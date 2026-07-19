@@ -129,9 +129,10 @@ const settingUpdaters: {
     commands.changeClipboardRestoreDelaySetting(value as string),
   submit_clipboard_restore_delay: (value) =>
     commands.changeSubmitClipboardRestoreDelaySetting(value as string),
-  anchor_keep: (value) => commands.changeAnchorKeepSetting(value as boolean),
-  anchor_return_focus: (value) =>
-    commands.changeAnchorReturnFocusSetting(value as boolean),
+  return_focus_output: (value) =>
+    commands.changeReturnFocusSetting("output", value as boolean),
+  return_focus_submit: (value) =>
+    commands.changeReturnFocusSetting("submit", value as boolean),
   anchor_action_output_idle: (value) =>
     commands.changeAnchorActionSetting("output_idle", value as string),
   anchor_action_output_stop: (value) =>
@@ -148,10 +149,10 @@ const settingUpdaters: {
     commands.changeAnchorActionSlotSetting("submit_idle", value as number),
   anchor_action_submit_stop_slot: (value) =>
     commands.changeAnchorActionSlotSetting("submit_stop", value as number),
-  jumper_track_output: (value) =>
-    commands.changeJumperTrackSetting("output", value as boolean),
-  jumper_track_submit: (value) =>
-    commands.changeJumperTrackSetting("submit", value as boolean),
+  jumper_track_enabled: (value) =>
+    commands.changeJumperTrackSetting(value as boolean),
+  jumper_track_slot: (value) =>
+    commands.changeJumperTrackSlotSetting(value as number),
   translator_enabled: (value) =>
     commands.changeTranslatorEnabled(value as boolean),
   translator_priority: (value) =>

@@ -339,51 +339,38 @@
         "title": "Hot slot (Anchor & Deliver)",
         "optionsMoved": {
           "title": "Delivery options",
-          "description": "Keep-after-delivery and return-focus for the hot slot now live next to the flow that uses them.",
+          "description": "Track-last-output and return-focus now live next to the flows that use them.",
           "hint": "Configured in the Transcribe and Transcribe & Submit groups on the General page."
-        }
-      },
-      "slotOptions": {
-        "keep": {
-          "hot": {
-            "label": "Keep anchor after delivery",
-            "description": "Leave the anchor armed after a successful delivery instead of clearing it, for repeated dictation into the same field."
-          },
-          "static": {
-            "label": "Keep slot after delivery",
-            "description": "Leave this slot set after delivering into it. Turn off to make the slot one-shot — it clears itself after one delivery, like the hot anchor."
-          }
-        },
-        "returnFocus": {
-          "label": "Return focus after delivery",
-          "description": "Switch back to the window you were using once the text has been delivered into this slot."
         }
       },
       "slot": {
         "title": "Static slot {{index}}",
         "status": "Slot {{index}} target",
-        "description": "Set a static slot on a field you keep returning to and jump back any time. By default it stays set after deliveries (see Keep slot after delivery). A slot remembers the window and field, not a browser tab or cursor position.",
+        "description": "Set a static slot on a field you keep returning to and jump back any time. Slots stay set after deliveries. A slot remembers the window and field, not a browser tab or cursor position.",
         "test": "Test",
         "testFailed": "Jump failed: {{reason}}",
         "stale": "Saved: {{app}} ({{control}}) — window not found yet"
       },
       "persist": {
         "label": "Remember slots across restarts",
-        "description": "Windows can't keep exact window handles across a restart, so Handy saves each slot's identity (app + window type) and re-finds the matching window when it starts — and again the moment you use the slot. A saved slot whose app isn't running shows in red until it reappears."
+        "description": "Applies to ALL slots. Windows can't keep exact window handles across a restart, so Handy saves each slot's identity (app + window type) and re-finds the matching window when it starts — and again the moment you use the slot. A saved slot whose app isn't running shows in red until it reappears.",
+        "groupTitle": "Persistence"
       },
       "slotNames": {
         "hot": "Hot (anchor)",
         "static": "Slot {{index}}"
       },
       "track": {
-        "output": {
-          "label": "Track last output location",
-          "description": "After each normal transcription is pasted, remember that field in the hot slot so Jump to Anchor returns you there."
-        },
-        "submit": {
-          "label": "Track last output location",
-          "description": "After each Transcribe & Submit delivery, remember that field in the hot slot so Jump to Anchor returns you there."
+        "label": "Track last output location",
+        "description": "One switch for both flows: after any transcription is pasted, remember that field in the chosen slot so jumping to it returns you to the last output spot.",
+        "slot": {
+          "title": "Save location into",
+          "description": "Which jump slot receives the tracked last-output location."
         }
+      },
+      "returnFocus": {
+        "label": "Return focus after delivery",
+        "description": "Switch back to where you were when the delivery started. The starting location is remembered automatically every time — no slot setup needed."
       }
     },
     "translator": {

@@ -48,10 +48,19 @@ echo Using LIBCLANG_PATH=!LIBCLANG_PATH!
 :: Use Ninja generator to avoid VS version detection issues with cmake crate
 set CMAKE_GENERATOR=Ninja
 
-:: Short build path: whisper.cpp Vulkan shader builds exceed the MSVC 250-char
-:: path limit under deep folders.
-if "!CARGO_TARGET_DIR!"=="" set "CARGO_TARGET_DIR=C:\tmp\hb"
-echo Using CARGO_TARGET_DIR=!CARGO_TARGET_DIR!
+:: T-210: pin a portable CPU baseline for the distributable binary. Without
+:: this, ggml defaults GGML_NATIVE=ON and bakes THIS machine's CPU features
+:: (via MSVC FindSIMD host detection) into the static whisper.cpp lib, which
+:: can illegal-instruction-crash on older supported CPUs before Vulkan
+:: init even runs. whisper-rs-sys/build.rs already hardcodes
+:: GGML_NATIVE=OFF as its own default, but it also forwards any GGML_* env
+:: var (last -D wins in CMake) — so set it explicitly here too, both as
+:: defense-in-depth against that default ever changing and to keep this
+:: local production script and release CI (.github/workflows/build.yml)
+:: on the same explicit policy. Vulkan (GGML_VULKAN) is untouched.
+:: Opt back into a machine-tuned build: set GGML_NATIVE=ON before running.
+if "!GGML_NATIVE!"=="" set GGML_NATIVE=OFF
+echo Using GGML_NATIVE=!GGML_NATIVE! (portable CPU baseline; set GGML_NATIVE=ON to opt out)
 
 :: Check model file exists
 if not exist "src-tauri\resources\models\silero_vad_v4.onnx" (
@@ -76,5 +85,4 @@ if !errorlevel! neq 0 (
 
 echo.
 echo BUILD SUCCEEDED
-echo Binary:     !CARGO_TARGET_DIR!\release\handy.exe
-echo Installers: !CARGO_TARGET_DIR!\release\bundle\nsis\ and ...\msi\
+echo Binary: src-tauri\target\release\handy.exe

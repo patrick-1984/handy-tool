@@ -4,7 +4,7 @@ import { MicrophoneSelector } from "../MicrophoneSelector";
 import { ShortcutInput } from "../ShortcutInput";
 import { TranscribeAndSubmitSettings } from "../TranscribeAndSubmitSettings";
 import { JumperTrackToggle } from "../JumperTrackToggle";
-import { JumperSlotOptions } from "../JumperSlotOptions";
+import { JumperReturnFocusToggle } from "../JumperReturnFocusToggle";
 import { PasteMethodSetting } from "../PasteMethod";
 import { PasteMethodPttSetting } from "../PasteMethodPtt";
 import { TypingToolSetting } from "../TypingTool";
@@ -50,8 +50,8 @@ export const GeneralSettings: React.FC = () => {
           moment="stop"
           grouped={true}
         />
-        <JumperTrackToggle flow="output" grouped={true} />
-        <JumperSlotOptions slot={0} grouped={true} />
+        <JumperTrackToggle grouped={true} />
+        <JumperReturnFocusToggle flow="output" grouped={true} />
       </SettingsGroup>
       <TranscribeAndSubmitSettings />
       <ModelSettingsCard />

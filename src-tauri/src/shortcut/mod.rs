@@ -1090,38 +1090,44 @@ pub fn change_anchor_action_slot_setting(
     Ok(())
 }
 
-/// Toggle track-last-output for a flow ("output" or "submit").
+/// Toggle the ONE global track-last-output switch (shared by both flows).
 #[tauri::command]
 #[specta::specta]
-pub fn change_jumper_track_setting(
+pub fn change_jumper_track_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    settings.jumper_track_enabled = enabled;
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
+/// Pick which slot receives the tracked last-output location (0 = hot).
+#[tauri::command]
+#[specta::specta]
+pub fn change_jumper_track_slot_setting(app: AppHandle, slot: u32) -> Result<(), String> {
+    if slot as usize >= crate::anchor::SLOT_COUNT {
+        return Err(format!("invalid jump slot {slot}"));
+    }
+    let mut settings = settings::get_settings(&app);
+    settings.jumper_track_slot = slot as u8;
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
+/// Toggle return-focus-after-delivery for a flow ("output" or "submit").
+/// The location returned to is captured automatically at delivery start.
+#[tauri::command]
+#[specta::specta]
+pub fn change_return_focus_setting(
     app: AppHandle,
     flow: String,
     enabled: bool,
 ) -> Result<(), String> {
     let mut settings = settings::get_settings(&app);
     match flow.as_str() {
-        "output" => settings.jumper_track_output = enabled,
-        "submit" => settings.jumper_track_submit = enabled,
-        other => return Err(format!("Unknown jumper track flow '{}'", other)),
+        "output" => settings.return_focus_output = enabled,
+        "submit" => settings.return_focus_submit = enabled,
+        other => return Err(format!("Unknown return-focus flow '{}'", other)),
     }
-    settings::write_settings(&app, settings);
-    Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
-pub fn change_anchor_keep_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
-    let mut settings = settings::get_settings(&app);
-    settings.anchor_keep = enabled;
-    settings::write_settings(&app, settings);
-    Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
-pub fn change_anchor_return_focus_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
-    let mut settings = settings::get_settings(&app);
-    settings.anchor_return_focus = enabled;
     settings::write_settings(&app, settings);
     Ok(())
 }
@@ -1141,39 +1147,6 @@ pub fn change_jumper_persist_setting(app: AppHandle, enabled: bool) -> Result<()
         #[cfg(windows)]
         crate::anchor::snapshot_slots(&app);
     }
-    Ok(())
-}
-
-/// Per-slot delivery options. Slot 0 routes to the legacy hot-anchor fields;
-/// slots 1–4 to their `jumper_slot_*` entries. `option` is "keep" or
-/// "return_focus".
-#[tauri::command]
-#[specta::specta]
-pub fn change_jumper_slot_option(
-    app: AppHandle,
-    slot: u32,
-    option: String,
-    enabled: bool,
-) -> Result<(), String> {
-    if slot as usize >= crate::anchor::SLOT_COUNT {
-        return Err(format!("invalid jump slot {slot}"));
-    }
-    let mut settings = settings::get_settings(&app);
-    // Older stores may carry short vectors — pad to the 4 static slots.
-    if settings.jumper_slot_keep.len() < 4 {
-        settings.jumper_slot_keep.resize(4, true);
-    }
-    if settings.jumper_slot_return_focus.len() < 4 {
-        settings.jumper_slot_return_focus.resize(4, true);
-    }
-    match (slot, option.as_str()) {
-        (0, "keep") => settings.anchor_keep = enabled,
-        (0, "return_focus") => settings.anchor_return_focus = enabled,
-        (s, "keep") => settings.jumper_slot_keep[(s - 1) as usize] = enabled,
-        (s, "return_focus") => settings.jumper_slot_return_focus[(s - 1) as usize] = enabled,
-        (_, other) => return Err(format!("unknown jumper slot option: {other}")),
-    }
-    settings::write_settings(&app, settings);
     Ok(())
 }
 

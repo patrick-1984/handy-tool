@@ -854,34 +854,34 @@ fn paste_inner(
         Ok(())
     })();
 
-    // Track-last-output: capture where the text just landed into the HOT slot
-    // — BEFORE any focus-return, so the slot points at the paste target. Keyed
-    // on the flow that FINISHED the take (submit override present = T&S).
+    // Track-last-output: ONE global switch for both flows — capture where the
+    // text just landed into the configured slot, BEFORE any focus-return so
+    // the slot points at the paste target.
     #[cfg(windows)]
-    let mut hot_recaptured = false;
-    #[cfg(windows)]
-    if flow_paste && delivered.is_ok() && paste_method != PasteMethod::None {
-        let track = if submit_override.is_some() {
-            settings.jumper_track_submit
-        } else {
-            settings.jumper_track_output
-        };
-        if track {
-            match crate::anchor::set_slot(&app_handle, crate::anchor::HOT) {
-                Ok(_) => hot_recaptured = true,
-                Err(e) => log::debug!("track-last-output capture skipped: {}", e),
-            }
+    if flow_paste
+        && delivered.is_ok()
+        && paste_method != PasteMethod::None
+        && settings.jumper_track_enabled
+    {
+        let slot = (settings.jumper_track_slot as usize).min(crate::anchor::SLOT_COUNT - 1);
+        if let Err(e) = crate::anchor::set_slot(&app_handle, slot) {
+            log::debug!("track-last-output capture skipped: {}", e);
         }
     }
 
-    // Anchored delivery epilogue: consume the one-shot anchor and return focus
-    // — strictly AFTER the submit key so Enter lands in the anchored app, and
-    // on failure paths too (never strand focus at the anchor). A failed paste
-    // keeps the anchor for a retry; a successful track capture wins over the
-    // one-shot clear (the slot was just deliberately refreshed).
+    // Anchored delivery epilogue — strictly AFTER the submit key so Enter
+    // lands in the anchored app, and on failure paths too (never strand focus
+    // at the anchor). Anchors are always kept; whether focus returns to the
+    // auto-captured start location is the finishing FLOW's setting (submit
+    // override present = Transcribe & Submit).
     #[cfg(windows)]
     if let Some(guard) = anchor_guard {
-        crate::anchor::finish_delivery(&app_handle, guard, delivered.is_ok(), hot_recaptured);
+        let return_focus = if submit_override.is_some() {
+            settings.return_focus_submit
+        } else {
+            settings.return_focus_output
+        };
+        crate::anchor::finish_delivery(&app_handle, guard, delivered.is_ok(), return_focus);
     }
 
     // NOTE: the deferred "on finish" Set/Clear is NOT consumed here — the

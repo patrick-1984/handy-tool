@@ -697,24 +697,22 @@ pub struct AppSettings {
     /// "Transcribe & Submit" paste.
     #[serde(default)]
     pub submit_clipboard_restore_delay: ClipboardRestoreDelay,
-    /// Hot slot: keep the anchor armed after a successful delivery
-    /// (default one-shot). Static slots have their own per-slot flags below.
-    #[serde(default)]
-    pub anchor_keep: bool,
-    /// Hot slot: return focus to the previous window after delivering.
-    #[serde(default = "default_anchor_return_focus")]
+    /// Return focus after an anchored delivery, per finishing flow. The
+    /// starting location is captured automatically every time a delivery
+    /// begins (an internal, invisible slot) — no user slot is involved.
+    #[serde(default = "default_return_focus")]
+    pub return_focus_output: bool,
+    #[serde(default = "default_return_focus")]
+    pub return_focus_submit: bool,
+    /// Deprecated (pre-0.40 per-slot return-focus): read once to seed the
+    /// per-flow fields above, never written back. Anchors are now ALWAYS
+    /// kept after delivery — the old keep/one-shot options are gone.
+    #[serde(default = "default_return_focus", skip_serializing)]
     pub anchor_return_focus: bool,
-    /// Static slots 1–4: keep the slot after a delivery into it (index 0 =
-    /// slot 1). Default true — statics are durable bookmarks; turning one off
-    /// makes that slot one-shot like the hot anchor.
-    #[serde(default = "default_static_slot_keep")]
-    pub jumper_slot_keep: Vec<bool>,
-    /// Static slots 1–4: return focus after delivering into the slot.
-    #[serde(default = "default_static_slot_return_focus")]
-    pub jumper_slot_return_focus: Vec<bool>,
-    /// Persist jump-slot targets across restarts (opt-in). Handles can't
-    /// survive a reboot, so the saved identity is re-resolved against live
-    /// windows; unresolved slots show red until their app reappears.
+    /// Persist jump-slot targets across restarts (opt-in, applies to ALL
+    /// slots). Handles can't survive a reboot, so the saved identity is
+    /// re-resolved against live windows; unresolved slots show red until
+    /// their app reappears.
     #[serde(default)]
     pub jumper_persist: bool,
     /// Saved identities, index = slot (only used when `jumper_persist`).
@@ -741,12 +739,23 @@ pub struct AppSettings {
     pub anchor_action_submit_idle_slot: u8,
     #[serde(default)]
     pub anchor_action_submit_stop_slot: u8,
-    /// Track-last-output: after this flow pastes, the HOT slot auto-captures
-    /// where the text landed (before any focus return). Default off.
+    /// Track-last-output: ONE global switch shared by both flows. When on,
+    /// the chosen slot auto-captures where the text landed after every paste
+    /// (before any focus return). Default off.
     #[serde(default)]
+    pub jumper_track_enabled: bool,
+    /// Which slot receives the tracked location (0 = hot, 1–4 = static).
+    #[serde(default)]
+    pub jumper_track_slot: u8,
+    /// Deprecated (pre-0.40 per-flow track toggles): read once to seed
+    /// `jumper_track_enabled`, never written back.
+    #[serde(default, skip_serializing)]
     pub jumper_track_output: bool,
-    #[serde(default)]
+    #[serde(default, skip_serializing)]
     pub jumper_track_submit: bool,
+    /// One-time migration marker for the 0.40 Jumper settings rework.
+    #[serde(default)]
+    pub jumper_v2_migrated: bool,
     /// Translator: watch folders and batch-transcribe new audio files into
     /// `.txt` sidecars using the currently selected engine.
     #[serde(default)]
@@ -778,16 +787,8 @@ fn default_translator_poll_secs() -> u64 {
     15
 }
 
-fn default_anchor_return_focus() -> bool {
+fn default_return_focus() -> bool {
     true
-}
-
-fn default_static_slot_keep() -> Vec<bool> {
-    vec![true; 4]
-}
-
-fn default_static_slot_return_focus() -> Vec<bool> {
-    vec![true; 4]
 }
 
 fn default_jumper_saved_slots() -> Vec<Option<SavedJumpSlot>> {
@@ -1147,6 +1148,31 @@ fn default_typing_tool() -> TypingTool {
 ///    base_url, api_key, model, enabled, cost);
 /// 2. ensure the built-in post-processing prompt exists and is selected,
 ///    migrating off the legacy "Improve Transcriptions" default.
+/// One-time migration to the 0.40 Jumper settings model: the per-flow track
+/// toggles collapse into one global switch (target slot = hot, where the old
+/// toggles always captured), per-slot return-focus becomes per-flow (seeded
+/// from the old hot-slot value, which is what both flow groups displayed),
+/// and the keep/one-shot options disappear — anchors are always kept now.
+fn ensure_jumper_v2(settings: &mut AppSettings) -> bool {
+    let mut changed = false;
+    if !settings.jumper_v2_migrated {
+        settings.jumper_track_enabled =
+            settings.jumper_track_output || settings.jumper_track_submit;
+        settings.jumper_track_slot = 0;
+        settings.return_focus_output = settings.anchor_return_focus;
+        settings.return_focus_submit = settings.anchor_return_focus;
+        settings.jumper_v2_migrated = true;
+        changed = true;
+    }
+    // Normalize a corrupt tracked-slot index (hand-edited store) to hot so
+    // the UI dropdown and the capture target always agree.
+    if settings.jumper_track_slot as usize >= crate::anchor::SLOT_COUNT {
+        settings.jumper_track_slot = 0;
+        changed = true;
+    }
+    changed
+}
+
 fn ensure_llm_defaults(settings: &mut AppSettings) -> bool {
     let mut changed = false;
 
@@ -1449,10 +1475,9 @@ pub fn get_default_settings() -> AppSettings {
         submit_clipboard_handling: ClipboardHandling::default(),
         clipboard_restore_delay: ClipboardRestoreDelay::default(),
         submit_clipboard_restore_delay: ClipboardRestoreDelay::default(),
-        anchor_keep: false,
-        anchor_return_focus: default_anchor_return_focus(),
-        jumper_slot_keep: default_static_slot_keep(),
-        jumper_slot_return_focus: default_static_slot_return_focus(),
+        return_focus_output: default_return_focus(),
+        return_focus_submit: default_return_focus(),
+        anchor_return_focus: default_return_focus(),
         jumper_persist: false,
         jumper_saved_slots: default_jumper_saved_slots(),
         anchor_action_output_idle: AnchorAction::default(),
@@ -1463,8 +1488,12 @@ pub fn get_default_settings() -> AppSettings {
         anchor_action_output_stop_slot: 0,
         anchor_action_submit_idle_slot: 0,
         anchor_action_submit_stop_slot: 0,
+        jumper_track_enabled: false,
+        jumper_track_slot: 0,
         jumper_track_output: false,
         jumper_track_submit: false,
+        // Fresh installs are already on the v2 model — nothing to migrate.
+        jumper_v2_migrated: true,
         translator_enabled: false,
         translator_folders: Vec::new(),
         translator_seeded: false,
@@ -1561,6 +1590,10 @@ pub fn load_or_create_app_settings(app: &AppHandle) -> AppSettings {
         default_settings
     };
 
+    if ensure_jumper_v2(&mut settings) {
+        store.set("settings", serde_json::to_value(&settings).unwrap());
+    }
+
     if ensure_llm_defaults(&mut settings) {
         store.set("settings", serde_json::to_value(&settings).unwrap());
     }
@@ -1585,8 +1618,12 @@ pub fn get_settings(app: &AppHandle) -> AppSettings {
         default_settings
     };
 
+    // MUST run before anything can write this struct back: the migration
+    // sources are `skip_serializing` fields, so a write that happens before
+    // the one-time migration would silently drop the old values.
+    let jumper_updated = ensure_jumper_v2(&mut settings);
     let bindings_updated = ensure_default_bindings(&mut settings);
-    if ensure_llm_defaults(&mut settings) || bindings_updated {
+    if ensure_llm_defaults(&mut settings) || bindings_updated || jumper_updated {
         store.set("settings", serde_json::to_value(&settings).unwrap());
     }
 

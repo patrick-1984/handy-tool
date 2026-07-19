@@ -219,17 +219,9 @@ async changeSubmitClipboardRestoreDelaySetting(delay: string) : Promise<Result<n
 async getShortcutRegistrationFailures() : Promise<RegistrationFailure[]> {
     return await TAURI_INVOKE("get_shortcut_registration_failures");
 },
-async changeAnchorKeepSetting(enabled: boolean) : Promise<Result<null, string>> {
+async changeReturnFocusSetting(flow: string, enabled: boolean) : Promise<Result<null, string>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("change_anchor_keep_setting", { enabled }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
-async changeAnchorReturnFocusSetting(enabled: boolean) : Promise<Result<null, string>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("change_anchor_return_focus_setting", { enabled }) };
+    return { status: "ok", data: await TAURI_INVOKE("change_return_focus_setting", { flow, enabled }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -255,14 +247,6 @@ async jumpToSlot(slot: number) : Promise<Result<null, string>> {
     else return { status: "error", error: e  as any };
 }
 },
-async changeJumperSlotOption(slot: number, option: string, enabled: boolean) : Promise<Result<null, string>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("change_jumper_slot_option", { slot, option, enabled }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
 async changeJumperPersistSetting(enabled: boolean) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("change_jumper_persist_setting", { enabled }) };
@@ -279,9 +263,17 @@ async changeAnchorActionSlotSetting(key: string, slot: number) : Promise<Result<
     else return { status: "error", error: e  as any };
 }
 },
-async changeJumperTrackSetting(flow: string, enabled: boolean) : Promise<Result<null, string>> {
+async changeJumperTrackSetting(enabled: boolean) : Promise<Result<null, string>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("change_jumper_track_setting", { flow, enabled }) };
+    return { status: "ok", data: await TAURI_INVOKE("change_jumper_track_setting", { enabled }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async changeJumperTrackSlotSetting(slot: number) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_jumper_track_slot_setting", { slot }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -1290,7 +1282,7 @@ mcp_server_port?: number;
 /**
  * Bearer token guarding the MCP/CLI server. Generated on first enable.
  */
-mcp_server_token?: string; submit_paste_method?: PasteMethod; submit_key?: AutoSubmitKey; submit_idle_behavior?: SubmitIdleBehavior; submit_clipboard_handling?: ClipboardHandling; clipboard_restore_delay?: ClipboardRestoreDelay; submit_clipboard_restore_delay?: ClipboardRestoreDelay; anchor_keep?: boolean; anchor_return_focus?: boolean; anchor_action_output_idle?: AnchorAction; anchor_action_output_stop?: AnchorAction; anchor_action_submit_idle?: AnchorAction; anchor_action_submit_stop?: AnchorAction; anchor_action_output_idle_slot?: number; anchor_action_output_stop_slot?: number; anchor_action_submit_idle_slot?: number; anchor_action_submit_stop_slot?: number; jumper_track_output?: boolean; jumper_track_submit?: boolean; translator_enabled?: boolean; translator_folders?: TranslatorFolder[]; translator_seeded?: boolean; translator_priority?: TranslatorPriority; translator_model?: string; translator_poll_secs?: number; jumper_slot_keep?: boolean[]; jumper_slot_return_focus?: boolean[]; jumper_persist?: boolean; jumper_saved_slots?: (SavedJumpSlot | null)[] }
+mcp_server_token?: string; submit_paste_method?: PasteMethod; submit_key?: AutoSubmitKey; submit_idle_behavior?: SubmitIdleBehavior; submit_clipboard_handling?: ClipboardHandling; clipboard_restore_delay?: ClipboardRestoreDelay; submit_clipboard_restore_delay?: ClipboardRestoreDelay; return_focus_output?: boolean; return_focus_submit?: boolean; anchor_return_focus?: boolean; anchor_action_output_idle?: AnchorAction; anchor_action_output_stop?: AnchorAction; anchor_action_submit_idle?: AnchorAction; anchor_action_submit_stop?: AnchorAction; anchor_action_output_idle_slot?: number; anchor_action_output_stop_slot?: number; anchor_action_submit_idle_slot?: number; anchor_action_submit_stop_slot?: number; jumper_track_enabled?: boolean; jumper_track_slot?: number; jumper_track_output?: boolean; jumper_track_submit?: boolean; jumper_v2_migrated?: boolean; translator_enabled?: boolean; translator_folders?: TranslatorFolder[]; translator_seeded?: boolean; translator_priority?: TranslatorPriority; translator_model?: string; translator_poll_secs?: number; jumper_persist?: boolean; jumper_saved_slots?: (SavedJumpSlot | null)[] }
 export type AudioDevice = { index: string; name: string; is_default: boolean }
 export type AutoSubmitKey = "enter" | "ctrl_enter" | "cmd_enter"
 export type SubmitIdleBehavior = "start_normal" | "do_nothing" | "start_and_submit"

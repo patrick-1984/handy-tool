@@ -1,13 +1,13 @@
 //! Jumper (Windows-only v1): five jump slots for desktop text fields.
 //!
 //! Slot 0 is the HOT slot — the original "anchor": transcription flows can
-//! set/clear/jump/deliver-to it via per-flow event actions, it is one-shot
-//! (cleared after a VERIFIED delivery unless `anchor_keep`), and it can
-//! auto-track where a flow last pasted (`jumper_track_*`). Slots 1–4 are
-//! STATIC bookmarks: set via `jump_set_slot_N`, jumped via `jump_slot_N`,
-//! never auto-cleared by delivery — they live until overwritten, cleared, or
-//! their window dies. All slots share the same capture/validation/delivery
-//! machinery and safety rails:
+//! set/clear/jump/deliver-to it via per-flow event actions. Any slot can be
+//! the target of track-last-output (`jumper_track_enabled`/`_slot`), which
+//! auto-captures where a flow last pasted. NO slot is ever auto-cleared by a
+//! delivery (0.40 rework) — slots live until overwritten, cleared, or their
+//! window dies. Slots 1–4 are STATIC bookmarks: set via `jump_set_slot_N`,
+//! jumped via `jump_slot_N`. All slots share the same
+//! capture/validation/delivery machinery and safety rails:
 //!
 //! - capture via `GetGUIThreadInfo` (no thread-input attachment at capture),
 //!   durable identity (HWND + PID + TID + class, revalidated at delivery —
@@ -19,8 +19,10 @@
 //!   the slot (cleared only when the window is destroyed);
 //! - delivery is strictly opt-in per paste via a one-shot requested-slot.
 //!
-//! Slots are in-memory only: window handles die with their windows, so
-//! persisting them across restarts would be fake precision.
+//! Live slots are in-memory (window handles die with their windows); the
+//! opt-in `jumper_persist` setting additionally saves each slot's IDENTITY
+//! (app + window/control class) and re-resolves it against live windows at
+//! startup and lazily on use — see `restore_slots`/`snapshot_slots`.
 
 use serde::Serialize;
 use specta::Type;
@@ -597,6 +599,11 @@ mod win {
             }
             return BeginDelivery::Failed { reason };
         }
+        // The return-focus target is a FOCUS-ONLY restore (alt-tab semantics):
+        // no keystrokes or text ever go to it, so the delivery-capture
+        // refusals (password controls, Handy's own windows) deliberately do
+        // not apply. Its own guards live in finish_delivery: only restored if
+        // the window is still alive and the user didn't switch away.
         let prev = unsafe { GetForegroundWindow().0 as isize };
         if let Err(reason) = activate_verified(HWND(target.hwnd as _)) {
             return BeginDelivery::Failed { reason };
@@ -623,45 +630,22 @@ mod win {
         })
     }
 
+    /// Delivery epilogue. Anchors are ALWAYS kept after a delivery (0.40
+    /// rework — a set anchor stays set until the user changes it or its
+    /// window dies; the old keep/one-shot options are gone). `return_focus`
+    /// is the finishing FLOW's setting, decided by the caller; the location
+    /// returned to is `guard.prev_foreground`, auto-captured at
+    /// `begin_delivery` — the invisible start-location slot.
     pub fn finish_delivery(
         app: &AppHandle,
         guard: DeliveryGuard,
         delivered_ok: bool,
-        hot_recaptured: bool,
+        return_focus: bool,
     ) {
-        let settings = crate::settings::get_settings(app);
-        // Keep/return-focus are PER-SLOT options: the hot slot uses the
-        // legacy anchor_keep/anchor_return_focus pair (default one-shot),
-        // static slots their jumper_slot_* entries (default durable). A
-        // static slot with keep=off becomes one-shot like the hot anchor.
-        let (slot_keep, slot_return_focus) = if guard.slot == HOT {
-            (settings.anchor_keep, settings.anchor_return_focus)
-        } else {
-            let i = guard.slot - 1;
-            (
-                settings.jumper_slot_keep.get(i).copied().unwrap_or(true),
-                settings
-                    .jumper_slot_return_focus
-                    .get(i)
-                    .copied()
-                    .unwrap_or(true),
-            )
-        };
-        // The clear is skipped when the paste itself failed (keep the target
-        // for a retry) and when track-last-output just re-captured HOT
-        // (tracking wins — clearing would erase the fresher capture). A
-        // one-shot clear removes the persisted identity too.
-        if delivered_ok && !slot_keep && !(guard.slot == HOT && hot_recaptured) {
-            if let Ok(mut slots) = SLOTS.lock() {
-                slots[guard.slot] = None;
-            }
-            persist_slot(app, guard.slot, None);
-            emit_changed(app);
-        }
         if delivered_ok {
             let _ = app.emit("anchor-delivered", guard.slot as u32);
         }
-        if slot_return_focus {
+        if return_focus {
             unsafe {
                 let current = GetForegroundWindow().0 as isize;
                 // Restore only if the target is still foreground (the user
@@ -793,15 +777,15 @@ pub fn finish_delivery(
     app: &AppHandle,
     guard: DeliveryGuard,
     delivered_ok: bool,
-    hot_recaptured: bool,
+    return_focus: bool,
 ) {
     #[cfg(windows)]
     {
-        win::finish_delivery(app, guard, delivered_ok, hot_recaptured);
+        win::finish_delivery(app, guard, delivered_ok, return_focus);
     }
     #[cfg(not(windows))]
     {
-        let _ = (app, guard, delivered_ok, hot_recaptured);
+        let _ = (app, guard, delivered_ok, return_focus);
     }
 }
 

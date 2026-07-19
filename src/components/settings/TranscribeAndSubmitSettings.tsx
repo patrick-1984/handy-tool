@@ -7,8 +7,7 @@ import { Dropdown } from "../ui/Dropdown";
 import { buildPasteMethodOptions } from "./PasteMethod";
 import { ClipboardRestoreDelaySetting } from "./ClipboardRestoreDelay";
 import { AnchorActionSetting } from "./AnchorActionSetting";
-import { JumperTrackToggle } from "./JumperTrackToggle";
-import { JumperSlotOptions } from "./JumperSlotOptions";
+import { JumperReturnFocusToggle } from "./JumperReturnFocusToggle";
 import { useSettings } from "../../hooks/useSettings";
 import { useOsType } from "../../hooks/useOsType";
 import type {
@@ -171,8 +170,7 @@ export const TranscribeAndSubmitSettings: React.FC = React.memo(() => {
         moment="stop"
         grouped={true}
       />
-      <JumperTrackToggle flow="submit" grouped={true} />
-      <JumperSlotOptions slot={0} grouped={true} />
+      <JumperReturnFocusToggle flow="submit" grouped={true} />
     </SettingsGroup>
   );
 });

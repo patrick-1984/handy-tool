@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { listen } from "@tauri-apps/api/event";
 import { toast } from "sonner";
 import { ShortcutInput } from "../ShortcutInput";
-import { JumperSlotOptions } from "../JumperSlotOptions";
 import { SettingsGroup } from "../../ui/SettingsGroup";
 import { SettingContainer } from "../../ui/SettingContainer";
 import { ToggleSwitch } from "../../ui/ToggleSwitch";
@@ -14,9 +13,10 @@ import { commands, type AnchorStatus } from "@/bindings";
 
 /**
  * The Jumper (Windows-only): five jump slots for desktop text fields. Slot 0
- * is the HOT slot — transcription flows can set/clear/jump/deliver into it and
- * it can auto-track where text last landed. Slots 1–4 are static bookmarks.
- * Slots live in memory only (window handles die with their windows).
+ * is the HOT slot — transcription flows can set/clear/jump/deliver into it;
+ * any slot can auto-track where text last landed. Slots 1–4 are static
+ * bookmarks. Live slots are in-memory; the opt-in persistence setting below
+ * saves slot identities and re-resolves them across restarts.
  */
 export const JumperSettings: React.FC = () => {
   const { t } = useTranslation();
@@ -115,6 +115,8 @@ export const JumperSettings: React.FC = () => {
             {t("settings.jumper.hot.optionsMoved.hint")}
           </span>
         </SettingContainer>
+      </SettingsGroup>
+      <SettingsGroup title={t("settings.jumper.persist.groupTitle")}>
         <ToggleSwitch
           checked={getSetting("jumper_persist") ?? false}
           onChange={(enabled) => updateSetting("jumper_persist", enabled)}
@@ -140,7 +142,6 @@ export const JumperSettings: React.FC = () => {
           >
             {slotStatus(i)}
           </SettingContainer>
-          <JumperSlotOptions slot={i} grouped={true} />
         </SettingsGroup>
       ))}
     </div>

@@ -172,6 +172,33 @@ fn main() {
         .very_verbose(true)
         .pic(true);
 
+    // T-210: portable CPU baseline for distributable binaries.
+    // ggml/CMakeLists.txt: GGML_NATIVE_DEFAULT is ON for any non-cross build,
+    // and `option(GGML_NATIVE ... ${GGML_NATIVE_DEFAULT})` inherits that — so
+    // an un-pinned build silently bakes the CI runner's / dev machine's CPU
+    // into the static lib. Concretely, in ggml/src/CMakeLists.txt's x86
+    // ARCH_FLAGS block: on MSVC (this project's Windows toolchain),
+    // `if (GGML_NATIVE) include(FindSIMD.cmake)` runs host CPU detection
+    // (baking in whatever the build box supports, e.g. AVX-512); on
+    // gcc/clang it appends `-march=native` directly. Either produces an
+    // illegal-instruction crash on an older CPU before Vulkan/Metal init can
+    // even run.
+    // Pinning GGML_NATIVE=OFF flips `INS_ENB` ON in ggml/CMakeLists.txt,
+    // so GGML_AVX/GGML_AVX2/GGML_FMA/GGML_F16C (non-MSVC only) default ON
+    // while GGML_AVX512/AMX/VNNI stay explicitly OFF (hardcoded, not tied to
+    // INS_ENB). On MSVC the ARCH_FLAGS elseif-chain then picks /arch:AVX2
+    // (GGML_AVX2 wins over plain GGML_AVX); on gcc/clang it appends
+    // -mavx -mavx2 -mfma -mf16c. Net effect either way: an AVX2-class x86-64
+    // baseline (~Haswell/2013+, roughly "x86-64-v3" minus BMI2, which ggml
+    // never toggles as its own flag) — well above every CPU family Handy
+    // still supports, well below anything a modern host lacks. GPU backends
+    // (GGML_VULKAN / GGML_METAL) are configured independently below and are
+    // unaffected by this.
+    // Opt back into a machine-tuned local build with env GGML_NATIVE=ON:
+    // GGML_* env vars are forwarded below and a later -D wins in CMake.
+    config.define("GGML_NATIVE", "OFF");
+    println!("cargo:rerun-if-env-changed=GGML_NATIVE");
+
     if cfg!(target_os = "windows") {
         config.cxxflag("/utf-8");
         println!("cargo:rustc-link-lib=advapi32");
@@ -257,12 +284,22 @@ fn main() {
         config.define("CMAKE_BUILD_TYPE", "Release");
     }
 
-    // Allow passing any WHISPER or CMAKE compile flags
+    // Allow passing any WHISPER, GGML or CMAKE compile flags.
+    // These are forwarded AFTER the defines above, and in CMake the last -D
+    // wins, so env vars can override the pinned defaults (e.g. GGML_NATIVE).
     for (key, value) in env::vars() {
+        // Skip empty values: CI templates set unused flags to "" (e.g.
+        // `GGML_AVX: ${{ cond && 'OFF' || '' }}`), and forwarding an empty
+        // `-DGGML_AVX=` would define the option to a falsy empty string on
+        // platforms that never meant to set it.
+        if value.is_empty() {
+            continue;
+        }
         let is_whisper_flag =
             key.starts_with("WHISPER_") && key != "WHISPER_DONT_GENERATE_BINDINGS";
         let is_cmake_flag = key.starts_with("CMAKE_");
-        if is_whisper_flag || is_cmake_flag {
+        let is_ggml_flag = key.starts_with("GGML_");
+        if is_whisper_flag || is_cmake_flag || is_ggml_flag {
             config.define(&key, &value);
         }
     }

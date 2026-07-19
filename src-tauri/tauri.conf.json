@@ -2,7 +2,7 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Handy Tool",
   "mainBinaryName": "handy",
-  "version": "0.39.0",
+  "version": "0.40.0",
   "identifier": "pr.handy",
   "build": {
     "beforeDevCommand": "bun run dev",
@@ -70,7 +70,15 @@
         "files": {}
       }
     },
-    "windows": {}
+    "windows": {
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper",
+        "silent": true
+      },
+      "nsis": {
+        "installerHooks": "nsis/hooks.nsh"
+      }
+    }
   },
   "plugins": {}
 }
