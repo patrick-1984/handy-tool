@@ -15,13 +15,29 @@ use tauri_plugin_clipboard_manager::ClipboardExt;
 use crate::utils::{is_kde_wayland, is_wayland};
 
 /// One-shot paste override armed when the "Transcribe & Submit" shortcut finishes
-/// a recording. Consumed (taken) by the next `paste()`.
+/// a recording.
+///
+/// T-116 (same take-ownership treatment T-101 gave `DeliveryIntent`): this
+/// static is now ONLY the arming mailbox between the coordinator's finishing
+/// press and the take's `stop()` — `actions.rs` consumes it into an owned,
+/// take-scoped value via `take_submit_override()` synchronously at the SAME
+/// point it captures `delivery_intent`/`post_take_action`/`take_gen` (before
+/// the async pipeline spawns), and threads it BY VALUE through `paste()` into
+/// `paste_inner`. Previously `paste_inner` itself called `take_submit_override()`
+/// lazily, at actual-paste time — a process-global one-shot consumed whenever
+/// the NEXT `paste()` happened to run. That let a pathologically delayed OLD
+/// take's paste consume a NEWER take's override (pasting with the wrong
+/// method/submit key), and let a new take's `start()`-time
+/// `clear_submit_override()` strip an already-stopped take's override out from
+/// under it. Capturing by value at stop() closes both: nothing is left in the
+/// global for a later take to pick up, and a take that already owns its copy
+/// can't have it erased by a later clear.
 ///
 /// - `submit`: when `Some`, force this paste method and always send the submit key
 ///   (independent of the global `auto_submit`).
 /// - `clipboard`: when `Some`, override clipboard handling for this paste.
 /// - `restore_extra_ms`: extra wait before restoring the original clipboard.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct SubmitOverride {
     pub submit: Option<(PasteMethod, AutoSubmitKey)>,
     pub clipboard: Option<ClipboardHandling>,
@@ -52,7 +68,10 @@ static SUBMIT_OVERRIDE: Lazy<Mutex<Option<SubmitOverride>>> = Lazy::new(|| Mutex
 /// surfaced to the user as-is.
 const ANCHOR_FOCUS_LOST: &str = "__anchor_focus_lost_mid_paste__";
 
-/// Arm the next paste with a submit/clipboard override.
+/// Arm the mailbox (T-116): the coordinator calls this synchronously on the
+/// Transcribe & Submit finishing press, BEFORE calling `stop()` — which is
+/// exactly where `take_submit_override()` below consumes it into the take's
+/// owned pipeline value.
 pub fn set_submit_override(over: SubmitOverride) {
     if let Ok(mut guard) = SUBMIT_OVERRIDE.lock() {
         *guard = Some(over);
@@ -102,15 +121,26 @@ mod restore_race_tests {
     }
 }
 
-/// Clear any armed submit override (called when a new recording starts or its
-/// lifecycle ends, so a stale override can never leak into an unrelated paste).
+/// Clear the mailbox (called when a new recording starts, mirroring
+/// `anchor::clear_delivery_request`/`clear_post_take_action`). T-116: this only
+/// protects a LATER take now — a take whose `stop()` already captured the
+/// override into its own pipeline by value is untouched by this clear, since
+/// `take_submit_override()` is the ONLY reader of the global and it already
+/// ran for that take.
 pub fn clear_submit_override() {
     if let Ok(mut guard) = SUBMIT_OVERRIDE.lock() {
         *guard = None;
     }
 }
 
-fn take_submit_override() -> Option<SubmitOverride> {
+/// Consume the mailbox into an owned, take-scoped value. Call ONCE per take,
+/// synchronously, at the SAME `stop()`-time point `anchor::take_delivery_intent()`
+/// / `anchor::take_post_take_action()` / `actions::snapshot_take_generation()`
+/// are called — while the coordinator thread still serializes everything, so
+/// no other take can be starting concurrently. This is now the ONLY place that
+/// reads `SUBMIT_OVERRIDE`; `paste_inner` no longer reads the global itself,
+/// it receives this take's captured value as a parameter.
+pub(crate) fn take_submit_override() -> Option<SubmitOverride> {
     SUBMIT_OVERRIDE
         .lock()
         .ok()
@@ -746,24 +776,34 @@ fn should_send_auto_submit(auto_submit: bool, paste_method: PasteMethod) -> bool
     auto_submit && paste_method != PasteMethod::None
 }
 
-/// Flow paste: consumes the one-shot submit override and a take-scoped
-/// anchored-delivery intent (captured by the caller at stop()/take time via
-/// `anchor::take_delivery_intent()` — see T-101), and can auto-track the
-/// output location. Used by the transcription flows only.
+/// Flow paste: takes a take-scoped submit override and a take-scoped
+/// anchored-delivery intent — BOTH captured by the caller at stop()/take time
+/// (`clipboard::take_submit_override()` — T-116 — and
+/// `anchor::take_delivery_intent()` — T-101), never read from any global in
+/// here — and can auto-track the output location. Used by the transcription
+/// flows only.
 pub fn paste(
     text: String,
     app_handle: AppHandle,
     is_ptt: bool,
     delivery_intent: crate::anchor::DeliveryIntent,
+    submit_override: Option<SubmitOverride>,
 ) -> Result<(), String> {
-    paste_inner(text, app_handle, is_ptt, true, delivery_intent)
+    paste_inner(
+        text,
+        app_handle,
+        is_ptt,
+        true,
+        delivery_intent,
+        submit_override,
+    )
 }
 
 /// Plain paste for non-flow callers (MCP/CLI `keyboard_type`): must NEVER
 /// consume or observe flow one-shots — a stale submit override or delivery
 /// intent would redirect unrelated text into the submit pipeline or an
-/// anchored window. Constructed with `DeliveryIntent::NONE` by construction,
-/// never by reading any global.
+/// anchored window. Constructed with `DeliveryIntent::NONE` and `None` by
+/// construction, never by reading any global.
 pub fn paste_plain(text: String, app_handle: AppHandle) -> Result<(), String> {
     paste_inner(
         text,
@@ -771,6 +811,7 @@ pub fn paste_plain(text: String, app_handle: AppHandle) -> Result<(), String> {
         false,
         false,
         crate::anchor::DeliveryIntent::NONE,
+        None,
     )
 }
 
@@ -780,6 +821,7 @@ fn paste_inner(
     is_ptt: bool,
     flow_paste: bool,
     delivery_intent: crate::anchor::DeliveryIntent,
+    submit_override: Option<SubmitOverride>,
 ) -> Result<(), String> {
     // The Jumper (and therefore `delivery_intent`) is Windows-only — silence
     // the unused-parameter warning on other platforms rather than threading
@@ -788,11 +830,15 @@ fn paste_inner(
     let _ = delivery_intent;
 
     let settings = get_settings(&app_handle);
-    let submit_override = if flow_paste {
-        take_submit_override()
-    } else {
-        None
-    };
+    // T-116: `submit_override` is now the CALLER's already-take-scoped value
+    // (captured once, synchronously, at stop() time — see
+    // `take_submit_override`). This defensive mask is the same belt-and-
+    // braces the `delivery_intent`/`clear_post_take_action` non-flow-paste
+    // path already applies: a non-flow paste (MCP/CLI, `flow_paste == false`)
+    // must never act on a submit override even if some future caller ever
+    // passed one in by mistake — `paste_plain` already guarantees `None` by
+    // construction, so this is a no-op there today.
+    let submit_override = if flow_paste { submit_override } else { None };
     let forced_submit = submit_override.and_then(|o| o.submit);
     let clipboard_handling = submit_override
         .and_then(|o| o.clipboard)
@@ -1090,7 +1136,18 @@ fn paste_inner(
     // Set/Clear action (T-102), this capture is decided and executed in the
     // SAME instant the paste finishes — there's no earlier snapshot that
     // could go stale, so the generation-CAS guard doesn't apply here; a
-    // plain `set_slot` (unconditional, authoritative) is correct.
+    // plain unconditional, authoritative commit is correct.
+    //
+    // T-104: for an ANCHORED delivery (`anchor_guard` is `Some`), source the
+    // capture from the guard's already-verified hwnd/control
+    // (`anchor::track_from_guard`) instead of a fresh foreground-window query
+    // (the old `set_slot` path here) — a submit keystroke sent just above
+    // (Enter closing a dialog, navigating a composer) can have already moved
+    // the foreground window away from the real delivery target by this point,
+    // and `set_slot`'s `GetForegroundWindow()` would silently track wherever
+    // Enter left focus instead. Non-anchored (plain) pastes are unaffected —
+    // they keep the pre-existing `set_slot` foreground-query capture, since
+    // there is no known delivery target to fall back on for them.
     #[cfg(windows)]
     if flow_paste
         && delivered.is_ok()
@@ -1098,7 +1155,11 @@ fn paste_inner(
         && settings.jumper_track_enabled
     {
         let slot = (settings.jumper_track_slot as usize).min(crate::anchor::SLOT_COUNT - 1);
-        if let Err(e) = crate::anchor::set_slot(&app_handle, slot) {
+        let result = match anchor_guard.as_ref() {
+            Some(guard) => crate::anchor::track_from_guard(&app_handle, guard, slot),
+            None => crate::anchor::set_slot(&app_handle, slot),
+        };
+        if let Err(e) = result {
             log::debug!("track-last-output capture skipped: {}", e);
         }
     }
@@ -1165,5 +1226,60 @@ mod tests {
         assert!(should_send_auto_submit(true, PasteMethod::Direct));
         assert!(should_send_auto_submit(true, PasteMethod::CtrlShiftV));
         assert!(should_send_auto_submit(true, PasteMethod::ShiftInsert));
+    }
+
+    fn dummy_override(key: AutoSubmitKey) -> SubmitOverride {
+        SubmitOverride {
+            submit: Some((PasteMethod::CtrlV, key)),
+            clipboard: Some(ClipboardHandling::CopyToClipboard),
+            restore_extra_ms: 0,
+        }
+    }
+
+    /// T-116, mirrors `anchor::delivery_intent_is_take_scoped_one_shot`:
+    /// `take_submit_override()` is a strict one-shot over the `SUBMIT_OVERRIDE`
+    /// mailbox — a second take must never observe a prior take's
+    /// already-consumed arm, and a value captured BEFORE a later `set_
+    /// submit_override` call stays `None` (it's a plain owned `Option`, never
+    /// a live view of the global). Combined into one test — `SUBMIT_OVERRIDE`
+    /// is a shared global and cargo runs tests in parallel by default, so a
+    /// second test touching the same static could otherwise interleave (same
+    /// rationale as the `anchor.rs` cross-platform tests).
+    #[test]
+    fn submit_override_is_take_scoped_one_shot() {
+        clear_submit_override();
+        assert_eq!(take_submit_override(), None);
+
+        set_submit_override(dummy_override(AutoSubmitKey::Enter));
+        let captured = take_submit_override();
+        assert_eq!(captured, Some(dummy_override(AutoSubmitKey::Enter)));
+
+        // Consumed: a second (later) take's capture must see None, never the
+        // prior take's override.
+        assert_eq!(take_submit_override(), None);
+
+        // A value captured EARLIER is unaffected by an arm that lands AFTER
+        // it was taken — it never re-reads the global (mirrors the
+        // DeliveryIntent ownership-by-value proof).
+        let earlier_take_override = take_submit_override();
+        set_submit_override(dummy_override(AutoSubmitKey::CtrlEnter));
+        let later_take_override = take_submit_override();
+        assert_eq!(
+            later_take_override,
+            Some(dummy_override(AutoSubmitKey::CtrlEnter))
+        );
+        assert_eq!(earlier_take_override, None);
+
+        // A new take's start()-time clear (`clear_submit_override`, mirroring
+        // `anchor::clear_delivery_request`) must never reach back into a
+        // value an earlier take already captured by value.
+        set_submit_override(dummy_override(AutoSubmitKey::Enter));
+        let already_stopped_takes_override = take_submit_override();
+        clear_submit_override(); // the NEXT take starting, clearing the mailbox
+        assert_eq!(
+            already_stopped_takes_override,
+            Some(dummy_override(AutoSubmitKey::Enter)),
+            "a later clear must not strip an already-captured take's override"
+        );
     }
 }

@@ -19,6 +19,7 @@ import { TranscriptionModePttSetting } from "../TranscriptionModePttSetting";
 import { ApiTranscriptionSettings } from "../ApiTranscriptionSettings";
 import { OpenRouterTranscriptionSettings } from "../OpenRouterTranscriptionSettings";
 import { TranscriptionModelOptions } from "../TranscriptionModelOptions";
+import { GpuDeviceSelector } from "../GpuDeviceSelector";
 import { KeyboardImplementationSelector } from "../debug/KeyboardImplementationSelector";
 import { RegisteredLlmProviders } from "./RegisteredLlmProviders";
 import { McpSettings } from "./McpSettings";
@@ -73,6 +74,7 @@ export const AdvancedSettings: React.FC = () => {
               descriptionMode="tooltip"
               grouped={true}
             />
+            <GpuDeviceSelector descriptionMode="tooltip" grouped={true} />
             {selectedModel === "api-whisper" && (
               <ApiTranscriptionSettings
                 descriptionMode="tooltip"

@@ -1171,16 +1171,31 @@ pub fn change_return_focus_setting(
 #[tauri::command]
 #[specta::specta]
 pub fn change_jumper_persist_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
-    let mut settings = settings::get_settings(&app);
-    settings.jumper_persist = enabled;
-    if !enabled {
-        settings.jumper_saved_slots = vec![None; crate::anchor::SLOT_COUNT];
-    }
-    settings::write_settings(&app, settings);
-    if enabled {
-        #[cfg(windows)]
-        crate::anchor::snapshot_slots(&app);
-    }
+    // Finding 11 (v0.42.0 SECOND adversarial review): the settings flag flip
+    // and the follow-on snapshot/delete step must run as ONE indivisible
+    // sequence relative to a concurrent call of this same function — a
+    // second `change_jumper_persist_setting` call (enable racing disable, or
+    // vice versa) interleaving between the flag flip and the snapshot/delete
+    // below could resurrect cleared identities, flip `jumper_persist` back,
+    // or recreate the hints sidecar right after it was deleted. See
+    // `anchor::with_persist_toggle_lock`'s doc for the full lock order this
+    // composes with (`snapshot_all`'s own `PERSIST_LOCK`/
+    // `SETTINGS_MUTATION_LOCK` nesting).
+    crate::anchor::with_persist_toggle_lock(|| {
+        if enabled {
+            settings::update_settings(&app, |settings| {
+                settings.jumper_persist = true;
+            });
+            #[cfg(windows)]
+            crate::anchor::snapshot_slots(&app);
+        } else {
+            // Flag flip + identity clear + hints-sidecar delete run as ONE
+            // operation under PERSIST_LOCK (finding 11, v0.42.0 3rd review) so
+            // an in-flight `persist_slot` — which holds the SAME lock — can
+            // never recreate a hint or resurrect an identity after the clear.
+            crate::anchor::disable_persistence(&app);
+        }
+    });
     Ok(())
 }
 
@@ -1303,6 +1318,27 @@ pub fn change_transcription_mode_ptt_setting(app: AppHandle, mode: String) -> Re
         settings.transcription_mode_ptt
     );
     settings::write_settings(&app, settings);
+    Ok(())
+}
+
+/// T-212: persists the local Whisper GPU-device selection. Sentinel-encoded
+/// (`-1` Auto, `-2` force CPU, `>= 0` explicit Vulkan device index — see the
+/// `transcribe_gpu_device` doc comment in settings.rs), so this is a plain
+/// `i32` setter rather than an enum-parsing command; validation/fallback for
+/// a stale or disappeared device happens at model load time
+/// (`managers/transcription.rs`), not here.
+///
+/// Adversarial review finding 7 (T-212 follow-up): routes through
+/// `settings::update_settings` (the T-111 read-modify-write helper) instead
+/// of the bare `get_settings`/mutate/`write_settings` pattern, which raced
+/// other concurrent settings writers.
+#[tauri::command]
+#[specta::specta]
+pub fn change_transcribe_gpu_device_setting(app: AppHandle, device: i32) -> Result<(), String> {
+    settings::update_settings(&app, |settings| {
+        settings.transcribe_gpu_device = device;
+    });
+    log::info!("Transcribe GPU device setting changed to: {}", device);
     Ok(())
 }
 

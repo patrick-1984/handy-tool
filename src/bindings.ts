@@ -386,6 +386,14 @@ async changeTranscriptionModePttSetting(mode: string) : Promise<Result<null, str
     else return { status: "error", error: e  as any };
 }
 },
+async changeTranscribeGpuDeviceSetting(device: number) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_transcribe_gpu_device_setting", { device }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async changeApiTranscriptionUrlSetting(url: string) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("change_api_transcription_url_setting", { url }) };
@@ -1033,6 +1041,21 @@ async hasAnyModelsOrDownloads() : Promise<Result<boolean, string>> {
     else return { status: "error", error: e  as any };
 }
 },
+/**
+ * List the GPU adapters whisper.cpp's Vulkan backend can see, for the
+ * transcription GPU-device selector. Enumeration is lazy (queries the
+ * Vulkan backend on demand) and safe to call at any time — it never touches
+ * a loaded model. Returns an empty list on macOS (Metal backend, no Vulkan
+ * device registry) or if no adapters are found.
+ */
+async listGpuDevices() : Promise<Result<GpuDeviceOption[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("list_gpu_devices") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async updateMicrophoneMode(alwaysOn: boolean) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("update_microphone_mode", { alwaysOn }) };
@@ -1247,7 +1270,18 @@ async isLaptop() : Promise<Result<boolean, string>> {
 
 /** user-defined types **/
 
-export type AppSettings = { bindings: Partial<{ [key in string]: ShortcutBinding }>; push_to_talk: boolean; audio_feedback: boolean; audio_feedback_volume?: number; sound_theme?: SoundTheme; start_hidden?: boolean; autostart_enabled?: boolean; typing_start_delay_secs?: number; typing_key_delay_ms?: number; selected_model?: string; always_on_microphone?: boolean; selected_microphone?: string | null; clamshell_microphone?: string | null; selected_output_device?: string | null; translate_to_english?: boolean; selected_language?: string; overlay_position?: OverlayPosition;
+export type AppSettings = { bindings: Partial<{ [key in string]: ShortcutBinding }>; push_to_talk: boolean; audio_feedback: boolean; audio_feedback_volume?: number; sound_theme?: SoundTheme; start_hidden?: boolean; autostart_enabled?: boolean; typing_start_delay_secs?: number; typing_key_delay_ms?: number; selected_model?: string;
+/**
+ * Vulkan GPU device selection for local Whisper transcription (T-212).
+ * Sentinel-encoded rather than a parallel accelerator enum: `-1`
+ * (default) = Auto (whisper.cpp's own default: GPU on, device 0 — the
+ * behavior before this setting existed), `-2` = force CPU, `>= 0` = an
+ * explicit Vulkan device index from `list_gpu_devices`. Applied at
+ * Whisper model load (`managers/transcription.rs`); an adapter that
+ * fails to init (disappeared, stale index, driver reordering) falls
+ * back to Auto rather than bricking transcription.
+ */
+transcribe_gpu_device?: number; always_on_microphone?: boolean; selected_microphone?: string | null; clamshell_microphone?: string | null; selected_output_device?: string | null; translate_to_english?: boolean; selected_language?: string; overlay_position?: OverlayPosition;
 /**
  * UI appearance: System (follows OS), Light, or Dark. Resolved and
  * applied by the frontend (main window via React; the overlay/floating
@@ -1422,6 +1456,12 @@ export type McpStatus = { enabled: boolean; running: boolean; port: number;
 token: string; cli_installed: boolean; cli_path: string }
 export type RestoreReport = { settings_restored: boolean; history_restored: boolean; recordings_restored: number; restart_required: boolean; errors: string[] }
 export type ModelInfo = { id: string; name: string; description: string; filename: string; url: string | null; size_mb: number; is_downloaded: boolean; is_downloading: boolean; partial_size: number; is_directory: boolean; engine_type: EngineType; accuracy_score: number; speed_score: number; supports_translation: boolean; is_recommended: boolean; supported_languages: string[]; is_custom: boolean }
+/**
+ * One Vulkan GPU adapter offered to the frontend's device-selection dropdown
+ * (T-212). Trimmed down from `transcribe_rs::engines::whisper::GpuDeviceInfo`
+ * — the UI only needs an id to persist and a label to show.
+ */
+export type GpuDeviceOption = { index: number; name: string; vram_total_mb: number }
 export type ModelLoadStatus = { is_loaded: boolean; current_model: string | null }
 /**
  * The model-testing prompt library: separately-saved model and judge prompts,

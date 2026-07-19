@@ -153,8 +153,9 @@ static RECORDING_PLAN: Lazy<Mutex<Option<RecordingPlan>>> = Lazy::new(|| Mutex::
 pub(crate) static CHUNK_TRANSCRIBE_LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
 
 /// Per-take cancellation generation (adversarial-review finding 7, T-101
-/// follow-up). `stop()` captures `delivery_intent`/`post_take_action` by
-/// value into the async pipeline task, so `utils::cancel_current_operation()`
+/// follow-up). `stop()` captures `delivery_intent`/`post_take_action`/
+/// `submit_override` (T-116) by value into the async pipeline task, so
+/// `utils::cancel_current_operation()`
 /// clearing the GLOBALS (`clear_delivery_request`/`clear_post_take_action`)
 /// only protects a LATER take — it can't reach back into a pipeline that
 /// already owns its copies. If Cancel lands while that pipeline is mid-flight
@@ -1166,6 +1167,13 @@ impl ShortcutAction for TranscribeAction {
         // pathologically delayed main-thread paste can then never observe a
         // NEWER take's delivery request (nor lose its own to one).
         let delivery_intent = crate::anchor::take_delivery_intent();
+        // T-116: identical take-ownership treatment for the Transcribe &
+        // Submit override — captured into an owned `Option<SubmitOverride>`
+        // here, synchronously, rather than read lazily by `paste_inner` at
+        // actual-paste time. `crate::clipboard::SUBMIT_OVERRIDE` stays only
+        // the arming mailbox between the coordinator's finishing press and
+        // this exact point.
+        let submit_override = crate::clipboard::take_submit_override();
 
         tauri::async_runtime::spawn(async move {
             let _guard = FinishGuard(ah.clone());
@@ -1382,7 +1390,13 @@ impl ShortcutAction for TranscribeAction {
                             return;
                         }
                         let park_text = paste_text.clone();
-                        match utils::paste(paste_text, ah_clone.clone(), is_ptt, delivery_intent) {
+                        match utils::paste(
+                            paste_text,
+                            ah_clone.clone(),
+                            is_ptt,
+                            delivery_intent,
+                            submit_override,
+                        ) {
                             Ok(()) => {
                                 // Finding 7(b): re-check the generation
                                 // immediately before the deferred on-finish
@@ -1667,6 +1681,7 @@ impl ShortcutAction for TranscribeAction {
                                     ah_clone.clone(),
                                     is_ptt,
                                     delivery_intent,
+                                    submit_override,
                                 ) {
                                     Ok(()) => {
                                         debug!(

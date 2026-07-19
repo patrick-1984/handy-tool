@@ -24,7 +24,7 @@ use transcribe_rs::{
             Language as SenseVoiceLanguage, SenseVoiceEngine, SenseVoiceInferenceParams,
             SenseVoiceModelParams,
         },
-        whisper::{WhisperEngine, WhisperInferenceParams},
+        whisper::{WhisperEngine, WhisperInferenceParams, WhisperModelParams},
     },
 };
 
@@ -35,6 +35,105 @@ use transcribe_rs::{
 /// Whisper-family engines are excluded: they decode the whole window fine and
 /// trailing silence only invites end-of-audio hallucinations.
 const TRAILING_SILENCE_PAD_SAMPLES: usize = 16_000;
+
+/// Serializes this app's only two entry points into ggml's Vulkan backend:
+/// `commands::models::list_gpu_devices` (enumeration) and the Whisper GPU
+/// model-load path below (adversarial review finding 4, T-212 follow-up).
+///
+/// `ggml-vulkan.cpp` guards its one-time backend init with an
+/// *unsynchronized* global flag that it marks complete before the device
+/// vectors it populates are fully written, so an enumeration call
+/// overlapping an in-progress load can observe partial state or otherwise
+/// data-race. `whisper-rs-local/src/vulkan.rs` has its own internal lock
+/// (`whisper_rs::vulkan::VULKAN_LOCK`) guarding its `list_devices()` FFI
+/// section, but `whisper-rs` is not a direct dependency of this crate (only
+/// reachable indirectly via the `transcribe-rs` re-export — see
+/// `Cargo.toml`), so that lock cannot be shared across the crate boundary
+/// without adding a new direct dependency edge, which is out of scope for
+/// this pass (see `tickets/T-212-gpu-selection.md`). This mirrors the same
+/// guarantee at the one layer this crate owns: nothing in this app touches
+/// the Vulkan backend except through the two call sites above, so
+/// serializing them here closes the practical race even though the two
+/// locks are technically separate objects.
+static VULKAN_OP_LOCK: Mutex<()> = Mutex::new(());
+
+/// Run `f` while holding [`VULKAN_OP_LOCK`]. `commands::models::list_gpu_devices`
+/// wraps its enumeration call in this so it can never overlap the GPU
+/// Whisper model-load path below.
+pub fn with_vulkan_op_lock<R>(f: impl FnOnce() -> R) -> R {
+    let _guard = VULKAN_OP_LOCK
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    f()
+}
+
+/// Resolve `AppSettings::transcribe_gpu_device` (T-212) into whisper-rs load
+/// parameters. Sentinel encoding, kept in a single `i32` field per the
+/// Settings Pattern rather than a parallel accelerator enum:
+///   * `-1` (default) = Auto — whisper.cpp's own default (GPU on, device 0),
+///     i.e. identical behavior to before this setting existed.
+///   * `-2` = force CPU (`use_gpu: false`).
+///   * `>= 0` = explicit Vulkan device index from `list_gpu_devices()`.
+/// Any other negative value is treated as Auto — defensive against a
+/// corrupt or future settings file rather than a hard error.
+fn whisper_gpu_params_for_setting(device_setting: i32) -> WhisperModelParams {
+    match device_setting {
+        -2 => WhisperModelParams {
+            use_gpu: false,
+            gpu_device: 0,
+        },
+        -1 => WhisperModelParams::default(),
+        n if n >= 0 => WhisperModelParams {
+            use_gpu: true,
+            gpu_device: n,
+        },
+        other => {
+            warn!(
+                "Unrecognized transcribe_gpu_device value {} — defaulting to Auto",
+                other
+            );
+            WhisperModelParams::default()
+        }
+    }
+}
+
+/// Given the outcome of a Whisper GPU load attempt, decide whether a
+/// safety-net retry with default (Auto) GPU parameters is appropriate
+/// (adversarial review finding 6, T-212 follow-up).
+///
+/// Only an explicit Vulkan device index (`>= 0`) gets the retry: that
+/// setting means "use GPU, specifically this adapter", and if the adapter
+/// failed to initialize, falling back to Auto (still GPU-on, just letting
+/// whisper.cpp pick) is a reasonable, non-surprising degradation.
+///
+/// A force-CPU setting (`-2`) failing must NOT retry with GPU-on
+/// parameters — `WhisperModelParams::default()` has `use_gpu: true`, so a
+/// blanket retry-on-any-error would silently violate the "CPU Only"
+/// contract the user explicitly chose. Auto (`-1`) itself failing also has
+/// no softer GPU fallback to retry with (it's already the default), so it
+/// isn't retried either — both `-2` and `-1` failures surface directly.
+fn should_retry_with_default_gpu_params(effective_device_setting: i32) -> bool {
+    effective_device_setting >= 0
+}
+
+/// Resolve the requested `transcribe_gpu_device` setting against the
+/// currently-visible Vulkan adapters (adversarial review finding 5, T-212
+/// follow-up). An explicit device index (`>= 0`) that isn't present in
+/// `available_indices` — a disappeared adapter, a stale index left over
+/// from an older settings file, a driver that reordered devices, etc. — is
+/// NOT attempted as-is: whisper.cpp can fail to attach a GPU backend for an
+/// unknown index, silently add the CPU backend anyway, and report success,
+/// so an Err-only check at load time would never catch it. This validates
+/// BEFORE the load and degrades to Auto (`-1`) instead. Auto and force-CPU
+/// (`-2`) pass through unchanged — neither names a specific adapter, so
+/// there's nothing to validate against the adapter list.
+fn resolve_effective_gpu_setting(gpu_setting: i32, available_indices: &[i32]) -> i32 {
+    if gpu_setting >= 0 && !available_indices.contains(&gpu_setting) {
+        -1
+    } else {
+        gpu_setting
+    }
+}
 
 #[derive(Clone, Debug, Serialize)]
 pub struct ModelStateEvent {
@@ -373,18 +472,107 @@ impl TranscriptionManager {
         let loaded_engine = match model_info.engine_type {
             EngineType::Whisper => {
                 let mut engine = WhisperEngine::new();
-                engine.load_model(&model_path).map_err(|e| {
-                    let error_msg = format!("Failed to load whisper model {}: {}", model_id, e);
-                    let _ = self.app_handle.emit(
-                        "model-state-changed",
-                        ModelStateEvent {
-                            event_type: "loading_failed".to_string(),
-                            model_id: Some(model_id.to_string()),
-                            model_name: Some(model_info.name.clone()),
-                            error: Some(error_msg.clone()),
-                        },
-                    );
-                    anyhow::anyhow!(error_msg)
+                // T-212: resolve the persisted GPU-device selection (Auto / CPU /
+                // explicit Vulkan device index) into whisper-rs load params. If
+                // the chosen device fails to initialize (disappeared adapter,
+                // driver reordered devices, invalid stale index, etc.), never
+                // brick transcription — log a warning and retry once with the
+                // default (Auto) params before giving up for real.
+                let gpu_setting = get_settings(&self.app_handle).transcribe_gpu_device;
+
+                // Adversarial review finding 4: hold the app-wide Vulkan
+                // serialization lock across BOTH the pre-load adapter-list
+                // validation (finding 5) and the load attempt(s) below, so
+                // this whole GPU-touching sequence can't overlap a
+                // concurrent `list_gpu_devices` enumeration call from the
+                // settings UI.
+                with_vulkan_op_lock(|| -> Result<()> {
+                    // Finding 5: an explicit device index (>= 0) that no
+                    // longer exists (disappeared adapter, driver reordered
+                    // devices, stale index from an old settings file) must
+                    // not be allowed to silently run on CPU. whisper.cpp can
+                    // fail to attach a GPU backend for an invalid index,
+                    // then add the CPU backend anyway and report success —
+                    // so an Err-only check at load time never catches it.
+                    // Validate the index against the LIVE adapter list
+                    // before ever attempting the load, and fall back to
+                    // Auto (with a warning) if it's out of range.
+                    let effective_gpu_setting = if gpu_setting >= 0 {
+                        let available = transcribe_rs::engines::whisper::list_gpu_devices();
+                        let available_count = available.len();
+                        let available_indices: Vec<i32> =
+                            available.into_iter().map(|d| d.index).collect();
+                        let resolved =
+                            resolve_effective_gpu_setting(gpu_setting, &available_indices);
+                        if resolved != gpu_setting {
+                            warn!(
+                                "transcribe_gpu_device={} does not match any of the {} \
+                                 currently-visible Vulkan adapter(s) — falling back to Auto",
+                                gpu_setting, available_count
+                            );
+                        }
+                        resolved
+                    } else {
+                        gpu_setting
+                    };
+
+                    let gpu_params = whisper_gpu_params_for_setting(effective_gpu_setting);
+                    if let Err(e) = engine.load_model_with_params(&model_path, gpu_params.clone()) {
+                        // Finding 6: only an explicit GPU index gets a
+                        // safety-net retry with default (Auto, still
+                        // GPU-on) parameters. A force-CPU (`-2`) load
+                        // failing must surface as a real error — retrying
+                        // it with `WhisperModelParams::default()` (GPU-on)
+                        // would silently break the "CPU Only" contract.
+                        let retryable = should_retry_with_default_gpu_params(effective_gpu_setting);
+                        warn!(
+                            "Failed to load whisper model {} with transcribe_gpu_device={} \
+                             (use_gpu={}, gpu_device={}): {}{}",
+                            model_id,
+                            effective_gpu_setting,
+                            gpu_params.use_gpu,
+                            gpu_params.gpu_device,
+                            e,
+                            if retryable {
+                                " — retrying with default GPU parameters"
+                            } else {
+                                " — force-CPU load failed, not retrying with GPU"
+                            }
+                        );
+
+                        if retryable {
+                            engine
+                                .load_model_with_params(&model_path, WhisperModelParams::default())
+                                .map_err(|e| {
+                                    let error_msg =
+                                        format!("Failed to load whisper model {}: {}", model_id, e);
+                                    let _ = self.app_handle.emit(
+                                        "model-state-changed",
+                                        ModelStateEvent {
+                                            event_type: "loading_failed".to_string(),
+                                            model_id: Some(model_id.to_string()),
+                                            model_name: Some(model_info.name.clone()),
+                                            error: Some(error_msg.clone()),
+                                        },
+                                    );
+                                    anyhow::anyhow!(error_msg)
+                                })?;
+                        } else {
+                            let error_msg =
+                                format!("Failed to load whisper model {}: {}", model_id, e);
+                            let _ = self.app_handle.emit(
+                                "model-state-changed",
+                                ModelStateEvent {
+                                    event_type: "loading_failed".to_string(),
+                                    model_id: Some(model_id.to_string()),
+                                    model_name: Some(model_info.name.clone()),
+                                    error: Some(error_msg.clone()),
+                                },
+                            );
+                            return Err(anyhow::anyhow!(error_msg));
+                        }
+                    }
+                    Ok(())
                 })?;
                 LoadedEngine::Whisper(engine)
             }
@@ -1141,5 +1329,125 @@ impl Drop for TranscriptionManager {
                 debug!("Idle watcher thread joined successfully");
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod gpu_device_setting_tests {
+    use super::{
+        resolve_effective_gpu_setting, should_retry_with_default_gpu_params,
+        whisper_gpu_params_for_setting,
+    };
+
+    // T-212 acceptance: Auto, CPU forcing, and explicit nonzero device
+    // selection all resolve to the correct whisper-rs load parameters.
+
+    #[test]
+    fn auto_sentinel_matches_default_gpu_behavior() {
+        let params = whisper_gpu_params_for_setting(-1);
+        assert!(params.use_gpu);
+        assert_eq!(params.gpu_device, 0);
+    }
+
+    #[test]
+    fn cpu_sentinel_forces_cpu() {
+        let params = whisper_gpu_params_for_setting(-2);
+        assert!(!params.use_gpu);
+    }
+
+    #[test]
+    fn explicit_nonzero_device_is_threaded_through() {
+        let params = whisper_gpu_params_for_setting(2);
+        assert!(params.use_gpu);
+        assert_eq!(params.gpu_device, 2);
+    }
+
+    #[test]
+    fn explicit_device_zero_is_threaded_through() {
+        let params = whisper_gpu_params_for_setting(0);
+        assert!(params.use_gpu);
+        assert_eq!(params.gpu_device, 0);
+    }
+
+    #[test]
+    fn unrecognized_negative_value_falls_back_to_auto() {
+        // A corrupt/future settings value outside the known sentinels (not
+        // -1 or -2) must never be misread as "device -37" — it degrades to
+        // Auto instead of panicking or erroring at load time.
+        let params = whisper_gpu_params_for_setting(-37);
+        assert!(params.use_gpu);
+        assert_eq!(params.gpu_device, 0);
+    }
+
+    // Adversarial review finding 6: only an explicit GPU index (>= 0) is
+    // eligible for the safety-net retry-with-Auto. -2 (force CPU) and -1
+    // (Auto itself) must never retry with GPU-on default params.
+
+    #[test]
+    fn explicit_device_zero_is_retryable() {
+        assert!(should_retry_with_default_gpu_params(0));
+    }
+
+    #[test]
+    fn explicit_nonzero_device_is_retryable() {
+        assert!(should_retry_with_default_gpu_params(5));
+    }
+
+    #[test]
+    fn force_cpu_sentinel_is_not_retryable() {
+        // The bug this guards against: WhisperModelParams::default() has
+        // use_gpu: true, so retrying a failed force-CPU load with it would
+        // silently turn "CPU Only" into "GPU".
+        assert!(!should_retry_with_default_gpu_params(-2));
+    }
+
+    #[test]
+    fn auto_sentinel_is_not_retryable() {
+        // Auto failing has no softer GPU fallback to retry with — it IS
+        // the default already.
+        assert!(!should_retry_with_default_gpu_params(-1));
+    }
+
+    #[test]
+    fn unrecognized_negative_value_is_not_retryable() {
+        assert!(!should_retry_with_default_gpu_params(-99));
+    }
+
+    // Adversarial review finding 5: an explicit device index must be
+    // validated against the live adapter list before load, and degrade to
+    // Auto (not silently run on CPU) when it's out of range.
+
+    #[test]
+    fn explicit_device_present_in_list_passes_through_unchanged() {
+        assert_eq!(resolve_effective_gpu_setting(1, &[0, 1, 2]), 1);
+    }
+
+    #[test]
+    fn explicit_device_zero_present_in_list_passes_through_unchanged() {
+        assert_eq!(resolve_effective_gpu_setting(0, &[0, 1]), 0);
+    }
+
+    #[test]
+    fn explicit_device_missing_from_list_falls_back_to_auto() {
+        assert_eq!(resolve_effective_gpu_setting(4, &[0, 1]), -1);
+    }
+
+    #[test]
+    fn explicit_device_falls_back_to_auto_when_no_adapters_present() {
+        // e.g. macOS (no Vulkan device registry) or a Vulkan backend that
+        // reports zero devices.
+        assert_eq!(resolve_effective_gpu_setting(0, &[]), -1);
+    }
+
+    #[test]
+    fn auto_sentinel_is_never_validated_against_the_adapter_list() {
+        // Auto doesn't name a specific adapter, so an empty/mismatched
+        // device list must not perturb it.
+        assert_eq!(resolve_effective_gpu_setting(-1, &[]), -1);
+    }
+
+    #[test]
+    fn cpu_sentinel_is_never_validated_against_the_adapter_list() {
+        assert_eq!(resolve_effective_gpu_setting(-2, &[]), -2);
     }
 }

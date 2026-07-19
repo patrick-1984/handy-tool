@@ -616,6 +616,16 @@
           "postRecording": "Post-Recording"
         }
       },
+      "gpuDevice": {
+        "title": "GPU Device",
+        "description": "Choose which GPU whisper.cpp's Vulkan backend uses, or force CPU-only transcription. Applies the next time the model loads. If the selected adapter is unavailable, Handy automatically falls back to Auto.",
+        "options": {
+          "auto": "Auto (Default)",
+          "cpu": "CPU Only",
+          "device": "{{name}} (device {{index}})",
+          "deviceWithVram": "{{name}} (device {{index}}, {{vram}} GB)"
+        }
+      },
       "apiTranscription": {
         "title": "API Transcription",
         "url": {

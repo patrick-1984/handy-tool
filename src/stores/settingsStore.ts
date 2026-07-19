@@ -182,6 +182,8 @@ const settingUpdaters: {
     commands.changeTranscriptionModeSetting(value as string),
   transcription_mode_ptt: (value) =>
     commands.changeTranscriptionModePttSetting(value as string),
+  transcribe_gpu_device: (value) =>
+    commands.changeTranscribeGpuDeviceSetting(value as number),
   api_transcription_url: (value) =>
     commands.changeApiTranscriptionUrlSetting(value as string),
   api_transcription_key: (value) =>

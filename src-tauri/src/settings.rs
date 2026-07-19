@@ -616,6 +616,16 @@ pub struct AppSettings {
     pub typing_key_delay_ms: u32,
     #[serde(default = "default_model")]
     pub selected_model: String,
+    /// Vulkan GPU device selection for local Whisper transcription (T-212).
+    /// Sentinel-encoded rather than a parallel accelerator enum: `-1`
+    /// (default) = Auto (whisper.cpp's own default: GPU on, device 0 — the
+    /// behavior before this setting existed), `-2` = force CPU, `>= 0` = an
+    /// explicit Vulkan device index from `list_gpu_devices`. Applied at
+    /// Whisper model load (`managers/transcription.rs`); an adapter that
+    /// fails to init (disappeared, stale index, driver reordering) falls
+    /// back to Auto rather than bricking transcription.
+    #[serde(default = "default_transcribe_gpu_device")]
+    pub transcribe_gpu_device: i32,
     #[serde(default = "default_always_on_microphone")]
     pub always_on_microphone: bool,
     #[serde(default)]
@@ -873,6 +883,12 @@ fn default_submit_paste_method() -> PasteMethod {
 
 fn default_model() -> String {
     "".to_string()
+}
+
+/// `-1` = Auto — see `transcribe_gpu_device` doc comment for the full
+/// sentinel encoding.
+fn default_transcribe_gpu_device() -> i32 {
+    -1
 }
 
 fn default_always_on_microphone() -> bool {
@@ -1483,6 +1499,7 @@ pub fn get_default_settings() -> AppSettings {
         typing_start_delay_secs: default_typing_start_delay_secs(),
         typing_key_delay_ms: default_typing_key_delay_ms(),
         selected_model: "".to_string(),
+        transcribe_gpu_device: default_transcribe_gpu_device(),
         always_on_microphone: false,
         selected_microphone: None,
         clamshell_microphone: None,
@@ -2033,5 +2050,46 @@ mod tests {
         assert!(!snap.translate_to_english);
         assert_eq!(snap.language, "en");
         assert_eq!(snap.word_correction_threshold, 0.3);
+    }
+
+    // --- T-212: GPU device selection --------------------------------------
+
+    #[test]
+    fn transcribe_gpu_device_defaults_to_auto() {
+        assert_eq!(get_default_settings().transcribe_gpu_device, -1);
+    }
+
+    #[test]
+    fn transcribe_gpu_device_round_trips_through_json() {
+        let mut settings = get_default_settings();
+        settings.transcribe_gpu_device = 3;
+        let json = serde_json::to_string(&settings).unwrap();
+        let restored: AppSettings = serde_json::from_str(&json).unwrap();
+        assert_eq!(restored.transcribe_gpu_device, 3);
+    }
+
+    #[test]
+    fn transcribe_gpu_device_defaults_when_missing_from_stored_json() {
+        // Migration safety: a settings file saved before T-212 has no
+        // `transcribe_gpu_device` key at all. Deserializing it must fall back
+        // to Auto (-1) via `#[serde(default = "default_transcribe_gpu_device")]`
+        // rather than failing to load or silently zeroing (which would read
+        // as "device 0" instead of Auto).
+        let mut value = serde_json::to_value(get_default_settings()).unwrap();
+        value
+            .as_object_mut()
+            .unwrap()
+            .remove("transcribe_gpu_device");
+        let restored: AppSettings = serde_json::from_value(value).unwrap();
+        assert_eq!(restored.transcribe_gpu_device, -1);
+    }
+
+    #[test]
+    fn transcribe_gpu_device_persists_cpu_forcing_sentinel() {
+        let mut settings = get_default_settings();
+        settings.transcribe_gpu_device = -2;
+        let json = serde_json::to_string(&settings).unwrap();
+        let restored: AppSettings = serde_json::from_str(&json).unwrap();
+        assert_eq!(restored.transcribe_gpu_device, -2);
     }
 }

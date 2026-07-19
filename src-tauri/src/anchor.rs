@@ -11,7 +11,26 @@
 //!
 //! - capture via `GetGUIThreadInfo` (no thread-input attachment at capture),
 //!   durable identity (HWND + PID + TID + class, revalidated at delivery —
-//!   bare HWNDs get recycled), password/self-window rejection;
+//!   bare HWNDs get recycled), password/self-window rejection — the
+//!   password check is TWO layers (T-105): `ES_PASSWORD` (classic Win32
+//!   `Edit` controls) plus a UI Automation `IsPassword` property query
+//!   (`uia_is_password`) for non-Win32 password fields (Electron/browser/
+//!   WinUI) invisible to the style bit — resolved via
+//!   `IUIAutomation::GetFocusedElement()`, NOT `ElementFromHandle(control)`
+//!   (a v0.42.0 adversarial-review finding: `ElementFromHandle` returns the
+//!   renderer HOST element in Chrome/Edge/Electron, never the focused
+//!   descendant that actually carries `IsPassword`, so it silently missed
+//!   exactly the browser/Electron password fields this check exists for;
+//!   `GetFocusedElement()` is process/desktop-wide and correctly resolves to
+//!   the true focused control even when it has no HWND of its own — guarded
+//!   by a same-process check against the target's PID so a validate()-time
+//!   call, where the target window isn't the active one yet, never queries
+//!   an unrelated element that merely happens to be focused elsewhere); a
+//!   UIA query failure fails OPEN (never blocks capture on its own) but a
+//!   definite positive result fails CLOSED exactly like `ES_PASSWORD`, at
+//!   both capture and delivery revalidation (`validate()`) — deliberately
+//!   NOT the per-keystroke `guard_still_foreground` TOCTOU recheck, which
+//!   stays cheap-syscalls-only;
 //! - delivery NEVER pastes blind: activation verified via
 //!   `GetForegroundWindow`, control focus verified via `GetGUIThreadInfo`
 //!   (both the window AND the specific control — `DeliveryGuard` tracks the
@@ -31,11 +50,59 @@
 //!   (mirroring `POST_TAKE_ACTION`'s take-ownership) — a pathologically
 //!   delayed main-thread paste can then never observe a NEWER take's intent.
 //!
+//! Track-last-output's capture point (T-104): when the paste that just
+//! finished was an ANCHORED delivery, the capture is sourced from the
+//! delivery guard's own already-verified hwnd/control
+//! (`track_from_guard`/`win::capture_target_from_guard`), never a fresh
+//! foreground-window query — a submit keystroke (Enter closing a dialog,
+//! navigating a composer) can move the foreground window away from the real
+//! delivery target before a plain `GetForegroundWindow()`-based capture would
+//! run. Non-anchored (plain) pastes still use the foreground-query capture
+//! (`set_slot`) — there is no known delivery target to fall back to for them.
+//! Hardened further (v0.42.0 adversarial review, finding 2): the identity
+//! `capture_target_from_guard` commits is the FULLY-VERIFIED
+//! pid/tid/window_class/control_class `begin_delivery` already captured at
+//! `DeliveryGuard` construction time, preserved verbatim — never re-derived
+//! from the guard's raw HWNDs at capture time, which by then may have been
+//! destroyed and recycled by Windows for an unrelated window. If the
+//! captured control is no longer a live window, the capture is refused
+//! outright (slot left unchanged) rather than "broadening" to the top-level
+//! window's identity, which would silently bookmark the wrong element.
+//!
 //! Live slots are in-memory (window handles die with their windows); the
 //! opt-in `jumper_persist` setting additionally saves each slot's IDENTITY
 //! (app + window/control class) and re-resolves it against live windows at
-//! startup and lazily on use — see `restore_slots`/`snapshot_slots`. Every
-//! slot write bumps a per-slot capture generation (T-102), tracked in a
+//! startup and lazily on use — see `restore_slots`/`snapshot_slots`.
+//! Same-app disambiguation (T-112): that identity alone can match MORE THAN
+//! ONE live window (two Chrome windows, two Citrix sessions) — `resolve_saved`
+//! collects every visible match and tries a persisted per-slot title-HASH
+//! hint (`jumper_slot_hints.json`, a tiny sidecar written alongside
+//! `jumper_saved_slots`; hashed rather than stored verbatim, since a window
+//! title can carry a sensitive document/page name) to pick the one unique
+//! candidate. When that still doesn't resolve to exactly one, the automatic
+//! paths (startup restore, `begin_delivery`) refuse to guess and leave the
+//! slot unresolved (stays "stale"/red) rather than silently committing to a
+//! possibly-wrong window; only the explicit `jump` path falls back to the
+//! topmost (Z-order) candidate, since the user is about to see where they
+//! land.
+//!
+//! Hardened further (v0.42.0 adversarial review, finding 3): the hint
+//! sidecar and `jumper_saved_slots` are two SEPARATE stores, so a hint write
+//! that fails AFTER the identity already persisted (or vice versa) used to
+//! risk a restart resolving against an unrelated leftover hint — exactly the
+//! wrong-window bug this ticket exists to close. `persist_slot` now writes
+//! the hint FIRST (rename-from-temp, so a crash mid-write can never leave a
+//! half-written file) and only persists the identity once that succeeded;
+//! every hint also carries a keyed fingerprint of the identity it was saved
+//! with, so even a torn write across the two files (a hard crash between
+//! them) is detected and ignored at resolve time rather than silently
+//! mismatched (`hint_is_valid_for`). The title hash itself is keyed with a
+//! per-install random key stored in the sidecar's own header (never a
+//! fixed/public key, and never regenerated once present — that would orphan
+//! every previously saved hint) and versioned, so an older, unkeyed sidecar
+//! is treated as absent rather than misread.
+//!
+//! Every slot write bumps a per-slot capture generation (T-102), tracked in a
 //! SEPARATE array from the targets themselves so clearing a slot to `None`
 //! never erases its generation history — a None→Set→Clear cycle a stale
 //! writer didn't observe is still visible as a generation change even though
@@ -108,6 +175,25 @@ pub struct DeliveryGuard {
     /// via `GetGUIThreadInfo` on every TOCTOU check.
     #[cfg(windows)]
     target_control: isize,
+    /// Full identity `begin_delivery` already validated for this delivery,
+    /// snapshotted at `DeliveryGuard` construction time (T-104 finding 2,
+    /// v0.42.0 adversarial review). `capture_target_from_guard` (the
+    /// track-last-output source for an anchored delivery) MUST use these
+    /// fields verbatim rather than re-deriving pid/tid/class from
+    /// `target_hwnd`/`target_control` at capture time — by then those HWND
+    /// values may have been destroyed and recycled by Windows for a wholly
+    /// unrelated window, and re-querying them would silently adopt that
+    /// window's identity instead of failing.
+    #[cfg(windows)]
+    target_pid: u32,
+    #[cfg(windows)]
+    target_tid: u32,
+    #[cfg(windows)]
+    target_window_class: String,
+    #[cfg(windows)]
+    target_control_class: String,
+    #[cfg(windows)]
+    target_app: String,
     #[cfg(windows)]
     slot: usize,
 }
@@ -118,23 +204,173 @@ mod win {
     use log::{debug, info, warn};
     use once_cell::sync::Lazy;
     use std::sync::Mutex;
-    use tauri::{AppHandle, Emitter};
-    use windows::Win32::Foundation::{CloseHandle, HWND, LPARAM};
+    use tauri::{AppHandle, Emitter, Manager};
+    use windows::Win32::Foundation::{CloseHandle, HWND, LPARAM, RPC_E_CHANGED_MODE};
+    use windows::Win32::System::Com::{
+        CLSCTX_INPROC_SERVER, COINIT_APARTMENTTHREADED, COINIT_MULTITHREADED, CoCreateInstance,
+        CoInitializeEx, CoUninitialize,
+    };
     use windows::Win32::System::Threading::{
         AttachThreadInput, GetCurrentThreadId, OpenProcess, PROCESS_NAME_WIN32,
         PROCESS_QUERY_LIMITED_INFORMATION, QueryFullProcessImageNameW,
     };
+    use windows::Win32::UI::Accessibility::{CUIAutomation, IUIAutomation, IUIAutomationElement};
     use windows::Win32::UI::Input::KeyboardAndMouse::SetFocus;
     use windows::Win32::UI::WindowsAndMessaging::{
         BringWindowToTop, EnumWindows, FindWindowExW, GA_ROOT, GUITHREADINFO, GWL_STYLE,
         GetAncestor, GetClassNameW, GetForegroundWindow, GetGUIThreadInfo, GetWindowLongW,
-        GetWindowThreadProcessId, IsIconic, IsWindow, IsWindowVisible, SW_RESTORE,
+        GetWindowTextW, GetWindowThreadProcessId, IsIconic, IsWindow, IsWindowVisible, SW_RESTORE,
         SetForegroundWindow, ShowWindow, SwitchToThisWindow,
     };
-    use windows::core::BOOL;
+    use windows::core::{BOOL, HRESULT};
 
     /// Edit-control style: password box. Defined locally to avoid feature churn.
     const ES_PASSWORD: i32 = 0x0020;
+
+    /// RAII guard for a possibly-newly-initialized COM apartment on the
+    /// CALLING thread (T-105). Per the Win32 contract, `CoInitializeEx` must
+    /// be paired with exactly one `CoUninitialize` for every SUCCESSFUL call
+    /// — `S_OK` (genuinely newly initialized) AND `S_FALSE` (already
+    /// initialized on this thread in the SAME mode) both count as
+    /// "successful" and both need the matching uninitialize. The ONE case
+    /// that must NOT be paired is `RPC_E_CHANGED_MODE`: the thread was
+    /// already initialized in a DIFFERENT concurrency mode by someone else
+    /// (e.g. the WebView2/Tauri UI thread's own STA init) — our call did
+    /// nothing in that case, so there is nothing for us to undo, and calling
+    /// `CoUninitialize` anyway would decrement a refcount we never
+    /// incremented.
+    struct ComApartmentGuard {
+        owns: bool,
+    }
+
+    impl Drop for ComApartmentGuard {
+        fn drop(&mut self) {
+            if self.owns {
+                unsafe { CoUninitialize() };
+            }
+        }
+    }
+
+    /// Outcome of a single `CoInitializeEx` attempt, decided PURELY from its
+    /// returned `HRESULT` — extracted from `ensure_com_initialized` so this
+    /// decision (which HRESULTs must/must-not be paired with a
+    /// `CoUninitialize`) is unit-testable without a real COM call (T-105).
+    #[derive(Debug, PartialEq, Eq)]
+    enum ComInitOutcome {
+        /// A genuinely new init, OR a repeat init that returned `S_FALSE`
+        /// (already initialized on this thread in the SAME mode) — the Win32
+        /// contract requires BOTH to be paired with exactly one
+        /// `CoUninitialize`.
+        Owned,
+        /// `RPC_E_CHANGED_MODE`: already initialized in a DIFFERENT mode by
+        /// someone else. COM is usable, but this call did nothing — never
+        /// uninitialize.
+        AlreadyInitializedElsewhere,
+        /// Failed for any other reason — COM is not usable via this attempt.
+        Failed,
+    }
+
+    fn classify_com_init(hr: HRESULT) -> ComInitOutcome {
+        if hr.is_ok() {
+            ComInitOutcome::Owned
+        } else if hr == RPC_E_CHANGED_MODE {
+            ComInitOutcome::AlreadyInitializedElsewhere
+        } else {
+            ComInitOutcome::Failed
+        }
+    }
+
+    /// Ensure COM is usable on the calling thread for a UIA query, returning
+    /// a guard that undoes ONLY what this call itself set up. Tries
+    /// apartment-threaded first (the common case: most callers here run on a
+    /// Tauri/WebView2-hosted thread that already has STA COM initialized, so
+    /// this typically returns `S_FALSE` and costs nothing extra), falling
+    /// back to multithreaded if that particular attempt fails for a reason
+    /// OTHER than "already initialized in a different mode". Returns `None`
+    /// if COM could not be made available at all on this thread — callers
+    /// treat that as "UIA unavailable" (see `uia_is_password`'s fail-open
+    /// contract), never as a capture-blocking error by itself.
+    fn ensure_com_initialized() -> Option<ComApartmentGuard> {
+        unsafe {
+            match classify_com_init(CoInitializeEx(None, COINIT_APARTMENTTHREADED)) {
+                ComInitOutcome::Owned => return Some(ComApartmentGuard { owns: true }),
+                ComInitOutcome::AlreadyInitializedElsewhere => {
+                    return Some(ComApartmentGuard { owns: false });
+                }
+                ComInitOutcome::Failed => {}
+            }
+            match classify_com_init(CoInitializeEx(None, COINIT_MULTITHREADED)) {
+                ComInitOutcome::Owned => Some(ComApartmentGuard { owns: true }),
+                ComInitOutcome::AlreadyInitializedElsewhere => {
+                    Some(ComApartmentGuard { owns: false })
+                }
+                ComInitOutcome::Failed => {
+                    debug!("UIA: COM initialization failed — IsPassword query unavailable");
+                    None
+                }
+            }
+        }
+    }
+
+    /// UIA `IsPassword` check (T-105, revised after a v0.42.0 adversarial
+    /// review finding): catches non-Win32 password fields (Electron/browser/
+    /// WinUI, e.g. a Chrome/Edge `<input type="password">`) invisible to the
+    /// `ES_PASSWORD` style check above, which only exists on classic Win32
+    /// `Edit` controls.
+    ///
+    /// `pid` is the owning process of the control being checked (the
+    /// caller's already-known target/control pid — capture and `validate()`
+    /// both have it on hand). The ORIGINAL implementation queried
+    /// `IUIAutomation::ElementFromHandle(control)` — which, for a Chromium/
+    /// Electron host HWND, returns the renderer HOST element, not the
+    /// specific focused input descendant that actually carries
+    /// `IsPassword`; a browser password field was therefore invisible to
+    /// this check even though it looked like the right API call. The fix
+    /// queries `GetFocusedElement()` instead: UIA's own process/desktop-wide
+    /// focus tracking, which correctly resolves to the true focused
+    /// descendant (a web/Electron control has no HWND of its own, so
+    /// `ElementFromHandle` can never reach it, but `GetFocusedElement` does).
+    /// Since that query is desktop-wide rather than scoped to a specific
+    /// HWND, its result is verified to belong to `pid` before being trusted
+    /// — at capture time `pid` IS whatever currently has focus (the capture
+    /// target), so this always matches; at delivery revalidation
+    /// (`validate()`, which runs BEFORE the target is re-activated) the
+    /// currently focused element may well belong to a different app
+    /// entirely, and a pid mismatch there correctly means "can't determine
+    /// for THIS target" rather than misreading an unrelated window's focus.
+    ///
+    /// Returns `None` on ANY failure — COM unavailable, `CoCreateInstance`,
+    /// `GetFocusedElement`, a pid mismatch, or the property query itself
+    /// erroring. Callers MUST treat `None` as "could not determine" and fail
+    /// OPEN (never capture-blocking on its own): a UIA failure must never be
+    /// read as "is a password field", and the `ES_PASSWORD` check remains
+    /// the hard floor regardless of whether UIA is available on this
+    /// machine. Only a definite `Some(true)` refuses capture/delivery.
+    /// Deliberately NOT called from the per-keystroke `guard_still_foreground`
+    /// TOCTOU re-check (T-103) — that path is cheap-syscalls-only and a COM
+    /// automation round-trip (element lookup + property fetch) does not belong
+    /// there. It runs at capture, at delivery revalidation (`validate()`), and
+    /// once after activation in `begin_delivery`. NOTE (T-105 LATER-13): a
+    /// cross-process UIA round-trip is synchronous and has NO timeout, and one
+    /// of its call sites (an on-start anchor `Set`) sits on the
+    /// recording-START path ahead of mic-open — so it CAN add latency there if
+    /// the target's UIA provider is slow/hung. Moving that specific call off
+    /// the start path onto a bounded MTA worker thread is the deferred
+    /// LATER-13 follow-up.
+    fn uia_is_password(pid: u32) -> Option<bool> {
+        unsafe {
+            let _com = ensure_com_initialized()?;
+            let automation: IUIAutomation =
+                CoCreateInstance(&CUIAutomation, None, CLSCTX_INPROC_SERVER).ok()?;
+            let element: IUIAutomationElement = automation.GetFocusedElement().ok()?;
+            let focused_pid = element.CurrentProcessId().ok()?;
+            if focused_pid < 0 || focused_pid as u32 != pid {
+                return None;
+            }
+            let is_password = element.CurrentIsPassword().ok()?;
+            Some(is_password.as_bool())
+        }
+    }
 
     #[derive(Clone)]
     struct Target {
@@ -316,6 +552,209 @@ mod win {
         }
     }
 
+    /// T-112/LATER-10: on-disk sidecar format version. Bumped whenever the
+    /// shape or hashing scheme changes, so an incompatible file (an older
+    /// keyed format, or a stray file of some other shape) is treated as
+    /// ABSENT rather than misread. The very first (pre-finding-3) format was
+    /// a bare `Vec<Option<u64>>` JSON array with no `version`/`key` at all —
+    /// a completely different shape, so it already fails `serde_json`
+    /// deserialization into `HintsFile` outright; the explicit version check
+    /// covers any future shape-compatible-but-semantically-different bump.
+    const HINTS_FORMAT_VERSION: u32 = 2;
+
+    /// Per-slot disambiguation hint (T-112), persisted in
+    /// `jumper_slot_hints.json`. Both hashes are KEYED (LATER-10) with the
+    /// sidecar's own per-install `HintsFile::key` — never a fixed/public
+    /// seed — so a leaked hash alone can't be dictionary-matched against
+    /// common window titles using a precomputed table shared across
+    /// installs.
+    #[derive(serde::Serialize, serde::Deserialize, Clone, Copy)]
+    struct SlotHint {
+        /// Keyed hash of (app, window_class, control_class) as they were at
+        /// the moment this hint was saved. NOT sensitive on its own (those
+        /// strings already live in cleartext in `jumper_saved_slots`) — its
+        /// purpose is purely to let `resolve_saved` detect a hint that no
+        /// longer corresponds to the identity CURRENTLY saved for this slot
+        /// (finding 3: a torn/partial persist between the two files) and
+        /// ignore it rather than risk disambiguating against a stale
+        /// window's title.
+        identity_fp: u64,
+        /// Keyed hash of the window's title at save time.
+        title_hash: u64,
+    }
+
+    /// The sidecar file's full shape (T-112/LATER-10, finding 3).
+    #[derive(serde::Serialize, serde::Deserialize)]
+    struct HintsFile {
+        version: u32,
+        /// Per-install random key (LATER-10), generated ONCE and persisted
+        /// here — regenerating it on every load would make every
+        /// previously saved hint permanently unmatchable, defeating the
+        /// whole disambiguation feature. Only created fresh when no valid
+        /// file exists yet (`Default::default`).
+        key: [u8; 16],
+        /// Index = slot.
+        slots: Vec<Option<SlotHint>>,
+    }
+
+    impl Default for HintsFile {
+        fn default() -> Self {
+            HintsFile {
+                version: HINTS_FORMAT_VERSION,
+                key: *uuid::Uuid::new_v4().as_bytes(),
+                slots: vec![None; SLOT_COUNT],
+            }
+        }
+    }
+
+    /// Pure parse + version gate, extracted so the "old/incompatible format
+    /// is ignored, never misread" decision is unit-testable without real
+    /// file I/O (LATER-10).
+    fn parse_hints_file(s: &str) -> Option<HintsFile> {
+        serde_json::from_str::<HintsFile>(s)
+            .ok()
+            .filter(|f| f.version == HINTS_FORMAT_VERSION)
+    }
+
+    /// Keyed hash (LATER-10): the key is never fixed/public, so a hash alone
+    /// (without this install's sidecar) can't be dictionary-matched against
+    /// common strings using a table computed once and shared across
+    /// installs.
+    fn keyed_hash(key: &[u8; 16], data: &str) -> u64 {
+        use std::hash::{Hash, Hasher};
+        let mut hasher = std::collections::hash_map::DefaultHasher::new();
+        key.hash(&mut hasher);
+        data.hash(&mut hasher);
+        hasher.finish()
+    }
+
+    /// Keyed fingerprint of a slot's (app, window_class, control_class)
+    /// identity (finding 3) — used to detect a hint that no longer matches
+    /// what's currently saved for its slot.
+    fn identity_fingerprint(
+        key: &[u8; 16],
+        app: &str,
+        window_class: &str,
+        control_class: &str,
+    ) -> u64 {
+        keyed_hash(
+            key,
+            &format!("{app}\u{0}{window_class}\u{0}{control_class}"),
+        )
+    }
+
+    /// T-112: a KEYED hash (LATER-10; never the raw text) of a window's
+    /// current title, used only as a same-app/same-class DISAMBIGUATION
+    /// signal — see the module doc. Hashing rather than persisting the
+    /// title verbatim means a document/page name never lands on disk even
+    /// though its identity is still comparable across a restart. `None` for
+    /// an untitled/inaccessible window (never treated as a match against a
+    /// saved hint — see `resolve_saved`).
+    fn title_hash(key: &[u8; 16], hwnd: HWND) -> Option<u64> {
+        let mut buf = [0u16; 256];
+        let n = unsafe { GetWindowTextW(hwnd, &mut buf) };
+        if n <= 0 {
+            return None;
+        }
+        let title = String::from_utf16_lossy(&buf[..n as usize]);
+        if title.is_empty() {
+            return None;
+        }
+        Some(keyed_hash(key, &title))
+    }
+
+    /// Pure decision (finding 3, v0.42.0 adversarial re-verify): a persisted
+    /// hint is usable ONLY if its `identity_fp` matches the identity
+    /// CURRENTLY being resolved — extracted so the "torn/partial persist"
+    /// detection is unit-testable without real file I/O or a live window.
+    fn hint_is_valid_for(hint: &SlotHint, current_identity_fp: u64) -> bool {
+        hint.identity_fp == current_identity_fp
+    }
+
+    /// T-112: per-slot title-hash hints for same-app/same-class
+    /// disambiguation (see `resolve_saved`'s module doc). Deliberately kept
+    /// OUTSIDE `AppSettings`/`jumper_saved_slots` — a tiny sidecar JSON file
+    /// of its own — so this hardening needs no settings-schema change; it is
+    /// purely a resolver-side refinement of the SAME saved identity.
+    fn hints_path(app: &AppHandle) -> Option<std::path::PathBuf> {
+        app.path()
+            .app_data_dir()
+            .ok()
+            .map(|d| d.join("jumper_slot_hints.json"))
+    }
+
+    /// Load the sidecar file, defaulting to a fresh (new random key, all
+    /// slots empty) `HintsFile` if it's missing, unreadable, or an
+    /// old/incompatible format (`parse_hints_file`'s version gate — LATER-10).
+    fn load_hints_file(app: &AppHandle) -> HintsFile {
+        let mut file = hints_path(app)
+            .and_then(|p| std::fs::read_to_string(p).ok())
+            .and_then(|s| parse_hints_file(&s))
+            .unwrap_or_default();
+        if file.slots.len() != SLOT_COUNT {
+            file.slots.resize(SLOT_COUNT, None);
+        }
+        file
+    }
+
+    /// Serialize and write `file` to `path` via write-then-rename (finding
+    /// 3): a crash mid-write can never leave a half-written
+    /// `jumper_slot_hints.json` in place of a previously-good one — the
+    /// rename only lands once the full temp-file write has already
+    /// succeeded. Returns whether the write succeeded, so `persist_slot` can
+    /// make identity persistence fail-atomic with it.
+    fn write_hints_file(path: &std::path::Path, file: &HintsFile) -> bool {
+        let Ok(s) = serde_json::to_string(file) else {
+            debug!("Jumper: failed to serialize jump slot hints");
+            return false;
+        };
+        let tmp = path.with_extension("json.tmp");
+        if let Err(e) = std::fs::write(&tmp, &s) {
+            debug!("Failed to write jump slot hints temp file: {}", e);
+            return false;
+        }
+        if let Err(e) = std::fs::rename(&tmp, path) {
+            debug!("Failed to finalize jump slot hints file: {}", e);
+            return false;
+        }
+        true
+    }
+
+    /// Write (or clear, when `target` is `None`) `slot`'s disambiguation
+    /// hint, returning whether the write succeeded. Called from
+    /// `persist_slot`, which already runs under `PERSIST_LOCK` (finding 6) —
+    /// piggybacking this write onto that SAME critical section avoids adding
+    /// a second, independently-racing persistence path for what is really
+    /// one logical "persist this slot's identity" operation.
+    ///
+    /// Finding 3 (v0.42.0 adversarial review): `persist_slot` treats a
+    /// `false` return here as fatal to a SET (the identity write is aborted
+    /// too — see its doc) so a hint that fails to land can never be paired
+    /// with a newer identity than the one it actually describes.
+    fn save_slot_hint(app: &AppHandle, slot: usize, target: Option<&Target>) -> bool {
+        let Some(path) = hints_path(app) else {
+            debug!(
+                "Jumper: no app-data dir available — cannot persist slot hint for slot {}",
+                slot
+            );
+            return false;
+        };
+        let mut file = load_hints_file(app);
+        if slot >= file.slots.len() {
+            file.slots.resize(SLOT_COUNT, None);
+        }
+        let key = file.key;
+        let new_hint = target.and_then(|t| {
+            let th = title_hash(&key, HWND(t.hwnd as _))?;
+            Some(SlotHint {
+                identity_fp: identity_fingerprint(&key, &t.app, &t.window_class, &t.control_class),
+                title_hash: th,
+            })
+        });
+        file.slots[slot] = new_hint;
+        write_hints_file(&path, &file)
+    }
+
     /// Live slots, with persisted-but-unresolved identities surfaced as
     /// `stale` entries so the UI can show them red.
     pub fn statuses(app: &AppHandle) -> Vec<Option<AnchorStatus>> {
@@ -359,20 +798,70 @@ mod win {
     }
 
     /// Mirror a slot mutation into the persisted identities (when enabled).
+    ///
+    /// Finding 3 (v0.42.0 adversarial review): identity (`jumper_saved_slots`
+    /// in settings) and the disambiguation hint (`jumper_slot_hints.json`)
+    /// are two SEPARATE stores. The old ordering wrote identity FIRST, hint
+    /// SECOND — if the hint write for a NEW occupant of this slot failed
+    /// after the identity had already landed, a restart could find the OLD
+    /// hint (from whatever window previously occupied this slot) still on
+    /// disk and mis-resolve against it: exactly the wrong-window bug T-112
+    /// exists to prevent. Fixed by making a SET fail-atomic: the hint is
+    /// written FIRST (verified via `save_slot_hint`'s return), and the
+    /// identity is only persisted once that succeeded; on failure the WHOLE
+    /// persist is aborted (identity left at its previous on-disk value) —
+    /// the in-memory `SLOTS` state, already committed by the caller before
+    /// `persist_slot` runs, is unaffected, so the live slot keeps working
+    /// regardless.
+    ///
+    /// A CLEAR (`target` is `None`) is exempt from that abort: with no saved
+    /// identity, `resolve_saved` early-returns before ever reading the hint
+    /// (see its `let Some(Some(saved)) = ... else { return false }`), so a
+    /// hint write failure during a clear can only leave harmless orphan
+    /// bytes, never a mis-resolution risk — aborting the identity clear
+    /// would be actively worse, since it would let the just-cleared anchor
+    /// silently reappear on the next restart.
     fn persist_slot(app: &AppHandle, slot: usize, target: Option<&Target>) {
-        let mut settings = crate::settings::get_settings(app);
-        if !settings.jumper_persist {
+        if !crate::settings::get_settings(app).jumper_persist {
             return;
         }
-        if settings.jumper_saved_slots.len() < SLOT_COUNT {
-            settings.jumper_saved_slots.resize(SLOT_COUNT, None);
+
+        if target.is_some() {
+            if !save_slot_hint(app, slot, target) {
+                warn!(
+                    "Jumper: aborting identity persist for slot {} — failed to write its disambiguation hint first (T-112 fail-atomic ordering)",
+                    slot
+                );
+                return;
+            }
+        } else if !save_slot_hint(app, slot, None) {
+            debug!(
+                "Jumper: slot {} hint clear failed (non-fatal — no identity means it's never read)",
+                slot
+            );
         }
-        settings.jumper_saved_slots[slot] = target.map(|t| crate::settings::SavedJumpSlot {
+
+        let saved = target.map(|t| crate::settings::SavedJumpSlot {
             app: t.app.clone(),
             window_class: t.window_class.clone(),
             control_class: t.control_class.clone(),
         });
-        crate::settings::write_settings(app, settings);
+        // Partial RMW under SETTINGS_MUTATION_LOCK, touching ONLY this slot —
+        // NOT the whole settings struct (finding 11): a bare whole-struct
+        // write from a stale snapshot could resurrect `jumper_persist=true`
+        // and cleared identities if a `change_jumper_persist_setting` disable
+        // landed in the gap. Re-checking `jumper_persist` inside the locked
+        // closure means a disable that committed first wins — we skip the
+        // identity write instead of resurrecting it.
+        crate::settings::update_settings(app, |settings| {
+            if !settings.jumper_persist {
+                return;
+            }
+            if settings.jumper_saved_slots.len() < SLOT_COUNT {
+                settings.jumper_saved_slots.resize(SLOT_COUNT, None);
+            }
+            settings.jumper_saved_slots[slot] = saved;
+        });
     }
 
     pub fn clear(app: &AppHandle, slot: usize) {
@@ -404,7 +893,13 @@ mod win {
     struct FindCtx {
         app: String,
         window_class: String,
-        found: isize,
+        /// T-112: EVERY visible window matching (exe, window_class), in
+        /// `EnumWindows`' own Z-order (topmost first) — previously this
+        /// stopped at the FIRST match, so two windows of the same app (two
+        /// Chrome windows, two Citrix sessions) were silently
+        /// indistinguishable; `resolve_saved` needs all of them to attempt
+        /// hint-based disambiguation before picking one.
+        candidates: Vec<isize>,
     }
 
     unsafe extern "system" fn find_window_cb(hwnd: HWND, lparam: LPARAM) -> BOOL {
@@ -418,28 +913,50 @@ mod win {
             }
             let mut pid = 0u32;
             let _ = GetWindowThreadProcessId(hwnd, Some(&mut pid));
-            match process_name(pid) {
-                Some(p) if p.eq_ignore_ascii_case(&ctx.app) => {
-                    ctx.found = hwnd.0 as isize;
-                    false.into() // stop enumeration
+            if let Some(p) = process_name(pid) {
+                if p.eq_ignore_ascii_case(&ctx.app) {
+                    ctx.candidates.push(hwnd.0 as isize);
                 }
-                _ => true.into(),
             }
+            // Never stop early (T-112) — a same-app window further back in
+            // Z-order than the first match must still be collected so
+            // disambiguation has every candidate to work with.
+            true.into()
         }
     }
 
-    /// Try to turn one saved identity back into a live target: first visible
-    /// window with the same executable + window class; the control is the
-    /// first direct child of the saved class (window itself otherwise —
-    /// delivery accepts window-level focus). `expected` is the slot's
-    /// generation at the moment the CALLER observed it empty (finding 5) —
-    /// it must be captured in the SAME lock acquisition as that emptiness
-    /// check (see `empty_slot_generation`), never re-read in here: re-reading
-    /// it here, AFTER the caller's separate check, would let a manual Set
-    /// landing in that gap become this function's own "expected" baseline —
-    /// and the stale restore below would then incorrectly win the race
-    /// against it once the slow scan finishes.
-    fn resolve_saved(app: &AppHandle, slot: usize, expected: u64) -> bool {
+    /// Try to turn one saved identity back into a live target: the same
+    /// executable + window class. `expected` is the slot's generation at the
+    /// moment the CALLER observed it empty (finding 5) — it must be captured
+    /// in the SAME lock acquisition as that emptiness check (see
+    /// `empty_slot_generation`), never re-read in here: re-reading it here,
+    /// AFTER the caller's separate check, would let a manual Set landing in
+    /// that gap become this function's own "expected" baseline — and the
+    /// stale restore below would then incorrectly win the race against it
+    /// once the slow scan finishes.
+    ///
+    /// T-112 (same-app multi-window disambiguation): when the identity match
+    /// is AMBIGUOUS (more than one visible window shares it — two Chrome
+    /// windows, two Citrix sessions), a persisted title-hash hint is tried
+    /// first (verified via `hint_is_valid_for` against a fingerprint of
+    /// THIS `saved` identity — finding 3: a hint that doesn't match is
+    /// treated exactly like no hint at all, since it can only mean a
+    /// torn/partial persist rather than a hint for the window actually
+    /// saved here); if it uniquely picks ONE candidate, that one is used.
+    /// Otherwise, `allow_ambiguous_fallback` decides:
+    /// `false` (the automatic/lazy paths — startup restore, `begin_delivery`)
+    /// refuses to guess and leaves the slot unresolved (stays "stale"/red in
+    /// the UI rather than silently committing to a possibly-wrong window);
+    /// `true` (the explicit `jump` path only) falls back to the topmost
+    /// (Z-order-first) candidate — the user is about to SEE where they land,
+    /// so a visible, reversible guess is acceptable there in a way it is not
+    /// for a silent automatic delivery.
+    fn resolve_saved(
+        app: &AppHandle,
+        slot: usize,
+        expected: u64,
+        allow_ambiguous_fallback: bool,
+    ) -> bool {
         let settings = crate::settings::get_settings(app);
         if !settings.jumper_persist {
             return false;
@@ -451,16 +968,75 @@ mod win {
             let mut ctx = FindCtx {
                 app: saved.app.clone(),
                 window_class: saved.window_class.clone(),
-                found: 0,
+                candidates: Vec::new(),
             };
             let _ = EnumWindows(
                 Some(find_window_cb),
                 LPARAM(&mut ctx as *mut FindCtx as isize),
             );
-            if ctx.found == 0 {
+            if ctx.candidates.is_empty() {
                 return false;
             }
-            let hwnd = HWND(ctx.found as _);
+            let chosen = if ctx.candidates.len() == 1 {
+                ctx.candidates[0]
+            } else {
+                let hints = load_hints_file(app);
+                let current_fp = identity_fingerprint(
+                    &hints.key,
+                    &saved.app,
+                    &saved.window_class,
+                    &saved.control_class,
+                );
+                let raw_hint = hints.slots.get(slot).copied().flatten();
+                let saved_hint = raw_hint
+                    .filter(|h| hint_is_valid_for(h, current_fp))
+                    .map(|h| h.title_hash);
+                if raw_hint.is_some() && saved_hint.is_none() {
+                    debug!(
+                        "Jump slot {} hint ignored — identity fingerprint mismatch (stale/partial persist)",
+                        slot
+                    );
+                }
+                let hint_matches: Vec<isize> = match saved_hint {
+                    Some(hint) => ctx
+                        .candidates
+                        .iter()
+                        .copied()
+                        .filter(|&h| title_hash(&hints.key, HWND(h as _)) == Some(hint))
+                        .collect(),
+                    None => Vec::new(),
+                };
+                match hint_matches.len() {
+                    1 => hint_matches[0],
+                    _ if allow_ambiguous_fallback => {
+                        debug!(
+                            "Jump slot {} ambiguous ({} same-app/class windows, {}) — falling back to the topmost (explicit jump)",
+                            slot,
+                            ctx.candidates.len(),
+                            if saved_hint.is_some() {
+                                "hint present but not a unique match"
+                            } else {
+                                "no title hint saved"
+                            }
+                        );
+                        ctx.candidates[0]
+                    }
+                    _ => {
+                        debug!(
+                            "Jump slot {} ambiguous ({} same-app/class windows, {}) — leaving unresolved (stale)",
+                            slot,
+                            ctx.candidates.len(),
+                            if saved_hint.is_some() {
+                                "hint present but not a unique match"
+                            } else {
+                                "no title hint saved"
+                            }
+                        );
+                        return false;
+                    }
+                }
+            };
+            let hwnd = HWND(chosen as _);
             let mut pid = 0u32;
             let tid = GetWindowThreadProcessId(hwnd, Some(&mut pid));
             if tid == 0 {
@@ -526,22 +1102,121 @@ mod win {
     /// concurrent single-slot persist's own settings RMW; `SLOTS` is only
     /// ever locked briefly to clone the current targets, never across the
     /// settings I/O.
+    ///
+    /// Finding 3 (v0.42.0 SECOND adversarial review) — fail-atomic ordering,
+    /// matching `persist_slot`: the ORIGINAL version wrote identities into
+    /// `jumper_saved_slots` FIRST, then wrote the hints sidecar SECOND,
+    /// best-effort. If an OLD (pre-existing) `jumper_slot_hints.json`
+    /// happened to still be on disk (e.g. persistence was toggled off/on
+    /// before, or the hint write below failed) and this call's hint write
+    /// then also failed, a restart would resolve the freshly-snapshotted
+    /// identities against whatever STALE hints were left over — able to
+    /// mis-disambiguate two same-app/class windows exactly like the
+    /// original bug T-112 exists to close, just reached via this alternate
+    /// "persistence just turned ON" path instead of `persist_slot`'s
+    /// per-slot one. Fixed the same way `persist_slot` was: write/replace
+    /// the hints sidecar FIRST (`write_hints_file`'s existing
+    /// temp-then-rename), and only persist the slot identities into
+    /// settings if that succeeded — an aborted snapshot leaves
+    /// `jumper_saved_slots` at whatever it was before (typically empty,
+    /// freshly toggled on) rather than risking a mismatched pairing; the
+    /// in-memory `SLOTS` state is unaffected either way, so live anchors
+    /// keep working regardless.
+    ///
+    /// Finding 11 (same review pass): the settings mutation now goes
+    /// through `settings::update_settings` (the `SETTINGS_MUTATION_LOCK`
+    /// path) instead of a bare `get_settings`/`write_settings` pair — the
+    /// bare pattern could interleave with an UNRELATED concurrent
+    /// `change_jumper_persist_setting` DISABLE's own settings write and
+    /// silently resurrect a just-cleared `jumper_saved_slots` (last-
+    /// writer-wins on the whole struct). The mutate closure also
+    /// re-checks `jumper_persist` is still `true` at the moment it runs —
+    /// belt-and-suspenders alongside `with_persist_toggle_lock` (which
+    /// should make a concurrent disable land entirely before or after this
+    /// whole call, never interleaved) so this function stays self-
+    /// consistent even if some future caller ever invokes it outside that
+    /// lock. See `with_persist_toggle_lock`'s doc for the full lock order.
     pub fn snapshot_all(app: &AppHandle) {
         let _persist_guard = PERSIST_LOCK.lock().unwrap_or_else(|p| p.into_inner());
-        let mut settings = crate::settings::get_settings(app);
         let live = SLOTS.lock().map(|s| s.targets.clone()).unwrap_or_default();
-        settings.jumper_saved_slots = (0..SLOT_COUNT)
+
+        let Some(path) = hints_path(app) else {
+            warn!(
+                "Jumper: no app-data dir available — aborting snapshot_all (cannot persist hints first)"
+            );
+            return;
+        };
+        let mut file = load_hints_file(app);
+        let key = file.key;
+        let new_hints: Vec<Option<SlotHint>> = (0..SLOT_COUNT)
             .map(|i| {
-                live.get(i)
-                    .and_then(|t| t.as_ref())
-                    .map(|t| crate::settings::SavedJumpSlot {
-                        app: t.app.clone(),
-                        window_class: t.window_class.clone(),
-                        control_class: t.control_class.clone(),
+                live.get(i).and_then(|t| t.as_ref()).and_then(|t| {
+                    let th = title_hash(&key, HWND(t.hwnd as _))?;
+                    Some(SlotHint {
+                        identity_fp: identity_fingerprint(
+                            &key,
+                            &t.app,
+                            &t.window_class,
+                            &t.control_class,
+                        ),
+                        title_hash: th,
                     })
+                })
             })
             .collect();
-        crate::settings::write_settings(app, settings);
+        file.slots = new_hints;
+        if !snapshot_may_persist_identities(write_hints_file(&path, &file)) {
+            warn!(
+                "Jumper: aborting snapshot_all — failed to write the disambiguation hints sidecar first (T-112/finding-3 fail-atomic ordering)"
+            );
+            return;
+        }
+
+        crate::settings::update_settings(app, |settings| {
+            if !snapshot_should_write_identities(settings.jumper_persist) {
+                debug!(
+                    "Jumper: snapshot_all no-op — persistence was disabled before this snapshot's settings write could land"
+                );
+                return;
+            }
+            settings.jumper_saved_slots = (0..SLOT_COUNT)
+                .map(|i| {
+                    live.get(i)
+                        .and_then(|t| t.as_ref())
+                        .map(|t| crate::settings::SavedJumpSlot {
+                            app: t.app.clone(),
+                            window_class: t.window_class.clone(),
+                            control_class: t.control_class.clone(),
+                        })
+                })
+                .collect();
+        });
+    }
+
+    /// Pure decision (finding 3, v0.42.0 SECOND adversarial review): whether
+    /// `snapshot_all` may proceed to persist slot identities into settings,
+    /// given whether its FIRST step — writing the disambiguation-hints
+    /// sidecar — succeeded. Mirrors `persist_slot`'s existing fail-atomic
+    /// SET ordering (hint first, abort the identity write entirely on
+    /// failure) rather than the old identities-first/hints-best-effort
+    /// order. Extracted so the ordering decision itself is unit-testable
+    /// without real file I/O.
+    fn snapshot_may_persist_identities(hints_write_succeeded: bool) -> bool {
+        hints_write_succeeded
+    }
+
+    /// Pure decision (finding 11, same review pass): whether `snapshot_all`'s
+    /// settings mutation should actually write `jumper_saved_slots`, given
+    /// the CURRENT `jumper_persist` flag value read inside the SAME
+    /// `update_settings` critical section that performs the write. Guards
+    /// against a concurrent disable landing between this function's hint-file
+    /// write and its settings-mutate closure running — `with_persist_toggle_
+    /// lock` should make that window unreachable in practice (see its doc),
+    /// but this keeps `snapshot_all` self-consistent even for a hypothetical
+    /// future caller outside that lock, rather than relying on lock
+    /// discipline alone.
+    fn snapshot_should_write_identities(persist_currently_enabled: bool) -> bool {
+        persist_currently_enabled
     }
 
     /// Attempt to restore every persisted slot at startup. Unresolved slots
@@ -554,7 +1229,9 @@ mod win {
         let mut restored = 0;
         for slot in 0..SLOT_COUNT {
             if let Some(expected) = empty_slot_generation(slot) {
-                if resolve_saved(app, slot, expected) {
+                // T-112: startup restore never guesses an ambiguous match —
+                // no user is watching to catch a wrong pick.
+                if resolve_saved(app, slot, expected, false) {
                     restored += 1;
                 }
             }
@@ -563,6 +1240,47 @@ mod win {
             info!("Jumper: restored {restored} persisted slot(s)");
             emit_changed(app);
         }
+    }
+
+    /// LATER-11: delete the sidecar hints file entirely. Meant to be called
+    /// from the persistence-disable path (`jumper_persist` turned off) —
+    /// once `jumper_saved_slots` is wiped there, `resolve_saved` early-
+    /// returns before ever reading the hint file again, so
+    /// `jumper_slot_hints.json` becomes permanently orphaned: nothing reads
+    /// it, and nothing deletes it either, so it silently lingers on disk
+    /// (holding keyed-but-still-somebody's-window-title hashes) forever. A
+    /// missing file is not an error — most of the time persistence was
+    /// never turned on at all.
+    pub fn delete_persisted_hints(app: &AppHandle) {
+        let Some(path) = hints_path(app) else {
+            return;
+        };
+        match std::fs::remove_file(&path) {
+            Ok(()) => debug!("Jumper: deleted orphaned jump slot hints file"),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+            Err(e) => debug!("Failed to delete jump slot hints file: {}", e),
+        }
+    }
+
+    /// Turn persistence OFF as ONE operation under `PERSIST_LOCK` (finding 11,
+    /// v0.42.0 THIRD adversarial review): flip `jumper_persist` false, clear
+    /// the saved identities, and delete the hints sidecar — all while holding
+    /// `PERSIST_LOCK`. `persist_slot` runs under the SAME lock (via
+    /// `persist_current_slot`/`snapshot_all`), so it can NEVER interleave: an
+    /// in-flight persist either fully completes before this runs (its identity
+    /// is then cleared here) or starts after (it re-reads `jumper_persist` ==
+    /// false under the lock and writes nothing — no hint recreated after the
+    /// delete, no identity a stale resolver could pick up). `update_settings`
+    /// (SETTINGS_MUTATION_LOCK) and `delete_persisted_hints` (a bare file
+    /// remove) take no lock that conflicts, preserving the documented order
+    /// PERSIST_TOGGLE_LOCK → PERSIST_LOCK → SETTINGS_MUTATION_LOCK.
+    pub fn disable_persistence(app: &AppHandle) {
+        let _persist_guard = PERSIST_LOCK.lock().unwrap_or_else(|p| p.into_inner());
+        crate::settings::update_settings(app, |settings| {
+            settings.jumper_persist = false;
+            settings.jumper_saved_slots = vec![None; SLOT_COUNT];
+        });
+        delete_persisted_hints(app);
     }
 
     /// Capture the current foreground window/control as a `Target`, applying
@@ -605,6 +1323,20 @@ mod win {
                     return Err("refusing to anchor a password field".into());
                 }
             }
+            // T-105: the ES_PASSWORD check above is the hard floor — it only
+            // exists for classic Win32 `Edit` controls, so it never catches
+            // Electron/browser/WinUI password inputs. Query UIA's
+            // `IsPassword` as an additional check: a definite `true` refuses
+            // capture; any query failure (COM unavailable, UIA error, pid
+            // mismatch) is treated as "not a password" (fail open on the
+            // QUERY only) so a machine where UIA misbehaves never loses the
+            // ability to anchor at all. `pid` is this capture's own process
+            // — at capture time the currently UIA-focused element always
+            // belongs to it, so `uia_is_password` reliably resolves the real
+            // focused descendant instead of the classic-control host.
+            if uia_is_password(pid).unwrap_or(false) {
+                return Err("refusing to anchor a password field".into());
+            }
             let app_name = process_name(pid).unwrap_or_else(|| "unknown".into());
             Ok(Target {
                 hwnd: hwnd.0 as isize,
@@ -646,6 +1378,176 @@ mod win {
             }
             // Never report success without storing — callers use the Ok
             // to e.g. suppress the hot slot's one-shot clear.
+            Err(_) => return Err("jump slot storage is unavailable".into()),
+        };
+        emit_changed(app);
+        persist_current_slot(app, slot);
+        Ok(AnchorStatus {
+            app: target.app,
+            control_class: target.control_class,
+            stale: false,
+        })
+    }
+
+    /// T-104: build a `Target` from an ACTIVE delivery's already-verified
+    /// hwnd/control instead of a fresh `GetForegroundWindow()` query.
+    /// `guard`'s target was activated and focus-verified in `begin_delivery`,
+    /// then re-verified via `guard_still_foreground` immediately before the
+    /// paste keystroke and before any submit keystroke — so it IS where the
+    /// text landed, regardless of what window a submit key (Enter closing a
+    /// dialog, navigating a composer) may have left in the foreground
+    /// AFTERWARD. The pre-T-104 track-last-output capture ran a plain
+    /// `capture_current_target` (fresh `GetForegroundWindow()`) AFTER the
+    /// whole paste+submit sequence, so Enter could have already moved focus
+    /// away from the real delivery target by the time it ran.
+    ///
+    /// Finding 2 (v0.42.0 adversarial review): this used to re-derive
+    /// pid/tid/window_class/control_class from the raw HWNDs at THIS call —
+    /// seconds after `begin_delivery` verified them — and, worse, when the
+    /// control HWND was no longer a valid window, it substituted the
+    /// top-level window's HWND as the "control" and rebuilt identity from
+    /// THAT. Both are unsafe: a destroyed HWND value can be recycled by
+    /// Windows for an entirely unrelated new window, so re-querying at
+    /// capture time risks silently adopting that new window's identity, and
+    /// "broadening to root" bookmarks the wrong element (or a replacement)
+    /// instead of where the text actually landed. Fixed: the identity is
+    /// taken from `guard`'s own already-verified fields VERBATIM (snapshotted
+    /// at `begin_delivery` time, see the `DeliveryGuard` doc) — never
+    /// re-derived from the HWNDs here. The HWNDs are used ONLY for a
+    /// liveness (`IsWindow`) check; if the control is no longer a live
+    /// window, this fails outright (the caller must leave the slot
+    /// unchanged) rather than falling back to anything.
+    fn capture_target_from_guard(guard: &DeliveryGuard) -> Result<Target, String> {
+        unsafe {
+            let hwnd = HWND(guard.target_hwnd as _);
+            if !IsWindow(Some(hwnd)).as_bool() {
+                return Err(
+                    "delivery target window no longer exists — skipping track capture".into(),
+                );
+            }
+            let control = HWND(guard.target_control as _);
+            if !IsWindow(Some(control)).as_bool() {
+                debug!(
+                    "Track-from-guard capture for slot {} skipped — delivery target control no longer exists (not broadening to the window root)",
+                    guard.slot
+                );
+                return Err(
+                    "delivery target control no longer exists — skipping track capture".into(),
+                );
+            }
+            // T-104 finding 2 (v0.42.0 SECOND adversarial review):
+            // `IsWindow` only proves the HWND VALUE currently refers to SOME
+            // live window — it says nothing about whether it's still the
+            // SAME window this guard was constructed for. Between
+            // `begin_delivery`'s snapshot (seconds ago, before a full
+            // paste+submit sequence) and this call, the target could have
+            // been destroyed and Windows could have recycled its HWND value
+            // for an entirely unrelated new window — one that also happens
+            // to be alive right now, so `IsWindow` alone would pass. Re-read
+            // the LIVE identity of both HWNDs and compare against the
+            // snapshot taken at `begin_delivery` time (the pure comparison
+            // lives in `guard_identity_still_matches` so it's unit-testable
+            // without a real HWND); only a match proves the handle still IS
+            // that window/control — never adopt the snapshot's identity
+            // without this check passing.
+            let mut live_window_pid = 0u32;
+            let live_window_tid = GetWindowThreadProcessId(hwnd, Some(&mut live_window_pid));
+            let mut live_control_pid = 0u32;
+            let live_control_tid = GetWindowThreadProcessId(control, Some(&mut live_control_pid));
+            if live_window_tid == 0 || live_control_tid == 0 {
+                debug!(
+                    "Track-from-guard capture for slot {} skipped — could not re-read the live window/control's owning thread",
+                    guard.slot
+                );
+                return Err(
+                    "delivery target identity could not be reverified — skipping track capture"
+                        .into(),
+                );
+            }
+            let live_window_class = class_name(hwnd);
+            let live_control_class = class_name(control);
+            if !guard_identity_still_matches(
+                live_window_pid,
+                live_window_tid,
+                &live_window_class,
+                live_control_pid,
+                &live_control_class,
+                guard.target_pid,
+                guard.target_tid,
+                &guard.target_window_class,
+                &guard.target_control_class,
+            ) {
+                debug!(
+                    "Track-from-guard capture for slot {} skipped — live window/control identity no longer matches the delivery snapshot (handle likely recycled)",
+                    guard.slot
+                );
+                return Err("delivery target identity changed — skipping track capture".into());
+            }
+            Ok(Target {
+                hwnd: guard.target_hwnd,
+                control: guard.target_control,
+                pid: guard.target_pid,
+                tid: guard.target_tid,
+                window_class: guard.target_window_class.clone(),
+                control_class: guard.target_control_class.clone(),
+                app: guard.target_app.clone(),
+            })
+        }
+    }
+
+    /// Pure decision behind `capture_target_from_guard`'s recycled-handle
+    /// guard (T-104 finding 2): does a freshly re-read window/control
+    /// identity still match what `begin_delivery` snapshotted into the
+    /// `DeliveryGuard`? Mirrors `validate()`'s existing convention —
+    /// same-process AND same-thread for the top-level window (a replaced
+    /// window is a different process or gets a fresh thread), same process
+    /// (deliberately NOT same thread — Citrix/Chromium/XAML input sites
+    /// legitimately host a control on a different thread than its top-level
+    /// window) plus same class for the control. Extracted so this comparison
+    /// is unit-testable without a live HWND/COM environment.
+    fn guard_identity_still_matches(
+        live_window_pid: u32,
+        live_window_tid: u32,
+        live_window_class: &str,
+        live_control_pid: u32,
+        live_control_class: &str,
+        expected_pid: u32,
+        expected_tid: u32,
+        expected_window_class: &str,
+        expected_control_class: &str,
+    ) -> bool {
+        live_window_pid == expected_pid
+            && live_window_tid == expected_tid
+            && live_window_class == expected_window_class
+            && live_control_pid == expected_pid
+            && live_control_class == expected_control_class
+    }
+
+    /// Track-last-output capture for an ANCHORED delivery (T-104): same
+    /// authoritative "always wins" commit as `set_slot` (a track-last-output
+    /// decision is made and executed in the SAME instant the paste finishes,
+    /// so the generation-CAS guard the deferred writers use doesn't apply —
+    /// see the module doc) — but sourced via `capture_target_from_guard`
+    /// instead of re-querying the foreground window.
+    pub fn set_slot_from_guard(
+        app: &AppHandle,
+        guard: &DeliveryGuard,
+        slot: usize,
+    ) -> Result<AnchorStatus, String> {
+        if slot >= SLOT_COUNT {
+            return Err(format!("invalid jump slot {slot}"));
+        }
+        let target = capture_target_from_guard(guard)?;
+        info!(
+            "Jump slot {} tracked from delivery: {} (class '{}', pid {}, tid {})",
+            slot, target.app, target.control_class, target.pid, target.tid
+        );
+        match SLOTS.lock() {
+            Ok(mut state) => {
+                let g = next_generation();
+                state.generations[slot] = g;
+                state.targets[slot] = Some(target.clone());
+            }
             Err(_) => return Err("jump slot storage is unavailable".into()),
         };
         emit_changed(app);
@@ -781,6 +1683,23 @@ mod win {
                     return Err(("target field became a password field".into(), false));
                 }
             }
+            // T-105: same UIA `IsPassword` re-check at delivery revalidation
+            // time as capture — a non-Win32 password field (Electron/
+            // browser/WinUI) invisible to ES_PASSWORD above can just as
+            // easily arm AFTER capture (e.g. navigating a saved Jump slot to
+            // a page that turned out to be a login form) as it can before.
+            // Same fail-open-on-query-failure contract as `capture_current_
+            // target` — never capture/delivery-blocking on its own; only a
+            // definite `true` refuses. Not window-gone, so `false` here.
+            // `t.pid` scopes the (desktop-wide) `GetFocusedElement()` query
+            // to this specific target: `validate()` runs BEFORE the target
+            // is re-activated, so whatever currently holds OS focus may well
+            // belong to an entirely different app — a pid mismatch there
+            // correctly yields "can't determine", not a false verdict about
+            // this control.
+            if uia_is_password(t.pid).unwrap_or(false) {
+                return Err(("target field became a password field".into(), false));
+            }
             Ok(())
         }
     }
@@ -888,8 +1807,13 @@ mod win {
         // Finding 5: the emptiness check and the generation snapshot handed
         // to `resolve_saved` come from the SAME lock acquisition — see
         // `empty_slot_generation`.
+        //
+        // T-112: `jump` is the ONE caller allowed to fall back on an
+        // ambiguous match (`true`) — the user is about to see where they
+        // land, so a visible, reversible guess is acceptable here in a way
+        // it is not for an automatic/silent path.
         if let Some(expected) = empty_slot_generation(slot) {
-            if resolve_saved(app, slot, expected) {
+            if resolve_saved(app, slot, expected, true) {
                 emit_changed(app);
             }
         }
@@ -921,9 +1845,14 @@ mod win {
 
     pub fn begin_delivery(app: &AppHandle, slot: usize) -> BeginDelivery {
         // Lazy restore of a persisted identity before giving up. Finding 5:
-        // same atomic empty-check + generation-snapshot as `jump`.
+        // same atomic empty-check + generation-snapshot as `jump`. T-112:
+        // unlike `jump`, delivery never guesses an ambiguous match (`false`)
+        // — pasting into a silently-wrong window is exactly the failure mode
+        // this hardening exists to prevent, so an ambiguous slot stays
+        // unresolved here (delivery then fails closed with "not set", same
+        // as any other unresolved slot) rather than picking one.
         if let Some(expected) = empty_slot_generation(slot) {
-            if resolve_saved(app, slot, expected) {
+            if resolve_saved(app, slot, expected, false) {
                 emit_changed(app);
             }
         }
@@ -966,6 +1895,39 @@ mod win {
             }
             return BeginDelivery::Failed { reason };
         }
+        // T-105 finding 1 (v0.42.0 SECOND adversarial review): `validate()`
+        // above runs BEFORE activation, while the target may not hold OS
+        // focus at all — if some OTHER window currently has it,
+        // `uia_is_password`'s pid-scoped `GetFocusedElement()` query can
+        // never reach the target (a pid mismatch yields `None`, which fails
+        // OPEN as "not a password" by design), so a saved slot that became a
+        // password field between capture and delivery could slip through
+        // silently. NOW that activation is verified (`GetForegroundWindow()
+        // == target.hwnd`, just proven by `activate_verified`) AND the
+        // control itself is focused (`focus_control_verified` just
+        // succeeded), this is the FIRST point in the flow where
+        // `GetFocusedElement()` is guaranteed to resolve to the target's own
+        // focused element with a matching pid — the query can actually SEE
+        // this specific control. A definite positive here means the field is
+        // a password field right now, at the exact moment we're about to
+        // paste into it — abort so the text parks on the clipboard (the
+        // caller's `BeginDelivery::Failed` contract) instead of landing in a
+        // password box. `ES_PASSWORD`/`validate()`'s checks remain as
+        // defense in depth; this closes the gap they could not reach.
+        if uia_is_password(target.pid).unwrap_or(false) {
+            warn!(
+                "Jump slot {} delivery aborted post-activation — UIA reports the focused control is a password field",
+                slot
+            );
+            unsafe {
+                if prev != 0 && IsWindow(Some(HWND(prev as _))).as_bool() {
+                    let _ = SetForegroundWindow(HWND(prev as _));
+                }
+            }
+            return BeginDelivery::Failed {
+                reason: "target field is a password field".into(),
+            };
+        }
         // Small settle so the target app processes the focus change before
         // the paste keystroke arrives.
         std::thread::sleep(std::time::Duration::from_millis(60));
@@ -973,6 +1935,16 @@ mod win {
             prev_foreground: prev,
             target_hwnd: target.hwnd,
             target_control: target.control,
+            // T-104 finding 2: snapshot the FULL verified identity here,
+            // while `target` is still the just-`validate()`d struct — this
+            // is what `capture_target_from_guard` must use verbatim later,
+            // never a fresh re-query of the (by-then possibly recycled)
+            // HWNDs above.
+            target_pid: target.pid,
+            target_tid: target.tid,
+            target_window_class: target.window_class.clone(),
+            target_control_class: target.control_class.clone(),
+            target_app: target.app.clone(),
             slot,
         })
     }
@@ -1241,6 +2213,226 @@ mod win {
             assert!(cas_commit(&mut state, HOT, expected, dummy_target()).is_none());
             assert!(state.targets[HOT].is_some());
         }
+
+        /// T-105: `classify_com_init`'s pure decision logic, without any real
+        /// COM call — a success HRESULT (S_OK, value 0) must be `Owned`
+        /// (needs a matching `CoUninitialize`); `RPC_E_CHANGED_MODE` must be
+        /// `AlreadyInitializedElsewhere` (must NOT be uninitialized by us);
+        /// and any other failure HRESULT must be `Failed`.
+        #[test]
+        fn classify_com_init_decides_ownership_from_hresult() {
+            assert_eq!(classify_com_init(HRESULT(0)), ComInitOutcome::Owned);
+            // S_FALSE (already initialized on this thread, SAME mode) is
+            // still a success HRESULT (>= 0) and must ALSO be Owned — the
+            // Win32 contract requires pairing it with CoUninitialize too.
+            assert_eq!(classify_com_init(HRESULT(1)), ComInitOutcome::Owned);
+            assert_eq!(
+                classify_com_init(RPC_E_CHANGED_MODE),
+                ComInitOutcome::AlreadyInitializedElsewhere
+            );
+            // E_FAIL: an arbitrary failure HRESULT unrelated to apartment
+            // mode — must be `Failed`, never mistaken for either success
+            // case.
+            assert_eq!(
+                classify_com_init(HRESULT(0x80004005_u32 as i32)),
+                ComInitOutcome::Failed
+            );
+        }
+
+        /// LATER-10: the hash is KEYED — the same title under two different
+        /// keys must not collide, or an attacker holding a hash but not this
+        /// install's key gains nothing over the old unkeyed `DefaultHasher`
+        /// scheme.
+        #[test]
+        fn keyed_hash_differs_across_keys_for_the_same_data() {
+            let a = keyed_hash(&[0u8; 16], "My Document.docx - Notepad");
+            let b = keyed_hash(&[1u8; 16], "My Document.docx - Notepad");
+            assert_ne!(a, b);
+        }
+
+        /// The hint feature depends on the SAME key reproducing the SAME
+        /// hash across restarts (the key is persisted, not regenerated per
+        /// run) — otherwise every previously saved hint would immediately
+        /// stop matching.
+        #[test]
+        fn keyed_hash_is_deterministic_for_the_same_key_and_data() {
+            let key = [7u8; 16];
+            assert_eq!(
+                keyed_hash(&key, "same title"),
+                keyed_hash(&key, "same title")
+            );
+            assert_ne!(keyed_hash(&key, "title a"), keyed_hash(&key, "title b"));
+        }
+
+        /// T-112 finding 3: `hint_is_valid_for` is the pure decision behind
+        /// "ignore a hint that doesn't correspond to the identity currently
+        /// being resolved" (a torn/partial persist between the settings
+        /// file and the hints sidecar).
+        #[test]
+        fn hint_is_valid_for_requires_matching_identity_fingerprint() {
+            let hint = SlotHint {
+                identity_fp: 42,
+                title_hash: 99,
+            };
+            assert!(hint_is_valid_for(&hint, 42));
+            assert!(!hint_is_valid_for(&hint, 43));
+        }
+
+        /// LATER-10: the OLD (pre-finding-3) sidecar format was a bare
+        /// `Vec<Option<u64>>` JSON array — a totally different shape from
+        /// `HintsFile`, so it must fail to parse rather than being
+        /// misinterpreted (e.g. a stray leading integer read as `version`).
+        #[test]
+        fn parse_hints_file_rejects_pre_keyed_bare_array_format() {
+            assert!(parse_hints_file("[null,null,null,null,null]").is_none());
+        }
+
+        /// LATER-10: an otherwise well-shaped file with the WRONG version
+        /// must also be ignored (never misread) — a future format bump
+        /// checks this exact gate.
+        #[test]
+        fn parse_hints_file_rejects_mismatched_version() {
+            let json = r#"{"version":1,"key":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"slots":[null,null,null,null,null]}"#;
+            assert!(parse_hints_file(json).is_none());
+        }
+
+        #[test]
+        fn parse_hints_file_accepts_current_version_and_round_trips_the_key() {
+            let json = format!(
+                r#"{{"version":{},"key":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"slots":[null,null,null,null,null]}}"#,
+                HINTS_FORMAT_VERSION
+            );
+            let file = parse_hints_file(&json).expect("current-version file should parse");
+            assert_eq!(
+                file.key,
+                [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+            );
+            assert_eq!(file.slots.len(), 5);
+        }
+
+        /// T-104 finding 2 (v0.42.0 SECOND adversarial review):
+        /// `guard_identity_still_matches` is the pure recycled-handle
+        /// comparison behind `capture_target_from_guard` — a perfect match
+        /// on every field is the only thing that may adopt the snapshotted
+        /// identity.
+        #[test]
+        fn guard_identity_still_matches_requires_every_field_to_match() {
+            assert!(guard_identity_still_matches(
+                100,
+                200,
+                "Chrome_WidgetWin_1",
+                100,
+                "Edit",
+                100,
+                200,
+                "Chrome_WidgetWin_1",
+                "Edit",
+            ));
+        }
+
+        /// A live pid mismatch on the top-level window is exactly the
+        /// "handle recycled for an unrelated new window" case this fix
+        /// closes — must be rejected even though `IsWindow` would have
+        /// reported the handle as alive.
+        #[test]
+        fn guard_identity_still_matches_rejects_window_pid_mismatch() {
+            assert!(!guard_identity_still_matches(
+                999,
+                200,
+                "Chrome_WidgetWin_1",
+                100,
+                "Edit",
+                100,
+                200,
+                "Chrome_WidgetWin_1",
+                "Edit",
+            ));
+        }
+
+        #[test]
+        fn guard_identity_still_matches_rejects_window_tid_mismatch() {
+            assert!(!guard_identity_still_matches(
+                100,
+                999,
+                "Chrome_WidgetWin_1",
+                100,
+                "Edit",
+                100,
+                200,
+                "Chrome_WidgetWin_1",
+                "Edit",
+            ));
+        }
+
+        #[test]
+        fn guard_identity_still_matches_rejects_window_class_mismatch() {
+            assert!(!guard_identity_still_matches(
+                100,
+                200,
+                "Notepad",
+                100,
+                "Edit",
+                100,
+                200,
+                "Chrome_WidgetWin_1",
+                "Edit",
+            ));
+        }
+
+        /// The control's pid must match the snapshot too, even though its
+        /// THREAD deliberately is not compared (see the function doc — a
+        /// legitimately multi-threaded host like Citrix/Chromium/XAML can
+        /// run a control's thread separately from its window's).
+        #[test]
+        fn guard_identity_still_matches_rejects_control_pid_mismatch() {
+            assert!(!guard_identity_still_matches(
+                100,
+                200,
+                "Chrome_WidgetWin_1",
+                999,
+                "Edit",
+                100,
+                200,
+                "Chrome_WidgetWin_1",
+                "Edit",
+            ));
+        }
+
+        #[test]
+        fn guard_identity_still_matches_rejects_control_class_mismatch() {
+            assert!(!guard_identity_still_matches(
+                100,
+                200,
+                "Chrome_WidgetWin_1",
+                100,
+                "Static",
+                100,
+                200,
+                "Chrome_WidgetWin_1",
+                "Edit",
+            ));
+        }
+
+        /// T-112 finding 3 (v0.42.0 SECOND adversarial review):
+        /// `snapshot_all` must not persist identities into settings unless
+        /// its hints-sidecar write (which now runs FIRST) actually
+        /// succeeded — the fail-atomic ordering mirroring `persist_slot`.
+        #[test]
+        fn snapshot_may_persist_identities_requires_successful_hint_write() {
+            assert!(snapshot_may_persist_identities(true));
+            assert!(!snapshot_may_persist_identities(false));
+        }
+
+        /// Finding 11 (same review pass): `snapshot_all`'s settings mutation
+        /// must be a no-op if `jumper_persist` is no longer enabled at the
+        /// moment it runs — the defense-in-depth check alongside
+        /// `with_persist_toggle_lock` that keeps a concurrent disable from
+        /// being silently undone.
+        #[test]
+        fn snapshot_should_write_identities_follows_current_persist_flag() {
+            assert!(snapshot_should_write_identities(true));
+            assert!(!snapshot_should_write_identities(false));
+        }
     }
 }
 
@@ -1488,6 +2680,29 @@ pub fn finish_delivery(
     }
 }
 
+/// Track-last-output capture for an ANCHORED delivery (T-104): sources the
+/// target from the delivery guard's already-verified hwnd/control instead of
+/// a fresh foreground-window query — see `win::capture_target_from_guard`.
+/// Callers use this instead of `set_slot` whenever a `DeliveryGuard` is
+/// active for the paste being tracked.
+#[cfg(windows)]
+pub fn track_from_guard(
+    app: &AppHandle,
+    guard: &DeliveryGuard,
+    slot: usize,
+) -> Result<AnchorStatus, String> {
+    win::set_slot_from_guard(app, guard, slot)
+}
+#[cfg(not(windows))]
+pub fn track_from_guard(
+    app: &AppHandle,
+    guard: &DeliveryGuard,
+    slot: usize,
+) -> Result<AnchorStatus, String> {
+    let _ = (app, guard, slot);
+    Err("The Jumper is Windows-only in this version".into())
+}
+
 /// Clear a slot (cross-platform surface for actions/commands).
 pub fn clear(app: &AppHandle, slot: usize) {
     #[cfg(windows)]
@@ -1538,6 +2753,76 @@ pub fn restore_persisted_slots(app: &AppHandle) {
 #[cfg(windows)]
 pub fn snapshot_slots(app: &AppHandle) {
     win::snapshot_all(app);
+}
+
+/// Serializes the ENTIRE persistence enable/disable toggle
+/// (`shortcut::change_jumper_persist_setting`) as one atomic sequence
+/// (finding 11, v0.42.0 SECOND adversarial review). Each individual step is
+/// already race-free on its own — the `jumper_persist` flag flip goes
+/// through `settings::update_settings`, and `snapshot_all`'s own settings
+/// write does too (finding 3/11) — but the TWO-OR-THREE steps of one
+/// enable (flip flag → snapshot identities + hints) or one disable (flip
+/// flag + clear identities → delete the hints sidecar) are not atomic AS A
+/// SEQUENCE. Without this lock, an enable and a disable running
+/// concurrently could interleave their steps — e.g. enable flips the flag
+/// true, then a disable fully runs (flag false, identities cleared, hints
+/// file deleted), and only THEN does the enable's now-stale `snapshot_all`
+/// call finally run, repopulating `jumper_saved_slots` and recreating the
+/// hints file as if the disable had never happened. Holding this lock
+/// across the WHOLE toggle body turns each enable/disable into one
+/// indivisible operation relative to the other.
+///
+/// Lock order (must be preserved everywhere to avoid deadlock):
+/// `PERSIST_TOGGLE_LOCK` (this lock — outermost, held for an entire toggle
+/// call) → `PERSIST_LOCK` (`anchor::win`, held across a single
+/// persist/snapshot operation's hint-file I/O plus its settings write) →
+/// `SETTINGS_MUTATION_LOCK` (`settings.rs`, held only for the duration of
+/// one `update_settings` read-modify-write) → the in-memory `SLOTS` mutex
+/// (held only to clone/mutate live targets, NEVER across settings I/O —
+/// pre-existing invariant, unchanged). Every caller in this codebase
+/// acquires them in this same order (never the reverse: nothing holds
+/// `PERSIST_LOCK` or `SETTINGS_MUTATION_LOCK` while trying to acquire
+/// `PERSIST_TOGGLE_LOCK`), so no cycle is possible.
+pub fn with_persist_toggle_lock<R>(f: impl FnOnce() -> R) -> R {
+    static PERSIST_TOGGLE_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+    let _guard = PERSIST_TOGGLE_LOCK
+        .lock()
+        .unwrap_or_else(|p| p.into_inner());
+    f()
+}
+
+/// LATER-11: delete the orphaned `jumper_slot_hints.json` sidecar (no-op if
+/// it doesn't exist). Meant to be called from the persistence-DISABLE path
+/// alongside wiping `jumper_saved_slots` — see
+/// `shortcut::change_jumper_persist_setting`'s `if !enabled` branch (that
+/// file is outside this module's ownership; wiring the call in is tracked in
+/// the T-112 ticket notes for its owner).
+pub fn delete_persisted_hints(app: &AppHandle) {
+    #[cfg(windows)]
+    {
+        win::delete_persisted_hints(app);
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = app;
+    }
+}
+
+/// Turn jump-slot persistence OFF atomically under `PERSIST_LOCK` (finding 11).
+/// On non-Windows the Jumper is inert, so this just clears the settings flag
+/// and identities (no sidecar exists to delete).
+pub fn disable_persistence(app: &AppHandle) {
+    #[cfg(windows)]
+    {
+        win::disable_persistence(app);
+    }
+    #[cfg(not(windows))]
+    {
+        crate::settings::update_settings(app, |settings| {
+            settings.jumper_persist = false;
+            settings.jumper_saved_slots = vec![None; SLOT_COUNT];
+        });
+    }
 }
 
 /// Explicit clear from the UI.

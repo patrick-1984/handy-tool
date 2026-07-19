@@ -1,6 +1,6 @@
 [package]
 name = "handy"
-version = "0.41.0"
+version = "0.42.0"
 description = "Handy"
 authors = ["pr"]
 edition = "2024"
@@ -100,6 +100,10 @@ windows = { version = "0.61.3", features = [
   "Win32_UI_WindowsAndMessaging",
   "Win32_UI_Input_KeyboardAndMouse",
   "Win32_System_Threading",
+  # T-105: UI Automation IsPassword query (anchor.rs) — CoInitializeEx/
+  # CoCreateInstance/CoUninitialize and the IUIAutomation* COM interfaces.
+  "Win32_System_Com",
+  "Win32_UI_Accessibility",
 ] }
 
 [target.'cfg(target_os = "macos")'.dependencies]

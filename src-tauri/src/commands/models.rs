@@ -1,8 +1,46 @@
 use crate::managers::model::{ModelInfo, ModelManager};
 use crate::managers::transcription::TranscriptionManager;
 use crate::settings::{get_settings, write_settings};
+use serde::Serialize;
+use specta::Type;
 use std::sync::Arc;
 use tauri::{AppHandle, State};
+
+/// One Vulkan GPU adapter offered to the frontend's device-selection dropdown
+/// (T-212). Trimmed down from `transcribe_rs::engines::whisper::GpuDeviceInfo`
+/// — the UI only needs an id to persist and a label to show.
+#[derive(Serialize, Clone, Debug, Type)]
+pub struct GpuDeviceOption {
+    pub index: i32,
+    pub name: String,
+    pub vram_total_mb: u64,
+}
+
+/// List the GPU adapters whisper.cpp's Vulkan backend can see, for the
+/// transcription GPU-device selector. Enumeration is lazy (queries the
+/// Vulkan backend on demand) and safe to call at any time — it never touches
+/// a loaded model. Returns an empty list on macOS (Metal backend, no Vulkan
+/// device registry) or if no adapters are found.
+///
+/// Adversarial review finding 4 (T-212 follow-up): runs under
+/// `crate::managers::transcription::with_vulkan_op_lock` so this enumeration
+/// can never overlap the GPU Whisper model-load path in
+/// `managers/transcription.rs` — see that lock's doc comment for why
+/// enumeration racing a load is unsafe.
+#[tauri::command]
+#[specta::specta]
+pub async fn list_gpu_devices() -> Result<Vec<GpuDeviceOption>, String> {
+    Ok(crate::managers::transcription::with_vulkan_op_lock(|| {
+        transcribe_rs::engines::whisper::list_gpu_devices()
+            .into_iter()
+            .map(|d| GpuDeviceOption {
+                index: d.index,
+                name: d.name,
+                vram_total_mb: d.vram_total_mb,
+            })
+            .collect()
+    }))
+}
 
 #[tauri::command]
 #[specta::specta]

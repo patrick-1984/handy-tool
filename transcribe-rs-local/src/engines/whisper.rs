@@ -12,12 +12,56 @@ use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextPar
 #[derive(Debug, Clone)]
 pub struct WhisperModelParams {
     pub use_gpu: bool,
+    /// Vulkan device index to run on when `use_gpu` is true (T-212). `0` is
+    /// whisper.cpp's own default (discrete GPUs are enumerated before
+    /// integrated ones — see `whisper_rs::vulkan::list_devices`).
+    pub gpu_device: i32,
 }
 
 impl Default for WhisperModelParams {
     fn default() -> Self {
-        Self { use_gpu: true }
+        Self {
+            use_gpu: true,
+            gpu_device: 0,
+        }
     }
+}
+
+/// A single GPU adapter as reported by ggml's Vulkan backend, trimmed to
+/// what callers need to build a selection UI (T-212). Kept independent of
+/// `whisper_rs::vulkan::VkDeviceInfo` so this crate's public API doesn't leak
+/// whisper-rs-sys buffer-type internals across the crate boundary.
+#[derive(Debug, Clone)]
+pub struct GpuDeviceInfo {
+    pub index: i32,
+    pub name: String,
+    pub vram_total_mb: u64,
+    pub vram_free_mb: u64,
+}
+
+/// Enumerate the GPU adapters whisper.cpp's Vulkan backend can see.
+///
+/// Lazy by construction (only queries when called, never at load/import
+/// time) and never touches a loaded model — safe to call from a settings UI
+/// before any transcription has happened. Returns an empty list on macOS
+/// (whisper-rs there is built with the Metal backend, which has no Vulkan
+/// device registry) or if the Vulkan backend reports zero devices.
+#[cfg(not(target_os = "macos"))]
+pub fn list_gpu_devices() -> Vec<GpuDeviceInfo> {
+    whisper_rs::vulkan::list_devices()
+        .into_iter()
+        .map(|d| GpuDeviceInfo {
+            index: d.id,
+            name: d.name,
+            vram_total_mb: (d.vram.total / (1024 * 1024)) as u64,
+            vram_free_mb: (d.vram.free / (1024 * 1024)) as u64,
+        })
+        .collect()
+}
+
+#[cfg(target_os = "macos")]
+pub fn list_gpu_devices() -> Vec<GpuDeviceInfo> {
+    Vec::new()
 }
 
 /// Parameters for configuring Whisper inference behavior.
@@ -112,10 +156,9 @@ impl TranscriptionEngine for WhisperEngine {
     ) -> Result<(), Box<dyn std::error::Error>> {
         let mut context_params = WhisperContextParameters::default();
         context_params.use_gpu = params.use_gpu;
-        let context = WhisperContext::new_with_params(
-            model_path.to_str().unwrap(),
-            context_params,
-        )?;
+        context_params.gpu_device = params.gpu_device;
+        let context =
+            WhisperContext::new_with_params(model_path.to_str().unwrap(), context_params)?;
 
         let state = context.create_state()?;
 
