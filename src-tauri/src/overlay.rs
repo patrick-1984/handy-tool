@@ -410,12 +410,42 @@ pub fn close_floating_transcription_window(app_handle: &AppHandle) {
     }
 }
 
-pub fn emit_levels(app_handle: &AppHandle, levels: &Vec<f32>) {
-    // emit levels to main app
-    let _ = app_handle.emit("mic-level", levels);
+/// Milliseconds of the last `mic-level` emit, for rate limiting (~30 FPS).
+static LAST_MIC_LEVEL_EMIT_MS: AtomicU64 = AtomicU64::new(0);
+const MIC_LEVEL_EMIT_INTERVAL_MS: u64 = 33;
 
-    // also emit to the recording overlay if it's open
+/// Forwards mic spectrum levels to the recording overlay window.
+///
+/// The overlay is the only `mic-level` consumer, so delivery targets it via
+/// `emit_to` instead of an app-wide broadcast, is rate-limited to ~30 events
+/// per second, and is skipped entirely while the overlay is disabled
+/// (`OverlayPosition::None`, the Linux default) or hidden.
+pub fn emit_levels(app_handle: &AppHandle, levels: &Vec<f32>) {
+    // Rate limit first — it's the cheapest check.
+    let now_ms = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis() as u64;
+    let last = LAST_MIC_LEVEL_EMIT_MS.load(Ordering::Relaxed);
+    if now_ms.saturating_sub(last) < MIC_LEVEL_EMIT_INTERVAL_MS {
+        return;
+    }
+    // Advance the stamp BEFORE the settings read so a disabled/hidden overlay
+    // (which returns early below) still pays get_settings at most ~30×/s
+    // instead of on every audio callback.
+    LAST_MIC_LEVEL_EMIT_MS.store(now_ms, Ordering::Relaxed);
+
+    // Reads current settings each rate-limited tick, so the gate reacts
+    // quickly when the overlay setting changes.
+    if settings::get_settings(app_handle).overlay_position == OverlayPosition::None {
+        return;
+    }
+
     if let Some(overlay_window) = app_handle.get_webview_window("recording_overlay") {
-        let _ = overlay_window.emit("mic-level", levels);
+        // No consumer is watching while the overlay is hidden.
+        if !overlay_window.is_visible().unwrap_or(true) {
+            return;
+        }
+        let _ = app_handle.emit_to("recording_overlay", "mic-level", levels);
     }
 }

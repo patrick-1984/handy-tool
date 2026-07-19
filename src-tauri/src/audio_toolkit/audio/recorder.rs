@@ -2,7 +2,7 @@ use std::{
     io::Error,
     path::PathBuf,
     sync::{Arc, Mutex, mpsc},
-    time::Duration,
+    time::{Duration, Instant},
 };
 
 use cpal::{
@@ -36,6 +36,12 @@ const SEG_SOFT_SAMPLES: usize = 20 * 16_000;
 /// Force a transcription segment cut even mid-speech (~45 s) so an unbroken
 /// monologue still streams to the engine.
 const SEG_HARD_SAMPLES: usize = 45 * 16_000;
+
+/// Minimum interval between mic-level callbacks while NOT recording (~16 Hz).
+/// The mic can be always-on, so idle spectrum updates are throttled to avoid
+/// flooding the event system; recording keeps full rate so the overlay
+/// visualizer stays smooth.
+const LEVEL_IDLE_INTERVAL: Duration = Duration::from_millis(60);
 
 enum Cmd {
     /// Begin recording. `Some(params)` streams chunked Opus to disk; `None`
@@ -560,6 +566,8 @@ fn run_consumer(
         400.0,  // vocal_min_hz
         4000.0, // vocal_max_hz
     );
+    // Last time the level callback fired while idle (see LEVEL_IDLE_INTERVAL).
+    let mut last_level_emit: Option<Instant> = None;
 
     loop {
         // Bounded wait: commands (Stop/Cancel/Shutdown) must be processed even
@@ -575,7 +583,16 @@ fn run_consumer(
             // ---------- spectrum processing ------------------------------ //
             if let Some(buckets) = visualizer.feed(&raw) {
                 if let Some(cb) = &level_cb {
-                    cb(buckets);
+                    // Full rate while recording; throttled while idle (the
+                    // always-on mic would otherwise flood the event system).
+                    let now = Instant::now();
+                    if recording
+                        || last_level_emit
+                            .map_or(true, |t| now.duration_since(t) >= LEVEL_IDLE_INTERVAL)
+                    {
+                        last_level_emit = Some(now);
+                        cb(buckets);
+                    }
                 }
             }
 

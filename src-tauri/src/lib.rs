@@ -95,6 +95,15 @@ fn build_console_filter() -> env_filter::Filter {
 
 fn show_main_window(app: &AppHandle) {
     if let Some(main_window) = app.get_webview_window("main") {
+        // On macOS, restore the Regular activation policy BEFORE showing or
+        // focusing: while the app is still an Accessory, macOS can ignore the
+        // focus request and leave the dock icon absent (T-220).
+        #[cfg(target_os = "macos")]
+        {
+            if let Err(e) = app.set_activation_policy(tauri::ActivationPolicy::Regular) {
+                log::error!("Failed to set activation policy to Regular: {}", e);
+            }
+        }
         // First, ensure the window is visible
         if let Err(e) = main_window.show() {
             log::error!("Failed to show window: {}", e);
@@ -102,13 +111,6 @@ fn show_main_window(app: &AppHandle) {
         // Then, bring it to the front and give it focus
         if let Err(e) = main_window.set_focus() {
             log::error!("Failed to focus window: {}", e);
-        }
-        // Optional: On macOS, ensure the app becomes active if it was an accessory
-        #[cfg(target_os = "macos")]
-        {
-            if let Err(e) = app.set_activation_policy(tauri::ActivationPolicy::Regular) {
-                log::error!("Failed to set activation policy to Regular: {}", e);
-            }
         }
     } else {
         log::error!("Main window not found.");

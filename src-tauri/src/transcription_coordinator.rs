@@ -10,6 +10,14 @@ use tauri::{AppHandle, Manager};
 
 const DEBOUNCE: Duration = Duration::from_millis(30);
 
+/// X11 auto-repeat coalescing (T-209): a held key under X11 auto-repeat is
+/// delivered as synthetic release→press pairs, not one long press. A PTT
+/// release is parked for this grace window and cancelled by the matching
+/// auto-repeat press; only a release that survives the window (a genuine
+/// key-up) actually stops the recording.
+#[cfg(target_os = "linux")]
+const PTT_RELEASE_GRACE: Duration = Duration::from_millis(40);
+
 /// Commands processed sequentially by the coordinator thread.
 enum Command {
     Input {
@@ -21,6 +29,15 @@ enum Command {
         recording_was_active: bool,
     },
     ProcessingFinished,
+    /// Commit a parked PTT release whose X11 auto-repeat grace window expired
+    /// without a matching press (T-209). Stale if `generation` no longer
+    /// matches the parked entry.
+    #[cfg(target_os = "linux")]
+    CommitPttRelease {
+        binding_id: String,
+        hotkey_string: String,
+        generation: u64,
+    },
 }
 
 /// Pipeline lifecycle, owned exclusively by the coordinator thread.
@@ -76,6 +93,11 @@ impl TranscriptionCoordinator {
     pub fn new(app: AppHandle) -> Self {
         let (tx, rx) = mpsc::channel();
 
+        // The coordinator thread sends itself delayed CommitPttRelease
+        // commands for parked releases (T-209).
+        #[cfg(target_os = "linux")]
+        let thread_tx = tx.clone();
+
         thread::spawn(move || {
             let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 let mut stage = Stage::Idle;
@@ -83,6 +105,14 @@ impl TranscriptionCoordinator {
                 // a just-processed press of binding A.
                 let mut last_press: std::collections::HashMap<String, Instant> =
                     std::collections::HashMap::new();
+                // Parked PTT releases awaiting their grace window, keyed by
+                // binding, valued by generation so a stale delayed commit
+                // can never fire a newer parked release (T-209).
+                #[cfg(target_os = "linux")]
+                let mut parked_ptt_release: std::collections::HashMap<String, u64> =
+                    std::collections::HashMap::new();
+                #[cfg(target_os = "linux")]
+                let mut ptt_release_generation: u64 = 0;
 
                 while let Ok(cmd) = rx.recv() {
                     match cmd {
@@ -92,6 +122,21 @@ impl TranscriptionCoordinator {
                             is_pressed,
                         } => {
                             let push_to_talk = is_ptt_binding(&binding_id);
+                            // A press for a binding whose release is parked is
+                            // X11 auto-repeat: cancel the parked release and
+                            // swallow the press — the recording simply keeps
+                            // going, no start actions replay (T-209). Checked
+                            // BEFORE the press debounce so a debounced repeat
+                            // press still cancels its parked release.
+                            #[cfg(target_os = "linux")]
+                            if push_to_talk
+                                && is_pressed
+                                && matches!(&stage, Stage::Recording(id) if id == &binding_id)
+                                && parked_ptt_release.remove(&binding_id).is_some()
+                            {
+                                debug!("Coalesced X11 auto-repeat press for '{binding_id}'");
+                                continue;
+                            }
                             // Debounce rapid-fire press events (key repeat / double-tap).
                             // Releases always pass through for push-to-talk.
                             if is_pressed {
@@ -121,14 +166,39 @@ impl TranscriptionCoordinator {
                                 } else if !is_pressed
                                     && matches!(&stage, Stage::Recording(id) if id == &binding_id)
                                 {
-                                    let s = crate::settings::get_settings(&app);
-                                    perform_anchor_action(
-                                        &app,
-                                        s.anchor_action_output_stop,
-                                        s.anchor_action_output_stop_slot,
-                                        true,
-                                    );
-                                    stop(&app, &mut stage, &binding_id, &hotkey_string);
+                                    // X11: park the release instead of stopping.
+                                    // A matching auto-repeat press within the
+                                    // grace window cancels it; otherwise it
+                                    // commits via CommitPttRelease (T-209).
+                                    #[cfg(target_os = "linux")]
+                                    {
+                                        ptt_release_generation += 1;
+                                        parked_ptt_release
+                                            .insert(binding_id.clone(), ptt_release_generation);
+                                        let tx = thread_tx.clone();
+                                        let generation = ptt_release_generation;
+                                        let binding_id = binding_id.clone();
+                                        let hotkey_string = hotkey_string.clone();
+                                        thread::spawn(move || {
+                                            thread::sleep(PTT_RELEASE_GRACE);
+                                            let _ = tx.send(Command::CommitPttRelease {
+                                                binding_id,
+                                                hotkey_string,
+                                                generation,
+                                            });
+                                        });
+                                    }
+                                    #[cfg(not(target_os = "linux"))]
+                                    {
+                                        let s = crate::settings::get_settings(&app);
+                                        perform_anchor_action(
+                                            &app,
+                                            s.anchor_action_output_stop,
+                                            s.anchor_action_output_stop_slot,
+                                            true,
+                                        );
+                                        stop(&app, &mut stage, &binding_id, &hotkey_string);
+                                    }
                                 } else if is_pressed {
                                     // Held PTT while the pipeline is busy: the
                                     // utterance will NOT be recorded — say so.
@@ -242,12 +312,47 @@ impl TranscriptionCoordinator {
                                 stage = Stage::Idle;
                                 publish_stage(&stage);
                             }
+                            // A parked release belongs to the recording that just
+                            // ended — dropping it here keeps a stale sleeper commit
+                            // from stopping the NEXT recording (its generation
+                            // would otherwise still match).
+                            #[cfg(target_os = "linux")]
+                            parked_ptt_release.clear();
                             schedule_unmute_cleanup(&app);
                         }
                         Command::ProcessingFinished => {
                             stage = Stage::Idle;
                             publish_stage(&stage);
+                            #[cfg(target_os = "linux")]
+                            parked_ptt_release.clear();
                             schedule_unmute_cleanup(&app);
+                        }
+                        #[cfg(target_os = "linux")]
+                        Command::CommitPttRelease {
+                            binding_id,
+                            hotkey_string,
+                            generation,
+                        } => {
+                            // Superseded: a matching auto-repeat press cancelled
+                            // this parked release, or a newer release re-parked.
+                            if parked_ptt_release.get(&binding_id) != Some(&generation) {
+                                debug!("Ignoring stale parked PTT release for '{binding_id}'");
+                                continue;
+                            }
+                            parked_ptt_release.remove(&binding_id);
+                            // Genuine key-up: run the exact stop path a direct
+                            // release would have taken (anchor action + stop),
+                            // guarded so it stops the matching recording once.
+                            if matches!(&stage, Stage::Recording(id) if id == &binding_id) {
+                                let s = crate::settings::get_settings(&app);
+                                perform_anchor_action(
+                                    &app,
+                                    s.anchor_action_output_stop,
+                                    s.anchor_action_output_stop_slot,
+                                    true,
+                                );
+                                stop(&app, &mut stage, &binding_id, &hotkey_string);
+                            }
                         }
                     }
                 }
