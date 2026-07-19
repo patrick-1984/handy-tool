@@ -307,7 +307,7 @@ pub fn call_tool(app: &AppHandle, name: &str, args: &Value) -> Result<Value, Str
             Ok(json!({ "stage": stage }))
         }
         "jump_slots" => {
-            let slots: Vec<Value> = crate::anchor::get_jump_slots()
+            let slots: Vec<Value> = crate::anchor::get_jump_slots(app.clone())
                 .into_iter()
                 .enumerate()
                 .map(|(i, s)| match s {
@@ -344,6 +344,7 @@ pub fn call_tool(app: &AppHandle, name: &str, args: &Value) -> Result<Value, Str
                 .get("enabled")
                 .and_then(|v| v.as_bool())
                 .ok_or("enabled is required")?;
+            let _guard = settings_guard();
             let mut settings = crate::settings::get_settings(app);
             settings.translator_enabled = enabled;
             crate::settings::write_settings(app, settings);

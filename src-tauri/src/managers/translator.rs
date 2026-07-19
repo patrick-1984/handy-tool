@@ -157,7 +157,11 @@ fn persist_queue(app: &AppHandle, queue: &VecDeque<PathBuf>, current: Option<&Pa
         .collect();
     match serde_json::to_vec(&all) {
         Ok(bytes) => {
-            if let Err(e) = std::fs::write(&path, bytes) {
+            // Atomic: a crash mid-write must never leave malformed JSON (the
+            // loader would silently restore an empty queue).
+            let tmp = path.with_extension("json.tmp");
+            let write_ok = std::fs::write(&tmp, bytes).and_then(|_| std::fs::rename(&tmp, &path));
+            if let Err(e) = write_ok {
                 debug!("could not persist translator queue: {e}");
             }
         }
@@ -421,6 +425,10 @@ fn worker(app: AppHandle, shutdown: Arc<AtomicBool>, status: Arc<Mutex<Translato
     // Force an immediate first scan.
     let mut last_scan: Option<Instant> = None;
     let mut was_enabled = false;
+    // Transient-failure retries per file (model hiccups, sidecar write
+    // failures). Decode failures are permanent and never retried.
+    let mut retry_counts: HashMap<PathBuf, u8> = HashMap::new();
+    const MAX_RETRIES: u8 = 2;
 
     let publish = |status: &Arc<Mutex<TranslatorStatus>>,
                    app: &AppHandle,
@@ -465,6 +473,8 @@ fn worker(app: AppHandle, shutdown: Arc<AtomicBool>, status: Arc<Mutex<Translato
                 // Disabling drops the in-flight job's progress (segments are
                 // cheap to redo) but keeps queued files queued for next time.
                 if let Some(job) = current.take() {
+                    app.state::<Arc<TranscriptionManager>>()
+                        .set_batch_transcribing(false);
                     queue.push_front(job.path);
                 }
                 persist_queue(&app, &queue, None);
@@ -525,9 +535,37 @@ fn worker(app: AppHandle, shutdown: Arc<AtomicBool>, status: Arc<Mutex<Translato
             }
         }
 
+        // Batch model: the per-Translator override when set and still valid,
+        // otherwise the dictation model. Only transcription-registry ids are
+        // accepted (every entry is ASR-capable — LLM chat providers aren't).
+        let model_manager = app.state::<Arc<crate::managers::model::ModelManager>>();
+        let effective_model = {
+            let m = settings.translator_model.trim();
+            if !m.is_empty() && model_manager.get_model_info(m).is_some() {
+                m.to_string()
+            } else {
+                settings.selected_model.clone()
+            }
+        };
+
+        // Engine class decides two special cases below: external engines
+        // (FLM/API/OpenRouter) don't need the single-tenant engine lock, and
+        // OpenRouter batch work must never overlap a live take (its per-take
+        // cost accumulator is process-global — overlap would bill batch
+        // segments to the live recording's history row).
+        let engine_info = model_manager.get_model_info(&effective_model);
+        let engine_external = engine_info
+            .as_ref()
+            .map(|m| m.engine_type.is_external())
+            .unwrap_or(false);
+        let engine_openrouter = matches!(
+            engine_info.as_ref().map(|m| &m.engine_type),
+            Some(crate::managers::model::EngineType::OpenRouterWhisper)
+        );
+
         // Priority gate.
         let stage = pipeline_stage();
-        let yield_now = match settings.translator_priority {
+        let mut yield_now = match settings.translator_priority {
             TranslatorPriority::LiveFirst => stage != STAGE_IDLE,
             TranslatorPriority::FolderFirst => stage == STAGE_PROCESSING,
             TranslatorPriority::Fifo => {
@@ -538,7 +576,22 @@ fn worker(app: AppHandle, shutdown: Arc<AtomicBool>, status: Arc<Mutex<Translato
                 }
             }
         };
+        if engine_openrouter && stage != STAGE_IDLE {
+            yield_now = true;
+        }
         if yield_now {
+            // If batch was using a DIFFERENT model than dictation, hand the
+            // engine back warm: reload the dictation model now, while we're
+            // paused anyway, so the take doesn't pay the swap cost at stop.
+            if effective_model != settings.selected_model && !settings.selected_model.is_empty() {
+                let tm = app.state::<Arc<TranscriptionManager>>();
+                if tm.get_current_model().as_deref() == Some(effective_model.as_str()) {
+                    info!("Translator: restoring dictation model for live activity");
+                    if let Err(e) = tm.load_model(&settings.selected_model) {
+                        warn!("Translator: dictation-model restore failed: {e}");
+                    }
+                }
+            }
             let reason = if stage == STAGE_PROCESSING {
                 "processing"
             } else {
@@ -574,6 +627,17 @@ fn worker(app: AppHandle, shutdown: Arc<AtomicBool>, status: Arc<Mutex<Translato
                 std::thread::sleep(TICK);
                 continue;
             };
+            // A transcript may have appeared while the file sat in the queue
+            // (another tool, a restart, or a same-stem sibling finishing) —
+            // never overwrite an existing sidecar.
+            if sidecar_path(&path).exists() {
+                debug!(
+                    "Translator: {} already has a transcript; skipping",
+                    path.display()
+                );
+                persist_queue(&app, &queue, None);
+                continue;
+            }
             match prepare_job(path.clone()) {
                 Ok(job) => {
                     info!(
@@ -581,9 +645,12 @@ fn worker(app: AppHandle, shutdown: Arc<AtomicBool>, status: Arc<Mutex<Translato
                         path.display(),
                         job.segments.len()
                     );
+                    app.state::<Arc<TranscriptionManager>>()
+                        .set_batch_transcribing(true);
                     current = Some(job);
                 }
                 Err(e) => {
+                    // Decode failures are permanent — no retry.
                     warn!("Translator: skipping {}: {e}", path.display());
                     failed_count += 1;
                 }
@@ -608,10 +675,26 @@ fn worker(app: AppHandle, shutdown: Arc<AtomicBool>, status: Arc<Mutex<Translato
             if job.next_segment < job.segments.len() {
                 let range = job.segments[job.next_segment].clone();
                 let segment = job.samples[range].to_vec();
-                let result = {
-                    let tm = app.state::<Arc<TranscriptionManager>>();
-                    // Single-tenant engine: serialize with live chunk workers
-                    // and the stop-path final pass.
+                let tm = app.state::<Arc<TranscriptionManager>>();
+                // The Translator is the only engine user that starts cold:
+                // transcribe() waits for an in-flight load but never initiates
+                // one, so load here (NOT under the engine lock — live segments
+                // wait on the loading condvar exactly as they do for the
+                // recording-start background load).
+                if tm.get_current_model().as_deref() != Some(effective_model.as_str())
+                    && !effective_model.is_empty()
+                {
+                    if let Err(e) = tm.load_model(&effective_model) {
+                        warn!("Translator: model load failed: {e}");
+                    }
+                }
+                let result = if engine_external {
+                    // External engines (HTTP/subprocess) aren't single-tenant —
+                    // and must not hold the engine lock across a network call.
+                    tm.transcribe(segment)
+                } else {
+                    // Single-tenant local engine: serialize with live chunk
+                    // workers and the stop-path final pass.
                     let _serial = crate::actions::CHUNK_TRANSCRIBE_LOCK
                         .lock()
                         .unwrap_or_else(|poisoned| poisoned.into_inner());
@@ -639,19 +722,18 @@ fn worker(app: AppHandle, shutdown: Arc<AtomicBool>, status: Arc<Mutex<Translato
 
             if job.next_segment >= job.segments.len() {
                 let job = current.take().expect("job present");
+                app.state::<Arc<TranscriptionManager>>()
+                    .set_batch_transcribing(false);
                 let text = job.parts.join(" ");
-                let all_failed =
-                    !job.segments.is_empty() && job.segment_errors == job.segments.len();
-                if all_failed {
-                    failed_count += 1;
-                    warn!(
-                        "Translator: {} failed (every segment errored); no sidecar written",
-                        job.path.display()
-                    );
-                } else {
+                // A sidecar means "complete transcript" — a file with ANY
+                // errored segment is retried whole (bounded), never published
+                // with silent holes.
+                let mut transient_failure = job.segment_errors > 0;
+                if !transient_failure {
                     match write_sidecar(&job.path, &text) {
                         Ok(()) => {
                             done_count += 1;
+                            retry_counts.remove(&job.path);
                             info!(
                                 "Translator: finished {} ({} chars)",
                                 job.path.display(),
@@ -659,12 +741,33 @@ fn worker(app: AppHandle, shutdown: Arc<AtomicBool>, status: Arc<Mutex<Translato
                             );
                         }
                         Err(e) => {
-                            failed_count += 1;
                             warn!(
                                 "Translator: could not write sidecar for {}: {e}",
                                 job.path.display()
                             );
+                            transient_failure = true;
                         }
+                    }
+                }
+                if transient_failure {
+                    let tries = retry_counts.entry(job.path.clone()).or_insert(0);
+                    if *tries < MAX_RETRIES {
+                        *tries += 1;
+                        warn!(
+                            "Translator: re-queueing {} (attempt {}/{})",
+                            job.path.display(),
+                            *tries,
+                            MAX_RETRIES
+                        );
+                        queue.push_back(job.path);
+                    } else {
+                        failed_count += 1;
+                        retry_counts.remove(&job.path);
+                        warn!(
+                            "Translator: giving up on {} after {} retries",
+                            job.path.display(),
+                            MAX_RETRIES
+                        );
                     }
                 }
                 persist_queue(&app, &queue, None);
@@ -680,6 +783,10 @@ fn worker(app: AppHandle, shutdown: Arc<AtomicBool>, status: Arc<Mutex<Translato
                 failed_count,
             );
         }
+    }
+    // Never leave the unload-suppression flag armed past the worker's life.
+    if let Some(tm) = app.try_state::<Arc<TranscriptionManager>>() {
+        tm.set_batch_transcribing(false);
     }
     info!("Translator worker stopped");
 }

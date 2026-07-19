@@ -766,10 +766,12 @@ fn paste_inner(
             }
         }
     } else {
-        // Paste disabled: any delivery request armed for this take must die
-        // with it — stranded, it would hijack the NEXT unrelated paste.
+        // Paste disabled: any delivery request or deferred on-finish action
+        // armed for this take must die with it — stranded, they would hijack
+        // the NEXT unrelated paste.
         if flow_paste {
             crate::anchor::clear_delivery_request();
+            crate::anchor::clear_post_take_action();
         }
         None
     };
@@ -867,6 +869,11 @@ fn paste_inner(
     if let Some(guard) = anchor_guard {
         crate::anchor::finish_delivery(&app_handle, guard, delivered.is_ok(), hot_recaptured);
     }
+
+    // NOTE: the deferred "on finish" Set/Clear is NOT consumed here — the
+    // take's own pipeline took ownership of it at stop time (actions.rs) and
+    // runs it after this paste returns, so a delayed paste can never execute
+    // another take's action.
 
     delivered?;
 

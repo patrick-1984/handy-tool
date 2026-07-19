@@ -72,6 +72,7 @@ impl FrameResampler {
                 if let Ok(out) = resampler.process(&[&self.in_buf[..]], None) {
                     self.emit_frames(&out[0], &mut emit);
                 }
+                self.in_buf.clear();
             }
         }
 
@@ -80,6 +81,18 @@ impl FrameResampler {
             self.pending.resize(self.frame_samples, 0.0);
             emit(&self.pending);
             self.pending.clear();
+        }
+    }
+
+    /// Forget all buffered input and internal filter state. Called at
+    /// recording boundaries: with an always-on microphone the resampler
+    /// otherwise carries up to one chunk (~64 ms) of pre-press audio plus
+    /// FFT overlap history into the new take.
+    pub fn reset(&mut self) {
+        self.in_buf.clear();
+        self.pending.clear();
+        if let Some(r) = self.resampler.as_mut() {
+            r.reset();
         }
     }
 

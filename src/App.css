@@ -11,7 +11,7 @@
 
 /*
  * Design tokens — single source of truth for all three windows.
- * Spec: _bmad-output/planning-artifacts/ux-designs/ux-handy-2026-07-05/DESIGN.md
+ * Spec: internal design system (brand tokens below are the source of truth).
  * Rules: components never hardcode hex; icons use currentColor; every token
  * has a value in BOTH themes; rose fills stay small (identity + recording).
  */

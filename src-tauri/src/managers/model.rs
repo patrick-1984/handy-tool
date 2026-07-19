@@ -168,8 +168,8 @@ impl ModelManager {
             "turbo".to_string(),
             ModelInfo {
                 id: "turbo".to_string(),
-                name: "Whisper Turbo".to_string(),
-                description: "Balanced accuracy and speed.".to_string(),
+                name: "Whisper Large V3 Turbo".to_string(),
+                description: "Balanced accuracy and speed (large-v3-turbo).".to_string(),
                 filename: "ggml-large-v3-turbo.bin".to_string(),
                 url: Some("https://blob.handy.computer/ggml-large-v3-turbo.bin".to_string()),
                 size_mb: 1600, // Approximate size
@@ -191,8 +191,10 @@ impl ModelManager {
             "large".to_string(),
             ModelInfo {
                 id: "large".to_string(),
-                name: "Whisper Large".to_string(),
-                description: "Good accuracy, but slow.".to_string(),
+                name: "Whisper Large V3".to_string(),
+                description:
+                    "Full large-v3 (q5 quant). Best accuracy, slower; supports translation."
+                        .to_string(),
                 filename: "ggml-large-v3-q5_0.bin".to_string(),
                 url: Some("https://blob.handy.computer/ggml-large-v3-q5_0.bin".to_string()),
                 size_mb: 1100, // Approximate size

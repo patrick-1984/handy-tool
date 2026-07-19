@@ -25,9 +25,10 @@ pub fn cancel_current_operation(app: &AppHandle) {
     let recording_was_active = audio_manager.is_recording();
     audio_manager.cancel_recording();
 
-    // A cancelled take's anchored-delivery request must die with it —
-    // stranded, it would hijack a later unrelated paste.
+    // A cancelled take's anchored-delivery request and deferred on-finish
+    // action must die with it — stranded, they would hijack a later paste.
     crate::anchor::clear_delivery_request();
+    crate::anchor::clear_post_take_action();
 
     // Tear down any chunked-recording session (clears the chunk callback and
     // re-enables model unloading before maybe_unload_immediately below).

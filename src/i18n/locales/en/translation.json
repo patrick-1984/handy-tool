@@ -45,51 +45,51 @@
     "models": {
       "small": {
         "name": "Whisper Small",
-        "description": "Fast and fairly accurate."
+        "description": "Fast and fairly accurate. GPU via whisper.cpp (Vulkan / Metal)."
       },
       "medium": {
         "name": "Whisper Medium",
-        "description": "Good accuracy, medium speed"
+        "description": "Good accuracy, medium speed. GPU via whisper.cpp (Vulkan / Metal)."
       },
       "turbo": {
-        "name": "Whisper Turbo",
-        "description": "Balanced accuracy and speed."
+        "name": "Whisper Large V3 Turbo",
+        "description": "Balanced accuracy and speed (large-v3-turbo). GPU via whisper.cpp (Vulkan / Metal)."
       },
       "large": {
-        "name": "Whisper Large",
-        "description": "Good accuracy, but slow."
+        "name": "Whisper Large V3",
+        "description": "Full large-v3 (q5 quant). Best accuracy, slower; supports translation. GPU via whisper.cpp (Vulkan / Metal)."
       },
       "parakeet-tdt-0.6b-v2": {
         "name": "Parakeet V2",
-        "description": "English only. The best model for English speakers."
+        "description": "English only. The best model for English speakers. CPU (ONNX runtime)."
       },
       "parakeet-tdt-0.6b-v3": {
         "name": "Parakeet V3",
-        "description": "Fast and accurate"
+        "description": "Fast and accurate. CPU (ONNX runtime)."
       },
       "moonshine-base": {
         "name": "Moonshine Base",
-        "description": "Very fast, English only. Handles accents well."
+        "description": "Very fast, English only. Handles accents well. CPU (ONNX runtime)."
       },
       "moonshine-tiny-streaming-en": {
         "name": "Moonshine V2 Tiny",
-        "description": "Ultra-fast, English only"
+        "description": "Ultra-fast, English only. CPU (ONNX runtime)."
       },
       "moonshine-small-streaming-en": {
         "name": "Moonshine V2 Small",
-        "description": "Fast, English only. Good balance of speed and accuracy."
+        "description": "Fast, English only. Good balance of speed and accuracy. CPU (ONNX runtime)."
       },
       "moonshine-medium-streaming-en": {
         "name": "Moonshine V2 Medium",
-        "description": "English only. High quality."
+        "description": "English only. High quality. CPU (ONNX runtime)."
       },
       "breeze-asr": {
         "name": "Breeze ASR",
-        "description": "Optimized for Taiwanese Mandarin. Code-switching support."
+        "description": "Optimized for Taiwanese Mandarin. Code-switching support. GPU via whisper.cpp (Vulkan / Metal)."
       },
       "sense-voice-int8": {
         "name": "SenseVoice",
-        "description": "Very fast. Chinese, English, Japanese, Korean, Cantonese."
+        "description": "Very fast. Chinese, English, Japanese, Korean, Cantonese. CPU (ONNX runtime)."
       }
     },
     "errors": {
@@ -263,12 +263,12 @@
             "clear": "Clear slot"
           },
           "idle": {
-            "title": "Jump slot action when idle",
-            "description": "What this shortcut additionally does with the selected jump slot when pressed while nothing is being transcribed. Jump navigates to the slot's field immediately."
+            "title": "Jump slot action on start",
+            "description": "What this shortcut additionally does with the selected jump slot at the keystroke that starts a new dictation. Jump navigates to the slot's field immediately, so you can start speaking right at the target."
           },
           "stop": {
-            "title": "Jump slot action when transcribing",
-            "description": "What this shortcut additionally does with the selected jump slot when pressed while a transcription is in progress (the finishing press). Jump delivers the transcription into the slot's field."
+            "title": "Jump slot action on finish",
+            "description": "What happens with the selected jump slot when the take finishes. Jump delivers the transcription into the slot's field. Set and Clear run only after the text has been pasted and the submit key sent."
           }
         }
       },
@@ -332,12 +332,40 @@
     "jumper": {
       "windowsOnly": "The Jumper is available on Windows only.",
       "hot": {
-        "title": "Hot slot (Anchor & Deliver)"
+        "title": "Hot slot (Anchor & Deliver)",
+        "optionsMoved": {
+          "title": "Delivery options",
+          "description": "Keep-after-delivery and return-focus for the hot slot now live next to the flow that uses them.",
+          "hint": "Configured in the Transcribe and Transcribe & Submit groups on the General page."
+        }
+      },
+      "slotOptions": {
+        "keep": {
+          "hot": {
+            "label": "Keep anchor after delivery",
+            "description": "Leave the anchor armed after a successful delivery instead of clearing it, for repeated dictation into the same field."
+          },
+          "static": {
+            "label": "Keep slot after delivery",
+            "description": "Leave this slot set after delivering into it. Turn off to make the slot one-shot — it clears itself after one delivery, like the hot anchor."
+          }
+        },
+        "returnFocus": {
+          "label": "Return focus after delivery",
+          "description": "Switch back to the window you were using once the text has been delivered into this slot."
+        }
       },
       "slot": {
         "title": "Static slot {{index}}",
         "status": "Slot {{index}} target",
-        "description": "Static slots are never cleared automatically — set one on a field you keep returning to and jump back any time. A slot remembers the window and field, not a browser tab or cursor position, and lasts until that window closes or Handy restarts."
+        "description": "Set a static slot on a field you keep returning to and jump back any time. By default it stays set after deliveries (see Keep slot after delivery). A slot remembers the window and field, not a browser tab or cursor position.",
+        "test": "Test",
+        "testFailed": "Jump failed: {{reason}}",
+        "stale": "Saved: {{app}} ({{control}}) — window not found yet"
+      },
+      "persist": {
+        "label": "Remember slots across restarts",
+        "description": "Windows can't keep exact window handles across a restart, so Handy saves each slot's identity (app + window type) and re-finds the matching window when it starts — and again the moment you use the slot. A saved slot whose app isn't running shows in red until it reappears."
       },
       "slotNames": {
         "hot": "Hot (anchor)",
@@ -368,6 +396,12 @@
           "folder_first": "Folder batch first",
           "fifo": "First come, first served"
         }
+      },
+      "model": {
+        "title": "Batch model",
+        "description": "Which speech model transcribes folder files. Every model in this list understands audio — models marked with a globe can also translate to English (turn on Translate to English in the main settings to use it). Picking a different model than dictation swaps models when switching between batch and live work, which costs a few seconds each way; with Live-first priority your dictation model is restored the moment you start recording.",
+        "sameAsDictation": "Same as dictation (default)",
+        "translates": "{{name}} — can translate to English"
       },
       "status": {
         "title": "Status",
@@ -908,10 +942,10 @@
         "description": "View source code and contribute",
         "button": "View on GitHub"
       },
-      "supportDevelopment": {
-        "title": "Support Development",
-        "description": "Help us continue building Handy Tool",
-        "button": "Donate"
+      "updates": {
+        "title": "Updates",
+        "description": "New versions are published on the GitHub releases page.",
+        "button": "Check releases"
       },
       "acknowledgments": {
         "title": "Acknowledgments",

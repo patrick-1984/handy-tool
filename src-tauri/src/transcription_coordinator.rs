@@ -296,10 +296,14 @@ impl TranscriptionCoordinator {
     }
 }
 
-/// Run the flow's configured Jumper side-action for this press, against the
-/// configured slot (0 = hot, 1–4 static). `at_finish` distinguishes the two
-/// moments: on an idle press, Jump navigates NOW; on the finish press, Jump
-/// arms verified DELIVERY into that slot's target for the upcoming paste.
+/// Run the flow's configured Jumper side-action, against the configured slot
+/// (0 = hot, 1–4 static). Two moments:
+/// - ON START (`at_finish == false`, the press that begins a sequence):
+///   the action runs immediately — Jump navigates NOW.
+/// - ON FINISH (`at_finish == true`, the press that ends the take): Jump arms
+///   verified DELIVERY (the paste itself IS the finish); Set/Clear are
+///   DEFERRED and run only after the paste has fully completed — "finished"
+///   means text delivered and clipboard restored, not "stop was pressed".
 fn perform_anchor_action(app: &AppHandle, action: AnchorAction, slot: u8, at_finish: bool) {
     let slot = (slot as usize).min(crate::anchor::SLOT_COUNT - 1);
     match action {
@@ -312,11 +316,19 @@ fn perform_anchor_action(app: &AppHandle, action: AnchorAction, slot: u8, at_fin
             }
         }
         AnchorAction::Set => {
-            if let Err(e) = crate::anchor::set_slot(app, slot) {
+            if at_finish {
+                crate::anchor::arm_post_take_action(crate::anchor::PostTakeAction::Set, slot);
+            } else if let Err(e) = crate::anchor::set_slot(app, slot) {
                 warn!("Jumper action set failed: {}", e);
             }
         }
-        AnchorAction::Clear => crate::anchor::clear(app, slot),
+        AnchorAction::Clear => {
+            if at_finish {
+                crate::anchor::arm_post_take_action(crate::anchor::PostTakeAction::Clear, slot);
+            } else {
+                crate::anchor::clear(app, slot);
+            }
+        }
     }
 }
 
@@ -340,8 +352,10 @@ fn start(app: &AppHandle, stage: &mut Stage, binding_id: &str, hotkey_string: &s
     // A fresh recording carries no submit intent until a submit shortcut finishes it.
     crate::clipboard::clear_submit_override();
     // Nor a stale anchored-delivery request (e.g. from a take whose paste was
-    // skipped because the transcription came back empty).
+    // skipped because the transcription came back empty), nor a stale deferred
+    // on-finish action.
     crate::anchor::clear_delivery_request();
+    crate::anchor::clear_post_take_action();
     let Some(action) = ACTION_MAP.get(binding_id) else {
         warn!("No action in ACTION_MAP for '{binding_id}'");
         return;

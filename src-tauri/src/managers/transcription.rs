@@ -69,6 +69,9 @@ pub struct TranscriptionManager {
     loading_condvar: Arc<Condvar>,
     /// Flag to prevent model unload during live/progressive transcription.
     is_live_transcribing: Arc<AtomicBool>,
+    /// Same protection for the Translator's folder-batch jobs — a separate
+    /// flag so the batch worker never fights the live pipeline's writes.
+    is_batch_transcribing: Arc<AtomicBool>,
     #[cfg(not(target_os = "macos"))]
     flm_manager: Arc<Mutex<Option<crate::managers::flm::FlmManager>>>,
 }
@@ -91,6 +94,7 @@ impl TranscriptionManager {
             is_loading: Arc::new(Mutex::new(false)),
             loading_condvar: Arc::new(Condvar::new()),
             is_live_transcribing: Arc::new(AtomicBool::new(false)),
+            is_batch_transcribing: Arc::new(AtomicBool::new(false)),
             #[cfg(not(target_os = "macos"))]
             flm_manager: Arc::new(Mutex::new(None)),
         };
@@ -128,8 +132,11 @@ impl TranscriptionManager {
 
                         // Never unload while a live/chunked recording is feeding
                         // the engine — a short Custom timeout must not yank the
-                        // model out from under an in-progress take.
-                        if manager_cloned.is_live_transcribing.load(Ordering::Relaxed) {
+                        // model out from under an in-progress take. Ditto for a
+                        // Translator batch job mid-file.
+                        if manager_cloned.is_live_transcribing.load(Ordering::Relaxed)
+                            || manager_cloned.is_batch_transcribing.load(Ordering::Relaxed)
+                        {
                             continue;
                         }
 
@@ -244,6 +251,10 @@ impl TranscriptionManager {
             debug!("Skipping immediate unload during live transcription");
             return;
         }
+        if self.is_batch_transcribing.load(Ordering::Relaxed) {
+            debug!("Skipping immediate unload during a Translator batch job");
+            return;
+        }
         let settings = get_settings(&self.app_handle);
         if settings.model_unload_timeout == ModelUnloadTimeout::Immediately
             && self.is_model_loaded()
@@ -257,6 +268,13 @@ impl TranscriptionManager {
 
     pub fn set_live_transcribing(&self, active: bool) {
         self.is_live_transcribing.store(active, Ordering::Relaxed);
+    }
+
+    /// Translator batch jobs hold this across their whole file (all segments)
+    /// so an "Immediately"/short unload timeout can't drop the model between
+    /// batch segments.
+    pub fn set_batch_transcribing(&self, active: bool) {
+        self.is_batch_transcribing.store(active, Ordering::Relaxed);
     }
 
     pub fn load_model(&self, model_id: &str) -> Result<()> {
@@ -561,10 +579,26 @@ impl TranscriptionManager {
 
         // Check if model is loaded, if not try to load it
         {
-            // If the model is loading, wait for it to complete.
+            // If the model is loading, wait for it — but BOUNDED. FLM's first
+            // use can spend minutes downloading its model inside load_model();
+            // an unbounded wait here froze recording stops ("transcription
+            // cannot be stopped"). Failing with a clear error lets the caller
+            // fall back (live text) and the user retry once the engine is up.
             let mut is_loading = self.is_loading.lock().unwrap();
+            let wait_start = std::time::Instant::now();
             while *is_loading {
-                is_loading = self.loading_condvar.wait(is_loading).unwrap();
+                let remaining = Duration::from_secs(60).saturating_sub(wait_start.elapsed());
+                if remaining.is_zero() {
+                    return Err(anyhow::anyhow!(
+                        "The model is still loading (this can take a while on first \
+                         use, e.g. FLM downloading its model). Try again shortly."
+                    ));
+                }
+                let (guard, _timeout) = self
+                    .loading_condvar
+                    .wait_timeout(is_loading, remaining)
+                    .unwrap();
+                is_loading = guard;
             }
 
             let engine_guard = self.lock_engine();
@@ -716,6 +750,10 @@ impl TranscriptionManager {
                     ));
                 }
             };
+            // Identity of the engine we took — a concurrent load/unload can
+            // legitimately change the loaded model while inference runs (the
+            // engine lives outside its mutex during the call).
+            let taken_model_id = self.get_current_model();
 
             // Release the lock before transcribing — no mutex held during the engine call
             drop(engine_guard);
@@ -812,9 +850,21 @@ impl TranscriptionManager {
 
             match transcribe_result {
                 Ok(inner_result) => {
-                    // Success or normal error — put the engine back
+                    // Success or normal error — put the engine back, UNLESS a
+                    // concurrent load/unload changed the loaded model while we
+                    // were transcribing. Restoring blindly would resurrect the
+                    // old engine over the new one (or undo a manual unload).
                     let mut engine_guard = self.lock_engine();
-                    *engine_guard = Some(engine);
+                    if engine_guard.is_none() && self.get_current_model() == taken_model_id {
+                        *engine_guard = Some(engine);
+                    } else {
+                        info!(
+                            "Loaded model changed during transcription; dropping the \
+                             previous engine instead of restoring it"
+                        );
+                        drop(engine_guard);
+                        drop(engine);
+                    }
                     inner_result?
                 }
                 Err(panic_payload) => {

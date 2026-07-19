@@ -602,6 +602,9 @@ fn run_consumer(
                     segment_start_idx = 0;
                     recording = true;
                     visualizer.reset(); // Reset visualization buffer
+                    // Drop pre-press audio buffered in the resampler (always-on
+                    // mic feeds it continuously) — the take starts at the press.
+                    frame_resampler.reset();
                     if let Some(v) = &vad {
                         v.lock().unwrap().reset();
                     }

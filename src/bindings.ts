@@ -247,6 +247,30 @@ async getJumpSlots() : Promise<(AnchorStatus | null)[]> {
 async clearJumpSlot(slot: number) : Promise<void> {
     return await TAURI_INVOKE("clear_jump_slot", { slot });
 },
+async jumpToSlot(slot: number) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("jump_to_slot", { slot }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async changeJumperSlotOption(slot: number, option: string, enabled: boolean) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_jumper_slot_option", { slot, option, enabled }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async changeJumperPersistSetting(enabled: boolean) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_jumper_persist_setting", { enabled }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async changeAnchorActionSlotSetting(key: string, slot: number) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("change_anchor_action_slot_setting", { key, slot }) };
@@ -282,6 +306,14 @@ async changeTranslatorEnabled(enabled: boolean) : Promise<Result<null, string>> 
 async changeTranslatorPriority(priority: string) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("change_translator_priority", { priority }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async changeTranslatorModel(modelId: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_translator_model", { modelId }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -1258,13 +1290,14 @@ mcp_server_port?: number;
 /**
  * Bearer token guarding the MCP/CLI server. Generated on first enable.
  */
-mcp_server_token?: string; submit_paste_method?: PasteMethod; submit_key?: AutoSubmitKey; submit_idle_behavior?: SubmitIdleBehavior; submit_clipboard_handling?: ClipboardHandling; clipboard_restore_delay?: ClipboardRestoreDelay; submit_clipboard_restore_delay?: ClipboardRestoreDelay; anchor_keep?: boolean; anchor_return_focus?: boolean; anchor_action_output_idle?: AnchorAction; anchor_action_output_stop?: AnchorAction; anchor_action_submit_idle?: AnchorAction; anchor_action_submit_stop?: AnchorAction; anchor_action_output_idle_slot?: number; anchor_action_output_stop_slot?: number; anchor_action_submit_idle_slot?: number; anchor_action_submit_stop_slot?: number; jumper_track_output?: boolean; jumper_track_submit?: boolean; translator_enabled?: boolean; translator_folders?: TranslatorFolder[]; translator_seeded?: boolean; translator_priority?: TranslatorPriority; translator_poll_secs?: number }
+mcp_server_token?: string; submit_paste_method?: PasteMethod; submit_key?: AutoSubmitKey; submit_idle_behavior?: SubmitIdleBehavior; submit_clipboard_handling?: ClipboardHandling; clipboard_restore_delay?: ClipboardRestoreDelay; submit_clipboard_restore_delay?: ClipboardRestoreDelay; anchor_keep?: boolean; anchor_return_focus?: boolean; anchor_action_output_idle?: AnchorAction; anchor_action_output_stop?: AnchorAction; anchor_action_submit_idle?: AnchorAction; anchor_action_submit_stop?: AnchorAction; anchor_action_output_idle_slot?: number; anchor_action_output_stop_slot?: number; anchor_action_submit_idle_slot?: number; anchor_action_submit_stop_slot?: number; jumper_track_output?: boolean; jumper_track_submit?: boolean; translator_enabled?: boolean; translator_folders?: TranslatorFolder[]; translator_seeded?: boolean; translator_priority?: TranslatorPriority; translator_model?: string; translator_poll_secs?: number; jumper_slot_keep?: boolean[]; jumper_slot_return_focus?: boolean[]; jumper_persist?: boolean; jumper_saved_slots?: (SavedJumpSlot | null)[] }
 export type AudioDevice = { index: string; name: string; is_default: boolean }
 export type AutoSubmitKey = "enter" | "ctrl_enter" | "cmd_enter"
 export type SubmitIdleBehavior = "start_normal" | "do_nothing" | "start_and_submit"
 export type ClipboardRestoreDelay = "none" | "ms250" | "ms500" | "ms1000" | "ms2500" | "ms5000"
 export type RegistrationFailure = { id: string; binding: string; error: string }
-export type AnchorStatus = { app: string; control_class: string }
+export type AnchorStatus = { app: string; control_class: string; stale: boolean }
+export type SavedJumpSlot = { app: string; window_class: string; control_class: string }
 export type AnchorAction = "none" | "jump" | "set" | "clear"
 export type TranslatorPriority = "live_first" | "folder_first" | "fifo"
 export type TranslatorFolder = { path: string; enabled: boolean }

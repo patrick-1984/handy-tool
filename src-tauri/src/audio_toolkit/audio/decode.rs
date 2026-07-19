@@ -21,6 +21,11 @@ pub const TARGET_HZ: u32 = 16_000;
 /// decoder outputs at 16 kHz here, but sizing for 48 kHz costs nothing.
 const MAX_FRAME_SAMPLES: usize = 5760;
 
+/// Hard ceiling on decoded audio (2 h at 16 kHz mono ≈ 460 MB of f32).
+/// Enforced DURING decoding so a hostile/corrupt file can't balloon memory
+/// before a post-hoc length check would run.
+pub const MAX_DECODED_SAMPLES: usize = 2 * 3600 * 16_000;
+
 /// Decode a supported audio file to 16 kHz mono f32 samples.
 pub fn decode_audio_file(path: &Path) -> Result<Vec<f32>> {
     let ext = path
@@ -46,7 +51,21 @@ fn decode_wav(path: &Path) -> Result<Vec<f32>> {
     let mut reader =
         hound::WavReader::open(path).with_context(|| format!("open WAV {}", path.display()))?;
     let spec = reader.spec();
+    if spec.sample_rate == 0 {
+        bail!("WAV declares a 0 Hz sample rate: {}", path.display());
+    }
     let channels = spec.channels.max(1) as usize;
+    // Bound BEFORE reading: duration is known from the header.
+    let mono_len = reader.len() as usize / channels;
+    let projected_16k = mono_len as u64 * TARGET_HZ as u64 / spec.sample_rate as u64;
+    if projected_16k > MAX_DECODED_SAMPLES as u64 {
+        bail!(
+            "audio too long ({} min; cap {} min): {}",
+            projected_16k / 16_000 / 60,
+            MAX_DECODED_SAMPLES / 16_000 / 60,
+            path.display()
+        );
+    }
 
     let interleaved: Vec<f32> = match spec.sample_format {
         hound::SampleFormat::Float => reader
@@ -83,7 +102,7 @@ fn decode_wav(path: &Path) -> Result<Vec<f32>> {
 /// Input is zero-padded to the resampler's chunk size; the extra tail is
 /// trailing silence, which the transcription engines ignore.
 pub fn resample_to_16k(samples: Vec<f32>, in_hz: u32) -> Vec<f32> {
-    if in_hz == TARGET_HZ || samples.is_empty() {
+    if in_hz == 0 || in_hz == TARGET_HZ || samples.is_empty() {
         return samples;
     }
     use rubato::{FftFixedIn, Resampler};
@@ -177,6 +196,10 @@ impl OpusStream {
             self.headers_seen = 2;
             return;
         }
+        if self.samples.len() >= MAX_DECODED_SAMPLES {
+            // Ceiling reached — stop accumulating (caller bails on total).
+            return;
+        }
         let mut out = vec![0f32; MAX_FRAME_SAMPLES];
         match self.decoder.decode_float(Some(packet), &mut out[..], false) {
             Ok(n) => {
@@ -263,6 +286,13 @@ fn decode_ogg_opus(path: &Path) -> Result<Vec<f32>> {
     }
     if all.is_empty() {
         bail!("no decodable Opus audio in {}", path.display());
+    }
+    if all.len() >= MAX_DECODED_SAMPLES {
+        bail!(
+            "audio too long (cap {} min): {}",
+            MAX_DECODED_SAMPLES / 16_000 / 60,
+            path.display()
+        );
     }
     Ok(all)
 }

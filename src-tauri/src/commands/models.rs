@@ -87,13 +87,17 @@ pub async fn set_active_model(
         settings.selected_model = model_id.clone();
         write_settings(&app_handle, settings);
 
-        if let Err(e) = transcription_manager.load_model(&model_id) {
-            log::warn!(
-                "Selected '{}' but it is not fully configured yet: {}",
-                model_id,
-                e
-            );
-        }
+        // Warm up in the BACKGROUND: FLM's start_serve can block for minutes
+        // on first use (it downloads its model), and doing that inline froze
+        // the UI on "switching". Selection is already persisted; a failed
+        // eager load only means lazy loading at first use.
+        let tm = transcription_manager.inner().clone();
+        let id = model_id.clone();
+        std::thread::spawn(move || {
+            if let Err(e) = tm.load_model(&id) {
+                log::warn!("Selected '{}' but it is not ready yet: {}", id, e);
+            }
+        });
         return Ok(());
     }
 

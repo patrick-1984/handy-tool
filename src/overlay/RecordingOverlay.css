@@ -1,6 +1,6 @@
 /* Recording overlay pill. Deliberately dark in both themes (HUD idiom), but
    every color is a token — no raw hex below the variable block.
-   Spec: _bmad-output/planning-artifacts/ux-designs/ux-handy-2026-07-05/DESIGN.md */
+   Spec: internal design system (brand tokens are the source of truth). */
 :root {
   --overlay-bg: rgba(10, 9, 11, 0.8);
   --overlay-text: #ffffff;

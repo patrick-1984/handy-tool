@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { listen } from "@tauri-apps/api/event";
+import { toast } from "sonner";
 import { ShortcutInput } from "../ShortcutInput";
+import { JumperSlotOptions } from "../JumperSlotOptions";
 import { SettingsGroup } from "../../ui/SettingsGroup";
 import { SettingContainer } from "../../ui/SettingContainer";
 import { ToggleSwitch } from "../../ui/ToggleSwitch";
@@ -48,19 +50,33 @@ export const JumperSettings: React.FC = () => {
     );
   }
 
-  const keep = getSetting("anchor_keep") ?? false;
-  const returnFocus = getSetting("anchor_return_focus") ?? true;
+  const testSlot = async (index: number) => {
+    const result = await commands.jumpToSlot(index);
+    if (result.status === "error") {
+      toast.error(
+        t("settings.jumper.slot.testFailed", { reason: result.error }),
+      );
+    }
+  };
 
   const slotStatus = (index: number) => {
     const s = slots[index];
     return s ? (
       <div className="flex items-center gap-3">
-        <span className="text-sm">
-          {t("settings.general.anchor.status.active", {
-            app: s.app,
-            control: s.control_class,
-          })}
+        <span className={`text-sm ${s.stale ? "text-red-400" : ""}`}>
+          {s.stale
+            ? t("settings.jumper.slot.stale", {
+                app: s.app,
+                control: s.control_class,
+              })
+            : t("settings.general.anchor.status.active", {
+                app: s.app,
+                control: s.control_class,
+              })}
         </span>
+        <Button size="sm" variant="secondary" onClick={() => testSlot(index)}>
+          {t("settings.jumper.slot.test")}
+        </Button>
         <Button
           size="sm"
           variant="secondary"
@@ -89,21 +105,22 @@ export const JumperSettings: React.FC = () => {
         >
           {slotStatus(0)}
         </SettingContainer>
-        <ToggleSwitch
-          checked={keep}
-          onChange={(enabled) => updateSetting("anchor_keep", enabled)}
-          isUpdating={isUpdating("anchor_keep")}
-          label={t("settings.general.anchor.keep.label")}
-          description={t("settings.general.anchor.keep.description")}
+        <SettingContainer
+          title={t("settings.jumper.hot.optionsMoved.title")}
+          description={t("settings.jumper.hot.optionsMoved.description")}
           descriptionMode="tooltip"
           grouped={true}
-        />
+        >
+          <span className="text-sm text-mid-gray">
+            {t("settings.jumper.hot.optionsMoved.hint")}
+          </span>
+        </SettingContainer>
         <ToggleSwitch
-          checked={returnFocus}
-          onChange={(enabled) => updateSetting("anchor_return_focus", enabled)}
-          isUpdating={isUpdating("anchor_return_focus")}
-          label={t("settings.general.anchor.returnFocus.label")}
-          description={t("settings.general.anchor.returnFocus.description")}
+          checked={getSetting("jumper_persist") ?? false}
+          onChange={(enabled) => updateSetting("jumper_persist", enabled)}
+          isUpdating={isUpdating("jumper_persist")}
+          label={t("settings.jumper.persist.label")}
+          description={t("settings.jumper.persist.description")}
           descriptionMode="tooltip"
           grouped={true}
         />
@@ -123,6 +140,7 @@ export const JumperSettings: React.FC = () => {
           >
             {slotStatus(i)}
           </SettingContainer>
+          <JumperSlotOptions slot={i} grouped={true} />
         </SettingsGroup>
       ))}
     </div>

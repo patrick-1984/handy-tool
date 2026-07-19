@@ -1126,6 +1126,57 @@ pub fn change_anchor_return_focus_setting(app: AppHandle, enabled: bool) -> Resu
     Ok(())
 }
 
+/// Persist jump slots across restarts. Turning it ON snapshots the current
+/// live slots so they survive; turning it OFF wipes the saved identities.
+#[tauri::command]
+#[specta::specta]
+pub fn change_jumper_persist_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    settings.jumper_persist = enabled;
+    if !enabled {
+        settings.jumper_saved_slots = vec![None; crate::anchor::SLOT_COUNT];
+    }
+    settings::write_settings(&app, settings);
+    if enabled {
+        #[cfg(windows)]
+        crate::anchor::snapshot_slots(&app);
+    }
+    Ok(())
+}
+
+/// Per-slot delivery options. Slot 0 routes to the legacy hot-anchor fields;
+/// slots 1–4 to their `jumper_slot_*` entries. `option` is "keep" or
+/// "return_focus".
+#[tauri::command]
+#[specta::specta]
+pub fn change_jumper_slot_option(
+    app: AppHandle,
+    slot: u32,
+    option: String,
+    enabled: bool,
+) -> Result<(), String> {
+    if slot as usize >= crate::anchor::SLOT_COUNT {
+        return Err(format!("invalid jump slot {slot}"));
+    }
+    let mut settings = settings::get_settings(&app);
+    // Older stores may carry short vectors — pad to the 4 static slots.
+    if settings.jumper_slot_keep.len() < 4 {
+        settings.jumper_slot_keep.resize(4, true);
+    }
+    if settings.jumper_slot_return_focus.len() < 4 {
+        settings.jumper_slot_return_focus.resize(4, true);
+    }
+    match (slot, option.as_str()) {
+        (0, "keep") => settings.anchor_keep = enabled,
+        (0, "return_focus") => settings.anchor_return_focus = enabled,
+        (s, "keep") => settings.jumper_slot_keep[(s - 1) as usize] = enabled,
+        (s, "return_focus") => settings.jumper_slot_return_focus[(s - 1) as usize] = enabled,
+        (_, other) => return Err(format!("unknown jumper slot option: {other}")),
+    }
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
 #[tauri::command]
 #[specta::specta]
 pub fn change_submit_idle_behavior_setting(app: AppHandle, behavior: String) -> Result<(), String> {

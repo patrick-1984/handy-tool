@@ -150,6 +150,10 @@ fn initialize_core_logic(app_handle: &AppHandle) {
     let translator_manager = crate::managers::translator::TranslatorManager::new(app_handle);
     app_handle.manage(translator_manager);
 
+    // Jumper persistence: re-resolve saved slot identities against the
+    // windows that exist now (opt-in; unresolved slots retry lazily).
+    crate::anchor::restore_persisted_slots(app_handle);
+
     // Note: Shortcuts are NOT initialized here.
     // The frontend is responsible for calling the `initialize_shortcuts` command
     // after permissions are confirmed (on macOS) or after onboarding completes.
@@ -291,6 +295,8 @@ pub fn run(cli_args: CliArgs) {
         shortcut::get_shortcut_registration_failures,
         shortcut::change_anchor_keep_setting,
         shortcut::change_anchor_return_focus_setting,
+        shortcut::change_jumper_slot_option,
+        shortcut::change_jumper_persist_setting,
         shortcut::change_anchor_action_setting,
         shortcut::change_anchor_action_slot_setting,
         shortcut::change_jumper_track_setting,
@@ -298,9 +304,11 @@ pub fn run(cli_args: CliArgs) {
         anchor::clear_anchor,
         anchor::get_jump_slots,
         anchor::clear_jump_slot,
+        anchor::jump_to_slot,
         commands::translator::get_translator_status,
         commands::translator::change_translator_enabled,
         commands::translator::change_translator_priority,
+        commands::translator::change_translator_model,
         commands::translator::translator_add_folder,
         commands::translator::translator_set_folder_enabled,
         commands::translator::translator_remove_folder,

@@ -925,6 +925,11 @@ impl ShortcutAction for TranscribeAction {
         let busy_flag = SEGMENT_BUSY.lock().ok().and_then(|mut g| g.take());
         let live_text_handle = LIVE_TEXT.lock().ok().and_then(|mut g| g.take());
 
+        // Take ownership of this take's deferred on-finish action NOW, while
+        // the coordinator flow is still serialized — a global left armed
+        // until the (queued) paste ran could cross take boundaries.
+        let post_take_action = crate::anchor::take_post_take_action();
+
         tauri::async_runtime::spawn(async move {
             let _guard = FinishGuard(ah.clone());
             let binding_id = binding_id.clone(); // Clone for the inner async task
@@ -1125,8 +1130,11 @@ impl ShortcutAction for TranscribeAction {
                     let is_ptt = binding_id == "transcribe_ptt";
                     let paste_text = text.clone();
                     ah.run_on_main_thread(move || {
-                        if let Err(e) = utils::paste(paste_text, ah_clone.clone(), is_ptt) {
-                            error!("Failed to paste transcription: {}", e);
+                        match utils::paste(paste_text, ah_clone.clone(), is_ptt) {
+                            Ok(()) => {
+                                crate::anchor::run_post_take_action(&ah_clone, post_take_action)
+                            }
+                            Err(e) => error!("Failed to paste transcription: {}", e),
                         }
                         utils::hide_recording_overlay(&ah_clone);
                         change_tray_icon(&ah_clone, TrayIconState::Idle);
@@ -1356,10 +1364,16 @@ impl ShortcutAction for TranscribeAction {
                             let is_ptt = binding_id == "transcribe_ptt";
                             ah.run_on_main_thread(move || {
                                 match utils::paste(final_text, ah_clone.clone(), is_ptt) {
-                                    Ok(()) => debug!(
-                                        "Text pasted successfully in {:?}",
-                                        paste_time.elapsed()
-                                    ),
+                                    Ok(()) => {
+                                        debug!(
+                                            "Text pasted successfully in {:?}",
+                                            paste_time.elapsed()
+                                        );
+                                        crate::anchor::run_post_take_action(
+                                            &ah_clone,
+                                            post_take_action,
+                                        );
+                                    }
                                     Err(e) => error!("Failed to paste transcription: {}", e),
                                 }
                                 // Hide the overlay after transcription is complete

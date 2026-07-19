@@ -156,6 +156,9 @@ const settingUpdaters: {
     commands.changeTranslatorEnabled(value as boolean),
   translator_priority: (value) =>
     commands.changeTranslatorPriority(value as string),
+  translator_model: (value) => commands.changeTranslatorModel(value as string),
+  jumper_persist: (value) =>
+    commands.changeJumperPersistSetting(value as boolean),
   model_unload_custom_seconds: (value) =>
     commands.setModelUnloadCustomSeconds(value as number),
   history_limit: (value) => commands.updateHistoryLimit(value as number),

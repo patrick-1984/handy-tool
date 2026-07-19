@@ -11,6 +11,8 @@ import { Dropdown } from "../../ui/Dropdown";
 import { Button } from "../../ui/Button";
 import { useSettings } from "../../../hooks/useSettings";
 import { useSettingsStore } from "../../../stores/settingsStore";
+import { useModelStore } from "../../../stores/modelStore";
+import { getTranslatedModelName } from "../../../lib/utils/modelTranslation";
 import {
   commands,
   type TranslatorPriority,
@@ -29,6 +31,9 @@ export const TranslatorSettings: React.FC = () => {
   const [status, setStatus] = useState<TranslatorStatus | null>(null);
 
   useEffect(() => {
+    // Idempotent — populates the model list for the batch-model picker even
+    // when the Models page hasn't been opened yet.
+    useModelStore.getState().initialize();
     let disposed = false;
     commands.getTranslatorStatus().then((r) => {
       if (!disposed && r.status === "ok") setStatus(r.data);
@@ -45,7 +50,9 @@ export const TranslatorSettings: React.FC = () => {
   const enabled = getSetting("translator_enabled") ?? false;
   const priority = (getSetting("translator_priority") ||
     "live_first") as TranslatorPriority;
+  const translatorModel = (getSetting("translator_model") as string) ?? "";
   const folders = settings?.translator_folders ?? [];
+  const models = useModelStore((s) => s.models);
 
   const priorityOptions = (
     ["live_first", "folder_first", "fifo"] as const
@@ -53,6 +60,23 @@ export const TranslatorSettings: React.FC = () => {
     value,
     label: t(`settings.translator.priority.options.${value}`),
   }));
+
+  // Only transcription-capable models are offered (the same registry the
+  // Models page shows) — an LLM chat provider can't transcribe audio. Models
+  // that can also translate to English are marked.
+  const modelOptions = [
+    { value: "", label: t("settings.translator.model.sameAsDictation") },
+    ...models
+      .filter((m) => m.is_downloaded)
+      .map((m) => ({
+        value: m.id,
+        label: m.supports_translation
+          ? t("settings.translator.model.translates", {
+              name: getTranslatedModelName(m, t),
+            })
+          : getTranslatedModelName(m, t),
+      })),
+  ];
 
   const addFolder = async () => {
     const picked = await open({ directory: true, multiple: false });
@@ -123,6 +147,19 @@ export const TranslatorSettings: React.FC = () => {
               updateSetting("translator_priority", value as TranslatorPriority)
             }
             disabled={isUpdating("translator_priority")}
+          />
+        </SettingContainer>
+        <SettingContainer
+          title={t("settings.translator.model.title")}
+          description={t("settings.translator.model.description")}
+          descriptionMode="tooltip"
+          grouped={true}
+        >
+          <Dropdown
+            options={modelOptions}
+            selectedValue={translatorModel}
+            onSelect={(value) => updateSetting("translator_model", value)}
+            disabled={isUpdating("translator_model")}
           />
         </SettingContainer>
         <SettingContainer

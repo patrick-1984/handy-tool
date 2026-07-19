@@ -367,6 +367,19 @@ pub struct TranslatorFolder {
     pub enabled: bool,
 }
 
+/// Persisted identity of a jump-slot target. Window handles are random per
+/// boot, so what survives a restart is the DESCRIPTION of the target —
+/// re-resolved against live windows when the app starts (and lazily on use).
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Type)]
+pub struct SavedJumpSlot {
+    /// Executable stem ("chrome", "Citrix.DesktopViewer.App").
+    pub app: String,
+    /// Top-level window class.
+    pub window_class: String,
+    /// Focused-control class captured with the slot.
+    pub control_class: String,
+}
+
 /// Which OpenRouter endpoint the OpenRouter transcription engine uses.
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type)]
 #[serde(rename_all = "snake_case")]
@@ -684,13 +697,29 @@ pub struct AppSettings {
     /// "Transcribe & Submit" paste.
     #[serde(default)]
     pub submit_clipboard_restore_delay: ClipboardRestoreDelay,
-    /// Anchor & Deliver: keep the anchor armed after a successful delivery
-    /// (default one-shot).
+    /// Hot slot: keep the anchor armed after a successful delivery
+    /// (default one-shot). Static slots have their own per-slot flags below.
     #[serde(default)]
     pub anchor_keep: bool,
-    /// Anchor & Deliver: return focus to the previous window after delivering.
+    /// Hot slot: return focus to the previous window after delivering.
     #[serde(default = "default_anchor_return_focus")]
     pub anchor_return_focus: bool,
+    /// Static slots 1–4: keep the slot after a delivery into it (index 0 =
+    /// slot 1). Default true — statics are durable bookmarks; turning one off
+    /// makes that slot one-shot like the hot anchor.
+    #[serde(default = "default_static_slot_keep")]
+    pub jumper_slot_keep: Vec<bool>,
+    /// Static slots 1–4: return focus after delivering into the slot.
+    #[serde(default = "default_static_slot_return_focus")]
+    pub jumper_slot_return_focus: Vec<bool>,
+    /// Persist jump-slot targets across restarts (opt-in). Handles can't
+    /// survive a reboot, so the saved identity is re-resolved against live
+    /// windows; unresolved slots show red until their app reappears.
+    #[serde(default)]
+    pub jumper_persist: bool,
+    /// Saved identities, index = slot (only used when `jumper_persist`).
+    #[serde(default = "default_jumper_saved_slots")]
+    pub jumper_saved_slots: Vec<Option<SavedJumpSlot>>,
     /// Anchor action for the typical-output shortcuts on an idle press.
     #[serde(default)]
     pub anchor_action_output_idle: AnchorAction,
@@ -731,6 +760,11 @@ pub struct AppSettings {
     pub translator_seeded: bool,
     #[serde(default = "default_translator_priority")]
     pub translator_priority: TranslatorPriority,
+    /// Model the Translator batch uses. Empty = same as dictation. Only ids
+    /// from the transcription-model registry are accepted (every entry there
+    /// is ASR-capable by construction — LLM chat providers are not offered).
+    #[serde(default)]
+    pub translator_model: String,
     /// Folder scan interval in seconds (no UI; edit settings_store.json).
     #[serde(default = "default_translator_poll_secs")]
     pub translator_poll_secs: u64,
@@ -746,6 +780,18 @@ fn default_translator_poll_secs() -> u64 {
 
 fn default_anchor_return_focus() -> bool {
     true
+}
+
+fn default_static_slot_keep() -> Vec<bool> {
+    vec![true; 4]
+}
+
+fn default_static_slot_return_focus() -> Vec<bool> {
+    vec![true; 4]
+}
+
+fn default_jumper_saved_slots() -> Vec<Option<SavedJumpSlot>> {
+    vec![None; 5]
 }
 
 fn default_model_unload_custom_seconds() -> u64 {
@@ -1405,6 +1451,10 @@ pub fn get_default_settings() -> AppSettings {
         submit_clipboard_restore_delay: ClipboardRestoreDelay::default(),
         anchor_keep: false,
         anchor_return_focus: default_anchor_return_focus(),
+        jumper_slot_keep: default_static_slot_keep(),
+        jumper_slot_return_focus: default_static_slot_return_focus(),
+        jumper_persist: false,
+        jumper_saved_slots: default_jumper_saved_slots(),
         anchor_action_output_idle: AnchorAction::default(),
         anchor_action_output_stop: AnchorAction::default(),
         anchor_action_submit_idle: AnchorAction::default(),
@@ -1419,6 +1469,7 @@ pub fn get_default_settings() -> AppSettings {
         translator_folders: Vec::new(),
         translator_seeded: false,
         translator_priority: default_translator_priority(),
+        translator_model: String::new(),
         translator_poll_secs: default_translator_poll_secs(),
     }
 }
@@ -1481,7 +1532,14 @@ pub fn load_or_create_app_settings(app: &AppHandle) -> AppSettings {
         // Parse the entire settings object
         match serde_json::from_value::<AppSettings>(settings_value) {
             Ok(mut settings) => {
-                debug!("Found existing settings: {:?}", settings);
+                // Never Debug-dump the whole settings struct: it embeds LLM
+                // provider API keys, the API-transcription key, and the MCP
+                // bearer token, and dev builds write DEBUG logs to disk.
+                debug!(
+                    "Found existing settings ({} bindings, {} providers)",
+                    settings.bindings.len(),
+                    settings.llm_providers.len()
+                );
                 if ensure_default_bindings(&mut settings) {
                     debug!("Settings updated with new bindings");
                     store.set("settings", serde_json::to_value(&settings).unwrap());

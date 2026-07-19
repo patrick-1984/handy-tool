@@ -1,7 +1,7 @@
 /* Floating transcription panel — follows the system theme via the same token
    values as the main window (this window doesn't load App.css, so the tokens
    are declared locally; keep values in sync with DESIGN.md).
-   Spec: _bmad-output/planning-artifacts/ux-designs/ux-handy-2026-07-05/DESIGN.md */
+   Spec: internal design system (brand tokens are the source of truth). */
 * {
   margin: 0;
   padding: 0;

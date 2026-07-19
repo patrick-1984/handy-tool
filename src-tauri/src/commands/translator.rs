@@ -41,6 +41,28 @@ pub fn change_translator_priority(app: AppHandle, priority: String) -> Result<()
 
 #[tauri::command]
 #[specta::specta]
+pub fn change_translator_model(
+    app: AppHandle,
+    model_manager: State<'_, Arc<crate::managers::model::ModelManager>>,
+    model_id: String,
+) -> Result<(), String> {
+    let trimmed = model_id.trim().to_string();
+    if !trimmed.is_empty() {
+        let info = model_manager
+            .get_model_info(&trimmed)
+            .ok_or_else(|| format!("Unknown model: {trimmed}"))?;
+        if !info.is_downloaded {
+            return Err(format!("Model not downloaded: {trimmed}"));
+        }
+    }
+    let mut settings = get_settings(&app);
+    settings.translator_model = trimmed;
+    write_settings(&app, settings);
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 pub fn translator_add_folder(app: AppHandle, path: String) -> Result<(), String> {
     let trimmed = path.trim();
     if trimmed.is_empty() {
