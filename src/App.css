@@ -1,0 +1,153 @@
+@import "tailwindcss";
+
+/* Brand wordmark font — Rajdhani (SIL OFL, see assets/fonts/OFL-Rajdhani.txt) */
+@font-face {
+  font-family: "Rajdhani";
+  src: url("./assets/fonts/Rajdhani-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/*
+ * Design tokens — single source of truth for all three windows.
+ * Spec: _bmad-output/planning-artifacts/ux-designs/ux-handy-2026-07-05/DESIGN.md
+ * Rules: components never hardcode hex; icons use currentColor; every token
+ * has a value in BOTH themes; rose fills stay small (identity + recording).
+ */
+@theme {
+  /* Base surfaces & text */
+  --color-text: #0f0f0f;
+  --color-text-secondary: #5f5c58;
+  --color-background: #fbfbfb;
+  --color-surface: #ffffff;
+  --color-border: #e6e3df;
+  --color-mid-gray: #6b6862;
+
+  /* Brand — Handy Tool technocratic slate/cyan */
+  --color-background-ui: #0e7490;
+  --color-logo-primary: #0891b2;
+  --color-logo-stroke: #0f172a;
+  --color-text-stroke: #f6f6f6;
+
+  /* Semantic */
+  --color-accent-strong: #0e7490; /* CTAs — keeps >=4.5:1 with white text */
+  --color-focus-ring: #0e7490;
+  --color-danger: #c42b1c;
+  --color-success: #1a7f37;
+  --color-recording: #e5484d;
+
+  /* Typography — Windows-first, graceful fallback elsewhere */
+  --font-sans:
+    "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-display:
+    "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system,
+    sans-serif;
+}
+
+:root {
+  color-scheme: light;
+
+  /* Typography */
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 24px;
+  font-weight: 400;
+
+  /* Motion tokens */
+  --motion-fast: 120ms;
+  --motion-base: 200ms;
+  --motion-slow: 320ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+
+  color: var(--color-text);
+  background-color: var(--color-background);
+}
+
+.container {
+  margin: 0;
+  padding-top: 10vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --color-text: #fbfbfb;
+    --color-text-secondary: #a8a49e;
+    --color-background: #2c2b29;
+    --color-surface: #343230;
+    --color-border: #45423e;
+    --color-mid-gray: #8f8b85;
+    --color-background-ui: #155e75;
+    --color-logo-primary: #22d3ee;
+    --color-logo-stroke: #a5f3fc;
+    --color-focus-ring: #f28cbb;
+    --color-danger: #d13438;
+    --color-success: #3fb968;
+  }
+}
+
+/* Keyboard focus is always visible — the app-wide contract (WCAG 2.4.7).
+   Mouse clicks don't trigger :focus-visible, so this stays quiet for pointer
+   users. Never add `outline: none` without an equivalent replacement. */
+:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 1px;
+}
+
+/* Windows: WebView2's default scrollbars clash with the soft UI. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-text) 18%, transparent);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--color-text) 32%, transparent);
+  background-clip: padding-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@layer utilities {
+  .text-stroke {
+    -webkit-text-stroke: 2px var(--color-text-stroke);
+  }
+}
+
+.logo-primary {
+  fill: var(--color-logo-primary);
+}
+
+.logo-stroke {
+  fill: var(--color-logo-stroke);
+  stroke: var(--color-logo-stroke);
+  stroke-width: 1;
+}

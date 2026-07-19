@@ -1,0 +1,135 @@
+/* Floating transcription panel — follows the system theme via the same token
+   values as the main window (this window doesn't load App.css, so the tokens
+   are declared locally; keep values in sync with DESIGN.md).
+   Spec: _bmad-output/planning-artifacts/ux-designs/ux-handy-2026-07-05/DESIGN.md */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  color-scheme: light;
+  --fl-bg: #ffffff;
+  --fl-text: #0f0f0f;
+  --fl-secondary: #5f5c58;
+  --fl-border: rgba(15, 15, 15, 0.14);
+  --fl-hover: rgba(15, 15, 15, 0.06);
+  --fl-dot: #e5484d;
+  --fl-focus: #b83d75;
+  --fl-font:
+    "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --fl-bg: #343230;
+    --fl-text: #fbfbfb;
+    --fl-secondary: #a8a49e;
+    --fl-border: rgba(251, 251, 251, 0.18);
+    --fl-hover: rgba(251, 251, 251, 0.08);
+    --fl-focus: #f28cbb;
+  }
+}
+
+.floating-root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--fl-bg);
+  color: var(--fl-text);
+  padding: 16px;
+  overflow-y: auto;
+  font-family: var(--fl-font);
+}
+
+.floating-idle {
+  font-size: 14px;
+  color: var(--fl-secondary);
+  font-style: italic;
+}
+
+.floating-listening {
+  font-size: 14px;
+  color: var(--fl-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recording-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--fl-dot);
+  animation: pulse-dot 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.floating-text {
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.floating-copy-button {
+  position: fixed;
+  top: 8px;
+  right: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--fl-text);
+  background: var(--fl-hover);
+  border: 1px solid var(--fl-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    opacity 0.15s;
+  opacity: 0.75;
+  z-index: 10;
+}
+
+.floating-copy-button:hover {
+  background: var(--fl-border);
+  opacity: 1;
+}
+
+.floating-copy-button:focus-visible {
+  outline: 2px solid var(--fl-focus);
+  outline-offset: 1px;
+  opacity: 1;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--fl-border);
+  border-radius: 999px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .recording-dot {
+    animation: none;
+  }
+  .floating-copy-button {
+    transition-duration: 0.01ms;
+  }
+}

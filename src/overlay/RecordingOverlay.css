@@ -1,0 +1,140 @@
+/* Recording overlay pill. Deliberately dark in both themes (HUD idiom), but
+   every color is a token — no raw hex below the variable block.
+   Spec: _bmad-output/planning-artifacts/ux-designs/ux-handy-2026-07-05/DESIGN.md */
+:root {
+  --overlay-bg: rgba(10, 9, 11, 0.8);
+  --overlay-text: #ffffff;
+  --overlay-accent: #faa2ca;
+  --overlay-bar: #ffe5ee;
+  --overlay-hover: rgba(250, 162, 202, 0.2);
+  --overlay-focus: #faa2ca;
+  --overlay-font:
+    "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+.recording-overlay {
+  height: 36px;
+  width: 204px;
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  align-items: center;
+  padding: 6px;
+  background: var(--overlay-bg);
+  color: var(--overlay-text);
+  font-family: var(--overlay-font);
+  border-radius: 18px;
+  opacity: 0;
+  transition: opacity 300ms ease-out;
+  box-sizing: border-box;
+}
+
+.overlay-left {
+  display: flex;
+  align-items: center;
+  color: var(--overlay-accent);
+}
+
+.overlay-middle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.overlay-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.bars-container {
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: 3px;
+  padding-bottom: 0px;
+  height: 24px;
+  overflow: hidden;
+}
+
+.bar {
+  width: 6px;
+  background: var(--overlay-bar);
+  max-height: 20px;
+  border-radius: 2px;
+  transition: height 80ms linear;
+  min-height: 4px;
+}
+
+.recording-overlay.fade-in {
+  opacity: 1;
+}
+
+.transcribing-text {
+  color: var(--overlay-text);
+  font-size: 12px;
+  animation: transcribing-pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes transcribing-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.cancel-button,
+.float-button {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  color: var(--overlay-accent);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease-out,
+    transform 100ms ease-out;
+  flex-shrink: 0;
+}
+
+.cancel-button:hover,
+.float-button:hover {
+  background: var(--overlay-hover);
+  transform: scale(1.05);
+}
+
+.cancel-button:active,
+.float-button:active {
+  transform: scale(0.95);
+}
+
+.cancel-button:focus-visible,
+.float-button:focus-visible {
+  outline: 2px solid var(--overlay-focus);
+  outline-offset: 1px;
+}
+
+.overlay-float-btn {
+  display: flex;
+  align-items: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .recording-overlay,
+  .bar,
+  .cancel-button,
+  .float-button {
+    transition-duration: 0.01ms;
+  }
+  .transcribing-text {
+    animation: none;
+    opacity: 1;
+  }
+}
