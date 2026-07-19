@@ -75,6 +75,24 @@ pub async fn set_active_model(
         return Err(format!("Model not downloaded: {}", model_id));
     }
 
+    // Clicking the already-selected, already-loaded model must be a no-op —
+    // reloading it churns CPU/GPU for seconds and drops the warm engine.
+    // External engines are exempt: their liveness isn't captured by
+    // current_model_id (a dead FLM subprocess still reports loaded), and
+    // reselecting is the user's natural "restart it" gesture.
+    if !model_info.engine_type.is_external() {
+        let settings = get_settings(&app_handle);
+        if settings.selected_model == model_id
+            && transcription_manager.get_current_model().as_deref() == Some(model_id.as_str())
+        {
+            log::debug!(
+                "Model '{}' is already active and loaded; skipping",
+                model_id
+            );
+            return Ok(());
+        }
+    }
+
     // External/API engines are configured separately (Advanced > Transcription)
     // and validate/load lazily at transcription time. Selecting one must persist
     // even before it's configured — otherwise it's a select-then-configure

@@ -1,6 +1,24 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Play, Pause } from "lucide-react";
 
+// Module-level playback registry: only one AudioPlayer may play at a time.
+// Claiming playback pauses whichever element currently holds it; releasing
+// (on pause/ended/unmount) clears the slot only if this element still owns it.
+let activeAudio: HTMLAudioElement | null = null;
+
+const claimPlayback = (audio: HTMLAudioElement) => {
+  if (activeAudio && activeAudio !== audio) {
+    activeAudio.pause();
+  }
+  activeAudio = audio;
+};
+
+const releasePlayback = (audio: HTMLAudioElement) => {
+  if (activeAudio === audio) {
+    activeAudio = null;
+  }
+};
+
 interface AudioPlayerProps {
   /** Audio source URL. If not provided, onLoadRequest must be provided. */
   src?: string;
@@ -89,10 +107,18 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
     const handleEnded = () => {
       setIsPlaying(false);
       setCurrentTime(audio.duration || 0);
+      releasePlayback(audio);
     };
 
-    const handlePlay = () => setIsPlaying(true);
-    const handlePause = () => setIsPlaying(false);
+    const handlePlay = () => {
+      // Pause any other player before this one takes over.
+      claimPlayback(audio);
+      setIsPlaying(true);
+    };
+    const handlePause = () => {
+      setIsPlaying(false);
+      releasePlayback(audio);
+    };
 
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
     audio.addEventListener("ended", handleEnded);
@@ -104,6 +130,8 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
       audio.removeEventListener("ended", handleEnded);
       audio.removeEventListener("play", handlePlay);
       audio.removeEventListener("pause", handlePause);
+      // Unmounting (e.g. history row deleted) must free the shared slot.
+      releasePlayback(audio);
     };
   }, []);
 

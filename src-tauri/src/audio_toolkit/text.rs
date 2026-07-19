@@ -202,12 +202,36 @@ const FILLER_WORDS: &[&str] = &[
 
 static MULTI_SPACE_PATTERN: Lazy<Regex> = Lazy::new(|| Regex::new(r"\s{2,}").unwrap());
 
-/// Collapses repeated 1-2 letter words (3+ repetitions) to a single instance.
-/// E.g., "wh wh wh wh" -> "wh", "I I I I" -> "I"
+/// Minimum consecutive repetitions before a word longer than 2 letters is
+/// treated as a hallucination loop. Higher than the short-stutter threshold
+/// so legitimate doubles ("very very good") are never touched. A collapsed
+/// loop keeps its first token plus its last (for closing punctuation).
+const LONG_REPEAT_THRESHOLD: usize = 4;
+
+/// Collapses repetition artifacts, comparing tokens case-insensitively with
+/// surrounding punctuation stripped:
+/// - 1-2 letter words repeated 3+ times collapse to a single instance
+///   (stutters like "wh wh wh wh" -> "wh")
+/// - longer words repeated 4+ times collapse to the first two instances
+///   (Whisper hallucination loops like "the the the the the" -> "the the")
 fn collapse_stutters(text: &str) -> String {
     let words: Vec<&str> = text.split_whitespace().collect();
     if words.is_empty() {
         return text.to_string();
+    }
+
+    // Normalized form used only for run comparison; output keeps the
+    // original tokens (case and punctuation intact)
+    fn normalize(word: &str) -> String {
+        word.trim_matches(|c: char| !c.is_alphanumeric())
+            .to_lowercase()
+    }
+
+    /// Sentence-terminal punctuation ends a repetition run (inclusive): a
+    /// loop must never be collapsed ACROSS a sentence boundary, and the
+    /// boundary token's punctuation must survive the collapse.
+    fn ends_sentence(word: &str) -> bool {
+        word.ends_with(['.', '!', '?'])
     }
 
     let mut result: Vec<&str> = Vec::new();
@@ -215,28 +239,44 @@ fn collapse_stutters(text: &str) -> String {
 
     while i < words.len() {
         let word = words[i];
-        let word_lower = word.to_lowercase();
+        let key = normalize(word);
 
-        // Only process 1-2 letter words
-        if word_lower.len() <= 2 && word_lower.chars().all(|c| c.is_alphabetic()) {
-            // Count consecutive repetitions (case-insensitive)
+        if !key.is_empty() && key.chars().all(|c| c.is_alphabetic()) {
+            // Count consecutive repetitions (case/punctuation-insensitive),
+            // stopping after any token that closes a sentence.
             let mut count = 1;
-            while i + count < words.len() && words[i + count].to_lowercase() == word_lower {
+            while i + count < words.len()
+                && normalize(words[i + count]) == key
+                && !ends_sentence(words[i + count - 1])
+            {
                 count += 1;
             }
 
-            // If 3+ repetitions, collapse to single instance
-            if count >= 3 {
-                result.push(word);
+            let is_short = key.chars().count() <= 2;
+            if is_short && count >= 3 {
+                // Short stutter: collapse to a single instance — the first
+                // token (its casing leads), unless the run closes a sentence,
+                // in which case the last token keeps its punctuation.
+                if ends_sentence(words[i + count - 1]) {
+                    result.push(words[i + count - 1]);
+                } else {
+                    result.push(word);
+                }
                 i += count;
-            } else {
-                result.push(word);
-                i += 1;
+                continue;
             }
-        } else {
-            result.push(word);
-            i += 1;
+            if !is_short && count >= LONG_REPEAT_THRESHOLD {
+                // Hallucination loop: keep the first occurrence plus the run's
+                // LAST token (which carries any closing punctuation).
+                result.push(words[i]);
+                result.push(words[i + count - 1]);
+                i += count;
+                continue;
+            }
         }
+
+        result.push(word);
+        i += 1;
     }
 
     result.join(" ")
@@ -257,7 +297,7 @@ static FILLER_PATTERNS: Lazy<Vec<Regex>> = Lazy::new(|| {
 ///
 /// This function cleans up raw transcription text by:
 /// 1. Removing filler words (uh, um, hmm, etc.)
-/// 2. Collapsing repeated 1-2 letter stutters (e.g., "wh wh wh" -> "wh")
+/// 2. Collapsing repeated stutters and word-repetition loops (e.g., "wh wh wh" -> "wh")
 /// 3. Cleaning up excess whitespace
 ///
 /// # Arguments
@@ -400,6 +440,58 @@ mod tests {
         let text = "no no is fine";
         let result = filter_transcription_output(text);
         assert_eq!(result, "no no is fine");
+    }
+
+    #[test]
+    fn test_filter_long_word_loop_english() {
+        let text = "and then the the the the the the end";
+        let result = filter_transcription_output(text);
+        assert_eq!(result, "and then the the end");
+    }
+
+    #[test]
+    fn test_filter_long_word_loop_polish() {
+        let text = "dziękuję dziękuję dziękuję dziękuję dziękuję bardzo";
+        let result = filter_transcription_output(text);
+        assert_eq!(result, "dziękuję dziękuję bardzo");
+    }
+
+    #[test]
+    fn test_filter_long_word_loop_mixed_case_punctuation() {
+        let text = "Okay, okay okay, OKAY okay. next";
+        let result = filter_transcription_output(text);
+        // First token + the run's last token (keeping its sentence period).
+        assert_eq!(result, "Okay, okay. next");
+    }
+
+    #[test]
+    fn test_filter_never_collapses_across_sentence_boundary() {
+        // "No." closes a sentence — the following short-word run is separate,
+        // and its own closing punctuation survives the collapse.
+        let text = "No. No no no.";
+        let result = filter_transcription_output(text);
+        assert_eq!(result, "No. no.");
+    }
+
+    #[test]
+    fn test_filter_preserves_legitimate_double() {
+        let text = "that was very very good";
+        let result = filter_transcription_output(text);
+        assert_eq!(result, "that was very very good");
+    }
+
+    #[test]
+    fn test_filter_preserves_long_word_triple() {
+        let text = "really really really important";
+        let result = filter_transcription_output(text);
+        assert_eq!(result, "really really really important");
+    }
+
+    #[test]
+    fn test_filter_long_word_normal_sentence_unchanged() {
+        let text = "The quick brown fox jumps over the lazy dog.";
+        let result = filter_transcription_output(text);
+        assert_eq!(result, "The quick brown fox jumps over the lazy dog.");
     }
 
     #[test]

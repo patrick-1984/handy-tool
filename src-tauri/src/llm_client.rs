@@ -1,5 +1,5 @@
 use crate::settings::LlmProvider;
-use log::info;
+use log::{debug, info};
 use reqwest::header::{AUTHORIZATION, CONTENT_TYPE, HeaderMap, HeaderValue, USER_AGENT};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -81,11 +81,19 @@ fn build_headers(provider: &LlmProvider, api_key: &str) -> Result<HeaderMap, Str
     Ok(headers)
 }
 
+/// Time allowed to establish a connection to the provider.
+const CONNECT_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(10);
+/// Total-request deadline — generous enough for slow local models, but a
+/// stalled provider can never hang post-processing forever.
+const REQUEST_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(120);
+
 /// Create an HTTP client with provider-specific headers
 fn create_client(provider: &LlmProvider, api_key: &str) -> Result<reqwest::Client, String> {
     let headers = build_headers(provider, api_key)?;
     reqwest::Client::builder()
         .default_headers(headers)
+        .connect_timeout(CONNECT_TIMEOUT)
+        .timeout(REQUEST_TIMEOUT)
         .build()
         .map_err(|e| format!("Failed to build HTTP client: {}", e))
 }
@@ -153,9 +161,11 @@ pub async fn send_chat_completion_with_schema(
 
     // Add system prompt if provided
     if let Some(system) = system_prompt {
-        info!(
-            "Post-process: system prompt ({} chars): {}",
-            system.len(),
+        // Content preview only at debug — release file logs are INFO and must
+        // never contain prompt or transcript text
+        info!("Post-process: system prompt ({} chars)", system.len());
+        debug!(
+            "Post-process: system prompt preview: {}",
             &system[..system.len().min(300)]
         );
         messages.push(ChatMessage {
@@ -203,22 +213,27 @@ pub async fn send_chat_completion_with_schema(
         request_body.think,
     );
     for (i, msg) in request_body.messages.iter().enumerate() {
-        let preview = if msg.content.len() <= 600 {
-            msg.content.clone()
-        } else {
-            format!(
-                "{}...[truncated]...{}",
-                &msg.content[..300],
-                &msg.content[msg.content.len() - 200..]
-            )
-        };
         info!(
-            "Post-process:   message[{}] role={}, {} chars:\n{}",
+            "Post-process:   message[{}] role={}, {} chars",
             i,
             msg.role,
             msg.content.len(),
-            preview
         );
+        // Content previews only at debug (privacy: transcript text must not
+        // reach INFO release file logs); guard avoids the allocation entirely
+        // when debug logging is off
+        if log::log_enabled!(log::Level::Debug) {
+            let preview = if msg.content.len() <= 600 {
+                msg.content.clone()
+            } else {
+                format!(
+                    "{}...[truncated]...{}",
+                    &msg.content[..300],
+                    &msg.content[msg.content.len() - 200..]
+                )
+            };
+            debug!("Post-process:   message[{}] content:\n{}", i, preview);
+        }
     }
 
     let request_start = std::time::Instant::now();

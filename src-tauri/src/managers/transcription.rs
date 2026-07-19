@@ -582,8 +582,11 @@ impl TranscriptionManager {
             // If the model is loading, wait for it — but BOUNDED. FLM's first
             // use can spend minutes downloading its model inside load_model();
             // an unbounded wait here froze recording stops ("transcription
-            // cannot be stopped"). Failing with a clear error lets the caller
-            // fall back (live text) and the user retry once the engine is up.
+            // cannot be stopped"). 60 s must cover a COLD local-model load at
+            // stop time (a 1.6 GB Whisper started loading in the background at
+            // recording start can legitimately need tens of seconds — a shorter
+            // bound silently produced empty takes); a stuck FLM start is capped
+            // at one such wait thanks to its failure cooldown.
             let mut is_loading = self.is_loading.lock().unwrap();
             let wait_start = std::time::Instant::now();
             while *is_loading {
@@ -940,7 +943,10 @@ impl TranscriptionManager {
         if final_result.is_empty() {
             info!("Transcription result is empty");
         } else {
-            info!("Transcription result: {}", final_result);
+            // Length at info; CONTENT only at debug — release file logs are
+            // info-level and dictated text can be sensitive.
+            info!("Transcription result: {} chars", final_result.len());
+            debug!("Transcription result: {}", final_result);
         }
 
         self.maybe_unload_immediately("transcription");

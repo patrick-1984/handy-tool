@@ -152,6 +152,21 @@ static RECORDING_PLAN: Lazy<Mutex<Option<RecordingPlan>>> = Lazy::new(|| Mutex::
 /// uses the engine — a waiter blocks for at most one segment (seconds).
 pub(crate) static CHUNK_TRANSCRIBE_LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
 
+/// A failed paste must never silently swallow the take: park the text on the
+/// clipboard (best effort) and tell the user via a global toast. The text is
+/// also in History, but the toast is what stops the "where did my words go"
+/// confusion in the moment.
+fn report_paste_failure(app: &AppHandle, text: &str, err: &str) {
+    error!("Failed to paste transcription: {}", err);
+    // park_text bumps the paste generation first — a pending delayed
+    // clipboard-restore must never overwrite the parked transcription.
+    let parked = crate::clipboard::park_text(app, text);
+    let _ = app.emit(
+        "paste-failed",
+        serde_json::json!({ "error": err, "parked": parked }),
+    );
+}
+
 /// Compute the unix-second timestamp for a new recording.
 fn now_ts() -> u64 {
     SystemTime::now()
@@ -568,13 +583,16 @@ async fn maybe_convert_chinese_variant(
         settings.selected_language
     );
 
-    // Use OpenCC to convert based on selected language
+    // Use OpenCC to convert based on selected language. Conversions are
+    // CHARACTER-level on purpose: the "p" (phrase) variants additionally
+    // rewrite regional vocabulary (e.g. 軟體/软件), which changes what the
+    // user actually said — too aggressive for a transcription tool.
     let config = if is_simplified {
-        // Convert Traditional Chinese to Simplified Chinese
-        BuiltinConfig::Tw2sp
+        // Traditional Chinese -> Simplified Chinese
+        BuiltinConfig::Tw2s
     } else {
-        // Convert Simplified Chinese to Traditional Chinese
-        BuiltinConfig::S2twp
+        // Simplified Chinese -> Traditional Chinese
+        BuiltinConfig::S2tw
     };
 
     match OpenCC::from_config(config) {
@@ -1129,18 +1147,25 @@ impl ShortcutAction for TranscribeAction {
                     let ah_clone = ah.clone();
                     let is_ptt = binding_id == "transcribe_ptt";
                     let paste_text = text.clone();
+                    let dispatch_park = text.clone();
                     ah.run_on_main_thread(move || {
+                        let park_text = paste_text.clone();
                         match utils::paste(paste_text, ah_clone.clone(), is_ptt) {
                             Ok(()) => {
                                 crate::anchor::run_post_take_action(&ah_clone, post_take_action)
                             }
-                            Err(e) => error!("Failed to paste transcription: {}", e),
+                            Err(e) => report_paste_failure(&ah_clone, &park_text, &e),
                         }
                         utils::hide_recording_overlay(&ah_clone);
                         change_tray_icon(&ah_clone, TrayIconState::Idle);
                     })
                     .unwrap_or_else(|e| {
-                        error!("Failed to run paste on main thread: {:?}", e);
+                        // The paste never ran — park the text so it isn't lost.
+                        report_paste_failure(
+                            &ah,
+                            &dispatch_park,
+                            &format!("main-thread dispatch failed: {e:?}"),
+                        );
                         utils::hide_recording_overlay(&ah);
                         change_tray_icon(&ah, TrayIconState::Idle);
                     });
@@ -1362,7 +1387,9 @@ impl ShortcutAction for TranscribeAction {
                             let ah_clone = ah.clone();
                             let paste_time = Instant::now();
                             let is_ptt = binding_id == "transcribe_ptt";
+                            let dispatch_park = final_text.clone();
                             ah.run_on_main_thread(move || {
+                                let park_text = final_text.clone();
                                 match utils::paste(final_text, ah_clone.clone(), is_ptt) {
                                     Ok(()) => {
                                         debug!(
@@ -1374,14 +1401,20 @@ impl ShortcutAction for TranscribeAction {
                                             post_take_action,
                                         );
                                     }
-                                    Err(e) => error!("Failed to paste transcription: {}", e),
+                                    Err(e) => report_paste_failure(&ah_clone, &park_text, &e),
                                 }
                                 // Hide the overlay after transcription is complete
                                 utils::hide_recording_overlay(&ah_clone);
                                 change_tray_icon(&ah_clone, TrayIconState::Idle);
                             })
                             .unwrap_or_else(|e| {
-                                error!("Failed to run paste on main thread: {:?}", e);
+                                // The paste never ran — park the text so it
+                                // isn't lost.
+                                report_paste_failure(
+                                    &ah,
+                                    &dispatch_park,
+                                    &format!("main-thread dispatch failed: {e:?}"),
+                                );
                                 utils::hide_recording_overlay(&ah);
                                 change_tray_icon(&ah, TrayIconState::Idle);
                             });

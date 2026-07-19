@@ -41,6 +41,15 @@ pub fn set_submit_override(over: SubmitOverride) {
     }
 }
 
+/// Park text on the clipboard as the delivery of last resort. Bumps the paste
+/// generation FIRST so a pending delayed clipboard-restore (from an earlier
+/// paste) can never overwrite what was just parked. Returns whether the write
+/// stuck.
+pub fn park_text(app: &AppHandle, text: &str) -> bool {
+    RESTORE_GEN.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+    app.clipboard().write_text(text).is_ok()
+}
+
 /// Clear any armed submit override (called when a new recording starts or its
 /// lifecycle ends, so a stale override can never leak into an unrelated paste).
 pub fn clear_submit_override() {
@@ -713,11 +722,16 @@ fn paste_inner(
         .into_iter()
         .rev()
         .collect();
+    // Metadata at info; CONTENT previews only at debug — release builds write
+    // info-level file logs, and dictated text can be sensitive.
     info!(
-        "Using paste method: {:?}, delay: {}ms, text: {} chars, first: {:?}, last: {:?}",
+        "Using paste method: {:?}, delay: {}ms, text: {} chars",
         paste_method,
         paste_delay_ms,
         text.len(),
+    );
+    log::debug!(
+        "Paste preview: first {:?}, last {:?}",
         first_chars,
         last_chars
     );

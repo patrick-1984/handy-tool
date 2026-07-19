@@ -63,8 +63,24 @@ function App() {
         { duration: 8000 },
       ),
     );
+    // Ordinary paste failures likewise: the text is parked on the clipboard
+    // (and always in History) — say so instead of failing silently.
+    const unlistenPaste = listen<{ error: string; parked: boolean }>(
+      "paste-failed",
+      (e) =>
+        toast.error(
+          t(
+            e.payload.parked
+              ? "toasts.pasteFailedParked"
+              : "toasts.pasteFailed",
+            { reason: e.payload.error },
+          ),
+          { duration: 8000 },
+        ),
+    );
     return () => {
       unlisten.then((f) => f());
+      unlistenPaste.then((f) => f());
     };
   }, [t]);
 

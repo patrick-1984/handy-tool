@@ -27,6 +27,19 @@ const FLM_BASE_URL: &str = "http://127.0.0.1:52625";
 /// early: the poll loop returns as soon as the child process dies.
 const HEALTH_TIMEOUT: Duration = Duration::from_secs(300);
 const HEALTH_POLL_INTERVAL: Duration = Duration::from_millis(500);
+/// After a failed start, don't retry (and re-block callers) for this long —
+/// a broken FLM must not stall every take with a fresh multi-minute wait.
+const FAILURE_COOLDOWN: Duration = Duration::from_secs(60);
+
+/// Unix-ms timestamp of the last failed `start_serve` (0 = none).
+static LAST_START_FAILURE_MS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
+fn now_ms() -> u64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or(0)
+}
 
 pub struct FlmManager {
     child: Option<Child>,
@@ -112,8 +125,21 @@ impl FlmManager {
         None // FLM is Windows/Linux only
     }
 
+    /// True when a recent `start_serve` failed and the cooldown hasn't
+    /// elapsed — callers should fail fast instead of re-blocking for minutes.
+    pub fn recently_failed() -> bool {
+        let last = LAST_START_FAILURE_MS.load(std::sync::atomic::Ordering::Relaxed);
+        last != 0 && now_ms().saturating_sub(last) < FAILURE_COOLDOWN.as_millis() as u64
+    }
+
     /// Start `flm serve` with the given model name and wait until the health endpoint responds.
     pub fn start_serve(model_name: &str) -> Result<Self> {
+        if Self::recently_failed() {
+            anyhow::bail!(
+                "FLM failed to start less than a minute ago; not retrying yet \
+                 (select the model again later or check the FLM installation)"
+            );
+        }
         let flm_path =
             Self::detect_flm().ok_or_else(|| anyhow::anyhow!("FLM not found on this system"))?;
 
@@ -124,15 +150,28 @@ impl FlmManager {
             flm_path.display()
         );
 
+        // FLM (v0.9.21+) cannot load a Whisper model as the MAIN serve model —
+        // `flm serve whisper-v3:turbo` fails with "Unsupported model family or
+        // non-llm". Whisper runs as the ASR sidecar: no positional model,
+        // `--asr 1`, and the transcription endpoint appears on the same port.
         let mut command = Command::new(&flm_path);
         command
-            .args(["serve", model_name])
+            .args([
+                "serve",
+                "--port",
+                "52625",
+                "--host",
+                "127.0.0.1",
+                "--asr",
+                "1",
+            ])
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::piped());
         no_window(&mut command);
-        let mut child = command
-            .spawn()
-            .map_err(|e| anyhow::anyhow!("Failed to spawn FLM process: {}", e))?;
+        let mut child = command.spawn().map_err(|e| {
+            LAST_START_FAILURE_MS.store(now_ms(), std::sync::atomic::Ordering::Relaxed);
+            anyhow::anyhow!("Failed to spawn FLM process: {}", e)
+        })?;
 
         info!("FLM process spawned (pid: {:?})", child.id());
 
@@ -176,9 +215,10 @@ impl FlmManager {
             model_name: model_name.to_string(),
         };
 
-        // Poll health endpoint until ready
+        // Poll readiness until the server answers. FLM ≥0.9.45 has no /health
+        // route (it 404s forever) — /v1/models is the working liveness probe.
         let start = Instant::now();
-        let health_url = format!("{}/health", FLM_BASE_URL);
+        let health_url = format!("{}/v1/models", FLM_BASE_URL);
 
         loop {
             if start.elapsed() > HEALTH_TIMEOUT {
@@ -187,6 +227,7 @@ impl FlmManager {
                     error!("FLM stderr output at timeout:\n{}", captured.trim());
                 }
                 manager.stop();
+                LAST_START_FAILURE_MS.store(now_ms(), std::sync::atomic::Ordering::Relaxed);
                 return Err(anyhow::anyhow!(
                     "FLM server did not become ready within {:?}. stderr: {}",
                     HEALTH_TIMEOUT,
@@ -201,6 +242,7 @@ impl FlmManager {
                     if !captured.is_empty() {
                         error!("FLM stderr: {}", captured.trim());
                     }
+                    LAST_START_FAILURE_MS.store(now_ms(), std::sync::atomic::Ordering::Relaxed);
                     return Err(anyhow::anyhow!(
                         "FLM process exited prematurely with status: {}. stderr: {}",
                         status,
@@ -268,6 +310,17 @@ impl FlmManager {
         let body = response
             .into_string()
             .map_err(|e| anyhow::anyhow!("Failed to read FLM response: {}", e))?;
+
+        // FLM returns HTTP 200 with a literal `null` body when its ASR model
+        // is not loaded (e.g. NPU context creation failed at startup —
+        // "Failed to create context virtual (0xc01e0009)"). Surfacing that as
+        // an empty transcript would silently swallow takes.
+        if body.trim().is_empty() || body.trim() == "null" {
+            anyhow::bail!(
+                "FLM returned no transcription — its ASR model is not loaded \
+                 (check the FLM/NPU driver; see 'flm serve --asr 1' output)"
+            );
+        }
 
         // Parse OpenAI-compatible response: {"text": "..."}
         let parsed: serde_json::Value = serde_json::from_str(&body)

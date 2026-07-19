@@ -875,8 +875,11 @@ impl ModelManager {
             flags.insert(model_id.to_string(), cancel_flag.clone());
         }
 
-        // Create HTTP client with range request for resuming
-        let client = reqwest::Client::new();
+        // Create HTTP client with range request for resuming. Connect timeout
+        // only — a total-request deadline would kill large model downloads.
+        let client = reqwest::Client::builder()
+            .connect_timeout(Duration::from_secs(15))
+            .build()?;
         let mut request = client.get(&url);
 
         if resume_from > 0 {
@@ -959,8 +962,33 @@ impl ModelManager {
         let mut last_emit = Instant::now();
         let throttle_duration = Duration::from_millis(100);
 
+        // Abort if the server stops sending bytes for this long; the partial
+        // file is kept on disk so the download stays resumable.
+        const STALL_TIMEOUT: Duration = Duration::from_secs(60);
+
         // Download with progress
-        while let Some(chunk) = stream.next().await {
+        loop {
+            let chunk = match tokio::time::timeout(STALL_TIMEOUT, stream.next()).await {
+                Ok(Some(chunk)) => chunk,
+                Ok(None) => break,
+                Err(_) => {
+                    // Stalled: close the file, clear downloading state, keep
+                    // the partial file for resume
+                    drop(file);
+                    {
+                        let mut models = self.available_models.lock().unwrap();
+                        if let Some(model) = models.get_mut(model_id) {
+                            model.is_downloading = false;
+                        }
+                    }
+                    return Err(anyhow::anyhow!(
+                        "Download stalled: no data received for {}s while downloading model {}",
+                        STALL_TIMEOUT.as_secs(),
+                        model_id
+                    ));
+                }
+            };
+
             // Check if download was cancelled
             if cancel_flag.load(Ordering::Relaxed) {
                 // Close the file before returning
