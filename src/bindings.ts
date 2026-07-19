@@ -93,6 +93,14 @@ async changeOverlayPositionSetting(position: string) : Promise<Result<null, stri
     else return { status: "error", error: e  as any };
 }
 },
+async changeAppThemeSetting(theme: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_app_theme_setting", { theme }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async changeDebugModeSetting(enabled: boolean) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("change_debug_mode_setting", { enabled }) };
@@ -319,17 +327,17 @@ async translatorAddFolder(path: string) : Promise<Result<null, string>> {
     else return { status: "error", error: e  as any };
 }
 },
-async translatorSetFolderEnabled(index: number, enabled: boolean) : Promise<Result<null, string>> {
+async translatorSetFolderEnabled(path: string, enabled: boolean) : Promise<Result<null, string>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("translator_set_folder_enabled", { index, enabled }) };
+    return { status: "ok", data: await TAURI_INVOKE("translator_set_folder_enabled", { path, enabled }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
 },
-async translatorRemoveFolder(index: number) : Promise<Result<null, string>> {
+async translatorRemoveFolder(path: string) : Promise<Result<null, string>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("translator_remove_folder", { index }) };
+    return { status: "ok", data: await TAURI_INVOKE("translator_remove_folder", { path }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -1239,7 +1247,14 @@ async isLaptop() : Promise<Result<boolean, string>> {
 
 /** user-defined types **/
 
-export type AppSettings = { bindings: Partial<{ [key in string]: ShortcutBinding }>; push_to_talk: boolean; audio_feedback: boolean; audio_feedback_volume?: number; sound_theme?: SoundTheme; start_hidden?: boolean; autostart_enabled?: boolean; typing_start_delay_secs?: number; typing_key_delay_ms?: number; selected_model?: string; always_on_microphone?: boolean; selected_microphone?: string | null; clamshell_microphone?: string | null; selected_output_device?: string | null; translate_to_english?: boolean; selected_language?: string; overlay_position?: OverlayPosition; debug_mode?: boolean; log_level?: LogLevel; custom_words?: string[]; model_unload_timeout?: ModelUnloadTimeout; model_unload_custom_seconds?: number; word_correction_threshold?: number; history_limit?: number; recording_retention_period?: RecordingRetentionPeriod; paste_method?: PasteMethod; paste_method_ptt?: PasteMethod; clipboard_handling?: ClipboardHandling; auto_submit?: boolean; auto_submit_key?: AutoSubmitKey; post_process_enabled?: boolean; 
+export type AppSettings = { bindings: Partial<{ [key in string]: ShortcutBinding }>; push_to_talk: boolean; audio_feedback: boolean; audio_feedback_volume?: number; sound_theme?: SoundTheme; start_hidden?: boolean; autostart_enabled?: boolean; typing_start_delay_secs?: number; typing_key_delay_ms?: number; selected_model?: string; always_on_microphone?: boolean; selected_microphone?: string | null; clamshell_microphone?: string | null; selected_output_device?: string | null; translate_to_english?: boolean; selected_language?: string; overlay_position?: OverlayPosition;
+/**
+ * UI appearance: System (follows OS), Light, or Dark. Resolved and
+ * applied by the frontend (main window via React; the overlay/floating
+ * windows via a Rust-side push since they have no settings store — see
+ * `apply_theme_to_aux_windows` in lib.rs).
+ */
+app_theme?: Theme; debug_mode?: boolean; log_level?: LogLevel; custom_words?: string[]; model_unload_timeout?: ModelUnloadTimeout; model_unload_custom_seconds?: number; word_correction_threshold?: number; history_limit?: number; recording_retention_period?: RecordingRetentionPeriod; paste_method?: PasteMethod; paste_method_ptt?: PasteMethod; clipboard_handling?: ClipboardHandling; auto_submit?: boolean; auto_submit_key?: AutoSubmitKey; post_process_enabled?: boolean; 
 /**
  * Unified registry of LLM providers powering token counting,
  * post-processing, and the model-testing tool. Aliased from the old
@@ -1469,6 +1484,7 @@ export type SoundTheme = "marimba" | "pop" | "custom"
  */
 export type TranscriptionAudioFormat = "wav" | "opus"
 export type TranscriptionMode = "live" | "post_recording"
+export type Theme = "system" | "light" | "dark"
 export type TypingTool = "auto" | "wtype" | "kwtype" | "dotool" | "ydotool" | "xdotool"
 
 /** tauri-specta globals **/

@@ -24,6 +24,11 @@ enum Command {
         binding_id: String,
         hotkey_string: String,
         is_pressed: bool,
+        /// T-113 (finding 9): timestamped at `send_input()` — enqueue time —
+        /// so the coordinator can log the QUEUE delay at dequeue, closing
+        /// the previously-uninstrumented shortcut→coordinator latency gap
+        /// (the existing timing only started AFTER dequeue).
+        enqueued_at: Instant,
     },
     Cancel {
         recording_was_active: bool,
@@ -120,7 +125,15 @@ impl TranscriptionCoordinator {
                             binding_id,
                             hotkey_string,
                             is_pressed,
+                            enqueued_at,
                         } => {
+                            // T-113 (finding 9): queue delay from send_input()
+                            // to this dequeue — the gap upstream of every
+                            // other timing point already in this file.
+                            debug!(
+                                "T-113: coordinator dequeued Input for '{binding_id}' (pressed={is_pressed}) after {:?} queue delay",
+                                enqueued_at.elapsed()
+                            );
                             let push_to_talk = is_ptt_binding(&binding_id);
                             // A press for a binding whose release is parked is
                             // X11 auto-repeat: cancel the parked release and
@@ -156,13 +169,14 @@ impl TranscriptionCoordinator {
                                     // PTT belongs to the typical-output flow —
                                     // same anchor side-actions as the toggle.
                                     let s = crate::settings::get_settings(&app);
-                                    perform_anchor_action(
+                                    timed_idle_start(
                                         &app,
+                                        &mut stage,
+                                        &binding_id,
+                                        &hotkey_string,
                                         s.anchor_action_output_idle,
                                         s.anchor_action_output_idle_slot,
-                                        false,
                                     );
-                                    start(&app, &mut stage, &binding_id, &hotkey_string);
                                 } else if !is_pressed
                                     && matches!(&stage, Stage::Recording(id) if id == &binding_id)
                                 {
@@ -243,14 +257,22 @@ impl TranscriptionCoordinator {
                                         }
                                         None if matches!(stage, Stage::Idle) => {
                                             let s = crate::settings::get_settings(&app);
-                                            // The anchor side-action runs even under
+                                            // T-113: time from dispatch, since the
+                                            // anchor side-action runs even under
                                             // DoNothing — it's what makes the key useful
-                                            // as a pure jump/anchor button.
+                                            // as a pure jump/anchor button — and is
+                                            // suspect #4 for start-latency reports
+                                            // (Jump's activate_verified poll ladder).
+                                            let t0 = Instant::now();
                                             perform_anchor_action(
                                                 &app,
                                                 s.anchor_action_submit_idle,
                                                 s.anchor_action_submit_idle_slot,
                                                 false,
+                                            );
+                                            debug!(
+                                                "T-113: perform_anchor_action (submit-idle) took {:?}",
+                                                t0.elapsed()
                                             );
                                             if s.submit_idle_behavior
                                                 == SubmitIdleBehavior::DoNothing
@@ -263,6 +285,10 @@ impl TranscriptionCoordinator {
                                                     &binding_id,
                                                     &hotkey_string,
                                                 );
+                                                debug!(
+                                                    "T-113: Idle→start dispatch for '{binding_id}' took {:?} total",
+                                                    t0.elapsed()
+                                                );
                                             }
                                         }
                                         None => {
@@ -274,13 +300,14 @@ impl TranscriptionCoordinator {
                                     match &stage {
                                         Stage::Idle => {
                                             let s = crate::settings::get_settings(&app);
-                                            perform_anchor_action(
+                                            timed_idle_start(
                                                 &app,
+                                                &mut stage,
+                                                &binding_id,
+                                                &hotkey_string,
                                                 s.anchor_action_output_idle,
                                                 s.anchor_action_output_idle_slot,
-                                                false,
                                             );
-                                            start(&app, &mut stage, &binding_id, &hotkey_string);
                                         }
                                         Stage::Recording(id) if id == &binding_id => {
                                             let s = crate::settings::get_settings(&app);
@@ -375,6 +402,7 @@ impl TranscriptionCoordinator {
                 binding_id: binding_id.to_string(),
                 hotkey_string: hotkey_string.to_string(),
                 is_pressed,
+                enqueued_at: Instant::now(),
             })
             .is_err()
         {
@@ -435,6 +463,33 @@ fn perform_anchor_action(app: &AppHandle, action: AnchorAction, slot: u8, at_fin
             }
         }
     }
+}
+
+/// T-113 instrumentation: the Idle→Recording dispatch, timed end-to-end —
+/// the configured on-START anchor side-action (suspect #4: Jump's
+/// `activate_verified` poll ladder can synchronously cost up to ~700ms ×3
+/// escalation steps) followed by `start()` itself (which times its own
+/// stages down into `try_start_recording`/mic-open — see managers/audio.rs
+/// and actions.rs). DEBUG-only logging; adds no blocking work of its own.
+fn timed_idle_start(
+    app: &AppHandle,
+    stage: &mut Stage,
+    binding_id: &str,
+    hotkey_string: &str,
+    action: AnchorAction,
+    slot: u8,
+) {
+    let t0 = Instant::now();
+    perform_anchor_action(app, action, slot, false);
+    debug!(
+        "T-113: perform_anchor_action (start, '{binding_id}') took {:?}",
+        t0.elapsed()
+    );
+    start(app, stage, binding_id, hotkey_string);
+    debug!(
+        "T-113: Idle→start dispatch for '{binding_id}' took {:?} total",
+        t0.elapsed()
+    );
 }
 
 /// The always-on start-feedback thread applies the mute AFTER its sound

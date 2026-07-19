@@ -15,6 +15,7 @@ import { useModelStore } from "../../../stores/modelStore";
 import { getTranslatedModelName } from "../../../lib/utils/modelTranslation";
 import {
   commands,
+  type Result,
   type TranslatorPriority,
   type TranslatorStatus,
 } from "@/bindings";
@@ -29,18 +30,28 @@ export const TranslatorSettings: React.FC = () => {
   const { getSetting, updateSetting, isUpdating, settings } = useSettings();
   const refreshSettings = useSettingsStore((s) => s.refreshSettings);
   const [status, setStatus] = useState<TranslatorStatus | null>(null);
+  // Folder paths with an in-flight toggle/remove operation — used to disable
+  // that row's controls and prevent overlapping requests against the same
+  // folder (T-109).
+  const [pendingFolders, setPendingFolders] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     // Idempotent — populates the model list for the batch-model picker even
     // when the Models page hasn't been opened yet.
     useModelStore.getState().initialize();
     let disposed = false;
+    // The `translator-status` event can arrive before the initial fetch
+    // resolves (the worker publishes on every tick); without this guard the
+    // late-resolving fetch would overwrite a newer event with a stale
+    // snapshot.
+    let eventArrived = false;
     commands.getTranslatorStatus().then((r) => {
-      if (!disposed && r.status === "ok") setStatus(r.data);
+      if (!disposed && !eventArrived && r.status === "ok") setStatus(r.data);
     });
-    const unlisten = listen<TranslatorStatus>("translator-status", (e) =>
-      setStatus(e.payload),
-    );
+    const unlisten = listen<TranslatorStatus>("translator-status", (e) => {
+      eventArrived = true;
+      setStatus(e.payload);
+    });
     return () => {
       disposed = true;
       unlisten.then((f) => f());
@@ -90,26 +101,58 @@ export const TranslatorSettings: React.FC = () => {
     await refreshSettings();
   };
 
-  const setFolderEnabled = async (index: number, value: boolean) => {
-    await commands.translatorSetFolderEnabled(index, value);
-    await refreshSettings();
+  // Both row operations are keyed by folder PATH (not array index): the
+  // backend resolves the entry itself, so two overlapping operations across
+  // rows can never be reinterpreted against a shifted index (T-109).
+  const withFolderPending = async (
+    path: string,
+    op: () => Promise<Result<null, string>>,
+  ) => {
+    setPendingFolders((prev) => new Set(prev).add(path));
+    try {
+      const result = await op();
+      if (result.status === "error") {
+        toast.error(
+          t("settings.translator.folders.operationFailed", {
+            reason: result.error,
+          }),
+        );
+      }
+    } finally {
+      setPendingFolders((prev) => {
+        const next = new Set(prev);
+        next.delete(path);
+        return next;
+      });
+      await refreshSettings();
+    }
   };
 
-  const removeFolder = async (index: number) => {
-    await commands.translatorRemoveFolder(index);
-    await refreshSettings();
-  };
+  const setFolderEnabled = (path: string, value: boolean) =>
+    withFolderPending(path, () => commands.translatorSetFolderEnabled(path, value));
+
+  const removeFolder = (path: string) =>
+    withFolderPending(path, () => commands.translatorRemoveFolder(path));
 
   const statusLine = () => {
     if (!status || !status.enabled) {
       return t("settings.translator.status.disabled");
     }
     if (status.current_file) {
-      const base = t("settings.translator.status.working", {
-        file: status.current_file,
-        segment: Math.min(status.current_segment + 1, status.current_total_segments),
-        total: status.current_total_segments,
-      });
+      // A file can briefly be "current" before its segment count is known
+      // (silent/near-silent audio yields zero speech segments) — never
+      // render a transient "segment 1/0".
+      const total = status.current_total_segments;
+      const base =
+        total > 0
+          ? t("settings.translator.status.working", {
+              file: status.current_file,
+              segment: Math.min(status.current_segment + 1, total),
+              total,
+            })
+          : t("settings.translator.status.workingIndeterminate", {
+              file: status.current_file,
+            });
       return status.paused_reason
         ? `${base} — ${t(`settings.translator.status.paused.${status.paused_reason}`)}`
         : base;
@@ -195,36 +238,48 @@ export const TranslatorSettings: React.FC = () => {
             </span>
           </SettingContainer>
         )}
-        {folders.map((folder, index) => (
-          <SettingContainer
-            key={`${folder.path}-${index}`}
-            title={folder.path.split(/[\\/]/).pop() || folder.path}
-            description={folder.path}
-            descriptionMode="tooltip"
-            grouped={true}
-          >
-            <div className="flex items-center gap-3">
-              <label className="inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
-                  checked={folder.enabled}
-                  onChange={(e) => setFolderEnabled(index, e.target.checked)}
-                />
-                <div className="relative w-11 h-6 bg-mid-gray/20 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-logo-primary rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-background-ui peer-disabled:opacity-50"></div>
-              </label>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => removeFolder(index)}
-                title={t("settings.translator.folders.remove")}
-                className="text-logo-primary/85 hover:text-logo-primary hover:bg-logo-primary/10"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </Button>
-            </div>
-          </SettingContainer>
-        ))}
+        {folders.map((folder, index) => {
+          const folderName = folder.path.split(/[\\/]/).pop() || folder.path;
+          const rowBusy = pendingFolders.has(folder.path);
+          return (
+            <SettingContainer
+              key={`${folder.path}-${index}`}
+              title={folderName}
+              description={folder.path}
+              descriptionMode="tooltip"
+              grouped={true}
+            >
+              <div className="flex items-center gap-3">
+                <label className="inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={folder.enabled}
+                    disabled={rowBusy}
+                    aria-label={t("settings.translator.folders.toggleAriaLabel", {
+                      name: folderName,
+                    })}
+                    onChange={(e) => setFolderEnabled(folder.path, e.target.checked)}
+                  />
+                  <div className="relative w-11 h-6 bg-mid-gray/20 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-logo-primary rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-background-ui peer-disabled:opacity-50"></div>
+                </label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeFolder(folder.path)}
+                  disabled={rowBusy}
+                  title={t("settings.translator.folders.remove")}
+                  aria-label={t("settings.translator.folders.removeAriaLabel", {
+                    name: folderName,
+                  })}
+                  className="text-logo-primary/85 hover:text-logo-primary hover:bg-logo-primary/10"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            </SettingContainer>
+          );
+        })}
         <SettingContainer
           title={t("settings.translator.folders.addTitle")}
           description={t("settings.translator.folders.addDescription")}

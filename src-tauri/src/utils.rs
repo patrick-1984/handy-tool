@@ -25,6 +25,16 @@ pub fn cancel_current_operation(app: &AppHandle) {
     let recording_was_active = audio_manager.is_recording();
     audio_manager.cancel_recording();
 
+    // Finding 7 (T-101 follow-up): bump the take-cancellation generation so
+    // an in-flight pipeline — already past start(), possibly mid-transcribe
+    // or mid-post-process, and already holding its OWN copies of
+    // `delivery_intent`/`post_take_action` by value — skips its paste/
+    // post-take-action dispatch instead of running them after the user
+    // cancelled. Clearing the globals below only protects the NEXT take; a
+    // take whose intent was already captured by value at stop() time is
+    // untouched by that clear, which is exactly the gap this closes.
+    crate::actions::cancel_take_generation();
+
     // A cancelled take's anchored-delivery request and deferred on-finish
     // action must die with it — stranded, they would hijack a later paste.
     crate::anchor::clear_delivery_request();

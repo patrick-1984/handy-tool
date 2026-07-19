@@ -401,6 +401,7 @@
         "idle": "Watching — nothing to do",
         "queued": "{{count}} file(s) queued",
         "working": "{{file}} — segment {{segment}}/{{total}}",
+        "workingIndeterminate": "{{file}}",
         "paused": {
           "live": "paused for live dictation",
           "processing": "paused while a recording is finishing"
@@ -416,7 +417,10 @@
         "addDescription": "New audio files that appear in the folder are queued for transcription. The recordings folder Handy already uses as a queue is preconfigured.",
         "add": "Add folder",
         "remove": "Stop watching this folder",
-        "addFailed": "Could not add folder: {{reason}}"
+        "addFailed": "Could not add folder: {{reason}}",
+        "operationFailed": "Could not update folder: {{reason}}",
+        "toggleAriaLabel": "Watch folder {{name}}",
+        "removeAriaLabel": "Stop watching folder {{name}}"
       }
     },
     "sound": {
@@ -484,6 +488,15 @@
         "label": "Recordings Folder",
         "description": "Open the folder where recordings and recovered audio are stored.",
         "button": "Open Folder"
+      },
+      "appearance": {
+        "title": "Appearance",
+        "description": "Choose Light or Dark to force a palette, or System to follow your OS setting and track its changes automatically.",
+        "options": {
+          "system": "System",
+          "light": "Light",
+          "dark": "Dark"
+        }
       },
       "startHidden": {
         "label": "Start Hidden",

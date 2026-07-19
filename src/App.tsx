@@ -37,6 +37,13 @@ function App() {
     useState<SidebarSection>("general");
   const { settings, updateSetting } = useSettings();
   const direction = getLanguageDirection(i18n.language);
+  // Resolved (never "system") light/dark value driving this window's
+  // data-theme attribute AND the Sonner toaster — a single source of truth
+  // per T-204's "consistent resolved theme" requirement instead of letting
+  // the toaster do its own independent system detection.
+  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">(
+    "light",
+  );
   const refreshAudioDevices = useSettingsStore(
     (state) => state.refreshAudioDevices,
   );
@@ -53,6 +60,30 @@ function App() {
   useEffect(() => {
     initializeRTL(i18n.language);
   }, [i18n.language]);
+
+  // Resolve appearance (system/light/dark) and stamp it on this window's
+  // document root. "system" tracks the OS live via a matchMedia change
+  // listener; an explicit light/dark choice ignores subsequent OS changes
+  // because the listener always recomputes from `settings.app_theme` first.
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const applyResolvedTheme = () => {
+      const appTheme = settings?.app_theme ?? "system";
+      const resolved =
+        appTheme === "light"
+          ? "light"
+          : appTheme === "dark"
+            ? "dark"
+            : media.matches
+              ? "dark"
+              : "light";
+      setResolvedTheme(resolved);
+      document.documentElement.setAttribute("data-theme", resolved);
+    };
+    applyResolvedTheme();
+    media.addEventListener("change", applyResolvedTheme);
+    return () => media.removeEventListener("change", applyResolvedTheme);
+  }, [settings?.app_theme]);
 
   // Anchored-delivery failures park the text on the clipboard — the toast must
   // fire no matter which settings page is open, so the listener lives here.
@@ -209,7 +240,7 @@ function App() {
       className="h-screen flex flex-col select-none cursor-default"
     >
       <Toaster
-        theme="system"
+        theme={resolvedTheme}
         toastOptions={{
           unstyled: true,
           classNames: {

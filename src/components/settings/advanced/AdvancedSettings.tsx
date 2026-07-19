@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ShowOverlay } from "../ShowOverlay";
+import { AppearanceSetting } from "../AppearanceSetting";
 import { CustomWords } from "../CustomWords";
 import { SettingsGroup } from "../../ui/SettingsGroup";
 import { StartHidden } from "../StartHidden";
@@ -49,6 +50,7 @@ export const AdvancedSettings: React.FC = () => {
       case "app":
         return (
           <SettingsGroup title={t("settings.advanced.groups.app")}>
+            <AppearanceSetting descriptionMode="tooltip" grouped={true} />
             <StartHidden descriptionMode="tooltip" grouped={true} />
             <AutostartToggle descriptionMode="tooltip" grouped={true} />
             <ShowTrayIcon descriptionMode="tooltip" grouped={true} />

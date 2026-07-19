@@ -1,6 +1,12 @@
 /* Recording overlay pill. Deliberately dark in both themes (HUD idiom), but
    every color is a token — no raw hex below the variable block.
-   Spec: internal design system (brand tokens are the source of truth). */
+   Spec: internal design system (brand tokens are the source of truth).
+   T-204: the Light/Dark/System appearance setting intentionally does NOT
+   change this pill — it has never varied with prefers-color-scheme either,
+   so there is nothing here for a `:root[data-theme="..."]` override to win
+   against. `apply_theme_to_aux_windows` (lib.rs) still stamps `data-theme`
+   onto this window's document root for consistency with the other windows;
+   this stylesheet just has no rule that reads it. */
 :root {
   --overlay-bg: rgba(10, 9, 11, 0.8);
   --overlay-text: #ffffff;

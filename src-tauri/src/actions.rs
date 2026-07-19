@@ -152,6 +152,90 @@ static RECORDING_PLAN: Lazy<Mutex<Option<RecordingPlan>>> = Lazy::new(|| Mutex::
 /// uses the engine — a waiter blocks for at most one segment (seconds).
 pub(crate) static CHUNK_TRANSCRIBE_LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
 
+/// Per-take cancellation generation (adversarial-review finding 7, T-101
+/// follow-up). `stop()` captures `delivery_intent`/`post_take_action` by
+/// value into the async pipeline task, so `utils::cancel_current_operation()`
+/// clearing the GLOBALS (`clear_delivery_request`/`clear_post_take_action`)
+/// only protects a LATER take — it can't reach back into a pipeline that
+/// already owns its copies. If Cancel lands while that pipeline is mid-flight
+/// (transcribing, post-processing), it would still paste and run the take's
+/// action afterward with no way to stop it. `TAKE_GEN` closes that: `stop()`
+/// snapshots it into the pipeline; `cancel_take_generation()` bumps it; the
+/// pipeline re-checks its snapshot against the CURRENT value immediately
+/// before dispatching the paste (and the post-take action) and skips both on
+/// a mismatch. History save is NOT gated by this — a cancelled take's
+/// transcript is still worth keeping even though it won't be pasted.
+static TAKE_GEN: AtomicU64 = AtomicU64::new(0);
+
+/// Snapshot the current take generation. Call once per take, synchronously,
+/// at the same stop()-time point `delivery_intent`/`post_take_action` are
+/// captured — mirrors their take-ownership pattern (see the `TAKE_GEN` doc).
+pub(crate) fn snapshot_take_generation() -> u64 {
+    TAKE_GEN.load(Ordering::SeqCst)
+}
+
+/// Bump the take generation, invalidating any in-flight pipeline's snapshot.
+/// Called by `utils::cancel_current_operation()`.
+pub(crate) fn cancel_take_generation() {
+    TAKE_GEN.fetch_add(1, Ordering::SeqCst);
+}
+
+/// True if `snapshot` is still the CURRENT take generation — i.e. no Cancel
+/// landed since it was taken. Call immediately before dispatching a take's
+/// paste or its deferred on-finish action; on `false` the caller must skip
+/// both (history save may still proceed).
+pub(crate) fn take_generation_current(snapshot: u64) -> bool {
+    TAKE_GEN.load(Ordering::SeqCst) == snapshot
+}
+
+#[cfg(test)]
+mod take_generation_tests {
+    use super::*;
+
+    /// T-101/finding 7, ONE test on purpose: `TAKE_GEN` is process-global and
+    /// cargo runs `#[test]`s in parallel — two tests mutating it would race
+    /// each other's snapshot/check pairs and flake. Everything exercising the
+    /// counter therefore lives in this single sequential body.
+    #[test]
+    fn take_generation_cancel_semantics() {
+        // A snapshot taken before a Cancel must read as stale afterward, and
+        // a FRESH snapshot taken after the Cancel must read as current —
+        // proving the pipeline's pre-dispatch check actually catches a
+        // Cancel that lands mid-flight instead of only protecting later takes.
+        let before = snapshot_take_generation();
+        assert!(take_generation_current(before));
+
+        cancel_take_generation();
+        assert!(!take_generation_current(before));
+
+        let after = snapshot_take_generation();
+        assert!(take_generation_current(after));
+        assert_ne!(before, after);
+
+        // Capture-ordering regression (finding 7a): snapshotting the
+        // generation AFTER some other take-ownership step lets a Cancel that
+        // lands in the gap go undetected — the snapshot reflects the
+        // POST-cancel value, so `take_generation_current` wrongly reports
+        // "still current" and the pipeline runs the very paste/action the
+        // Cancel meant to stop.
+        cancel_take_generation();
+        let buggy_order_snapshot = snapshot_take_generation();
+        assert!(
+            take_generation_current(buggy_order_snapshot),
+            "snapshotting after the cancel absorbs it — the bug this fix closes"
+        );
+
+        // Correct ordering (the fix in stop()): snapshot FIRST, then a
+        // Cancel lands before the later captures would have run.
+        let correct_order_snapshot = snapshot_take_generation();
+        cancel_take_generation();
+        assert!(
+            !take_generation_current(correct_order_snapshot),
+            "snapshotting first must detect a cancel landing right after it"
+        );
+    }
+}
+
 /// A failed paste must never silently swallow the take: park the text on the
 /// clipboard (best effort) and tell the user via a global toast. The text is
 /// also in History, but the toast is what stops the "where did my words go"
@@ -728,10 +812,6 @@ impl ShortcutAction for TranscribeAction {
         let start_time = Instant::now();
         debug!("TranscribeAction::start called for binding: {}", binding_id);
 
-        // Load model in the background
-        let tm = app.state::<Arc<TranscriptionManager>>();
-        tm.initiate_model_load();
-
         // Emit reset event to clear any previous live transcription session
         let _ = app.emit("live-transcription-reset", ());
 
@@ -801,6 +881,21 @@ impl ShortcutAction for TranscribeAction {
                 debug!("Failed to start recording");
             }
         }
+
+        // T-113/finding 8: kick off model loading AFTER the microphone-start
+        // attempt above, never before. `initiate_model_load`'s preflight
+        // check locks the SAME engine mutex `unload_model` holds while
+        // releasing engine resources — calling it FIRST (as this used to)
+        // could stall the on-demand mic-open behind an in-flight unload,
+        // directly delaying capture start. The load itself is still
+        // fire-and-forget (spawns a background thread and returns
+        // immediately) — this only reorders WHEN the possibly-blocking
+        // preflight runs, never makes loading itself block capture. (The
+        // preflight was ALSO made non-blocking — see `initiate_model_load` in
+        // managers/transcription.rs — so this reorder is defense in depth,
+        // not the only fix.)
+        let tm = app.state::<Arc<TranscriptionManager>>();
+        tm.initiate_model_load();
 
         if !recording_started {
             // Roll back the optimistic Recording UI (set above, before the
@@ -1051,10 +1146,26 @@ impl ShortcutAction for TranscribeAction {
         let busy_flag = SEGMENT_BUSY.lock().ok().and_then(|mut g| g.take());
         let live_text_handle = LIVE_TEXT.lock().ok().and_then(|mut g| g.take());
 
+        // Finding 7(a): snapshot the take-cancellation generation FIRST, BEFORE
+        // taking ownership of the intent/action below. Capturing intent/action
+        // first would let a Cancel that bumps `TAKE_GEN` in the gap AFTER
+        // those captures but BEFORE this snapshot go undetected: the snapshot
+        // would then read as the POST-cancel value, so the pipeline's later
+        // `take_generation_current` re-check would see it as still "current"
+        // and silently run the very paste/action the Cancel meant to stop.
+        // Snapshotting first means that same interleaving instead captures
+        // the PRE-cancel (stale) value, so the mismatch is always caught.
+        let take_gen = snapshot_take_generation();
         // Take ownership of this take's deferred on-finish action NOW, while
         // the coordinator flow is still serialized — a global left armed
         // until the (queued) paste ran could cross take boundaries.
         let post_take_action = crate::anchor::take_post_take_action();
+        // Same take-ownership treatment for the anchored-delivery request
+        // (T-101): captured into an owned `DeliveryIntent` here, synchronously,
+        // rather than read lazily by begin_delivery() at paste time — a
+        // pathologically delayed main-thread paste can then never observe a
+        // NEWER take's delivery request (nor lose its own to one).
+        let delivery_intent = crate::anchor::take_delivery_intent();
 
         tauri::async_runtime::spawn(async move {
             let _guard = FinishGuard(ah.clone());
@@ -1257,10 +1368,40 @@ impl ShortcutAction for TranscribeAction {
                     let paste_text = text.clone();
                     let dispatch_park = text.clone();
                     ah.run_on_main_thread(move || {
+                        // Finding 7: a Cancel that landed while this take was
+                        // transcribing/post-processing bumped TAKE_GEN — skip
+                        // the paste and the deferred on-finish action (but the
+                        // history save above already happened; the transcript
+                        // stays regardless).
+                        if !take_generation_current(take_gen) {
+                            debug!(
+                                "Take cancelled mid-pipeline — skipping paste and post-take action"
+                            );
+                            utils::hide_recording_overlay(&ah_clone);
+                            change_tray_icon(&ah_clone, TrayIconState::Idle);
+                            return;
+                        }
                         let park_text = paste_text.clone();
-                        match utils::paste(paste_text, ah_clone.clone(), is_ptt) {
+                        match utils::paste(paste_text, ah_clone.clone(), is_ptt, delivery_intent) {
                             Ok(()) => {
-                                crate::anchor::run_post_take_action(&ah_clone, post_take_action)
+                                // Finding 7(b): re-check the generation
+                                // immediately before the deferred on-finish
+                                // action too — the paste above can block for a
+                                // while (clipboard settle delay, keystroke
+                                // dispatch), long enough for a Cancel to land
+                                // in that gap. Checking only once, before the
+                                // paste, would let a Cancel that arrives DURING
+                                // the paste still run the Set/Clear action.
+                                if take_generation_current(take_gen) {
+                                    crate::anchor::run_post_take_action(
+                                        &ah_clone,
+                                        post_take_action,
+                                    )
+                                } else {
+                                    debug!(
+                                        "Take cancelled during paste — skipping deferred on-finish action"
+                                    );
+                                }
                             }
                             Err(e) => report_paste_failure(&ah_clone, &park_text, &e),
                         }
@@ -1268,12 +1409,21 @@ impl ShortcutAction for TranscribeAction {
                         change_tray_icon(&ah_clone, TrayIconState::Idle);
                     })
                     .unwrap_or_else(|e| {
-                        // The paste never ran — park the text so it isn't lost.
-                        report_paste_failure(
-                            &ah,
-                            &dispatch_park,
-                            &format!("main-thread dispatch failed: {e:?}"),
-                        );
+                        // The paste never ran — park the text so it isn't
+                        // lost, UNLESS a Cancel landed for this take (finding
+                        // 7c): a cancelled take must not surface its text at
+                        // all, not even via this dispatch-failure fallback.
+                        if take_generation_current(take_gen) {
+                            report_paste_failure(
+                                &ah,
+                                &dispatch_park,
+                                &format!("main-thread dispatch failed: {e:?}"),
+                            );
+                        } else {
+                            debug!(
+                                "Take cancelled — skipping fallback park after main-thread dispatch failure"
+                            );
+                        }
                         utils::hide_recording_overlay(&ah);
                         change_tray_icon(&ah, TrayIconState::Idle);
                     });
@@ -1497,17 +1647,48 @@ impl ShortcutAction for TranscribeAction {
                             let is_ptt = binding_id == "transcribe_ptt";
                             let dispatch_park = final_text.clone();
                             ah.run_on_main_thread(move || {
+                                // Finding 7: skip the paste and the deferred
+                                // on-finish action if a Cancel landed while
+                                // this take was still transcribing/
+                                // post-processing (TAKE_GEN bumped since our
+                                // snapshot) — the history save above already
+                                // ran regardless, so the transcript is kept.
+                                if !take_generation_current(take_gen) {
+                                    debug!(
+                                        "Take cancelled mid-pipeline — skipping paste and post-take action"
+                                    );
+                                    utils::hide_recording_overlay(&ah_clone);
+                                    change_tray_icon(&ah_clone, TrayIconState::Idle);
+                                    return;
+                                }
                                 let park_text = final_text.clone();
-                                match utils::paste(final_text, ah_clone.clone(), is_ptt) {
+                                match utils::paste(
+                                    final_text,
+                                    ah_clone.clone(),
+                                    is_ptt,
+                                    delivery_intent,
+                                ) {
                                     Ok(()) => {
                                         debug!(
                                             "Text pasted successfully in {:?}",
                                             paste_time.elapsed()
                                         );
-                                        crate::anchor::run_post_take_action(
-                                            &ah_clone,
-                                            post_take_action,
-                                        );
+                                        // Finding 7(b): re-check the generation
+                                        // immediately before the deferred
+                                        // on-finish action — the paste above
+                                        // can block long enough for a Cancel
+                                        // to land in that gap; a single
+                                        // pre-paste check would miss it.
+                                        if take_generation_current(take_gen) {
+                                            crate::anchor::run_post_take_action(
+                                                &ah_clone,
+                                                post_take_action,
+                                            );
+                                        } else {
+                                            debug!(
+                                                "Take cancelled during paste — skipping deferred on-finish action"
+                                            );
+                                        }
                                     }
                                     Err(e) => report_paste_failure(&ah_clone, &park_text, &e),
                                 }
@@ -1517,12 +1698,21 @@ impl ShortcutAction for TranscribeAction {
                             })
                             .unwrap_or_else(|e| {
                                 // The paste never ran — park the text so it
-                                // isn't lost.
-                                report_paste_failure(
-                                    &ah,
-                                    &dispatch_park,
-                                    &format!("main-thread dispatch failed: {e:?}"),
-                                );
+                                // isn't lost, UNLESS a Cancel landed for this
+                                // take (finding 7c): a cancelled take must not
+                                // surface its text at all, not even via this
+                                // dispatch-failure fallback.
+                                if take_generation_current(take_gen) {
+                                    report_paste_failure(
+                                        &ah,
+                                        &dispatch_park,
+                                        &format!("main-thread dispatch failed: {e:?}"),
+                                    );
+                                } else {
+                                    debug!(
+                                        "Take cancelled — skipping fallback park after main-thread dispatch failure"
+                                    );
+                                }
                                 utils::hide_recording_overlay(&ah);
                                 change_tray_icon(&ah, TrayIconState::Idle);
                             });

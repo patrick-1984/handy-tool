@@ -619,6 +619,59 @@ mod tests {
         true
     }
 
+    /// A parsed Ogg page header (minus lacing/CRC, which the tests don't need
+    /// once framing is validated by [`crc_ok`]/[`page_count`]). Used to assert
+    /// on BOS/EOS flags, granule positions, serials, and packet contents.
+    struct PageInfo {
+        header_type: u8,
+        granule: u64,
+        serial: u32,
+        page_seq: u32,
+        body: Vec<u8>,
+    }
+
+    fn parse_pages(bytes: &[u8]) -> Vec<PageInfo> {
+        let mut offset = 0usize;
+        let mut pages = Vec::new();
+        while offset + 27 <= bytes.len() && &bytes[offset..offset + 4] == b"OggS" {
+            let header_type = bytes[offset + 5];
+            let granule = u64::from_le_bytes(bytes[offset + 6..offset + 14].try_into().unwrap());
+            let serial = u32::from_le_bytes(bytes[offset + 14..offset + 18].try_into().unwrap());
+            let page_seq = u32::from_le_bytes(bytes[offset + 18..offset + 22].try_into().unwrap());
+            let nsegs = bytes[offset + 26] as usize;
+            let header_end = offset + 27 + nsegs;
+            if header_end > bytes.len() {
+                break;
+            }
+            let body_len: usize = bytes[offset + 27..header_end]
+                .iter()
+                .map(|&b| b as usize)
+                .sum();
+            let page_end = header_end + body_len;
+            if page_end > bytes.len() {
+                break;
+            }
+            pages.push(PageInfo {
+                header_type,
+                granule,
+                serial,
+                page_seq,
+                body: bytes[header_end..page_end].to_vec(),
+            });
+            offset = page_end;
+        }
+        pages
+    }
+
+    /// A 440 Hz tone at 16 kHz mono, matching `decode.rs`'s test helper: opus's
+    /// VOIP high-pass filter can flatten a DC/constant signal, so tests that
+    /// need "real audible energy" use a tone, not `vec![x; n]`.
+    fn tone(len_samples: usize) -> Vec<f32> {
+        (0..len_samples)
+            .map(|i| (i as f32 * 440.0 * 2.0 * std::f32::consts::PI / 16_000.0).sin() * 0.5)
+            .collect()
+    }
+
     #[test]
     fn encodes_valid_ogg_opus() {
         let dir = TempDir::new().unwrap();
@@ -714,5 +767,396 @@ mod tests {
         assert!(crc_ok(&glued), "chained file pages all CRC-valid");
         // Distinct serials per chunk (required for a valid chain).
         assert_ne!(serial_for(&paths[0]), serial_for(&paths[1]));
+    }
+
+    // ------------------------------------------------------------------
+    // Single-chunk structure: headers, CRCs, granule positions, BOS/EOS.
+    // ------------------------------------------------------------------
+
+    #[test]
+    fn header_pages_have_correct_structure() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("handy-10-chunk-1.opus");
+        let mut w = OpusChunkWriter::create(&path).unwrap();
+        w.write_frame(&vec![0.1f32; 480]).unwrap();
+        w.finalize().unwrap();
+
+        let bytes = std::fs::read(&path).unwrap();
+        assert!(crc_ok(&bytes), "all page CRCs valid");
+        let pages = parse_pages(&bytes);
+        assert_eq!(pages.len(), 3, "head + tags + one audio/EOS page");
+
+        // Page 0: BOS, lone OpusHead packet with the fields we actually stamp.
+        assert_eq!(pages[0].header_type & 0x02, 0x02, "first page must be BOS");
+        assert_eq!(pages[0].page_seq, 0);
+        assert_eq!(pages[0].serial, serial_for(&path));
+        assert_eq!(&pages[0].body[0..8], b"OpusHead");
+        assert_eq!(pages[0].body[8], 1, "OpusHead version must be 1");
+        assert_eq!(pages[0].body[9], 1, "mono channel count");
+        let pre_skip = u16::from_le_bytes([pages[0].body[10], pages[0].body[11]]);
+        assert_eq!(pre_skip, PRE_SKIP_48K);
+        let rate = u32::from_le_bytes(pages[0].body[12..16].try_into().unwrap());
+        assert_eq!(rate, IN_RATE_HZ);
+        assert_eq!(pages[0].granule, 0, "header page carries no audio granule");
+
+        // Page 1: OpusTags, not BOS/EOS.
+        assert_eq!(pages[1].header_type, 0x00);
+        assert_eq!(&pages[1].body[0..8], b"OpusTags");
+        let vendor_len = u32::from_le_bytes(pages[1].body[8..12].try_into().unwrap()) as usize;
+        assert_eq!(&pages[1].body[12..12 + vendor_len], b"handy");
+
+        // Last page: EOS, granule reflects the TRUE (un-padded) sample count,
+        // even though write_frame's 480 samples get zero-padded to 640 for
+        // encoding (480 -> one 320-frame now, one zero-padded 320-frame at
+        // finalize).
+        let last = pages.last().unwrap();
+        assert_eq!(last.header_type & 0x04, 0x04, "last page must be EOS");
+        let expected_granule = PRE_SKIP_48K as u64 + 480 * 3;
+        assert_eq!(last.granule, expected_granule);
+    }
+
+    #[test]
+    fn single_chunk_granules_and_flags_are_correct_across_pages() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("handy-11-chunk-1.opus");
+        let mut w = OpusChunkWriter::create(&path).unwrap();
+        // 120 native 320-sample frames = 120 packets, forcing multiple
+        // ~500 ms pages (PACKETS_PER_PAGE = 25) beyond the two header pages.
+        let frame = vec![0.15f32; ENC_FRAME_SAMPLES];
+        for _ in 0..120 {
+            w.write_frame(&frame).unwrap();
+        }
+        w.finalize().unwrap();
+
+        let bytes = std::fs::read(&path).unwrap();
+        assert!(crc_ok(&bytes), "all page CRCs valid");
+        let pages = parse_pages(&bytes);
+        assert!(
+            pages.len() >= 5,
+            "expected head+tags+multiple audio pages, got {}",
+            pages.len()
+        );
+
+        // Only the first page is BOS, only the last page is EOS; every page
+        // seq is sequential starting at 0.
+        for (i, p) in pages.iter().enumerate() {
+            assert_eq!(p.page_seq, i as u32, "page_seq must be sequential");
+            let is_first = i == 0;
+            let is_last = i == pages.len() - 1;
+            assert_eq!(
+                p.header_type & 0x02 != 0,
+                is_first,
+                "BOS flag mismatch at page {i}"
+            );
+            assert_eq!(
+                p.header_type & 0x04 != 0,
+                is_last,
+                "EOS flag mismatch at page {i}"
+            );
+        }
+
+        // Audio-page granules (skip the two all-zero header pages) never regress.
+        let audio_granules: Vec<u64> = pages[2..].iter().map(|p| p.granule).collect();
+        for pair in audio_granules.windows(2) {
+            assert!(
+                pair[1] >= pair[0],
+                "granule regressed: {} -> {}",
+                pair[0],
+                pair[1]
+            );
+        }
+    }
+
+    #[test]
+    fn zero_frame_chunk_produces_valid_minimal_stream() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("handy-12-chunk-1.opus");
+        let w = OpusChunkWriter::create(&path).unwrap();
+        // No write_frame calls at all: a chunk opened and immediately
+        // finalized (e.g. a recording stopped the instant it started).
+        let out = w.finalize().unwrap();
+        assert_eq!(out, path);
+
+        let bytes = std::fs::read(&path).unwrap();
+        assert!(crc_ok(&bytes), "all page CRCs valid");
+        let pages = parse_pages(&bytes);
+        assert_eq!(pages.len(), 3, "head + tags + an empty EOS page");
+        let last = pages.last().unwrap();
+        assert_eq!(last.header_type & 0x04, 0x04, "final page must carry EOS");
+        assert!(last.body.is_empty(), "EOS page has no audio segments");
+        assert_eq!(
+            last.granule, PRE_SKIP_48K as u64,
+            "granule reflects zero true samples"
+        );
+    }
+
+    #[test]
+    fn glue_chunks_rejects_empty_list() {
+        let dir = TempDir::new().unwrap();
+        let out = dir.path().join("handy-19.opus");
+        let err = glue_chunks(&[], &out).unwrap_err();
+        assert!(
+            err.to_string().contains("no chunks"),
+            "unexpected error: {err}"
+        );
+    }
+
+    // ------------------------------------------------------------------
+    // Multi-chunk glue: distinct serials, each chain's own BOS/EOS (T-110).
+    // ------------------------------------------------------------------
+
+    #[test]
+    fn glue_preserves_bos_eos_per_chain() {
+        let dir = TempDir::new().unwrap();
+        let mut paths = Vec::new();
+        for i in 1..=2 {
+            let p = dir.path().join(format!("handy-13-chunk-{}.opus", i));
+            let mut w = OpusChunkWriter::create(&p).unwrap();
+            w.write_frame(&vec![0.05f32; 4800]).unwrap();
+            paths.push(w.finalize().unwrap());
+        }
+        let out = dir.path().join("handy-13.opus");
+        glue_chunks(&paths, &out).unwrap();
+        let glued = std::fs::read(&out).unwrap();
+        assert!(crc_ok(&glued), "chained file pages all CRC-valid");
+        let pages = parse_pages(&glued);
+
+        let serial_a = serial_for(&paths[0]);
+        let serial_b = serial_for(&paths[1]);
+        assert_ne!(
+            serial_a, serial_b,
+            "distinct chunks must carry distinct serials"
+        );
+
+        let chain_a: Vec<&PageInfo> = pages.iter().filter(|p| p.serial == serial_a).collect();
+        let chain_b: Vec<&PageInfo> = pages.iter().filter(|p| p.serial == serial_b).collect();
+        assert!(!chain_a.is_empty() && !chain_b.is_empty());
+
+        // Each chain has its own BOS at its first page and its own EOS at its
+        // last page -- a chained-Ogg file is really two independent logical
+        // streams, not one continuing stream.
+        assert_eq!(chain_a.first().unwrap().header_type & 0x02, 0x02);
+        assert_eq!(chain_a.last().unwrap().header_type & 0x04, 0x04);
+        assert_eq!(chain_b.first().unwrap().header_type & 0x02, 0x02);
+        assert_eq!(chain_b.last().unwrap().header_type & 0x04, 0x04);
+        // Each chain's own page_seq restarts at 0 (independent per-serial
+        // numbering, as the Ogg spec requires).
+        assert_eq!(chain_a.first().unwrap().page_seq, 0);
+        assert_eq!(chain_b.first().unwrap().page_seq, 0);
+
+        // Glue is a straight byte concat: all of A's pages precede all of B's.
+        let a_end = pages.iter().rposition(|p| p.serial == serial_a).unwrap();
+        let b_start = pages.iter().position(|p| p.serial == serial_b).unwrap();
+        assert!(
+            a_end < b_start,
+            "chunk A's pages must all come before chunk B's"
+        );
+    }
+
+    #[test]
+    fn glued_chunks_with_distinct_serials_decode_in_order() {
+        // T-110: encode_samples_to_ogg_opus always uses serial 1, so gluing two
+        // of its outputs (as the old test did) exercises ONE decoder stream
+        // treating the second header as a stray packet, not the real per-serial
+        // path that production `glue_chunks` (distinct serial per chunk) takes.
+        // This test goes through OpusChunkWriter + distinct filenames, exactly
+        // like the recorder does, so the decoder's per-serial state machine in
+        // `decode.rs` is genuinely exercised end to end.
+        use crate::audio_toolkit::audio::decode_audio_file;
+
+        let dir = TempDir::new().unwrap();
+        let loud = tone(16_000); // ~1s, real energy (not DC -- opus's VOIP
+        // high-pass filter would flatten a constant signal)
+        let quiet = vec![0.0f32; 16_000]; // ~1s silence
+
+        let p1 = dir.path().join("handy-14-chunk-1.opus");
+        let mut w1 = OpusChunkWriter::create(&p1).unwrap();
+        w1.write_frame(&loud).unwrap();
+        let c1 = w1.finalize().unwrap();
+
+        let p2 = dir.path().join("handy-14-chunk-2.opus");
+        let mut w2 = OpusChunkWriter::create(&p2).unwrap();
+        w2.write_frame(&quiet).unwrap();
+        let c2 = w2.finalize().unwrap();
+
+        // The whole point of this test vs. the encode_samples_to_ogg_opus-based
+        // one: these two chunks really do carry distinct serials.
+        assert_ne!(serial_for(&c1), serial_for(&c2));
+
+        let glued = dir.path().join("handy-14.opus");
+        glue_chunks(&[c1, c2], &glued).unwrap();
+
+        let decoded = decode_audio_file(&glued).unwrap();
+        assert!(
+            decoded.len() > 28_000,
+            "expected ~2s decoded, got {}",
+            decoded.len()
+        );
+
+        let half = decoded.len() / 2;
+        let rms = |s: &[f32]| (s.iter().map(|x| x * x).sum::<f32>() / s.len().max(1) as f32).sqrt();
+        assert!(
+            rms(&decoded[..half]) > 0.1,
+            "first half should carry the loud chunk's signal"
+        );
+        assert!(
+            rms(&decoded[half..]) < 0.05,
+            "second half should carry the quiet chunk's signal"
+        );
+    }
+
+    // ------------------------------------------------------------------
+    // Crash recovery: truncated final page.
+    // ------------------------------------------------------------------
+
+    #[test]
+    fn repair_recovers_a_chunk_with_zero_audio_frames() {
+        // Simulate a crash immediately after the chunk was opened -- before
+        // any write_frame call and before finalize() ever ran.
+        let dir = TempDir::new().unwrap();
+        let final_path = dir.path().join("handy-15-chunk-1.opus");
+        let w = OpusChunkWriter::create(&final_path).unwrap();
+        let temp_path = w.path().to_path_buf();
+        drop(w);
+
+        let samples = repair_truncated_opus(&temp_path).unwrap();
+        assert_eq!(samples, 0, "no audio was ever written");
+
+        let repaired = std::fs::read(&temp_path).unwrap();
+        assert!(crc_ok(&repaired), "repaired file has valid page CRCs");
+        let pages = parse_pages(&repaired);
+        assert_eq!(pages.len(), 2, "only head + tags pages existed to recover");
+        assert_eq!(
+            pages.last().unwrap().header_type & 0x04,
+            0x04,
+            "last surviving page is marked EOS"
+        );
+    }
+
+    #[test]
+    fn repair_rejects_a_file_with_no_complete_pages() {
+        let dir = TempDir::new().unwrap();
+        let final_path = dir.path().join("handy-16-chunk-1.opus");
+        let w = OpusChunkWriter::create(&final_path).unwrap();
+        let temp_path = w.path().to_path_buf();
+        drop(w);
+
+        let mut bytes = std::fs::read(&temp_path).unwrap();
+        bytes.truncate(10); // well within page 0's 27-byte header
+        std::fs::write(&temp_path, &bytes).unwrap();
+
+        let err = repair_truncated_opus(&temp_path).unwrap_err();
+        assert!(
+            err.to_string().contains("no recoverable audio"),
+            "unexpected error: {err}"
+        );
+    }
+
+    #[test]
+    fn repair_handles_truncation_at_many_offsets() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("handy-17-chunk-1.opus");
+        {
+            let mut w = OpusChunkWriter::create(&path).unwrap();
+            for _ in 0..200 {
+                w.write_frame(&vec![0.2f32; 480]).unwrap();
+            }
+            w.finalize().unwrap();
+        }
+        let full = std::fs::read(&path).unwrap();
+        let full_len = full.len();
+
+        // Chop off a handful of different tail lengths, all landing mid-page
+        // (never on a page boundary), and confirm each repaired result is a
+        // structurally valid, CRC-clean Ogg stream with an EOS-marked final
+        // page and earlier pages preserved intact -- never a torn/corrupt file.
+        for chop in [1usize, 5, 20, 37, 60, 90] {
+            assert!(
+                chop < full_len,
+                "chop {chop} exceeds file length {full_len}"
+            );
+            let mut truncated = full.clone();
+            truncated.truncate(full_len - chop);
+            std::fs::write(&path, &truncated).unwrap();
+
+            let samples = repair_truncated_opus(&path).unwrap();
+            assert!(samples > 0, "chop {chop}: expected some recovered audio");
+
+            let repaired = std::fs::read(&path).unwrap();
+            assert!(
+                crc_ok(&repaired),
+                "chop {chop}: repaired file has valid CRCs"
+            );
+            let pages = parse_pages(&repaired);
+            assert!(
+                pages.len() >= 2,
+                "chop {chop}: expected head+tags to survive"
+            );
+            assert_eq!(
+                pages.last().unwrap().header_type & 0x04,
+                0x04,
+                "chop {chop}: last surviving page must be marked EOS"
+            );
+            assert!(
+                repaired.len() <= truncated.len(),
+                "chop {chop}: repair must not grow the file"
+            );
+
+            // Earlier pages are preserved byte-for-byte -- repair only ever
+            // rewrites the last surviving page's header_type bit and CRC, then
+            // truncates. Recompute that last page's start offset (by walking
+            // all pages up to it) and diff the untouched prefix against the
+            // pristine original file.
+            let mut last_page_start = 0usize;
+            for _ in 0..pages.len() - 1 {
+                let nsegs = repaired[last_page_start + 26] as usize;
+                let header_end = last_page_start + 27 + nsegs;
+                let body_len: usize = repaired[last_page_start + 27..header_end]
+                    .iter()
+                    .map(|&b| b as usize)
+                    .sum();
+                last_page_start = header_end + body_len;
+            }
+            assert_eq!(
+                &repaired[..last_page_start],
+                &full[..last_page_start],
+                "chop {chop}: earlier pages preserved byte-for-byte"
+            );
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // CRC validation catches corruption.
+    // ------------------------------------------------------------------
+
+    #[test]
+    fn crc_check_detects_body_corruption() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("handy-18-chunk-1.opus");
+        let mut w = OpusChunkWriter::create(&path).unwrap();
+        w.write_frame(&vec![0.25f32; 4800]).unwrap();
+        w.finalize().unwrap();
+
+        let bytes = std::fs::read(&path).unwrap();
+        assert!(crc_ok(&bytes), "sanity: original file is CRC-clean");
+
+        // Flip one bit deep in the last page's body. The page stays
+        // structurally valid (same lengths/offsets), so only the CRC can
+        // catch the tampering.
+        let mut corrupted = bytes.clone();
+        let tail = corrupted.len() - 1;
+        corrupted[tail] ^= 0x01;
+        assert!(
+            !crc_ok(&corrupted),
+            "flipping a body byte must invalidate its page CRC"
+        );
+
+        // And corruption in the segment table / header area is caught too.
+        let mut corrupted_header = bytes.clone();
+        corrupted_header[7] ^= 0xFF; // inside the granule field of page 0
+        assert!(
+            !crc_ok(&corrupted_header),
+            "flipping a header byte must invalidate its page CRC"
+        );
     }
 }

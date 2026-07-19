@@ -97,6 +97,43 @@
   }
 }
 
+/* T-204 — explicit Light/Dark appearance choice wins over the OS
+   prefers-color-scheme default above in BOTH directions. The
+   `[data-theme="..."]` attribute selector always out-specifies the plain
+   `:root` used inside the media query, so these apply regardless of source
+   order; App.tsx stamps `data-theme` on <html> once the setting resolves. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-text: #fbfbfb;
+  --color-text-secondary: #a8a49e;
+  --color-background: #2c2b29;
+  --color-surface: #343230;
+  --color-border: #45423e;
+  --color-mid-gray: #8f8b85;
+  --color-background-ui: #155e75;
+  --color-logo-primary: #22d3ee;
+  --color-logo-stroke: #a5f3fc;
+  --color-focus-ring: #f28cbb;
+  --color-danger: #d13438;
+  --color-success: #3fb968;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-text: #0f0f0f;
+  --color-text-secondary: #5f5c58;
+  --color-background: #fbfbfb;
+  --color-surface: #ffffff;
+  --color-border: #e6e3df;
+  --color-mid-gray: #6b6862;
+  --color-background-ui: #0e7490;
+  --color-logo-primary: #0891b2;
+  --color-logo-stroke: #0f172a;
+  --color-focus-ring: #0e7490;
+  --color-danger: #c42b1c;
+  --color-success: #1a7f37;
+}
+
 /* Keyboard focus is always visible — the app-wide contract (WCAG 2.4.7).
    Mouse clicks don't trigger :focus-visible, so this stays quiet for pointer
    users. Never add `outline: none` without an equivalent replacement. */

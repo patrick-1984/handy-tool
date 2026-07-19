@@ -13,6 +13,20 @@
 //! - A `.txt` sidecar marks a file as done forever (survives restarts).
 //! - Recorder-internal files are never touched: `*-chunk-N.*`, `*-temp.*`,
 //!   `*.partial` (the glued main file is the one that gets transcribed).
+//! - Disabling a folder FREEZES it: `Scanner` forgets the folder's baseline
+//!   (and any of its pending candidates) the moment it drops out of the
+//!   enabled list. Re-enabling behaves exactly like a first-ever enable —
+//!   the folder's current contents are re-snapshotted as backlog and left
+//!   alone. This means files that arrived while a folder was disabled are
+//!   NOT retroactively queued on re-enable (same rule as the initial
+//!   backlog), which keeps "only files that appear after watching starts"
+//!   a single consistent contract no matter how many times a folder is
+//!   toggled (T-107).
+//! - A file that disappears and reappears under the SAME name (deleted, then
+//!   a new take recorded with that name) is identified by mtime, not just
+//!   name: `Scanner` records the mtime it last saw a path at, and a newer
+//!   mtime on a later scan means the file was recreated and is queued again
+//!   as if it were brand new (T-107).
 //! - The pending queue is persisted to `{app_data}/translator_queue.json` so
 //!   queued-but-unfinished work survives a restart/crash.
 //!
@@ -331,10 +345,21 @@ fn write_sidecar(file: &Path, text: &str) -> std::io::Result<()> {
 }
 
 struct Scanner {
-    /// Per-folder snapshot of pre-existing files (never queued).
-    baselines: HashMap<PathBuf, HashSet<PathBuf>>,
-    /// Stability tracking for new candidates: size + when first seen at it.
-    pending: HashMap<PathBuf, (u64, Instant)>,
+    /// Per-folder snapshot of known files: the mtime recorded the last time
+    /// each path was placed in the baseline (either as pre-existing backlog
+    /// or after being promoted to the queue). A path missing from disk is
+    /// pruned; a path whose current mtime is newer than the recorded one was
+    /// deleted and recreated under the same name and is treated as a brand
+    /// new candidate (T-107).
+    baselines: HashMap<PathBuf, HashMap<PathBuf, std::time::SystemTime>>,
+    /// Stability tracking for new candidates: size + mtime + when first seen
+    /// at that (size, mtime) pair. T-107(a): mtime is part of the identity —
+    /// a same-size REPLACEMENT of the file between two scans (same byte
+    /// count, different content — e.g. two same-duration recordings sharing
+    /// a name) bumps the mtime, which must reset the stability window rather
+    /// than being silently treated as "the same candidate, now stable" just
+    /// because the size happened to match.
+    pending: HashMap<PathBuf, (u64, std::time::SystemTime, Instant)>,
     /// Folders already warned about (missing/unreadable) — warn once.
     warned: HashSet<PathBuf>,
 }
@@ -349,61 +374,138 @@ impl Scanner {
     }
 
     /// Scan enabled folders; returns newly stable files, oldest first.
+    ///
+    /// Disabled/removed folders are frozen: their baseline and any pending
+    /// candidates are dropped up front, so a re-enable rebuilds the baseline
+    /// from scratch (files present at that moment become backlog again,
+    /// exactly like a first-ever enable — see the module-level doc). This
+    /// also bounds `baselines`/`pending` growth: entries for files that
+    /// vanish (or whose folder is no longer enabled) don't linger forever.
     fn scan(
         &mut self,
         folders: &[TranslatorFolder],
         already_queued: &dyn Fn(&Path) -> bool,
     ) -> Vec<PathBuf> {
+        let enabled_dirs: HashSet<PathBuf> = folders
+            .iter()
+            .filter(|f| f.enabled)
+            .map(|f| PathBuf::from(&f.path))
+            .collect();
+
+        // Freeze: forget everything belonging to a folder that isn't
+        // currently enabled (disabled, or removed from the watch list).
+        self.baselines.retain(|dir, _| enabled_dirs.contains(dir));
+        self.pending.retain(|path, _| {
+            path.parent()
+                .map(|parent| enabled_dirs.contains(parent))
+                .unwrap_or(false)
+        });
+        self.warned.retain(|dir| enabled_dirs.contains(dir));
+
         let mut promoted: Vec<(std::time::SystemTime, PathBuf)> = Vec::new();
-        for folder in folders.iter().filter(|f| f.enabled) {
-            let dir = PathBuf::from(&folder.path);
-            let entries = match std::fs::read_dir(&dir) {
+        for dir in &enabled_dirs {
+            let entries = match std::fs::read_dir(dir) {
                 Ok(e) => e,
                 Err(e) => {
                     if self.warned.insert(dir.clone()) {
                         warn!("translator: cannot read folder {}: {e}", dir.display());
                     }
+                    // T-107(b): an unreadable/missing enabled folder must not
+                    // retain its baseline/pending forever. The per-dir prune
+                    // below (after the entries loop) never runs on this
+                    // early `continue`, and the top-level freeze at the top
+                    // of `scan()` only drops folders that are DISABLED or
+                    // removed from the watch list — a folder that's still
+                    // enabled but transiently unreadable (network drive
+                    // hiccup, permission blip) would otherwise keep growing
+                    // these maps forever. Treat it exactly like a disabled
+                    // folder: forget its state now, so a later successful
+                    // scan re-snapshots current contents as backlog again
+                    // (first-ever-enable semantics), matching the existing
+                    // disable/re-enable freeze behavior.
+                    self.baselines.remove(dir);
+                    self.pending.retain(|p, _| {
+                        p.parent()
+                            .map(|parent| parent != dir.as_path())
+                            .unwrap_or(true)
+                    });
                     continue;
                 }
             };
-            self.warned.remove(&dir);
-            let baseline_is_new = !self.baselines.contains_key(&dir);
+            self.warned.remove(dir);
+            let baseline_is_new = !self.baselines.contains_key(dir);
             let baseline = self.baselines.entry(dir.clone()).or_default();
 
+            let mut present: HashSet<PathBuf> = HashSet::new();
             for entry in entries.flatten() {
                 let path = entry.path();
                 if !path.is_file() || !is_candidate(&path) {
                     continue;
                 }
-                if baseline_is_new {
-                    // First look at this folder: everything present is
-                    // backlog, not queue input.
-                    baseline.insert(path);
-                    continue;
-                }
-                if baseline.contains(&path) || sidecar_path(&path).exists() || already_queued(&path)
-                {
-                    continue;
-                }
+                present.insert(path.clone());
                 let Ok(meta) = entry.metadata() else { continue };
                 let mtime = meta.modified().unwrap_or(std::time::SystemTime::now());
+
+                if baseline_is_new {
+                    // First look at this folder (or first look since it was
+                    // last frozen): everything present is backlog, not queue
+                    // input.
+                    baseline.insert(path, mtime);
+                    continue;
+                }
+                if let Some(known_mtime) = baseline.get(&path) {
+                    if mtime <= *known_mtime {
+                        continue; // unchanged: still backlog-ignored, or already handled
+                    }
+                    // else: mtime advanced since we last recorded this path —
+                    // deleted-and-recreated (or modified) — fall through and
+                    // treat it as a fresh candidate.
+                }
+                if sidecar_path(&path).exists() || already_queued(&path) {
+                    continue;
+                }
                 let age_ok = mtime.elapsed().map(|a| a >= MIN_FILE_AGE).unwrap_or(false);
                 let size = meta.len();
+                // T-107(a): identity/stability requires size AND mtime to
+                // match the previous observation — size alone let a
+                // same-size REPLACEMENT between two scans (same byte count,
+                // different content) slip through as "the same candidate,
+                // now stable" and get promoted immediately, since only the
+                // byte count was ever compared across scans.
                 match self.pending.get(&path) {
-                    Some((seen_size, _first)) if *seen_size == size && age_ok && size > 0 => {
+                    Some((seen_size, seen_mtime, _first))
+                        if *seen_size == size && *seen_mtime == mtime && age_ok && size > 0 =>
+                    {
                         self.pending.remove(&path);
-                        baseline.insert(path.clone());
+                        baseline.insert(path.clone(), mtime);
                         promoted.push((mtime, path));
                     }
-                    Some((seen_size, _)) if *seen_size != size => {
-                        self.pending.insert(path, (size, Instant::now()));
+                    Some((seen_size, seen_mtime, _))
+                        if *seen_size != size || *seen_mtime != mtime =>
+                    {
+                        // Size changed, OR the size coincidentally matches
+                        // but the mtime moved (a same-size replacement) —
+                        // either way this is NOT confirmed-stable yet;
+                        // restart the stability window against the CURRENT
+                        // (size, mtime) pair.
+                        self.pending.insert(path, (size, mtime, Instant::now()));
                     }
                     Some(_) => {} // stable but too young — wait another scan
                     None => {
-                        self.pending.insert(path, (size, Instant::now()));
+                        self.pending.insert(path, (size, mtime, Instant::now()));
                     }
                 }
             }
+            // Prune: drop baseline/pending entries for files that vanished
+            // from this folder so both maps stay bounded across days of
+            // uptime, not just over each file's own lifecycle.
+            baseline.retain(|p, _| present.contains(p));
+            self.pending.retain(|p, _| {
+                p.parent()
+                    .map(|parent| parent != dir.as_path())
+                    .unwrap_or(true)
+                    || present.contains(p)
+            });
         }
         promoted.sort_by_key(|(mtime, _)| *mtime);
         promoted.into_iter().map(|(_, p)| p).collect()
@@ -688,17 +790,21 @@ fn worker(app: AppHandle, shutdown: Arc<AtomicBool>, status: Arc<Mutex<Translato
                         warn!("Translator: model load failed: {e}");
                     }
                 }
+                // The batch worker's expectation is ITS model (the override,
+                // or the dictation model when unset) — `transcribe()` itself
+                // would assert the SELECTED model and wrongly reject override
+                // batches (pass-3 finding 8a revalidation).
                 let result = if engine_external {
                     // External engines (HTTP/subprocess) aren't single-tenant —
                     // and must not hold the engine lock across a network call.
-                    tm.transcribe(segment)
+                    tm.transcribe_expecting(&effective_model, segment)
                 } else {
                     // Single-tenant local engine: serialize with live chunk
                     // workers and the stop-path final pass.
                     let _serial = crate::actions::CHUNK_TRANSCRIBE_LOCK
                         .lock()
                         .unwrap_or_else(|poisoned| poisoned.into_inner());
-                    tm.transcribe(segment)
+                    tm.transcribe_expecting(&effective_model, segment)
                 };
                 match result {
                     Ok(text) => {
@@ -794,6 +900,254 @@ fn worker(app: AppHandle, shutdown: Arc<AtomicBool>, status: Arc<Mutex<Translato
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tempfile::TempDir;
+
+    /// Push a file's mtime into the past so it clears `MIN_FILE_AGE`
+    /// immediately, without a real-time sleep in the test.
+    fn backdate(path: &Path, secs_ago: u64) {
+        let file = std::fs::OpenOptions::new()
+            .write(true)
+            .open(path)
+            .expect("open for mtime backdate");
+        let t = std::time::SystemTime::now() - Duration::from_secs(secs_ago);
+        file.set_modified(t).expect("set_modified");
+    }
+
+    fn folder(dir: &TempDir, enabled: bool) -> Vec<TranslatorFolder> {
+        vec![TranslatorFolder {
+            path: dir.path().to_string_lossy().to_string(),
+            enabled,
+        }]
+    }
+
+    #[test]
+    fn scanner_ignores_preexisting_backlog_then_queues_new_files() {
+        let dir = TempDir::new().unwrap();
+        let folders = folder(&dir, true);
+
+        // Pre-existing file before watching starts: backlog, never queued.
+        let old = dir.path().join("old.wav");
+        std::fs::write(&old, b"backlog").unwrap();
+
+        let mut scanner = Scanner::new();
+        let promoted = scanner.scan(&folders, &|_| false);
+        assert!(
+            promoted.is_empty(),
+            "pre-existing backlog must not be queued"
+        );
+
+        // A genuinely new file appears after watching started.
+        let fresh = dir.path().join("fresh.wav");
+        std::fs::write(&fresh, b"new").unwrap();
+        backdate(&fresh, 10);
+
+        let promoted = scanner.scan(&folders, &|_| false); // first sighting -> pending
+        assert!(promoted.is_empty());
+        let promoted = scanner.scan(&folders, &|_| false); // stable -> promoted
+        assert_eq!(promoted, vec![fresh]);
+
+        // Both still-present files remain baselined; nothing unbounded here.
+        assert_eq!(
+            scanner
+                .baselines
+                .get(&PathBuf::from(dir.path()))
+                .map(|b| b.len()),
+            Some(2)
+        );
+    }
+
+    #[test]
+    fn recreated_file_under_the_same_name_is_queued_again() {
+        let dir = TempDir::new().unwrap();
+        let folders = folder(&dir, true);
+        let target = dir.path().join("take.wav");
+        std::fs::write(&target, b"original").unwrap();
+        backdate(&target, 200);
+
+        let mut scanner = Scanner::new();
+        let promoted = scanner.scan(&folders, &|_| false);
+        assert!(promoted.is_empty(), "original backlog file is ignored");
+
+        // Delete and re-record under the identical name — newer mtime.
+        std::fs::remove_file(&target).unwrap();
+        std::fs::write(&target, b"re-recorded").unwrap();
+        backdate(&target, 10);
+
+        let promoted = scanner.scan(&folders, &|_| false); // first sighting of the "new" file
+        assert!(promoted.is_empty());
+        let promoted = scanner.scan(&folders, &|_| false); // stable -> promoted
+        assert_eq!(
+            promoted,
+            vec![target],
+            "recreated file must be treated as new, not ignored forever"
+        );
+    }
+
+    #[test]
+    fn same_size_replacement_between_scans_resets_stability_tracking() {
+        // T-107(a) regression: a same-size REPLACEMENT of the pending file
+        // (identical byte count, different content — e.g. two same-duration
+        // recordings sharing a name) must NOT be promoted on the very next
+        // scan just because the byte count still matches; the mtime moved,
+        // so stability tracking must restart against the new (size, mtime).
+        let dir = TempDir::new().unwrap();
+        let folders = folder(&dir, true);
+
+        let mut scanner = Scanner::new();
+        scanner.scan(&folders, &|_| false); // baseline established (empty folder)
+
+        let target = dir.path().join("take.wav");
+        std::fs::write(&target, b"AAAAAAAAAA").unwrap(); // 10 bytes
+        backdate(&target, 10);
+        scanner.scan(&folders, &|_| false); // first sighting -> pending
+        assert_eq!(scanner.pending.len(), 1);
+
+        // Same-size replacement: different bytes, identical length, newer mtime.
+        std::fs::write(&target, b"BBBBBBBBBB").unwrap(); // still 10 bytes
+        backdate(&target, 10);
+
+        let promoted = scanner.scan(&folders, &|_| false);
+        assert!(
+            promoted.is_empty(),
+            "a same-size replacement must not be promoted immediately just because the byte count matches"
+        );
+
+        // No further changes: now genuinely stable against the replacement's
+        // own (size, mtime) -> promoted.
+        let promoted = scanner.scan(&folders, &|_| false);
+        assert_eq!(promoted, vec![target]);
+    }
+
+    #[test]
+    fn missing_or_unreadable_folder_prunes_its_baseline_and_pending() {
+        // T-107(b) regression: an enabled folder that becomes unreadable
+        // (permission blip, disconnected network drive) or disappears
+        // outright must not retain its baseline/pending entries forever —
+        // the per-dir prune only runs after a successful `read_dir`, so the
+        // error path needs its own pruning.
+        let dir = TempDir::new().unwrap();
+        let folders = folder(&dir, true);
+
+        let backlog_file = dir.path().join("backlog.wav");
+        std::fs::write(&backlog_file, b"x").unwrap();
+
+        let mut scanner = Scanner::new();
+        scanner.scan(&folders, &|_| false); // backlog_file baselined
+        assert_eq!(
+            scanner
+                .baselines
+                .get(&PathBuf::from(dir.path()))
+                .map(|b| b.len()),
+            Some(1)
+        );
+
+        let pending_file = dir.path().join("pending.wav");
+        std::fs::write(&pending_file, b"partial").unwrap(); // fresh mtime: too young
+        scanner.scan(&folders, &|_| false);
+        assert_eq!(scanner.pending.len(), 1);
+
+        // The folder itself disappears (simulates "unreadable" just as well
+        // as a genuine permission error — `read_dir` fails either way).
+        std::fs::remove_file(&backlog_file).unwrap();
+        std::fs::remove_file(&pending_file).unwrap();
+        std::fs::remove_dir(dir.path()).unwrap();
+
+        scanner.scan(&folders, &|_| false);
+
+        assert!(
+            !scanner.baselines.contains_key(&PathBuf::from(dir.path())),
+            "an unreadable/missing folder must not retain its baseline forever"
+        );
+        assert!(
+            scanner.pending.is_empty(),
+            "an unreadable/missing folder must not retain its pending entries forever"
+        );
+    }
+
+    #[test]
+    fn disabling_a_folder_freezes_it_and_reenable_rebuilds_the_baseline() {
+        let dir = TempDir::new().unwrap();
+        let mut folders = folder(&dir, true);
+
+        let pre = dir.path().join("pre.wav");
+        std::fs::write(&pre, b"backlog").unwrap();
+
+        let mut scanner = Scanner::new();
+        scanner.scan(&folders, &|_| false); // baseline established, pre.wav ignored
+
+        // Disable: the folder's baseline is frozen/forgotten.
+        folders[0].enabled = false;
+        scanner.scan(&folders, &|_| false);
+        assert!(
+            !scanner.baselines.contains_key(&PathBuf::from(dir.path())),
+            "disabling must drop the folder's baseline"
+        );
+
+        // A file appears while the folder is disabled.
+        let while_disabled = dir.path().join("while_disabled.wav");
+        std::fs::write(&while_disabled, b"during").unwrap();
+        backdate(&while_disabled, 10);
+
+        // Re-enable: per the documented rule, this rebuilds the baseline
+        // fresh — the file that arrived while disabled becomes backlog too
+        // and is NOT retroactively queued.
+        folders[0].enabled = true;
+        let promoted = scanner.scan(&folders, &|_| false);
+        assert!(
+            promoted.is_empty(),
+            "re-enable must re-snapshot current contents as backlog"
+        );
+
+        // A genuinely new file after re-enable is queued normally.
+        let fresh = dir.path().join("fresh.wav");
+        std::fs::write(&fresh, b"z").unwrap();
+        backdate(&fresh, 10);
+        scanner.scan(&folders, &|_| false); // pending
+        let promoted = scanner.scan(&folders, &|_| false); // stable -> promoted
+        assert_eq!(promoted, vec![fresh]);
+    }
+
+    #[test]
+    fn baseline_and_pending_entries_are_pruned_when_files_vanish() {
+        let dir = TempDir::new().unwrap();
+        let folders = folder(&dir, true);
+
+        let backlog_file = dir.path().join("gone.wav");
+        std::fs::write(&backlog_file, b"x").unwrap();
+
+        let mut scanner = Scanner::new();
+        scanner.scan(&folders, &|_| false); // baselined as backlog
+        assert_eq!(
+            scanner
+                .baselines
+                .get(&PathBuf::from(dir.path()))
+                .map(|b| b.len()),
+            Some(1)
+        );
+
+        // A second, not-yet-stable candidate sits in `pending`.
+        let mid_write = dir.path().join("mid_write.wav");
+        std::fs::write(&mid_write, b"partial").unwrap(); // fresh mtime: too young
+        scanner.scan(&folders, &|_| false);
+        assert_eq!(scanner.pending.len(), 1);
+
+        std::fs::remove_file(&backlog_file).unwrap();
+        std::fs::remove_file(&mid_write).unwrap();
+        scanner.scan(&folders, &|_| false);
+
+        assert_eq!(
+            scanner
+                .baselines
+                .get(&PathBuf::from(dir.path()))
+                .map(|b| b.len()),
+            Some(0),
+            "removed file must be pruned from the baseline"
+        );
+        assert!(
+            scanner.pending.is_empty(),
+            "pending entry for a deleted file must be pruned"
+        );
+    }
 
     #[test]
     fn internal_artifacts_are_skipped() {

@@ -3,6 +3,7 @@ use serde::de::{self, Visitor};
 use serde::{Deserialize, Deserializer, Serialize};
 use specta::Type;
 use std::collections::HashMap;
+use std::sync::Mutex;
 use tauri::AppHandle;
 use tauri_plugin_store::StoreExt;
 
@@ -343,6 +344,24 @@ pub enum TranscriptionMode {
     PostRecording,
 }
 
+/// UI appearance mode. `System` follows the OS `prefers-color-scheme` (and
+/// keeps tracking it live); `Light` and `Dark` force one of Handy's two
+/// palettes regardless of subsequent OS theme changes. Defaults to `System`
+/// so existing installs are unaffected until the user opts into a forced mode.
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type)]
+#[serde(rename_all = "snake_case")]
+pub enum Theme {
+    System,
+    Light,
+    Dark,
+}
+
+impl Default for Theme {
+    fn default() -> Self {
+        Theme::System
+    }
+}
+
 /// How the Translator's folder-batch work shares the (single-tenant) engine
 /// with live dictation.
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type)]
@@ -378,6 +397,45 @@ pub struct SavedJumpSlot {
     pub window_class: String,
     /// Focused-control class captured with the slot.
     pub control_class: String,
+}
+
+/// A frozen snapshot of the settings fields that affect HOW a transcription
+/// job's audio is turned into text — model, language, translation, custom
+/// words, and the custom-word fuzzy-match threshold — taken once and held
+/// constant for the rest of a multi-segment job (T-108). Building this via
+/// `AppSettings::transcription_policy_snapshot` and threading it through a
+/// job's segments (instead of re-reading live settings per segment) prevents
+/// a mid-job settings change from producing a sidecar assembled from
+/// incompatible modes (e.g. half translated, half not).
+///
+/// `word_correction_threshold` (T-108 follow-up finding) governs the
+/// Levenshtein/Soundex fuzzy match in `audio_toolkit::text::apply_custom_words`
+/// and therefore affects EVERY segment's custom-word output exactly like
+/// `custom_words` itself does — omitting it left a mid-job change to the
+/// threshold (Advanced > Custom Words) able to make some segments of the same
+/// job correct words the others didn't, the identical inconsistency this
+/// snapshot exists to prevent for every other policy field.
+///
+/// This is the DATA half of T-108 only. Wiring `managers/translator.rs`'s
+/// per-tick `get_settings` re-reads (and `TranscriptionManager::transcribe`'s
+/// own internal settings re-read) to snapshot once at job start and hold this
+/// value for every segment is cross-file work tracked as a follow-up in the
+/// T-108 ticket — those files are owned by a different concurrent workstream.
+// Not yet constructed outside this file's own tests (see follow-up above) —
+// `#[allow(dead_code)]` prevents a dead-code warning until translator.rs is
+// wired up to call `transcription_policy_snapshot`.
+#[allow(dead_code)]
+// `f64` doesn't implement `Eq` (NaN breaks reflexivity), so this can only
+// derive `PartialEq`, not `Eq`, once `word_correction_threshold` joins the
+// struct — `==` comparisons (used by the tests below) still work fine via
+// `PartialEq`.
+#[derive(Debug, Clone, PartialEq)]
+pub struct TranscriptionPolicySnapshot {
+    pub model: String,
+    pub language: String,
+    pub translate_to_english: bool,
+    pub custom_words: Vec<String>,
+    pub word_correction_threshold: f64,
 }
 
 /// Which OpenRouter endpoint the OpenRouter transcription engine uses.
@@ -572,6 +630,12 @@ pub struct AppSettings {
     pub selected_language: String,
     #[serde(default = "default_overlay_position")]
     pub overlay_position: OverlayPosition,
+    /// UI appearance: System (follows OS), Light, or Dark. Resolved and
+    /// applied by the frontend (main window via React; the overlay/floating
+    /// windows via a Rust-side push since they have no settings store — see
+    /// `apply_theme_to_aux_windows` in lib.rs).
+    #[serde(default)]
+    pub app_theme: Theme,
     #[serde(default = "default_debug_mode")]
     pub debug_mode: bool,
     #[serde(default = "default_log_level")]
@@ -1426,6 +1490,7 @@ pub fn get_default_settings() -> AppSettings {
         translate_to_english: false,
         selected_language: "auto".to_string(),
         overlay_position: default_overlay_position(),
+        app_theme: Theme::default(),
         debug_mode: false,
         log_level: default_log_level(),
         custom_words: Vec::new(),
@@ -1515,6 +1580,34 @@ impl AppSettings {
             return None;
         }
         self.llm_provider(&self.post_process_provider_ref)
+    }
+
+    /// Build a `TranscriptionPolicySnapshot` for a new job (T-108). Pass the
+    /// already-resolved effective model id (e.g. Translator's per-job
+    /// `translator_model`, validated against the model registry by the
+    /// caller and falling back to live dictation's `selected_model`) as
+    /// `model_override`; an empty/`None` override falls back to
+    /// `selected_model` directly. Deliberately does NOT reach into the model
+    /// registry itself — that dependency belongs to the caller, not
+    /// settings.rs.
+    // Not yet called outside this file's own tests — see the T-108 ticket
+    // follow-up. Remove once translator.rs is wired up.
+    #[allow(dead_code)]
+    pub fn transcription_policy_snapshot(
+        &self,
+        model_override: Option<&str>,
+    ) -> TranscriptionPolicySnapshot {
+        let model = model_override
+            .filter(|m| !m.is_empty())
+            .map(str::to_string)
+            .unwrap_or_else(|| self.selected_model.clone());
+        TranscriptionPolicySnapshot {
+            model,
+            language: self.selected_language.clone(),
+            translate_to_english: self.translate_to_english,
+            custom_words: self.custom_words.clone(),
+            word_correction_threshold: self.word_correction_threshold,
+        }
     }
 }
 
@@ -1638,6 +1731,77 @@ pub fn write_settings(app: &AppHandle, settings: AppSettings) {
     store.set("settings", serde_json::to_value(&settings).unwrap());
 }
 
+/// Process-wide lock serializing settings read-modify-write cycles started
+/// through `update_settings` below (T-111). Every settings mutation in the
+/// app today is a bare `let mut s = get_settings(app); s.x = y;
+/// write_settings(app, s);` with no cross-thread coordination: two concurrent
+/// mutators (e.g. a UI command and the Translator worker seeding its default
+/// folder, or the MCP server and a shortcut handler) can each read the
+/// pre-mutation struct and then write it back, and whichever writes second
+/// silently discards the other's change — last-writer-wins on the whole
+/// struct.
+///
+/// IMPORTANT — what this DOES and does NOT fix:
+/// - It DOES serialize any callers that go through `update_settings`, so two
+///   such callers mutating different fields concurrently both persist (see
+///   the `synchronized_rmw_serializes_concurrent_field_mutations` test below,
+///   which exercises the same read/mutate/write shape without needing a real
+///   `AppHandle`).
+/// - It does NOT retrofit the ~50 existing call sites elsewhere in the app
+///   (`shortcut/mod.rs`, `commands/*.rs`, `anchor.rs`, `managers/translator.rs`,
+///   etc.) that still do the bare pattern directly against `get_settings` /
+///   `write_settings` — those files are owned by other concurrent
+///   workstreams and are out of scope for this change. They are NOT
+///   serialized against `update_settings` or against each other. Migrating
+///   them to call `update_settings(app, |s| ...)` instead is mechanical and
+///   tracked as the T-111 follow-up.
+/// - `mcp/tools.rs` has its own separate `SETTINGS_LOCK` covering only MCP
+///   mutators; it is a different lock from this one and the two do not
+///   serialize against each other. Converging both onto this helper is part
+///   of the same follow-up.
+static SETTINGS_MUTATION_LOCK: Mutex<()> = Mutex::new(());
+
+/// Generic read-modify-write-under-lock primitive. Pulled out of
+/// `update_settings` so the serialization guarantee can be unit-tested with a
+/// plain in-memory value instead of a real Tauri `AppHandle`/store (which
+/// can't be constructed in a `cargo test` without launching an app). Returns
+/// both the mutated value and whatever `mutate` returns, so callers that need
+/// the resulting state back (like `update_settings`) don't have to re-read.
+fn synchronized_rmw<T: Clone, R>(
+    lock: &Mutex<()>,
+    read: impl FnOnce() -> T,
+    mutate: impl FnOnce(&mut T) -> R,
+    write: impl FnOnce(T),
+) -> (T, R) {
+    let _guard = lock.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+    let mut value = read();
+    let result = mutate(&mut value);
+    write(value.clone());
+    (value, result)
+}
+
+/// Read-modify-write `AppSettings` under the process-wide lock above. Prefer
+/// this over the bare `get_settings(app); s.field = x; write_settings(app,
+/// s);` pattern for any new writer, and for existing writers being migrated
+/// as part of the T-111 follow-up. Returns the settings as they were left
+/// after `mutate` ran (and were persisted).
+///
+/// First production call sites (T-109, see `tickets/T-109-*.md` and
+/// `tickets/T-111-*.md`): `commands/translator.rs`'s
+/// `translator_set_folder_enabled`/`translator_remove_folder`, which used to
+/// race each other's bare read-modify-write. The remaining ~50 call sites
+/// elsewhere in the app are still on the bare pattern — migrating them stays
+/// the T-111 follow-up.
+pub fn update_settings(app: &AppHandle, mutate: impl FnOnce(&mut AppSettings)) -> AppSettings {
+    let (settings, ()) = synchronized_rmw(
+        &SETTINGS_MUTATION_LOCK,
+        || get_settings(app),
+        mutate,
+        |settings| write_settings(app, settings),
+    );
+    settings
+}
+
 pub fn get_bindings(app: &AppHandle) -> HashMap<String, ShortcutBinding> {
     let settings = get_settings(app);
 
@@ -1723,5 +1887,151 @@ mod tests {
         let settings = get_default_settings();
         assert!(!settings.auto_submit);
         assert_eq!(settings.auto_submit_key, AutoSubmitKey::Enter);
+    }
+
+    // --- T-111: settings RMW concurrency ---------------------------------
+
+    /// Directly exercises the acceptance criterion "two concurrent mutations
+    /// of different fields both persist" using `synchronized_rmw` against a
+    /// plain in-memory struct (no `AppHandle` needed). Without the lock this
+    /// is exactly the lost-update race T-111 describes: both threads read
+    /// the zeroed struct, each bumps its own field, and whichever writes
+    /// second clobbers the other's write of the *unrelated* field back to 0.
+    #[test]
+    fn synchronized_rmw_serializes_concurrent_field_mutations() {
+        use std::sync::Arc;
+        use std::thread;
+
+        #[derive(Clone, Default)]
+        struct FakeSettings {
+            a: i32,
+            b: i32,
+        }
+
+        static LOCK: Mutex<()> = Mutex::new(());
+        let store = Arc::new(Mutex::new(FakeSettings::default()));
+        const ITERS: i32 = 200;
+
+        let store_a = Arc::clone(&store);
+        let t_a = thread::spawn(move || {
+            for _ in 0..ITERS {
+                synchronized_rmw(
+                    &LOCK,
+                    || store_a.lock().unwrap().clone(),
+                    |s: &mut FakeSettings| s.a += 1,
+                    |s| *store_a.lock().unwrap() = s,
+                );
+            }
+        });
+        let store_b = Arc::clone(&store);
+        let t_b = thread::spawn(move || {
+            for _ in 0..ITERS {
+                synchronized_rmw(
+                    &LOCK,
+                    || store_b.lock().unwrap().clone(),
+                    |s: &mut FakeSettings| s.b += 1,
+                    |s| *store_b.lock().unwrap() = s,
+                );
+            }
+        });
+        t_a.join().unwrap();
+        t_b.join().unwrap();
+
+        let final_state = store.lock().unwrap().clone();
+        assert_eq!(final_state.a, ITERS, "field mutated on thread A was lost");
+        assert_eq!(final_state.b, ITERS, "field mutated on thread B was lost");
+    }
+
+    #[test]
+    fn synchronized_rmw_returns_mutated_value_and_closure_result() {
+        static LOCK: Mutex<()> = Mutex::new(());
+        let source = 41;
+        let mut written = None;
+        let (value, doubled) = synchronized_rmw(
+            &LOCK,
+            || source,
+            |v: &mut i32| {
+                *v += 1;
+                *v * 2
+            },
+            |v| written = Some(v),
+        );
+        assert_eq!(value, 42);
+        assert_eq!(doubled, 84);
+        assert_eq!(written, Some(42));
+    }
+
+    // --- T-108: transcription policy snapshot -----------------------------
+
+    #[test]
+    fn transcription_policy_snapshot_uses_override_when_present() {
+        let mut settings = get_default_settings();
+        settings.selected_model = "whisper-base".to_string();
+        settings.selected_language = "en".to_string();
+        settings.translate_to_english = true;
+        settings.custom_words = vec!["Handy".to_string()];
+        settings.word_correction_threshold = 0.42;
+
+        let snap = settings.transcription_policy_snapshot(Some("parakeet-tdt-0.6b-v3-int8"));
+        assert_eq!(snap.model, "parakeet-tdt-0.6b-v3-int8");
+        assert_eq!(snap.language, "en");
+        assert!(snap.translate_to_english);
+        assert_eq!(snap.custom_words, vec!["Handy".to_string()]);
+        assert_eq!(snap.word_correction_threshold, 0.42);
+    }
+
+    /// T-108 follow-up: `word_correction_threshold` affects every segment's
+    /// custom-word output exactly like `custom_words` does, so it must be
+    /// part of the frozen snapshot too — this asserts it actually gets
+    /// captured (a regression against the field being silently dropped from
+    /// `transcription_policy_snapshot`'s constructor again).
+    #[test]
+    fn transcription_policy_snapshot_captures_word_correction_threshold() {
+        let mut settings = get_default_settings();
+        settings.word_correction_threshold = 0.75;
+        let snap = settings.transcription_policy_snapshot(None);
+        assert_eq!(snap.word_correction_threshold, 0.75);
+
+        settings.word_correction_threshold = 0.1;
+        // Frozen: a later mutation must not leak into the already-taken snapshot.
+        assert_eq!(snap.word_correction_threshold, 0.75);
+    }
+
+    #[test]
+    fn transcription_policy_snapshot_falls_back_to_selected_model() {
+        let mut settings = get_default_settings();
+        settings.selected_model = "whisper-base".to_string();
+
+        // Empty override string (e.g. an unset `translator_model`) falls back,
+        // same as no override at all.
+        assert_eq!(
+            settings.transcription_policy_snapshot(Some("")).model,
+            "whisper-base"
+        );
+        assert_eq!(
+            settings.transcription_policy_snapshot(None).model,
+            "whisper-base"
+        );
+    }
+
+    /// The whole point of T-108: once taken, a snapshot must not observe a
+    /// settings change made after it (simulating a mid-job toggle of
+    /// Translate-to-English while a multi-segment job is running).
+    #[test]
+    fn transcription_policy_snapshot_is_frozen_after_later_settings_mutation() {
+        let mut settings = get_default_settings();
+        settings.translate_to_english = false;
+        settings.selected_language = "en".to_string();
+        settings.word_correction_threshold = 0.3;
+
+        let snap = settings.transcription_policy_snapshot(None);
+
+        settings.translate_to_english = true;
+        settings.selected_language = "fr".to_string();
+        settings.word_correction_threshold = 0.9;
+
+        assert!(!snap.translate_to_english);
+        assert_eq!(snap.language, "en");
+        assert_eq!(snap.word_correction_threshold, 0.3);
     }
 }

@@ -117,6 +117,53 @@ fn show_main_window(app: &AppHandle) {
     }
 }
 
+/// Push the resolved appearance theme into the overlay/floating windows.
+///
+/// Unlike the main window (which resolves + applies `app_theme` itself via
+/// React in App.tsx, including tracking OS `prefers-color-scheme` changes
+/// live when System is selected), the recording-overlay and
+/// floating-transcription windows have no settings store of their own — they
+/// only listen for a handful of narrow, single-purpose events (T-204). Rather
+/// than widen their event contracts, we stamp `data-theme` directly onto each
+/// window's `document.documentElement` from the Rust side: `System` clears
+/// the attribute so each window's own `@media (prefers-color-scheme: dark)`
+/// CSS keeps tracking the OS live (no JS needed for that case), while
+/// `Light`/`Dark` set an explicit override that wins in both directions per
+/// the `:root[data-theme="..."]` rules in RecordingOverlay.css /
+/// FloatingTranscription.css.
+///
+/// Called once at startup (right after both aux windows are created, using
+/// the persisted setting) and again on every `change_app_theme_setting` call
+/// so the change applies immediately without restarting.
+/// Builder `initialization_script` for a forced theme: runs before the page's
+/// own scripts on EVERY navigation, closing the load race where an `eval`
+/// issued right after `build()` lands on the pre-navigation document and is
+/// lost. Empty for `System` (no attribute — the window's own
+/// `prefers-color-scheme` CSS tracks the OS). Enum-derived: no user string
+/// ever reaches the script.
+pub(crate) fn theme_init_script(theme: settings::Theme) -> &'static str {
+    match theme {
+        settings::Theme::Light => "document.documentElement.setAttribute('data-theme','light');",
+        settings::Theme::Dark => "document.documentElement.setAttribute('data-theme','dark');",
+        settings::Theme::System => "",
+    }
+}
+
+pub(crate) fn apply_theme_to_aux_windows(app: &AppHandle, theme: settings::Theme) {
+    let js = match theme {
+        settings::Theme::Light => "document.documentElement.setAttribute('data-theme','light');",
+        settings::Theme::Dark => "document.documentElement.setAttribute('data-theme','dark');",
+        settings::Theme::System => "document.documentElement.removeAttribute('data-theme');",
+    };
+    for label in ["recording_overlay", "floating_transcription"] {
+        if let Some(window) = app.get_webview_window(label) {
+            if let Err(e) = window.eval(js) {
+                log::warn!("Failed to apply theme to '{}' window: {}", label, e);
+            }
+        }
+    }
+}
+
 fn initialize_core_logic(app_handle: &AppHandle) {
     // Note: Enigo (keyboard/mouse simulation) is NOT initialized here.
     // The frontend is responsible for calling the `initialize_enigo` command
@@ -259,6 +306,11 @@ fn initialize_core_logic(app_handle: &AppHandle) {
 
     // Create the floating transcription window (hidden by default)
     overlay::create_floating_transcription_window(app_handle);
+
+    // Stamp the persisted appearance theme onto both aux windows now that
+    // they exist (T-204). `settings` here was fetched above for the
+    // show_tray_icon/autostart checks and still reflects app_theme.
+    apply_theme_to_aux_windows(app_handle, settings.app_theme);
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -279,6 +331,7 @@ pub fn run(cli_args: CliArgs) {
         shortcut::change_translate_to_english_setting,
         shortcut::change_selected_language_setting,
         shortcut::change_overlay_position_setting,
+        shortcut::change_app_theme_setting,
         shortcut::change_debug_mode_setting,
         shortcut::change_word_correction_threshold_setting,
         shortcut::change_paste_method_setting,

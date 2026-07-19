@@ -32,7 +32,25 @@ pub struct SubmitOverride {
 /// clipboard restore only fires if no newer paste has superseded it.
 static RESTORE_GEN: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
+/// Serializes every clipboard WRITE with the generation bump that guards it
+/// (T-103, finding 3). Without this, the delayed restore thread could read
+/// `RESTORE_GEN`, find it still matches its own generation, and then — in the
+/// gap before its own `write_text` call — lose a race to a `park_text`/paste
+/// that bumps the generation and writes AFTER the restore's check but BEFORE
+/// its write, so the restore's write (now stale) lands last and clobbers the
+/// just-parked text. Held ONLY around the bump+write pair itself — never
+/// across the paste keystroke, any sleep, or other blocking work.
+static CLIPBOARD_WRITE_LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
+
 static SUBMIT_OVERRIDE: Lazy<Mutex<Option<SubmitOverride>>> = Lazy::new(|| Mutex::new(None));
+
+/// Sentinel error returned internally when a per-keystroke anchor re-check
+/// (T-103, finding 1) finds the delivery target no longer foreground/focused
+/// mid-paste. Distinct from an ordinary paste failure so `paste_inner` routes
+/// it through the SAME fail-closed park path as a `begin_delivery`/TOCTOU
+/// verification failure — never the generic paste-failure toast. Never
+/// surfaced to the user as-is.
+const ANCHOR_FOCUS_LOST: &str = "__anchor_focus_lost_mid_paste__";
 
 /// Arm the next paste with a submit/clipboard override.
 pub fn set_submit_override(over: SubmitOverride) {
@@ -42,12 +60,46 @@ pub fn set_submit_override(over: SubmitOverride) {
 }
 
 /// Park text on the clipboard as the delivery of last resort. Bumps the paste
-/// generation FIRST so a pending delayed clipboard-restore (from an earlier
-/// paste) can never overwrite what was just parked. Returns whether the write
-/// stuck.
+/// generation and writes under `CLIPBOARD_WRITE_LOCK` (T-103, finding 3) so a
+/// pending delayed clipboard-restore (from an earlier paste) can never land
+/// between the bump and the write and overwrite what was just parked. Returns
+/// whether the write stuck.
 pub fn park_text(app: &AppHandle, text: &str) -> bool {
+    let _write_lock = CLIPBOARD_WRITE_LOCK
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
     RESTORE_GEN.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
     app.clipboard().write_text(text).is_ok()
+}
+
+/// Pure decision helper for the restore-vs-park/paste race (T-103, finding
+/// 3): given the generation a delayed restore was armed for and the CURRENT
+/// generation read INSIDE the same lock as the restore's write, should the
+/// restore proceed? Extracted so the ordering logic is unit-testable without
+/// real clipboard I/O, timing, or touching the shared `RESTORE_GEN`/
+/// `CLIPBOARD_WRITE_LOCK` statics from a test.
+fn should_restore(armed_generation: u64, current_generation: u64) -> bool {
+    armed_generation == current_generation
+}
+
+#[cfg(test)]
+mod restore_race_tests {
+    use super::*;
+
+    #[test]
+    fn restore_proceeds_when_no_newer_write_landed() {
+        assert!(should_restore(3, 3));
+    }
+
+    #[test]
+    fn restore_is_skipped_when_a_newer_generation_landed_under_the_lock() {
+        // Simulates a park_text/paste bumping the generation between the
+        // restore thread's spawn and its lock acquisition — the classic
+        // T-103 finding 3 race. Reading the CURRENT generation inside the
+        // same lock as the write (rather than before it) is what lets the
+        // restore see this fresh value and skip.
+        assert!(!should_restore(1, 2));
+    }
 }
 
 /// Clear any armed submit override (called when a new recording starts or its
@@ -68,6 +120,14 @@ fn take_submit_override() -> Option<SubmitOverride> {
 /// Pastes text using the clipboard: saves current content, writes text, sends
 /// the paste keystroke, then (when `restore_after_ms` is `Some`) restores the
 /// original clipboard after that delay on a background thread.
+///
+/// `anchor_guard`, when `Some`, is the active anchored delivery's TOCTOU
+/// guard (T-103, finding 1): re-verified immediately before the synthesized
+/// keystroke below — the write-clipboard delay (`paste_delay_ms`) and the
+/// native-tool-vs-enigo dispatch are exactly the kind of gap a focus-stealing
+/// popup can land in between `begin_delivery`'s own check and this one. `None`
+/// for every non-anchored paste (MCP/CLI, no delivery intent, paste disabled)
+/// — those are completely unaffected by this check.
 fn paste_via_clipboard(
     enigo: &mut Enigo,
     text: &str,
@@ -75,34 +135,54 @@ fn paste_via_clipboard(
     paste_method: &PasteMethod,
     paste_delay_ms: u64,
     restore_after_ms: Option<u64>,
+    anchor_guard: Option<&crate::anchor::DeliveryGuard>,
 ) -> Result<(), String> {
     let clipboard = app_handle.clipboard();
     let clipboard_content = clipboard.read_text().unwrap_or_default();
 
-    // Supersede any pending delayed restore from a previous paste — it must not
-    // clobber the text we are about to place on the clipboard.
-    let generation = RESTORE_GEN.fetch_add(1, std::sync::atomic::Ordering::SeqCst) + 1;
+    // Supersede any pending delayed restore from a previous paste, and place
+    // OUR text on the clipboard, atomically w.r.t. the restore thread below
+    // (T-103, finding 3): the restore thread re-checks the generation INSIDE
+    // the SAME `CLIPBOARD_WRITE_LOCK` right before its own write, so it can
+    // never land between our bump and our write and clobber this paste's text.
+    let generation = {
+        let _write_lock = CLIPBOARD_WRITE_LOCK
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        let generation = RESTORE_GEN.fetch_add(1, std::sync::atomic::Ordering::SeqCst) + 1;
 
-    // Write text to clipboard first
-    // On Wayland, prefer wl-copy for better compatibility (especially with umlauts)
-    #[cfg(target_os = "linux")]
-    let write_result = if is_wayland() && is_wl_copy_available() {
-        info!("Using wl-copy for clipboard write on Wayland");
-        write_clipboard_via_wl_copy(text)
-    } else {
-        clipboard
+        // Write text to clipboard first
+        // On Wayland, prefer wl-copy for better compatibility (especially with umlauts)
+        #[cfg(target_os = "linux")]
+        let write_result = if is_wayland() && is_wl_copy_available() {
+            info!("Using wl-copy for clipboard write on Wayland");
+            write_clipboard_via_wl_copy(text)
+        } else {
+            clipboard
+                .write_text(text)
+                .map_err(|e| format!("Failed to write to clipboard: {}", e))
+        };
+
+        #[cfg(not(target_os = "linux"))]
+        let write_result = clipboard
             .write_text(text)
-            .map_err(|e| format!("Failed to write to clipboard: {}", e))
+            .map_err(|e| format!("Failed to write to clipboard: {}", e));
+
+        write_result?;
+        generation
     };
 
-    #[cfg(not(target_os = "linux"))]
-    let write_result = clipboard
-        .write_text(text)
-        .map_err(|e| format!("Failed to write to clipboard: {}", e));
-
-    write_result?;
-
     std::thread::sleep(Duration::from_millis(paste_delay_ms));
+
+    // T-103 (finding 1): re-verify the anchor immediately before the
+    // synthesized keystroke below — a focus change since `begin_delivery`'s
+    // own check (or since the last re-check) must abort rather than paste
+    // blind. No-op (`anchor_guard` is `None`) for every non-anchored paste.
+    if let Some(guard) = anchor_guard {
+        if !crate::anchor::guard_still_foreground(guard) {
+            return Err(ANCHOR_FOCUS_LOST.to_string());
+        }
+    }
 
     // Send paste key combo
     #[cfg(target_os = "linux")]
@@ -124,13 +204,22 @@ fn paste_via_clipboard(
     // Restore the original clipboard content after a delay, off this thread.
     // Remote sessions (Citrix/RDP) fetch clipboard data on demand AFTER the
     // paste keystroke lands in the remote app; restoring too early hands them
-    // the old content. The generation guard aborts this restore if a newer
-    // paste supersedes it while we wait.
+    // the old content. The generation is re-checked INSIDE the SAME
+    // `CLIPBOARD_WRITE_LOCK` as the write itself (T-103, finding 3) — a
+    // check-then-write without the lock left a gap where a park/paste could
+    // bump the generation and write AFTER this check but BEFORE this write,
+    // so this (now-stale) restore would land last and clobber it.
     if let Some(delay_ms) = restore_after_ms {
         let app = app_handle.clone();
         std::thread::spawn(move || {
             std::thread::sleep(Duration::from_millis(delay_ms));
-            if RESTORE_GEN.load(std::sync::atomic::Ordering::SeqCst) != generation {
+            let _write_lock = CLIPBOARD_WRITE_LOCK
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            if !should_restore(
+                generation,
+                RESTORE_GEN.load(std::sync::atomic::Ordering::SeqCst),
+            ) {
                 return;
             }
             // On Wayland, prefer wl-copy for better compatibility
@@ -657,19 +746,32 @@ fn should_send_auto_submit(auto_submit: bool, paste_method: PasteMethod) -> bool
     auto_submit && paste_method != PasteMethod::None
 }
 
-/// Flow paste: consumes the one-shot submit override and anchored-delivery
-/// request, and can auto-track the output location. Used by the transcription
-/// flows only.
-pub fn paste(text: String, app_handle: AppHandle, is_ptt: bool) -> Result<(), String> {
-    paste_inner(text, app_handle, is_ptt, true)
+/// Flow paste: consumes the one-shot submit override and a take-scoped
+/// anchored-delivery intent (captured by the caller at stop()/take time via
+/// `anchor::take_delivery_intent()` — see T-101), and can auto-track the
+/// output location. Used by the transcription flows only.
+pub fn paste(
+    text: String,
+    app_handle: AppHandle,
+    is_ptt: bool,
+    delivery_intent: crate::anchor::DeliveryIntent,
+) -> Result<(), String> {
+    paste_inner(text, app_handle, is_ptt, true, delivery_intent)
 }
 
 /// Plain paste for non-flow callers (MCP/CLI `keyboard_type`): must NEVER
 /// consume or observe flow one-shots — a stale submit override or delivery
-/// request would redirect unrelated text into the submit pipeline or an
-/// anchored window.
+/// intent would redirect unrelated text into the submit pipeline or an
+/// anchored window. Constructed with `DeliveryIntent::NONE` by construction,
+/// never by reading any global.
 pub fn paste_plain(text: String, app_handle: AppHandle) -> Result<(), String> {
-    paste_inner(text, app_handle, false, false)
+    paste_inner(
+        text,
+        app_handle,
+        false,
+        false,
+        crate::anchor::DeliveryIntent::NONE,
+    )
 }
 
 fn paste_inner(
@@ -677,7 +779,14 @@ fn paste_inner(
     app_handle: AppHandle,
     is_ptt: bool,
     flow_paste: bool,
+    delivery_intent: crate::anchor::DeliveryIntent,
 ) -> Result<(), String> {
+    // The Jumper (and therefore `delivery_intent`) is Windows-only — silence
+    // the unused-parameter warning on other platforms rather than threading
+    // a `#[cfg]` through every call site.
+    #[cfg(not(windows))]
+    let _ = delivery_intent;
+
     let settings = get_settings(&app_handle);
     let submit_override = if flow_paste {
         take_submit_override()
@@ -748,15 +857,44 @@ fn paste_inner(
         .lock()
         .map_err(|e| format!("Failed to lock Enigo: {}", e))?;
 
+    // Park `text` on the clipboard as the anchored-delivery fail-closed path:
+    // supersede any pending delayed restore first (so it can't overwrite the
+    // parked text), write, and emit `anchor-delivery-failed`. Shared by a
+    // verification failure at `begin_delivery` and the T-103 TOCTOU re-check
+    // right before the keystroke — both must behave identically.
+    #[cfg(windows)]
+    let park_anchor_failure = |reason: String| {
+        // Bump-and-write under CLIPBOARD_WRITE_LOCK (T-103, finding 3): the
+        // SAME serialization `park_text`/`paste_via_clipboard`'s restore use,
+        // so a delayed restore can never land between this bump and this
+        // write and clobber the parked text.
+        let reason = {
+            let _write_lock = CLIPBOARD_WRITE_LOCK
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            RESTORE_GEN.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            match app_handle.clipboard().write_text(&text) {
+                Ok(()) => reason,
+                Err(e) => {
+                    // Don't claim the text is on the clipboard when it isn't.
+                    log::warn!("Could not park transcription on clipboard: {}", e);
+                    format!("{reason}; clipboard also unavailable ({e})")
+                }
+            }
+        };
+        let _ = app_handle.emit("anchor-delivery-failed", reason);
+    };
+
     // Anchored delivery: activate + focus the captured target BEFORE any
     // keystroke, with verification — never paste blind into a surprise
     // location. On failure the text is parked on the clipboard instead
     // (superseding any pending delayed restore) and the anchor is kept for a
     // retry (or cleared if the window is gone). Non-flow pastes (MCP/CLI)
-    // never touch the delivery request.
+    // never touch delivery — `delivery_intent` is `DeliveryIntent::NONE` by
+    // construction for them.
     #[cfg(windows)]
-    let anchor_guard = if flow_paste && paste_method != PasteMethod::None {
-        match crate::anchor::begin_delivery(&app_handle) {
+    let mut anchor_guard = if flow_paste && paste_method != PasteMethod::None {
+        match crate::anchor::begin_delivery(&app_handle, delivery_intent) {
             crate::anchor::BeginDelivery::NoAnchor => None,
             crate::anchor::BeginDelivery::Ready(guard) => Some(guard),
             crate::anchor::BeginDelivery::Failed { reason } => {
@@ -764,31 +902,75 @@ fn paste_inner(
                     "Anchored delivery failed: {} — parking text on clipboard",
                     reason
                 );
-                // Supersede any pending delayed restore BEFORE parking, so it
-                // can't overwrite the parked text in the gap.
-                RESTORE_GEN.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-                let reason = match app_handle.clipboard().write_text(&text) {
-                    Ok(()) => reason,
-                    Err(e) => {
-                        // Don't claim the text is on the clipboard when it isn't.
-                        log::warn!("Could not park transcription on clipboard: {}", e);
-                        format!("{reason}; clipboard also unavailable ({e})")
-                    }
-                };
-                let _ = app_handle.emit("anchor-delivery-failed", reason);
+                park_anchor_failure(reason);
                 return Ok(());
             }
         }
     } else {
-        // Paste disabled: any delivery request or deferred on-finish action
-        // armed for this take must die with it — stranded, they would hijack
-        // the NEXT unrelated paste.
+        // Paste disabled: the take-scoped `delivery_intent` simply drops
+        // with this call (nothing global left to leak into the NEXT
+        // paste — T-101). Only the deferred on-finish action is a residual
+        // global concern: actions.rs already takes ownership of it at
+        // stop() time before this call ever runs, so this clear is a
+        // defensive no-op today, kept in case a future caller reaches
+        // paste_inner without going through that take-ownership point.
         if flow_paste {
-            crate::anchor::clear_delivery_request();
             crate::anchor::clear_post_take_action();
         }
         None
     };
+
+    // TOCTOU close (T-103): `begin_delivery` verified activation/focus, then
+    // settled 60ms before returning — a focus change in that gap (a popup
+    // stealing focus, the user clicking elsewhere) must not receive a blind
+    // paste. Re-check immediately before the paste keystroke and route a
+    // mismatch to the EXACT same fail-closed park path as a verification
+    // failure. One cheap syscall — no measurable latency on a normal
+    // delivery.
+    #[cfg(windows)]
+    {
+        let focus_lost_before_paste = anchor_guard
+            .as_ref()
+            .map(|guard| !crate::anchor::guard_still_foreground(guard))
+            .unwrap_or(false);
+        if focus_lost_before_paste {
+            let reason = "focus changed before the paste keystroke (TOCTOU re-check)".to_string();
+            info!(
+                "Anchored delivery aborted: {} — parking text on clipboard",
+                reason
+            );
+            park_anchor_failure(reason);
+            // Finding 1 (second adversarial re-verify): this early-abort path
+            // used to `return Ok(())` here directly, silently dropping the
+            // owned `DeliveryGuard` WITHOUT ever running the
+            // `finish_delivery` epilogue near the bottom of this function —
+            // so the flow's `return_focus` policy never ran on this path,
+            // even though every other paste outcome (success, a failure that
+            // reaches the end of the function) does run it. `.take()`
+            // consumes the guard here so the unconditional `finish_delivery`
+            // call at the bottom (which only fires if `anchor_guard` is
+            // still `Some`) can never double-run it.
+            if let Some(guard) = anchor_guard.take() {
+                let return_focus = if submit_override.is_some() {
+                    settings.return_focus_submit
+                } else {
+                    settings.return_focus_output
+                };
+                crate::anchor::finish_delivery(&app_handle, guard, false, return_focus);
+            }
+            return Ok(());
+        }
+    }
+
+    // Cross-platform handle to the active guard (if any) for the PER-KEYSTROKE
+    // re-checks below (T-103, finding 1) — `None` on non-Windows (the Jumper
+    // doesn't exist there) and for every non-anchored paste, so those are
+    // completely unaffected. `guard_still_foreground` is itself a no-op
+    // `true` on non-Windows, so no `#[cfg]` is needed at the call sites.
+    #[cfg(windows)]
+    let anchor_guard_ref: Option<&crate::anchor::DeliveryGuard> = anchor_guard.as_ref();
+    #[cfg(not(windows))]
+    let anchor_guard_ref: Option<&crate::anchor::DeliveryGuard> = None;
 
     let (do_submit, submit_key) = match forced_submit {
         // Submit shortcut: always submit (unless paste itself is disabled).
@@ -824,6 +1006,7 @@ fn paste_inner(
                         &PasteMethod::CtrlV,
                         paste_delay_ms,
                         restore_after_ms,
+                        anchor_guard_ref,
                     )?;
                 }
             }
@@ -835,6 +1018,7 @@ fn paste_inner(
                     &paste_method,
                     paste_delay_ms,
                     restore_after_ms,
+                    anchor_guard_ref,
                 )?
             }
             PasteMethod::ExternalScript => {
@@ -843,20 +1027,70 @@ fn paste_inner(
                     .as_ref()
                     .filter(|p| !p.is_empty())
                     .ok_or("External script path is not configured")?;
+                // NOTE: an external script's own actions are opaque to Handy
+                // (T-103, finding 1) — there is no "keystroke" here for a
+                // per-action re-check to guard, and the Jumper is
+                // Windows-only besides, so `anchor_guard_ref` is always
+                // `None` on any path that reaches this arm anyway.
                 paste_via_external_script(&text, script_path)?;
             }
         }
 
         if do_submit {
             std::thread::sleep(Duration::from_millis(50));
+            // T-103 (finding 1): re-verify immediately before the auto-submit
+            // keystroke too — the 50ms settle above is exactly the kind of
+            // gap a focus-stealing popup can land in after the paste itself
+            // already succeeded.
+            if let Some(guard) = anchor_guard_ref {
+                if !crate::anchor::guard_still_foreground(guard) {
+                    return Err(ANCHOR_FOCUS_LOST.to_string());
+                }
+            }
             send_return_key(&mut enigo, submit_key)?;
         }
         Ok(())
     })();
 
+    // T-103 (finding 1): a per-keystroke abort inside the closure above
+    // (paste_via_clipboard's internal check, or the submit-key check just
+    // above) is routed through the IDENTICAL fail-closed park path as every
+    // other anchor-focus mismatch — never the generic paste-failure toast a
+    // plain `Err` would otherwise trigger in the caller.
+    #[cfg(windows)]
+    if let Err(e) = &delivered {
+        if e == ANCHOR_FOCUS_LOST {
+            let reason = "focus changed mid-paste (per-keystroke re-check)".to_string();
+            info!(
+                "Anchored delivery aborted: {} — parking text on clipboard",
+                reason
+            );
+            park_anchor_failure(reason);
+            // Finding 1 (second adversarial re-verify): same fix as the
+            // TOCTOU-close abort above — run `finish_delivery` (delivered_ok
+            // = false, the flow's `return_focus`) before returning, instead
+            // of silently dropping the guard. `anchor_guard_ref`'s borrow of
+            // `anchor_guard` ended when the closure above returned, so
+            // `.take()` here is fine.
+            if let Some(guard) = anchor_guard.take() {
+                let return_focus = if submit_override.is_some() {
+                    settings.return_focus_submit
+                } else {
+                    settings.return_focus_output
+                };
+                crate::anchor::finish_delivery(&app_handle, guard, false, return_focus);
+            }
+            return Ok(());
+        }
+    }
+
     // Track-last-output: ONE global switch for both flows — capture where the
     // text just landed into the configured slot, BEFORE any focus-return so
-    // the slot points at the paste target.
+    // the slot points at the paste target. Unlike the deferred on-finish
+    // Set/Clear action (T-102), this capture is decided and executed in the
+    // SAME instant the paste finishes — there's no earlier snapshot that
+    // could go stale, so the generation-CAS guard doesn't apply here; a
+    // plain `set_slot` (unconditional, authoritative) is correct.
     #[cfg(windows)]
     if flow_paste
         && delivered.is_ok()
@@ -891,12 +1125,20 @@ fn paste_inner(
 
     delivered?;
 
-    // After pasting, optionally copy to clipboard based on settings
-    if clipboard_handling == ClipboardHandling::CopyToClipboard {
-        let clipboard = app_handle.clipboard();
-        clipboard
-            .write_text(&text)
-            .map_err(|e| format!("Failed to copy to clipboard: {}", e))?;
+    // After pasting, optionally copy to clipboard based on settings.
+    //
+    // Finding 3 (second adversarial re-verify): this write used to go
+    // straight to `app_handle.clipboard().write_text` — no
+    // `CLIPBOARD_WRITE_LOCK`, no `RESTORE_GEN` bump. An OLDER paste's still-
+    // pending delayed restore (armed before this write, e.g. a prior take
+    // with a different clipboard handling) could fire AFTER this write and
+    // clobber it, since nothing about this write superseded that restore's
+    // armed generation. Routing it through `park_text` — the same
+    // bump-then-write-under-`CLIPBOARD_WRITE_LOCK` primitive
+    // `park_anchor_failure`/`paste_via_clipboard`'s own initial write already
+    // use — supersedes any such pending restore.
+    if clipboard_handling == ClipboardHandling::CopyToClipboard && !park_text(&app_handle, &text) {
+        return Err("Failed to copy to clipboard".to_string());
     }
 
     Ok(())

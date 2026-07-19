@@ -174,6 +174,9 @@ pub fn create_recording_overlay(app_handle: &AppHandle) {
         return;
     }
 
+    // Stamp a forced theme before the page's scripts run — an eval issued
+    // right after build() can land on the pre-navigation document (T-204).
+    let theme_js = crate::theme_init_script(crate::settings::get_settings(app_handle).app_theme);
     let mut builder = WebviewWindowBuilder::new(
         app_handle,
         "recording_overlay",
@@ -193,6 +196,10 @@ pub fn create_recording_overlay(app_handle: &AppHandle) {
     .transparent(true)
     .focused(false)
     .visible(false);
+
+    if !theme_js.is_empty() {
+        builder = builder.initialization_script(theme_js);
+    }
 
     if let Some((x, y)) = position {
         builder = builder.position(x, y);
@@ -338,7 +345,10 @@ const FLOATING_LABEL: &str = "floating_transcription";
 /// main thread and freeze all IPC on Windows.
 #[cfg(not(target_os = "macos"))]
 pub fn create_floating_transcription_window(app_handle: &AppHandle) {
-    match WebviewWindowBuilder::new(
+    // Same load-race guard as the overlay: stamp a forced theme before the
+    // page's own scripts run (T-204).
+    let theme_js = crate::theme_init_script(crate::settings::get_settings(app_handle).app_theme);
+    let mut builder = WebviewWindowBuilder::new(
         app_handle,
         FLOATING_LABEL,
         tauri::WebviewUrl::App("src/floating/index.html".into()),
@@ -351,9 +361,11 @@ pub fn create_floating_transcription_window(app_handle: &AppHandle) {
     .always_on_top(true)
     .skip_taskbar(true)
     .focused(false)
-    .visible(false)
-    .build()
-    {
+    .visible(false);
+    if !theme_js.is_empty() {
+        builder = builder.initialization_script(theme_js);
+    }
+    match builder.build() {
         Ok(_) => {
             log::debug!("Floating transcription window pre-created (hidden)");
         }

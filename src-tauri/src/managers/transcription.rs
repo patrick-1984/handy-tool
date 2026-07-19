@@ -56,12 +56,34 @@ enum LoadedEngine {
     OpenRouterWhisper,
 }
 
+/// The loaded engine AND the model ID it was loaded for, behind ONE mutex
+/// (adversarial-review finding 8b). These used to live in two SEPARATE
+/// `Mutex`es, updated in two separate critical sections by
+/// `load_model`/`unload_model`. A racing reader that locked them one at a
+/// time — e.g. "is anything loaded" followed by "for which model" — could
+/// observe an inconsistent pairing (engine-without-id mid-load,
+/// id-without-engine mid-unload) even though the writer always intended the
+/// pair to change together: two separately-locked fields simply can't be
+/// read as a consistent pair no matter how carefully the WRITER orders its
+/// own two critical sections. Combining them under one lock makes "engine
+/// and model_id always change together" an actual invariant instead of a
+/// hopeful convention.
+struct EngineState {
+    engine: Option<LoadedEngine>,
+    model_id: Option<String>,
+    /// Bumped on EVERY state mutation (install, unload, panic-clear). The
+    /// transcribe() take-out records it; put-back and panic-cleanup compare
+    /// against it instead of `model_id` — a REPLACEMENT engine that happens
+    /// to carry the same model id is a different instance and must never be
+    /// clobbered by the old instance's cleanup (Codex 0410 pass-3 finding 8).
+    instance: u64,
+}
+
 #[derive(Clone)]
 pub struct TranscriptionManager {
-    engine: Arc<Mutex<Option<LoadedEngine>>>,
+    engine: Arc<Mutex<EngineState>>,
     model_manager: Arc<ModelManager>,
     app_handle: AppHandle,
-    current_model_id: Arc<Mutex<Option<String>>>,
     last_activity: Arc<AtomicU64>,
     shutdown_signal: Arc<AtomicBool>,
     watcher_handle: Arc<Mutex<Option<thread::JoinHandle<()>>>>,
@@ -79,10 +101,13 @@ pub struct TranscriptionManager {
 impl TranscriptionManager {
     pub fn new(app_handle: &AppHandle, model_manager: Arc<ModelManager>) -> Result<Self> {
         let manager = Self {
-            engine: Arc::new(Mutex::new(None)),
+            engine: Arc::new(Mutex::new(EngineState {
+                engine: None,
+                model_id: None,
+                instance: 0,
+            })),
             model_manager,
             app_handle: app_handle.clone(),
-            current_model_id: Arc::new(Mutex::new(None)),
             last_activity: Arc::new(AtomicU64::new(
                 SystemTime::now()
                     .duration_since(SystemTime::UNIX_EPOCH)
@@ -174,8 +199,29 @@ impl TranscriptionManager {
         Ok(manager)
     }
 
+    /// Reject a dispatch when the loaded model does not match the caller's
+    /// expectation (pass-4 finding 8b): EVERY dispatch route — external
+    /// (FLM/API/OpenRouter, which return before the local take-out) and the
+    /// local engine path — must validate against the SAME guard it dispatches
+    /// under, because selecting a model persists `selected_model` before the
+    /// async load installs it. Empty `expected` = no expectation.
+    fn ensure_expected_model(state: &EngineState, expected: &str) -> Result<()> {
+        if expected.is_empty() {
+            return Ok(());
+        }
+        match state.model_id.as_deref() {
+            Some(loaded) if loaded != expected => Err(anyhow::anyhow!(
+                "Loaded model '{}' does not match the expected model '{}' \
+                 (it changed mid-take) — please retry.",
+                loaded,
+                expected
+            )),
+            _ => Ok(()),
+        }
+    }
+
     /// Lock the engine mutex, recovering from poison if a previous transcription panicked.
-    fn lock_engine(&self) -> MutexGuard<'_, Option<LoadedEngine>> {
+    fn lock_engine(&self) -> MutexGuard<'_, EngineState> {
         self.engine.lock().unwrap_or_else(|poisoned| {
             warn!("Engine mutex was poisoned by a previous panic, recovering");
             poisoned.into_inner()
@@ -183,8 +229,8 @@ impl TranscriptionManager {
     }
 
     pub fn is_model_loaded(&self) -> bool {
-        let engine = self.lock_engine();
-        engine.is_some()
+        let state = self.lock_engine();
+        state.engine.is_some()
     }
 
     pub fn unload_model(&self) -> Result<()> {
@@ -192,8 +238,8 @@ impl TranscriptionManager {
         debug!("Starting to unload model");
 
         {
-            let mut engine = self.lock_engine();
-            if let Some(ref mut loaded_engine) = *engine {
+            let mut state = self.lock_engine();
+            if let Some(ref mut loaded_engine) = state.engine {
                 match loaded_engine {
                     LoadedEngine::Whisper(e) => e.unload_model(),
                     LoadedEngine::Parakeet(e) => e.unload_model(),
@@ -218,11 +264,13 @@ impl TranscriptionManager {
                     }
                 }
             }
-            *engine = None; // Drop the engine to free memory
-        }
-        {
-            let mut current_model = self.current_model_id.lock().unwrap();
-            *current_model = None;
+            // Finding 8(b): clear the engine AND its model_id together, under
+            // the SAME lock acquisition — never in two separate critical
+            // sections (the old two-mutex design let a racing reader observe
+            // engine-without-id or id-without-engine).
+            state.engine = None; // Drop the engine to free memory
+            state.model_id = None;
+            state.instance += 1;
         }
 
         // Emit unloaded event
@@ -502,14 +550,15 @@ impl TranscriptionManager {
             }
         };
 
-        // Update the current engine and model ID
+        // Finding 8(b): update the engine AND its model ID together, under
+        // the SAME lock acquisition — never in two separate critical
+        // sections, so a racing observer can never see engine-without-id or
+        // id-without-engine.
         {
-            let mut engine = self.lock_engine();
-            *engine = Some(loaded_engine);
-        }
-        {
-            let mut current_model = self.current_model_id.lock().unwrap();
-            *current_model = Some(model_id.to_string());
+            let mut state = self.lock_engine();
+            state.engine = Some(loaded_engine);
+            state.model_id = Some(model_id.to_string());
+            state.instance += 1;
         }
 
         // Emit loading completed event
@@ -535,13 +584,59 @@ impl TranscriptionManager {
     /// Kicks off the model loading in a background thread if it's not already loaded
     pub fn initiate_model_load(&self) {
         let mut is_loading = self.is_loading.lock().unwrap();
-        if *is_loading || self.is_model_loaded() {
+        if *is_loading {
             return;
+        }
+
+        let selected_model = get_settings(&self.app_handle).selected_model;
+
+        // T-113/finding 8: non-blocking preflight. `is_model_loaded()` locks
+        // the ENGINE mutex, and `unload_model()` holds that SAME mutex while
+        // releasing engine resources (can take real time for some engines) —
+        // blocking here on the recording-START path could stall behind an
+        // in-flight unload, directly delaying capture (this is also why
+        // `TranscribeAction::start()` now calls this AFTER the mic-open
+        // attempt, not before — see actions.rs). On contention, assume "not
+        // loaded" and let `load_model()` below sort it out: it fully
+        // (re)loads regardless of what was there before, so a wrong
+        // assumption here costs at most one redundant-but-correct load —
+        // never a missed load, and never a stall on the start path.
+        //
+        // Finding 8(a): a loaded engine ALONE is not proof the right model is
+        // in it — compare the loaded model's ID against the currently
+        // SELECTED model before skipping. The Translator's folder-batch
+        // worker can temporarily load an OVERRIDE model into this same
+        // shared engine slot (see `managers/translator.rs`); if this
+        // preflight only checked "is anything loaded" it would see the
+        // Translator's override engine, wrongly conclude the dictation model
+        // was already ready, and skip loading it — dictation would then
+        // transcribe through the WRONG model.
+        match self.engine.try_lock() {
+            Ok(guard) => {
+                if guard.engine.is_some() {
+                    if guard.model_id.as_deref() == Some(selected_model.as_str()) {
+                        return; // already loaded with the right model — nothing to do
+                    }
+                    debug!(
+                        "Engine loaded for a different model than selected ({:?} vs {}) — reloading",
+                        guard.model_id, selected_model
+                    );
+                }
+            }
+            Err(_) => {
+                debug!(
+                    "Engine mutex busy during load preflight (likely an in-flight unload) — proceeding to load without blocking"
+                );
+            }
         }
 
         *is_loading = true;
         let self_clone = self.clone();
         thread::spawn(move || {
+            // Re-fetch settings fresh inside the thread (rather than reusing
+            // the `selected_model` snapshot above, which was only taken for
+            // the preflight comparison) in case they changed in the gap
+            // between this call and the thread actually starting.
             let settings = get_settings(&self_clone.app_handle);
             if let Err(e) = self_clone.load_model(&settings.selected_model) {
                 error!("Failed to load model: {}", e);
@@ -553,11 +648,24 @@ impl TranscriptionManager {
     }
 
     pub fn get_current_model(&self) -> Option<String> {
-        let current_model = self.current_model_id.lock().unwrap();
-        current_model.clone()
+        let state = self.lock_engine();
+        state.model_id.clone()
     }
 
+    /// Transcribe expecting the currently SELECTED model (the dictation
+    /// contract). Callers with a different expectation — the Translator's
+    /// batch override — must use [`Self::transcribe_expecting`].
     pub fn transcribe(&self, audio: Vec<f32>) -> Result<String> {
+        let expected = get_settings(&self.app_handle).selected_model;
+        self.transcribe_expecting(&expected, audio)
+    }
+
+    /// Transcribe, revalidating at ACTUAL inference time that the loaded
+    /// local engine still carries `expected_model` (pass-3 finding 8a): the
+    /// engine slot is shared and a concurrent load can swap models between a
+    /// caller's preflight and the take-out below. Empty `expected_model`
+    /// skips the check (no expectation).
+    pub fn transcribe_expecting(&self, expected_model: &str, audio: Vec<f32>) -> Result<String> {
         // Update last activity timestamp
         self.last_activity.store(
             SystemTime::now()
@@ -605,7 +713,7 @@ impl TranscriptionManager {
             }
 
             let engine_guard = self.lock_engine();
-            if engine_guard.is_none() {
+            if engine_guard.engine.is_none() {
                 return Err(anyhow::anyhow!("Model is not loaded for transcription."));
             }
         }
@@ -628,7 +736,8 @@ impl TranscriptionManager {
         #[cfg(not(target_os = "macos"))]
         {
             let engine_guard = self.lock_engine();
-            if matches!(&*engine_guard, Some(LoadedEngine::FlmWhisper)) {
+            if matches!(&engine_guard.engine, Some(LoadedEngine::FlmWhisper)) {
+                Self::ensure_expected_model(&engine_guard, expected_model)?;
                 drop(engine_guard);
                 let flm_guard = self.flm_manager.lock().unwrap();
                 if let Some(ref flm) = *flm_guard {
@@ -655,7 +764,8 @@ impl TranscriptionManager {
         // If API Whisper engine is active, POST to the configured endpoint
         {
             let engine_guard = self.lock_engine();
-            if matches!(&*engine_guard, Some(LoadedEngine::ApiWhisper)) {
+            if matches!(&engine_guard.engine, Some(LoadedEngine::ApiWhisper)) {
+                Self::ensure_expected_model(&engine_guard, expected_model)?;
                 drop(engine_guard);
                 let language = normalize_language_for_engine(&settings.selected_language)
                     .or_else(|| Some("en".to_string()));
@@ -686,7 +796,8 @@ impl TranscriptionManager {
         // engine runs per segment/chunk, so it works in live and chunked modes.
         {
             let engine_guard = self.lock_engine();
-            if matches!(&*engine_guard, Some(LoadedEngine::OpenRouterWhisper)) {
+            if matches!(&engine_guard.engine, Some(LoadedEngine::OpenRouterWhisper)) {
+                Self::ensure_expected_model(&engine_guard, expected_model)?;
                 drop(engine_guard);
                 // Require the configured provider to exist AND carry a key — never
                 // send an unauthenticated request (which just 401s silently).
@@ -745,7 +856,7 @@ impl TranscriptionManager {
             // Take the engine out so we own it during transcription.
             // If the engine panics, we simply don't put it back (effectively unloading it)
             // instead of poisoning the mutex.
-            let mut engine = match engine_guard.take() {
+            let mut engine = match engine_guard.engine.take() {
                 Some(e) => e,
                 None => {
                     return Err(anyhow::anyhow!(
@@ -755,8 +866,32 @@ impl TranscriptionManager {
             };
             // Identity of the engine we took — a concurrent load/unload can
             // legitimately change the loaded model while inference runs (the
-            // engine lives outside its mutex during the call).
-            let taken_model_id = self.get_current_model();
+            // engine lives outside its mutex during the call). Read straight
+            // off the guard we already hold — `get_current_model()` locks
+            // this SAME combined mutex (finding 8b) and would deadlock here.
+            let taken_model_id = engine_guard.model_id.clone();
+            let taken_instance = engine_guard.instance;
+
+            // Revalidate the EXPECTED model at actual inference time (pass-3
+            // finding 8a): the preflight comparison happens long before this
+            // point, and the shared engine slot can legitimately swap models
+            // in the gap (dictation vs the Translator's batch override). A
+            // mismatch puts the engine straight back (we still hold the
+            // guard) and errors instead of silently transcribing through the
+            // wrong model.
+            if !expected_model.is_empty() {
+                if let Some(loaded) = taken_model_id.as_deref() {
+                    if loaded != expected_model {
+                        engine_guard.engine = Some(engine);
+                        return Err(anyhow::anyhow!(
+                            "Loaded model '{}' does not match the expected model '{}' \
+                             (it changed mid-take) — please retry.",
+                            loaded,
+                            expected_model
+                        ));
+                    }
+                }
+            }
 
             // Release the lock before transcribing — no mutex held during the engine call
             drop(engine_guard);
@@ -854,12 +989,16 @@ impl TranscriptionManager {
             match transcribe_result {
                 Ok(inner_result) => {
                     // Success or normal error — put the engine back, UNLESS a
-                    // concurrent load/unload changed the loaded model while we
-                    // were transcribing. Restoring blindly would resurrect the
-                    // old engine over the new one (or undo a manual unload).
+                    // concurrent load/unload mutated the state while we were
+                    // transcribing. The INSTANCE counter (not model_id) is the
+                    // identity: every install/unload bumps it, so a
+                    // replacement engine carrying the same model id — or a
+                    // manual unload — reads as a different instance and is
+                    // never clobbered (pass-3 finding 8). Take-out itself
+                    // doesn't bump, so an unchanged instance means untouched.
                     let mut engine_guard = self.lock_engine();
-                    if engine_guard.is_none() && self.get_current_model() == taken_model_id {
-                        *engine_guard = Some(engine);
+                    if engine_guard.engine.is_none() && engine_guard.instance == taken_instance {
+                        engine_guard.engine = Some(engine);
                     } else {
                         info!(
                             "Loaded model changed during transcription; dropping the \
@@ -880,33 +1019,65 @@ impl TranscriptionManager {
                     } else {
                         "unknown panic".to_string()
                     };
-                    error!(
-                        "Transcription engine panicked: {}. Model has been unloaded.",
-                        panic_msg
-                    );
+                    error!("Transcription engine panicked: {}", panic_msg);
 
-                    // Clear the model ID so it will be reloaded on next attempt
-                    {
-                        let mut current_model = self
-                            .current_model_id
-                            .lock()
-                            .unwrap_or_else(|e| e.into_inner());
-                        *current_model = None;
+                    // Clear the state so the model reloads on next attempt —
+                    // but ONLY if OUR instance is still current (pass-3
+                    // finding 8): a concurrent load may have installed a
+                    // replacement engine, possibly with the SAME model id, and
+                    // the panicked instance's cleanup must never tear that
+                    // down. The "unloaded" event fires only when this cleanup
+                    // actually cleared the state — if a replacement survived,
+                    // nothing was unloaded from the app's point of view.
+                    // `!cleared` alone doesn't say WHAT superseded us — a
+                    // newer load (replacement engine alive) and a concurrent
+                    // unload (slot empty) both bump the instance. Capture the
+                    // distinction under the same lock so the diagnostics can
+                    // tell the truth for both cases.
+                    let (cleared, replacement_alive) = {
+                        let mut state = self.engine.lock().unwrap_or_else(|e| e.into_inner());
+                        if state.instance == taken_instance {
+                            state.engine = None;
+                            state.model_id = None;
+                            state.instance += 1;
+                            (true, false)
+                        } else {
+                            (false, state.engine.is_some())
+                        }
+                    };
+
+                    if cleared {
+                        let _ = self.app_handle.emit(
+                            "model-state-changed",
+                            ModelStateEvent {
+                                event_type: "unloaded".to_string(),
+                                model_id: None,
+                                model_name: None,
+                                error: Some(format!("Engine panicked: {}", panic_msg)),
+                            },
+                        );
+                    } else if replacement_alive {
+                        info!(
+                            "Panicked engine instance was already replaced by a newer load — \
+                             leaving the replacement untouched"
+                        );
+                    } else {
+                        info!(
+                            "Panicked engine instance was already unloaded concurrently — \
+                             nothing to clean up"
+                        );
                     }
 
-                    let _ = self.app_handle.emit(
-                        "model-state-changed",
-                        ModelStateEvent {
-                            event_type: "unloaded".to_string(),
-                            model_id: None,
-                            model_name: None,
-                            error: Some(format!("Engine panicked: {}", panic_msg)),
-                        },
-                    );
-
                     return Err(anyhow::anyhow!(
-                        "Transcription engine panicked: {}. The model has been unloaded and will reload on next attempt.",
-                        panic_msg
+                        "Transcription engine panicked: {}. {}",
+                        panic_msg,
+                        if cleared {
+                            "The model has been unloaded and will reload on next attempt."
+                        } else if replacement_alive {
+                            "A newer model load already replaced it; the replacement is untouched."
+                        } else {
+                            "It was already unloaded concurrently; nothing further was changed."
+                        }
                     ));
                 }
             }

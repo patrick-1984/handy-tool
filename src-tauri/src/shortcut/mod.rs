@@ -22,7 +22,7 @@ use tauri_plugin_autostart::ManagerExt;
 use crate::settings::{
     self, AnchorAction, AutoSubmitKey, ClipboardHandling, ClipboardRestoreDelay,
     KeyboardImplementation, LLMPrompt, OverlayPosition, PasteMethod, ShortcutBinding, SoundTheme,
-    SubmitIdleBehavior, TranscriptionMode, TypingTool, get_settings,
+    SubmitIdleBehavior, Theme, TranscriptionMode, TypingTool, get_settings,
 };
 use crate::tray;
 
@@ -675,6 +675,40 @@ pub fn change_overlay_position_setting(app: AppHandle, position: String) -> Resu
 
     // Update overlay position without recreating window
     crate::utils::update_overlay_position(&app);
+
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn change_app_theme_setting(app: AppHandle, theme: String) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    settings.app_theme = match theme.as_str() {
+        "system" => Theme::System,
+        "light" => Theme::Light,
+        "dark" => Theme::Dark,
+        other => {
+            warn!("Invalid appearance theme '{}', defaulting to system", other);
+            Theme::System
+        }
+    };
+    let resolved = settings.app_theme;
+    info!("Appearance theme changed to: {:?}", resolved);
+    settings::write_settings(&app, settings);
+
+    // The main window resolves + applies its own theme via React (including
+    // tracking OS changes live when System is selected). The overlay and
+    // floating windows have no settings store of their own, so push the
+    // resolved choice into them directly here.
+    crate::apply_theme_to_aux_windows(&app, resolved);
+
+    let _ = app.emit(
+        "settings-changed",
+        serde_json::json!({
+            "setting": "app_theme",
+            "value": theme
+        }),
+    );
 
     Ok(())
 }

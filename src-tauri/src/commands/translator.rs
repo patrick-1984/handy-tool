@@ -3,7 +3,9 @@
 //! are parsed manually; the worker thread picks changes up on its next tick.
 
 use crate::managers::translator::{TranslatorManager, TranslatorStatus};
-use crate::settings::{TranslatorFolder, TranslatorPriority, get_settings, write_settings};
+use crate::settings::{
+    TranslatorFolder, TranslatorPriority, get_settings, update_settings, write_settings,
+};
 use std::sync::Arc;
 use tauri::{AppHandle, State};
 
@@ -91,27 +93,49 @@ pub fn translator_add_folder(app: AppHandle, path: String) -> Result<(), String>
 #[specta::specta]
 pub fn translator_set_folder_enabled(
     app: AppHandle,
-    index: u32,
+    path: String,
     enabled: bool,
 ) -> Result<(), String> {
-    let mut settings = get_settings(&app);
-    let folder = settings
-        .translator_folders
-        .get_mut(index as usize)
-        .ok_or_else(|| format!("No watched folder at index {index}"))?;
-    folder.enabled = enabled;
-    write_settings(&app, settings);
+    // T-109 — the first production migration of T-111's `update_settings`
+    // helper (see tickets/T-111-*.md). This command and
+    // `translator_remove_folder` below used to each run their own bare
+    // get_settings/mutate/write_settings read-modify-write with no
+    // cross-call coordination: toggling folder A's enabled flag while
+    // removing folder B ran concurrently could each read the SAME
+    // pre-mutation settings and write back a version missing the other
+    // call's change — a toggle could resurrect a folder just removed, or a
+    // removal could silently discard a concurrent toggle. Routing both
+    // through `update_settings` serializes them (and every other migrated
+    // writer) under one process-wide lock, so both mutations always land.
+    let mut found = false;
+    update_settings(&app, |settings| {
+        if let Some(folder) = settings
+            .translator_folders
+            .iter_mut()
+            .find(|f| f.path == path)
+        {
+            folder.enabled = enabled;
+            found = true;
+        }
+    });
+    if !found {
+        return Err(format!("No watched folder: {path}"));
+    }
     Ok(())
 }
 
 #[tauri::command]
 #[specta::specta]
-pub fn translator_remove_folder(app: AppHandle, index: u32) -> Result<(), String> {
-    let mut settings = get_settings(&app);
-    if (index as usize) >= settings.translator_folders.len() {
-        return Err(format!("No watched folder at index {index}"));
+pub fn translator_remove_folder(app: AppHandle, path: String) -> Result<(), String> {
+    // T-109: see `translator_set_folder_enabled` above — same race, same fix.
+    let mut removed = false;
+    update_settings(&app, |settings| {
+        let before = settings.translator_folders.len();
+        settings.translator_folders.retain(|f| f.path != path);
+        removed = settings.translator_folders.len() != before;
+    });
+    if !removed {
+        return Err(format!("No watched folder: {path}"));
     }
-    settings.translator_folders.remove(index as usize);
-    write_settings(&app, settings);
     Ok(())
 }

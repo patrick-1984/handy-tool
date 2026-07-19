@@ -33,6 +33,33 @@
   }
 }
 
+/* T-204 — explicit Light/Dark appearance choice wins over the OS
+   prefers-color-scheme default above in BOTH directions. This window has no
+   settings store of its own, so the `data-theme` attribute is stamped by the
+   Rust side (`apply_theme_to_aux_windows` in lib.rs) instead of JS running
+   here; "system" simply omits the attribute, leaving the media query above
+   live-tracking the OS. `[data-theme="..."]` always out-specifies the plain
+   `:root` inside the media query regardless of source order. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --fl-bg: #343230;
+  --fl-text: #fbfbfb;
+  --fl-secondary: #a8a49e;
+  --fl-border: rgba(251, 251, 251, 0.18);
+  --fl-hover: rgba(251, 251, 251, 0.08);
+  --fl-focus: #f28cbb;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --fl-bg: #ffffff;
+  --fl-text: #0f0f0f;
+  --fl-secondary: #5f5c58;
+  --fl-border: rgba(15, 15, 15, 0.14);
+  --fl-hover: rgba(15, 15, 15, 0.06);
+  --fl-focus: #b83d75;
+}
+
 .floating-root {
   position: relative;
   width: 100%;

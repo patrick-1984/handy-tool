@@ -353,6 +353,11 @@ impl AudioRecordingManager {
     }
 
     pub fn try_start_recording(&self, binding_id: &str, ts: u64) -> bool {
+        // T-113: split the on-demand mic-open cost (suspect #2 — CPAL device
+        // negotiation can cost seconds on some hardware) from the recorder's
+        // own start() dispatch (near-instant: it just sends a Cmd to the
+        // already-running worker thread).
+        let t0 = Instant::now();
         let mut state = self.state.lock().unwrap();
 
         if let RecordingState::Idle = *state {
@@ -363,6 +368,10 @@ impl AudioRecordingManager {
                     return false;
                 }
             }
+            debug!(
+                "T-113: try_start_recording mic-ready after {:?}",
+                t0.elapsed()
+            );
 
             let target = self.chunk_target_for_new_recording(ts);
             if let Some(rec) = self.recorder.lock().unwrap().as_ref() {
@@ -371,7 +380,10 @@ impl AudioRecordingManager {
                     *state = RecordingState::Recording {
                         binding_id: binding_id.to_string(),
                     };
-                    debug!("Recording started for binding {binding_id}");
+                    debug!(
+                        "Recording started for binding {binding_id} (try_start_recording total {:?})",
+                        t0.elapsed()
+                    );
                     return true;
                 }
             }

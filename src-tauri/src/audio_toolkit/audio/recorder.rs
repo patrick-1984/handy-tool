@@ -1,7 +1,11 @@
 use std::{
     io::Error,
     path::PathBuf,
-    sync::{Arc, Mutex, mpsc},
+    sync::{
+        Arc, Mutex,
+        atomic::{AtomicBool, AtomicU64, Ordering},
+        mpsc,
+    },
     time::{Duration, Instant},
 };
 
@@ -123,6 +127,16 @@ impl AudioRecorder {
             return Ok(()); // already open
         }
 
+        // T-113 (finding 9): timestamp `open()` itself — the caller
+        // (`start_microphone_stream`) only times the SYNCHRONOUS portion up
+        // to the worker-thread spawn (near-instant: it's just a channel setup
+        // + `thread::spawn` dispatch), which made "mic-ready" inaccurate —
+        // the worker hadn't done any device negotiation yet. The two new log
+        // lines below (config negotiated, stream playing) measure from THIS
+        // point, decomposing on-demand mic-open latency into stages that
+        // were previously invisible.
+        let open_start = Instant::now();
+
         let (sample_tx, sample_rx) = mpsc::channel::<Vec<f32>>();
         let (cmd_tx, cmd_rx) = mpsc::channel::<Cmd>();
 
@@ -141,9 +155,26 @@ impl AudioRecorder {
         let segment_cb = self.segment_cb.clone();
         let closed_chunk_cb = self.closed_chunk_cb.clone();
 
+        // T-113 (finding 9, audio-thread discipline): the CPAL data callback
+        // must stay trivial — no logging/formatting/allocation on the audio
+        // thread (CLAUDE.md's audio-callback discipline). It only stores a
+        // flag + elapsed-nanos-since-`stream_start` into these atomics; the
+        // CONSUMER thread (`run_consumer`, below) does the actual one-shot
+        // `debug!` log after observing the flag. Previously the callback
+        // called `log::debug!` directly on its first invocation, which
+        // violated that discipline.
+        let first_buffer_seen = Arc::new(AtomicBool::new(false));
+        let first_buffer_nanos = Arc::new(AtomicU64::new(0));
+        let first_buffer_seen_cb = Arc::clone(&first_buffer_seen);
+        let first_buffer_nanos_cb = Arc::clone(&first_buffer_nanos);
+
         let worker = std::thread::spawn(move || {
             let config = AudioRecorder::get_preferred_config(&thread_device)
                 .expect("failed to fetch preferred config");
+            log::debug!(
+                "T-113: recorder worker config negotiated {:?} after open() was called",
+                open_start.elapsed()
+            );
 
             let sample_rate = config.sample_rate().0;
             let channels = config.channels() as usize;
@@ -156,31 +187,73 @@ impl AudioRecorder {
                 config.sample_format()
             );
 
+            // T-113: one-shot timestamp for stream-start→first-CPAL-buffer,
+            // decoded by run_consumer from the atomics above. Combined with
+            // start_microphone_stream()'s own "Microphone stream initialized
+            // in {:?}" (which covers device negotiation up through here),
+            // this decomposes the on-demand mic-open latency into "getting
+            // the device ready" vs "device ready but CPAL hasn't delivered
+            // audio yet".
+            let stream_start = Instant::now();
             let stream = match config.sample_format() {
-                cpal::SampleFormat::U8 => {
-                    AudioRecorder::build_stream::<u8>(&thread_device, &config, sample_tx, channels)
-                        .unwrap()
-                }
-                cpal::SampleFormat::I8 => {
-                    AudioRecorder::build_stream::<i8>(&thread_device, &config, sample_tx, channels)
-                        .unwrap()
-                }
-                cpal::SampleFormat::I16 => {
-                    AudioRecorder::build_stream::<i16>(&thread_device, &config, sample_tx, channels)
-                        .unwrap()
-                }
-                cpal::SampleFormat::I32 => {
-                    AudioRecorder::build_stream::<i32>(&thread_device, &config, sample_tx, channels)
-                        .unwrap()
-                }
-                cpal::SampleFormat::F32 => {
-                    AudioRecorder::build_stream::<f32>(&thread_device, &config, sample_tx, channels)
-                        .unwrap()
-                }
+                cpal::SampleFormat::U8 => AudioRecorder::build_stream::<u8>(
+                    &thread_device,
+                    &config,
+                    sample_tx,
+                    channels,
+                    stream_start,
+                    Arc::clone(&first_buffer_seen_cb),
+                    Arc::clone(&first_buffer_nanos_cb),
+                )
+                .unwrap(),
+                cpal::SampleFormat::I8 => AudioRecorder::build_stream::<i8>(
+                    &thread_device,
+                    &config,
+                    sample_tx,
+                    channels,
+                    stream_start,
+                    Arc::clone(&first_buffer_seen_cb),
+                    Arc::clone(&first_buffer_nanos_cb),
+                )
+                .unwrap(),
+                cpal::SampleFormat::I16 => AudioRecorder::build_stream::<i16>(
+                    &thread_device,
+                    &config,
+                    sample_tx,
+                    channels,
+                    stream_start,
+                    Arc::clone(&first_buffer_seen_cb),
+                    Arc::clone(&first_buffer_nanos_cb),
+                )
+                .unwrap(),
+                cpal::SampleFormat::I32 => AudioRecorder::build_stream::<i32>(
+                    &thread_device,
+                    &config,
+                    sample_tx,
+                    channels,
+                    stream_start,
+                    Arc::clone(&first_buffer_seen_cb),
+                    Arc::clone(&first_buffer_nanos_cb),
+                )
+                .unwrap(),
+                cpal::SampleFormat::F32 => AudioRecorder::build_stream::<f32>(
+                    &thread_device,
+                    &config,
+                    sample_tx,
+                    channels,
+                    stream_start,
+                    Arc::clone(&first_buffer_seen_cb),
+                    Arc::clone(&first_buffer_nanos_cb),
+                )
+                .unwrap(),
                 _ => panic!("unsupported sample format"),
             };
 
             stream.play().expect("failed to start stream");
+            log::debug!(
+                "T-113: recorder worker ready (stream playing) {:?} after open() was called",
+                open_start.elapsed()
+            );
 
             // keep the stream alive while we process samples
             run_consumer(
@@ -191,6 +264,8 @@ impl AudioRecorder {
                 level_cb,
                 segment_cb,
                 closed_chunk_cb,
+                first_buffer_seen,
+                first_buffer_nanos,
             );
             // stream is dropped here, after run_consumer returns
         });
@@ -243,6 +318,9 @@ impl AudioRecorder {
         config: &cpal::SupportedStreamConfig,
         sample_tx: mpsc::Sender<Vec<f32>>,
         channels: usize,
+        stream_start: Instant,
+        first_buffer_seen: Arc<AtomicBool>,
+        first_buffer_nanos: Arc<AtomicU64>,
     ) -> Result<cpal::Stream, cpal::BuildStreamError>
     where
         T: Sample + SizedSample + Send + 'static,
@@ -251,6 +329,28 @@ impl AudioRecorder {
         let mut output_buffer = Vec::new();
 
         let stream_cb = move |data: &[T], _: &cpal::InputCallbackInfo| {
+            // T-113 (finding 9): the audio callback stays trivial — two
+            // atomic stores, nothing else; no logging, formatting, or any
+            // other non-trivial work happens here. The CONSUMER thread
+            // (`run_consumer`) emits the actual one-shot `debug!` after
+            // observing `first_buffer_seen`.
+            //
+            // Adversarial-review finding 9: the timestamp is stored BEFORE
+            // the flag is published, and the publish/observe pair uses
+            // Release/Acquire rather than Relaxed on both sides. With
+            // Relaxed on both, there is no happens-before relationship
+            // between the two independent atomics, so the consumer thread
+            // could observe `first_buffer_seen == true` before
+            // `first_buffer_nanos`'s store became visible to it and log a
+            // bogus 0ns startup latency. This callback is only ever invoked
+            // from CPAL's single dedicated audio thread, so a plain
+            // load-check + two stores (no `swap`/CAS) is safe — nothing else
+            // ever writes these atomics concurrently with this callback.
+            if !first_buffer_seen.load(Ordering::Relaxed) {
+                first_buffer_nanos
+                    .store(stream_start.elapsed().as_nanos() as u64, Ordering::Relaxed);
+                first_buffer_seen.store(true, Ordering::Release);
+            }
             output_buffer.clear();
 
             if channels == 1 {
@@ -542,6 +642,12 @@ fn run_consumer(
     level_cb: Option<Arc<dyn Fn(Vec<f32>) + Send + Sync + 'static>>,
     segment_cb: SegmentCb,
     closed_chunk_cb: ClosedChunkCb,
+    // T-113 (finding 9): the audio callback (`build_stream`'s `stream_cb`)
+    // only stores into these atomics — trivial, lock-free, no logging. This
+    // consumer thread does the actual one-shot `debug!` once it observes the
+    // flag, keeping the log call entirely off the audio thread.
+    first_buffer_seen: Arc<AtomicBool>,
+    first_buffer_nanos: Arc<AtomicU64>,
 ) {
     let mut frame_resampler = FrameResampler::new(
         in_sample_rate as usize,
@@ -568,8 +674,25 @@ fn run_consumer(
     );
     // Last time the level callback fired while idle (see LEVEL_IDLE_INTERVAL).
     let mut last_level_emit: Option<Instant> = None;
+    // T-113 (finding 9): one-shot — only the FIRST loop iteration after the
+    // audio callback flags `first_buffer_seen` logs the stream-start→
+    // first-buffer latency; every later iteration is steady-state and not
+    // interesting for start-latency.
+    let mut first_buffer_logged = false;
 
     loop {
+        // Acquire pairs with the callback's Release publish (finding 9): this
+        // guarantees the `first_buffer_nanos` store above is visible here
+        // once the flag reads true, never a stale/default 0ns.
+        if !first_buffer_logged && first_buffer_seen.load(Ordering::Acquire) {
+            first_buffer_logged = true;
+            let nanos = first_buffer_nanos.load(Ordering::Relaxed);
+            log::debug!(
+                "T-113: first CPAL buffer arrived {:?} after stream start",
+                Duration::from_nanos(nanos)
+            );
+        }
+
         // Bounded wait: commands (Stop/Cancel/Shutdown) must be processed even
         // when NO audio is flowing (e.g. the input stream died mid-recording) —
         // a blocking recv here would make stop_recording() hang forever.
