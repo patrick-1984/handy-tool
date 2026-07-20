@@ -10,11 +10,227 @@ use std::fs;
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 use tar::Archive;
 use tauri::{AppHandle, Emitter, Manager};
+use tokio::sync::Notify;
+
+/// Wakeable cancellation handle for an in-flight model download.
+///
+/// The `AtomicBool` is the source of truth for "was this cancelled"; the
+/// `Notify` lets `cancel()` immediately wake a download task that is parked on
+/// the next network chunk (or inside its stall window) instead of it only
+/// noticing after another chunk finally arrives. `notify_one()` stores a permit
+/// even if no waiter is currently parked, so a cancel that races the task
+/// between `select!` iterations is not lost — the next `cancelled().await`
+/// returns at once.
+struct DownloadCancel {
+    cancelled: AtomicBool,
+    notify: Notify,
+}
+
+impl DownloadCancel {
+    fn new() -> Self {
+        Self {
+            cancelled: AtomicBool::new(false),
+            notify: Notify::new(),
+        }
+    }
+
+    fn cancel(&self) {
+        self.cancelled.store(true, Ordering::SeqCst);
+        self.notify.notify_one();
+    }
+
+    fn is_cancelled(&self) -> bool {
+        self.cancelled.load(Ordering::SeqCst)
+    }
+
+    /// Resolves as soon as cancellation has been requested. Safe to call in a
+    /// `select!` arm every loop iteration.
+    async fn cancelled(&self) {
+        if self.is_cancelled() {
+            return;
+        }
+        self.notify.notified().await;
+    }
+}
+
+/// One in-flight download attempt for a model. `generation` is a process-unique
+/// id (from `ModelManager::download_seq`) so cleanup, cancellation, and the
+/// terminal event a task emits can be tied to THIS attempt and never to a newer
+/// retry that has since replaced it in `active_downloads`.
+struct DownloadAttempt {
+    generation: u64,
+    cancel: Arc<DownloadCancel>,
+}
+
+/// How the streaming loop ended (distinct from an error return).
+enum DownloadOutcome {
+    /// Server sent all bytes (natural EOF).
+    Completed,
+    /// A cancel was observed; the partial file is left intact for resume.
+    Cancelled,
+}
+
+/// Stream `stream` into `file`, racing each chunk against `cancel` and a stall
+/// timeout in a biased `select!`. Returns `Cancelled` the instant a cancel is
+/// seen (even while parked on the network or inside the stall window),
+/// `Completed` on natural EOF, or an error if the transfer stalls or a chunk
+/// errors. Deliberately free of any `ModelManager`/`AppHandle` dependency so it
+/// can be unit-tested against a real stalled HTTP server; the caller supplies
+/// `on_progress` to surface bytes written (the app emits Tauri events there).
+async fn stream_to_file_with_cancel<S, B>(
+    stream: &mut S,
+    file: &mut std::fs::File,
+    cancel: &DownloadCancel,
+    stall_timeout: Duration,
+    mut on_progress: impl FnMut(usize),
+) -> Result<DownloadOutcome>
+where
+    S: futures_util::Stream<Item = reqwest::Result<B>> + Unpin,
+    B: AsRef<[u8]>,
+{
+    loop {
+        let chunk = tokio::select! {
+            // Bias toward cancellation so a cancel that arrives mid-stall is
+            // honored before we consider the network at all.
+            biased;
+
+            _ = cancel.cancelled() => {
+                return Ok(DownloadOutcome::Cancelled);
+            }
+
+            result = tokio::time::timeout(stall_timeout, stream.next()) => {
+                match result {
+                    Ok(Some(chunk)) => chunk,
+                    Ok(None) => return Ok(DownloadOutcome::Completed),
+                    Err(_) => {
+                        // A cancel can land exactly as the stall fires; honor it
+                        // over reporting a stall so the caller keeps the partial.
+                        if cancel.is_cancelled() {
+                            return Ok(DownloadOutcome::Cancelled);
+                        }
+                        return Err(anyhow::anyhow!(
+                            "Download stalled: no data received for {}s",
+                            stall_timeout.as_secs()
+                        ));
+                    }
+                }
+            }
+        };
+
+        let chunk = chunk?;
+        let bytes = chunk.as_ref();
+        file.write_all(bytes)?;
+        on_progress(bytes.len());
+    }
+}
+
+/// RAII guard that clears a download attempt's transient state (its
+/// `is_downloading` flag and its `active_downloads` entry) on EVERY early exit
+/// from `download_model` after registration — cancellation, stall, stream
+/// error, size mismatch, or any extraction/finalize error — unless disarmed on
+/// success. Cleanup is scoped to the attempt's `generation`, so an old
+/// cancelled attempt that drops AFTER a retry replaced the map entry never
+/// deletes the retry's handle or clears its state.
+struct RegistrationGuard<'a> {
+    manager: &'a ModelManager,
+    model_id: &'a str,
+    generation: u64,
+    armed: bool,
+}
+
+impl<'a> RegistrationGuard<'a> {
+    fn new(manager: &'a ModelManager, model_id: &'a str, generation: u64) -> Self {
+        Self {
+            manager,
+            model_id,
+            generation,
+            armed: true,
+        }
+    }
+
+    /// Disarm on the success path so completion state (is_downloaded = true) is
+    /// not touched by the guard.
+    fn disarm(&mut self) {
+        self.armed = false;
+    }
+}
+
+impl Drop for RegistrationGuard<'_> {
+    fn drop(&mut self) {
+        if self.armed {
+            // An armed drop means a genuine error `?`-exit (the cancel,
+            // complete, and already-complete paths all disarm first). Clear this
+            // attempt's state, then emit a generation-tagged terminal failure
+            // event so the frontend clears exactly this attempt's UI state (and
+            // never a newer retry's).
+            self.manager
+                .clear_download_registration(self.model_id, self.generation);
+            let _ = self.manager.app_handle.emit(
+                "model-download-error",
+                DownloadEvent {
+                    model_id: self.model_id.to_string(),
+                    generation: self.generation,
+                    error: Some("Model download failed".to_string()),
+                },
+            );
+        }
+    }
+}
+
+/// RAII guard for the extraction phase. On ANY early exit during extraction
+/// (create_dir / open / unpack / read_dir / rename / remove errors), unless
+/// disarmed after a successful extraction, it removes the model from the backend
+/// `extracting_models` set. It deliberately does NOT emit a frontend event: an
+/// extraction error also `?`-returns through the still-armed `RegistrationGuard`,
+/// whose single `model-download-error` event is the ONE terminal failure event
+/// for the attempt (its frontend handler clears extractingModels too). Emitting
+/// here as well would double-report one attempt's failure.
+struct ExtractingGuard<'a> {
+    manager: &'a ModelManager,
+    model_id: &'a str,
+    armed: bool,
+}
+
+impl<'a> ExtractingGuard<'a> {
+    fn new(manager: &'a ModelManager, model_id: &'a str) -> Self {
+        Self {
+            manager,
+            model_id,
+            armed: true,
+        }
+    }
+
+    fn disarm(&mut self) {
+        self.armed = false;
+    }
+}
+
+impl Drop for ExtractingGuard<'_> {
+    fn drop(&mut self) {
+        if self.armed {
+            if let Ok(mut extracting) = self.manager.extracting_models.lock() {
+                extracting.remove(self.model_id);
+            }
+        }
+    }
+}
+
+/// Best-effort removal of a path regardless of whether it is a file or a
+/// directory. Used before committing a downloaded model so a wrong-type
+/// artifact sitting at the destination (e.g. a directory where a file model
+/// belongs, or vice versa) is cleared and the download can self-heal on retry.
+fn remove_path_any_type(path: &Path) {
+    if path.is_dir() {
+        let _ = fs::remove_dir_all(path);
+    } else if path.exists() {
+        let _ = fs::remove_file(path);
+    }
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 pub enum EngineType {
@@ -72,16 +288,38 @@ pub struct ModelInfo {
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 pub struct DownloadProgress {
     pub model_id: String,
+    /// Per-attempt id. The frontend tracks the newest generation seen per model
+    /// and ignores events from a superseded (older) attempt, so a stale event
+    /// for a cancelled attempt cannot clobber a fresh retry of the same model.
+    pub generation: u64,
     pub downloaded: u64,
     pub total: u64,
     pub percentage: f64,
+}
+
+/// Payload for terminal / lifecycle download events (complete, cancelled,
+/// extraction-started/completed/failed). Carries the attempt `generation` so
+/// the frontend can drop events belonging to a superseded attempt.
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+pub struct DownloadEvent {
+    pub model_id: String,
+    pub generation: u64,
+    /// Present only on failure events (e.g. extraction-failed).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
 }
 
 pub struct ModelManager {
     app_handle: AppHandle,
     models_dir: PathBuf,
     available_models: Mutex<HashMap<String, ModelInfo>>,
-    cancel_flags: Arc<Mutex<HashMap<String, Arc<AtomicBool>>>>,
+    /// One entry per in-flight download, keyed by model id. Single-owner: a
+    /// second concurrent `download_model` for the same id is rejected while an
+    /// entry exists. Each entry carries a unique `generation` for
+    /// attempt-scoped cleanup.
+    active_downloads: Arc<Mutex<HashMap<String, DownloadAttempt>>>,
+    /// Monotonic source of per-attempt generations.
+    download_seq: AtomicU64,
     extracting_models: Arc<Mutex<HashSet<String>>>,
 }
 
@@ -515,7 +753,8 @@ impl ModelManager {
             app_handle: app_handle.clone(),
             models_dir,
             available_models: Mutex::new(available_models),
-            cancel_flags: Arc::new(Mutex::new(HashMap::new())),
+            active_downloads: Arc::new(Mutex::new(HashMap::new())),
+            download_seq: AtomicU64::new(0),
             extracting_models: Arc::new(Mutex::new(HashSet::new())),
         };
 
@@ -598,57 +837,96 @@ impl ModelManager {
     }
 
     fn update_download_status(&self) -> Result<()> {
-        let mut models = self.available_models.lock().unwrap();
+        // Two-phase to keep filesystem I/O OUT of any critical section, so a
+        // refresh never blocks cancel_download / admission (which would regress
+        // T-205 responsiveness).
 
+        // Phase 0: snapshot model identity (brief available_models lock, no fs).
+        struct Probe {
+            id: String,
+            filename: String,
+            is_directory: bool,
+        }
+        let probes: Vec<Probe> = {
+            let models = self.available_models.lock().unwrap();
+            models
+                .values()
+                .filter(|m| !m.engine_type.is_external())
+                .map(|m| Probe {
+                    id: m.id.clone(),
+                    filename: m.filename.clone(),
+                    is_directory: m.is_directory,
+                })
+                .collect()
+        };
+
+        // Phase 1: filesystem probes + leftover .extracting cleanup with NO
+        // manager locks held. is_file()/is_dir() (not exists()) so a wrong-type
+        // artifact is not reported as downloaded.
+        let mut results: HashMap<String, (bool, u64)> = HashMap::new();
+        for p in &probes {
+            let model_path = self.models_dir.join(&p.filename);
+            let partial_path = self.models_dir.join(format!("{}.partial", &p.filename));
+            if p.is_directory {
+                let extracting_path = self.models_dir.join(format!("{}.extracting", &p.filename));
+                let is_currently_extracting = self
+                    .extracting_models
+                    .lock()
+                    .map(|e| e.contains(&p.id))
+                    .unwrap_or(false);
+                if extracting_path.exists() && !is_currently_extracting {
+                    warn!("Cleaning up interrupted extraction for model: {}", p.id);
+                    let _ = fs::remove_dir_all(&extracting_path);
+                }
+            }
+            // Match get_model_path's definition of "usable" EXACTLY: correct
+            // artifact type AND no leftover .partial. Otherwise a model with a
+            // lingering archive would be reported downloaded here yet rejected
+            // by get_model_path at load time.
+            let partial_exists = partial_path.exists();
+            let artifact_ok = if p.is_directory {
+                model_path.is_dir()
+            } else {
+                model_path.is_file()
+            };
+            let is_downloaded = artifact_ok && !partial_exists;
+            let partial_size = if partial_exists {
+                partial_path.metadata().map(|m| m.len()).unwrap_or(0)
+            } else {
+                0
+            };
+            results.insert(p.id.clone(), (is_downloaded, partial_size));
+        }
+
+        // Phase 2: short commit under available_models only. This refresh writes
+        // ONLY disk-derived facts (is_downloaded, partial_size) and deliberately
+        // NEVER touches is_downloading — that flag is owned solely by the
+        // download lifecycle (admission sets it, the RegistrationGuard/completion
+        // clears it) and is in-memory only (a fresh ModelManager starts all
+        // false). Not touching it here removes any refresh-vs-download race on
+        // the flag.
+        //
+        // A model that is CURRENTLY downloading also owns its is_downloaded /
+        // partial_size (they change as the transfer/extraction progresses), so
+        // read active membership live (active -> available order; no fs held)
+        // and skip those models here to avoid committing a stale disk snapshot
+        // over a live attempt's own updates. (The residual just-completed
+        // microsecond window is tracked in T-222.)
+        let active_ids: HashSet<String> = match self.active_downloads.lock() {
+            Ok(active) => active.keys().cloned().collect(),
+            Err(_) => HashSet::new(),
+        };
+        let mut models = self.available_models.lock().unwrap();
         for model in models.values_mut() {
-            // External engines (FLM/API/OpenRouter) have nothing on disk here;
-            // probing would stomp their registry is_downloaded to false and the
-            // UI would offer a Download that can never work (url: None).
             if model.engine_type.is_external() {
                 continue;
             }
-            if model.is_directory {
-                // For directory-based models, check if the directory exists
-                let model_path = self.models_dir.join(&model.filename);
-                let partial_path = self.models_dir.join(format!("{}.partial", &model.filename));
-                let extracting_path = self
-                    .models_dir
-                    .join(format!("{}.extracting", &model.filename));
-
-                // Clean up any leftover .extracting directories from interrupted extractions
-                // But only if this model is NOT currently being extracted
-                let is_currently_extracting = {
-                    let extracting = self.extracting_models.lock().unwrap();
-                    extracting.contains(&model.id)
-                };
-                if extracting_path.exists() && !is_currently_extracting {
-                    warn!("Cleaning up interrupted extraction for model: {}", model.id);
-                    let _ = fs::remove_dir_all(&extracting_path);
-                }
-
-                model.is_downloaded = model_path.exists() && model_path.is_dir();
-                model.is_downloading = false;
-
-                // Get partial file size if it exists (for the .tar.gz being downloaded)
-                if partial_path.exists() {
-                    model.partial_size = partial_path.metadata().map(|m| m.len()).unwrap_or(0);
-                } else {
-                    model.partial_size = 0;
-                }
-            } else {
-                // For file-based models (existing logic)
-                let model_path = self.models_dir.join(&model.filename);
-                let partial_path = self.models_dir.join(format!("{}.partial", &model.filename));
-
-                model.is_downloaded = model_path.exists();
-                model.is_downloading = false;
-
-                // Get partial file size if it exists
-                if partial_path.exists() {
-                    model.partial_size = partial_path.metadata().map(|m| m.len()).unwrap_or(0);
-                } else {
-                    model.partial_size = 0;
-                }
+            if active_ids.contains(&model.id) {
+                continue;
+            }
+            if let Some(&(is_downloaded, partial_size)) = results.get(&model.id) {
+                model.is_downloaded = is_downloaded;
+                model.partial_size = partial_size;
             }
         }
 
@@ -822,30 +1100,101 @@ impl ModelManager {
     }
 
     pub async fn download_model(&self, model_id: &str) -> Result<()> {
+        // Admit this attempt as the SOLE owner of this model's download as the
+        // very FIRST thing — before even the available_models lookup — and
+        // register its wakeable cancellation handle up front, so a cancel that
+        // races the very start of the download always finds a handle (no
+        // pre-admission window). A second concurrent download of the same model
+        // is rejected here (no two writers to the same .partial). The error is
+        // prefixed ALREADY_DOWNLOADING so the frontend can tell "another attempt
+        // owns this" apart from a genuine failure and NOT clear that attempt's
+        // UI state.
+        let cancel = Arc::new(DownloadCancel::new());
+        let generation = self
+            .download_seq
+            .fetch_add(1, Ordering::SeqCst)
+            .wrapping_add(1);
+        {
+            let mut active = self.active_downloads.lock().unwrap();
+            if active.contains_key(model_id) {
+                return Err(anyhow::anyhow!(
+                    "ALREADY_DOWNLOADING: a download is already in progress for model: {}",
+                    model_id
+                ));
+            }
+            active.insert(
+                model_id.to_string(),
+                DownloadAttempt {
+                    generation,
+                    cancel: cancel.clone(),
+                },
+            );
+        }
+
+        // From here on, any early exit (`?`, explicit return, cancel, stall)
+        // clears is_downloading + this attempt's registration exactly once via
+        // the guard, unless disarmed on success. Cleanup is generation-scoped so
+        // a superseding retry is never disturbed.
+        let mut cleanup_guard = RegistrationGuard::new(self, model_id, generation);
+
+        // Now resolve model info (guarded: any early return runs cleanup).
         let model_info = {
             let models = self.available_models.lock().unwrap();
             models.get(model_id).cloned()
         };
-
         let model_info =
             model_info.ok_or_else(|| anyhow::anyhow!("Model not found: {}", model_id))?;
-
         let url = model_info
             .url
+            .clone()
             .ok_or_else(|| anyhow::anyhow!("No download URL for model"))?;
         let model_path = self.models_dir.join(&model_info.filename);
         let partial_path = self
             .models_dir
             .join(format!("{}.partial", &model_info.filename));
 
-        // Don't download if complete version already exists
-        if model_path.exists() {
-            // Clean up any partial file that might exist
-            if partial_path.exists() {
-                let _ = fs::remove_file(&partial_path);
+        // Mark downloading and immediately publish this attempt's generation to
+        // the frontend (a zero-byte progress event) so any straggler event from
+        // an older attempt of the same model is recognized as stale right away.
+        if let Ok(mut models) = self.available_models.lock() {
+            if let Some(model) = models.get_mut(model_id) {
+                model.is_downloading = true;
             }
-            self.update_download_status()?;
-            return Ok(());
+        }
+
+        // Already complete: shortcut ONLY if the on-disk artifact is actually
+        // usable (correct type) AND any leftover partial is gone — otherwise a
+        // "complete" event would be emitted for a model that get_model_path
+        // still rejects (partial present) or that is the wrong type. If we can't
+        // make it usable, fall through and (re)download.
+        let artifact_usable = if model_info.is_directory {
+            model_path.is_dir()
+        } else {
+            model_path.is_file()
+        };
+        if artifact_usable {
+            let partial_cleared = if partial_path.exists() {
+                fs::remove_file(&partial_path).is_ok()
+            } else {
+                true
+            };
+            if partial_cleared {
+                if let Ok(mut models) = self.available_models.lock() {
+                    if let Some(model) = models.get_mut(model_id) {
+                        model.is_downloaded = true;
+                        model.is_downloading = false;
+                        model.partial_size = 0;
+                    }
+                }
+                self.clear_download_registration(model_id, generation);
+                cleanup_guard.disarm();
+                self.emit_download_complete(model_id, generation);
+                return Ok(());
+            }
+            warn!(
+                "Model {} looks complete but its stale .partial could not be removed; re-downloading",
+                model_id
+            );
         }
 
         // Check if we have a partial download to resume
@@ -858,20 +1207,21 @@ impl ModelManager {
             0
         };
 
-        // Mark as downloading
-        {
-            let mut models = self.available_models.lock().unwrap();
-            if let Some(model) = models.get_mut(model_id) {
-                model.is_downloading = true;
-            }
-        }
-
-        // Create cancellation flag for this download
-        let cancel_flag = Arc::new(AtomicBool::new(false));
-        {
-            let mut flags = self.cancel_flags.lock().unwrap();
-            flags.insert(model_id.to_string(), cancel_flag.clone());
-        }
+        // Publish the new attempt's generation to the frontend now (before the
+        // blocking HTTP prep) via an initial progress event. It carries
+        // `resume_from` as the already-downloaded baseline so the frontend's
+        // speed calculation doesn't count previously-downloaded bytes as a
+        // burst of new transfer on the first real chunk.
+        let _ = self.app_handle.emit(
+            "model-download-progress",
+            &DownloadProgress {
+                model_id: model_id.to_string(),
+                generation,
+                downloaded: resume_from,
+                total: 0,
+                percentage: 0.0,
+            },
+        );
 
         // Create HTTP client with range request for resuming. Connect timeout
         // only — a total-request deadline would kill large model downloads.
@@ -884,7 +1234,17 @@ impl ModelManager {
             request = request.header("Range", format!("bytes={}-", resume_from));
         }
 
-        let mut response = request.send().await?;
+        // Race the request against cancellation too — connect_timeout bounds it,
+        // but a cancel should not have to wait out even that.
+        let mut response = tokio::select! {
+            biased;
+            _ = cancel.cancelled() => {
+                cleanup_guard.disarm();
+                self.emit_download_cancelled(model_id, generation);
+                return Ok(());
+            }
+            r = request.send() => r?,
+        };
 
         // If we tried to resume but server returned 200 (not 206 Partial Content),
         // the server doesn't support range requests. Delete partial file and restart
@@ -901,20 +1261,22 @@ impl ModelManager {
             resume_from = 0;
 
             // Restart download without range header
-            response = client.get(&url).send().await?;
+            response = tokio::select! {
+                biased;
+                _ = cancel.cancelled() => {
+                    cleanup_guard.disarm();
+                    self.emit_download_cancelled(model_id, generation);
+                    return Ok(());
+                }
+                r = client.get(&url).send() => r?,
+            };
         }
 
         // Check for success or partial content status
         if !response.status().is_success()
             && response.status() != reqwest::StatusCode::PARTIAL_CONTENT
         {
-            // Mark as not downloading on error
-            {
-                let mut models = self.available_models.lock().unwrap();
-                if let Some(model) = models.get_mut(model_id) {
-                    model.is_downloading = false;
-                }
-            }
+            // cleanup_guard clears is_downloading + registration on return.
             return Err(anyhow::anyhow!(
                 "Failed to download model: HTTP {}",
                 response.status()
@@ -929,7 +1291,8 @@ impl ModelManager {
         };
 
         let mut downloaded = resume_from;
-        let mut stream = response.bytes_stream();
+        // Box::pin so the stream is `Unpin` for the helper's `select!`.
+        let mut stream = Box::pin(response.bytes_stream());
 
         // Open file for appending if resuming, or create new if starting fresh
         let mut file = if resume_from > 0 {
@@ -944,6 +1307,7 @@ impl ModelManager {
         // Emit initial progress
         let initial_progress = DownloadProgress {
             model_id: model_id.to_string(),
+            generation,
             downloaded,
             total: total_size,
             percentage: if total_size > 0 {
@@ -964,89 +1328,46 @@ impl ModelManager {
         // file is kept on disk so the download stays resumable.
         const STALL_TIMEOUT: Duration = Duration::from_secs(60);
 
-        // Download with progress
-        loop {
-            let chunk = match tokio::time::timeout(STALL_TIMEOUT, stream.next()).await {
-                Ok(Some(chunk)) => chunk,
-                Ok(None) => break,
-                Err(_) => {
-                    // Stalled: close the file, clear downloading state, keep
-                    // the partial file for resume
-                    drop(file);
-                    {
-                        let mut models = self.available_models.lock().unwrap();
-                        if let Some(model) = models.get_mut(model_id) {
-                            model.is_downloading = false;
-                        }
-                    }
-                    return Err(anyhow::anyhow!(
-                        "Download stalled: no data received for {}s while downloading model {}",
-                        STALL_TIMEOUT.as_secs(),
-                        model_id
-                    ));
+        // Stream to disk, racing each chunk against the wakeable cancel handle
+        // and the stall timeout (see stream_to_file_with_cancel). A cancel
+        // interrupts even a stalled read immediately. Progress is emitted from
+        // the callback (throttled). On a stream error the `?` propagates and
+        // cleanup_guard clears state.
+        let outcome =
+            stream_to_file_with_cancel(&mut stream, &mut file, &cancel, STALL_TIMEOUT, |n| {
+                downloaded += n as u64;
+                if last_emit.elapsed() >= throttle_duration {
+                    let progress = DownloadProgress {
+                        model_id: model_id.to_string(),
+                        generation,
+                        downloaded,
+                        total: total_size,
+                        percentage: if total_size > 0 {
+                            (downloaded as f64 / total_size as f64) * 100.0
+                        } else {
+                            0.0
+                        },
+                    };
+                    let _ = self.app_handle.emit("model-download-progress", &progress);
+                    last_emit = Instant::now();
                 }
-            };
+            })
+            .await?;
 
-            // Check if download was cancelled
-            if cancel_flag.load(Ordering::Relaxed) {
-                // Close the file before returning
-                drop(file);
-                info!("Download cancelled for: {}", model_id);
-
-                // Update state to mark as not downloading
-                {
-                    let mut models = self.available_models.lock().unwrap();
-                    if let Some(model) = models.get_mut(model_id) {
-                        model.is_downloading = false;
-                    }
-                }
-
-                // Remove cancel flag
-                {
-                    let mut flags = self.cancel_flags.lock().unwrap();
-                    flags.remove(model_id);
-                }
-
-                // Keep partial file for resume functionality
-                return Ok(());
-            }
-
-            let chunk = chunk.map_err(|e| {
-                // Mark as not downloading on error
-                {
-                    let mut models = self.available_models.lock().unwrap();
-                    if let Some(model) = models.get_mut(model_id) {
-                        model.is_downloading = false;
-                    }
-                }
-                e
-            })?;
-
-            file.write_all(&chunk)?;
-            downloaded += chunk.len() as u64;
-
-            let percentage = if total_size > 0 {
-                (downloaded as f64 / total_size as f64) * 100.0
-            } else {
-                0.0
-            };
-
-            // Emit progress event (throttled to avoid UI freeze)
-            if last_emit.elapsed() >= throttle_duration {
-                let progress = DownloadProgress {
-                    model_id: model_id.to_string(),
-                    downloaded,
-                    total: total_size,
-                    percentage,
-                };
-                let _ = self.app_handle.emit("model-download-progress", &progress);
-                last_emit = Instant::now();
-            }
+        if let DownloadOutcome::Cancelled = outcome {
+            // Close the file, keep the partial file for resume, and emit the one
+            // terminal event for this attempt (emit_download_cancelled clears
+            // state first). Disarm so the guard doesn't re-run the clear.
+            drop(file);
+            cleanup_guard.disarm();
+            self.emit_download_cancelled(model_id, generation);
+            return Ok(());
         }
 
         // Emit final progress to ensure 100% is shown
         let final_progress = DownloadProgress {
             model_id: model_id.to_string(),
+            generation,
             downloaded,
             total: total_size,
             percentage: if total_size > 0 {
@@ -1066,20 +1387,25 @@ impl ModelManager {
         if total_size > 0 {
             let actual_size = partial_path.metadata()?.len();
             if actual_size != total_size {
-                // Download is incomplete/corrupted - delete partial and return error
+                // Incomplete/corrupted: delete the partial so the next attempt
+                // restarts cleanly. cleanup_guard clears download state.
                 let _ = fs::remove_file(&partial_path);
-                {
-                    let mut models = self.available_models.lock().unwrap();
-                    if let Some(model) = models.get_mut(model_id) {
-                        model.is_downloading = false;
-                    }
-                }
                 return Err(anyhow::anyhow!(
                     "Download incomplete: expected {} bytes, got {} bytes",
                     total_size,
                     actual_size
                 ));
             }
+        }
+
+        // Honor a cancel that landed during the final chunks BEFORE we commit
+        // the download (extract or rename into place). Past this point the bytes
+        // are all on disk, so a later cancel loses the race and the download
+        // completes — but there is only ever one terminal event per attempt.
+        if cancel.is_cancelled() {
+            cleanup_guard.disarm();
+            self.emit_download_cancelled(model_id, generation);
+            return Ok(());
         }
 
         // Handle directory-based models (extract tar.gz) vs file-based models
@@ -1089,9 +1415,21 @@ impl ModelManager {
                 let mut extracting = self.extracting_models.lock().unwrap();
                 extracting.insert(model_id.to_string());
             }
+            // Clears the backend extracting_models set on ANY early exit during
+            // extraction, disarmed on success. It does NOT emit — an extraction
+            // error also unwinds through the armed RegistrationGuard, whose
+            // single model-download-error is the one terminal failure event.
+            let mut extracting_guard = ExtractingGuard::new(self, model_id);
 
             // Emit extraction started event
-            let _ = self.app_handle.emit("model-extraction-started", model_id);
+            let _ = self.app_handle.emit(
+                "model-extraction-started",
+                DownloadEvent {
+                    model_id: model_id.to_string(),
+                    generation,
+                    error: None,
+                },
+            );
             info!("Extracting archive for directory-based model: {}", model_id);
 
             // Use a temporary extraction directory to ensure atomic operations
@@ -1113,23 +1451,13 @@ impl ModelManager {
             let tar = GzDecoder::new(tar_gz);
             let mut archive = Archive::new(tar);
 
-            // Extract to the temporary directory first
+            // Extract to the temporary directory first. On failure, clean up the
+            // temp dir and propagate; extracting_guard clears the extracting set
+            // and the armed RegistrationGuard emits the single terminal
+            // model-download-error event.
             archive.unpack(&temp_extract_dir).map_err(|e| {
                 let error_msg = format!("Failed to extract archive: {}", e);
-                // Clean up failed extraction
                 let _ = fs::remove_dir_all(&temp_extract_dir);
-                // Remove from extracting set
-                {
-                    let mut extracting = self.extracting_models.lock().unwrap();
-                    extracting.remove(model_id);
-                }
-                let _ = self.app_handle.emit(
-                    "model-extraction-failed",
-                    &serde_json::json!({
-                        "model_id": model_id,
-                        "error": error_msg
-                    }),
-                );
                 anyhow::anyhow!(error_msg)
             })?;
 
@@ -1142,33 +1470,58 @@ impl ModelManager {
             if extracted_dirs.len() == 1 {
                 // Single directory extracted, move it to the final location
                 let source_dir = extracted_dirs[0].path();
-                if final_model_dir.exists() {
-                    fs::remove_dir_all(&final_model_dir)?;
-                }
+                // Clear any existing artifact at the destination (file OR dir).
+                remove_path_any_type(&final_model_dir);
                 fs::rename(&source_dir, &final_model_dir)?;
                 // Clean up temp directory
                 let _ = fs::remove_dir_all(&temp_extract_dir);
             } else {
                 // Multiple items or no directories, rename the temp directory itself
-                if final_model_dir.exists() {
-                    fs::remove_dir_all(&final_model_dir)?;
-                }
+                remove_path_any_type(&final_model_dir);
                 fs::rename(&temp_extract_dir, &final_model_dir)?;
             }
 
             info!("Successfully extracted archive for model: {}", model_id);
-            // Remove from extracting set
+            // Extraction succeeded — remove from the extracting set exactly once
+            // and disarm the guard so it doesn't remove it again.
             {
                 let mut extracting = self.extracting_models.lock().unwrap();
                 extracting.remove(model_id);
             }
-            // Emit extraction completed event
-            let _ = self.app_handle.emit("model-extraction-completed", model_id);
+            extracting_guard.disarm();
 
-            // Remove the downloaded tar.gz file
-            let _ = fs::remove_file(&partial_path);
+            // Remove the downloaded tar.gz BEFORE announcing completion. If it
+            // lingers, get_model_path would reject the (otherwise extracted)
+            // model, so treat a removal failure as an error rather than emit a
+            // false completion — the next attempt hits the already-complete path
+            // and retries the removal. Emitting model-extraction-completed only
+            // after the archive is gone means no lifecycle event ever reports a
+            // model that get_model_path would still reject.
+            if partial_path.exists() {
+                if let Err(e) = fs::remove_file(&partial_path) {
+                    return Err(anyhow::anyhow!(
+                        "Extracted model {} but could not remove its archive {}: {}",
+                        model_id,
+                        partial_path.display(),
+                        e
+                    ));
+                }
+            }
+
+            // Emit extraction completed event (now that the model is finalized).
+            let _ = self.app_handle.emit(
+                "model-extraction-completed",
+                DownloadEvent {
+                    model_id: model_id.to_string(),
+                    generation,
+                    error: None,
+                },
+            );
         } else {
-            // Move partial file to final location for file-based models
+            // Move partial file to final location for file-based models. Clear
+            // any wrong-type artifact (e.g. a directory) at the destination
+            // first so the rename can't fail on it.
+            remove_path_any_type(&model_path);
             fs::rename(&partial_path, &model_path)?;
         }
 
@@ -1182,14 +1535,15 @@ impl ModelManager {
             }
         }
 
-        // Remove cancel flag on successful completion
-        {
-            let mut flags = self.cancel_flags.lock().unwrap();
-            flags.remove(model_id);
-        }
+        // Drop this attempt's registration on success (generation-scoped). This
+        // only removes the active_downloads entry and sets is_downloading=false
+        // (already false here); it never touches the is_downloaded=true set
+        // above. Then disarm the guard so it doesn't run again on scope exit.
+        self.clear_download_registration(model_id, generation);
+        cleanup_guard.disarm();
 
-        // Emit completion event
-        let _ = self.app_handle.emit("model-download-complete", model_id);
+        // Emit the single terminal completion event for this attempt.
+        self.emit_download_complete(model_id, generation);
 
         info!(
             "Successfully downloaded model {} to {:?}",
@@ -1302,8 +1656,9 @@ impl ModelManager {
                 ))
             }
         } else {
-            // For file-based models (existing logic)
-            if model_path.exists() && !partial_path.exists() {
+            // For file-based models: require an actual file (not a dir of the
+            // same name) and no leftover partial.
+            if model_path.is_file() && !partial_path.exists() {
                 Ok(model_path)
             } else {
                 Err(anyhow::anyhow!(
@@ -1314,35 +1669,79 @@ impl ModelManager {
         }
     }
 
+    /// Clear a download attempt's transient state: mark the model
+    /// not-downloading and drop its `active_downloads` entry — but ONLY if the
+    /// entry still belongs to `generation`. If a newer attempt has replaced it,
+    /// leave that attempt's state untouched. Poison-safe. Lock order:
+    /// active_downloads outer, available_models inner (matches admission).
+    fn clear_download_registration(&self, model_id: &str, generation: u64) {
+        if let Ok(mut active) = self.active_downloads.lock() {
+            match active.get(model_id) {
+                Some(attempt) if attempt.generation == generation => {
+                    active.remove(model_id);
+                    if let Ok(mut models) = self.available_models.lock() {
+                        if let Some(model) = models.get_mut(model_id) {
+                            model.is_downloading = false;
+                        }
+                    }
+                }
+                // A superseding retry (or nothing) owns the slot now — don't
+                // clear its handle or its downloading flag.
+                _ => {}
+            }
+        }
+    }
+
+    /// Emit the single terminal "cancelled" event for a download attempt AFTER
+    /// clearing this attempt's backend state (generation-scoped), so the
+    /// terminal event never precedes terminal state. Only the owning task calls
+    /// this, so a cancellation is reported exactly once and never alongside a
+    /// completion event.
+    fn emit_download_cancelled(&self, model_id: &str, generation: u64) {
+        self.clear_download_registration(model_id, generation);
+        info!("Download cancelled for: {}", model_id);
+        let _ = self.app_handle.emit(
+            "model-download-cancelled",
+            DownloadEvent {
+                model_id: model_id.to_string(),
+                generation,
+                error: None,
+            },
+        );
+    }
+
+    /// Emit the single terminal "complete" event for a download attempt.
+    fn emit_download_complete(&self, model_id: &str, generation: u64) {
+        let _ = self.app_handle.emit(
+            "model-download-complete",
+            DownloadEvent {
+                model_id: model_id.to_string(),
+                generation,
+                error: None,
+            },
+        );
+    }
+
     pub fn cancel_download(&self, model_id: &str) -> Result<()> {
         debug!("ModelManager: cancel_download called for: {}", model_id);
 
-        // Set the cancellation flag to stop the download loop
-        {
-            let flags = self.cancel_flags.lock().unwrap();
-            if let Some(flag) = flags.get(model_id) {
-                flag.store(true, Ordering::Relaxed);
-                info!("Cancellation flag set for: {}", model_id);
-            } else {
-                warn!("No active download found for: {}", model_id);
-            }
+        // Only wake the in-flight task so it aborts immediately (even parked on
+        // the next chunk or inside its stall window) and cleans up + emits its
+        // own terminal event. We deliberately do NOT flip is_downloading here,
+        // do NOT call update_download_status (which would stomp EVERY model's
+        // flag), and do NOT emit the cancelled event (the task owns it) — so a
+        // cancel of model A can't disturb model B, and no attempt gets two
+        // terminal events. The wakeable handle makes the task's cleanup prompt.
+        let active = self
+            .active_downloads
+            .lock()
+            .map_err(|_| anyhow::anyhow!("active_downloads mutex poisoned"))?;
+        if let Some(attempt) = active.get(model_id) {
+            attempt.cancel.cancel();
+            info!("Cancellation requested for: {}", model_id);
+        } else {
+            warn!("No active download found for: {}", model_id);
         }
-
-        // Update state immediately for UI responsiveness
-        {
-            let mut models = self.available_models.lock().unwrap();
-            if let Some(model) = models.get_mut(model_id) {
-                model.is_downloading = false;
-            }
-        }
-
-        // Update download status to reflect current state
-        self.update_download_status()?;
-
-        // Emit cancellation event so all UI components can clear their state
-        let _ = self.app_handle.emit("model-download-cancelled", model_id);
-
-        info!("Download cancellation initiated for: {}", model_id);
         Ok(())
     }
 }
@@ -1449,5 +1848,143 @@ mod tests {
         let result = ModelManager::discover_custom_whisper_models(&models_dir, &mut models);
         assert!(result.is_ok());
         assert_eq!(models.len(), count_before);
+    }
+}
+
+#[cfg(test)]
+mod download_cancel_tests {
+    use super::{DownloadCancel, DownloadOutcome, stream_to_file_with_cancel};
+    use std::io::{Read, Write};
+    use std::sync::Arc;
+    use std::time::Duration;
+
+    /// The core T-205 property: a cancel must wake a task parked on the next
+    /// chunk immediately — it must NOT wait for the (60s) stall timeout. Here a
+    /// 60s sleep stands in for "blocked on the network"; the test fails via its
+    /// own 1s deadline if `cancelled()` doesn't wake promptly.
+    #[tokio::test]
+    async fn cancel_wakes_a_blocked_wait_without_waiting_for_the_stall_timeout() {
+        let cancel = Arc::new(DownloadCancel::new());
+        let waiter_cancel = cancel.clone();
+        let waiter = tokio::spawn(async move {
+            tokio::select! {
+                biased;
+                _ = waiter_cancel.cancelled() => "cancelled",
+                _ = tokio::time::sleep(Duration::from_secs(60)) => "stalled",
+            }
+        });
+
+        // Let the waiter park on notify, then request cancellation.
+        tokio::time::sleep(Duration::from_millis(20)).await;
+        cancel.cancel();
+
+        let outcome = tokio::time::timeout(Duration::from_secs(1), waiter)
+            .await
+            .expect("cancelled() did not wake within 1s of cancel()")
+            .expect("waiter task panicked");
+        assert_eq!(outcome, "cancelled");
+        assert!(cancel.is_cancelled());
+    }
+
+    /// `cancelled()` on an already-cancelled handle must return immediately.
+    #[tokio::test]
+    async fn cancelled_returns_immediately_when_already_cancelled() {
+        let cancel = DownloadCancel::new();
+        cancel.cancel();
+        tokio::time::timeout(Duration::from_millis(100), cancel.cancelled())
+            .await
+            .expect("cancelled() blocked despite a prior cancel()");
+    }
+
+    /// A cancel that fires BEFORE the task parks (i.e. between `select!`
+    /// iterations, with no waiter registered) must not be lost — `notify_one`
+    /// stores a permit so the next `cancelled()` still resolves promptly.
+    #[tokio::test]
+    async fn cancel_before_wait_is_not_lost() {
+        let cancel = Arc::new(DownloadCancel::new());
+        cancel.cancel(); // no waiter parked yet
+
+        let waiter_cancel = cancel.clone();
+        let outcome = tokio::time::timeout(Duration::from_secs(1), async move {
+            tokio::select! {
+                biased;
+                _ = waiter_cancel.cancelled() => "cancelled",
+                _ = tokio::time::sleep(Duration::from_secs(60)) => "stalled",
+            }
+        })
+        .await
+        .expect("a pre-wait cancel was lost; cancelled() never resolved");
+        assert_eq!(outcome, "cancelled");
+    }
+
+    /// Acceptance #4: a real HTTP server that sends headers + a few bytes then
+    /// STALLS. A cancel must interrupt the parked read promptly (well under the
+    /// stall timeout, which is set to 10 minutes here so only the cancel can end
+    /// it) and the partial file must be preserved for resume.
+    #[tokio::test]
+    async fn cancel_interrupts_a_stalled_http_stream_and_keeps_partial() {
+        // Bind an ephemeral TCP server that speaks minimal HTTP/1.1, sends a few
+        // bytes, then holds the connection open without sending more.
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        let server = std::thread::spawn(move || {
+            if let Ok((mut sock, _)) = listener.accept() {
+                let mut buf = [0u8; 2048];
+                let _ = sock.read(&mut buf); // consume the request line/headers
+                let _ = sock.write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 1048576\r\n\r\n");
+                let _ = sock.write_all(&[0u8; 16]); // a few real bytes
+                let _ = sock.flush();
+                // Stall: keep the socket open but send nothing more.
+                std::thread::sleep(Duration::from_secs(3));
+            }
+        });
+
+        let client = reqwest::Client::new();
+        let resp = client
+            .get(format!("http://{}/", addr))
+            .send()
+            .await
+            .expect("request to local stall server failed");
+        let mut stream = Box::pin(resp.bytes_stream());
+
+        let tmp = tempfile::TempDir::new().unwrap();
+        let partial = tmp.path().join("model.partial");
+        let mut file = std::fs::File::create(&partial).unwrap();
+
+        let cancel = Arc::new(DownloadCancel::new());
+        let canceller = cancel.clone();
+        tokio::spawn(async move {
+            tokio::time::sleep(Duration::from_millis(150)).await;
+            canceller.cancel();
+        });
+
+        // Stall timeout is huge on purpose: only the cancel can end this
+        // promptly. The 5s outer deadline fails the test if it doesn't.
+        let outcome = tokio::time::timeout(
+            Duration::from_secs(5),
+            stream_to_file_with_cancel(
+                &mut stream,
+                &mut file,
+                &cancel,
+                Duration::from_secs(600),
+                |_| {},
+            ),
+        )
+        .await
+        .expect("stream_to_file_with_cancel did not wake within 5s of cancel()")
+        .expect("stream_to_file_with_cancel returned an error");
+
+        assert!(
+            matches!(outcome, DownloadOutcome::Cancelled),
+            "expected Cancelled outcome"
+        );
+
+        drop(file);
+        assert!(
+            partial.exists(),
+            "partial file must be preserved for resume"
+        );
+
+        let _ = server.join();
     }
 }

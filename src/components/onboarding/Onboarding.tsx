@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { ModelInfo } from "@/bindings";
@@ -24,6 +24,15 @@ const Onboarding: React.FC<OnboardingProps> = ({ onModelSelected }) => {
     downloadStats,
   } = useModelStore();
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
+  // Mirror of selectedModelId updated SYNCHRONOUSLY so a post-await guard reads
+  // the model the user currently wants, not a stale closure value. Prevents a
+  // delayed failure of a cancelled/abandoned download from clearing a different
+  // model the user has since selected.
+  const selectedModelIdRef = useRef<string | null>(null);
+  const setSelected = useCallback((id: string | null) => {
+    selectedModelIdRef.current = id;
+    setSelectedModelId(id);
+  }, []);
 
   const isDownloading = selectedModelId !== null;
 
@@ -36,13 +45,16 @@ const Onboarding: React.FC<OnboardingProps> = ({ onModelSelected }) => {
     const stillExtracting = selectedModelId in extractingModels;
 
     if (model?.is_downloaded && !stillDownloading && !stillExtracting) {
-      // Model is ready — select it and transition
-      selectModel(selectedModelId).then((success) => {
+      // Model is ready — select it and transition. Capture the target so a late
+      // result can't act after the user cancelled/switched to another model.
+      const targetId = selectedModelId;
+      selectModel(targetId).then((success) => {
+        if (selectedModelIdRef.current !== targetId) return;
         if (success) {
           onModelSelected();
         } else {
           toast.error(t("onboarding.errors.selectModel"));
-          setSelectedModelId(null);
+          setSelected(null);
         }
       });
     }
@@ -56,20 +68,26 @@ const Onboarding: React.FC<OnboardingProps> = ({ onModelSelected }) => {
   ]);
 
   const handleDownloadModel = async (modelId: string) => {
-    setSelectedModelId(modelId);
+    setSelected(modelId);
 
     const success = await downloadModel(modelId);
-    if (!success) {
+    // Only react to THIS download's failure if the user is still on this model.
+    // If they cancelled/switched while it was in flight, a delayed failure must
+    // not clear their new selection.
+    if (!success && selectedModelIdRef.current === modelId) {
       toast.error(t("onboarding.downloadFailed"));
-      setSelectedModelId(null);
+      setSelected(null);
     }
   };
 
   const handleCancelDownload = async (modelId: string) => {
     const success = await cancelDownload(modelId);
     if (success) {
-      // Back to a clean onboarding state — user can pick another model.
-      setSelectedModelId(null);
+      // Back to a clean onboarding state — user can pick another model. Only
+      // clear if the user is still on the model they cancelled.
+      if (selectedModelIdRef.current === modelId) {
+        setSelected(null);
+      }
     } else {
       console.error("Failed to cancel model download:", modelId);
     }
