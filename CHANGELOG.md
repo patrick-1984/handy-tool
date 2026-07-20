@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.52.0] - 2026-07-20
+
+### Added
+
+- **Five more static jump slots — now nine (Static 1–9).** The Jumper gained Static 5 through 9, identical to the existing static slots (each with its own set/jump shortcuts, save-mouse-position toggle, and cursor-position mode). Defaults: `Ctrl+Alt+Shift+N` to set, `Ctrl+Alt+N` to jump (N = 5–9). Existing slots and their data are untouched on upgrade.
+
+### Changed
+
+- **Slot pickers list Hot 2 directly under Hot 1**, then Static 1–9. In the anchor-action and track-last-output dropdowns Hot 2 now appears right below Hot 1 instead of last.
+
 ## [0.51.0] - 2026-07-20
 
 ### Changed

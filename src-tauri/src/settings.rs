@@ -885,6 +885,9 @@ pub struct AppSettings {
     /// One-time migration marker for the 0.46 per-flow track-output split.
     #[serde(default)]
     pub jumper_v3_migrated: bool,
+    /// One-time migration marker for T-305 (statics 4→9, Hot 2 moved 5→10).
+    #[serde(default)]
+    pub jumper_v4_migrated: bool,
     /// Save & restore the mouse cursor on a jump, PER SLOT (T-302, 0.49+).
     /// Index = slot (0 = Hot 1, 1-4 = static, 5 = Hot 2). Length SLOT_COUNT,
     /// normalized in `ensure_jumper_v2`. When a slot's flag is on, the cursor is captured
@@ -1411,6 +1414,43 @@ fn ensure_jumper_v2(settings: &mut AppSettings) -> bool {
             .resize(crate::anchor::SLOT_COUNT, None);
         changed = true;
     }
+    // T-305: statics grew 4→9 (SLOT_COUNT 6→11) and Hot 2 moved off index 5
+    // (now Static 5) to the new top index HOT2=10. One-time, and AFTER the
+    // resize blocks above so index HOT2 already exists: relocate Hot 2's
+    // persisted data 5→10 across all three per-slot vecs, reset index 5 to a
+    // fresh empty static (matching how 6–9 were padded above), and remap any
+    // flow slot-index setting that still points at the old Hot 2 (==5) to the
+    // new HOT2. Values 0–4 are untouched; no value >5 could exist since the
+    // old SLOT_COUNT was 6.
+    if !settings.jumper_v4_migrated {
+        const OLD_HOT2: usize = 5;
+        let new_hot2 = crate::anchor::HOT2;
+        // `.take()` moves Hot 2's slot identity to index 10 and leaves index 5
+        // as None; the two explicit resets below give the new Static 5 the same
+        // cursor prefs the freshly-padded statics 6–9 received.
+        settings.jumper_saved_slots[new_hot2] = settings.jumper_saved_slots[OLD_HOT2].take();
+        settings.jumper_save_cursor_slots[new_hot2] = settings.jumper_save_cursor_slots[OLD_HOT2];
+        settings.jumper_cursor_mode_slots[new_hot2] = settings.jumper_cursor_mode_slots[OLD_HOT2];
+        settings.jumper_save_cursor_slots[OLD_HOT2] = false;
+        settings.jumper_cursor_mode_slots[OLD_HOT2] = settings.jumper_cursor_mode;
+        // Remap flow slot-index settings that targeted the old Hot 2.
+        let (old, new) = (OLD_HOT2 as u8, new_hot2 as u8);
+        for s in [
+            &mut settings.anchor_action_output_idle_slot,
+            &mut settings.anchor_action_output_stop_slot,
+            &mut settings.anchor_action_submit_idle_slot,
+            &mut settings.anchor_action_submit_stop_slot,
+            &mut settings.jumper_track_output_slot,
+            &mut settings.jumper_track_submit_slot,
+            &mut settings.jumper_track_slot,
+        ] {
+            if *s == old {
+                *s = new;
+            }
+        }
+        settings.jumper_v4_migrated = true;
+        changed = true;
+    }
     changed
 }
 
@@ -1632,9 +1672,11 @@ pub fn get_default_settings() -> AppSettings {
         },
     );
 
-    // Jumper static slots 1–4 (Windows-only feature; registration skipped
+    // Jumper static slots 1–9 (Windows-only feature; registration skipped
     // elsewhere). Digits avoid AltGr letter collisions on European layouts.
-    for i in 1..=4u8 {
+    // T-305 grew this from 4 to 9; ensure_default_bindings back-fills 5–9 on
+    // existing stores. static N == slot index N (Hot 2 lives at index 10).
+    for i in 1..=9u8 {
         let set_id = format!("jump_set_slot_{}", i);
         bindings.insert(
             set_id.clone(),
@@ -1764,6 +1806,7 @@ pub fn get_default_settings() -> AppSettings {
         // Fresh installs are already on the current model — nothing to migrate.
         jumper_v2_migrated: true,
         jumper_v3_migrated: true,
+        jumper_v4_migrated: true,
         jumper_save_cursor_slots: default_jumper_save_cursor_slots(),
         jumper_cursor_mode: CursorMode::AppRelative,
         // Fresh install: length-correct all-AppRelative (ensure_jumper_v2 also
@@ -2078,6 +2121,69 @@ mod tests {
             custom.bindings["transcribe_ptt"].current_binding,
             "ctrl+alt+p"
         );
+    }
+
+    #[test]
+    fn jumper_v4_relocates_hot2_from_index_5_to_10() {
+        use crate::anchor::{HOT2, SLOT_COUNT};
+        // Simulate a pre-T-305 store: old SLOT_COUNT was 6, Hot 2 lived at
+        // index 5, and the v4 migration has not yet run.
+        let mut s = get_default_settings();
+        s.jumper_v4_migrated = false;
+        let hot2_slot = SavedJumpSlot {
+            app: "hot2-app".to_string(),
+            window_class: "Hot2Win".to_string(),
+            control_class: "Edit".to_string(),
+            cursor: None,
+        };
+        s.jumper_saved_slots = vec![None, None, None, None, None, Some(hot2_slot.clone())];
+        s.jumper_save_cursor_slots = vec![false, false, false, false, false, true];
+        s.jumper_cursor_mode_slots = vec![
+            CursorMode::AppRelative,
+            CursorMode::AppRelative,
+            CursorMode::AppRelative,
+            CursorMode::AppRelative,
+            CursorMode::AppRelative,
+            CursorMode::ScreenAbsolute,
+        ];
+        // Flows pointing at old Hot 2 (5) must move; one pointing at a static (2)
+        // must NOT.
+        s.anchor_action_output_stop_slot = 5;
+        s.anchor_action_submit_stop_slot = 5;
+        s.jumper_track_output_slot = 5;
+        s.anchor_action_output_idle_slot = 2;
+
+        assert!(ensure_jumper_v2(&mut s));
+        assert!(s.jumper_v4_migrated);
+
+        // All per-slot vectors grew to the new SLOT_COUNT.
+        assert_eq!(s.jumper_saved_slots.len(), SLOT_COUNT);
+        assert_eq!(s.jumper_save_cursor_slots.len(), SLOT_COUNT);
+        assert_eq!(s.jumper_cursor_mode_slots.len(), SLOT_COUNT);
+
+        // Hot 2's identity + prefs moved 5 -> HOT2 (10).
+        assert_eq!(s.jumper_saved_slots[HOT2], Some(hot2_slot));
+        assert!(s.jumper_save_cursor_slots[HOT2]);
+        assert_eq!(s.jumper_cursor_mode_slots[HOT2], CursorMode::ScreenAbsolute);
+
+        // Old index 5 is now a fresh, empty Static 5.
+        assert_eq!(s.jumper_saved_slots[5], None);
+        assert!(!s.jumper_save_cursor_slots[5]);
+        assert_eq!(s.jumper_cursor_mode_slots[5], CursorMode::AppRelative);
+
+        // Flow slot indices that targeted old Hot 2 were remapped; the static
+        // target (2) was left alone.
+        assert_eq!(s.anchor_action_output_stop_slot as usize, HOT2);
+        assert_eq!(s.anchor_action_submit_stop_slot as usize, HOT2);
+        assert_eq!(s.jumper_track_output_slot as usize, HOT2);
+        assert_eq!(s.anchor_action_output_idle_slot, 2);
+
+        // Idempotent: a second pass (flag now true) changes nothing.
+        let hot2_saved = s.jumper_saved_slots[HOT2].clone();
+        let stop_slot = s.anchor_action_output_stop_slot;
+        ensure_jumper_v2(&mut s);
+        assert_eq!(s.jumper_saved_slots[HOT2], hot2_saved);
+        assert_eq!(s.anchor_action_output_stop_slot, stop_slot);
     }
 
     #[test]

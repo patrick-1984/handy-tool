@@ -13,14 +13,14 @@ import { useOsType } from "../../../hooks/useOsType";
 import { commands, type AnchorStatus, type CursorMode } from "@/bindings";
 
 /**
- * The Jumper (Windows-only): six jump slots for desktop text fields. Slots 0
- * (Hot 1) and 5 (Hot 2) are the HOT slots — transcription flows can
+ * The Jumper (Windows-only): eleven jump slots for desktop text fields. Slots 0
+ * (Hot 1) and 10 (Hot 2) are the HOT slots — transcription flows can
  * set/clear/jump/deliver into either; any slot can auto-track where text last
- * landed. Slots 1–4 are static bookmarks. Live slots are in-memory; the opt-in
+ * landed. Slots 1–9 are static bookmarks. Live slots are in-memory; the opt-in
  * persistence setting below saves slot identities and re-resolves them across
  * restarts.
  *
- * Cursor save/restore is PER-SLOT (T-302): each slot (hot + 1–4) has its own
+ * Cursor save/restore is PER-SLOT (T-302): each slot (hot + 1–9) has its own
  * "save mouse position" switch. The cursor position mode is now ALSO per-slot
  * (T-304): each slot has its own mode dropdown, disabled when that slot's save
  * toggle is off. When a slot has save enabled, delivering into (or tracking
@@ -101,8 +101,8 @@ export const JumperSettings: React.FC = () => {
     );
   };
 
-  // Per-slot save-cursor state. The setting is a bool[] of length SLOT_COUNT=6
-  // (index = slot; 0 = Hot 1, 1–4 = static, 5 = Hot 2); missing/short reads false.
+  // Per-slot save-cursor state. The setting is a bool[] of length SLOT_COUNT=11
+  // (index = slot; 0 = Hot 1, 1–9 = static, 10 = Hot 2); missing/short reads false.
   const saveCursorSlots = getSetting("jumper_save_cursor_slots") as
     | boolean[]
     | undefined;
@@ -233,10 +233,10 @@ export const JumperSettings: React.FC = () => {
           descriptionMode="tooltip"
           grouped={true}
         >
-          {slotStatus(5)}
+          {slotStatus(10)}
         </SettingContainer>
-        {saveCursorToggle(5)}
-        {cursorModeDropdown(5)}
+        {saveCursorToggle(10)}
+        {cursorModeDropdown(10)}
       </SettingsGroup>
       <SettingsGroup title={t("settings.jumper.persist.groupTitle")}>
         <ToggleSwitch
@@ -259,7 +259,7 @@ export const JumperSettings: React.FC = () => {
           grouped={true}
         />
       </SettingsGroup>
-      {[1, 2, 3, 4].map((i) => (
+      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
         <SettingsGroup
           key={i}
           title={t("settings.jumper.slot.title", { index: i })}

@@ -139,12 +139,14 @@ use serde::Serialize;
 use specta::Type;
 use tauri::AppHandle;
 
-/// Number of jump slots (index 0 = Hot 1, 1–4 = static, 5 = Hot 2).
-pub const SLOT_COUNT: usize = 6;
+/// Number of jump slots (index 0 = Hot 1, 1–9 = static, 10 = Hot 2). T-305 grew
+/// the static range from 4 to 9 and moved Hot 2 to the top of the range (was 5)
+/// so `static N == slot index N` holds with no display/index decoupling.
+pub const SLOT_COUNT: usize = 11;
 /// The hot slot index (Hot 1).
 pub const HOT: usize = 0;
-/// The second hot slot index (Hot 2, T-303).
-pub const HOT2: usize = 5;
+/// The second hot slot index (Hot 2, T-303; relocated from 5 to 10 in T-305).
+pub const HOT2: usize = 10;
 
 /// T-302 per-slot cursor gating — the SINGLE source of truth. Given the
 /// `jumper_save_cursor_slots` flags (index = slot; 0 = hot, 1–4 = static),
@@ -471,7 +473,9 @@ mod win {
 
     static SLOTS: Lazy<Mutex<SlotState>> = Lazy::new(|| {
         Mutex::new(SlotState {
-            targets: [None, None, None, None, None, None],
+            targets: [
+                None, None, None, None, None, None, None, None, None, None, None,
+            ],
             generations: [0; SLOT_COUNT],
         })
     });
@@ -761,7 +765,20 @@ mod win {
             .and_then(|p| std::fs::read_to_string(p).ok())
             .and_then(|s| parse_hints_file(&s))
             .unwrap_or_default();
-        if file.slots.len() != SLOT_COUNT {
+        // T-305: a pre-expansion sidecar (exactly the old SLOT_COUNT of 6, with
+        // Hot 2 at index 5) must move its Hot 2 hint to the new HOT2 index as it
+        // grows to SLOT_COUNT. A plain resize would strand the hint at index 5
+        // (now Static 5) and leave the real Hot 2 unhinted, so a migrated Hot 2
+        // with two matching windows couldn't auto-disambiguate. Mirrors the
+        // settings-side jumper_v4 migration. Other lengths (Hot 2 never existed,
+        // or already grown) just resize. Deterministic, so re-running before the
+        // next persist rewrites the file yields the same result.
+        const PRE_T305_LEN: usize = 6;
+        const OLD_HOT2: usize = 5;
+        if file.slots.len() == PRE_T305_LEN && SLOT_COUNT > PRE_T305_LEN {
+            file.slots.resize(SLOT_COUNT, None);
+            file.slots[super::HOT2] = file.slots[OLD_HOT2].take();
+        } else if file.slots.len() != SLOT_COUNT {
             file.slots.resize(SLOT_COUNT, None);
         }
         file
@@ -2492,7 +2509,9 @@ mod win {
 
         fn empty_state() -> SlotState {
             SlotState {
-                targets: [None, None, None, None, None, None],
+                targets: [
+                    None, None, None, None, None, None, None, None, None, None, None,
+                ],
                 generations: [0; SLOT_COUNT],
             }
         }

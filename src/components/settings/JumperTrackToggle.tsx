@@ -41,12 +41,13 @@ export const JumperTrackToggle: React.FC<JumperTrackToggleProps> = React.memo(
 
     const enabled = getSetting(enabledKey) ?? false;
     const selectedSlot = String(getSetting(slotKey) ?? 0);
-    const slotOptions = [0, 1, 2, 3, 4, 5].map((slot) => ({
+    // Hot 2 listed directly under Hot 1, then the static slots 1–9.
+    const slotOptions = [0, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((slot) => ({
       value: String(slot),
       label:
         slot === 0
           ? t("settings.jumper.slotNames.hot")
-          : slot === 5
+          : slot === 10
             ? t("settings.jumper.slotNames.hot2")
             : t("settings.jumper.slotNames.static", { index: slot }),
     }));
