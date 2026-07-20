@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.50.0] - 2026-07-20
+
+### Added
+
+- **Second hot anchor.** The Jumper now has two hot anchors — **Hot 1** and **Hot 2** — each with its own quick set/jump shortcuts (Hot 2 defaults to `Ctrl+Alt+H` / `Ctrl+Alt+G`). Either can be targeted by the dictate and Transcribe & Submit flows independently, so each flow can own a distinct hot anchor. Existing slots are unchanged; Hot 2 starts empty.
+
+### Changed
+
+- **Current Audio keeps the last transcript.** When a new take starts, the previous transcript stays visible until the new one produces text (live / push-to-talk streams the in-progress result; post-recording keeps the last until the final arrives), instead of blanking between takes.
+- **Copy button moved into the transcript box** (top-right, GitHub-style), appearing when there's text; "Open floating window" stays in the header.
+
 ## [0.49.0] - 2026-07-20
 
 ### Added

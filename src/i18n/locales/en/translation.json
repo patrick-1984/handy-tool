@@ -344,6 +344,9 @@
           "hint": "Configured in the Transcribe and Transcribe & Submit groups on the General page."
         }
       },
+      "hot2": {
+        "title": "Second hot slot (Anchor & Deliver)"
+      },
       "slot": {
         "title": "Static slot {{index}}",
         "status": "Slot {{index}} target",
@@ -358,7 +361,8 @@
         "groupTitle": "Persistence"
       },
       "slotNames": {
-        "hot": "Hot (anchor)",
+        "hot": "Hot 1",
+        "hot2": "Hot 2",
         "static": "Slot {{index}}"
       },
       "track": {

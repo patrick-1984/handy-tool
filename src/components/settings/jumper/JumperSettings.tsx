@@ -13,11 +13,12 @@ import { useOsType } from "../../../hooks/useOsType";
 import { commands, type AnchorStatus } from "@/bindings";
 
 /**
- * The Jumper (Windows-only): five jump slots for desktop text fields. Slot 0
- * is the HOT slot — transcription flows can set/clear/jump/deliver into it;
- * any slot can auto-track where text last landed. Slots 1–4 are static
- * bookmarks. Live slots are in-memory; the opt-in persistence setting below
- * saves slot identities and re-resolves them across restarts.
+ * The Jumper (Windows-only): six jump slots for desktop text fields. Slots 0
+ * (Hot 1) and 5 (Hot 2) are the HOT slots — transcription flows can
+ * set/clear/jump/deliver into either; any slot can auto-track where text last
+ * landed. Slots 1–4 are static bookmarks. Live slots are in-memory; the opt-in
+ * persistence setting below saves slot identities and re-resolves them across
+ * restarts.
  *
  * Cursor save/restore is PER-SLOT (T-302): each slot (hot + 1–4) has its own
  * "save mouse position" switch; a single shared "cursor position mode" dropdown
@@ -213,6 +214,19 @@ export const JumperSettings: React.FC = () => {
             {t("settings.jumper.hot.optionsMoved.hint")}
           </span>
         </SettingContainer>
+      </SettingsGroup>
+      <SettingsGroup title={t("settings.jumper.hot2.title")}>
+        <ShortcutInput shortcutId="anchor_set_2" grouped={true} />
+        <ShortcutInput shortcutId="anchor_jump_2" grouped={true} />
+        <SettingContainer
+          title={t("settings.general.anchor.status.title")}
+          description={t("settings.general.anchor.status.description")}
+          descriptionMode="tooltip"
+          grouped={true}
+        >
+          {slotStatus(5)}
+        </SettingContainer>
+        {saveCursorToggle(5)}
       </SettingsGroup>
       <SettingsGroup title={t("settings.jumper.persist.groupTitle")}>
         <ToggleSwitch

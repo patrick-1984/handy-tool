@@ -131,6 +131,8 @@ pub fn get_shortcut_registration_failures() -> Vec<RegistrationFailure> {
 pub(crate) fn is_jumper_binding(id: &str) -> bool {
     id == "anchor_set"
         || id == "anchor_jump"
+        || id == "anchor_set_2"
+        || id == "anchor_jump_2"
         || id.starts_with("jump_slot_")
         || id.starts_with("jump_set_slot_")
 }
@@ -1129,7 +1131,7 @@ pub fn change_anchor_action_slot_setting(
     key: String,
     slot: u32,
 ) -> Result<(), String> {
-    let slot = slot.min(4) as u8;
+    let slot = slot.min((crate::anchor::SLOT_COUNT - 1) as u32) as u8;
     let mut settings = settings::get_settings(&app);
     match key.as_str() {
         "output_idle" => settings.anchor_action_output_idle_slot = slot,

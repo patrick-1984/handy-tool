@@ -139,10 +139,12 @@ use serde::Serialize;
 use specta::Type;
 use tauri::AppHandle;
 
-/// Number of jump slots (index 0 = hot).
-pub const SLOT_COUNT: usize = 5;
-/// The hot slot index.
+/// Number of jump slots (index 0 = Hot 1, 1–4 = static, 5 = Hot 2).
+pub const SLOT_COUNT: usize = 6;
+/// The hot slot index (Hot 1).
 pub const HOT: usize = 0;
+/// The second hot slot index (Hot 2, T-303).
+pub const HOT2: usize = 5;
 
 /// T-302 per-slot cursor gating — the SINGLE source of truth. Given the
 /// `jumper_save_cursor_slots` flags (index = slot; 0 = hot, 1–4 = static),
@@ -455,7 +457,7 @@ mod win {
 
     static SLOTS: Lazy<Mutex<SlotState>> = Lazy::new(|| {
         Mutex::new(SlotState {
-            targets: [None, None, None, None, None],
+            targets: [None, None, None, None, None, None],
             generations: [0; SLOT_COUNT],
         })
     });
@@ -2467,7 +2469,7 @@ mod win {
 
         fn empty_state() -> SlotState {
             SlotState {
-                targets: [None, None, None, None, None],
+                targets: [None, None, None, None, None, None],
                 generations: [0; SLOT_COUNT],
             }
         }

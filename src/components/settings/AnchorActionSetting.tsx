@@ -64,12 +64,14 @@ export const AnchorActionSetting: React.FC<AnchorActionSettingProps> =
         label: t(`settings.general.anchor.actions.options.${value}`),
       }),
     );
-    const slotOptions = [0, 1, 2, 3, 4].map((slot) => ({
+    const slotOptions = [0, 1, 2, 3, 4, 5].map((slot) => ({
       value: String(slot),
       label:
         slot === 0
           ? t("settings.jumper.slotNames.hot")
-          : t("settings.jumper.slotNames.static", { index: slot }),
+          : slot === 5
+            ? t("settings.jumper.slotNames.hot2")
+            : t("settings.jumper.slotNames.static", { index: slot }),
     }));
 
     return (

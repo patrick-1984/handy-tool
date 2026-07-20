@@ -886,8 +886,8 @@ pub struct AppSettings {
     #[serde(default)]
     pub jumper_v3_migrated: bool,
     /// Save & restore the mouse cursor on a jump, PER SLOT (T-302, 0.49+).
-    /// Index = slot (0 = hot, 1-4 = static). Length SLOT_COUNT (5), normalized
-    /// in `ensure_jumper_v2`. When a slot's flag is on, the cursor is captured
+    /// Index = slot (0 = Hot 1, 1-4 = static, 5 = Hot 2). Length SLOT_COUNT,
+    /// normalized in `ensure_jumper_v2`. When a slot's flag is on, the cursor is captured
     /// with that slot's anchor and restored after a jump activates the window
     /// (and, for delivery, AFTER the paste). Replaces the 0.48 per-flow toggles.
     /// Default all-off.
@@ -949,16 +949,16 @@ fn default_return_focus() -> bool {
 }
 
 fn default_jumper_saved_slots() -> Vec<Option<SavedJumpSlot>> {
-    vec![None; 5]
+    vec![None; crate::anchor::SLOT_COUNT]
 }
 
 fn default_model_unload_custom_seconds() -> u64 {
     300
 }
 
-/// Per-slot save-cursor flags, one per jump slot (0=hot, 1-4=static). T-302.
+/// Per-slot save-cursor flags, one per jump slot (0=Hot 1, 1-4=static, 5=Hot 2). T-302/T-303.
 fn default_jumper_save_cursor_slots() -> Vec<bool> {
-    vec![false; 5]
+    vec![false; crate::anchor::SLOT_COUNT]
 }
 
 fn default_mcp_port() -> u16 {
@@ -1368,6 +1368,15 @@ fn ensure_jumper_v2(settings: &mut AppSettings) -> bool {
             .resize(crate::anchor::SLOT_COUNT, false);
         changed = true;
     }
+    // T-303: same for the persisted saved-slot identities — normalize to
+    // SLOT_COUNT AT LOAD so a pre-0.50 store (len 5) gains an empty index-5
+    // (Hot 2) before any restore reads it, not only lazily on the next write.
+    if settings.jumper_saved_slots.len() != crate::anchor::SLOT_COUNT {
+        settings
+            .jumper_saved_slots
+            .resize(crate::anchor::SLOT_COUNT, None);
+        changed = true;
+    }
     changed
 }
 
@@ -1564,6 +1573,28 @@ pub fn get_default_settings() -> AppSettings {
             description: "Brings the anchored window and field into focus.".to_string(),
             default_binding: "ctrl+alt+j".to_string(),
             current_binding: "ctrl+alt+j".to_string(),
+        },
+    );
+    // Second hot anchor (Hot 2, T-303). h/g are AltGr-safe on European layouts.
+    bindings.insert(
+        "anchor_set_2".to_string(),
+        ShortcutBinding {
+            id: "anchor_set_2".to_string(),
+            name: "Set Anchor 2".to_string(),
+            description: "Anchors the focused text field as the second delivery target."
+                .to_string(),
+            default_binding: "ctrl+alt+h".to_string(),
+            current_binding: "ctrl+alt+h".to_string(),
+        },
+    );
+    bindings.insert(
+        "anchor_jump_2".to_string(),
+        ShortcutBinding {
+            id: "anchor_jump_2".to_string(),
+            name: "Jump to Anchor 2".to_string(),
+            description: "Brings the second anchored window and field into focus.".to_string(),
+            default_binding: "ctrl+alt+g".to_string(),
+            current_binding: "ctrl+alt+g".to_string(),
         },
     );
 

@@ -44,7 +44,11 @@ export const CurrentAudioView: React.FC = () => {
   useEffect(() => {
     const setupListeners = async () => {
       const unlistenReset = await listen("live-transcription-reset", () => {
-        setChunks([]);
+        // Keep the LAST transcript on screen until the NEW take produces text
+        // — a live chunk (live / push-to-talk streams the in-progress result)
+        // or the final result (post-recording). This way the view never blanks
+        // between takes; the recording indicator in the header shows a new take
+        // is in progress while the previous transcript stays visible.
         setIsRecording(true);
       });
 
@@ -100,52 +104,50 @@ export const CurrentAudioView: React.FC = () => {
                     : ""}
               </span>
             </div>
-            <div className="flex items-center gap-3">
-              {hasText && (
-                <button
-                  onClick={handleCopy}
-                  className="flex items-center gap-1 text-xs text-mid-gray hover:text-white transition-colors cursor-pointer"
-                  title={
-                    copied
-                      ? t("settings.currentAudio.copied")
-                      : t("settings.currentAudio.copy")
-                  }
-                >
-                  {copied ? <Check size={14} /> : <Copy size={14} />}
-                  {copied
-                    ? t("settings.currentAudio.copied")
-                    : t("settings.currentAudio.copy")}
-                </button>
-              )}
-              <button
-                onClick={() => commands.openFloatingTranscription()}
-                className="flex items-center gap-1 text-xs text-mid-gray hover:text-white transition-colors cursor-pointer"
-                title={t("settings.currentAudio.openFloating")}
-              >
-                <ExternalLink size={14} />
-                {t("settings.currentAudio.openFloating")}
-              </button>
-            </div>
+            <button
+              onClick={() => commands.openFloatingTranscription()}
+              className="flex items-center gap-1 text-xs text-mid-gray hover:text-white transition-colors cursor-pointer"
+              title={t("settings.currentAudio.openFloating")}
+            >
+              <ExternalLink size={14} />
+              {t("settings.currentAudio.openFloating")}
+            </button>
           </div>
 
-          <div
-            ref={scrollRef}
-            className="min-h-[200px] max-h-[400px] overflow-y-auto rounded-lg bg-black/20 p-4"
-          >
-            {!hasText && !isRecording && (
-              <p className="text-sm text-mid-gray italic">
-                {t("settings.currentAudio.idle")}
-              </p>
-            )}
-            {isRecording && !hasText && (
-              <p className="text-sm text-mid-gray italic">
-                {t("settings.currentAudio.recording")}
-              </p>
-            )}
+          <div className="relative">
+            <div
+              ref={scrollRef}
+              className="min-h-[200px] max-h-[400px] overflow-y-auto rounded-lg bg-black/20 p-4"
+            >
+              {!hasText && !isRecording && (
+                <p className="text-sm text-mid-gray italic">
+                  {t("settings.currentAudio.idle")}
+                </p>
+              )}
+              {isRecording && !hasText && (
+                <p className="text-sm text-mid-gray italic">
+                  {t("settings.currentAudio.recording")}
+                </p>
+              )}
+              {hasText && (
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                  {chunks.join(" ")}
+                </p>
+              )}
+            </div>
             {hasText && (
-              <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                {chunks.join(" ")}
-              </p>
+              <button
+                onClick={handleCopy}
+                className="absolute top-2 right-2 flex items-center justify-center p-1.5 rounded-md bg-black/40 hover:bg-black/70 text-mid-gray hover:text-white transition-colors cursor-pointer"
+                title={
+                  copied
+                    ? t("settings.currentAudio.copied")
+                    : t("settings.currentAudio.copy")
+                }
+                aria-label={t("settings.currentAudio.copy")}
+              >
+                {copied ? <Check size={14} /> : <Copy size={14} />}
+              </button>
             )}
           </div>
         </div>

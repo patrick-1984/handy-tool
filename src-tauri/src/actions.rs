@@ -1997,6 +1997,16 @@ pub static ACTION_MAP: Lazy<HashMap<String, Arc<dyn ShortcutAction>>> = Lazy::ne
         "anchor_jump".to_string(),
         Arc::new(AnchorJumpAction) as Arc<dyn ShortcutAction>,
     );
+    // Second hot anchor (Hot 2, T-303) — reuse the generic slot actions
+    // targeting HOT2, NOT the legacy hot-only AnchorSet/JumpAction.
+    map.insert(
+        "anchor_set_2".to_string(),
+        Arc::new(SetSlotAction(crate::anchor::HOT2)) as Arc<dyn ShortcutAction>,
+    );
+    map.insert(
+        "anchor_jump_2".to_string(),
+        Arc::new(JumpSlotAction(crate::anchor::HOT2)) as Arc<dyn ShortcutAction>,
+    );
     for i in 1..=4usize {
         map.insert(
             format!("jump_set_slot_{}", i),
