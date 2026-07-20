@@ -1235,20 +1235,39 @@ pub fn change_anchor_require_same_flow(app: AppHandle, enabled: bool) -> Result<
     Ok(())
 }
 
-/// Set the coordinate mode used when restoring the cursor: "AppRelative"
-/// (same spot inside the app; default) or "ScreenAbsolute" (fixed monitor
-/// pixel). Shared by both flows. T-301. Takes a String parsed manually per the
-/// enum-arg convention; the strings are the `CursorMode` variant names.
+/// Set the coordinate mode used when restoring the cursor for a SINGLE jump
+/// slot (index 0 = Hot 1, 1-4 = static, 5 = Hot 2): "AppRelative" (same spot
+/// inside the app; default) or "ScreenAbsolute" (fixed monitor pixel). T-304
+/// (replaces the pre-0.51 shared cursor-mode command). Takes a
+/// String parsed manually per the enum-arg convention; the strings are the
+/// `CursorMode` variant names. Mirrors `change_jumper_save_cursor_slot`:
+/// validate the slot BEFORE the mutation closure and normalize the vec to
+/// SLOT_COUNT before indexing so an old/short persisted value can't panic.
 #[tauri::command]
 #[specta::specta]
-pub fn change_jumper_cursor_mode_setting(app: AppHandle, mode: String) -> Result<(), String> {
+pub fn change_jumper_cursor_mode_slot(
+    app: AppHandle,
+    slot: u8,
+    mode: String,
+) -> Result<(), String> {
+    if slot as usize >= crate::anchor::SLOT_COUNT {
+        return Err(format!("invalid jump slot {slot}"));
+    }
     let parsed = match mode.as_str() {
         "AppRelative" => CursorMode::AppRelative,
         "ScreenAbsolute" => CursorMode::ScreenAbsolute,
         other => return Err(format!("Unknown cursor mode '{}'", other)),
     };
     settings::update_settings(&app, |s| {
-        s.jumper_cursor_mode = parsed;
+        if s.jumper_cursor_mode_slots.len() != crate::anchor::SLOT_COUNT {
+            // Seed any padded entries from the legacy global, matching the
+            // ensure_jumper_v2 migration, so a first write pre-normalization
+            // can't reset other slots to the type default.
+            let seed = s.jumper_cursor_mode;
+            s.jumper_cursor_mode_slots
+                .resize(crate::anchor::SLOT_COUNT, seed);
+        }
+        s.jumper_cursor_mode_slots[slot as usize] = parsed;
     });
     Ok(())
 }

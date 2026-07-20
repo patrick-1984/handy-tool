@@ -10,7 +10,7 @@ import { Dropdown } from "../../ui/Dropdown";
 import { Button } from "../../ui/Button";
 import { useSettings } from "../../../hooks/useSettings";
 import { useOsType } from "../../../hooks/useOsType";
-import { commands, type AnchorStatus } from "@/bindings";
+import { commands, type AnchorStatus, type CursorMode } from "@/bindings";
 
 /**
  * The Jumper (Windows-only): six jump slots for desktop text fields. Slots 0
@@ -21,10 +21,10 @@ import { commands, type AnchorStatus } from "@/bindings";
  * restarts.
  *
  * Cursor save/restore is PER-SLOT (T-302): each slot (hot + 1–4) has its own
- * "save mouse position" switch; a single shared "cursor position mode" dropdown
- * governs how any saved position is measured. When a slot has save enabled,
- * delivering into (or tracking onto) it captures the pointer so a jump restores
- * it.
+ * "save mouse position" switch. The cursor position mode is now ALSO per-slot
+ * (T-304): each slot has its own mode dropdown, disabled when that slot's save
+ * toggle is off. When a slot has save enabled, delivering into (or tracking
+ * onto) it captures the pointer so a jump restores it.
  */
 export const JumperSettings: React.FC = () => {
   const { t } = useTranslation();
@@ -101,13 +101,12 @@ export const JumperSettings: React.FC = () => {
     );
   };
 
-  // Per-slot save-cursor state. The setting is a bool[] of length SLOT_COUNT=5
-  // (index = slot; 0 = hot, 1–4 = static); a missing/short entry reads false.
+  // Per-slot save-cursor state. The setting is a bool[] of length SLOT_COUNT=6
+  // (index = slot; 0 = Hot 1, 1–4 = static, 5 = Hot 2); missing/short reads false.
   const saveCursorSlots = getSetting("jumper_save_cursor_slots") as
     | boolean[]
     | undefined;
   const isSaveCursorOn = (index: number) => saveCursorSlots?.[index] ?? false;
-  const anySaveCursor = saveCursorSlots?.some(Boolean) ?? false;
 
   const setSaveCursor = async (index: number, value: boolean) => {
     try {
@@ -133,8 +132,13 @@ export const JumperSettings: React.FC = () => {
     />
   );
 
-  // Shared cursor-position mode (App-relative vs screen-absolute).
-  const cursorMode = String(getSetting("jumper_cursor_mode") ?? "AppRelative");
+  // Per-slot cursor-position mode (T-304). Vector of CursorMode, index = slot;
+  // a missing/short entry reads "AppRelative".
+  const cursorModeSlots = getSetting("jumper_cursor_mode_slots") as
+    | CursorMode[]
+    | undefined;
+  const cursorModeFor = (index: number): string =>
+    String(cursorModeSlots?.[index] ?? "AppRelative");
   const cursorModeOptions = [
     {
       value: "AppRelative",
@@ -145,9 +149,9 @@ export const JumperSettings: React.FC = () => {
       label: t("settings.jumper.saveCursor.mode.screenAbsolute"),
     },
   ];
-  const setCursorMode = async (value: string) => {
+  const setCursorModeSlot = async (index: number, value: string) => {
     try {
-      const result = await commands.changeJumperCursorModeSetting(value);
+      const result = await commands.changeJumperCursorModeSlot(index, value);
       if (result.status === "error") {
         toast.error(String(result.error));
         return;
@@ -157,6 +161,25 @@ export const JumperSettings: React.FC = () => {
       toast.error(String(error));
     }
   };
+
+  // Rendered under each slot's save toggle; disabled (grayed) when that slot's
+  // save-cursor switch is off, so the mode is always visible but inert until
+  // the slot actually saves a cursor (T-304).
+  const cursorModeDropdown = (index: number) => (
+    <SettingContainer
+      title={t("settings.jumper.saveCursor.mode.title")}
+      description={t("settings.jumper.saveCursor.mode.description")}
+      descriptionMode="tooltip"
+      grouped={true}
+    >
+      <Dropdown
+        options={cursorModeOptions}
+        selectedValue={cursorModeFor(index)}
+        onSelect={(value) => void setCursorModeSlot(index, value)}
+        disabled={!isSaveCursorOn(index)}
+      />
+    </SettingContainer>
+  );
 
   // On-finish flow-match gate (T-302 #3).
   const requireSameFlow =
@@ -189,21 +212,7 @@ export const JumperSettings: React.FC = () => {
           {slotStatus(0)}
         </SettingContainer>
         {saveCursorToggle(0)}
-        {anySaveCursor && (
-          <SettingContainer
-            title={t("settings.jumper.saveCursor.mode.title")}
-            description={t("settings.jumper.saveCursor.mode.description")}
-            descriptionMode="tooltip"
-            grouped={true}
-          >
-            <Dropdown
-              options={cursorModeOptions}
-              selectedValue={cursorMode}
-              onSelect={(value) => void setCursorMode(value)}
-              disabled={isUpdating("jumper_cursor_mode")}
-            />
-          </SettingContainer>
-        )}
+        {cursorModeDropdown(0)}
         <SettingContainer
           title={t("settings.jumper.hot.optionsMoved.title")}
           description={t("settings.jumper.hot.optionsMoved.description")}
@@ -227,6 +236,7 @@ export const JumperSettings: React.FC = () => {
           {slotStatus(5)}
         </SettingContainer>
         {saveCursorToggle(5)}
+        {cursorModeDropdown(5)}
       </SettingsGroup>
       <SettingsGroup title={t("settings.jumper.persist.groupTitle")}>
         <ToggleSwitch
@@ -265,6 +275,7 @@ export const JumperSettings: React.FC = () => {
             {slotStatus(i)}
           </SettingContainer>
           {saveCursorToggle(i)}
+          {cursorModeDropdown(i)}
         </SettingsGroup>
       ))}
     </div>

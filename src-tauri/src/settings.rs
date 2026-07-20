@@ -893,10 +893,20 @@ pub struct AppSettings {
     /// Default all-off.
     #[serde(default = "default_jumper_save_cursor_slots")]
     pub jumper_save_cursor_slots: Vec<bool>,
-    /// Coordinate mode for cursor restore: AppRelative (same spot inside the
-    /// app; default) or ScreenAbsolute (fixed monitor pixel). Shared by slots.
+    /// LEGACY (pre-0.51): the single shared cursor mode. Retained ONLY as the
+    /// one-time migration seed for `jumper_cursor_mode_slots` (see
+    /// `ensure_jumper_v2`). Not written after upgrade and not read outside the
+    /// migration; the per-slot vector below is the live source of truth.
     #[serde(default)]
     pub jumper_cursor_mode: CursorMode,
+    /// Coordinate mode for cursor restore, PER SLOT (T-304, 0.51+): AppRelative
+    /// (same spot inside the app; default) or ScreenAbsolute (fixed monitor
+    /// pixel). Index = slot (0 = Hot 1, 1-4 = static, 5 = Hot 2). Length
+    /// SLOT_COUNT, seeded from the legacy `jumper_cursor_mode` and normalized in
+    /// `ensure_jumper_v2`. Each slot's mode is stamped onto its `SavedCursor` at
+    /// capture time (anchor.rs `capture_cursor`), resolving this by target slot.
+    #[serde(default = "default_jumper_cursor_mode_slots")]
+    pub jumper_cursor_mode_slots: Vec<CursorMode>,
     /// When true, an on-finish Jumper jump/anchor action fires ONLY if the
     /// take's finishing flow matches its starting flow — e.g. a recording
     /// started as plain Transcribe but finished via Transcribe & Submit will
@@ -959,6 +969,16 @@ fn default_model_unload_custom_seconds() -> u64 {
 /// Per-slot save-cursor flags, one per jump slot (0=Hot 1, 1-4=static, 5=Hot 2). T-302/T-303.
 fn default_jumper_save_cursor_slots() -> Vec<bool> {
     vec![false; crate::anchor::SLOT_COUNT]
+}
+
+/// Per-slot cursor-mode default (T-304). Deliberately EMPTY — unlike
+/// `default_jumper_save_cursor_slots`'s length-SLOT_COUNT default — so
+/// `ensure_jumper_v2` can distinguish an un-migrated store (empty/short) from a
+/// present one and SEED every slot from the legacy global `jumper_cursor_mode`.
+/// A length-SLOT_COUNT default here would mask the upgrade and silently reset a
+/// ScreenAbsolute user back to AppRelative.
+fn default_jumper_cursor_mode_slots() -> Vec<CursorMode> {
+    Vec::new()
 }
 
 fn default_mcp_port() -> u16 {
@@ -1368,6 +1388,20 @@ fn ensure_jumper_v2(settings: &mut AppSettings) -> bool {
             .resize(crate::anchor::SLOT_COUNT, false);
         changed = true;
     }
+    // T-304: per-slot cursor mode. Normalize to SLOT_COUNT AT LOAD, SEEDING any
+    // newly added entries from the legacy global `jumper_cursor_mode`. A store
+    // upgrading from the shared-mode era has no `jumper_cursor_mode_slots` (so
+    // serde gives the empty default) → resize fills all SLOT_COUNT slots with
+    // the user's prior global mode, preserving behavior. A hand-edited short vec
+    // keeps its entries and pads the rest from the same seed. `CursorMode: Copy`,
+    // so `resize` can take the seed value directly.
+    if settings.jumper_cursor_mode_slots.len() != crate::anchor::SLOT_COUNT {
+        let seed = settings.jumper_cursor_mode;
+        settings
+            .jumper_cursor_mode_slots
+            .resize(crate::anchor::SLOT_COUNT, seed);
+        changed = true;
+    }
     // T-303: same for the persisted saved-slot identities — normalize to
     // SLOT_COUNT AT LOAD so a pre-0.50 store (len 5) gains an empty index-5
     // (Hot 2) before any restore reads it, not only lazily on the next write.
@@ -1732,6 +1766,9 @@ pub fn get_default_settings() -> AppSettings {
         jumper_v3_migrated: true,
         jumper_save_cursor_slots: default_jumper_save_cursor_slots(),
         jumper_cursor_mode: CursorMode::AppRelative,
+        // Fresh install: length-correct all-AppRelative (ensure_jumper_v2 also
+        // normalizes, but keep this path self-consistent without relying on it).
+        jumper_cursor_mode_slots: vec![CursorMode::AppRelative; crate::anchor::SLOT_COUNT],
         anchor_on_finish_require_same_flow: false,
         translator_enabled: false,
         translator_folders: Vec::new(),

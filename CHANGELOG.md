@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.51.0] - 2026-07-20
+
+### Changed
+
+- **Cursor-position mode is now per-slot.** Every Jumper slot — Hot 1, Hot 2, and the four static slots — has its own **App-relative / Screen-absolute** mode dropdown, sitting right under that slot's "Save mouse position" switch (previously only Hot 1 showed a single shared mode). The dropdown is always visible but **grayed out** when that slot's save switch is off, instead of appearing/disappearing. Existing setups are migrated: every slot inherits your previous shared mode, so nothing changes until you adjust a slot.
+
 ## [0.50.0] - 2026-07-20
 
 ### Added

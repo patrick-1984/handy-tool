@@ -406,7 +406,7 @@ pub fn run(cli_args: CliArgs) {
         shortcut::change_jumper_track_slot_setting,
         shortcut::change_jumper_save_cursor_slot,
         shortcut::change_anchor_require_same_flow,
-        shortcut::change_jumper_cursor_mode_setting,
+        shortcut::change_jumper_cursor_mode_slot,
         shortcut::change_translator_model_unload_timeout,
         shortcut::change_translator_model_unload_custom_seconds,
         shortcut::change_return_focus_setting,

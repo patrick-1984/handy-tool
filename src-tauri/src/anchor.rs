@@ -163,6 +163,20 @@ pub(crate) fn slot_save_cursor(slots: &[bool], slot: usize) -> bool {
     slots.get(slot).copied().unwrap_or(false)
 }
 
+/// T-304 per-slot cursor MODE resolution — the single source of truth. Given
+/// `jumper_cursor_mode_slots` (index = slot; 0 = Hot 1, 1–4 = static, 5 = Hot 2),
+/// the `CursorMode` to stamp on slot `slot`'s captured cursor. Bounds-checked:
+/// an out-of-range slot or a short/empty vec reads as `CursorMode::default()`
+/// (AppRelative) — never panics. Mirrors `slot_save_cursor`; every capture entry
+/// resolves the mode through this against its TARGET slot.
+#[cfg_attr(not(windows), allow(dead_code))]
+pub(crate) fn slot_cursor_mode(
+    modes: &[crate::settings::CursorMode],
+    slot: usize,
+) -> crate::settings::CursorMode {
+    modes.get(slot).copied().unwrap_or_default()
+}
+
 /// What the UI shows for an occupied slot (never the window title — titles are
 /// volatile and can carry sensitive document names). `stale` = the slot only
 /// exists as a persisted identity whose window hasn't been found yet (shown
@@ -1468,10 +1482,11 @@ mod win {
     /// here, so the hot slot and manual sets always carry it. `hwnd` is the
     /// anchor window, used only for the AppRelative client-normalized coords;
     /// `abs_*` is the physical virtual-screen pixel and doubles as the
-    /// AppRelative fallback. The global `jumper_cursor_mode` is stamped in here
-    /// (Codex "stamp mode at persist" — capture is the single choke point for
-    /// mode selection). `None` only if `GetCursorPos` fails outright.
-    fn capture_cursor(app: &AppHandle, hwnd: HWND) -> Option<SavedCursor> {
+    /// AppRelative fallback. The per-slot `CursorMode` is chosen by the CALLER
+    /// (via `slot_cursor_mode` against the TARGET slot) and passed in as `mode`;
+    /// capture stays the single choke point that STAMPS it onto the
+    /// `SavedCursor`. `None` only if `GetCursorPos` fails outright.
+    fn capture_cursor(_app: &AppHandle, hwnd: HWND, mode: CursorMode) -> Option<SavedCursor> {
         let mut pt = POINT::default();
         unsafe {
             if GetCursorPos(&mut pt).is_err() {
@@ -1487,7 +1502,7 @@ mod win {
             abs_y: pt.y,
             norm_x,
             norm_y,
-            mode: crate::settings::get_settings(app).jumper_cursor_mode,
+            mode,
         })
     }
 
@@ -1658,7 +1673,11 @@ mod win {
             // T-301: capture the cursor UNCONDITIONALLY (relative to the
             // top-level window); flow gating nulls it at commit for the
             // flow-driven paths, never for the manual/hot `set_slot`.
-            let cursor = capture_cursor(app, hwnd);
+            let mode = super::slot_cursor_mode(
+                &crate::settings::get_settings(app).jumper_cursor_mode_slots,
+                slot,
+            );
+            let cursor = capture_cursor(app, hwnd, mode);
             Ok(Target {
                 hwnd: hwnd.0 as isize,
                 control: control.0 as isize,
@@ -1900,7 +1919,11 @@ mod win {
         // computed by clipboard.rs from the correct flow's toggle (submit flow
         // → submit toggle, dictate/output flow → output toggle), so the two
         // flows gate independently rather than sharing an "either" test.
-        target.cursor = capture_cursor(app, HWND(guard.target_hwnd as _));
+        let mode = super::slot_cursor_mode(
+            &crate::settings::get_settings(app).jumper_cursor_mode_slots,
+            slot,
+        );
+        target.cursor = capture_cursor(app, HWND(guard.target_hwnd as _), mode);
         if !save_cursor {
             target.cursor = None;
         }
