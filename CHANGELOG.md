@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.47.0] - 2026-07-20
+
+### Changed
+
+- **Clearer FLM/NPU error when the NPU is busy.** When FLM's speech-to-text model can't create an NPU inference context (error `0xc01e0009`), the message now explains the most common cause — another process (FLMTray, a standalone `flm serve`, or Lemonade) already holds the single NPU context — and tells you to close it and reselect the model, before suggesting a driver update.
+
 ## [0.46.0] - 2026-07-20
 
 ### Fixed

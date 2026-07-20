@@ -65,8 +65,10 @@ fn asr_failure_message(stdout: &str) -> String {
     if stdout.contains("Failed to create context") {
         format!(
             "FLM started but its ASR (speech-to-text) model failed to load — the NPU could not \
-             create an inference context (e.g. error 0xc01e0009). FLM-based transcription is \
-             unavailable on this machine; update the NPU driver / FLM runtime, or select a \
+             create an inference context (e.g. error 0xc01e0009). The NPU allows only one app at \
+             a time, so this usually means another process already holds it: close any other FLM \
+             instances (FLMTray, a standalone `flm serve`, or Lemonade) and reselect the model. \
+             If nothing else is using the NPU, update the NPU driver / FLM runtime, or select a \
              non-FLM model. (FLM: {})",
             detail
         )
