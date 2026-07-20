@@ -115,6 +115,10 @@ pub fn regenerate_mcp_token(app: AppHandle) -> Result<McpStatus, String> {
 #[tauri::command]
 #[specta::specta]
 pub fn install_cli(_app: AppHandle) -> Result<String, String> {
+    // `install_cli_binary()` itself refuses in portable mode (T-114 gap #3)
+    // — it would write outside the portable folder, to a machine/user PATH
+    // location (%LOCALAPPDATA%\Microsoft\WindowsApps on Windows) — and
+    // returns an informative error the Settings UI surfaces.
     crate::install_cli_binary()
 }
 
@@ -127,8 +131,16 @@ struct ServerState {
 
 static SERVER: Lazy<Mutex<Option<ServerState>>> = Lazy::new(|| Mutex::new(None));
 
-/// Path of the discovery sidecar, computed identically by the app and the CLI.
+/// Path of the discovery sidecar, computed identically by the app and the
+/// CLI. `handy.exe` is a single binary serving both, so
+/// `crate::portable::portable_data_dir()` (keyed off `current_exe()`, no
+/// `AppHandle` needed/available here) resolves the same way for either
+/// caller: portable mode puts the sidecar in `<exe_dir>\data\` alongside
+/// settings/history/models instead of the OS profile dir (T-114).
 pub fn sidecar_path() -> PathBuf {
+    if let Some(dir) = crate::portable::portable_data_dir() {
+        return dir.join("handy-mcp.json");
+    }
     let base = dirs::config_dir().unwrap_or_else(std::env::temp_dir);
     base.join("pr.handy").join("handy-mcp.json")
 }

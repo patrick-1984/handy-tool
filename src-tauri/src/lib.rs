@@ -16,6 +16,7 @@ mod managers;
 mod mcp;
 mod model_testing;
 mod overlay;
+mod portable;
 mod settings;
 mod shortcut;
 mod signal_handle;
@@ -41,7 +42,7 @@ use signal_hook::consts::{SIGUSR1, SIGUSR2};
 #[cfg(unix)]
 use signal_hook::iterator::Signals;
 use std::sync::Arc;
-use std::sync::atomic::{AtomicU8, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
 use tauri::image::Image;
 pub use transcription_coordinator::TranscriptionCoordinator;
 
@@ -93,6 +94,30 @@ fn build_console_filter() -> env_filter::Filter {
     builder.build()
 }
 
+/// Set when a "show main window" request (single-instance relaunch, tray
+/// menu click, ...) arrives before the `main` `WebviewWindow` has been built
+/// yet (T-114 finding #1(d)): `tauri_plugin_single_instance`'s callback is
+/// registered via `.plugin(...)` before the `.setup(...)` closure that
+/// actually builds `main` (see the setup closure below), so a rapid second
+/// launch can race that window into existence and previously lost its show
+/// request silently (`get_webview_window("main")` returned `None`,
+/// `show_main_window` just logged an error and did nothing).
+/// `show_main_window` now queues the request here instead when the window
+/// isn't found; the setup closure drains the flag right after building
+/// `main` via [`take_pending_main_show`]. `swap` makes the drain atomic, so
+/// exactly one consumer ever acts on a queued request — no lost show, no
+/// double show.
+static PENDING_MAIN_SHOW: AtomicBool = AtomicBool::new(false);
+
+/// Pure swap-and-act core of the pending-show drain, split out so it's unit
+/// testable without a Tauri `AppHandle`/`AtomicBool` statics. Returns `true`
+/// exactly once per queued request (subsequent calls before another queue
+/// return `false`), which is what lets the caller show the window without
+/// ever double-showing for the same request.
+fn take_pending_main_show(flag: &AtomicBool) -> bool {
+    flag.swap(false, Ordering::SeqCst)
+}
+
 fn show_main_window(app: &AppHandle) {
     if let Some(main_window) = app.get_webview_window("main") {
         // On macOS, restore the Regular activation policy BEFORE showing or
@@ -113,7 +138,21 @@ fn show_main_window(app: &AppHandle) {
             log::error!("Failed to focus window: {}", e);
         }
     } else {
-        log::error!("Main window not found.");
+        // Window doesn't exist yet — most likely the setup closure hasn't
+        // built it yet (T-114 #1(d)). Queue the request; the setup closure
+        // drains PENDING_MAIN_SHOW right after building `main`.
+        PENDING_MAIN_SHOW.store(true, Ordering::SeqCst);
+        log::warn!("Main window not found yet — queuing show request until it is built.");
+        // Close the check-then-store TOCTOU gap: `main` may have been built
+        // (and the setup drain may have already run and observed `false`) in
+        // the window between our `get_webview_window` miss above and the
+        // `store` just now — in which case that drain will never fire again
+        // and our request would be lost. Re-check: if `main` now exists,
+        // consume our own flag (swap is atomic, so we and the setup drain can
+        // never both act on the same queued request) and show it here.
+        if app.get_webview_window("main").is_some() && take_pending_main_show(&PENDING_MAIN_SHOW) {
+            show_main_window(app);
+        }
     }
 }
 
@@ -289,16 +328,27 @@ fn initialize_core_logic(app_handle: &AppHandle) {
         tray::update_tray_menu(&app_handle_for_listener, &tray::TrayIconState::Idle, None);
     });
 
-    // Get the autostart manager and configure based on user setting
-    let autostart_manager = app_handle.autolaunch();
+    // Get the autostart manager and configure based on user setting.
+    // Portable mode NEVER touches this (T-114 gap #3): the autostart
+    // Run-key entry is machine/user-profile state that outlives the
+    // portable folder, and a fresh portable profile's `autostart_enabled`
+    // default (false) would otherwise DISABLE an installed copy's autostart
+    // entry the very first time a portable copy runs on the same machine.
     let settings = settings::get_settings(&app_handle);
 
-    if settings.autostart_enabled {
-        // Enable autostart if user has opted in
-        let _ = autostart_manager.enable();
+    if portable::portable_data_dir().is_some() {
+        log::info!(
+            "Portable mode: skipping autostart registration (the Run-key entry, if any, is left untouched)"
+        );
     } else {
-        // Disable autostart if user has opted out
-        let _ = autostart_manager.disable();
+        let autostart_manager = app_handle.autolaunch();
+        if settings.autostart_enabled {
+            // Enable autostart if user has opted in
+            let _ = autostart_manager.enable();
+        } else {
+            // Disable autostart if user has opted out
+            let _ = autostart_manager.disable();
+        }
     }
 
     // Create the recording overlay window (hidden by default)
@@ -486,6 +536,29 @@ pub fn run(cli_args: CliArgs) {
         )
         .expect("Failed to export typescript bindings");
 
+    // Portable-aware (T-114 gap #2): file logs must land under
+    // `<portable_data>\logs`, not the OS profile log dir, when portable mode
+    // is active. This target list is assembled before an `AppHandle` exists
+    // (we're still building `tauri::Builder`), so it goes through the
+    // `AppHandle`-free `portable_log_dir()` rather than
+    // `portable::resolve_log_dir()` (which `commands::get_log_dir_path` /
+    // `open_log_dir` use once an `AppHandle` is available, resolving to the
+    // SAME path). `None` here (normal, installed run) falls back to
+    // `TargetKind::LogDir`, byte-identical to before this change.
+    let file_log_target = match portable::portable_log_dir() {
+        Some(path) => Target::new(TargetKind::Folder {
+            path,
+            file_name: Some("handy".into()),
+        }),
+        None => Target::new(TargetKind::LogDir {
+            file_name: Some("handy".into()),
+        }),
+    }
+    .filter(|metadata| {
+        let file_level = FILE_LOG_LEVEL.load(Ordering::Relaxed);
+        metadata.level() <= level_filter_from_u8(file_level)
+    });
+
     let builder = tauri::Builder::default()
         .device_event_filter(tauri::DeviceEventFilter::Always)
         .plugin(tauri_plugin_dialog::init())
@@ -502,13 +575,7 @@ pub fn run(cli_args: CliArgs) {
                         move |metadata| console_filter.enabled(metadata)
                     }),
                     // File logs respect the user's settings (stored in FILE_LOG_LEVEL atomic)
-                    Target::new(TargetKind::LogDir {
-                        file_name: Some("handy".into()),
-                    })
-                    .filter(|metadata| {
-                        let file_level = FILE_LOG_LEVEL.load(Ordering::Relaxed);
-                        metadata.level() <= level_filter_from_u8(file_level)
-                    }),
+                    file_log_target,
                 ])
                 .build(),
         );
@@ -562,6 +629,65 @@ pub fn run(cli_args: CliArgs) {
             FILE_LOG_LEVEL.store(file_log_level.to_level_filter() as u8, Ordering::Relaxed);
             let app_handle = app.handle().clone();
             app.manage(TranscriptionCoordinator::new(app_handle.clone()));
+
+            // Create the main window ourselves (T-114 gap #1: WebView2
+            // storage isolation). tauri.conf.json declares "main" with
+            // `"create": false` so Tauri's own pre-setup window-creation
+            // loop (`app.rs`'s internal `setup()`, which runs BEFORE this
+            // closure) skips it — that loop is the only place Tauri
+            // auto-builds windows from config, and by the time our closure
+            // ran it would already be too late to inject a data directory
+            // into an already-built webview. Building it here from the
+            // exact same `WindowConfig` keeps every other attribute (title,
+            // size, visibility, ...) identical to the config; the only
+            // addition is an explicit `.data_directory()` when portable mode
+            // is active, so WebView2's localStorage/cache/IndexedDB/cookies
+            // live under `<portable_data>\webview` instead of defaulting to
+            // `%LOCALAPPDATA%\pr.handy` — the same folder an INSTALLED copy
+            // uses, which is exactly the leak this closes (a portable and an
+            // installed copy on the same machine would otherwise share
+            // localStorage). Non-portable runs are unaffected:
+            // `portable_data_dir()` is `None`, so this is byte-identical to
+            // the previous auto-created window (same config, same
+            // attributes, just built a few lines earlier).
+            let main_window_config = app
+                .config()
+                .app
+                .windows
+                .iter()
+                .find(|w| w.label == "main")
+                .cloned()
+                .expect("main window must be declared in tauri.conf.json");
+            #[cfg_attr(not(windows), allow(unused_mut))]
+            let mut main_window_builder =
+                tauri::WebviewWindowBuilder::from_config(&app_handle, &main_window_config)
+                    .expect("failed to build main window builder from config");
+            #[cfg(windows)]
+            {
+                // data_directory() is WebView2-only (WKWebView on macOS has
+                // no equivalent — see portable.rs module docs); portable
+                // mode is Windows-only in practice (portable.cmd is
+                // Windows-only per CLAUDE.md), so this is cfg-gated rather
+                // than relying on portable_data_dir() staying inert
+                // elsewhere.
+                if let Some(portable_dir) = portable::portable_data_dir() {
+                    main_window_builder =
+                        main_window_builder.data_directory(portable_dir.join("webview"));
+                }
+            }
+            main_window_builder
+                .build()
+                .expect("failed to create main window");
+
+            // T-114 finding #1(d): the single-instance callback (registered
+            // above via `.plugin(...)`, which runs before this closure) can
+            // fire while `main` didn't exist yet and queue itself in
+            // PENDING_MAIN_SHOW instead of being silently dropped. Drain it
+            // now that `main` exists. `take_pending_main_show` uses `swap`,
+            // so this can only fire once per queued request.
+            if take_pending_main_show(&PENDING_MAIN_SHOW) {
+                show_main_window(&app_handle);
+            }
 
             initialize_core_logic(&app_handle);
 
@@ -707,7 +833,22 @@ pub fn installed_app_path() -> Option<std::path::PathBuf> {
 /// Copy this executable to the CLI install path so `handy` is available on PATH.
 /// Writes to a temp sibling then atomically renames, so a running `handy` CLI's
 /// binary is never truncated in place.
+///
+/// Portable-gated (T-114 gap #3): `cli_install_path()` points at
+/// `%LOCALAPPDATA%\Microsoft\WindowsApps` (Windows) / `~/.local/bin` — both
+/// machine/user-profile locations outside the portable folder, and outliving
+/// it. This is the single choke point for ALL three ways a CLI install can be
+/// triggered — the `mcp::install_cli` Tauri command (Settings UI), the
+/// headless `handy install-cli` companion command (`cli_client.rs`), and the
+/// startup self-refresh below (`install_cli_if_needed`) — so gating here
+/// covers all of them without needing to touch `cli_client.rs`.
 pub fn install_cli_binary() -> Result<String, String> {
+    if portable::portable_data_dir().is_some() {
+        return Err(
+            "CLI install is disabled in portable mode (it would write outside this folder, to a machine/user-profile PATH location)"
+                .to_string(),
+        );
+    }
     let src = std::env::current_exe().map_err(|e| e.to_string())?;
     let dest = cli_install_path()?;
     if let Some(parent) = dest.parent() {
@@ -726,7 +867,16 @@ pub fn install_cli_binary() -> Result<String, String> {
 /// so it tracks app updates. Never bootstrap-installs: putting `handy` on PATH
 /// is only done by the explicit "Install CLI" action in settings — a PATH copy
 /// the user didn't ask for turns a typed `handy` into a dead console launch.
+///
+/// Portable mode skips this entirely (T-114 gap #3) — belt-and-suspenders
+/// with the gate inside `install_cli_binary()`: this also avoids a wasted
+/// `stat` of a machine-profile path and a spurious `warn!` on every portable
+/// startup when a differently-sized CLI copy happens to already exist there
+/// (e.g. left by an installed copy on the same machine).
 fn install_cli_if_needed() {
+    if portable::portable_data_dir().is_some() {
+        return;
+    }
     let Ok(dest) = cli_install_path() else { return };
     let src = std::env::current_exe().ok();
     let need = match (
@@ -742,5 +892,81 @@ fn install_cli_if_needed() {
         } else {
             log::info!("Installed handy CLI to {}", dest.to_string_lossy());
         }
+    }
+}
+
+#[cfg(test)]
+mod pending_main_show_tests {
+    use super::*;
+
+    // T-114 finding #1(d): the pending-show flag exists so a "show main
+    // window" request arriving before `main` is built (single-instance
+    // relaunch racing the setup closure) is queued rather than dropped, and
+    // is drained exactly once so it's never double-shown either. These
+    // tests exercise the pure swap-and-act helper directly against a local
+    // `AtomicBool` (never the process-wide `PENDING_MAIN_SHOW` static, so
+    // tests can't interfere with each other when run in parallel).
+
+    #[test]
+    fn queued_request_is_taken_exactly_once() {
+        let flag = AtomicBool::new(false);
+        flag.store(true, Ordering::SeqCst);
+
+        assert!(
+            take_pending_main_show(&flag),
+            "a queued request must be taken"
+        );
+        assert!(
+            !take_pending_main_show(&flag),
+            "a second drain must not re-fire the same request (no double-show)"
+        );
+    }
+
+    #[test]
+    fn no_queued_request_is_a_no_op() {
+        let flag = AtomicBool::new(false);
+        assert!(
+            !take_pending_main_show(&flag),
+            "draining with nothing queued must not claim a show"
+        );
+    }
+
+    #[test]
+    fn requeue_after_drain_is_taken_again() {
+        // A second, later show request (e.g. another relaunch) after the
+        // first was already drained must still be honored — the flag isn't
+        // permanently "spent" after one use.
+        let flag = AtomicBool::new(false);
+        flag.store(true, Ordering::SeqCst);
+        assert!(take_pending_main_show(&flag));
+
+        flag.store(true, Ordering::SeqCst);
+        assert!(take_pending_main_show(&flag));
+    }
+
+    #[test]
+    fn store_after_drain_is_recovered_by_a_second_consumer() {
+        // Models the TOCTOU interleaving (T-114 #1(d) re-verify): the setup
+        // drain runs and finds nothing (store hadn't landed yet), THEN the
+        // producer stores its request. A single drain would lose it. The
+        // producer's own post-store re-check is the second consumer — and
+        // because `take` is an atomic swap, exactly ONE of {setup drain,
+        // producer re-check} ever returns true for a given queued request.
+        let flag = AtomicBool::new(false);
+
+        // 1. setup drain runs first — nothing queued yet.
+        assert!(!take_pending_main_show(&flag), "drain sees nothing");
+        // 2. producer stores its request AFTER that drain (the lost-wakeup gap).
+        flag.store(true, Ordering::SeqCst);
+        // 3. producer's post-store re-check consumes it — the show is NOT lost.
+        assert!(
+            take_pending_main_show(&flag),
+            "the post-store re-check must recover a request that landed after the drain"
+        );
+        // And it's still exactly-once: neither consumer can act on it again.
+        assert!(
+            !take_pending_main_show(&flag),
+            "no double-show after recovery"
+        );
     }
 }

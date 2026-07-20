@@ -90,11 +90,20 @@ fn build_headers(provider: &LlmProvider, api_key: &str) -> Result<HeaderMap, Str
     Ok(headers)
 }
 
-/// Time allowed to establish a connection to the provider.
-const CONNECT_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(10);
+/// Time allowed to establish a connection to the provider. `pub(crate)` so
+/// `token_count.rs`/`model_testing.rs` can reuse the same connect budget for
+/// their own clients (T-202) instead of drifting from it independently.
+pub(crate) const CONNECT_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(10);
 /// Total-request deadline — generous enough for slow local models, but a
 /// stalled provider can never hang post-processing forever.
 const REQUEST_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(120);
+
+/// Upper bound on an LLM response body (success or error) read into memory.
+/// A misbehaving/hostile endpoint that keeps streaming bytes past this is
+/// rejected instead of being buffered without limit (T-202). `pub(crate)` so
+/// `token_count.rs`/`model_testing.rs` share the exact same cap instead of
+/// drifting from it independently (T-202 finding 4).
+pub(crate) const MAX_RESPONSE_BYTES: usize = 10 * 1024 * 1024; // 10 MB
 
 /// Create an HTTP client with provider-specific headers
 fn create_client(provider: &LlmProvider, api_key: &str) -> Result<reqwest::Client, String> {
@@ -105,6 +114,115 @@ fn create_client(provider: &LlmProvider, api_key: &str) -> Result<reqwest::Clien
         .timeout(REQUEST_TIMEOUT)
         .build()
         .map_err(|e| format!("Failed to build HTTP client: {}", e))
+}
+
+/// Phase-labels a failed `.send()`/read so a timeout tells the user WHERE it
+/// happened instead of a bare "operation timed out" (T-202). Pure/testable:
+/// takes the two flags `reqwest::Error` already exposes (`is_timeout`,
+/// `is_connect`) plus the raw message, rather than a live `reqwest::Error` —
+/// unit tests don't need a real network round-trip to exercise the mapping.
+///
+/// `request_timeout` is the caller's own total-request budget (each of
+/// `llm_client`/`token_count`/`model_testing` configures its own — 120s for
+/// post-processing, 15/30s or 300s for token-count/model-testing depending on
+/// local vs cloud) so the reported number always matches the client that was
+/// actually used, not a hardcoded value borrowed from another module.
+pub(crate) fn request_error_message(
+    is_timeout: bool,
+    is_connect_phase: bool,
+    raw: &str,
+    request_timeout: std::time::Duration,
+) -> String {
+    match (is_timeout, is_connect_phase) {
+        (true, true) => format!(
+            "Connection timed out after {}s — could not reach the provider",
+            CONNECT_TIMEOUT.as_secs()
+        ),
+        (true, false) => format!(
+            "Request timed out after {}s — provider did not finish responding in time",
+            request_timeout.as_secs()
+        ),
+        (false, true) => format!("Connection failed: {}", raw),
+        (false, false) => format!("HTTP request failed: {}", raw),
+    }
+}
+
+/// Describe a `.send()` failure (or, via `read_body_capped`, a mid-body read
+/// failure), labeling connect-phase vs total-request-phase timeouts — see
+/// `request_error_message`. `pub(crate)` so `token_count.rs`/`model_testing.rs`
+/// can label their own `.send()` errors the same way if needed.
+pub(crate) fn describe_request_error(
+    e: &reqwest::Error,
+    request_timeout: std::time::Duration,
+) -> String {
+    request_error_message(
+        e.is_timeout(),
+        e.is_connect(),
+        &e.to_string(),
+        request_timeout,
+    )
+}
+
+/// Accumulates response-body bytes up to `max_bytes`, independent of the
+/// transport so the cap logic itself is unit-testable without a live
+/// connection. Rejects the moment the running total would exceed the cap,
+/// before the offending chunk is appended.
+struct CappedBuf {
+    buf: Vec<u8>,
+    max_bytes: usize,
+}
+
+impl CappedBuf {
+    fn new(max_bytes: usize) -> Self {
+        Self {
+            buf: Vec::new(),
+            max_bytes,
+        }
+    }
+
+    fn push(&mut self, chunk: &[u8]) -> Result<(), String> {
+        if self.buf.len() + chunk.len() > self.max_bytes {
+            return Err(format!(
+                "Response body exceeded {} byte limit",
+                self.max_bytes
+            ));
+        }
+        self.buf.extend_from_slice(chunk);
+        Ok(())
+    }
+
+    fn into_bytes(self) -> Vec<u8> {
+        self.buf
+    }
+}
+
+/// Read a response body via `.chunk()` (bounded byte accumulator) instead of
+/// `.text()`/`.json()`, so an oversized or endlessly-streaming body is caught
+/// mid-stream rather than buffered without limit first (T-202). Shared by
+/// `llm_client`, `token_count`, and `model_testing` (T-202 finding 4) so every
+/// provider response — success or error, post-processing or token-count/
+/// model-testing — is read through the same bounded reader; there is no
+/// second, unbounded `.json()`/`.text()` path left anywhere in the app's LLM
+/// traffic.
+///
+/// `request_timeout` is the caller's own configured total-request deadline,
+/// used ONLY to phase-label a timeout that fires mid-body-read (a stalled
+/// read here is a total-request-phase timeout, never connect-phase, since the
+/// connection and headers already arrived) — see `describe_request_error`.
+pub(crate) async fn read_body_capped(
+    mut response: reqwest::Response,
+    max_bytes: usize,
+    request_timeout: std::time::Duration,
+) -> Result<Vec<u8>, String> {
+    let mut acc = CappedBuf::new(max_bytes);
+    while let Some(chunk) = response
+        .chunk()
+        .await
+        .map_err(|e| describe_request_error(&e, request_timeout))?
+    {
+        acc.push(&chunk)?;
+    }
+    Ok(acc.into_bytes())
 }
 
 /// Reasoning-dialect switches for one request, derived per provider kind.
@@ -356,7 +474,7 @@ pub async fn send_chat_completion_with_schema(
         .json(&request_body)
         .send()
         .await
-        .map_err(|e| format!("HTTP request failed: {}", e))?;
+        .map_err(|e| describe_request_error(&e, REQUEST_TIMEOUT))?;
 
     let status = response.status();
     let elapsed_ms = request_start.elapsed().as_millis();
@@ -366,19 +484,18 @@ pub async fn send_chat_completion_with_schema(
     );
 
     if !status.is_success() {
-        let error_text = response
-            .text()
+        let error_bytes = read_body_capped(response, MAX_RESPONSE_BYTES, REQUEST_TIMEOUT)
             .await
-            .unwrap_or_else(|_| "Failed to read error response".to_string());
+            .unwrap_or_else(|e| e.into_bytes());
+        let error_text = String::from_utf8_lossy(&error_bytes);
         return Err(format!(
             "API request failed with status {}: {}",
             status, error_text
         ));
     }
 
-    let completion: ChatCompletionResponse = response
-        .json()
-        .await
+    let body_bytes = read_body_capped(response, MAX_RESPONSE_BYTES, REQUEST_TIMEOUT).await?;
+    let completion: ChatCompletionResponse = serde_json::from_slice(&body_bytes)
         .map_err(|e| format!("Failed to parse API response: {}", e))?;
 
     let result = completion
@@ -522,6 +639,190 @@ mod tests {
             assert!(!obj.contains_key("reasoning_effort"), "kind {}", kind);
             assert!(!obj.contains_key("reasoning"), "kind {}", kind);
         }
+    }
+
+    #[test]
+    fn request_error_message_labels_connect_phase_timeout() {
+        let msg = request_error_message(true, true, "operation timed out", REQUEST_TIMEOUT);
+        assert!(msg.contains("Connection timed out"), "{msg}");
+        assert!(
+            msg.contains(&CONNECT_TIMEOUT.as_secs().to_string()),
+            "{msg}"
+        );
+    }
+
+    #[test]
+    fn request_error_message_labels_total_request_timeout() {
+        let msg = request_error_message(true, false, "operation timed out", REQUEST_TIMEOUT);
+        assert!(msg.contains("Request timed out"), "{msg}");
+        assert!(
+            msg.contains(&REQUEST_TIMEOUT.as_secs().to_string()),
+            "{msg}"
+        );
+        // Must NOT be mislabeled as a connect-phase failure.
+        assert!(!msg.contains("Connection timed out"), "{msg}");
+    }
+
+    #[test]
+    fn request_error_message_total_request_timeout_uses_the_callers_own_budget() {
+        // token_count/model_testing configure their own total-request timeout
+        // per call (15/30/300s), distinct from llm_client's 120s — the
+        // reported number must reflect whichever budget actually applied,
+        // never a value borrowed from another module.
+        let msg = request_error_message(
+            true,
+            false,
+            "operation timed out",
+            std::time::Duration::from_secs(15),
+        );
+        assert!(msg.contains("Request timed out after 15s"), "{msg}");
+    }
+
+    #[test]
+    fn request_error_message_non_timeout_connect_failure_passes_through_raw() {
+        let msg = request_error_message(false, true, "connection refused", REQUEST_TIMEOUT);
+        assert!(msg.contains("Connection failed"), "{msg}");
+        assert!(msg.contains("connection refused"), "{msg}");
+    }
+
+    #[test]
+    fn request_error_message_generic_failure_passes_through_raw() {
+        let msg = request_error_message(false, false, "some other reqwest error", REQUEST_TIMEOUT);
+        assert!(msg.contains("HTTP request failed"), "{msg}");
+        assert!(msg.contains("some other reqwest error"), "{msg}");
+    }
+
+    #[test]
+    fn capped_buf_accepts_chunks_up_to_the_limit() {
+        let mut acc = CappedBuf::new(4);
+        acc.push(b"ab").unwrap();
+        acc.push(b"cd").unwrap();
+        assert_eq!(acc.into_bytes(), b"abcd".to_vec());
+    }
+
+    #[test]
+    fn capped_buf_accepts_exactly_at_the_boundary() {
+        // Total size exactly equal to max_bytes must NOT be rejected.
+        let mut acc = CappedBuf::new(3);
+        acc.push(b"abc").unwrap();
+        assert_eq!(acc.into_bytes(), b"abc".to_vec());
+    }
+
+    #[test]
+    fn capped_buf_rejects_the_chunk_that_crosses_the_limit() {
+        let mut acc = CappedBuf::new(4);
+        acc.push(b"ab").unwrap();
+        let err = acc.push(b"cde").unwrap_err();
+        assert!(err.contains("exceeded 4 byte limit"), "{err}");
+    }
+
+    #[test]
+    fn capped_buf_rejects_a_single_oversized_chunk() {
+        let mut acc = CappedBuf::new(2);
+        let err = acc.push(b"abc").unwrap_err();
+        assert!(err.contains("exceeded 2 byte limit"), "{err}");
+    }
+
+    /// A tiny local TCP listener stands in for "a fast hostile/misconfigured
+    /// endpoint" — a real HTTP response, not a mocked `reqwest::Response`, so
+    /// this exercises `read_body_capped`'s actual `.chunk()` loop rather than
+    /// just `CappedBuf` in isolation (T-202 finding 4). The server writes the
+    /// body across two separate writes with a short sleep between them, so
+    /// the running total crosses the cap on the SECOND `.chunk()` call, not
+    /// the first — proving the multi-chunk accumulation path, not just a
+    /// single-oversized-chunk rejection (already covered above).
+    #[test]
+    fn read_body_capped_rejects_an_over_cap_multi_chunk_stream() {
+        use std::io::Write;
+        use std::net::TcpListener;
+
+        let listener = TcpListener::bind("127.0.0.1:0").expect("bind local test listener");
+        let addr = listener.local_addr().unwrap();
+
+        let server = std::thread::spawn(move || {
+            let (mut stream, _) = listener.accept().expect("accept");
+            stream
+                .write_all(b"HTTP/1.1 200 OK\r\nConnection: close\r\n\r\n")
+                .ok();
+            // First chunk: 8 bytes, comfortably under the 10-byte cap alone.
+            stream.write_all(&[b'a'; 8]).ok();
+            stream.flush().ok();
+            std::thread::sleep(std::time::Duration::from_millis(50));
+            // Second chunk: another 8 bytes — 16 total pushes it over the cap.
+            stream.write_all(&[b'b'; 8]).ok();
+            stream.flush().ok();
+        });
+
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .expect("build a local tokio runtime for the test");
+
+        let result: Result<Vec<u8>, String> = rt.block_on(async {
+            let client = reqwest::Client::new();
+            let response = client
+                .get(format!("http://{}/", addr))
+                .send()
+                .await
+                .expect("request should reach the local test server");
+            read_body_capped(response, 10, REQUEST_TIMEOUT).await
+        });
+
+        server.join().expect("test server thread must not panic");
+
+        let err = result.expect_err("a body over the cap must be rejected, not buffered fully");
+        assert!(err.contains("exceeded 10 byte limit"), "{err}");
+    }
+
+    /// A body read that stalls past the client's total-request timeout must
+    /// be classified as a total-request-phase timeout, never connect-phase —
+    /// the connection and headers already arrived, only the body stalled.
+    /// Uses a short client timeout (not the app's real 120s) so the test
+    /// doesn't have to wait a real total-request deadline out to observe the
+    /// classification (T-202 finding 4).
+    #[test]
+    fn body_read_timeout_is_labeled_as_total_request_phase() {
+        use std::io::Write;
+        use std::net::TcpListener;
+
+        let listener = TcpListener::bind("127.0.0.1:0").expect("bind local test listener");
+        let addr = listener.local_addr().unwrap();
+
+        let server = std::thread::spawn(move || {
+            let (mut stream, _) = listener.accept().expect("accept");
+            // Headers plus a token amount of body, then go silent well past
+            // the client's total-request timeout below.
+            stream
+                .write_all(b"HTTP/1.1 200 OK\r\nConnection: close\r\n\r\n1")
+                .ok();
+            stream.flush().ok();
+            std::thread::sleep(std::time::Duration::from_millis(500));
+        });
+
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .expect("build a local tokio runtime for the test");
+
+        let short_timeout = std::time::Duration::from_millis(100);
+        let outcome: Result<Vec<u8>, String> = rt.block_on(async {
+            let client = reqwest::Client::builder()
+                .timeout(short_timeout)
+                .build()
+                .expect("build client");
+            let response = client
+                .get(format!("http://{}/", addr))
+                .send()
+                .await
+                .expect("headers should arrive well before the stall");
+            read_body_capped(response, MAX_RESPONSE_BYTES, short_timeout).await
+        });
+
+        server.join().expect("test server thread must not panic");
+
+        let err = outcome.expect_err("a stalled body read must time out, not hang forever");
+        assert!(err.contains("Request timed out after"), "{err}");
+        assert!(!err.contains("Connection timed out"), "{err}");
     }
 
     #[test]

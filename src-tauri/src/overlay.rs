@@ -205,6 +205,20 @@ pub fn create_recording_overlay(app_handle: &AppHandle) {
         builder = builder.position(x, y);
     }
 
+    // T-114 finding #1: without an explicit data directory, WebView2
+    // defaults this window's storage to %LOCALAPPDATA%\pr.handy — the same
+    // profile dir an installed copy uses — even in portable mode. Mirror the
+    // main window's fix (lib.rs setup closure): share the SAME
+    // `<portable_data>\webview` dir so all of Handy's webview state (main +
+    // both aux windows) lands in one portable place. Non-portable/non-Windows
+    // behavior is unaffected (`portable_data_dir()` is `None`).
+    #[cfg(windows)]
+    {
+        if let Some(portable_dir) = crate::portable::portable_data_dir() {
+            builder = builder.data_directory(portable_dir.join("webview"));
+        }
+    }
+
     match builder.build() {
         Ok(_window) => {
             #[cfg(target_os = "linux")]
@@ -365,6 +379,18 @@ pub fn create_floating_transcription_window(app_handle: &AppHandle) {
     if !theme_js.is_empty() {
         builder = builder.initialization_script(theme_js);
     }
+
+    // T-114 finding #1: same portable-webview-dir fix as the recording
+    // overlay above and the main window (lib.rs) — share
+    // `<portable_data>\webview` so this window's WebView2 storage doesn't
+    // leak into %LOCALAPPDATA%\pr.handy in portable mode.
+    #[cfg(windows)]
+    {
+        if let Some(portable_dir) = crate::portable::portable_data_dir() {
+            builder = builder.data_directory(portable_dir.join("webview"));
+        }
+    }
+
     match builder.build() {
         Ok(_) => {
             log::debug!("Floating transcription window pre-created (hidden)");

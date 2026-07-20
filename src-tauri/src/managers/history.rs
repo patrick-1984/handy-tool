@@ -8,7 +8,7 @@ use specta::Type;
 use std::collections::BTreeSet;
 use std::fs;
 use std::path::PathBuf;
-use tauri::{AppHandle, Emitter, Manager};
+use tauri::{AppHandle, Emitter};
 
 use crate::audio_toolkit::save_wav_file;
 
@@ -123,7 +123,8 @@ pub struct HistoryManager {
 impl HistoryManager {
     pub fn new(app_handle: &AppHandle) -> Result<Self> {
         // Create recordings directory in app data dir
-        let app_data_dir = app_handle.path().app_data_dir()?;
+        let app_data_dir =
+            crate::portable::resolve_app_data_dir(app_handle).map_err(|e| anyhow::anyhow!(e))?;
         let recordings_dir = app_data_dir.join("recordings");
         let db_path = app_data_dir.join("history.db");
 

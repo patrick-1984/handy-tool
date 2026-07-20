@@ -36,11 +36,17 @@ fn append_if_exists<W: std::io::Write>(
 #[tauri::command]
 #[specta::specta]
 pub fn create_backup(app: AppHandle, profile: String, dest_path: String) -> Result<String, String> {
-    let data_dir = app
-        .path()
-        .app_data_dir()
-        .map_err(|e| format!("app data dir: {}", e))?;
-    let config_dir = app.path().app_config_dir().ok();
+    let data_dir = crate::portable::resolve_app_data_dir(&app)?;
+    // In portable mode data_dir and config_dir are the same folder (there is
+    // only one "beside the exe" location), so short-circuit to it without a
+    // second app_config_dir() lookup. Only fall back to the real
+    // app_config_dir() — which can differ from app_data_dir() on
+    // non-Windows — when portable mode isn't active, preserving the exact
+    // pre-existing cross-platform settings-file search behavior below.
+    let config_dir = match crate::portable::portable_data_dir() {
+        Some(dir) => Some(dir),
+        None => app.path().app_config_dir().ok(),
+    };
 
     let file = File::create(&dest_path).map_err(|e| format!("create {}: {}", dest_path, e))?;
     let enc = GzEncoder::new(file, Compression::default());
@@ -190,10 +196,7 @@ pub fn restore_backup(
     include_config: bool,
     include_recordings: bool,
 ) -> Result<RestoreReport, String> {
-    let data_dir = app
-        .path()
-        .app_data_dir()
-        .map_err(|e| format!("app data dir: {}", e))?;
+    let data_dir = crate::portable::resolve_app_data_dir(&app)?;
 
     let file = File::open(&archive_path).map_err(|e| format!("open {}: {}", archive_path, e))?;
     let mut archive = tar::Archive::new(GzDecoder::new(file));

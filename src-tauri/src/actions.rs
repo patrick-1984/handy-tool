@@ -1316,9 +1316,7 @@ impl ShortcutAction for TranscribeAction {
                     // a history row at it — encode/glue/rename can fail, and a
                     // row referencing a missing file is worse than a text-only
                     // row.
-                    let opus_ok = ah
-                        .path()
-                        .app_data_dir()
+                    let opus_ok = crate::portable::resolve_app_data_dir(&ah)
                         .map(|d| {
                             d.join("recordings")
                                 .join(format!("handy-{}.opus", ts))
@@ -1352,7 +1350,7 @@ impl ShortcutAction for TranscribeAction {
                     // resurrect the glued opus on next launch — remove what
                     // this recording just wrote (handy-{ts} files only; the
                     // never-touch-user-files invariant holds).
-                    if let Ok(dir) = ah.path().app_data_dir() {
+                    if let Ok(dir) = crate::portable::resolve_app_data_dir(&ah) {
                         let rec = dir.join("recordings");
                         let _ = std::fs::remove_file(rec.join(format!("handy-{}.opus", ts)));
                         let chunk_prefix = format!("handy-{}-chunk-", ts);
@@ -1500,9 +1498,7 @@ impl ShortcutAction for TranscribeAction {
                 // artifact exists (finalize/glue can fail) and fall back to the
                 // in-memory samples (WAV) when it doesn't.
                 let crash_safe = crash_safe
-                    && ah
-                        .path()
-                        .app_data_dir()
+                    && crate::portable::resolve_app_data_dir(&ah)
                         .map(|d| {
                             d.join("recordings")
                                 .join(format!("handy-{}.opus", ts))

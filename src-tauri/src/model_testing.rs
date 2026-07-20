@@ -81,14 +81,30 @@ fn is_local_url(url: &str) -> bool {
     url.contains("127.0.0.1") || url.contains("localhost") || url.contains("[::1]")
 }
 
-fn http_client(provider: &LlmProvider) -> Result<reqwest::Client, String> {
+/// This provider's total-request deadline (local services get a longer
+/// budget than cloud APIs). Exposed separately from `http_client` so callers
+/// can reuse the exact same duration when phase-labeling a body-read timeout
+/// via `read_body_capped` (T-202 finding 4) instead of guessing.
+fn request_timeout_for(provider: &LlmProvider) -> Duration {
     let secs = if is_local_url(&provider.base_url) {
         LOCAL_TIMEOUT_SECS
     } else {
         CLOUD_TIMEOUT_SECS
     };
+    Duration::from_secs(secs)
+}
+
+/// Every client built here gets BOTH a connect deadline (shared with
+/// `llm_client`'s post-processing client, T-202) and this provider's
+/// total-request deadline. Each provider gets its own `reqwest::Client`
+/// instance built fresh per call, so one hung provider's timeout firing can
+/// never block or delay another provider's request — including within a
+/// sequential lane, where the timeout is what guarantees the lane eventually
+/// moves on to the next provider instead of hanging indefinitely.
+fn http_client(provider: &LlmProvider) -> Result<reqwest::Client, String> {
     reqwest::Client::builder()
-        .timeout(Duration::from_secs(secs))
+        .connect_timeout(crate::llm_client::CONNECT_TIMEOUT)
+        .timeout(request_timeout_for(provider))
         .build()
         .map_err(|e| format!("Failed to build HTTP client: {}", e))
 }
@@ -214,10 +230,14 @@ async fn chat_openai_compatible(
         .await
         .map_err(|e| format!("Request failed: {}", e))?;
     let status = response.status();
-    let value: Value = response
-        .json()
-        .await
-        .map_err(|e| format!("Invalid response: {}", e))?;
+    let body_bytes = crate::llm_client::read_body_capped(
+        response,
+        crate::llm_client::MAX_RESPONSE_BYTES,
+        request_timeout_for(provider),
+    )
+    .await?;
+    let value: Value =
+        serde_json::from_slice(&body_bytes).map_err(|e| format!("Invalid response: {}", e))?;
     if !status.is_success() {
         return Err(api_error(&value, status.as_u16()));
     }
@@ -307,10 +327,14 @@ async fn chat_anthropic(
         .await
         .map_err(|e| format!("Request failed: {}", e))?;
     let status = response.status();
-    let value: Value = response
-        .json()
-        .await
-        .map_err(|e| format!("Invalid response: {}", e))?;
+    let body_bytes = crate::llm_client::read_body_capped(
+        response,
+        crate::llm_client::MAX_RESPONSE_BYTES,
+        request_timeout_for(provider),
+    )
+    .await?;
+    let value: Value =
+        serde_json::from_slice(&body_bytes).map_err(|e| format!("Invalid response: {}", e))?;
     if !status.is_success() {
         return Err(api_error(&value, status.as_u16()));
     }
@@ -380,10 +404,14 @@ async fn chat_gemini(
         .await
         .map_err(|e| format!("Request failed: {}", e))?;
     let status = response.status();
-    let value: Value = response
-        .json()
-        .await
-        .map_err(|e| format!("Invalid response: {}", e))?;
+    let body_bytes = crate::llm_client::read_body_capped(
+        response,
+        crate::llm_client::MAX_RESPONSE_BYTES,
+        request_timeout_for(provider),
+    )
+    .await?;
+    let value: Value =
+        serde_json::from_slice(&body_bytes).map_err(|e| format!("Invalid response: {}", e))?;
     if !status.is_success() {
         return Err(api_error(&value, status.as_u16()));
     }
@@ -613,19 +641,26 @@ pub fn write_text_file(path: String, contents: String) -> Result<(), String> {
 #[tauri::command]
 #[specta::specta]
 pub async fn fetch_openrouter_model_prices() -> Result<Vec<OpenRouterModelPrice>, String> {
+    let timeout = Duration::from_secs(CLOUD_TIMEOUT_SECS);
     let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(CLOUD_TIMEOUT_SECS))
+        .connect_timeout(crate::llm_client::CONNECT_TIMEOUT)
+        .timeout(timeout)
         .build()
         .map_err(|e| format!("Failed to build HTTP client: {}", e))?;
-    let value: Value = client
+    let response = client
         .get("https://openrouter.ai/api/v1/models")
         .header("X-Title", "Handy")
         .send()
         .await
-        .map_err(|e| format!("Request failed: {}", e))?
-        .json()
-        .await
-        .map_err(|e| format!("Invalid response: {}", e))?;
+        .map_err(|e| format!("Request failed: {}", e))?;
+    let body_bytes = crate::llm_client::read_body_capped(
+        response,
+        crate::llm_client::MAX_RESPONSE_BYTES,
+        timeout,
+    )
+    .await?;
+    let value: Value =
+        serde_json::from_slice(&body_bytes).map_err(|e| format!("Invalid response: {}", e))?;
 
     // OpenRouter pricing is USD per single token (string) — ×1e6 for per-1M.
     let per_million = |v: &Value| -> f64 {

@@ -15,12 +15,15 @@ pub struct CustomSounds {
 }
 
 fn custom_sound_exists(app: &AppHandle, sound_type: &str) -> bool {
-    app.path()
-        .resolve(
-            format!("custom_{}.wav", sound_type),
-            tauri::path::BaseDirectory::AppData,
-        )
-        .map_or(false, |path| path.exists())
+    // T-114 finding #5: route through the portable-aware resolver instead of
+    // resolving BaseDirectory::AppData directly, so a portable launch checks
+    // its own `data\custom_*.wav` files instead of always looking in
+    // %APPDATA%\pr.handy (which would both ignore a portable copy's own
+    // custom sounds and pick up an installed copy's, if present).
+    match crate::portable::resolve_app_data_dir(app) {
+        Ok(dir) => dir.join(format!("custom_{}.wav", sound_type)).exists(),
+        Err(_) => false,
+    }
 }
 
 #[tauri::command]

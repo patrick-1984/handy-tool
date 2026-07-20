@@ -135,8 +135,7 @@ impl TranslatorManager {
 }
 
 fn queue_store_path(app: &AppHandle) -> Option<PathBuf> {
-    app.path()
-        .app_data_dir()
+    crate::portable::resolve_app_data_dir(app)
         .ok()
         .map(|d| d.join("translator_queue.json"))
 }
@@ -230,7 +229,7 @@ fn seed_default_folder(app: &AppHandle) {
     if settings.translator_seeded {
         return;
     }
-    if let Ok(dir) = app.path().app_data_dir() {
+    if let Ok(dir) = crate::portable::resolve_app_data_dir(app) {
         let rec = dir.join("recordings");
         settings.translator_folders.push(TranslatorFolder {
             path: rec.to_string_lossy().to_string(),

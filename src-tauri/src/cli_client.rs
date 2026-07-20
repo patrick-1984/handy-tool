@@ -44,8 +44,16 @@ fn out_line(s: &str) {
 /// Read `mcp_server_enabled` from the persisted settings store (same dir as the
 /// sidecar). `None` if unknown (old settings / unreadable) — caller should try.
 fn mcp_enabled_in_settings() -> Option<bool> {
-    let base = dirs::config_dir()?;
-    let path = base.join("pr.handy").join("settings_store.json");
+    // Portable-aware (T-114): in portable mode the settings store lives in
+    // `<exe_dir>\data\` (keyed off current_exe, no AppHandle here), exactly
+    // like the sidecar this pairs with — otherwise the CLI would read the
+    // OS-profile settings while the app uses the portable ones.
+    let path = match crate::portable::portable_data_dir() {
+        Some(dir) => dir.join("settings_store.json"),
+        None => dirs::config_dir()?
+            .join("pr.handy")
+            .join("settings_store.json"),
+    };
     let txt = std::fs::read_to_string(path).ok()?;
     let v: Value = serde_json::from_str(&txt).ok()?;
     v.get("settings")?.get("mcp_server_enabled")?.as_bool()

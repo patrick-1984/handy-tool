@@ -20,8 +20,29 @@ fn resolve_sound_path(
     sound_type: SoundType,
 ) -> Option<PathBuf> {
     let sound_file = get_sound_path(settings, sound_type);
-    let base_dir = get_sound_base_dir(settings);
-    app.path().resolve(&sound_file, base_dir).ok()
+    // T-114 finding #5: custom sounds are user data (dropped in the app-data
+    // dir by the user), not a bundled resource — route them through the
+    // portable-aware resolver so a portable launch plays/discovers its own
+    // `data\custom_*.wav` instead of always resolving BaseDirectory::AppData
+    // (which is %APPDATA%\pr.handy regardless of portable mode, so portable
+    // custom sounds would be silently ignored and an installed copy's custom
+    // sounds would leak into a portable run on the same machine). Built-in
+    // theme sounds stay bundled resources either way — unaffected.
+    if is_custom_sound(settings) {
+        return crate::portable::resolve_app_data_dir(app)
+            .ok()
+            .map(|dir| dir.join(sound_file));
+    }
+    app.path()
+        .resolve(&sound_file, tauri::path::BaseDirectory::Resource)
+        .ok()
+}
+
+/// Pure branch-selection helper backing `resolve_sound_path`'s
+/// custom-vs-bundled-resource decision (T-114 finding #5), split out so it's
+/// unit testable without an `AppHandle`.
+fn is_custom_sound(settings: &AppSettings) -> bool {
+    settings.sound_theme == SoundTheme::Custom
 }
 
 fn get_sound_path(settings: &AppSettings, sound_type: SoundType) -> String {
@@ -30,13 +51,6 @@ fn get_sound_path(settings: &AppSettings, sound_type: SoundType) -> String {
         (SoundTheme::Custom, SoundType::Stop) => "custom_stop.wav".to_string(),
         (_, SoundType::Start) => settings.sound_theme.to_start_path(),
         (_, SoundType::Stop) => settings.sound_theme.to_stop_path(),
-    }
-}
-
-fn get_sound_base_dir(settings: &AppSettings) -> tauri::path::BaseDirectory {
-    match settings.sound_theme {
-        SoundTheme::Custom => tauri::path::BaseDirectory::AppData,
-        _ => tauri::path::BaseDirectory::Resource,
     }
 }
 
@@ -181,4 +195,69 @@ fn play_audio_file(
     sink.sleep_until_end();
 
     Ok(())
+}
+
+#[cfg(test)]
+mod sound_path_tests {
+    use super::*;
+
+    // T-114 finding #5: custom sounds must route through the portable-aware
+    // resolver, bundled themes must not. These tests exercise the pure
+    // branch-selection decision (`is_custom_sound`) and the file-name half
+    // of `get_sound_path` directly, without needing an `AppHandle` — the
+    // `AppHandle`-dependent half of `resolve_sound_path` (actually calling
+    // `resolve_app_data_dir` / `BaseDirectory::Resource`) isn't unit
+    // testable without standing up a Tauri app, so it's covered by the
+    // portable.rs resolver tests instead.
+
+    #[test]
+    fn custom_theme_is_flagged_custom_sound() {
+        let mut settings = settings::get_default_settings();
+        settings.sound_theme = SoundTheme::Custom;
+        assert!(is_custom_sound(&settings));
+    }
+
+    #[test]
+    fn builtin_themes_are_not_custom_sound() {
+        let mut settings = settings::get_default_settings();
+        settings.sound_theme = SoundTheme::Marimba;
+        assert!(!is_custom_sound(&settings));
+
+        settings.sound_theme = SoundTheme::Pop;
+        assert!(!is_custom_sound(&settings));
+    }
+
+    #[test]
+    fn custom_sound_file_names_have_no_resource_prefix() {
+        // Custom sounds are joined directly onto the resolved app-data dir
+        // (dir.join(sound_file)) — unlike the bundled "resources/..." paths
+        // below, they must NOT carry a "resources/" prefix, or they'd
+        // resolve to <data_dir>/resources/custom_start.wav instead of the
+        // flat <data_dir>/custom_start.wav the rest of the app (and
+        // commands/audio.rs::custom_sound_exists) expects.
+        let mut settings = settings::get_default_settings();
+        settings.sound_theme = SoundTheme::Custom;
+        assert_eq!(
+            get_sound_path(&settings, SoundType::Start),
+            "custom_start.wav"
+        );
+        assert_eq!(
+            get_sound_path(&settings, SoundType::Stop),
+            "custom_stop.wav"
+        );
+    }
+
+    #[test]
+    fn builtin_theme_sound_paths_keep_resources_prefix() {
+        let mut settings = settings::get_default_settings();
+        settings.sound_theme = SoundTheme::Marimba;
+        assert_eq!(
+            get_sound_path(&settings, SoundType::Start),
+            "resources/marimba_start.wav"
+        );
+        assert_eq!(
+            get_sound_path(&settings, SoundType::Stop),
+            "resources/marimba_stop.wav"
+        );
+    }
 }

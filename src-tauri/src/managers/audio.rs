@@ -345,7 +345,7 @@ impl AudioRecordingManager {
         if !settings.crash_resilient_recording {
             return None;
         }
-        let app_data_dir = self.app_handle.path().app_data_dir().ok()?;
+        let app_data_dir = crate::portable::resolve_app_data_dir(&self.app_handle).ok()?;
         Some(StartParams {
             dir: app_data_dir.join("recordings"),
             ts,

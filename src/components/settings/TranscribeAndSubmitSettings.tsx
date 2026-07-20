@@ -8,6 +8,7 @@ import { buildPasteMethodOptions } from "./PasteMethod";
 import { ClipboardRestoreDelaySetting } from "./ClipboardRestoreDelay";
 import { AnchorActionSetting } from "./AnchorActionSetting";
 import { JumperReturnFocusToggle } from "./JumperReturnFocusToggle";
+import { JumperTrackToggle } from "./JumperTrackToggle";
 import { useSettings } from "../../hooks/useSettings";
 import { useOsType } from "../../hooks/useOsType";
 import type {
@@ -171,6 +172,10 @@ export const TranscribeAndSubmitSettings: React.FC = React.memo(() => {
         grouped={true}
       />
       <JumperReturnFocusToggle flow="submit" grouped={true} />
+      {/* The global track-last-output switch applies to BOTH flows; render it
+          here too (T-117) so it's discoverable from Transcribe & Submit, not
+          only the General page. Same setting key — stays in sync. */}
+      <JumperTrackToggle grouped={true} />
     </SettingsGroup>
   );
 });

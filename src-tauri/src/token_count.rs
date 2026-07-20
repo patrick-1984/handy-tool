@@ -61,8 +61,15 @@ fn provider_timeout(provider: &LlmProvider) -> Duration {
     }
 }
 
+/// Every client built here gets BOTH a connect deadline (shared with
+/// `llm_client`'s post-processing client, T-202) and this call's total-request
+/// deadline — a hung TLS handshake or a stalled mid-response server must never
+/// block a token-count sweep forever, and each provider call gets its own
+/// independent timeout so one hung provider can't stall the others sharing a
+/// sweep.
 fn http_client(timeout: Duration) -> Result<reqwest::Client, String> {
     reqwest::Client::builder()
+        .connect_timeout(crate::llm_client::CONNECT_TIMEOUT)
         .timeout(timeout)
         .build()
         .map_err(|e| format!("Failed to build HTTP client: {}", e))
@@ -81,7 +88,8 @@ fn trim_base(base_url: &str) -> String {
 }
 
 async fn count_anthropic(provider: &LlmProvider, text: &str) -> Result<u32, String> {
-    let client = http_client(provider_timeout(provider))?;
+    let timeout = provider_timeout(provider);
+    let client = http_client(timeout)?;
     let url = format!("{}/v1/messages/count_tokens", trim_base(&provider.base_url));
     let body = json!({
         "model": provider.model,
@@ -96,10 +104,16 @@ async fn count_anthropic(provider: &LlmProvider, text: &str) -> Result<u32, Stri
         .await
         .map_err(|e| format!("Request failed: {}", e))?;
     let status = response.status();
-    let value: Value = response
-        .json()
-        .await
-        .map_err(|e| format!("Invalid response: {}", e))?;
+    // Bounded read (T-202 finding 4): a hostile/misconfigured endpoint can no
+    // longer exhaust memory via an unbounded `.json()` on either body.
+    let body_bytes = crate::llm_client::read_body_capped(
+        response,
+        crate::llm_client::MAX_RESPONSE_BYTES,
+        timeout,
+    )
+    .await?;
+    let value: Value =
+        serde_json::from_slice(&body_bytes).map_err(|e| format!("Invalid response: {}", e))?;
     if !status.is_success() {
         return Err(api_error(&value, status.as_u16()));
     }
@@ -110,7 +124,8 @@ async fn count_anthropic(provider: &LlmProvider, text: &str) -> Result<u32, Stri
 }
 
 async fn count_gemini(provider: &LlmProvider, text: &str) -> Result<u32, String> {
-    let client = http_client(provider_timeout(provider))?;
+    let timeout = provider_timeout(provider);
+    let client = http_client(timeout)?;
     let url = format!(
         "{}/v1beta/models/{}:countTokens?key={}",
         trim_base(&provider.base_url),
@@ -127,10 +142,14 @@ async fn count_gemini(provider: &LlmProvider, text: &str) -> Result<u32, String>
         .await
         .map_err(|e| format!("Request failed: {}", e))?;
     let status = response.status();
-    let value: Value = response
-        .json()
-        .await
-        .map_err(|e| format!("Invalid response: {}", e))?;
+    let body_bytes = crate::llm_client::read_body_capped(
+        response,
+        crate::llm_client::MAX_RESPONSE_BYTES,
+        timeout,
+    )
+    .await?;
+    let value: Value =
+        serde_json::from_slice(&body_bytes).map_err(|e| format!("Invalid response: {}", e))?;
     if !status.is_success() {
         return Err(api_error(&value, status.as_u16()));
     }
@@ -215,10 +234,14 @@ async fn probe_usage(
         .await
         .map_err(|e| format!("Request failed: {}", e))?;
     let status = response.status();
-    let value: Value = response
-        .json()
-        .await
-        .map_err(|e| format!("Invalid response: {}", e))?;
+    let body_bytes = crate::llm_client::read_body_capped(
+        response,
+        crate::llm_client::MAX_RESPONSE_BYTES,
+        provider_timeout(provider),
+    )
+    .await?;
+    let value: Value =
+        serde_json::from_slice(&body_bytes).map_err(|e| format!("Invalid response: {}", e))?;
     if !status.is_success() {
         return Err(api_error(&value, status.as_u16()));
     }
@@ -425,22 +448,29 @@ pub async fn list_provider_models(
     match provider.kind.as_str() {
         "openai_local" => Ok(vec!["o200k_base".to_string(), "cl100k_base".to_string()]),
         "anthropic" => {
-            let client = http_client(provider_timeout(&provider))?;
-            let value: Value = client
+            let timeout = provider_timeout(&provider);
+            let client = http_client(timeout)?;
+            let response = client
                 .get(format!("{}/v1/models", base))
                 .header("x-api-key", provider.api_key.trim())
                 .header("anthropic-version", "2023-06-01")
                 .send()
                 .await
-                .map_err(|e| format!("Request failed: {}", e))?
-                .json()
-                .await
+                .map_err(|e| format!("Request failed: {}", e))?;
+            let body_bytes = crate::llm_client::read_body_capped(
+                response,
+                crate::llm_client::MAX_RESPONSE_BYTES,
+                timeout,
+            )
+            .await?;
+            let value: Value = serde_json::from_slice(&body_bytes)
                 .map_err(|e| format!("Invalid response: {}", e))?;
             extract_ids(&value["data"], "id")
         }
         "gemini" => {
-            let client = http_client(provider_timeout(&provider))?;
-            let value: Value = client
+            let timeout = provider_timeout(&provider);
+            let client = http_client(timeout)?;
+            let response = client
                 .get(format!(
                     "{}/v1beta/models?key={}",
                     base,
@@ -448,9 +478,14 @@ pub async fn list_provider_models(
                 ))
                 .send()
                 .await
-                .map_err(|e| format!("Request failed: {}", e))?
-                .json()
-                .await
+                .map_err(|e| format!("Request failed: {}", e))?;
+            let body_bytes = crate::llm_client::read_body_capped(
+                response,
+                crate::llm_client::MAX_RESPONSE_BYTES,
+                timeout,
+            )
+            .await?;
+            let value: Value = serde_json::from_slice(&body_bytes)
                 .map_err(|e| format!("Invalid response: {}", e))?;
             let models = extract_ids(&value["models"], "name")?;
             Ok(models
@@ -459,17 +494,23 @@ pub async fn list_provider_models(
                 .collect())
         }
         _ => {
-            let client = http_client(provider_timeout(&provider))?;
+            let timeout = provider_timeout(&provider);
+            let client = http_client(timeout)?;
             let mut request = client.get(format!("{}/models", base));
             if !provider.api_key.trim().is_empty() {
                 request = request.bearer_auth(provider.api_key.trim());
             }
-            let value: Value = request
+            let response = request
                 .send()
                 .await
-                .map_err(|e| format!("Request failed: {}", e))?
-                .json()
-                .await
+                .map_err(|e| format!("Request failed: {}", e))?;
+            let body_bytes = crate::llm_client::read_body_capped(
+                response,
+                crate::llm_client::MAX_RESPONSE_BYTES,
+                timeout,
+            )
+            .await?;
+            let value: Value = serde_json::from_slice(&body_bytes)
                 .map_err(|e| format!("Invalid response: {}", e))?;
             extract_ids(&value["data"], "id")
         }
@@ -511,7 +552,8 @@ pub async fn list_openrouter_transcription_models(
         Ok(p) => (trim_base(&p.base_url), p.api_key.trim().to_string()),
         Err(_) => ("https://openrouter.ai/api/v1".to_string(), String::new()),
     };
-    let client = match http_client(std::time::Duration::from_secs(15)) {
+    let timeout = std::time::Duration::from_secs(15);
+    let client = match http_client(timeout) {
         Ok(c) => c,
         Err(_) => return Ok(fallback()),
     };
@@ -520,8 +562,17 @@ pub async fn list_openrouter_transcription_models(
         request = request.bearer_auth(&key);
     }
     let value: Value = match request.send().await {
-        Ok(r) => match r.json().await {
-            Ok(v) => v,
+        Ok(r) => match crate::llm_client::read_body_capped(
+            r,
+            crate::llm_client::MAX_RESPONSE_BYTES,
+            timeout,
+        )
+        .await
+        {
+            Ok(bytes) => match serde_json::from_slice(&bytes) {
+                Ok(v) => v,
+                Err(_) => return Ok(fallback()),
+            },
             Err(_) => return Ok(fallback()),
         },
         Err(_) => return Ok(fallback()),

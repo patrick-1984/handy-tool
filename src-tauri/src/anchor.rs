@@ -677,8 +677,9 @@ mod win {
     /// of its own — so this hardening needs no settings-schema change; it is
     /// purely a resolver-side refinement of the SAME saved identity.
     fn hints_path(app: &AppHandle) -> Option<std::path::PathBuf> {
-        app.path()
-            .app_data_dir()
+        // Portable-aware (T-114): keep the hints sidecar beside the rest of
+        // the app's data so a portable launch doesn't strand it in %APPDATA%.
+        crate::portable::resolve_app_data_dir(app)
             .ok()
             .map(|d| d.join("jumper_slot_hints.json"))
     }

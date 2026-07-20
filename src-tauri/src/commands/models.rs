@@ -1,6 +1,6 @@
-use crate::managers::model::{ModelInfo, ModelManager};
+use crate::managers::model::{EngineType, ModelInfo, ModelManager};
 use crate::managers::transcription::TranscriptionManager;
-use crate::settings::{get_settings, write_settings};
+use crate::settings::{AppSettings, get_settings, write_settings};
 use serde::Serialize;
 use specta::Type;
 use std::sync::Arc;
@@ -194,23 +194,70 @@ pub async fn is_model_loading(
     Ok(current_model.is_none())
 }
 
+/// T-106: is this registry entry a REAL, usable transcription path right now?
+///
+/// Local engines (Whisper/Parakeet/Moonshine/SenseVoice) are usable once
+/// `is_downloaded` is true — the registry probes the filesystem for these
+/// (see `update_download_status` in `managers/model.rs`).
+///
+/// External engines (`EngineType::is_external()`) are a DIFFERENT story: the
+/// registry always sets `is_downloaded: true` for API/OpenRouter (they have
+/// no on-disk artifact — see the doc comment on `EngineType::is_external`),
+/// and FLM's entry is only inserted into the registry when `detect_flm()`
+/// already succeeded at startup. So `is_downloaded` alone can't distinguish
+/// "the user configured this" from "this engine merely exists" — that's
+/// exactly the T-106 bug (a fresh install with an unconfigured API/OpenRouter
+/// entry skipped onboarding into a broken state). Require each external
+/// engine's own minimum usable configuration instead:
+/// - `ApiWhisper`: a non-empty endpoint URL (the API key is legitimately
+///   optional for some OpenAI-compatible servers, e.g. local FLM/faster-
+///   whisper-server without auth).
+/// - `OpenRouterWhisper`: a configured provider reference that resolves to a
+///   registered `llm_providers` entry with a non-empty API key (the
+///   transcription model itself may be left unset — the engine falls back to
+///   `openai/whisper-large-v3`, see CLAUDE.md).
+/// - `FlmWhisper`: presence in the registry already means `detect_flm()`
+///   succeeded, so `is_downloaded` (always true for this entry) is accurate.
+fn is_model_usable(model: &ModelInfo, settings: &AppSettings) -> bool {
+    match model.engine_type {
+        EngineType::ApiWhisper => !settings.api_transcription_url.trim().is_empty(),
+        EngineType::OpenRouterWhisper => {
+            let provider_ref = settings.openrouter_transcription_provider_ref.trim();
+            !provider_ref.is_empty()
+                && settings
+                    .llm_provider(provider_ref)
+                    .map(|p| !p.api_key.trim().is_empty())
+                    .unwrap_or(false)
+        }
+        #[cfg(not(target_os = "macos"))]
+        EngineType::FlmWhisper => model.is_downloaded,
+        _ => model.is_downloaded,
+    }
+}
+
 #[tauri::command]
 #[specta::specta]
 pub async fn has_any_models_available(
+    app_handle: AppHandle,
     model_manager: State<'_, Arc<ModelManager>>,
 ) -> Result<bool, String> {
+    let settings = get_settings(&app_handle);
     let models = model_manager.get_available_models();
-    Ok(models.iter().any(|m| m.is_downloaded))
+    Ok(models.iter().any(|m| is_model_usable(m, &settings)))
 }
 
 #[tauri::command]
 #[specta::specta]
 pub async fn has_any_models_or_downloads(
+    app_handle: AppHandle,
     model_manager: State<'_, Arc<ModelManager>>,
 ) -> Result<bool, String> {
+    let settings = get_settings(&app_handle);
     let models = model_manager.get_available_models();
-    // Return true if any models are downloaded OR if any downloads are in progress
-    Ok(models.iter().any(|m| m.is_downloaded))
+    // Return true if any models are usable OR if any downloads are in progress
+    Ok(models
+        .iter()
+        .any(|m| is_model_usable(m, &settings) || m.is_downloading))
 }
 
 #[tauri::command]
@@ -222,4 +269,127 @@ pub async fn cancel_download(
     model_manager
         .cancel_download(&model_id)
         .map_err(|e| e.to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::settings::{LlmProvider, get_default_settings};
+
+    /// Minimal `ModelInfo` builder for the fields `is_model_usable` cares
+    /// about; the rest are cosmetic (name/description/scores/etc.).
+    fn model(engine_type: EngineType, is_downloaded: bool) -> ModelInfo {
+        ModelInfo {
+            id: "test-model".to_string(),
+            name: "Test Model".to_string(),
+            description: String::new(),
+            filename: String::new(),
+            url: None,
+            size_mb: 0,
+            is_downloaded,
+            is_downloading: false,
+            partial_size: 0,
+            is_directory: false,
+            engine_type,
+            accuracy_score: 0.0,
+            speed_score: 0.0,
+            supports_translation: false,
+            is_recommended: false,
+            supported_languages: Vec::new(),
+            is_custom: false,
+        }
+    }
+
+    fn provider(id: &str, api_key: &str) -> LlmProvider {
+        LlmProvider {
+            id: id.to_string(),
+            kind: "openrouter".to_string(),
+            enabled: true,
+            name: "Test Provider".to_string(),
+            base_url: String::new(),
+            allow_base_url_edit: false,
+            api_key: api_key.to_string(),
+            model: String::new(),
+            supports_structured_output: false,
+            cost_input_per_million: 0.0,
+            cost_output_per_million: 0.0,
+            concurrency_group: String::new(),
+            sequential: false,
+            persist_price: false,
+        }
+    }
+
+    #[test]
+    fn local_engine_usable_only_when_downloaded() {
+        let settings = get_default_settings();
+        assert!(!is_model_usable(
+            &model(EngineType::Whisper, false),
+            &settings
+        ));
+        assert!(is_model_usable(
+            &model(EngineType::Whisper, true),
+            &settings
+        ));
+    }
+
+    #[test]
+    fn api_engine_requires_url_regardless_of_registry_is_downloaded() {
+        let mut settings = get_default_settings();
+        // Registry always marks api-whisper as `is_downloaded: true` even
+        // when nothing is configured — this is exactly the T-106 bug.
+        let m = model(EngineType::ApiWhisper, true);
+
+        settings.api_transcription_url = String::new();
+        assert!(
+            !is_model_usable(&m, &settings),
+            "unconfigured API engine must not count as usable"
+        );
+
+        settings.api_transcription_url = "   ".to_string();
+        assert!(
+            !is_model_usable(&m, &settings),
+            "whitespace-only URL must not count as usable"
+        );
+
+        settings.api_transcription_url = "http://localhost:8080".to_string();
+        assert!(is_model_usable(&m, &settings));
+    }
+
+    #[test]
+    fn openrouter_engine_requires_provider_ref_and_api_key() {
+        let mut settings = get_default_settings();
+        let m = model(EngineType::OpenRouterWhisper, true);
+
+        // Nothing configured.
+        assert!(!is_model_usable(&m, &settings));
+
+        // provider_ref set but no matching provider registered.
+        settings.openrouter_transcription_provider_ref = "missing-provider".to_string();
+        assert!(!is_model_usable(&m, &settings));
+
+        // Matching provider exists but has no API key yet.
+        settings.llm_providers.push(provider("or-provider", ""));
+        settings.openrouter_transcription_provider_ref = "or-provider".to_string();
+        assert!(!is_model_usable(&m, &settings));
+
+        // Provider has a key: usable, even though the transcription model
+        // itself is left unset (falls back to openai/whisper-large-v3).
+        settings.llm_providers.last_mut().unwrap().api_key = "sk-test".to_string();
+        assert!(settings.openrouter_transcription_model.is_empty());
+        assert!(is_model_usable(&m, &settings));
+    }
+
+    #[test]
+    fn flm_engine_trusts_registry_is_downloaded() {
+        // FLM's entry is only ever inserted into the registry when
+        // `detect_flm()` already succeeded, so `is_downloaded` is authoritative.
+        #[cfg(not(target_os = "macos"))]
+        {
+            let settings = get_default_settings();
+            assert!(is_model_usable(
+                &model(EngineType::FlmWhisper, true),
+                &settings
+            ));
+        }
+    }
 }

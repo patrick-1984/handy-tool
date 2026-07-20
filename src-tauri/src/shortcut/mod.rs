@@ -754,6 +754,23 @@ pub fn change_start_hidden_setting(app: AppHandle, enabled: bool) -> Result<(), 
 #[tauri::command]
 #[specta::specta]
 pub fn change_autostart_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
+    // Portable mode never registers/unregisters the autostart Run-key entry
+    // (T-114 gap #3, mirrors the startup-time skip in
+    // `lib.rs::initialize_core_logic`) — it's machine/user-profile state
+    // that would outlive the portable folder, and could stomp an installed
+    // copy's autostart entry sharing the same Run key. Reject up front
+    // rather than silently no-op, so the settings UI can surface why the
+    // toggle had no effect.
+    if crate::portable::portable_data_dir().is_some() {
+        warn!(
+            "Portable mode: ignoring change_autostart_setting({enabled}) — autostart is disabled in portable mode"
+        );
+        return Err(
+            "Autostart is disabled in portable mode (it would register a machine-wide Run key entry outside this folder)"
+                .to_string(),
+        );
+    }
+
     let mut settings = settings::get_settings(&app);
     settings.autostart_enabled = enabled;
     settings::write_settings(&app, settings);

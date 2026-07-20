@@ -299,18 +299,13 @@ echo downloaded, the model is cached and works fully offline afterward.
 echo.
 echo WHERE YOUR DATA LIVES
 echo ----------------------
-echo IMPORTANT ^(read this^): as of this build, Handy Tool's underlying app-data
-echo location is still hardcoded to your Windows user profile, NOT this
-echo folder. Even though this package includes an empty "data\" folder and a
-echo "portable.marker" file ^(intended to make settings/history/downloaded
-echo models live beside handy.exe^), the current handy.exe build does not yet
-echo read that marker -- this wiring is tracked as a follow-up
-echo ^(see T-114 in the source repo^). Until that ships, this portable build
-echo will still write to:
-echo   %%APPDATA%%\pr.handy\  ^(settings_store.json, history.db, models\, recordings\^)
-echo exactly like an installed copy would. Do not assume this folder is
-echo self-contained yet -- treat the "data\" folder here as a placeholder for
-echo the day that wiring lands, not as where things go today.
+echo This build reads the "portable.marker" file beside handy.exe and, when
+echo present, keeps ALL of its data inside the "data\" folder next to the exe:
+echo settings, history, downloaded models, recordings, logs, and the WebView
+echo storage. Nothing is written to %%APPDATA%%\pr.handy or %%LOCALAPPDATA%%.
+echo Delete the whole folder to remove every trace. ^(If "data\" ever can't be
+echo written -- e.g. a read-only drive -- Handy safely falls back to the normal
+echo per-user profile location and logs a warning.^)
 echo.
 echo REGISTRY / SYSTEM CHANGES
 echo --------------------------

@@ -10,20 +10,19 @@ installer and no admin rights.
 > library's `disable()`, which *attempts to delete* a pre-existing `Run`
 > value if one is present — so a launch may touch the registry to remove a
 > stale entry (this delete is best-effort and its result is not checked).
-> The portable build never intentionally *adds* a registry entry unless you
-> enable autostart, but it does not promise a wholly registry-free launch.
-> True portable-mode isolation (including suppressing autostart entirely in
-> portable mode) is part of the pending Rust wiring — see T-114.
+> Autostart is **disabled in portable mode** (it would write a machine-level
+> registry Run entry pointing at a removable path), so a portable launch does
+> not add a registry entry. See T-114 for the isolation details.
 
-> **Status: packaging only, partially wired (T-114).** The ZIP assembly
-> described below works today. Making the app actually *read and write its
-> data next to the exe* — the other half of "portable" — needs a small Rust
-> change that hasn't shipped yet. Until it does, a portable-launched
-> `handy.exe` still stores settings, history, downloaded models, and
-> recordings in the normal per-user Windows profile
-> (`%APPDATA%\pr.handy\`), exactly like an installed copy. See
-> [T-114](../tickets/T-114-portable-distribution.md) for the exact spec of
-> the remaining change.
+> **Status: fully wired.** When a `portable.marker` file sits beside
+> `handy.exe`, the app reads and writes ALL of its data — settings, history,
+> downloaded models, recordings, logs, and WebView storage — inside a `data\`
+> folder next to the exe. Nothing lands in `%APPDATA%\pr.handy` or
+> `%LOCALAPPDATA%`, and a portable launch does not mutate machine-level state
+> (autostart and CLI self-install are suppressed). If `data\` can't be written
+> (e.g. a read-only drive), Handy falls back to the normal per-user profile and
+> logs a warning. See
+> [T-114](../tickets/T-114-portable-distribution.md) for the full spec.
 
 ## Building the portable ZIP
 
