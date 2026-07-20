@@ -73,6 +73,21 @@ fn update_gtk_layer_shell_anchors(overlay_window: &tauri::webview::WebviewWindow
 /// Returns true if layer shell was successfully initialized, false otherwise
 #[cfg(target_os = "linux")]
 fn init_gtk_layer_shell(overlay_window: &tauri::webview::WebviewWindow) -> bool {
+    // Manual escape hatch: some compositors report layer-shell as "supported"
+    // yet render the overlay incorrectly. HANDY_NO_GTK_LAYER_SHELL=1 (or
+    // true/yes, case-insensitive) forces the plain always-on-top fallback.
+    // Unset/0/false/empty leaves behavior unchanged.
+    let force_disabled = env::var("HANDY_NO_GTK_LAYER_SHELL")
+        .map(|v| {
+            let v = v.trim();
+            !v.is_empty() && v != "0" && !v.eq_ignore_ascii_case("false")
+        })
+        .unwrap_or(false);
+    if force_disabled {
+        debug!("HANDY_NO_GTK_LAYER_SHELL set — skipping GTK layer shell init");
+        return false;
+    }
+
     // On KDE Wayland, layer-shell init has shown protocol instability.
     // Fall back to regular always-on-top overlay behavior (as in v0.7.1).
     let is_wayland = env::var("WAYLAND_DISPLAY").is_ok()
