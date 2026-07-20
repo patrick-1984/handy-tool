@@ -320,6 +320,16 @@ pub struct ModelManager {
     active_downloads: Arc<Mutex<HashMap<String, DownloadAttempt>>>,
     /// Monotonic source of per-attempt generations.
     download_seq: AtomicU64,
+    /// Per-model refresh revision, bumped on EVERY lifecycle transition that
+    /// changes a model's is_downloaded/is_downloading — ATOMICALLY with that
+    /// change (always mutated while holding `available_models`, as a strict
+    /// inner lock). `update_download_status` snapshots a model's revision when
+    /// it probes the disk and commits the probed value only if the revision is
+    /// unchanged at commit time; otherwise a lifecycle transition happened
+    /// during the probe and the stale disk snapshot is skipped. Closes the T-222
+    /// probe→commit window (e.g. a download completing during a delete_model
+    /// refresh). ALWAYS lock this AFTER available_models, never alone.
+    refresh_revisions: Mutex<HashMap<String, u64>>,
     extracting_models: Arc<Mutex<HashSet<String>>>,
 }
 
@@ -755,14 +765,17 @@ impl ModelManager {
             available_models: Mutex::new(available_models),
             active_downloads: Arc::new(Mutex::new(HashMap::new())),
             download_seq: AtomicU64::new(0),
+            refresh_revisions: Mutex::new(HashMap::new()),
             extracting_models: Arc::new(Mutex::new(HashSet::new())),
         };
 
         // Migrate any bundled models to user directory
         manager.migrate_bundled_models()?;
 
-        // Check which models are already downloaded
-        manager.update_download_status()?;
+        // Check which models are already downloaded. Startup is the only place
+        // that cleans up leftover .extracting dirs (no downloads are in flight
+        // yet, so the cleanup can't race a live extraction — T-222 item ii).
+        manager.update_download_status(true)?;
 
         // Auto-select a model if none is currently selected
         manager.auto_select_model_if_needed()?;
@@ -836,19 +849,31 @@ impl ModelManager {
         Ok(())
     }
 
-    fn update_download_status(&self) -> Result<()> {
+    /// Refresh each local model's on-disk status.
+    ///
+    /// `cleanup_stale_extractions`: when true (startup only — no downloads are
+    /// in flight then), remove leftover `<filename>.extracting` directories from
+    /// interrupted extractions. When false (e.g. from `delete_model`, which can
+    /// run while another model is extracting), the cleanup is skipped so it can
+    /// never race and delete a live extraction's temp directory (T-222 item ii).
+    fn update_download_status(&self, cleanup_stale_extractions: bool) -> Result<()> {
         // Two-phase to keep filesystem I/O OUT of any critical section, so a
         // refresh never blocks cancel_download / admission (which would regress
         // T-205 responsiveness).
 
-        // Phase 0: snapshot model identity (brief available_models lock, no fs).
+        // Phase 0: snapshot model identity AND each model's refresh revision
+        // (brief available_models -> refresh_revisions lock, no fs). The
+        // revision snapshot lets phase 2 detect a lifecycle transition that
+        // happened while we were probing the disk (T-222 item i).
         struct Probe {
             id: String,
             filename: String,
             is_directory: bool,
+            revision: u64,
         }
         let probes: Vec<Probe> = {
             let models = self.available_models.lock().unwrap();
+            let revs = self.refresh_revisions.lock().ok();
             models
                 .values()
                 .filter(|m| !m.engine_type.is_external())
@@ -856,18 +881,22 @@ impl ModelManager {
                     id: m.id.clone(),
                     filename: m.filename.clone(),
                     is_directory: m.is_directory,
+                    revision: revs
+                        .as_ref()
+                        .and_then(|r| r.get(&m.id).copied())
+                        .unwrap_or(0),
                 })
                 .collect()
         };
 
-        // Phase 1: filesystem probes + leftover .extracting cleanup with NO
-        // manager locks held. is_file()/is_dir() (not exists()) so a wrong-type
-        // artifact is not reported as downloaded.
+        // Phase 1: filesystem probes (+ optional leftover .extracting cleanup)
+        // with NO manager locks held. is_file()/is_dir() (not exists()) so a
+        // wrong-type artifact is not reported as downloaded.
         let mut results: HashMap<String, (bool, u64)> = HashMap::new();
         for p in &probes {
             let model_path = self.models_dir.join(&p.filename);
             let partial_path = self.models_dir.join(format!("{}.partial", &p.filename));
-            if p.is_directory {
+            if p.is_directory && cleanup_stale_extractions {
                 let extracting_path = self.models_dir.join(format!("{}.extracting", &p.filename));
                 let is_currently_extracting = self
                     .extracting_models
@@ -898,30 +927,39 @@ impl ModelManager {
             results.insert(p.id.clone(), (is_downloaded, partial_size));
         }
 
-        // Phase 2: short commit under available_models only. This refresh writes
-        // ONLY disk-derived facts (is_downloaded, partial_size) and deliberately
-        // NEVER touches is_downloading — that flag is owned solely by the
-        // download lifecycle (admission sets it, the RegistrationGuard/completion
-        // clears it) and is in-memory only (a fresh ModelManager starts all
-        // false). Not touching it here removes any refresh-vs-download race on
-        // the flag.
+        // Phase 2: short commit under available_models (+ refresh_revisions as a
+        // strict inner lock). This refresh writes ONLY disk-derived facts
+        // (is_downloaded, partial_size) and deliberately NEVER touches
+        // is_downloading — owned solely by the download lifecycle.
         //
-        // A model that is CURRENTLY downloading also owns its is_downloaded /
-        // partial_size (they change as the transfer/extraction progresses), so
-        // read active membership live (active -> available order; no fs held)
-        // and skip those models here to avoid committing a stale disk snapshot
-        // over a live attempt's own updates. (The residual just-completed
-        // microsecond window is tracked in T-222.)
+        // A model that is CURRENTLY downloading owns its is_downloaded /
+        // partial_size, so skip active models. AND, to close the probe->commit
+        // window, commit a probed value only if the model's refresh revision is
+        // UNCHANGED since phase 0 — if a lifecycle transition (e.g. a download
+        // completing during a delete_model refresh) bumped it, the disk snapshot
+        // is stale, so skip it (its own transition already set the truth).
+        let snapshot_revs: HashMap<&str, u64> =
+            probes.iter().map(|p| (p.id.as_str(), p.revision)).collect();
         let active_ids: HashSet<String> = match self.active_downloads.lock() {
             Ok(active) => active.keys().cloned().collect(),
             Err(_) => HashSet::new(),
         };
         let mut models = self.available_models.lock().unwrap();
+        let current_revs = self.refresh_revisions.lock().ok();
         for model in models.values_mut() {
             if model.engine_type.is_external() {
                 continue;
             }
             if active_ids.contains(&model.id) {
+                continue;
+            }
+            // Skip if a transition bumped the revision during our probe.
+            let snap = snapshot_revs.get(model.id.as_str()).copied();
+            let now = current_revs
+                .as_ref()
+                .and_then(|r| r.get(&model.id).copied())
+                .unwrap_or(0);
+            if snap != Some(now) {
                 continue;
             }
             if let Some(&(is_downloaded, partial_size)) = results.get(&model.id) {
@@ -1160,6 +1198,7 @@ impl ModelManager {
             if let Some(model) = models.get_mut(model_id) {
                 model.is_downloading = true;
             }
+            self.bump_refresh_revision(model_id);
         }
 
         // Already complete: shortcut ONLY if the on-disk artifact is actually
@@ -1185,6 +1224,7 @@ impl ModelManager {
                         model.is_downloading = false;
                         model.partial_size = 0;
                     }
+                    self.bump_refresh_revision(model_id);
                 }
                 self.clear_download_registration(model_id, generation);
                 cleanup_guard.disarm();
@@ -1533,6 +1573,7 @@ impl ModelManager {
                 model.is_downloaded = true;
                 model.partial_size = 0;
             }
+            self.bump_refresh_revision(model_id);
         }
 
         // Drop this attempt's registration on success (generation-scoped). This
@@ -1612,8 +1653,10 @@ impl ModelManager {
             models.remove(model_id);
             debug!("ModelManager: removed custom model from available models");
         } else {
-            // Update download status (marks predefined models as not downloaded)
-            self.update_download_status()?;
+            // Update download status (marks predefined models as not
+            // downloaded). Do NOT clean up .extracting dirs here — a delete can
+            // run while another model is extracting (T-222 item ii).
+            self.update_download_status(false)?;
             debug!("ModelManager: download status updated");
         }
 
@@ -1669,11 +1712,25 @@ impl ModelManager {
         }
     }
 
+    /// Bump a model's refresh revision. MUST be called while already holding
+    /// `available_models` (refresh_revisions is a strict inner lock), so the
+    /// revision bump is atomic with the is_downloaded/is_downloading change it
+    /// accompanies. This is what lets `update_download_status` detect that a
+    /// lifecycle transition happened during its disk probe and skip the stale
+    /// commit. Poison-safe.
+    fn bump_refresh_revision(&self, model_id: &str) {
+        if let Ok(mut revs) = self.refresh_revisions.lock() {
+            *revs.entry(model_id.to_string()).or_insert(0) += 1;
+        }
+    }
+
     /// Clear a download attempt's transient state: mark the model
     /// not-downloading and drop its `active_downloads` entry — but ONLY if the
     /// entry still belongs to `generation`. If a newer attempt has replaced it,
-    /// leave that attempt's state untouched. Poison-safe. Lock order:
-    /// active_downloads outer, available_models inner (matches admission).
+    /// leave that attempt's state untouched. Poison-safe. Lock order here:
+    /// active_downloads outer, available_models inner, refresh_revisions
+    /// innermost (a strict subset of the global active -> available ->
+    /// refresh_revisions order).
     fn clear_download_registration(&self, model_id: &str, generation: u64) {
         if let Ok(mut active) = self.active_downloads.lock() {
             match active.get(model_id) {
@@ -1683,6 +1740,8 @@ impl ModelManager {
                         if let Some(model) = models.get_mut(model_id) {
                             model.is_downloading = false;
                         }
+                        // Atomic with the is_downloading change above.
+                        self.bump_refresh_revision(model_id);
                     }
                 }
                 // A superseding retry (or nothing) owns the slot now — don't

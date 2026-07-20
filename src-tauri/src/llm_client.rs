@@ -733,7 +733,7 @@ mod tests {
     /// single-oversized-chunk rejection (already covered above).
     #[test]
     fn read_body_capped_rejects_an_over_cap_multi_chunk_stream() {
-        use std::io::Write;
+        use std::io::{Read, Write};
         use std::net::TcpListener;
 
         let listener = TcpListener::bind("127.0.0.1:0").expect("bind local test listener");
@@ -741,8 +741,14 @@ mod tests {
 
         let server = std::thread::spawn(move || {
             let (mut stream, _) = listener.accept().expect("accept");
+            // Drain the client's request line/headers BEFORE responding. If the
+            // server writes the response while the client is still sending its
+            // request, hyper sees inbound data early and fails the send with
+            // UnexpectedMessage — the source of this test's flakiness.
+            let mut req = [0u8; 1024];
+            let _ = stream.read(&mut req);
             stream
-                .write_all(b"HTTP/1.1 200 OK\r\nConnection: close\r\n\r\n")
+                .write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 16\r\n\r\n")
                 .ok();
             // First chunk: 8 bytes, comfortably under the 10-byte cap alone.
             stream.write_all(&[b'a'; 8]).ok();
@@ -751,6 +757,12 @@ mod tests {
             // Second chunk: another 8 bytes — 16 total pushes it over the cap.
             stream.write_all(&[b'b'; 8]).ok();
             stream.flush().ok();
+            // Keep the connection open long enough for the client to read the
+            // second chunk (and hit the cap) BEFORE we drop the socket. Dropping
+            // immediately can close the connection abruptly (RST) and surface as
+            // "error decoding response body" instead of the cap rejection,
+            // making this test flaky under load.
+            std::thread::sleep(std::time::Duration::from_millis(500));
         });
 
         let rt = tokio::runtime::Builder::new_current_thread()
@@ -782,7 +794,7 @@ mod tests {
     /// classification (T-202 finding 4).
     #[test]
     fn body_read_timeout_is_labeled_as_total_request_phase() {
-        use std::io::Write;
+        use std::io::{Read, Write};
         use std::net::TcpListener;
 
         let listener = TcpListener::bind("127.0.0.1:0").expect("bind local test listener");
@@ -790,13 +802,23 @@ mod tests {
 
         let server = std::thread::spawn(move || {
             let (mut stream, _) = listener.accept().expect("accept");
-            // Headers plus a token amount of body, then go silent well past
-            // the client's total-request timeout below.
+            // Drain the client's request BEFORE responding, so hyper doesn't see
+            // early inbound data and fail the send with UnexpectedMessage.
+            let mut req = [0u8; 1024];
+            let _ = stream.read(&mut req);
+            // Send clean, Content-Length-framed headers promising 100 body
+            // bytes, then send only 1 and go silent — so the client's BODY read
+            // genuinely stalls waiting for the promised remainder. Using a
+            // proper Content-Length (rather than close-delimited framing) keeps
+            // hyper from rejecting the response under load with UnexpectedMessage.
             stream
-                .write_all(b"HTTP/1.1 200 OK\r\nConnection: close\r\n\r\n1")
+                .write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 100\r\n\r\n1")
                 .ok();
             stream.flush().ok();
-            std::thread::sleep(std::time::Duration::from_millis(500));
+            // Keep the connection OPEN and silent well past the client timeout
+            // below, so the timeout — not a connection close (which would be a
+            // decode error) — is what ends the stalled body read.
+            std::thread::sleep(std::time::Duration::from_secs(5));
         });
 
         let rt = tokio::runtime::Builder::new_current_thread()
@@ -804,10 +826,17 @@ mod tests {
             .build()
             .expect("build a local tokio runtime for the test");
 
-        let short_timeout = std::time::Duration::from_millis(100);
+        // reqwest's client `.timeout()` is the mechanism that fires here
+        // (read_body_capped uses its timeout arg only to CLASSIFY the error).
+        // A moderate 2s total-request timeout: generous enough that header
+        // arrival never races it (no flaky send under load), yet it fires
+        // during the server's 5s body stall so the classified error is a
+        // total-request timeout. Same value passed to read_body_capped for the
+        // message text.
+        let timeout = std::time::Duration::from_secs(2);
         let outcome: Result<Vec<u8>, String> = rt.block_on(async {
             let client = reqwest::Client::builder()
-                .timeout(short_timeout)
+                .timeout(timeout)
                 .build()
                 .expect("build client");
             let response = client
@@ -815,7 +844,7 @@ mod tests {
                 .send()
                 .await
                 .expect("headers should arrive well before the stall");
-            read_body_capped(response, MAX_RESPONSE_BYTES, short_timeout).await
+            read_body_capped(response, MAX_RESPONSE_BYTES, timeout).await
         });
 
         server.join().expect("test server thread must not panic");
