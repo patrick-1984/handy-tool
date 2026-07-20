@@ -1,5 +1,65 @@
 # Changelog
 
+## [0.45.0] - 2026-07-20
+
+### Fixed
+
+- **Model-download status is race-hardened.** A download that finishes (or starts) at the exact moment the app refreshes its on-disk model list can no longer be shown with a stale "not downloaded" state — each model carries a refresh revision so the refresh skips any model whose state changed mid-probe. Cleanup of leftover extraction folders now runs only at startup, so it can never remove an extraction that is currently in progress.
+
+## [0.44.0] - 2026-07-20
+
+### Fixed
+
+- **Cancelling a model download now stops it immediately.** Previously, cancelling while a download had stalled (server gone quiet) left the transfer, connection, and file handle alive until the next byte arrived or a 60 s stall timeout elapsed. Cancellation now interrupts a stalled download at once and preserves the partial file for resume. The whole download lifecycle is tied to a single attempt identity, so a cancelled or superseded download can no longer clobber a fresh retry's progress — or the model you have since selected.
+
+## [0.43.0] - 2026-07-20
+
+### Added
+
+- **Portable mode.** Place a `portable.marker` file next to `handy.exe` and Handy keeps everything — settings, models, history, recordings, logs, and its web-view data — in a `data\` folder beside the executable, mutating no machine-level state (no autostart entry, no CLI self-install). Falls back to the normal per-user location if that folder isn't writable.
+
+### Fixed
+
+- **First-run model step shows correctly.** A fresh install with no local model but an unconfigured API/OpenRouter entry no longer skips the model-download step.
+- **LLM post-processing, token counting, and model testing now have full network timeouts** (connect + total) and a bounded response reader, so a hung or oversized provider response can't stall the app.
+- **"Track last output location" is reachable from the Transcribe & Submit settings**, not only the General page — it is one shared switch governing both flows.
+
+## [0.42.0] - 2026-07-20
+
+### Added
+
+- **GPU device picker for Whisper (Vulkan).** Choose a specific GPU, Auto, or CPU in Advanced settings; an invalid or unavailable choice validates and falls back to Auto rather than failing the load.
+
+### Fixed
+
+- **Jumper anchor and slot-persistence hardening.** Anchored delivery re-verifies the captured window/control identity (guarding against recycled handles), detects password fields via UI Automation for browser and Electron logins, and persists jump slots through a keyed, versioned, torn-write-safe sidecar file.
+
+## [0.41.0] - 2026-07-19
+
+### Added
+
+- **Appearance selector** (system / light / dark) in settings.
+
+### Fixed
+
+- **Jumper delivery is take-scoped and TOCTOU-safe.** Each recording's delivery target is captured per-take and re-verified — down to the focused control, with a password-field re-check — immediately before every keystroke, failing closed (parking the text on the clipboard) if focus has moved. Translator batch hardening (stable folder scanning, per-job settings snapshot, path-keyed rows) and per-request engine-identity revalidation on every transcription route. Recording-start latency is now instrumented for diagnosis on slower machines.
+
+## [0.40.0] - 2026-07-19
+
+### Changed
+
+- **Jumper settings reworked.** A single global "track last output location" switch with a slot picker, shared by both the dictate and Transcribe & Submit flows; anchors are always kept after delivery; "remember slots across restarts" is now a standalone all-slots setting; and each flow can optionally return focus to where you started.
+
+### Fixed
+
+- **Windows installer prerequisites.** The installer now detects and guides WebView2 and Visual C++ runtime prerequisites. Windows builds use an AVX2 CPU baseline for broader hardware compatibility.
+
+## [0.39.0] - 2026-07-19
+
+### Fixed
+
+- **Post-processing prompt-injection isolation.** The transcript is now passed to the post-processing model as data, separated from the system and processing instructions, so dictated text can't hijack the prompt; each provider's "disable thinking" switch is sent only in the dialect that provider accepts. Linux/X11 fixes: push-to-talk auto-repeat no longer strands a recording, microphone level-gating on the overlay, and correct macOS dock-activation order.
+
 ## [0.25.0] - 2026-07-06
 
 ### Fixed
@@ -21,7 +81,7 @@
 
 ### Added
 
-- **Full architecture + UX audit completed**, driving the Windows-first UI polish wave below.
+- **Full BMAD architecture + UX audit shipped in-repo.** Architecture spine + verification report (`_bmad-output/planning-artifacts/architecture/architecture-handy-2026-07-05/`) and a UI/UX audit with a Windows-first redesign spec, DESIGN.md/EXPERIENCE.md (`_bmad-output/planning-artifacts/ux-designs/ux-handy-2026-07-05/`).
 
 ### Changed (UI wave 1 — Windows-first polish)
 
