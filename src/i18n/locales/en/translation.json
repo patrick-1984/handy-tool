@@ -12,7 +12,8 @@
   },
   "toasts": {
     "pasteFailed": "Pasting the transcription failed: {{reason}}. The text is saved in History.",
-    "pasteFailedParked": "Pasting the transcription failed: {{reason}}. The text is on your clipboard (and in History) — paste it manually."
+    "pasteFailedParked": "Pasting the transcription failed: {{reason}}. The text is on your clipboard (and in History) — paste it manually.",
+    "transcriptionFailed": "Transcription failed: {{reason}}. Check that your selected model is working, then try again."
   },
   "sidebar": {
     "general": "General",
@@ -362,10 +363,10 @@
       },
       "track": {
         "label": "Track last output location",
-        "description": "One switch for both flows: after any transcription is pasted, remember that field in the chosen slot so jumping to it returns you to the last output spot.",
+        "description": "After this flow delivers a transcription, remember the field it landed in — in the slot below — so jumping to that slot returns you to the last output spot. Independent of the other flow's switch.",
         "slot": {
           "title": "Save location into",
-          "description": "Which jump slot receives the tracked last-output location."
+          "description": "Which jump slot receives this flow's tracked last-output location."
         }
       },
       "returnFocus": {

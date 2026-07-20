@@ -31,6 +31,54 @@ const HEALTH_POLL_INTERVAL: Duration = Duration::from_millis(500);
 /// a broken FLM must not stall every take with a fresh multi-minute wait.
 const FAILURE_COOLDOWN: Duration = Duration::from_secs(60);
 
+/// The HTTP server answers `/v1/models` within tens of ms, but the ASR
+/// sub-model loads a second or two LATER and can fail NPU context creation
+/// (e.g. "Failed to create context virtual (0xc01e0009)") — leaving the server
+/// "up" while every transcription returns null. After the server is reachable
+/// we watch FLM's stdout for that failure for this window, so selecting the FLM
+/// model fails loudly with the real reason instead of silently producing empty
+/// transcripts on every take. No failure marker within the window => assume the
+/// ASR model loaded fine (never false-fails a working setup).
+const ASR_CONFIRM_TIMEOUT: Duration = Duration::from_secs(8);
+const ASR_CONFIRM_POLL: Duration = Duration::from_millis(250);
+
+/// Substrings FLM prints to stdout when the ASR model fails to initialize.
+const ASR_FAIL_MARKERS: [&str; 2] = ["Failed to load ASR model", "Failed to create context"];
+
+/// True if FLM's stdout so far contains a marker indicating the ASR model
+/// failed to load (e.g. NPU context creation error 0xc01e0009).
+fn asr_output_indicates_failure(stdout: &str) -> bool {
+    ASR_FAIL_MARKERS.iter().any(|m| stdout.contains(m))
+}
+
+/// Build the user-facing error for an ASR-load failure. Only blames the NPU
+/// context specifically when FLM actually reported a context-creation failure;
+/// a generic "Failed to load ASR model" gets a generic message so we don't
+/// misattribute an unrelated ASR error to the NPU.
+fn asr_failure_message(stdout: &str) -> String {
+    let detail = stdout
+        .lines()
+        .rev()
+        .find(|l| ASR_FAIL_MARKERS.iter().any(|m| l.contains(m)))
+        .unwrap_or("")
+        .trim();
+    if stdout.contains("Failed to create context") {
+        format!(
+            "FLM started but its ASR (speech-to-text) model failed to load — the NPU could not \
+             create an inference context (e.g. error 0xc01e0009). FLM-based transcription is \
+             unavailable on this machine; update the NPU driver / FLM runtime, or select a \
+             non-FLM model. (FLM: {})",
+            detail
+        )
+    } else {
+        format!(
+            "FLM started but its ASR (speech-to-text) model failed to load, so transcription is \
+             unavailable. Check the FLM runtime/logs, or select a non-FLM model. (FLM: {})",
+            detail
+        )
+    }
+}
+
 /// Unix-ms timestamp of the last failed `start_serve` (0 = none).
 static LAST_START_FAILURE_MS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
@@ -177,13 +225,35 @@ impl FlmManager {
 
         // Spawn threads to continuously drain stdout/stderr so the FLM process
         // doesn't block on a full pipe buffer, and capture output for diagnostics.
+        // stdout is ALSO buffered so the ASR-load confirmation below can detect
+        // the NPU context-creation failure that FLM only reports on stdout.
         let stderr_log: Arc<Mutex<String>> = Arc::new(Mutex::new(String::new()));
+        let stdout_log: Arc<Mutex<String>> = Arc::new(Mutex::new(String::new()));
+        // stdout is buffered ONLY during the startup ASR-load confirmation
+        // below; once confirmation ends we flip this off so the buffer stops
+        // growing for the (possibly long-lived) rest of the FLM process. The
+        // drain thread keeps running (and logging) either way so the pipe never
+        // blocks.
+        let capture_stdout: Arc<std::sync::atomic::AtomicBool> =
+            Arc::new(std::sync::atomic::AtomicBool::new(true));
         if let Some(stdout) = child.stdout.take() {
+            let log_handle = Arc::clone(&stdout_log);
+            let capture = Arc::clone(&capture_stdout);
             std::thread::spawn(move || {
                 let reader = BufReader::new(stdout);
                 for line in reader.lines() {
                     match line {
-                        Ok(l) => info!("FLM stdout: {}", l),
+                        Ok(l) => {
+                            info!("FLM stdout: {}", l);
+                            if capture.load(std::sync::atomic::Ordering::Relaxed) {
+                                if let Ok(mut buf) = log_handle.lock() {
+                                    if !buf.is_empty() {
+                                        buf.push('\n');
+                                    }
+                                    buf.push_str(&l);
+                                }
+                            }
+                        }
                         Err(_) => break,
                     }
                 }
@@ -222,12 +292,29 @@ impl FlmManager {
 
         loop {
             if start.elapsed() > HEALTH_TIMEOUT {
+                manager.stop();
+                LAST_START_FAILURE_MS.store(now_ms(), std::sync::atomic::Ordering::Relaxed);
+                // Prefer the specific ASR/NPU diagnosis if the marker reached
+                // stdout, even when /v1/models never answered. The stdout reader
+                // is async, so drain-retry briefly (same bound as the exit path)
+                // before falling back to the generic timeout message.
+                let mut out = stdout_log.lock().map(|b| b.clone()).unwrap_or_default();
+                for _ in 0..10 {
+                    if asr_output_indicates_failure(&out) {
+                        break;
+                    }
+                    std::thread::sleep(Duration::from_millis(50));
+                    out = stdout_log.lock().map(|b| b.clone()).unwrap_or_default();
+                }
+                capture_stdout.store(false, std::sync::atomic::Ordering::Relaxed);
+                if asr_output_indicates_failure(&out) {
+                    error!("FLM ASR model failed to load:\n{}", out.trim());
+                    return Err(anyhow::anyhow!("{}", asr_failure_message(&out)));
+                }
                 let captured = stderr_log.lock().map(|b| b.clone()).unwrap_or_default();
                 if !captured.is_empty() {
                     error!("FLM stderr output at timeout:\n{}", captured.trim());
                 }
-                manager.stop();
-                LAST_START_FAILURE_MS.store(now_ms(), std::sync::atomic::Ordering::Relaxed);
                 return Err(anyhow::anyhow!(
                     "FLM server did not become ready within {:?}. stderr: {}",
                     HEALTH_TIMEOUT,
@@ -235,14 +322,33 @@ impl FlmManager {
                 ));
             }
 
-            // Check if the child process has exited unexpectedly
+            // Check if the child process has exited unexpectedly. The ASR/NPU
+            // failure marker can be printed to stdout BEFORE /v1/models ever
+            // answers, so prefer the specific ASR diagnosis here too (with the
+            // same bounded drain-retry as the confirm loop) rather than always
+            // emitting the generic premature-exit message.
             if let Some(ref mut child) = manager.child {
                 if let Ok(Some(status)) = child.try_wait() {
+                    LAST_START_FAILURE_MS.store(now_ms(), std::sync::atomic::Ordering::Relaxed);
+                    let mut out = stdout_log.lock().map(|b| b.clone()).unwrap_or_default();
+                    for _ in 0..10 {
+                        if asr_output_indicates_failure(&out) {
+                            break;
+                        }
+                        std::thread::sleep(Duration::from_millis(50));
+                        out = stdout_log.lock().map(|b| b.clone()).unwrap_or_default();
+                    }
+                    if asr_output_indicates_failure(&out) {
+                        error!("FLM ASR model failed to load:\n{}", out.trim());
+                        manager.stop();
+                        capture_stdout.store(false, std::sync::atomic::Ordering::Relaxed);
+                        return Err(anyhow::anyhow!("{}", asr_failure_message(&out)));
+                    }
                     let captured = stderr_log.lock().map(|b| b.clone()).unwrap_or_default();
                     if !captured.is_empty() {
                         error!("FLM stderr: {}", captured.trim());
                     }
-                    LAST_START_FAILURE_MS.store(now_ms(), std::sync::atomic::Ordering::Relaxed);
+                    capture_stdout.store(false, std::sync::atomic::Ordering::Relaxed);
                     return Err(anyhow::anyhow!(
                         "FLM process exited prematurely with status: {}. stderr: {}",
                         status,
@@ -254,11 +360,10 @@ impl FlmManager {
             match ureq::get(&health_url).call() {
                 Ok(_) => {
                     info!(
-                        "FLM server ready in {:?} for model: {}",
-                        start.elapsed(),
-                        model_name
+                        "FLM server reachable in {:?}; confirming ASR model loaded...",
+                        start.elapsed()
                     );
-                    return Ok(manager);
+                    break;
                 }
                 Err(e) => {
                     info!(
@@ -270,6 +375,79 @@ impl FlmManager {
                 }
             }
         }
+
+        // The server is reachable, but the ASR sub-model loads slightly later
+        // and can fail NPU context creation. Watch FLM's stdout for that failure
+        // for a bounded window; if it appears, fail the start with the real
+        // reason so model SELECTION reports it (instead of every take silently
+        // yielding an empty transcript). No marker within the window => the ASR
+        // model loaded fine.
+        let confirm_start = Instant::now();
+        let outcome = loop {
+            let out = stdout_log.lock().map(|b| b.clone()).unwrap_or_default();
+
+            // Explicit ASR-load failure marker — the definitive signal. Checked
+            // FIRST so we always emit the specific NPU/ASR diagnosis, even if
+            // the process then exits (which would otherwise hit the generic
+            // exit branch below).
+            if asr_output_indicates_failure(&out) {
+                error!("FLM ASR model failed to load:\n{}", out.trim());
+                manager.stop();
+                LAST_START_FAILURE_MS.store(now_ms(), std::sync::atomic::Ordering::Relaxed);
+                break Err(anyhow::anyhow!("{}", asr_failure_message(&out)));
+            }
+
+            // Child died while loading the ASR model? Prefer the ASR-marker
+            // diagnosis if it's present in stdout by now; else report the exit.
+            if let Some(ref mut child) = manager.child {
+                if let Ok(Some(status)) = child.try_wait() {
+                    LAST_START_FAILURE_MS.store(now_ms(), std::sync::atomic::Ordering::Relaxed);
+                    // The stdout drain thread is async: the process can exit
+                    // just after printing the failure marker but before the
+                    // reader appends it. Give it a brief bounded window to
+                    // surface so we emit the specific NPU/ASR diagnosis rather
+                    // than the generic exit message.
+                    let mut out = stdout_log.lock().map(|b| b.clone()).unwrap_or_default();
+                    for _ in 0..10 {
+                        if asr_output_indicates_failure(&out) {
+                            break;
+                        }
+                        std::thread::sleep(Duration::from_millis(50));
+                        out = stdout_log.lock().map(|b| b.clone()).unwrap_or_default();
+                    }
+                    if asr_output_indicates_failure(&out) {
+                        break Err(anyhow::anyhow!("{}", asr_failure_message(&out)));
+                    }
+                    let captured = stderr_log.lock().map(|b| b.clone()).unwrap_or_default();
+                    break Err(anyhow::anyhow!(
+                        "FLM process exited while loading the ASR model (status: {}). stderr: {}",
+                        status,
+                        captured.trim()
+                    ));
+                }
+            }
+
+            if confirm_start.elapsed() > ASR_CONFIRM_TIMEOUT {
+                info!(
+                    "FLM ASR model confirmed loaded (no failure within {:?}) for model: {}",
+                    ASR_CONFIRM_TIMEOUT, model_name
+                );
+                info!(
+                    "FLM server ready in {:?} for model: {}",
+                    start.elapsed(),
+                    model_name
+                );
+                break Ok(manager);
+            }
+
+            std::thread::sleep(ASR_CONFIRM_POLL);
+        };
+
+        // Stop growing the stdout capture buffer for the rest of the (possibly
+        // long-lived) FLM process — it was only needed for the confirmation
+        // above. The drain thread keeps running (and logging).
+        capture_stdout.store(false, std::sync::atomic::Ordering::Relaxed);
+        outcome
     }
 
     /// Send audio samples to FLM for transcription via the OpenAI-compatible endpoint.
@@ -343,6 +521,16 @@ impl FlmManager {
             debug!("Stopping FLM process for model: {}", self.model_name);
             let _ = child.kill();
             let _ = child.wait();
+        }
+    }
+
+    /// True if the FLM subprocess is still alive (has not exited). Used to skip
+    /// a redundant restart when a re-selection lands on an already-healthy FLM,
+    /// while still restarting a dead one.
+    pub fn is_running(&mut self) -> bool {
+        match self.child {
+            Some(ref mut child) => matches!(child.try_wait(), Ok(None)),
+            None => false,
         }
     }
 }
@@ -422,4 +610,52 @@ fn build_multipart_body(wav_bytes: &[u8], model: &str, language: Option<&str>) -
     // closing boundary
     let _ = write!(body, "--{}--\r\n", boundary);
     body
+}
+
+#[cfg(test)]
+mod tests {
+    use super::asr_output_indicates_failure;
+
+    #[test]
+    fn detects_npu_context_failure_in_flm_stdout() {
+        // The exact stdout FLM emits on this class of failure.
+        let stdout = "[FLM]  Configuring NPU Power Mode to performance (flm default)\n\
+                      [FLM]  Using user-specified port: 52625\n\
+                      [FLM]  Loading model: C:\\Users\\x\\.flm\\models\\Whisper-V3-Turbo-NPU2\n\
+                      [ERROR]  Failed to load ASR model: Failed to create context virtual \
+                      (0xc01e0009): There was an error while creating context ";
+        assert!(asr_output_indicates_failure(stdout));
+    }
+
+    #[test]
+    fn does_not_flag_a_healthy_startup() {
+        let stdout = "[FLM]  Configuring NPU Power Mode to performance (flm default)\n\
+                      [FLM]  Using user-specified port: 52625\n\
+                      [FLM]  Loading model: C:\\Users\\x\\.flm\\models\\Whisper-V3-Turbo-NPU2\n\
+                      [FLM]  ASR model ready";
+        assert!(!asr_output_indicates_failure(stdout));
+    }
+
+    #[test]
+    fn flags_the_generic_asr_load_failure_marker_too() {
+        assert!(asr_output_indicates_failure(
+            "[ERROR]  Failed to load ASR model: some other reason"
+        ));
+        assert!(!asr_output_indicates_failure(""));
+    }
+
+    #[test]
+    fn message_blames_the_npu_only_on_a_context_failure() {
+        use super::asr_failure_message;
+        let npu = asr_failure_message(
+            "[ERROR]  Failed to load ASR model: Failed to create context virtual (0xc01e0009)",
+        );
+        assert!(npu.contains("NPU"), "{npu}");
+        assert!(npu.contains("0xc01e0009"), "{npu}");
+
+        // Generic ASR failure (no context marker) must NOT be blamed on the NPU.
+        let generic = asr_failure_message("[ERROR]  Failed to load ASR model: some other reason");
+        assert!(!generic.contains("NPU"), "{generic}");
+        assert!(generic.contains("unavailable"), "{generic}");
+    }
 }

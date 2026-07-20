@@ -94,6 +94,13 @@ struct ChunkedSession {
     deferred: bool,
     /// Buffered per-chunk PCM (only used when `deferred`).
     pcm: Mutex<BTreeMap<usize, Vec<f32>>>,
+    /// Chunks whose transcription ERRORED (engine failure), distinct from a
+    /// legitimately-empty transcript. If the assembled text is empty AND this
+    /// is > 0, the take FAILED (e.g. FLM's ASR model not loaded) rather than
+    /// being silence — the stop path surfaces that to the user instead of
+    /// silently saving a textless recording.
+    error_count: AtomicUsize,
+    last_error: Mutex<Option<String>>,
 }
 
 impl ChunkedSession {
@@ -107,6 +114,8 @@ impl ChunkedSession {
             abandoned: AtomicBool::new(false),
             deferred,
             pcm: Mutex::new(BTreeMap::new()),
+            error_count: AtomicUsize::new(0),
+            last_error: Mutex::new(None),
         }
     }
 
@@ -1044,10 +1053,20 @@ impl ShortcutAction for TranscribeAction {
                             session_inner.done_count.fetch_add(1, Ordering::SeqCst);
                             return;
                         }
-                        let text = tm_inner.transcribe(pcm).unwrap_or_else(|e| {
-                            debug!("Chunk {} transcription failed: {}", idx, e);
-                            String::new()
-                        });
+                        let text = match tm_inner.transcribe(pcm) {
+                            Ok(t) => t,
+                            Err(e) => {
+                                debug!("Chunk {} transcription failed: {}", idx, e);
+                                // Record the failure so the stop path can tell an
+                                // engine error (surface it) apart from genuine
+                                // silence (empty result is fine).
+                                session_inner.error_count.fetch_add(1, Ordering::SeqCst);
+                                if let Ok(mut le) = session_inner.last_error.lock() {
+                                    *le = Some(e.to_string());
+                                }
+                                String::new()
+                            }
+                        };
                         if let Ok(mut map) = session_inner.transcripts.lock() {
                             map.insert(idx, Some(text));
                         }
@@ -1195,6 +1214,10 @@ impl ShortcutAction for TranscribeAction {
                 let mut raw_text = String::new();
                 let mut produced_audio = false;
                 let mut total_samples: u64 = 0;
+                // Set (from inside the session scope) when a segment's
+                // transcription ERRORED — lets the empty-text check below tell an
+                // engine failure apart from genuine silence after `session` drops.
+                let mut transcription_error: Option<String> = None;
                 if let Some(session) = chunked_session {
                     let total = session.closed_count.load(Ordering::SeqCst);
                     produced_audio = total > 0;
@@ -1235,13 +1258,29 @@ impl ShortcutAction for TranscribeAction {
                             let _serial = CHUNK_TRANSCRIBE_LOCK
                                 .lock()
                                 .unwrap_or_else(|poisoned| poisoned.into_inner());
-                            raw_text = tm.transcribe(full).unwrap_or_else(|e| {
-                                error!("Deferred (OpenRouter) transcription failed: {}", e);
-                                String::new()
-                            });
+                            raw_text = match tm.transcribe(full) {
+                                Ok(t) => t,
+                                Err(e) => {
+                                    error!("Deferred (OpenRouter) transcription failed: {}", e);
+                                    session.error_count.fetch_add(1, Ordering::SeqCst);
+                                    if let Ok(mut le) = session.last_error.lock() {
+                                        *le = Some(e.to_string());
+                                    }
+                                    String::new()
+                                }
+                            };
                         }
                     } else {
                         raw_text = session.assemble();
+                    }
+                    // Snapshot any engine error before `session` drops.
+                    if session.error_count.load(Ordering::SeqCst) > 0 {
+                        transcription_error = session
+                            .last_error
+                            .lock()
+                            .ok()
+                            .and_then(|le| le.clone())
+                            .or_else(|| Some("transcription failed".to_string()));
                     }
                 }
 
@@ -1254,6 +1293,18 @@ impl ShortcutAction for TranscribeAction {
                     utils::hide_recording_overlay(&ah);
                     change_tray_icon(&ah, TrayIconState::Idle);
                     return;
+                }
+
+                // The take produced audio but the transcript is empty AND at
+                // least one segment ERRORED (engine failure, not silence) —
+                // surface it. Without this a broken engine (e.g. FLM whose ASR
+                // model failed to load) silently saves a textless recording,
+                // which reads as "recording works but produces no text".
+                if raw_text.is_empty() {
+                    if let Some(reason) = transcription_error {
+                        warn!("Transcription produced no text due to engine error: {reason}");
+                        let _ = ah.emit("transcription-failed", reason);
+                    }
                 }
 
                 let settings = get_settings(&ah);
@@ -1758,6 +1809,10 @@ impl ShortcutAction for TranscribeAction {
                     }
                     Err(err) => {
                         error!("Transcription failed: {}", err);
+                        // Surface the engine failure so a broken engine (e.g. FLM
+                        // whose ASR model failed to load) doesn't silently leave a
+                        // textless recording that reads as "no output".
+                        let _ = ah.emit("transcription-failed", err.to_string());
                         // Save the audio so recordings aren't lost on engine failure
                         // (e.g. Moonshine 64s limit, Whisper OOM, etc.)
                         if effective_len >= MIN_SAMPLES_TO_SAVE {

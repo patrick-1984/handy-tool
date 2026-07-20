@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.46.0] - 2026-07-20
+
+### Fixed
+
+- **FLM (NPU) models no longer silently produce empty recordings.** When FLM's speech-to-text model fails to load on the NPU — for example, the NPU cannot create an inference context — Handy now detects this at model-selection time and reports a clear error, instead of appearing to work and then saving every recording with no text. More generally, any transcription engine error that would leave a recording with no text now raises a visible "transcription failed" notice rather than saving a silent, empty result.
+- **FLM start/stop is more robust.** Selecting FLM reliably restarts a stopped server, a failed start no longer leaves the app thinking a model is loaded, and rapid re-selection of an external model no longer restarts a healthy server or races itself.
+
+### Changed
+
+- **"Track last output location" is now an independent switch per flow.** Dictation (Transcribe) and Transcribe & Submit each have their own toggle instead of sharing one global switch. Existing settings are migrated so nothing changes until you adjust them.
+
 ## [0.45.0] - 2026-07-20
 
 ### Fixed

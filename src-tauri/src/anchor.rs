@@ -2,8 +2,10 @@
 //!
 //! Slot 0 is the HOT slot — the original "anchor": transcription flows can
 //! set/clear/jump/deliver-to it via per-flow event actions. Any slot can be
-//! the target of track-last-output (`jumper_track_enabled`/`_slot`), which
-//! auto-captures where a flow last pasted. NO slot is ever auto-cleared by a
+//! the target of track-last-output — a per-flow, independent switch + slot
+//! (`jumper_track_output_enabled`/`_slot` for dictate,
+//! `jumper_track_submit_enabled`/`_slot` for Transcribe & Submit) — which
+//! auto-captures where that flow last pasted. NO slot is ever auto-cleared by a
 //! delivery (0.40 rework) — slots live until overwritten, cleared, or their
 //! window dies. Slots 1–4 are STATIC bookmarks: set via `jump_set_slot_N`,
 //! jumped via `jump_slot_N`. All slots share the same
@@ -2083,13 +2085,20 @@ mod win {
         #[test]
         fn cas_commit_succeeds_when_generation_matches_expected() {
             let mut state = empty_state();
+            // Derive `expected` from the allocator instead of a literal:
+            // `next_generation()` is a process-global monotonic counter shared
+            // across parallel tests, so a hardcoded expected (e.g. 5) is flaky —
+            // the fresh generation cas_commit allocates could coincidentally
+            // equal it when the counter happens to sit there.
+            let expected = next_generation();
             state.targets[HOT] = Some(dummy_target());
-            state.generations[HOT] = 5;
-            let result = cas_commit(&mut state, HOT, 5, dummy_target());
+            state.generations[HOT] = expected;
+            let result = cas_commit(&mut state, HOT, expected, dummy_target());
             assert!(result.is_some());
-            // Committing always allocates a FRESH generation — never reuses
-            // the expected one, so a subsequent stale writer can't match it.
-            assert_ne!(state.generations[HOT], 5);
+            // Committing always allocates a FRESH generation, strictly GREATER
+            // than any previously issued one (monotonic) — so a subsequent stale
+            // writer holding the old snapshot can never match it.
+            assert!(state.generations[HOT] > expected);
             assert_eq!(state.generations[HOT], result.unwrap());
         }
 

@@ -813,23 +813,41 @@ pub struct AppSettings {
     pub anchor_action_submit_idle_slot: u8,
     #[serde(default)]
     pub anchor_action_submit_stop_slot: u8,
-    /// Track-last-output: ONE global switch shared by both flows. When on,
-    /// the chosen slot auto-captures where the text landed after every paste
-    /// (before any focus return). Default off.
+    /// Deprecated (0.40–0.45): a single global track-last-output switch. Kept
+    /// only as the migration source for the per-flow fields below; no longer
+    /// read by the delivery logic. See `jumper_track_output_enabled` /
+    /// `jumper_track_submit_enabled`.
     #[serde(default)]
     pub jumper_track_enabled: bool,
-    /// Which slot receives the tracked location (0 = hot, 1–4 = static).
     #[serde(default)]
     pub jumper_track_slot: u8,
-    /// Deprecated (pre-0.40 per-flow track toggles): read once to seed
-    /// `jumper_track_enabled`, never written back.
+    /// Deprecated (pre-0.40 per-flow track toggles): read once to seed the
+    /// 0.40 global switch, never written back.
     #[serde(default, skip_serializing)]
     pub jumper_track_output: bool,
     #[serde(default, skip_serializing)]
     pub jumper_track_submit: bool,
+    /// Track-last-output, PER FLOW and INDEPENDENT (0.46+). When on, the chosen
+    /// slot auto-captures where the text landed after every paste of that flow
+    /// (before any focus return). The dictate/"Transcribe" flow and the
+    /// "Transcribe & Submit" flow each have their own switch + slot — mirroring
+    /// `return_focus_output` / `return_focus_submit`. Default off.
+    #[serde(default)]
+    pub jumper_track_output_enabled: bool,
+    /// Slot (0 = hot, 1–4 = static) the dictate flow tracks into.
+    #[serde(default)]
+    pub jumper_track_output_slot: u8,
+    #[serde(default)]
+    pub jumper_track_submit_enabled: bool,
+    /// Slot the Transcribe & Submit flow tracks into.
+    #[serde(default)]
+    pub jumper_track_submit_slot: u8,
     /// One-time migration marker for the 0.40 Jumper settings rework.
     #[serde(default)]
     pub jumper_v2_migrated: bool,
+    /// One-time migration marker for the 0.46 per-flow track-output split.
+    #[serde(default)]
+    pub jumper_v3_migrated: bool,
     /// Translator: watch folders and batch-transcribe new audio files into
     /// `.txt` sidecars using the currently selected engine.
     #[serde(default)]
@@ -1244,10 +1262,31 @@ fn ensure_jumper_v2(settings: &mut AppSettings) -> bool {
         settings.jumper_v2_migrated = true;
         changed = true;
     }
-    // Normalize a corrupt tracked-slot index (hand-edited store) to hot so
-    // the UI dropdown and the capture target always agree.
+    // 0.46: split the single global track-output switch into independent
+    // per-flow switches. Seed BOTH flows from the old global so existing
+    // behavior is preserved on upgrade; the user can then toggle them
+    // independently. Runs after the v2 block above so it reads the freshly
+    // migrated global value.
+    if !settings.jumper_v3_migrated {
+        settings.jumper_track_output_enabled = settings.jumper_track_enabled;
+        settings.jumper_track_submit_enabled = settings.jumper_track_enabled;
+        settings.jumper_track_output_slot = settings.jumper_track_slot;
+        settings.jumper_track_submit_slot = settings.jumper_track_slot;
+        settings.jumper_v3_migrated = true;
+        changed = true;
+    }
+    // Normalize corrupt tracked-slot indices (hand-edited store) to hot so the
+    // UI dropdowns and the capture targets always agree.
     if settings.jumper_track_slot as usize >= crate::anchor::SLOT_COUNT {
         settings.jumper_track_slot = 0;
+        changed = true;
+    }
+    if settings.jumper_track_output_slot as usize >= crate::anchor::SLOT_COUNT {
+        settings.jumper_track_output_slot = 0;
+        changed = true;
+    }
+    if settings.jumper_track_submit_slot as usize >= crate::anchor::SLOT_COUNT {
+        settings.jumper_track_submit_slot = 0;
         changed = true;
     }
     changed
@@ -1574,8 +1613,13 @@ pub fn get_default_settings() -> AppSettings {
         jumper_track_slot: 0,
         jumper_track_output: false,
         jumper_track_submit: false,
-        // Fresh installs are already on the v2 model — nothing to migrate.
+        jumper_track_output_enabled: false,
+        jumper_track_output_slot: 0,
+        jumper_track_submit_enabled: false,
+        jumper_track_submit_slot: 0,
+        // Fresh installs are already on the current model — nothing to migrate.
         jumper_v2_migrated: true,
+        jumper_v3_migrated: true,
         translator_enabled: false,
         translator_folders: Vec::new(),
         translator_seeded: false,

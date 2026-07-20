@@ -143,14 +143,21 @@ pub async fn set_active_model(
         settings.selected_model = model_id.clone();
         write_settings(&app_handle, settings);
 
-        // Warm up in the BACKGROUND: FLM's start_serve can block for minutes
-        // on first use (it downloads its model), and doing that inline froze
-        // the UI on "switching". Selection is already persisted; a failed
-        // eager load only means lazy loading at first use.
+        // Warm up in the BACKGROUND. Use `reload_external_model_if_latest` (NOT
+        // `initiate_model_load`) so RE-selecting an external model force-reloads
+        // it — that's the intended recovery when e.g. an FLM subprocess died
+        // (initiate_model_load's model-id preflight would no-op on a dead-but-
+        // "loaded" engine). It is single-flight (`load_flight`) and its FLM arm
+        // stops the old child before spawning a new one, so this can't race
+        // recording start or the Translator into a duplicate `flm serve`. The
+        // generation guard makes rapid re-selections latest-intent-wins: a
+        // superseded warm-up bails instead of restarting a freshly-loaded FLM.
+        // A failure still surfaces via load_model's `loading_failed` event.
         let tm = transcription_manager.inner().clone();
         let id = model_id.clone();
+        let select_gen = tm.next_external_select_gen();
         std::thread::spawn(move || {
-            if let Err(e) = tm.load_model(&id) {
+            if let Err(e) = tm.reload_external_model_if_latest(&id, select_gen) {
                 log::warn!("Selected '{}' but it is not ready yet: {}", id, e);
             }
         });

@@ -172,10 +172,10 @@ export const TranscribeAndSubmitSettings: React.FC = React.memo(() => {
         grouped={true}
       />
       <JumperReturnFocusToggle flow="submit" grouped={true} />
-      {/* The global track-last-output switch applies to BOTH flows; render it
-          here too (T-117) so it's discoverable from Transcribe & Submit, not
-          only the General page. Same setting key — stays in sync. */}
-      <JumperTrackToggle grouped={true} />
+      {/* Track-last-output is per-flow and independent (T-118): this instance
+          reads/writes jumper_track_submit_enabled/_slot only, and never
+          affects the General page's "output" flow instance. */}
+      <JumperTrackToggle flow="submit" grouped={true} />
     </SettingsGroup>
   );
 });

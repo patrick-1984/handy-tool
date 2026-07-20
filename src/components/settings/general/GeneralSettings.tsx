@@ -50,7 +50,7 @@ export const GeneralSettings: React.FC = () => {
           moment="stop"
           grouped={true}
         />
-        <JumperTrackToggle grouped={true} />
+        <JumperTrackToggle flow="output" grouped={true} />
         <JumperReturnFocusToggle flow="output" grouped={true} />
       </SettingsGroup>
       <TranscribeAndSubmitSettings />

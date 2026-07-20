@@ -1130,9 +1130,11 @@ fn paste_inner(
         }
     }
 
-    // Track-last-output: ONE global switch for both flows — capture where the
-    // text just landed into the configured slot, BEFORE any focus-return so
-    // the slot points at the paste target. Unlike the deferred on-finish
+    // Track-last-output: capture where the text just landed into the configured
+    // slot, BEFORE any focus-return so the slot points at the paste target. The
+    // switch + target slot are PER FLOW and independent — the dictate flow and
+    // the Transcribe & Submit flow (submit_override present) each have their
+    // own, mirroring return_focus_output/submit. Unlike the deferred on-finish
     // Set/Clear action (T-102), this capture is decided and executed in the
     // SAME instant the paste finishes — there's no earlier snapshot that
     // could go stale, so the generation-CAS guard doesn't apply here; a
@@ -1149,18 +1151,27 @@ fn paste_inner(
     // they keep the pre-existing `set_slot` foreground-query capture, since
     // there is no known delivery target to fall back on for them.
     #[cfg(windows)]
-    if flow_paste
-        && delivered.is_ok()
-        && paste_method != PasteMethod::None
-        && settings.jumper_track_enabled
     {
-        let slot = (settings.jumper_track_slot as usize).min(crate::anchor::SLOT_COUNT - 1);
-        let result = match anchor_guard.as_ref() {
-            Some(guard) => crate::anchor::track_from_guard(&app_handle, guard, slot),
-            None => crate::anchor::set_slot(&app_handle, slot),
+        let (track_enabled, track_slot) = if submit_override.is_some() {
+            (
+                settings.jumper_track_submit_enabled,
+                settings.jumper_track_submit_slot,
+            )
+        } else {
+            (
+                settings.jumper_track_output_enabled,
+                settings.jumper_track_output_slot,
+            )
         };
-        if let Err(e) = result {
-            log::debug!("track-last-output capture skipped: {}", e);
+        if flow_paste && delivered.is_ok() && paste_method != PasteMethod::None && track_enabled {
+            let slot = (track_slot as usize).min(crate::anchor::SLOT_COUNT - 1);
+            let result = match anchor_guard.as_ref() {
+                Some(guard) => crate::anchor::track_from_guard(&app_handle, guard, slot),
+                None => crate::anchor::set_slot(&app_handle, slot),
+            };
+            if let Err(e) = result {
+                log::debug!("track-last-output capture skipped: {}", e);
+            }
         }
     }
 

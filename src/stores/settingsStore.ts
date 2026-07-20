@@ -150,10 +150,17 @@ const settingUpdaters: {
     commands.changeAnchorActionSlotSetting("submit_idle", value as number),
   anchor_action_submit_stop_slot: (value) =>
     commands.changeAnchorActionSlotSetting("submit_stop", value as number),
-  jumper_track_enabled: (value) =>
-    commands.changeJumperTrackSetting(value as boolean),
-  jumper_track_slot: (value) =>
-    commands.changeJumperTrackSlotSetting(value as number),
+  // jumper_track_enabled / jumper_track_slot are deprecated (superseded by
+  // the per-flow fields below) and have no updater: the backend commands now
+  // require a `flow` arg, so there's nothing left to route these to.
+  jumper_track_output_enabled: (value) =>
+    commands.changeJumperTrackSetting("output", value as boolean),
+  jumper_track_output_slot: (value) =>
+    commands.changeJumperTrackSlotSetting("output", value as number),
+  jumper_track_submit_enabled: (value) =>
+    commands.changeJumperTrackSetting("submit", value as boolean),
+  jumper_track_submit_slot: (value) =>
+    commands.changeJumperTrackSlotSetting("submit", value as number),
   translator_enabled: (value) =>
     commands.changeTranslatorEnabled(value as boolean),
   translator_priority: (value) =>

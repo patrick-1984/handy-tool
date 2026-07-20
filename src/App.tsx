@@ -109,9 +109,18 @@ function App() {
           { duration: 8000 },
         ),
     );
+    // An engine error that leaves the take with no text (e.g. FLM's ASR model
+    // failed to load) — otherwise the recording is saved textless and reads as
+    // "recording works but produces nothing".
+    const unlistenTranscribe = listen<string>("transcription-failed", (e) =>
+      toast.error(t("toasts.transcriptionFailed", { reason: e.payload }), {
+        duration: 8000,
+      }),
+    );
     return () => {
       unlisten.then((f) => f());
       unlistenPaste.then((f) => f());
+      unlistenTranscribe.then((f) => f());
     };
   }, [t]);
 

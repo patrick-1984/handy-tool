@@ -1141,26 +1141,54 @@ pub fn change_anchor_action_slot_setting(
     Ok(())
 }
 
-/// Toggle the ONE global track-last-output switch (shared by both flows).
+/// Toggle track-last-output for a flow ("output" = dictate, "submit" =
+/// Transcribe & Submit). The two flows are independent (mirrors
+/// `change_return_focus_setting`).
 #[tauri::command]
 #[specta::specta]
-pub fn change_jumper_track_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
-    let mut settings = settings::get_settings(&app);
-    settings.jumper_track_enabled = enabled;
-    settings::write_settings(&app, settings);
+pub fn change_jumper_track_setting(
+    app: AppHandle,
+    flow: String,
+    enabled: bool,
+) -> Result<(), String> {
+    // Validate BEFORE the mutation closure so an unknown flow can't half-apply,
+    // and route through the serialized RMW helper (T-111) so the two per-flow
+    // switches — and rapid enable/slot writes — can't overwrite one another.
+    if flow != "output" && flow != "submit" {
+        return Err(format!("Unknown track-output flow '{}'", flow));
+    }
+    settings::update_settings(&app, |s| {
+        if flow == "output" {
+            s.jumper_track_output_enabled = enabled;
+        } else {
+            s.jumper_track_submit_enabled = enabled;
+        }
+    });
     Ok(())
 }
 
-/// Pick which slot receives the tracked last-output location (0 = hot).
+/// Pick which slot receives the tracked last-output location (0 = hot) for a
+/// flow ("output" or "submit").
 #[tauri::command]
 #[specta::specta]
-pub fn change_jumper_track_slot_setting(app: AppHandle, slot: u32) -> Result<(), String> {
+pub fn change_jumper_track_slot_setting(
+    app: AppHandle,
+    flow: String,
+    slot: u32,
+) -> Result<(), String> {
+    if flow != "output" && flow != "submit" {
+        return Err(format!("Unknown track-output flow '{}'", flow));
+    }
     if slot as usize >= crate::anchor::SLOT_COUNT {
         return Err(format!("invalid jump slot {slot}"));
     }
-    let mut settings = settings::get_settings(&app);
-    settings.jumper_track_slot = slot as u8;
-    settings::write_settings(&app, settings);
+    settings::update_settings(&app, |s| {
+        if flow == "output" {
+            s.jumper_track_output_slot = slot as u8;
+        } else {
+            s.jumper_track_submit_slot = slot as u8;
+        }
+    });
     Ok(())
 }
 

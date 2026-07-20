@@ -188,6 +188,21 @@ pub struct TranscriptionManager {
     watcher_handle: Arc<Mutex<Option<thread::JoinHandle<()>>>>,
     is_loading: Arc<Mutex<bool>>,
     loading_condvar: Arc<Condvar>,
+    /// Single-flight guard held across the WHOLE of `load_model`, so every
+    /// loader — recording start (via `initiate_model_load`), external-model
+    /// selection warm-up (commands/models.rs), and the Translator's override
+    /// loads (managers/translator.rs) — serializes. Without it two concurrent
+    /// loads could both reach the FLM arm and spawn a second `flm serve` on the
+    /// same port (spurious failure / mismatch). Distinct from `is_loading`,
+    /// which only stops `initiate_model_load` from spawning a second BACKGROUND
+    /// load; direct callers (Translator, selection) bypass that flag.
+    load_flight: Arc<Mutex<()>>,
+    /// Monotonic counter bumped on every EXTERNAL-model selection. A background
+    /// warm-up thread captures its value and, after winning `load_flight`,
+    /// skips the (re)load if a newer selection has since bumped it — so rapid
+    /// re-selections are latest-intent-wins and a freshly-loaded FLM isn't
+    /// pointlessly restarted by a stale queued request.
+    external_select_gen: Arc<AtomicU64>,
     /// Flag to prevent model unload during live/progressive transcription.
     is_live_transcribing: Arc<AtomicBool>,
     /// Same protection for the Translator's folder-batch jobs — a separate
@@ -217,6 +232,8 @@ impl TranscriptionManager {
             watcher_handle: Arc::new(Mutex::new(None)),
             is_loading: Arc::new(Mutex::new(false)),
             loading_condvar: Arc::new(Condvar::new()),
+            load_flight: Arc::new(Mutex::new(())),
+            external_select_gen: Arc::new(AtomicU64::new(0)),
             is_live_transcribing: Arc::new(AtomicBool::new(false)),
             is_batch_transcribing: Arc::new(AtomicBool::new(false)),
             #[cfg(not(target_os = "macos"))]
@@ -333,6 +350,16 @@ impl TranscriptionManager {
     }
 
     pub fn unload_model(&self) -> Result<()> {
+        // Same single-flight lock the loader holds: without it an unload could
+        // land BETWEEN a load installing the FLM subprocess and installing the
+        // engine state, stopping the new child yet leaving `FlmWhisper` marked
+        // loaded (a subprocess-less phantom). Load and unload must be mutually
+        // exclusive. Lock order is always load_flight → engine (never the
+        // reverse), matching load_model, so this cannot deadlock. Poison-safe.
+        let _flight = self
+            .load_flight
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
         let unload_start = std::time::Instant::now();
         debug!("Starting to unload model");
 
@@ -424,7 +451,88 @@ impl TranscriptionManager {
         self.is_batch_transcribing.store(active, Ordering::Relaxed);
     }
 
+    /// Bump the external-selection generation and return the new value. The
+    /// caller passes it to `reload_external_model_if_latest` from a background
+    /// thread; a later selection bumps it again, letting the stale load bail.
+    pub fn next_external_select_gen(&self) -> u64 {
+        self.external_select_gen.fetch_add(1, Ordering::SeqCst) + 1
+    }
+
+    /// Background warm-up for an EXTERNAL model selection. Force-reloads (so a
+    /// dead FLM is restarted) UNLESS a newer selection has bumped the
+    /// generation while this request waited for `load_flight` — in which case
+    /// the newer request owns the load and this one is a no-op. This makes
+    /// concurrent/rapid re-selections latest-intent-wins and avoids restarting
+    /// a freshly-loaded FLM out from under it.
+    pub fn reload_external_model_if_latest(&self, model_id: &str, select_gen: u64) -> Result<()> {
+        let _flight = self
+            .load_flight
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        if self.external_select_gen.load(Ordering::SeqCst) != select_gen {
+            debug!(
+                "External selection for '{}' (gen {}) superseded before load — skipping",
+                model_id, select_gen
+            );
+            return Ok(());
+        }
+        // Coalesce concurrent same-model selections into ONE reload: if this
+        // exact model is already loaded AND healthy, an earlier selection that
+        // won the flight first already (re)started it — skip the redundant
+        // restart. A genuinely DEAD FLM fails the liveness check and is still
+        // restarted (the reselect-to-recover path). Engine lock is taken and
+        // released before flm_manager (never nested) to preserve lock order.
+        let already_loaded = {
+            let state = self.lock_engine();
+            state.engine.is_some() && state.model_id.as_deref() == Some(model_id)
+        };
+        if already_loaded {
+            #[cfg(not(target_os = "macos"))]
+            let healthy = {
+                let is_flm = self
+                    .model_manager
+                    .get_model_info(model_id)
+                    .map(|m| matches!(m.engine_type, EngineType::FlmWhisper))
+                    .unwrap_or(false);
+                if is_flm {
+                    self.flm_manager
+                        .lock()
+                        .ok()
+                        .and_then(|mut g| g.as_mut().map(|f| f.is_running()))
+                        .unwrap_or(false)
+                } else {
+                    // Stateless HTTP engine (ApiWhisper/OpenRouter): loaded == healthy.
+                    true
+                }
+            };
+            #[cfg(target_os = "macos")]
+            let healthy = true;
+            if healthy {
+                debug!(
+                    "External model '{}' already loaded and healthy — skipping redundant reload",
+                    model_id
+                );
+                return Ok(());
+            }
+        }
+        self.load_model_locked(model_id)
+    }
+
     pub fn load_model(&self, model_id: &str) -> Result<()> {
+        // Single-flight: serialize the entire load across ALL callers so two
+        // concurrent loads can't both spawn `flm serve` on the same port (and
+        // so an FLM restart always fully stops the old child before starting a
+        // new one). Poison-safe.
+        let _flight = self
+            .load_flight
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        self.load_model_locked(model_id)
+    }
+
+    /// The actual load, assuming `load_flight` is ALREADY held by the caller.
+    /// Never acquire `load_flight` in here (it is not reentrant).
+    fn load_model_locked(&self, model_id: &str) -> Result<()> {
         let load_start = std::time::Instant::now();
         debug!("Starting to load model: {}", model_id);
 
@@ -669,19 +777,47 @@ impl TranscriptionManager {
                 } else {
                     &model_info.filename
                 };
-                let flm = FlmManager::start_serve(flm_model_name).map_err(|e| {
-                    let error_msg = format!("Failed to start FLM server: {}", e);
-                    let _ = self.app_handle.emit(
-                        "model-state-changed",
-                        ModelStateEvent {
-                            event_type: "loading_failed".to_string(),
-                            model_id: Some(model_id.to_string()),
-                            model_name: Some(model_info.name.clone()),
-                            error: Some(error_msg.clone()),
-                        },
-                    );
-                    anyhow::anyhow!(error_msg)
-                })?;
+                // Stop and drop any existing FLM child BEFORE spawning a new
+                // one, so re-selecting FLM restarts a dead server (recovery)
+                // AND the new `flm serve` doesn't collide with the old one on
+                // port 52625. Serialized by `load_flight`, so this stop→start is
+                // atomic with respect to other loaders.
+                if let Ok(mut existing) = self.flm_manager.lock() {
+                    if let Some(mut old) = existing.take() {
+                        old.stop();
+                    }
+                }
+                let flm = match FlmManager::start_serve(flm_model_name) {
+                    Ok(flm) => flm,
+                    Err(e) => {
+                        let error_msg = format!("Failed to start FLM server: {}", e);
+                        // We already stopped+dropped the previous FLM child
+                        // above, and the user's selection has already been
+                        // persisted to FLM — so leaving ANY engine installed
+                        // (a stale FlmWhisper with no subprocess, OR a
+                        // previously-loaded different engine) makes runtime and
+                        // persisted state disagree. Clear unconditionally so
+                        // recording init / preflight see "not loaded" and retry
+                        // the (selected) FLM instead of silently running the old
+                        // engine or skipping recovery.
+                        {
+                            let mut state = self.lock_engine();
+                            state.engine = None;
+                            state.model_id = None;
+                            state.instance += 1;
+                        }
+                        let _ = self.app_handle.emit(
+                            "model-state-changed",
+                            ModelStateEvent {
+                                event_type: "loading_failed".to_string(),
+                                model_id: Some(model_id.to_string()),
+                                model_name: Some(model_info.name.clone()),
+                                error: Some(error_msg.clone()),
+                            },
+                        );
+                        return Err(anyhow::anyhow!(error_msg));
+                    }
+                };
                 *self.flm_manager.lock().unwrap() = Some(flm);
                 LoadedEngine::FlmWhisper
             }
@@ -927,24 +1063,44 @@ impl TranscriptionManager {
             if matches!(&engine_guard.engine, Some(LoadedEngine::FlmWhisper)) {
                 Self::ensure_expected_model(&engine_guard, expected_model)?;
                 drop(engine_guard);
-                let flm_guard = self.flm_manager.lock().unwrap();
-                if let Some(ref flm) = *flm_guard {
-                    let language = normalize_language_for_engine(&settings.selected_language)
-                        .or_else(|| Some("en".to_string()));
-                    let raw_text =
-                        flm.transcribe(audio, language.as_deref(), effective_translate)?;
-                    let corrected = if !settings.custom_words.is_empty() {
-                        apply_custom_words(
-                            &raw_text,
-                            &settings.custom_words,
-                            settings.word_correction_threshold,
-                        )
-                    } else {
-                        raw_text
-                    };
-                    let filtered = filter_transcription_output(&corrected);
-                    self.maybe_unload_immediately("FLM transcription");
-                    return Ok(filtered);
+                let language = normalize_language_for_engine(&settings.selected_language)
+                    .or_else(|| Some("en".to_string()));
+                // Transcribe under the flm lock, then RELEASE it before
+                // maybe_unload_immediately: unload_model re-locks flm_manager, so
+                // holding it across the unload self-deadlocks (std Mutex is not
+                // reentrant). The `.map` yields an owned Result that does not
+                // borrow the guard, so the guard drops at the block's end.
+                let flm_result = {
+                    let flm_guard = self.flm_manager.lock().unwrap();
+                    flm_guard
+                        .as_ref()
+                        .map(|flm| flm.transcribe(audio, language.as_deref(), effective_translate))
+                };
+                match flm_result {
+                    Some(raw) => {
+                        let raw_text = raw?;
+                        let corrected = if !settings.custom_words.is_empty() {
+                            apply_custom_words(
+                                &raw_text,
+                                &settings.custom_words,
+                                settings.word_correction_threshold,
+                            )
+                        } else {
+                            raw_text
+                        };
+                        let filtered = filter_transcription_output(&corrected);
+                        self.maybe_unload_immediately("FLM transcription");
+                        return Ok(filtered);
+                    }
+                    // Engine state says FLM but the subprocess is gone (e.g. a
+                    // failed restart) — fail loudly instead of falling through to
+                    // the local-engine path, which would misread the empty slot.
+                    None => {
+                        return Err(anyhow::anyhow!(
+                            "FLM engine is selected but its server is not running. \
+                             Reselect the model to restart it."
+                        ));
+                    }
                 }
             }
         }

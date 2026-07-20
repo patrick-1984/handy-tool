@@ -8,6 +8,13 @@ use serde::Serialize;
 use std::sync::Arc;
 use tauri::AppHandle;
 
+/// Mirrors the real module's Vulkan-serialization helper so callers
+/// (`commands/models.rs::list_gpu_devices`) still resolve under the CI mock.
+/// No real Vulkan work happens in CI, so this just runs the closure.
+pub fn with_vulkan_op_lock<R>(f: impl FnOnce() -> R) -> R {
+    f()
+}
+
 #[derive(Clone, Debug, Serialize)]
 pub struct ModelStateEvent {
     pub event_type: String,
@@ -43,6 +50,14 @@ impl TranscriptionManager {
         Ok(())
     }
 
+    pub fn next_external_select_gen(&self) -> u64 {
+        0
+    }
+
+    pub fn reload_external_model_if_latest(&self, _model_id: &str, _select_gen: u64) -> Result<()> {
+        Ok(())
+    }
+
     pub fn initiate_model_load(&self) {}
 
     pub fn get_current_model(&self) -> Option<String> {
@@ -52,4 +67,12 @@ impl TranscriptionManager {
     pub fn transcribe(&self, _audio: Vec<f32>) -> Result<String> {
         Ok(String::new())
     }
+
+    pub fn transcribe_expecting(&self, _expected_model: &str, _audio: Vec<f32>) -> Result<String> {
+        Ok(String::new())
+    }
+
+    pub fn set_live_transcribing(&self, _active: bool) {}
+
+    pub fn set_batch_transcribing(&self, _active: bool) {}
 }
