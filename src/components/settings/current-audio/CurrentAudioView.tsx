@@ -3,7 +3,8 @@ import { useTranslation } from "react-i18next";
 import { listen } from "@tauri-apps/api/event";
 import { SettingsGroup } from "@/components/ui/SettingsGroup";
 import { commands } from "@/bindings";
-import { ExternalLink } from "lucide-react";
+import { writeText } from "@tauri-apps/plugin-clipboard-manager";
+import { ExternalLink, Copy, Check } from "lucide-react";
 
 interface LiveTranscriptionChunk {
   index: number;
@@ -15,7 +16,20 @@ export const CurrentAudioView: React.FC = () => {
   const { t } = useTranslation();
   const [chunks, setChunks] = useState<string[]>([]);
   const [isRecording, setIsRecording] = useState(false);
+  const [copied, setCopied] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleCopy = useCallback(async () => {
+    const text = chunks.join(" ").trim();
+    if (!text) return;
+    try {
+      await writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch (e) {
+      console.warn("Failed to copy transcript:", e);
+    }
+  }, [chunks]);
 
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {
@@ -86,14 +100,32 @@ export const CurrentAudioView: React.FC = () => {
                     : ""}
               </span>
             </div>
-            <button
-              onClick={() => commands.openFloatingTranscription()}
-              className="flex items-center gap-1 text-xs text-mid-gray hover:text-white transition-colors cursor-pointer"
-              title={t("settings.currentAudio.openFloating")}
-            >
-              <ExternalLink size={14} />
-              {t("settings.currentAudio.openFloating")}
-            </button>
+            <div className="flex items-center gap-3">
+              {hasText && (
+                <button
+                  onClick={handleCopy}
+                  className="flex items-center gap-1 text-xs text-mid-gray hover:text-white transition-colors cursor-pointer"
+                  title={
+                    copied
+                      ? t("settings.currentAudio.copied")
+                      : t("settings.currentAudio.copy")
+                  }
+                >
+                  {copied ? <Check size={14} /> : <Copy size={14} />}
+                  {copied
+                    ? t("settings.currentAudio.copied")
+                    : t("settings.currentAudio.copy")}
+                </button>
+              )}
+              <button
+                onClick={() => commands.openFloatingTranscription()}
+                className="flex items-center gap-1 text-xs text-mid-gray hover:text-white transition-colors cursor-pointer"
+                title={t("settings.currentAudio.openFloating")}
+              >
+                <ExternalLink size={14} />
+                {t("settings.currentAudio.openFloating")}
+              </button>
+            </div>
           </div>
 
           <div

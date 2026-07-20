@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.49.0] - 2026-07-20
+
+### Added
+
+- **Jumper cursor save/restore is now per-slot.** Each jump slot (the hot slot and the four static slots) has its own "save mouse position" switch on the Jumper page, plus a shared App-relative/Screen-absolute mode. The old per-flow toggles in General / Transcribe & Submit are gone — everything cursor-related now lives on the Jumper page.
+- **"Only jump on finish if started the same way" option.** When enabled, a flow's on-finish jump fires only if the recording was both started and finished by the same flow — e.g. a take started with plain Transcribe but finished via Transcribe & Submit no longer triggers the submit flow's jump (the submit itself still happens).
+- **Copy button on the Current Audio view** — a top-right button copies the current transcript to the clipboard.
+
+### Changed
+
+- **Settings menu tidy-up.** The Transcribe and Transcribe & Submit option groups moved from the (crowded) General page to the top of Advanced → Transcription. The Transcribe and Push-to-Talk shortcuts, the model card, and Sound stay on General.
+
 ## [0.48.0] - 2026-07-20
 
 ### Added

@@ -9,7 +9,7 @@ The original pipeline kept your entire recording in memory and wrote it once, at
 The rework changed the physics of the problem:
 
 - Audio is encoded to **Opus on the fly** and flushed to disk in chunks while you speak. Any crash — app, driver, power — leaves recoverable audio; the next launch folds it into history automatically.
-- **Transcription no longer waits for the end.** Chunks are transcribed in the background as they close, cut at *silence boundaries* (never mid-word), so stopping a long recording returns text almost immediately.
+- **Transcription no longer waits for the end.** Chunks are transcribed in the background as they close, cut at _silence boundaries_ (never mid-word), so stopping a long recording returns text almost immediately.
 - Chunk transcriptions are strictly serialized against the engine, so a fast talker on a slow machine can't produce gaps in the final text.
 - Storage dropped ~10× versus WAV, and a recording that fits one chunk produces one tidy file.
 
@@ -32,7 +32,7 @@ The **Transcribe & Submit** shortcut grew from the same work: one keystroke that
 Before opening the project up, the push-to-talk path — largely untouched through the pipeline rework — was put through a full multi-lens audit (architecture, wiring, press/release lifecycle, per-engine pipeline behavior, keyboard backend internals, including the upstream hotkey crates' source). The verdict: the core state machine was sound — release events verified on all platforms, key auto-repeat filtered at three layers, no orphaned recordings. The findings that did surface were fixed:
 
 - **Hot-mic after release**: the recorder now stops the instant you release the key, instead of after in-flight transcription work — post-release chatter and the stop beep no longer leak into your text.
-- **macOS default shortcut collision**: the default PTT chord aliased to the main transcribe chord (option *is* alt on macOS), so one of the two silently failed to register each launch. New default plus automatic migration of affected configs.
+- **macOS default shortcut collision**: the default PTT chord aliased to the main transcribe chord (option _is_ alt on macOS), so one of the two silently failed to register each launch. New default plus automatic migration of affected configs.
 - **Pipeline decisions are locked at recording start**: changing settings or models mid-recording can no longer reroute (and silently discard) the take at stop time.
 - **No silently dead hotkeys**: registration failures now surface as a visible notification.
 - **Stuck states eliminated**: a failed recording start rolls back the recording UI; unregistering or rebinding a held shortcut synthesizes the release; a press while the pipeline is busy gives an audible cue instead of losing the utterance.

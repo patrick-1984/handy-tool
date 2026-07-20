@@ -48,7 +48,9 @@ export const AboutSettings: React.FC = () => {
           <Button
             variant="secondary"
             size="md"
-            onClick={() => openUrl("https://github.com/patrick-1984/handy-tool")}
+            onClick={() =>
+              openUrl("https://github.com/patrick-1984/handy-tool")
+            }
           >
             {t("settings.about.sourceCode.button")}
           </Button>

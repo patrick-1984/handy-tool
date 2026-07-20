@@ -1193,28 +1193,42 @@ pub fn change_jumper_track_slot_setting(
     Ok(())
 }
 
-/// Toggle save/restore-cursor for a flow ("output" = dictate, "submit" =
-/// Transcribe & Submit). Independent per flow (mirrors
-/// `change_jumper_track_setting`). T-301.
+/// Toggle save/restore-cursor for a single jump slot (index 0 = hot, 1-4 =
+/// static). Per-slot config lives on the Jumper page; capture gating is by
+/// target slot index everywhere. T-302.
 #[tauri::command]
 #[specta::specta]
-pub fn change_jumper_save_cursor_setting(
+pub fn change_jumper_save_cursor_slot(
     app: AppHandle,
-    flow: String,
+    slot: u8,
     enabled: bool,
 ) -> Result<(), String> {
-    // Validate BEFORE the mutation closure so an unknown flow can't half-apply,
-    // and route through the serialized RMW helper so the two per-flow switches
-    // can't overwrite one another.
-    if flow != "output" && flow != "submit" {
-        return Err(format!("Unknown save-cursor flow '{}'", flow));
+    // Validate BEFORE the mutation closure so an out-of-range slot can't
+    // half-apply, and route through the serialized RMW helper so concurrent
+    // per-slot toggles can't overwrite one another.
+    if slot as usize >= crate::anchor::SLOT_COUNT {
+        return Err(format!("invalid jump slot {slot}"));
     }
     settings::update_settings(&app, |s| {
-        if flow == "output" {
-            s.jumper_save_cursor_output_enabled = enabled;
-        } else {
-            s.jumper_save_cursor_submit_enabled = enabled;
+        // Defensively normalize the vec to SLOT_COUNT before indexing so an
+        // old/short persisted value can't panic.
+        if s.jumper_save_cursor_slots.len() != crate::anchor::SLOT_COUNT {
+            s.jumper_save_cursor_slots
+                .resize(crate::anchor::SLOT_COUNT, false);
         }
+        s.jumper_save_cursor_slots[slot as usize] = enabled;
+    });
+    Ok(())
+}
+
+/// Toggle whether the on-finish Jumper jump/anchor action fires only when the
+/// take's START flow matches its FINISH flow (start plain Transcribe + finish
+/// Transcribe & Submit → no jump). Default off. T-302.
+#[tauri::command]
+#[specta::specta]
+pub fn change_anchor_require_same_flow(app: AppHandle, enabled: bool) -> Result<(), String> {
+    settings::update_settings(&app, |s| {
+        s.anchor_on_finish_require_same_flow = enabled;
     });
     Ok(())
 }

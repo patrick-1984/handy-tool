@@ -372,6 +372,8 @@
       "saveCursor": {
         "label": "Restore mouse cursor position",
         "description": "After this flow delivers a transcription, remember the mouse cursor position and move the pointer back there when you jump. Independent of the other flow's switch; the position mode below is shared between both flows.",
+        "perSlot": "Save mouse position",
+        "perSlotDescription": "Remember the mouse cursor position for this slot when it is set or tracked, and move the pointer back there when you jump to this slot. Each slot has its own switch; the cursor position mode is shared across all slots.",
         "mode": {
           "title": "Cursor position mode",
           "description": "How the saved cursor position is measured. App-relative anchors the pointer to the target window, so it lands correctly even if the window has moved. Screen-absolute restores the exact screen coordinates regardless of the window.",
@@ -382,6 +384,11 @@
       "returnFocus": {
         "label": "Return focus after delivery",
         "description": "Switch back to where you were when the delivery started. The starting location is remembered automatically every time — no slot setup needed."
+      },
+      "requireSameFlow": {
+        "groupTitle": "On-finish behavior",
+        "label": "Only jump on finish if started the same way",
+        "description": "When on, the on-finish jump/anchor action fires only if the take was started and finished with the same shortcut. For example, starting with Transcribe and finishing with Transcribe & Submit will not jump; only same-flow-in-and-out triggers the on-finish jump. The submit itself always happens — only the jump is gated."
       }
     },
     "translator": {
@@ -848,7 +855,9 @@
       "title": "Current Audio",
       "idle": "Start recording to see live transcription",
       "recording": "Listening...",
-      "openFloating": "Open floating window"
+      "openFloating": "Open floating window",
+      "copy": "Copy",
+      "copied": "Copied"
     },
     "history": {
       "title": "History",

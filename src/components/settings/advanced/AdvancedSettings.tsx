@@ -24,6 +24,16 @@ import { KeyboardImplementationSelector } from "../debug/KeyboardImplementationS
 import { RegisteredLlmProviders } from "./RegisteredLlmProviders";
 import { McpSettings } from "./McpSettings";
 import { TranscriptionCostReport } from "./TranscriptionCostReport";
+import { TranscribeAndSubmitSettings } from "../TranscribeAndSubmitSettings";
+import { JumperTrackToggle } from "../JumperTrackToggle";
+import { JumperReturnFocusToggle } from "../JumperReturnFocusToggle";
+import { PasteMethodSetting } from "../PasteMethod";
+import { PasteMethodPttSetting } from "../PasteMethodPtt";
+import { TypingToolSetting } from "../TypingTool";
+import { ClipboardHandlingSetting } from "../ClipboardHandling";
+import { AutoSubmit } from "../AutoSubmit";
+import { ClipboardRestoreDelaySetting } from "../ClipboardRestoreDelay";
+import { AnchorActionSetting } from "../AnchorActionSetting";
 import { useModelStore } from "../../../stores/modelStore";
 
 const TABS = [
@@ -61,36 +71,66 @@ export const AdvancedSettings: React.FC = () => {
         );
       case "transcription":
         return (
-          <SettingsGroup title={t("settings.advanced.groups.transcription")}>
-            <TranscriptionModeSetting
-              descriptionMode="tooltip"
-              grouped={true}
-            />
-            <TranscriptionModePttSetting
-              descriptionMode="tooltip"
-              grouped={true}
-            />
-            <TranscriptionModelOptions
-              descriptionMode="tooltip"
-              grouped={true}
-            />
-            <GpuDeviceSelector descriptionMode="tooltip" grouped={true} />
-            {selectedModel === "api-whisper" && (
-              <ApiTranscriptionSettings
+          <>
+            <SettingsGroup title={t("settings.general.transcribeGroup.title")}>
+              <PasteMethodSetting descriptionMode="tooltip" grouped={true} />
+              <PasteMethodPttSetting descriptionMode="tooltip" grouped={true} />
+              <TypingToolSetting descriptionMode="tooltip" grouped={true} />
+              <ClipboardHandlingSetting
                 descriptionMode="tooltip"
                 grouped={true}
               />
-            )}
-            {selectedModel === "openrouter-transcription" && (
-              <OpenRouterTranscriptionSettings
+              <AutoSubmit descriptionMode="tooltip" grouped={true} />
+              <ClipboardRestoreDelaySetting
+                settingKey="clipboard_restore_delay"
                 descriptionMode="tooltip"
                 grouped={true}
               />
-            )}
-            <CustomWords descriptionMode="tooltip" grouped />
-            <AppendTrailingSpace descriptionMode="tooltip" grouped={true} />
-            <TranscriptionCostReport />
-          </SettingsGroup>
+              <AnchorActionSetting
+                settingKey="anchor_action_output_idle"
+                moment="idle"
+                grouped={true}
+              />
+              <AnchorActionSetting
+                settingKey="anchor_action_output_stop"
+                moment="stop"
+                grouped={true}
+              />
+              <JumperTrackToggle flow="output" grouped={true} />
+              <JumperReturnFocusToggle flow="output" grouped={true} />
+            </SettingsGroup>
+            <TranscribeAndSubmitSettings />
+            <SettingsGroup title={t("settings.advanced.groups.transcription")}>
+              <TranscriptionModeSetting
+                descriptionMode="tooltip"
+                grouped={true}
+              />
+              <TranscriptionModePttSetting
+                descriptionMode="tooltip"
+                grouped={true}
+              />
+              <TranscriptionModelOptions
+                descriptionMode="tooltip"
+                grouped={true}
+              />
+              <GpuDeviceSelector descriptionMode="tooltip" grouped={true} />
+              {selectedModel === "api-whisper" && (
+                <ApiTranscriptionSettings
+                  descriptionMode="tooltip"
+                  grouped={true}
+                />
+              )}
+              {selectedModel === "openrouter-transcription" && (
+                <OpenRouterTranscriptionSettings
+                  descriptionMode="tooltip"
+                  grouped={true}
+                />
+              )}
+              <CustomWords descriptionMode="tooltip" grouped />
+              <AppendTrailingSpace descriptionMode="tooltip" grouped={true} />
+              <TranscriptionCostReport />
+            </SettingsGroup>
+          </>
         );
       case "providers":
         return (

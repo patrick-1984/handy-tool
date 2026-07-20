@@ -144,6 +144,23 @@ pub const SLOT_COUNT: usize = 5;
 /// The hot slot index.
 pub const HOT: usize = 0;
 
+/// T-302 per-slot cursor gating — the SINGLE source of truth. Given the
+/// `jumper_save_cursor_slots` flags (index = slot; 0 = hot, 1–4 = static),
+/// whether slot `slot`'s (unconditionally captured) cursor should be KEPT.
+/// Bounds-checked: an out-of-range slot or a short/empty vec reads as `false`
+/// (never panics, never assumes default-on). EVERY capture entry resolves the
+/// gate through this against its TARGET slot index — the manual/hot `set_slot`
+/// (its own `slot`), and the clipboard track-last-output / coordinator
+/// on-finish paths (their tracked target slot) — replacing the removed per-flow
+/// output/submit toggles.
+///
+/// Its only non-test callers are the Windows-only capture paths, so it is
+/// dead on other targets — the cross-platform unit test still exercises it.
+#[cfg_attr(not(windows), allow(dead_code))]
+pub(crate) fn slot_save_cursor(slots: &[bool], slot: usize) -> bool {
+    slots.get(slot).copied().unwrap_or(false)
+}
+
 /// What the UI shows for an occupied slot (never the window title — titles are
 /// volatile and can carry sensitive document names). `stale` = the slot only
 /// exists as a persisted identity whose window hasn't been found yet (shown
@@ -408,11 +425,14 @@ mod win {
         /// T-301: cursor position captured with this target (or `None`). Rides
         /// inside the committed `Target` and mirrors to/from
         /// `SavedJumpSlot.cursor` in the persist path. Captured
-        /// UNCONDITIONALLY at capture time; a save toggle nulls it at commit
-        /// (Codex correction #5): flow-driven captures
-        /// (`set_slot_if_unchanged` / `set_slot_from_guard`) gate on the
-        /// DRIVING flow's toggle (passed in as `save_cursor`), while the
-        /// manual/hot `set_slot` gates on the dictate/output toggle.
+        /// UNCONDITIONALLY at capture time; a save toggle nulls it at commit.
+        /// T-302: the gating is now PER-SLOT (`jumper_save_cursor_slots[slot]`)
+        /// rather than per-flow. Every capture entry resolves that flag for its
+        /// TARGET slot and passes it in as `save_cursor`: the manual/hot
+        /// `set_slot` resolves `slots[slot]` itself; the flow-driven track
+        /// captures (`set_slot_if_unchanged` / `set_slot_from_guard` /
+        /// `set_slot_with_cursor_policy`) receive it from the
+        /// coordinator/clipboard caller, which resolved `slots[target_slot]`.
         cursor: Option<SavedCursor>,
     }
 
@@ -1652,15 +1672,22 @@ mod win {
 
     /// Manual/unconditional capture: always wins regardless of what was
     /// there before (a direct user action — Set Anchor, the hot-slot Set
-    /// binding — is authoritative and never deferred, so there's nothing to
-    /// compare-and-swap against). MANUAL/HOT captures keep the cursor IFF the
-    /// dictate/output toggle is on; this wrapper resolves that toggle and
-    /// defers to `set_slot_with_cursor_policy`. (Flow-driven track captures
-    /// gate on their DRIVING flow's toggle instead — see `set_slot_if_unchanged`
-    /// / `set_slot_from_guard` / `set_slot_with_cursor_policy`, which take an
-    /// explicit `save_cursor` computed by the caller from the right flow.)
+    /// binding, the static `jump_set_slot_N` bindings — is authoritative and
+    /// never deferred, so there's nothing to compare-and-swap against). Since
+    /// T-302 the cursor save is PER-SLOT: this manual/hot capture keeps the
+    /// cursor IFF `jumper_save_cursor_slots[slot]` is on (each slot, hot or
+    /// static, has its own toggle on the Jumper page — the old per-flow
+    /// output/submit toggles are gone). This wrapper resolves that per-slot
+    /// flag and defers to `set_slot_with_cursor_policy`. (Flow-driven track
+    /// captures resolve the SAME per-slot flag for their TARGET slot in the
+    /// coordinator/clipboard caller and pass it in — see
+    /// `set_slot_if_unchanged` / `set_slot_from_guard` /
+    /// `set_slot_with_cursor_policy`, which take an explicit `save_cursor`.)
     pub fn set_slot(app: &AppHandle, slot: usize) -> Result<AnchorStatus, String> {
-        let save_cursor = crate::settings::get_settings(app).jumper_save_cursor_output_enabled;
+        let save_cursor = super::slot_save_cursor(
+            &crate::settings::get_settings(app).jumper_save_cursor_slots,
+            slot,
+        );
         set_slot_with_cursor_policy(app, slot, save_cursor)
     }
 
@@ -3184,12 +3211,13 @@ pub fn set_slot(app: &AppHandle, slot: usize) -> Result<AnchorStatus, String> {
     }
 }
 
-/// Flow-aware manual capture (T-301): like `set_slot` but the caller decides
-/// whether the cursor is kept, instead of always the output toggle. Used by
-/// the non-anchored track-last-output fallback in clipboard.rs so its cursor
-/// gating follows the DRIVING flow (submit vs dictate/output), matching the
-/// anchored `track_from_guard` path. `set_slot` stays output-toggle gated for
-/// the manual/hot callers.
+/// Explicit-policy manual capture (T-301/T-302): like `set_slot` but the
+/// caller decides whether the cursor is kept, instead of `set_slot` resolving
+/// the per-slot flag itself. Used by the non-anchored track-last-output
+/// fallback in clipboard.rs, which resolves `jumper_save_cursor_slots[slot]`
+/// for the TARGET slot (T-302 per-slot gating) and passes it in, matching the
+/// anchored `track_from_guard` path. `set_slot` resolves the same per-slot flag
+/// itself for the manual/hot callers.
 pub fn set_slot_with_cursor_policy(
     app: &AppHandle,
     slot: usize,
@@ -3500,5 +3528,33 @@ mod cross_platform_tests {
         // Out-of-range slot is refused at arm time, never silently stored.
         arm_post_take_action(PostTakeAction::Set, SLOT_COUNT + 3, false);
         assert!(take_post_take_action().is_none());
+    }
+
+    /// T-302: `set_slot` (and every other capture entry) gates the cursor on
+    /// the PER-SLOT flag for the TARGET slot — `jumper_save_cursor_slots[slot]`
+    /// — not the removed per-flow output/submit toggles. `slot_save_cursor` is
+    /// the single source of truth that gate resolves through; it reads each
+    /// slot independently and is bounds-safe (out-of-range / short / empty vec
+    /// → `false`, never panics, never assumes default-on).
+    #[test]
+    fn slot_save_cursor_gates_per_target_slot() {
+        // hot (0) on, static 2 on, the rest off.
+        let slots = [true, false, true, false, false];
+        assert!(slot_save_cursor(&slots, HOT));
+        assert!(!slot_save_cursor(&slots, 1));
+        assert!(slot_save_cursor(&slots, 2));
+        assert!(!slot_save_cursor(&slots, 3));
+        assert!(!slot_save_cursor(&slots, 4));
+
+        // Each slot is independent — a neighbor being on never leaks in.
+        let only_static_1 = [false, true, false, false, false];
+        assert!(!slot_save_cursor(&only_static_1, HOT));
+        assert!(slot_save_cursor(&only_static_1, 1));
+
+        // Bounds-safe: out-of-range, short, and empty all read false.
+        assert!(!slot_save_cursor(&slots, SLOT_COUNT));
+        assert!(!slot_save_cursor(&slots, 99));
+        assert!(!slot_save_cursor(&[true, true], 3));
+        assert!(!slot_save_cursor(&[], HOT));
     }
 }

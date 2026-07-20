@@ -12,12 +12,12 @@ Dictation tools usually fail in one of three ways: they send your audio to someo
 
 ## Documentation
 
-| Document | What it covers |
-|---|---|
-| [Features](features.md) | Every feature, framed as the problem it solves — recording, transcription modes, engines, delivery, resilience |
-| [Tools](tools.md) | The built-in toolbox: Model Testing & Judge, Keyboard Typer, Token Counter, MCP/CLI server |
-| [Improvements](improvements.md) | The engineering journey — what was rebuilt, why, and what it bought |
-| [Portable Distribution](portable.md) | Running Handy Tool from a folder/USB stick with no installer — current status and how to build the ZIP |
+| Document                             | What it covers                                                                                                 |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| [Features](features.md)              | Every feature, framed as the problem it solves — recording, transcription modes, engines, delivery, resilience |
+| [Tools](tools.md)                    | The built-in toolbox: Model Testing & Judge, Keyboard Typer, Token Counter, MCP/CLI server                     |
+| [Improvements](improvements.md)      | The engineering journey — what was rebuilt, why, and what it bought                                            |
+| [Portable Distribution](portable.md) | Running Handy Tool from a folder/USB stick with no installer — current status and how to build the ZIP         |
 
 ## At a glance
 

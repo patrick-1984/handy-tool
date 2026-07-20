@@ -20,7 +20,7 @@ A **Cancel** shortcut (Esc while recording) abandons the take, and pressing a re
 
 **Problem:** while you dictate, you browse. When the transcription lands, your cursor is three windows away from where the text belongs — so you paste into the wrong app, or trek back with the mouse.
 
-Click into the target field once, press **Set Anchor** (`Ctrl+Alt+K`) — the exact window *and control* are remembered. Keep working anywhere. When your transcription finishes, Handy Tool activates the anchored window, focuses the anchored field, verifies both actually happened (it never pastes blind), delivers the text — including your submit key if the flow has one — and returns you to where you were. The anchor is **one-shot**: consumed by a verified delivery (a "keep anchor" toggle covers repeated dictation into one document).
+Click into the target field once, press **Set Anchor** (`Ctrl+Alt+K`) — the exact window _and control_ are remembered. Keep working anywhere. When your transcription finishes, Handy Tool activates the anchored window, focuses the anchored field, verifies both actually happened (it never pastes blind), delivers the text — including your submit key if the flow has one — and returns you to where you were. The anchor is **one-shot**: consumed by a verified delivery (a "keep anchor" toggle covers repeated dictation into one document).
 
 **Jump to Anchor** (`Ctrl+Alt+J`) is the same bookmark used manually: it teleports you to the anchored field without pasting anything — handy on its own as a "back to my draft" key.
 
@@ -39,15 +39,15 @@ Both modes are configured independently for the toggle and push-to-talk shortcut
 
 **Problem:** no single engine wins on privacy, speed, quality, and hardware at once.
 
-| Engine | Runs | Why you'd pick it |
-|---|---|---|
+| Engine                         | Runs                                                             | Why you'd pick it                                                                                        |
+| ------------------------------ | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | **Whisper** (small → large-v3) | Local, GPU-accelerated (Vulkan on Windows/Linux, Metal on macOS) | Best all-round quality, fully offline. Ships with a custom-built whisper.cpp for modern GPU acceleration |
-| **NVIDIA Parakeet** V2/V3 | Local, CPU-only (~5× realtime) | Excellent accuracy without a GPU; automatic language detection |
-| **Moonshine** | Local | Lightweight and fast for short clips |
-| **SenseVoice** | Local | Strong multilingual coverage |
-| **FLM** | Local, NPU-accelerated | Uses AI accelerator silicon (e.g. AMD Ryzen AI) so your CPU/GPU stay free |
-| **OpenAI-compatible API** | Remote | Bring any `/v1/audio/transcriptions` server — Groq, faster-whisper-server, your own |
-| **OpenRouter** | Remote | One key, many STT-capable models; per-request cost is tracked into history |
+| **NVIDIA Parakeet** V2/V3      | Local, CPU-only (~5× realtime)                                   | Excellent accuracy without a GPU; automatic language detection                                           |
+| **Moonshine**                  | Local                                                            | Lightweight and fast for short clips                                                                     |
+| **SenseVoice**                 | Local                                                            | Strong multilingual coverage                                                                             |
+| **FLM**                        | Local, NPU-accelerated                                           | Uses AI accelerator silicon (e.g. AMD Ryzen AI) so your CPU/GPU stay free                                |
+| **OpenAI-compatible API**      | Remote                                                           | Bring any `/v1/audio/transcriptions` server — Groq, faster-whisper-server, your own                      |
+| **OpenRouter**                 | Remote                                                           | One key, many STT-capable models; per-request cost is tracked into history                               |
 
 Custom Whisper GGML models dropped into the models folder are auto-discovered. Engines that clip trailing words on abrupt audio endings get automatic trailing-silence padding — the last word of your sentence survives every engine.
 
@@ -58,7 +58,7 @@ Custom Whisper GGML models dropped into the models folder are auto-discovered. E
 - **Paste method** per flow: clipboard paste via Ctrl+V, Ctrl+Shift+V, or Shift+Insert; direct typing; an external script hook (Linux); or none.
 - **Auto-submit**: optionally press Enter / Ctrl+Enter / Cmd+Enter after pasting — globally, or per-shortcut on Transcribe & Submit.
 - **Clipboard preservation**: by default your clipboard is restored after the paste; alternatively keep the transcription on it.
-- **Clipboard restore delay** (None → 5 s): remote sessions such as **Citrix and RDP fetch clipboard content on demand, *after* the paste keystroke arrives**. Restoring your old clipboard too early hands the remote session stale content. The configurable delay closes that race — the fix for "my Citrix session pastes the wrong thing".
+- **Clipboard restore delay** (None → 5 s): remote sessions such as **Citrix and RDP fetch clipboard content on demand, _after_ the paste keystroke arrives**. Restoring your old clipboard too early hands the remote session stale content. The configurable delay closes that race — the fix for "my Citrix session pastes the wrong thing".
 
 ## Crash-resilient recording
 

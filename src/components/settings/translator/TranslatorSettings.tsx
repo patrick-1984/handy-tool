@@ -67,12 +67,12 @@ export const TranslatorSettings: React.FC = () => {
   const folders = settings?.translator_folders ?? [];
   const models = useModelStore((s) => s.models);
 
-  const priorityOptions = (
-    ["live_first", "folder_first", "fifo"] as const
-  ).map((value) => ({
-    value,
-    label: t(`settings.translator.priority.options.${value}`),
-  }));
+  const priorityOptions = (["live_first", "folder_first", "fifo"] as const).map(
+    (value) => ({
+      value,
+      label: t(`settings.translator.priority.options.${value}`),
+    }),
+  );
 
   // Model-unload timeout for the translator's own model — mirrors the main
   // model unload setting (same option set + custom-seconds handling), bound to
@@ -211,7 +211,9 @@ export const TranslatorSettings: React.FC = () => {
   };
 
   const setFolderEnabled = (path: string, value: boolean) =>
-    withFolderPending(path, () => commands.translatorSetFolderEnabled(path, value));
+    withFolderPending(path, () =>
+      commands.translatorSetFolderEnabled(path, value),
+    );
 
   const removeFolder = (path: string) =>
     withFolderPending(path, () => commands.translatorRemoveFolder(path));
@@ -379,10 +381,15 @@ export const TranslatorSettings: React.FC = () => {
                     className="sr-only peer"
                     checked={folder.enabled}
                     disabled={rowBusy}
-                    aria-label={t("settings.translator.folders.toggleAriaLabel", {
-                      name: folderName,
-                    })}
-                    onChange={(e) => setFolderEnabled(folder.path, e.target.checked)}
+                    aria-label={t(
+                      "settings.translator.folders.toggleAriaLabel",
+                      {
+                        name: folderName,
+                      },
+                    )}
+                    onChange={(e) =>
+                      setFolderEnabled(folder.path, e.target.checked)
+                    }
                   />
                   <div className="relative w-11 h-6 bg-mid-gray/20 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-logo-primary rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-background-ui peer-disabled:opacity-50"></div>
                 </label>

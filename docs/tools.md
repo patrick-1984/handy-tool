@@ -8,7 +8,7 @@ Handy Tool ships several tools that have nothing to do with dictation per se —
 
 The Model Testing page runs **one prompt across every provider/model you select, side by side**, capturing for each: the full response, token usage, **real cost** (actual metered cost for OpenRouter; computed from your configured rates elsewhere), and round-trip time.
 
-Then the **judge panel** takes over: you nominate one or more models as arbiters, and they score the collected answers against each other. Instead of you eyeballing six walls of text, you get a ranked verdict — *from models judging models* — plus the raw responses to check the judges' work. Results render as a Markdown report you can save or share.
+Then the **judge panel** takes over: you nominate one or more models as arbiters, and they score the collected answers against each other. Instead of you eyeballing six walls of text, you get a ranked verdict — _from models judging models_ — plus the raw responses to check the judges' work. Results render as a Markdown report you can save or share.
 
 Local providers that can only load one model at a time are run sequentially and never in parallel — the tool understands provider families, so a single-loader local server doesn't get trampled.
 

@@ -176,7 +176,7 @@ impl TranscriptionCoordinator {
                                         &hotkey_string,
                                         s.anchor_action_output_idle,
                                         s.anchor_action_output_idle_slot,
-                                        s.jumper_save_cursor_output_enabled,
+                                        &s.jumper_save_cursor_slots,
                                     );
                                 } else if !is_pressed
                                     && matches!(&stage, Stage::Recording(id) if id == &binding_id)
@@ -211,7 +211,7 @@ impl TranscriptionCoordinator {
                                             s.anchor_action_output_stop,
                                             s.anchor_action_output_stop_slot,
                                             true,
-                                            s.jumper_save_cursor_output_enabled,
+                                            &s.jumper_save_cursor_slots,
                                         );
                                         stop(&app, &mut stage, &binding_id, &hotkey_string);
                                     }
@@ -237,13 +237,22 @@ impl TranscriptionCoordinator {
                                             // submit key, and apply its clipboard handling — no
                                             // matter which binding started the recording.
                                             let s = crate::settings::get_settings(&app);
-                                            perform_anchor_action(
-                                                &app,
-                                                s.anchor_action_submit_stop,
-                                                s.anchor_action_submit_stop_slot,
-                                                true,
-                                                s.jumper_save_cursor_submit_enabled,
-                                            );
+                                            // T-302 #3: the on-finish jump/anchor action fires
+                                            // only when the take STARTED and FINISHED via the
+                                            // same flow. Started plain Transcribe, finished
+                                            // Transcribe&Submit → skip the jump (but still
+                                            // submit) when require-same-flow is on.
+                                            let same_flow = rec_id == "transcribe_and_submit";
+                                            if !(s.anchor_on_finish_require_same_flow && !same_flow)
+                                            {
+                                                perform_anchor_action(
+                                                    &app,
+                                                    s.anchor_action_submit_stop,
+                                                    s.anchor_action_submit_stop_slot,
+                                                    true,
+                                                    &s.jumper_save_cursor_slots,
+                                                );
+                                            }
                                             crate::clipboard::set_submit_override(
                                                 crate::clipboard::SubmitOverride {
                                                     submit: Some((
@@ -272,7 +281,7 @@ impl TranscriptionCoordinator {
                                                 s.anchor_action_submit_idle,
                                                 s.anchor_action_submit_idle_slot,
                                                 false,
-                                                s.jumper_save_cursor_submit_enabled,
+                                                &s.jumper_save_cursor_slots,
                                             );
                                             debug!(
                                                 "T-113: perform_anchor_action (submit-idle) took {:?}",
@@ -311,7 +320,7 @@ impl TranscriptionCoordinator {
                                                 &hotkey_string,
                                                 s.anchor_action_output_idle,
                                                 s.anchor_action_output_idle_slot,
-                                                s.jumper_save_cursor_output_enabled,
+                                                &s.jumper_save_cursor_slots,
                                             );
                                         }
                                         Stage::Recording(id) if id == &binding_id => {
@@ -321,7 +330,7 @@ impl TranscriptionCoordinator {
                                                 s.anchor_action_output_stop,
                                                 s.anchor_action_output_stop_slot,
                                                 true,
-                                                s.jumper_save_cursor_output_enabled,
+                                                &s.jumper_save_cursor_slots,
                                             );
                                             stop(&app, &mut stage, &binding_id, &hotkey_string);
                                         }
@@ -383,7 +392,7 @@ impl TranscriptionCoordinator {
                                     s.anchor_action_output_stop,
                                     s.anchor_action_output_stop_slot,
                                     true,
-                                    s.jumper_save_cursor_output_enabled,
+                                    &s.jumper_save_cursor_slots,
                                 );
                                 stop(&app, &mut stage, &binding_id, &hotkey_string);
                             }
@@ -449,9 +458,10 @@ fn perform_anchor_action(
     action: AnchorAction,
     slot: u8,
     at_finish: bool,
-    save_cursor: bool,
+    save_cursor_slots: &[bool],
 ) {
     let slot = (slot as usize).min(crate::anchor::SLOT_COUNT - 1);
+    let save_cursor = crate::anchor::slot_save_cursor(save_cursor_slots, slot);
     match action {
         AnchorAction::None => {}
         AnchorAction::Jump => {
@@ -502,10 +512,10 @@ fn timed_idle_start(
     hotkey_string: &str,
     action: AnchorAction,
     slot: u8,
-    save_cursor: bool,
+    save_cursor_slots: &[bool],
 ) {
     let t0 = Instant::now();
-    perform_anchor_action(app, action, slot, false, save_cursor);
+    perform_anchor_action(app, action, slot, false, save_cursor_slots);
     debug!(
         "T-113: perform_anchor_action (start, '{binding_id}') took {:?}",
         t0.elapsed()

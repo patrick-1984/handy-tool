@@ -328,7 +328,9 @@ export const ModelsSettings: React.FC = () => {
                 status={getModelStatus(model.id)}
                 onSelect={handleModelSelect}
                 onDownload={handleModelDownload}
-                onDelete={isExternalEngine(model) ? undefined : handleModelDelete}
+                onDelete={
+                  isExternalEngine(model) ? undefined : handleModelDelete
+                }
                 onCancel={handleModelCancel}
                 downloadProgress={getDownloadProgress(model.id)}
                 downloadSpeed={getDownloadSpeed(model.id)}
@@ -350,7 +352,9 @@ export const ModelsSettings: React.FC = () => {
                   status={getModelStatus(model.id)}
                   onSelect={handleModelSelect}
                   onDownload={handleModelDownload}
-                  onDelete={isExternalEngine(model) ? undefined : handleModelDelete}
+                  onDelete={
+                    isExternalEngine(model) ? undefined : handleModelDelete
+                  }
                   onCancel={handleModelCancel}
                   downloadProgress={getDownloadProgress(model.id)}
                   downloadSpeed={getDownloadSpeed(model.id)}

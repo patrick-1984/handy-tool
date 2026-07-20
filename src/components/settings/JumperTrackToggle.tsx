@@ -35,7 +35,9 @@ export const JumperTrackToggle: React.FC<JumperTrackToggleProps> = React.memo(
         ? "jumper_track_output_enabled"
         : "jumper_track_submit_enabled";
     const slotKey =
-      flow === "output" ? "jumper_track_output_slot" : "jumper_track_submit_slot";
+      flow === "output"
+        ? "jumper_track_output_slot"
+        : "jumper_track_submit_slot";
 
     const enabled = getSetting(enabledKey) ?? false;
     const selectedSlot = String(getSetting(slotKey) ?? 0);

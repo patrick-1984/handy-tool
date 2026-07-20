@@ -161,10 +161,10 @@ const settingUpdaters: {
     commands.changeJumperTrackSetting("submit", value as boolean),
   jumper_track_submit_slot: (value) =>
     commands.changeJumperTrackSlotSetting("submit", value as number),
-  jumper_save_cursor_output_enabled: (value) =>
-    commands.changeJumperSaveCursorSetting("output", value as boolean),
-  jumper_save_cursor_submit_enabled: (value) =>
-    commands.changeJumperSaveCursorSetting("submit", value as boolean),
+  // jumper_save_cursor_slots (Vec<bool>) and anchor_on_finish_require_same_flow
+  // are driven by direct command calls from JumperSettings
+  // (commands.changeJumperSaveCursorSlot / changeAnchorRequireSameFlow), so
+  // they have no updater entries here.
   jumper_cursor_mode: (value) =>
     commands.changeJumperCursorModeSetting(value as string),
   translator_model_unload_timeout: (value) =>

@@ -6,8 +6,8 @@ installer and no admin rights.
 
 > **Registry note:** enabling **Autostart** in Settings writes a Windows
 > `Run`-key entry pointing at the exe's current location (independent of
-> packaging). Even with autostart *off*, startup calls the autostart
-> library's `disable()`, which *attempts to delete* a pre-existing `Run`
+> packaging). Even with autostart _off_, startup calls the autostart
+> library's `disable()`, which _attempts to delete_ a pre-existing `Run`
 > value if one is present — so a launch may touch the registry to remove a
 > stale entry (this delete is best-effort and its result is not checked).
 > Autostart is **disabled in portable mode** (it would write a machine-level
@@ -71,7 +71,7 @@ The file list under `resources/` is not a guess — it was read directly off
 an installed copy of the app (`%LOCALAPPDATA%\Handy Tool\resources\` on this
 machine) so the portable package matches what the installer actually ships.
 Notably this **excludes** `resources\icon.ico`, which is present in the raw
-Cargo build output but is *not* copied there by the NSIS installer either —
+Cargo build output but is _not_ copied there by the NSIS installer either —
 `portable.cmd` mirrors the installed reality, not the raw build folder.
 
 ## First-run model downloads

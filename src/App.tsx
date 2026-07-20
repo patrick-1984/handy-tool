@@ -41,9 +41,7 @@ function App() {
   // data-theme attribute AND the Sonner toaster — a single source of truth
   // per T-204's "consistent resolved theme" requirement instead of letting
   // the toaster do its own independent system detection.
-  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">(
-    "light",
-  );
+  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
   const refreshAudioDevices = useSettingsStore(
     (state) => state.refreshAudioDevices,
   );
@@ -128,10 +126,7 @@ function App() {
   useEffect(() => {
     if (onboardingStep === "done" && !hasCompletedPostOnboardingInit.current) {
       hasCompletedPostOnboardingInit.current = true;
-      Promise.all([
-        commands.initializeEnigo(),
-        commands.initializeShortcuts(),
-      ])
+      Promise.all([commands.initializeEnigo(), commands.initializeShortcuts()])
         .then(async () => {
           // Surface hotkeys that failed to register (e.g. taken by another
           // app) — otherwise they are silently dead while the UI shows them

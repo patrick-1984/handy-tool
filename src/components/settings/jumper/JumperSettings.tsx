@@ -6,6 +6,7 @@ import { ShortcutInput } from "../ShortcutInput";
 import { SettingsGroup } from "../../ui/SettingsGroup";
 import { SettingContainer } from "../../ui/SettingContainer";
 import { ToggleSwitch } from "../../ui/ToggleSwitch";
+import { Dropdown } from "../../ui/Dropdown";
 import { Button } from "../../ui/Button";
 import { useSettings } from "../../../hooks/useSettings";
 import { useOsType } from "../../../hooks/useOsType";
@@ -17,11 +18,18 @@ import { commands, type AnchorStatus } from "@/bindings";
  * any slot can auto-track where text last landed. Slots 1–4 are static
  * bookmarks. Live slots are in-memory; the opt-in persistence setting below
  * saves slot identities and re-resolves them across restarts.
+ *
+ * Cursor save/restore is PER-SLOT (T-302): each slot (hot + 1–4) has its own
+ * "save mouse position" switch; a single shared "cursor position mode" dropdown
+ * governs how any saved position is measured. When a slot has save enabled,
+ * delivering into (or tracking onto) it captures the pointer so a jump restores
+ * it.
  */
 export const JumperSettings: React.FC = () => {
   const { t } = useTranslation();
   const osType = useOsType();
-  const { getSetting, updateSetting, isUpdating } = useSettings();
+  const { getSetting, updateSetting, isUpdating, refreshSettings } =
+    useSettings();
   const [slots, setSlots] = useState<(AnchorStatus | null)[]>([]);
 
   // Delivery-failure toasts are handled globally in App.tsx — this page only
@@ -92,6 +100,80 @@ export const JumperSettings: React.FC = () => {
     );
   };
 
+  // Per-slot save-cursor state. The setting is a bool[] of length SLOT_COUNT=5
+  // (index = slot; 0 = hot, 1–4 = static); a missing/short entry reads false.
+  const saveCursorSlots = getSetting("jumper_save_cursor_slots") as
+    | boolean[]
+    | undefined;
+  const isSaveCursorOn = (index: number) => saveCursorSlots?.[index] ?? false;
+  const anySaveCursor = saveCursorSlots?.some(Boolean) ?? false;
+
+  const setSaveCursor = async (index: number, value: boolean) => {
+    try {
+      const result = await commands.changeJumperSaveCursorSlot(index, value);
+      if (result.status === "error") {
+        toast.error(String(result.error));
+        return;
+      }
+      await refreshSettings();
+    } catch (error) {
+      toast.error(String(error));
+    }
+  };
+
+  const saveCursorToggle = (index: number) => (
+    <ToggleSwitch
+      checked={isSaveCursorOn(index)}
+      onChange={(value) => void setSaveCursor(index, value)}
+      label={t("settings.jumper.saveCursor.perSlot")}
+      description={t("settings.jumper.saveCursor.perSlotDescription")}
+      descriptionMode="tooltip"
+      grouped={true}
+    />
+  );
+
+  // Shared cursor-position mode (App-relative vs screen-absolute).
+  const cursorMode = String(getSetting("jumper_cursor_mode") ?? "AppRelative");
+  const cursorModeOptions = [
+    {
+      value: "AppRelative",
+      label: t("settings.jumper.saveCursor.mode.appRelative"),
+    },
+    {
+      value: "ScreenAbsolute",
+      label: t("settings.jumper.saveCursor.mode.screenAbsolute"),
+    },
+  ];
+  const setCursorMode = async (value: string) => {
+    try {
+      const result = await commands.changeJumperCursorModeSetting(value);
+      if (result.status === "error") {
+        toast.error(String(result.error));
+        return;
+      }
+      await refreshSettings();
+    } catch (error) {
+      toast.error(String(error));
+    }
+  };
+
+  // On-finish flow-match gate (T-302 #3).
+  const requireSameFlow =
+    (getSetting("anchor_on_finish_require_same_flow") as boolean | undefined) ??
+    false;
+  const setRequireSameFlow = async (value: boolean) => {
+    try {
+      const result = await commands.changeAnchorRequireSameFlow(value);
+      if (result.status === "error") {
+        toast.error(String(result.error));
+        return;
+      }
+      await refreshSettings();
+    } catch (error) {
+      toast.error(String(error));
+    }
+  };
+
   return (
     <div className="w-full space-y-6">
       <SettingsGroup title={t("settings.jumper.hot.title")}>
@@ -105,6 +187,22 @@ export const JumperSettings: React.FC = () => {
         >
           {slotStatus(0)}
         </SettingContainer>
+        {saveCursorToggle(0)}
+        {anySaveCursor && (
+          <SettingContainer
+            title={t("settings.jumper.saveCursor.mode.title")}
+            description={t("settings.jumper.saveCursor.mode.description")}
+            descriptionMode="tooltip"
+            grouped={true}
+          >
+            <Dropdown
+              options={cursorModeOptions}
+              selectedValue={cursorMode}
+              onSelect={(value) => void setCursorMode(value)}
+              disabled={isUpdating("jumper_cursor_mode")}
+            />
+          </SettingContainer>
+        )}
         <SettingContainer
           title={t("settings.jumper.hot.optionsMoved.title")}
           description={t("settings.jumper.hot.optionsMoved.description")}
@@ -127,6 +225,16 @@ export const JumperSettings: React.FC = () => {
           grouped={true}
         />
       </SettingsGroup>
+      <SettingsGroup title={t("settings.jumper.requireSameFlow.groupTitle")}>
+        <ToggleSwitch
+          checked={requireSameFlow}
+          onChange={(value) => void setRequireSameFlow(value)}
+          label={t("settings.jumper.requireSameFlow.label")}
+          description={t("settings.jumper.requireSameFlow.description")}
+          descriptionMode="tooltip"
+          grouped={true}
+        />
+      </SettingsGroup>
       {[1, 2, 3, 4].map((i) => (
         <SettingsGroup
           key={i}
@@ -142,6 +250,7 @@ export const JumperSettings: React.FC = () => {
           >
             {slotStatus(i)}
           </SettingContainer>
+          {saveCursorToggle(i)}
         </SettingsGroup>
       ))}
     </div>

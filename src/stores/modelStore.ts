@@ -1,7 +1,11 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { produce } from "immer";
-import { listen, type EventCallback, type UnlistenFn } from "@tauri-apps/api/event";
+import {
+  listen,
+  type EventCallback,
+  type UnlistenFn,
+} from "@tauri-apps/api/event";
 import { commands, type ModelInfo } from "@/bindings";
 
 interface DownloadProgress {
@@ -323,7 +327,7 @@ export const useModelStore = create<ModelsStore>()(
       // event — is never missed (and a registration failure surfaces before the
       // store is marked initialized). `on(...)` collects each listen promise.
       const registrations: Promise<UnlistenFn>[] = [];
-      const on = <T,>(name: string, handler: EventCallback<T>) => {
+      const on = <T>(name: string, handler: EventCallback<T>) => {
         registrations.push(listen<T>(name, handler));
       };
 

@@ -776,23 +776,6 @@ fn should_send_auto_submit(auto_submit: bool, paste_method: PasteMethod) -> bool
     auto_submit && paste_method != PasteMethod::None
 }
 
-/// T-301 per-flow cursor gating (Codex correction #5 — user decision). A
-/// FLOW-DRIVEN track capture keeps the saved cursor IFF the DRIVING flow's own
-/// toggle is on: the Transcribe & Submit flow uses `submit_enabled`, the
-/// dictate/output flow uses `output_enabled`. The two flows gate INDEPENDENTLY
-/// — deliberately NOT the old `output_enabled || submit_enabled` "either
-/// toggle" test that let one flow's preference leak into the other. (Manual/
-/// hot captures gate on the output toggle inside `anchor.rs`.) Pure so the
-/// decision is unit-testable without a paste pipeline.
-#[cfg(windows)]
-fn flow_save_cursor(is_submit_flow: bool, output_enabled: bool, submit_enabled: bool) -> bool {
-    if is_submit_flow {
-        submit_enabled
-    } else {
-        output_enabled
-    }
-}
-
 /// Flow paste: takes a take-scoped submit override and a take-scoped
 /// anchored-delivery intent — BOTH captured by the caller at stop()/take time
 /// (`clipboard::take_submit_override()` — T-116 — and
@@ -1181,24 +1164,20 @@ fn paste_inner(
                 settings.jumper_track_output_slot,
             )
         };
-        // T-301 (Codex correction #5 — user decision): a flow-driven track
-        // capture keeps the cursor IFF the DRIVING flow's own toggle is on —
-        // the submit flow uses the submit toggle, the dictate/output flow the
-        // output toggle. The two gate INDEPENDENTLY (no "either toggle" test).
-        let save_cursor = flow_save_cursor(
-            is_submit_flow,
-            settings.jumper_save_cursor_output_enabled,
-            settings.jumper_save_cursor_submit_enabled,
-        );
         if flow_paste && delivered.is_ok() && paste_method != PasteMethod::None && track_enabled {
             let slot = (track_slot as usize).min(crate::anchor::SLOT_COUNT - 1);
-            // Both branches thread the SAME flow-resolved `save_cursor`:
+            // T-302: cursor save is PER-SLOT, not per-flow — resolve the flag
+            // for the flow's TARGET slot (the one we're about to capture into)
+            // via the single source of truth `anchor::slot_save_cursor`,
+            // replacing the removed per-flow output/submit toggles. Both
+            // branches thread this SAME per-slot-resolved `save_cursor`:
             // anchored deliveries via `set_slot_from_guard`, the non-anchored
-            // fallback via `set_slot_with_cursor_policy` (T-301). The fallback
-            // used to call the plain output-toggle-gated `set_slot`, which
-            // ignored the submit flow's own cursor toggle — the last per-flow
-            // cursor-gating gap. The manual/hot `set_slot` stays output-toggle
-            // gated for its other callers.
+            // fallback via `set_slot_with_cursor_policy`. `slot` is already
+            // clamped to the valid range, so it is exactly the target slot
+            // index whose flag governs this capture (and `slot_save_cursor` is
+            // itself bounds-safe regardless).
+            let save_cursor =
+                crate::anchor::slot_save_cursor(&settings.jumper_save_cursor_slots, slot);
             let result = match anchor_guard.as_ref() {
                 Some(guard) => {
                     crate::anchor::track_from_guard(&app_handle, guard, slot, save_cursor)
@@ -1265,25 +1244,6 @@ mod tests {
     #[test]
     fn auto_submit_skips_none_paste_method() {
         assert!(!should_send_auto_submit(true, PasteMethod::None));
-    }
-
-    /// T-301 (Codex correction #5): each flow gates its cursor save on its OWN
-    /// toggle, independently — the submit flow never keeps the cursor just
-    /// because the output toggle is on, and vice versa.
-    #[cfg(windows)]
-    #[test]
-    fn flow_save_cursor_gates_per_driving_flow() {
-        // Output/dictate flow → output toggle only.
-        assert!(flow_save_cursor(false, true, false));
-        assert!(!flow_save_cursor(false, false, true));
-        // Submit flow → submit toggle only.
-        assert!(flow_save_cursor(true, false, true));
-        assert!(!flow_save_cursor(true, true, false));
-        // Both off → never; both on → each flow still honors its own.
-        assert!(!flow_save_cursor(false, false, false));
-        assert!(!flow_save_cursor(true, false, false));
-        assert!(flow_save_cursor(false, true, true));
-        assert!(flow_save_cursor(true, true, true));
     }
 
     #[test]

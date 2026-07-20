@@ -9,7 +9,6 @@ import { ClipboardRestoreDelaySetting } from "./ClipboardRestoreDelay";
 import { AnchorActionSetting } from "./AnchorActionSetting";
 import { JumperReturnFocusToggle } from "./JumperReturnFocusToggle";
 import { JumperTrackToggle } from "./JumperTrackToggle";
-import { JumperSaveCursorToggle } from "./JumperSaveCursorToggle";
 import { useSettings } from "../../hooks/useSettings";
 import { useOsType } from "../../hooks/useOsType";
 import type {
@@ -177,10 +176,6 @@ export const TranscribeAndSubmitSettings: React.FC = React.memo(() => {
           reads/writes jumper_track_submit_enabled/_slot only, and never
           affects the General page's "output" flow instance. */}
       <JumperTrackToggle flow="submit" grouped={true} />
-      {/* Save-cursor is per-flow (enable) with a shared mode (T-301): this
-          instance reads/writes jumper_save_cursor_submit_enabled and the
-          shared jumper_cursor_mode. */}
-      <JumperSaveCursorToggle flow="submit" grouped={true} />
     </SettingsGroup>
   );
 });

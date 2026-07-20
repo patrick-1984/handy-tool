@@ -23,7 +23,8 @@ export const ClipboardRestoreDelaySetting: React.FC<ClipboardRestoreDelayProps> 
     const { t } = useTranslation();
     const { getSetting, updateSetting, isUpdating } = useSettings();
 
-    const selected = (getSetting(settingKey) || "none") as ClipboardRestoreDelay;
+    const selected = (getSetting(settingKey) ||
+      "none") as ClipboardRestoreDelay;
     const options = (
       ["none", "ms250", "ms500", "ms1000", "ms2500", "ms5000"] as const
     ).map((value) => ({

@@ -14,12 +14,12 @@ Dictation tools usually fail in one of three ways: they send your audio to someo
 
 ## Documentation
 
-| Document | What it covers |
-|---|---|
-| [Features](docs/features.md) | Every feature, framed as the problem it solves — recording, transcription modes, engines, delivery, resilience |
-| [Tools](docs/tools.md) | The built-in toolbox: Model Testing & Judge, Keyboard Typer, Token Counter, MCP/CLI server |
-| [Improvements](docs/improvements.md) | The engineering journey — what was rebuilt, why, and what it bought |
-| [Building](BUILD.md) | Build instructions for all platforms |
+| Document                             | What it covers                                                                                                 |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| [Features](docs/features.md)         | Every feature, framed as the problem it solves — recording, transcription modes, engines, delivery, resilience |
+| [Tools](docs/tools.md)               | The built-in toolbox: Model Testing & Judge, Keyboard Typer, Token Counter, MCP/CLI server                     |
+| [Improvements](docs/improvements.md) | The engineering journey — what was rebuilt, why, and what it bought                                            |
+| [Building](BUILD.md)                 | Build instructions for all platforms                                                                           |
 
 ## At a glance
 

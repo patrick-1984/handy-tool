@@ -885,18 +885,25 @@ pub struct AppSettings {
     /// One-time migration marker for the 0.46 per-flow track-output split.
     #[serde(default)]
     pub jumper_v3_migrated: bool,
-    /// Save & restore the mouse cursor on a jump, PER FLOW (T-301, 0.48+). When
-    /// on, the cursor is captured with the anchor and restored after the jump
-    /// activates the window (and, for delivery, AFTER the paste). The hot slot
-    /// (0) and manual sets follow the dictate/"output" toggle. Default off.
-    #[serde(default)]
-    pub jumper_save_cursor_output_enabled: bool,
-    #[serde(default)]
-    pub jumper_save_cursor_submit_enabled: bool,
+    /// Save & restore the mouse cursor on a jump, PER SLOT (T-302, 0.49+).
+    /// Index = slot (0 = hot, 1-4 = static). Length SLOT_COUNT (5), normalized
+    /// in `ensure_jumper_v2`. When a slot's flag is on, the cursor is captured
+    /// with that slot's anchor and restored after a jump activates the window
+    /// (and, for delivery, AFTER the paste). Replaces the 0.48 per-flow toggles.
+    /// Default all-off.
+    #[serde(default = "default_jumper_save_cursor_slots")]
+    pub jumper_save_cursor_slots: Vec<bool>,
     /// Coordinate mode for cursor restore: AppRelative (same spot inside the
-    /// app; default) or ScreenAbsolute (fixed monitor pixel). Shared by flows.
+    /// app; default) or ScreenAbsolute (fixed monitor pixel). Shared by slots.
     #[serde(default)]
     pub jumper_cursor_mode: CursorMode,
+    /// When true, an on-finish Jumper jump/anchor action fires ONLY if the
+    /// take's finishing flow matches its starting flow — e.g. a recording
+    /// started as plain Transcribe but finished via Transcribe & Submit will
+    /// NOT run the submit flow's on-finish jump (the submit paste still
+    /// happens; only the jump is gated). Default false (fire regardless). T-302.
+    #[serde(default)]
+    pub anchor_on_finish_require_same_flow: bool,
     /// Translator: watch folders and batch-transcribe new audio files into
     /// `.txt` sidecars using the currently selected engine.
     #[serde(default)]
@@ -947,6 +954,11 @@ fn default_jumper_saved_slots() -> Vec<Option<SavedJumpSlot>> {
 
 fn default_model_unload_custom_seconds() -> u64 {
     300
+}
+
+/// Per-slot save-cursor flags, one per jump slot (0=hot, 1-4=static). T-302.
+fn default_jumper_save_cursor_slots() -> Vec<bool> {
+    vec![false; 5]
 }
 
 fn default_mcp_port() -> u16 {
@@ -1347,6 +1359,15 @@ fn ensure_jumper_v2(settings: &mut AppSettings) -> bool {
         settings.jumper_track_submit_slot = 0;
         changed = true;
     }
+    // T-302: keep the per-slot save-cursor vector exactly SLOT_COUNT long so
+    // indexing by slot is always in bounds (pad missing with false, truncate
+    // any hand-edited overflow).
+    if settings.jumper_save_cursor_slots.len() != crate::anchor::SLOT_COUNT {
+        settings
+            .jumper_save_cursor_slots
+            .resize(crate::anchor::SLOT_COUNT, false);
+        changed = true;
+    }
     changed
 }
 
@@ -1678,9 +1699,9 @@ pub fn get_default_settings() -> AppSettings {
         // Fresh installs are already on the current model — nothing to migrate.
         jumper_v2_migrated: true,
         jumper_v3_migrated: true,
-        jumper_save_cursor_output_enabled: false,
-        jumper_save_cursor_submit_enabled: false,
+        jumper_save_cursor_slots: default_jumper_save_cursor_slots(),
         jumper_cursor_mode: CursorMode::AppRelative,
+        anchor_on_finish_require_same_flow: false,
         translator_enabled: false,
         translator_folders: Vec::new(),
         translator_seeded: false,

@@ -91,7 +91,9 @@ export const AnchorActionSetting: React.FC<AnchorActionSettingProps> =
           <Dropdown
             options={options}
             selectedValue={selected}
-            onSelect={(value) => updateSetting(settingKey, value as AnchorAction)}
+            onSelect={(value) =>
+              updateSetting(settingKey, value as AnchorAction)
+            }
             disabled={isUpdating(settingKey)}
           />
         </div>
