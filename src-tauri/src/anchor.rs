@@ -198,16 +198,28 @@ pub struct DeliveryGuard {
     target_app: String,
     #[cfg(windows)]
     slot: usize,
+    /// T-301: the cursor position to restore after this delivery finishes,
+    /// snapshotted from the committed `Target` at `begin_delivery` time (NOT
+    /// restored there). Restored in `finish_delivery` as the very last
+    /// focus/input op. `None` when no cursor was saved for this slot / flow.
+    #[cfg(windows)]
+    cursor: Option<crate::settings::SavedCursor>,
 }
 
 #[cfg(windows)]
 mod win {
     use super::{AnchorStatus, BeginDelivery, DeliveryGuard, HOT, SLOT_COUNT};
+    use crate::settings::{CursorMode, SavedCursor};
     use log::{debug, info, warn};
     use once_cell::sync::Lazy;
     use std::sync::Mutex;
     use tauri::{AppHandle, Emitter, Manager};
-    use windows::Win32::Foundation::{CloseHandle, HWND, LPARAM, RPC_E_CHANGED_MODE};
+    use windows::Win32::Foundation::{CloseHandle, HWND, LPARAM, POINT, RECT, RPC_E_CHANGED_MODE};
+    // T-301: nearest-monitor clamp for cursor restore (Win32_Graphics_Gdi).
+    // `ClientToScreen` also lives here in windows-rs.
+    use windows::Win32::Graphics::Gdi::{
+        ClientToScreen, GetMonitorInfoW, MONITOR_DEFAULTTONEAREST, MONITORINFO, MonitorFromPoint,
+    };
     use windows::Win32::System::Com::{
         CLSCTX_INPROC_SERVER, COINIT_APARTMENTTHREADED, COINIT_MULTITHREADED, CoCreateInstance,
         CoInitializeEx, CoUninitialize,
@@ -217,12 +229,22 @@ mod win {
         PROCESS_QUERY_LIMITED_INFORMATION, QueryFullProcessImageNameW,
     };
     use windows::Win32::UI::Accessibility::{CUIAutomation, IUIAutomation, IUIAutomationElement};
+    // T-301: Per-Monitor-V2 DPI-awareness prerequisite check (Win32_UI_HiDpi).
+    // The EXACT-context equality check (Codex correction #3, revised) needs
+    // `AreDpiAwarenessContextsEqual` + the `DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2`
+    // sentinel — both live under the already-enabled `Win32_UI_HiDpi` feature,
+    // so no extra Cargo feature is required.
+    use windows::Win32::UI::HiDpi::{
+        AreDpiAwarenessContextsEqual, DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2,
+        GetThreadDpiAwarenessContext,
+    };
     use windows::Win32::UI::Input::KeyboardAndMouse::SetFocus;
     use windows::Win32::UI::WindowsAndMessaging::{
         BringWindowToTop, EnumWindows, FindWindowExW, GA_ROOT, GUITHREADINFO, GWL_STYLE,
-        GetAncestor, GetClassNameW, GetForegroundWindow, GetGUIThreadInfo, GetWindowLongW,
-        GetWindowTextW, GetWindowThreadProcessId, IsIconic, IsWindow, IsWindowVisible, SW_RESTORE,
-        SetForegroundWindow, ShowWindow, SwitchToThisWindow,
+        GetAncestor, GetClassNameW, GetClientRect, GetCursorPos, GetForegroundWindow,
+        GetGUIThreadInfo, GetWindowLongW, GetWindowTextW, GetWindowThreadProcessId, IsIconic,
+        IsWindow, IsWindowVisible, SW_RESTORE, SetCursorPos, SetForegroundWindow, ShowWindow,
+        SwitchToThisWindow,
     };
     use windows::core::{BOOL, HRESULT};
 
@@ -383,6 +405,15 @@ mod win {
         window_class: String,
         control_class: String,
         app: String,
+        /// T-301: cursor position captured with this target (or `None`). Rides
+        /// inside the committed `Target` and mirrors to/from
+        /// `SavedJumpSlot.cursor` in the persist path. Captured
+        /// UNCONDITIONALLY at capture time; a save toggle nulls it at commit
+        /// (Codex correction #5): flow-driven captures
+        /// (`set_slot_if_unchanged` / `set_slot_from_guard`) gate on the
+        /// DRIVING flow's toggle (passed in as `save_cursor`), while the
+        /// manual/hot `set_slot` gates on the dictate/output toggle.
+        cursor: Option<SavedCursor>,
     }
 
     /// Slot storage: the live targets AND their capture generations, guarded
@@ -848,6 +879,8 @@ mod win {
             app: t.app.clone(),
             window_class: t.window_class.clone(),
             control_class: t.control_class.clone(),
+            // T-301: mirror the saved cursor alongside the identity.
+            cursor: t.cursor,
         });
         // Partial RMW under SETTINGS_MUTATION_LOCK, touching ONLY this slot —
         // NOT the whole settings struct (finding 11): a bare whole-struct
@@ -1071,6 +1104,8 @@ mod win {
                 window_class: saved.window_class.clone(),
                 control_class,
                 app: saved.app.clone(),
+                // T-301: restore the persisted cursor back into the live target.
+                cursor: saved.cursor,
             };
             info!(
                 "Jump slot {} restored: {} ({})",
@@ -1190,6 +1225,8 @@ mod win {
                             app: t.app.clone(),
                             window_class: t.window_class.clone(),
                             control_class: t.control_class.clone(),
+                            // T-301: mirror the saved cursor alongside the identity.
+                            cursor: t.cursor,
                         })
                 })
                 .collect();
@@ -1286,13 +1323,268 @@ mod win {
         delete_persisted_hints(app);
     }
 
+    // ------------------------------------------------------------------
+    // T-301: mouse-cursor save & restore (Windows-only, best-effort).
+    //
+    // Every cursor op here is STRICTLY best-effort: it must never fail a
+    // jump/paste, never panic, never retry. Any Win32 failure (locked/secure/
+    // headless desktop, RDP/Citrix remap, monitor hotplug, a destroyed/recycled
+    // HWND, GetCursorPos/SetCursorPos erroring, ClipCursor silently adjusting
+    // the point) degrades to "did nothing" / "used the absolute fallback".
+    // All coordinates are PHYSICAL virtual-screen pixels, coherent only under
+    // verified Per-Monitor-V2 DPI awareness (checked before every restore).
+    // ------------------------------------------------------------------
+
+    /// Warn at most once when cursor restore is skipped for lack of
+    /// per-monitor DPI awareness (a process-wide, unchanging condition — no
+    /// point logging it per jump).
+    static DPI_AWARENESS_WARNED: std::sync::Once = std::sync::Once::new();
+
+    /// T-301 PREREQUISITE (Codex correction #3, revised): cursor restore is
+    /// only safe when this thread is Per-Monitor-V2 DPI aware — all the math is
+    /// in physical pixels, which mean something different under system/unaware/
+    /// PMv1 contexts. tao attempts PMv2 at runtime but can fall back, so verify
+    /// at runtime rather than trusting a manifest (there is none — the runtime
+    /// check IS the gate).
+    ///
+    /// This is an EXACT-context equality check, NOT the earlier
+    /// `GetAwarenessFromDpiAwarenessContext(...) == DPI_AWARENESS_PER_MONITOR_AWARE`
+    /// coarse test: that awareness ENUM collapses PMv1 and PMv2 into the SAME
+    /// `PER_MONITOR_AWARE` value, so it wrongly accepted PMv1 (whose coordinate
+    /// semantics differ from PMv2). `AreDpiAwarenessContextsEqual` against the
+    /// `PER_MONITOR_AWARE_V2` sentinel confirms V2 specifically. If it is not
+    /// exactly V2, callers SKIP restore entirely (never corrupt coords).
+    fn per_monitor_dpi_aware() -> bool {
+        unsafe {
+            AreDpiAwarenessContextsEqual(
+                GetThreadDpiAwarenessContext(),
+                DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2,
+            )
+            .as_bool()
+        }
+    }
+
+    /// Pure divide-by-zero-guarded client-area normalization: a screen point
+    /// `(px, py)`, the client rect's screen-space top-left `(ox, oy)`, and the
+    /// client size `(w, h)` → fraction (0..1) of the client area. `None` on a
+    /// non-positive dimension. Extracted so the norm math is unit-testable
+    /// without a live window.
+    ///
+    /// The app-relative deltas (`px - ox`, `py - oy`) are computed in `i64`
+    /// (Codex correction #4): both operands are physical virtual-screen pixels
+    /// that can legitimately be far negative (monitors left of / above the
+    /// primary), so the raw i32 subtraction could overflow — panicking in a
+    /// debug build, wrapping in release. Widening before the subtraction makes
+    /// it total; the ratio is a plain `f64` divide afterward.
+    fn normalize_in_client(
+        px: i32,
+        py: i32,
+        ox: i32,
+        oy: i32,
+        w: i32,
+        h: i32,
+    ) -> Option<(f64, f64)> {
+        if w <= 0 || h <= 0 {
+            return None;
+        }
+        let dx = px as i64 - ox as i64;
+        let dy = py as i64 - oy as i64;
+        Some((dx as f64 / w as f64, dy as f64 / h as f64))
+    }
+
+    /// Pure inverse of `normalize_in_client` for ONE axis, with checked/widened
+    /// arithmetic (Codex correction #6): client `origin` (screen px) + `norm` ×
+    /// `size` (client px), computed in `i64` and saturated back to `i32` so a
+    /// wild persisted norm or a huge client rect can never overflow. `f64→i64`
+    /// `as` casts saturate in Rust, so this is total.
+    fn norm_to_screen(origin: i32, size: i32, norm: f64) -> i32 {
+        let offset = (norm * size as f64).round() as i64;
+        (origin as i64 + offset).clamp(i32::MIN as i64, i32::MAX as i64) as i32
+    }
+
+    /// One client-rect dimension (`right - left` or `bottom - top`), widened to
+    /// `i64` before the subtraction (Codex correction #4) so two far-apart i32
+    /// edge coordinates can never overflow, then validated strictly positive
+    /// and saturated back to `i32`. `None` on a degenerate/non-positive axis
+    /// (caller falls back to the absolute cursor pixel). Extracted so the
+    /// widening is unit-testable without a live window.
+    fn client_dim(hi: i32, lo: i32) -> Option<i32> {
+        let d = hi as i64 - lo as i64;
+        if d <= 0 {
+            return None;
+        }
+        Some(d.min(i32::MAX as i64) as i32)
+    }
+
+    /// Pure decision (Codex correction #3): should AppRelative restore attempt
+    /// window-relative placement at all? Only when the mode is AppRelative AND
+    /// both normalized coords were captured. Otherwise (ScreenAbsolute, or
+    /// AppRelative whose client rect was unavailable at capture → `None` norms)
+    /// restore falls back to the absolute pixel. Testable without a window.
+    fn wants_app_relative(cursor: &SavedCursor) -> Option<(f64, f64)> {
+        if cursor.mode == CursorMode::AppRelative {
+            if let (Some(nx), Some(ny)) = (cursor.norm_x, cursor.norm_y) {
+                return Some((nx, ny));
+            }
+        }
+        None
+    }
+
+    /// Pure 1-D clamp into a monitor rect edge (Codex correction #1): the
+    /// monitor rect's `right`/`bottom` are ONE PAST the last valid pixel
+    /// (exclusive), so the inclusive max is `hi - 1`. A degenerate rect
+    /// (`hi <= lo`) clamps to `lo`. Testable without a monitor.
+    fn clamp_into_rect_1d(v: i32, lo: i32, hi: i32) -> i32 {
+        if hi <= lo {
+            return lo;
+        }
+        v.clamp(lo, hi - 1)
+    }
+
+    /// Capture the current cursor position as a `SavedCursor` (T-301),
+    /// UNCONDITIONALLY — the per-flow save toggle is honored at commit, not
+    /// here, so the hot slot and manual sets always carry it. `hwnd` is the
+    /// anchor window, used only for the AppRelative client-normalized coords;
+    /// `abs_*` is the physical virtual-screen pixel and doubles as the
+    /// AppRelative fallback. The global `jumper_cursor_mode` is stamped in here
+    /// (Codex "stamp mode at persist" — capture is the single choke point for
+    /// mode selection). `None` only if `GetCursorPos` fails outright.
+    fn capture_cursor(app: &AppHandle, hwnd: HWND) -> Option<SavedCursor> {
+        let mut pt = POINT::default();
+        unsafe {
+            if GetCursorPos(&mut pt).is_err() {
+                return None;
+            }
+        }
+        let (norm_x, norm_y) = match client_norm(hwnd, pt) {
+            Some((nx, ny)) => (Some(nx), Some(ny)),
+            None => (None, None),
+        };
+        Some(SavedCursor {
+            abs_x: pt.x,
+            abs_y: pt.y,
+            norm_x,
+            norm_y,
+            mode: crate::settings::get_settings(app).jumper_cursor_mode,
+        })
+    }
+
+    /// Client-area-normalized cursor coords via `GetClientRect` +
+    /// `ClientToScreen`. `None` (→ absolute fallback) on any failure or a
+    /// degenerate client rect.
+    fn client_norm(hwnd: HWND, pt: POINT) -> Option<(f64, f64)> {
+        let mut rc = RECT::default();
+        let mut origin = POINT { x: 0, y: 0 };
+        unsafe {
+            if GetClientRect(hwnd, &mut rc).is_err() {
+                return None;
+            }
+            if !ClientToScreen(hwnd, &mut origin).as_bool() {
+                return None;
+            }
+        }
+        // Codex correction #4: compute the client dimensions in i64 (via
+        // `client_dim`), validate positive, and saturate back to i32 before
+        // the norm math — a raw `rc.right - rc.left` could overflow i32.
+        let w = client_dim(rc.right, rc.left)?;
+        let h = client_dim(rc.bottom, rc.top)?;
+        normalize_in_client(pt.x, pt.y, origin.x, origin.y, w, h)
+    }
+
+    /// AppRelative restore point: `norm` fraction of the TARGET window's LIVE
+    /// client rect, in screen coords. `None` (→ caller uses abs) if the window
+    /// is gone or the client rect is unavailable/degenerate.
+    fn app_relative_point(target_hwnd: isize, nx: f64, ny: f64) -> Option<(i32, i32)> {
+        let hwnd = HWND(target_hwnd as _);
+        let mut rc = RECT::default();
+        let mut origin = POINT { x: 0, y: 0 };
+        unsafe {
+            if !IsWindow(Some(hwnd)).as_bool() {
+                return None;
+            }
+            if GetClientRect(hwnd, &mut rc).is_err() {
+                return None;
+            }
+            if !ClientToScreen(hwnd, &mut origin).as_bool() {
+                return None;
+            }
+        }
+        // Codex correction #4: widen the client-dimension subtraction to i64
+        // (via `client_dim`) — it validates positivity and saturates back to
+        // i32, so a huge/degenerate live client rect can neither overflow nor
+        // slip past the positive-dimension check.
+        let w = client_dim(rc.right, rc.left)?;
+        let h = client_dim(rc.bottom, rc.top)?;
+        Some((
+            norm_to_screen(origin.x, w, nx),
+            norm_to_screen(origin.y, h, ny),
+        ))
+    }
+
+    /// Resolve the desired restore point in physical virtual-screen pixels:
+    /// AppRelative (window-relative) when available, else the captured
+    /// absolute pixel (also the ScreenAbsolute path).
+    fn resolve_restore_point(cursor: &SavedCursor, target_hwnd: isize) -> (i32, i32) {
+        if let Some((nx, ny)) = wants_app_relative(cursor) {
+            if let Some(pt) = app_relative_point(target_hwnd, nx, ny) {
+                return pt;
+            }
+        }
+        (cursor.abs_x, cursor.abs_y)
+    }
+
+    /// Clamp a point to the nearest CURRENTLY-present monitor's rect (Codex
+    /// correction #1): the virtual-desktop bounding box has dead pixels between
+    /// staggered/L-shaped/separated monitors, so we clamp to an ACTUAL monitor,
+    /// never `SM_*VIRTUALSCREEN`. `MONITOR_DEFAULTTONEAREST` returns the
+    /// monitor the point is in (clamp is then a no-op) or, for a point in dead
+    /// space / off all monitors (e.g. the saved monitor was unplugged), the
+    /// closest one — into whose `rcMonitor` we clamp. Best-effort: on API
+    /// failure the point is returned unchanged (SetCursorPos clamps anyway).
+    fn clamp_to_nearest_monitor(pt: (i32, i32)) -> (i32, i32) {
+        let mut mi = MONITORINFO {
+            cbSize: std::mem::size_of::<MONITORINFO>() as u32,
+            ..Default::default()
+        };
+        unsafe {
+            let mon = MonitorFromPoint(POINT { x: pt.0, y: pt.1 }, MONITOR_DEFAULTTONEAREST);
+            if !GetMonitorInfoW(mon, &mut mi).as_bool() {
+                return pt;
+            }
+        }
+        (
+            clamp_into_rect_1d(pt.0, mi.rcMonitor.left, mi.rcMonitor.right),
+            clamp_into_rect_1d(pt.1, mi.rcMonitor.top, mi.rcMonitor.bottom),
+        )
+    }
+
+    /// Best-effort cursor restore (T-301). Verifies the PMv2 prerequisite,
+    /// resolves the point (AppRelative w/ absolute fallback, or ScreenAbsolute),
+    /// clamps it onto the nearest present monitor, and `SetCursorPos`. NEVER
+    /// fails a jump/paste, never panics — every failure is swallowed.
+    fn restore_cursor(cursor: &SavedCursor, target_hwnd: isize) {
+        if !per_monitor_dpi_aware() {
+            DPI_AWARENESS_WARNED.call_once(|| {
+                warn!(
+                    "Jumper: cursor restore skipped — thread is not Per-Monitor-V2 DPI aware (physical-pixel coords would be incoherent)"
+                );
+            });
+            return;
+        }
+        let point = resolve_restore_point(cursor, target_hwnd);
+        let (x, y) = clamp_to_nearest_monitor(point);
+        unsafe {
+            let _ = SetCursorPos(x, y);
+        }
+    }
+
     /// Capture the current foreground window/control as a `Target`, applying
     /// every capture-time refusal (no foreground window, Handy's own window,
     /// password field). `Target` no longer carries a generation (that lives
     /// in `SlotState`, separately) — callers assign one at commit time via
     /// `next_generation()`, kept as close as possible to the moment the
     /// target actually lands in `SLOTS`.
-    fn capture_current_target(_app: &AppHandle, slot: usize) -> Result<Target, String> {
+    fn capture_current_target(app: &AppHandle, slot: usize) -> Result<Target, String> {
         if slot >= SLOT_COUNT {
             return Err(format!("invalid jump slot {slot}"));
         }
@@ -1341,6 +1633,10 @@ mod win {
                 return Err("refusing to anchor a password field".into());
             }
             let app_name = process_name(pid).unwrap_or_else(|| "unknown".into());
+            // T-301: capture the cursor UNCONDITIONALLY (relative to the
+            // top-level window); flow gating nulls it at commit for the
+            // flow-driven paths, never for the manual/hot `set_slot`.
+            let cursor = capture_cursor(app, hwnd);
             Ok(Target {
                 hwnd: hwnd.0 as isize,
                 control: control.0 as isize,
@@ -1349,6 +1645,7 @@ mod win {
                 window_class: class_name(hwnd),
                 control_class,
                 app: app_name,
+                cursor,
             })
         }
     }
@@ -1356,9 +1653,32 @@ mod win {
     /// Manual/unconditional capture: always wins regardless of what was
     /// there before (a direct user action — Set Anchor, the hot-slot Set
     /// binding — is authoritative and never deferred, so there's nothing to
-    /// compare-and-swap against).
+    /// compare-and-swap against). MANUAL/HOT captures keep the cursor IFF the
+    /// dictate/output toggle is on; this wrapper resolves that toggle and
+    /// defers to `set_slot_with_cursor_policy`. (Flow-driven track captures
+    /// gate on their DRIVING flow's toggle instead — see `set_slot_if_unchanged`
+    /// / `set_slot_from_guard` / `set_slot_with_cursor_policy`, which take an
+    /// explicit `save_cursor` computed by the caller from the right flow.)
     pub fn set_slot(app: &AppHandle, slot: usize) -> Result<AnchorStatus, String> {
-        let target = capture_current_target(app, slot)?;
+        let save_cursor = crate::settings::get_settings(app).jumper_save_cursor_output_enabled;
+        set_slot_with_cursor_policy(app, slot, save_cursor)
+    }
+
+    /// Manual/unconditional capture with an explicit cursor policy (T-301):
+    /// identical to `set_slot`'s authoritative "always wins" commit, but the
+    /// caller decides whether the (unconditionally captured) cursor is kept.
+    /// Used by the non-anchored track-last-output fallback in clipboard.rs,
+    /// which gates the cursor on the DRIVING flow's toggle rather than always
+    /// the output toggle.
+    pub fn set_slot_with_cursor_policy(
+        app: &AppHandle,
+        slot: usize,
+        save_cursor: bool,
+    ) -> Result<AnchorStatus, String> {
+        let mut target = capture_current_target(app, slot)?;
+        if !save_cursor {
+            target.cursor = None;
+        }
         info!(
             "Jump slot {} set: {} (class '{}', pid {}, tid {})",
             slot, target.app, target.control_class, target.pid, target.tid
@@ -1494,6 +1814,9 @@ mod win {
                 window_class: guard.target_window_class.clone(),
                 control_class: guard.target_control_class.clone(),
                 app: guard.target_app.clone(),
+                // T-301: filled in by `set_slot_from_guard` (needs `app` for
+                // the settings mode + flow gating) — captured fresh there.
+                cursor: None,
             })
         }
     }
@@ -1536,11 +1859,22 @@ mod win {
         app: &AppHandle,
         guard: &DeliveryGuard,
         slot: usize,
+        save_cursor: bool,
     ) -> Result<AnchorStatus, String> {
         if slot >= SLOT_COUNT {
             return Err(format!("invalid jump slot {slot}"));
         }
-        let target = capture_target_from_guard(guard)?;
+        let mut target = capture_target_from_guard(guard)?;
+        // T-301 (Codex correction #5): flow-driven track capture — grab the
+        // cursor (relative to the delivery target window) UNCONDITIONALLY,
+        // then null it unless the DRIVING flow opted in. `save_cursor` is
+        // computed by clipboard.rs from the correct flow's toggle (submit flow
+        // → submit toggle, dictate/output flow → output toggle), so the two
+        // flows gate independently rather than sharing an "either" test.
+        target.cursor = capture_cursor(app, HWND(guard.target_hwnd as _));
+        if !save_cursor {
+            target.cursor = None;
+        }
         info!(
             "Jump slot {} tracked from delivery: {} (class '{}', pid {}, tid {})",
             slot, target.app, target.control_class, target.pid, target.tid
@@ -1585,14 +1919,26 @@ mod win {
     /// window can change harmlessly between snapshot and here); only the
     /// final commit is guarded, and it happens under one `SLOTS` lock
     /// acquisition so the compare-and-swap is atomic.
-    pub fn set_slot_if_unchanged(app: &AppHandle, slot: usize, expected: u64) -> bool {
-        let target = match capture_current_target(app, slot) {
+    pub fn set_slot_if_unchanged(
+        app: &AppHandle,
+        slot: usize,
+        expected: u64,
+        save_cursor: bool,
+    ) -> bool {
+        let mut target = match capture_current_target(app, slot) {
             Ok(t) => t,
             Err(e) => {
                 debug!("Automatic capture for slot {} skipped: {}", slot, e);
                 return false;
             }
         };
+        // T-301 (Codex correction #5): flow-driven capture — drop the
+        // (unconditionally captured) cursor unless the DRIVING flow opted in.
+        // `save_cursor` is decided by the caller from the correct flow's
+        // toggle. The manual/hot `set_slot` gates on the output toggle instead.
+        if !save_cursor {
+            target.cursor = None;
+        }
         // T-102/finding 6: mutate under the lock, THEN persist after
         // releasing it — unified ordering with every other writer, guarded
         // against a newer mutation racing the persist (`persist_current_slot`
@@ -1842,6 +2188,12 @@ mod win {
         // Best-effort focus — jump is navigation, not delivery, so a focus
         // miss is not fatal.
         let _ = focus_control_verified(HWND(target.hwnd as _), HWND(target.control as _));
+        // T-301: restore the saved cursor AFTER activation + focus, using the
+        // validated target's own cursor. Best-effort — a failure never fails
+        // the jump.
+        if let Some(cursor) = target.cursor.as_ref() {
+            restore_cursor(cursor, target.hwnd);
+        }
         debug!("Jumped to slot {}: {}", slot, target.app);
         Ok(())
     }
@@ -1949,6 +2301,9 @@ mod win {
             target_control_class: target.control_class.clone(),
             target_app: target.app.clone(),
             slot,
+            // T-301: snapshot the saved cursor into the guard — do NOT restore
+            // here; `finish_delivery` restores it as the very last op.
+            cursor: target.cursor,
         })
     }
 
@@ -2053,6 +2408,13 @@ mod win {
                 }
             }
         }
+        // T-301: cursor restore is the VERY LAST focus/input op of the whole
+        // delivery — strictly after the anchor-delivered emit AND the
+        // return-focus block above — so it can never perturb the TOCTOU
+        // keystroke path. Best-effort; a failure never affects the delivery.
+        if let Some(cursor) = guard.cursor.as_ref() {
+            restore_cursor(cursor, guard.target_hwnd);
+        }
     }
 
     #[cfg(test)]
@@ -2072,6 +2434,7 @@ mod win {
                 window_class: "TestWindow".into(),
                 control_class: "TestControl".into(),
                 app: "test".into(),
+                cursor: None,
             }
         }
 
@@ -2443,6 +2806,186 @@ mod win {
             assert!(snapshot_should_write_identities(true));
             assert!(!snapshot_should_write_identities(false));
         }
+
+        // ------------------------------------------------------------------
+        // T-301: cursor save/restore pure-logic tests.
+        // ------------------------------------------------------------------
+
+        /// A `SavedCursor` (incl. `None` norms) must survive a serde
+        /// round-trip unchanged — persisted inside `SavedJumpSlot.cursor`.
+        #[test]
+        fn saved_cursor_serde_round_trips_including_none_norms() {
+            let with_norms = SavedCursor {
+                abs_x: -1920,
+                abs_y: 37,
+                norm_x: Some(0.25),
+                norm_y: Some(0.75),
+                mode: CursorMode::AppRelative,
+            };
+            let json = serde_json::to_string(&with_norms).unwrap();
+            let back: SavedCursor = serde_json::from_str(&json).unwrap();
+            assert_eq!(back, with_norms);
+
+            let no_norms = SavedCursor {
+                abs_x: 10,
+                abs_y: 20,
+                norm_x: None,
+                norm_y: None,
+                mode: CursorMode::ScreenAbsolute,
+            };
+            let json = serde_json::to_string(&no_norms).unwrap();
+            let back: SavedCursor = serde_json::from_str(&json).unwrap();
+            assert_eq!(back, no_norms);
+            assert!(back.norm_x.is_none() && back.norm_y.is_none());
+        }
+
+        /// The `CursorMode` variants must cross the command boundary as the
+        /// exact strings the frontend Dropdown + manual parse rely on.
+        #[test]
+        fn cursor_mode_serializes_as_pinned_variant_names() {
+            assert_eq!(
+                serde_json::to_string(&CursorMode::AppRelative).unwrap(),
+                "\"AppRelative\""
+            );
+            assert_eq!(
+                serde_json::to_string(&CursorMode::ScreenAbsolute).unwrap(),
+                "\"ScreenAbsolute\""
+            );
+        }
+
+        /// Client-normalization math: a point at the client origin is 0.0, at
+        /// the far corner is ~1.0, at the center is 0.5; a non-positive
+        /// dimension guards divide-by-zero with `None`.
+        #[test]
+        fn normalize_in_client_maps_points_to_fractions() {
+            // origin (100, 200), size 800x600.
+            assert_eq!(
+                normalize_in_client(100, 200, 100, 200, 800, 600),
+                Some((0.0, 0.0))
+            );
+            assert_eq!(
+                normalize_in_client(500, 500, 100, 200, 800, 600),
+                Some((0.5, 0.5))
+            );
+            assert_eq!(
+                normalize_in_client(900, 800, 100, 200, 800, 600),
+                Some((1.0, 1.0))
+            );
+            // Degenerate client rect → None (abs fallback).
+            assert_eq!(normalize_in_client(0, 0, 0, 0, 0, 600), None);
+            assert_eq!(normalize_in_client(0, 0, 0, 0, 800, -1), None);
+        }
+
+        /// `norm_to_screen` is the inverse of `normalize_in_client` on one
+        /// axis and round-trips the center/corner points.
+        #[test]
+        fn norm_to_screen_inverts_normalization() {
+            assert_eq!(norm_to_screen(100, 800, 0.0), 100);
+            assert_eq!(norm_to_screen(100, 800, 0.5), 500);
+            assert_eq!(norm_to_screen(100, 800, 1.0), 900);
+            // Negative origin (secondary monitor left of primary) is fine.
+            assert_eq!(norm_to_screen(-1920, 1920, 0.5), -960);
+        }
+
+        /// Checked/widened arithmetic (Codex correction #6): a pathological
+        /// persisted norm or size can never overflow — the result saturates
+        /// into `i32` instead of panicking/wrapping.
+        #[test]
+        fn norm_to_screen_saturates_instead_of_overflowing() {
+            assert_eq!(norm_to_screen(i32::MAX, i32::MAX, 1000.0), i32::MAX);
+            assert_eq!(norm_to_screen(i32::MIN, i32::MAX, -1000.0), i32::MIN);
+        }
+
+        /// Codex correction #4: the app-relative delta is computed in i64, so
+        /// far-apart physical pixels (a point on a monitor far left of the
+        /// origin) never overflow the i32 subtraction — in debug this would
+        /// otherwise panic. Values chosen so `px - ox` exceeds i32 range.
+        #[test]
+        fn normalize_in_client_delta_does_not_overflow_i32() {
+            // ox near i32::MIN, px near i32::MAX → true delta ~2^32, unrepresentable in i32.
+            let (nx, _ny) = normalize_in_client(i32::MAX, 0, i32::MIN, 0, i32::MAX, 600).unwrap();
+            // ~ (i32::MAX - i32::MIN) / i32::MAX ≈ 2.0, computed without overflow.
+            assert!((nx - 2.0).abs() < 0.001, "nx was {nx}");
+        }
+
+        /// Codex correction #4: `client_dim` widens `hi - lo` to i64 (no
+        /// overflow), rejects non-positive/degenerate axes, and saturates the
+        /// result back into i32.
+        #[test]
+        fn client_dim_widens_validates_and_saturates() {
+            assert_eq!(client_dim(800, 100), Some(700));
+            // Degenerate / inverted → None.
+            assert_eq!(client_dim(100, 100), None);
+            assert_eq!(client_dim(100, 200), None);
+            // hi - lo would overflow i32 (positive); widened then saturated to i32::MAX.
+            assert_eq!(client_dim(i32::MAX, i32::MIN), Some(i32::MAX));
+            // Large-but-in-range difference is preserved exactly.
+            assert_eq!(client_dim(i32::MAX, 0), Some(i32::MAX));
+        }
+
+        /// Nearest-monitor clamp (Codex correction #1): a point inside the
+        /// rect is unchanged; a point past the exclusive right/bottom edge
+        /// clamps to `right-1`/`bottom-1`; a point before the top-left clamps
+        /// to `left`/`top`; a degenerate rect clamps to its origin.
+        #[test]
+        fn clamp_into_rect_1d_respects_exclusive_far_edge() {
+            // Synthetic secondary monitor at [-1920, 0) width 1920.
+            assert_eq!(clamp_into_rect_1d(-1000, -1920, 0), -1000); // inside
+            assert_eq!(clamp_into_rect_1d(-1920, -1920, 0), -1920); // left edge
+            assert_eq!(clamp_into_rect_1d(50, -1920, 0), -1); // past exclusive right
+            assert_eq!(clamp_into_rect_1d(-5000, -1920, 0), -1920); // far left
+            // Degenerate rect → origin.
+            assert_eq!(clamp_into_rect_1d(500, 100, 100), 100);
+            assert_eq!(clamp_into_rect_1d(500, 100, 50), 100);
+        }
+
+        /// AppRelative WITH captured norms attempts window-relative placement.
+        #[test]
+        fn wants_app_relative_uses_norms_when_present_and_app_relative() {
+            let c = SavedCursor {
+                abs_x: 5,
+                abs_y: 6,
+                norm_x: Some(0.3),
+                norm_y: Some(0.4),
+                mode: CursorMode::AppRelative,
+            };
+            assert_eq!(wants_app_relative(&c), Some((0.3, 0.4)));
+        }
+
+        /// AppRelative with MISSING norms falls back to absolute (Codex
+        /// correction #3 fallback) — the client rect was unavailable at
+        /// capture, so there is no window-relative point to restore to.
+        #[test]
+        fn wants_app_relative_none_when_norms_missing_falls_back_to_abs() {
+            let c = SavedCursor {
+                abs_x: 5,
+                abs_y: 6,
+                norm_x: None,
+                norm_y: None,
+                mode: CursorMode::AppRelative,
+            };
+            assert_eq!(wants_app_relative(&c), None);
+            // Half-captured norms are treated as absent too.
+            let half = SavedCursor {
+                norm_x: Some(0.5),
+                norm_y: None,
+                ..c
+            };
+            assert_eq!(wants_app_relative(&half), None);
+        }
+
+        /// ScreenAbsolute never uses norms even when they were captured.
+        #[test]
+        fn wants_app_relative_none_for_screen_absolute_mode() {
+            let c = SavedCursor {
+                abs_x: 5,
+                abs_y: 6,
+                norm_x: Some(0.3),
+                norm_y: Some(0.4),
+                mode: CursorMode::ScreenAbsolute,
+            };
+            assert_eq!(wants_app_relative(&c), None);
+        }
     }
 }
 
@@ -2513,19 +3056,24 @@ pub enum PostTakeAction {
 /// Set/Clear of the same slot can easily land before this finally runs.
 /// Comparing generations at run time lets the fresher manual action win
 /// instead of being silently clobbered by the stale deferred one.
-static POST_TAKE_ACTION: std::sync::Mutex<Option<(PostTakeAction, usize, Option<u64>)>> =
+static POST_TAKE_ACTION: std::sync::Mutex<Option<(PostTakeAction, usize, Option<u64>, bool)>> =
     std::sync::Mutex::new(None);
 
-pub fn arm_post_take_action(action: PostTakeAction, slot: usize) {
+/// `save_cursor` is the DRIVING flow's cursor policy, resolved at the
+/// finishing press by the coordinator (submit flow → submit toggle,
+/// dictate/output flow → output toggle) and carried verbatim into the
+/// deferred on-finish Set so `run_post_take_action` never has to recompute it
+/// (it has no flow context at run time). Ignored for the Clear variant.
+pub fn arm_post_take_action(action: PostTakeAction, slot: usize, save_cursor: bool) {
     if slot < SLOT_COUNT {
         let expected = slot_generation(slot);
         if let Ok(mut guard) = POST_TAKE_ACTION.lock() {
-            *guard = Some((action, slot, expected));
+            *guard = Some((action, slot, expected, save_cursor));
         }
     }
 }
 
-pub fn take_post_take_action() -> Option<(PostTakeAction, usize, Option<u64>)> {
+pub fn take_post_take_action() -> Option<(PostTakeAction, usize, Option<u64>, bool)> {
     POST_TAKE_ACTION.lock().ok().and_then(|mut g| g.take())
 }
 
@@ -2539,17 +3087,26 @@ pub fn clear_post_take_action() {
 /// Both variants are generation-guarded (compare-and-set against the
 /// snapshot taken at arm time): if the slot was touched by anything else in
 /// the meantime, this deferred write is skipped rather than clobbering it.
-pub fn run_post_take_action(app: &AppHandle, action: Option<(PostTakeAction, usize, Option<u64>)>) {
+pub fn run_post_take_action(
+    app: &AppHandle,
+    action: Option<(PostTakeAction, usize, Option<u64>, bool)>,
+) {
     match action {
-        Some((PostTakeAction::Set, slot, expected)) => {
-            if !set_slot_if_unchanged(app, slot, expected) {
+        Some((PostTakeAction::Set, slot, expected, save_cursor)) => {
+            // T-301: the deferred on-finish Set carries the DRIVING flow's own
+            // cursor policy, resolved and threaded through `arm_post_take_action`
+            // at the finishing press (submit flow → submit toggle, dictate/
+            // output flow → output toggle) — NOT recomputed from the output
+            // toggle here, which ignored the submit flow's toggle (the last
+            // per-flow cursor-gating gap).
+            if !set_slot_if_unchanged(app, slot, expected, save_cursor) {
                 log::debug!(
                     "on-finish set for slot {} skipped — a newer capture won the race",
                     slot
                 );
             }
         }
-        Some((PostTakeAction::Clear, slot, expected)) => {
+        Some((PostTakeAction::Clear, slot, expected, _save_cursor)) => {
             if !clear_if_unchanged(app, slot, expected) {
                 log::debug!(
                     "on-finish clear for slot {} skipped — a newer capture won the race",
@@ -2584,14 +3141,19 @@ pub fn slot_generation(slot: usize) -> Option<u64> {
 /// `expected` is only ever `None` when it originated from a non-Windows
 /// `slot_generation()` call (where this whole path is unreachable anyway);
 /// `unwrap_or(0)` degrades to "never written" rather than panicking.
-pub fn set_slot_if_unchanged(app: &AppHandle, slot: usize, expected: Option<u64>) -> bool {
+pub fn set_slot_if_unchanged(
+    app: &AppHandle,
+    slot: usize,
+    expected: Option<u64>,
+    save_cursor: bool,
+) -> bool {
     #[cfg(windows)]
     {
-        win::set_slot_if_unchanged(app, slot, expected.unwrap_or(0))
+        win::set_slot_if_unchanged(app, slot, expected.unwrap_or(0), save_cursor)
     }
     #[cfg(not(windows))]
     {
-        let _ = (app, slot, expected);
+        let _ = (app, slot, expected, save_cursor);
         false
     }
 }
@@ -2618,6 +3180,28 @@ pub fn set_slot(app: &AppHandle, slot: usize) -> Result<AnchorStatus, String> {
     #[cfg(not(windows))]
     {
         let _ = (app, slot);
+        Err("The Jumper is Windows-only in this version".into())
+    }
+}
+
+/// Flow-aware manual capture (T-301): like `set_slot` but the caller decides
+/// whether the cursor is kept, instead of always the output toggle. Used by
+/// the non-anchored track-last-output fallback in clipboard.rs so its cursor
+/// gating follows the DRIVING flow (submit vs dictate/output), matching the
+/// anchored `track_from_guard` path. `set_slot` stays output-toggle gated for
+/// the manual/hot callers.
+pub fn set_slot_with_cursor_policy(
+    app: &AppHandle,
+    slot: usize,
+    save_cursor: bool,
+) -> Result<AnchorStatus, String> {
+    #[cfg(windows)]
+    {
+        win::set_slot_with_cursor_policy(app, slot, save_cursor)
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = (app, slot, save_cursor);
         Err("The Jumper is Windows-only in this version".into())
     }
 }
@@ -2700,16 +3284,18 @@ pub fn track_from_guard(
     app: &AppHandle,
     guard: &DeliveryGuard,
     slot: usize,
+    save_cursor: bool,
 ) -> Result<AnchorStatus, String> {
-    win::set_slot_from_guard(app, guard, slot)
+    win::set_slot_from_guard(app, guard, slot, save_cursor)
 }
 #[cfg(not(windows))]
 pub fn track_from_guard(
     app: &AppHandle,
     guard: &DeliveryGuard,
     slot: usize,
+    save_cursor: bool,
 ) -> Result<AnchorStatus, String> {
-    let _ = (app, guard, slot);
+    let _ = (app, guard, slot, save_cursor);
     Err("The Jumper is Windows-only in this version".into())
 }
 
@@ -2902,17 +3488,17 @@ mod cross_platform_tests {
         clear_post_take_action();
         assert!(take_post_take_action().is_none());
 
-        arm_post_take_action(PostTakeAction::Clear, HOT);
+        arm_post_take_action(PostTakeAction::Clear, HOT, false);
         let action = take_post_take_action();
         match action {
-            Some((PostTakeAction::Clear, slot, _expected)) => assert_eq!(slot, HOT),
+            Some((PostTakeAction::Clear, slot, _expected, _save_cursor)) => assert_eq!(slot, HOT),
             _ => panic!("expected an armed Clear action for HOT"),
         }
         // One-shot: taking it again yields nothing.
         assert!(take_post_take_action().is_none());
 
         // Out-of-range slot is refused at arm time, never silently stored.
-        arm_post_take_action(PostTakeAction::Set, SLOT_COUNT + 3);
+        arm_post_take_action(PostTakeAction::Set, SLOT_COUNT + 3, false);
         assert!(take_post_take_action().is_none());
     }
 }

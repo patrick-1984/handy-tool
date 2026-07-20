@@ -369,6 +369,16 @@
           "description": "Which jump slot receives this flow's tracked last-output location."
         }
       },
+      "saveCursor": {
+        "label": "Restore mouse cursor position",
+        "description": "After this flow delivers a transcription, remember the mouse cursor position and move the pointer back there when you jump. Independent of the other flow's switch; the position mode below is shared between both flows.",
+        "mode": {
+          "title": "Cursor position mode",
+          "description": "How the saved cursor position is measured. App-relative anchors the pointer to the target window, so it lands correctly even if the window has moved. Screen-absolute restores the exact screen coordinates regardless of the window.",
+          "appRelative": "App-relative (follows the window)",
+          "screenAbsolute": "Screen-absolute (exact coordinates)"
+        }
+      },
       "returnFocus": {
         "label": "Return focus after delivery",
         "description": "Switch back to where you were when the delivery started. The starting location is remembered automatically every time — no slot setup needed."
@@ -394,6 +404,10 @@
         "description": "Which speech model transcribes folder files. Every model in this list understands audio — models marked with a globe can also translate to English (turn on Translate to English in the main settings to use it). Picking a different model than dictation swaps models when switching between batch and live work, which costs a few seconds each way; with Live-first priority your dictation model is restored the moment you start recording.",
         "sameAsDictation": "Same as dictation (default)",
         "translates": "{{name}} — can translate to English"
+      },
+      "unload": {
+        "title": "Unload batch model after",
+        "description": "How long the translator's batch model stays loaded in memory after it finishes work. Unloading frees memory sooner; keeping it loaded avoids the reload cost when the next file arrives. Only applies when the batch model differs from the dictation model."
       },
       "status": {
         "title": "Status",

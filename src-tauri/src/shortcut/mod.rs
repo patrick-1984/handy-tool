@@ -20,9 +20,10 @@ use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_autostart::ManagerExt;
 
 use crate::settings::{
-    self, AnchorAction, AutoSubmitKey, ClipboardHandling, ClipboardRestoreDelay,
-    KeyboardImplementation, LLMPrompt, OverlayPosition, PasteMethod, ShortcutBinding, SoundTheme,
-    SubmitIdleBehavior, Theme, TranscriptionMode, TypingTool, get_settings,
+    self, AnchorAction, AutoSubmitKey, ClipboardHandling, ClipboardRestoreDelay, CursorMode,
+    KeyboardImplementation, LLMPrompt, ModelUnloadTimeout, OverlayPosition, PasteMethod,
+    ShortcutBinding, SoundTheme, SubmitIdleBehavior, Theme, TranscriptionMode, TypingTool,
+    get_settings,
 };
 use crate::tray;
 
@@ -1188,6 +1189,84 @@ pub fn change_jumper_track_slot_setting(
         } else {
             s.jumper_track_submit_slot = slot as u8;
         }
+    });
+    Ok(())
+}
+
+/// Toggle save/restore-cursor for a flow ("output" = dictate, "submit" =
+/// Transcribe & Submit). Independent per flow (mirrors
+/// `change_jumper_track_setting`). T-301.
+#[tauri::command]
+#[specta::specta]
+pub fn change_jumper_save_cursor_setting(
+    app: AppHandle,
+    flow: String,
+    enabled: bool,
+) -> Result<(), String> {
+    // Validate BEFORE the mutation closure so an unknown flow can't half-apply,
+    // and route through the serialized RMW helper so the two per-flow switches
+    // can't overwrite one another.
+    if flow != "output" && flow != "submit" {
+        return Err(format!("Unknown save-cursor flow '{}'", flow));
+    }
+    settings::update_settings(&app, |s| {
+        if flow == "output" {
+            s.jumper_save_cursor_output_enabled = enabled;
+        } else {
+            s.jumper_save_cursor_submit_enabled = enabled;
+        }
+    });
+    Ok(())
+}
+
+/// Set the coordinate mode used when restoring the cursor: "AppRelative"
+/// (same spot inside the app; default) or "ScreenAbsolute" (fixed monitor
+/// pixel). Shared by both flows. T-301. Takes a String parsed manually per the
+/// enum-arg convention; the strings are the `CursorMode` variant names.
+#[tauri::command]
+#[specta::specta]
+pub fn change_jumper_cursor_mode_setting(app: AppHandle, mode: String) -> Result<(), String> {
+    let parsed = match mode.as_str() {
+        "AppRelative" => CursorMode::AppRelative,
+        "ScreenAbsolute" => CursorMode::ScreenAbsolute,
+        other => return Err(format!("Unknown cursor mode '{}'", other)),
+    };
+    settings::update_settings(&app, |s| {
+        s.jumper_cursor_mode = parsed;
+    });
+    Ok(())
+}
+
+/// Set the Translator engine's idle-unload timeout (independent of the main
+/// model's `model_unload_timeout`). Mirrors `set_model_unload_timeout` but
+/// takes a String parsed manually per the enum-arg convention; parsing via
+/// serde guarantees it accepts exactly the `ModelUnloadTimeout` wire repr. T-36.
+#[tauri::command]
+#[specta::specta]
+pub fn change_translator_model_unload_timeout(
+    app: AppHandle,
+    timeout: String,
+) -> Result<(), String> {
+    let parsed: ModelUnloadTimeout =
+        serde_json::from_value(serde_json::Value::String(timeout.clone()))
+            .map_err(|_| format!("Invalid translator model unload timeout '{}'", timeout))?;
+    settings::update_settings(&app, |s| {
+        s.translator_model_unload_timeout = parsed;
+    });
+    Ok(())
+}
+
+/// Idle seconds for the Translator's `Custom` unload timeout. Mirrors
+/// `set_model_unload_custom_seconds` (clamps to >= 1). T-36.
+#[tauri::command]
+#[specta::specta]
+pub fn change_translator_model_unload_custom_seconds(
+    app: AppHandle,
+    seconds: u64,
+) -> Result<(), String> {
+    let seconds = seconds.max(1);
+    settings::update_settings(&app, |s| {
+        s.translator_model_unload_custom_seconds = seconds;
     });
     Ok(())
 }

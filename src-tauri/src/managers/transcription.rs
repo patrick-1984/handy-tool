@@ -1,6 +1,8 @@
 use crate::audio_toolkit::{apply_custom_words, filter_transcription_output, pad_trailing_silence};
 use crate::managers::model::{EngineType, ModelManager};
-use crate::settings::{ModelUnloadTimeout, get_settings, normalize_language_for_engine};
+use crate::settings::{
+    AppSettings, ModelUnloadTimeout, get_settings, normalize_language_for_engine,
+};
 use anyhow::Result;
 use log::{debug, error, info, warn};
 use serde::Serialize;
@@ -181,9 +183,19 @@ struct EngineState {
 #[derive(Clone)]
 pub struct TranscriptionManager {
     engine: Arc<Mutex<EngineState>>,
+    /// Dedicated SECOND engine slot for the Translator folder-batch worker,
+    /// used ONLY when its model differs from the dictation model AND is a local
+    /// engine — so the two models stay resident in PARALLEL (e.g. dictation on
+    /// FLM/NPU in `engine`, Translator on a Whisper/iGPU model here) instead of
+    /// thrashing one shared slot. External engines (FLM/API/OpenRouter) never
+    /// use this slot: one NPU can't host two FLM contexts, and HTTP engines are
+    /// stateless. Its own idle-unload is `translator_model_unload_timeout`.
+    translator_engine: Arc<Mutex<EngineState>>,
     model_manager: Arc<ModelManager>,
     app_handle: AppHandle,
     last_activity: Arc<AtomicU64>,
+    /// Last-use timestamp for the Translator slot's idle watcher.
+    translator_last_activity: Arc<AtomicU64>,
     shutdown_signal: Arc<AtomicBool>,
     watcher_handle: Arc<Mutex<Option<thread::JoinHandle<()>>>>,
     is_loading: Arc<Mutex<bool>>,
@@ -220,9 +232,20 @@ impl TranscriptionManager {
                 model_id: None,
                 instance: 0,
             })),
+            translator_engine: Arc::new(Mutex::new(EngineState {
+                engine: None,
+                model_id: None,
+                instance: 0,
+            })),
             model_manager,
             app_handle: app_handle.clone(),
             last_activity: Arc::new(AtomicU64::new(
+                SystemTime::now()
+                    .duration_since(SystemTime::UNIX_EPOCH)
+                    .unwrap()
+                    .as_millis() as u64,
+            )),
+            translator_last_activity: Arc::new(AtomicU64::new(
                 SystemTime::now()
                     .duration_since(SystemTime::UNIX_EPOCH)
                     .unwrap()
@@ -255,14 +278,26 @@ impl TranscriptionManager {
                     }
 
                     let settings = get_settings(&app_handle_cloned);
-                    let timeout_seconds = settings
-                        .model_unload_timeout
-                        .to_seconds(settings.model_unload_custom_seconds);
 
-                    if let Some(limit_seconds) = timeout_seconds {
+                    // Evaluate the MAIN slot's idle-unload INDEPENDENTLY of the
+                    // TRANSLATOR slot's (below). This runs inside a scoped
+                    // closure so its early exits are local `return`s: a bare
+                    // `continue` here used to abort the whole tick and starve
+                    // the translator-slot check that follows (so a translator
+                    // model never unloaded while the main slot was on
+                    // `Immediately`, or while a live/batch take held the flags).
+                    (|| {
+                        let timeout_seconds = settings
+                            .model_unload_timeout
+                            .to_seconds(settings.model_unload_custom_seconds);
+
+                        let Some(limit_seconds) = timeout_seconds else {
+                            return;
+                        };
+
                         // Skip polling-based unloading for immediate timeout since it's handled directly in transcribe()
                         if settings.model_unload_timeout == ModelUnloadTimeout::Immediately {
-                            continue;
+                            return;
                         }
 
                         let last = manager_cloned.last_activity.load(Ordering::Relaxed);
@@ -278,7 +313,7 @@ impl TranscriptionManager {
                         if manager_cloned.is_live_transcribing.load(Ordering::Relaxed)
                             || manager_cloned.is_batch_transcribing.load(Ordering::Relaxed)
                         {
-                            continue;
+                            return;
                         }
 
                         if now_ms.saturating_sub(last) > limit_seconds * 1000 {
@@ -302,6 +337,38 @@ impl TranscriptionManager {
                                         "Model unloaded due to inactivity (took {}ms)",
                                         unload_duration.as_millis()
                                     );
+                                }
+                            }
+                        }
+                    })();
+
+                    // Translator slot: ALWAYS evaluated each tick, independent of
+                    // the main-slot decision above. Independent idle-unload driven by
+                    // `translator_model_unload_timeout` vs
+                    // `translator_last_activity`. Unlike the main slot,
+                    // `Immediately` is NOT special-cased away here (there is no
+                    // per-take stop hook that would otherwise handle it) — with
+                    // a 0-second limit it simply unloads on the next tick after
+                    // a batch job releases `is_batch_transcribing`. The batch
+                    // flag guard means we never yank the model mid-file (a
+                    // paused-but-active job keeps the flag set).
+                    let translator_timeout = settings
+                        .translator_model_unload_timeout
+                        .to_seconds(settings.translator_model_unload_custom_seconds);
+                    if let Some(tr_limit) = translator_timeout {
+                        if !manager_cloned.is_batch_transcribing.load(Ordering::Relaxed) {
+                            let last = manager_cloned
+                                .translator_last_activity
+                                .load(Ordering::Relaxed);
+                            let now_ms = SystemTime::now()
+                                .duration_since(SystemTime::UNIX_EPOCH)
+                                .unwrap()
+                                .as_millis() as u64;
+                            if now_ms.saturating_sub(last) > tr_limit * 1000
+                                && manager_cloned.is_translator_model_loaded()
+                            {
+                                if let Ok(()) = manager_cloned.unload_translator_model() {
+                                    debug!("Translator model unloaded due to inactivity");
                                 }
                             }
                         }
@@ -340,6 +407,16 @@ impl TranscriptionManager {
     fn lock_engine(&self) -> MutexGuard<'_, EngineState> {
         self.engine.lock().unwrap_or_else(|poisoned| {
             warn!("Engine mutex was poisoned by a previous panic, recovering");
+            poisoned.into_inner()
+        })
+    }
+
+    /// Lock the Translator slot's engine mutex, poison-recovering like
+    /// [`Self::lock_engine`]. The two slots are independent mutexes — a
+    /// caller must never hold both at once, and no code path here does.
+    fn lock_translator_engine(&self) -> MutexGuard<'_, EngineState> {
+        self.translator_engine.lock().unwrap_or_else(|poisoned| {
+            warn!("Translator engine mutex was poisoned by a previous panic, recovering");
             poisoned.into_inner()
         })
     }
@@ -1266,9 +1343,20 @@ impl TranscriptionManager {
                                 ..Default::default()
                             };
 
-                            whisper_engine
-                                .transcribe_samples(audio, Some(params))
-                                .map_err(|e| anyhow::anyhow!("Whisper transcription failed: {}", e))
+                            // ggml-vulkan is not safe for concurrent device use.
+                            // Hold the SAME leaf Vulkan lock the GPU model-LOADS
+                            // take, but only around this inference call — so a
+                            // translator/dictation load's GPU init can never run
+                            // concurrently with Whisper inference on the shared
+                            // iGPU (graceful turn-taking). The slot mutex was
+                            // already released above (`drop(engine_guard)`), and
+                            // this lock is a LEAF (never acquires the slot mutex,
+                            // load_flight, or CHUNK_TRANSCRIBE_LOCK), so the lock
+                            // order stays acyclic.
+                            with_vulkan_op_lock(|| {
+                                whisper_engine.transcribe_samples(audio, Some(params))
+                            })
+                            .map_err(|e| anyhow::anyhow!("Whisper transcription failed: {}", e))
                         }
                         LoadedEngine::Parakeet(parakeet_engine) => {
                             let params = ParakeetInferenceParams {
@@ -1467,6 +1555,483 @@ impl TranscriptionManager {
         self.maybe_unload_immediately("transcription");
 
         Ok(final_result)
+    }
+
+    // ===================================================================
+    // Translator dedicated parallel engine slot (T-300)
+    //
+    // A SECOND resident local engine so the Translator folder-batch worker
+    // can keep its model loaded in parallel with the dictation model instead
+    // of thrashing the shared `engine` slot. Only LOCAL engines live here —
+    // external engines (FLM/API/OpenRouter) keep the shared/stateless path.
+    //
+    // Lock order (must stay acyclic, identical to the main slot):
+    //   load_flight -> (with_vulkan_op_lock) -> engine | translator_engine.
+    // `CHUNK_TRANSCRIBE_LOCK` (actions.rs) is OUTERMOST for inference and is
+    // held by the caller in managers/translator.rs — never acquired here.
+    // A slot lock is never held while awaiting `load_flight` or the chunk
+    // lock. `build_local_engine`/`run_engine_inference` are private, isolated
+    // duplicates of the live-path arms so the live dictation path stays
+    // byte-identical (deliberately NOT sharing code with `load_model_locked`
+    // / `transcribe_expecting`).
+    // ===================================================================
+
+    /// Build a LOCAL transcription engine for `model_id`, emit-free (no
+    /// `model-state-changed` events — those belong to the dictation slot).
+    /// External engines are rejected: they use the shared path. Mirrors the
+    /// local arms of `load_model_locked` (Whisper GPU logic incl.
+    /// `with_vulkan_op_lock`, Parakeet, Moonshine, MoonshineStreaming,
+    /// SenseVoice) but is a separate copy so the live path is untouched.
+    fn build_local_engine(
+        &self,
+        model_id: &str,
+        model_path: &std::path::Path,
+        model_info: &crate::managers::model::ModelInfo,
+    ) -> Result<LoadedEngine> {
+        match model_info.engine_type {
+            EngineType::Whisper => {
+                let mut engine = WhisperEngine::new();
+                let gpu_setting = get_settings(&self.app_handle).transcribe_gpu_device;
+                // Hold the app-wide Vulkan lock across adapter validation and
+                // the load attempt(s), exactly like the live path.
+                with_vulkan_op_lock(|| -> Result<()> {
+                    let effective_gpu_setting = if gpu_setting >= 0 {
+                        let available = transcribe_rs::engines::whisper::list_gpu_devices();
+                        let available_count = available.len();
+                        let available_indices: Vec<i32> =
+                            available.into_iter().map(|d| d.index).collect();
+                        let resolved =
+                            resolve_effective_gpu_setting(gpu_setting, &available_indices);
+                        if resolved != gpu_setting {
+                            warn!(
+                                "translator: transcribe_gpu_device={} does not match any of the \
+                                 {} currently-visible Vulkan adapter(s) — falling back to Auto",
+                                gpu_setting, available_count
+                            );
+                        }
+                        resolved
+                    } else {
+                        gpu_setting
+                    };
+
+                    let gpu_params = whisper_gpu_params_for_setting(effective_gpu_setting);
+                    if let Err(e) = engine.load_model_with_params(model_path, gpu_params.clone()) {
+                        let retryable = should_retry_with_default_gpu_params(effective_gpu_setting);
+                        warn!(
+                            "translator: failed to load whisper model {} with \
+                             transcribe_gpu_device={} (use_gpu={}, gpu_device={}): {}{}",
+                            model_id,
+                            effective_gpu_setting,
+                            gpu_params.use_gpu,
+                            gpu_params.gpu_device,
+                            e,
+                            if retryable {
+                                " — retrying with default GPU parameters"
+                            } else {
+                                " — force-CPU load failed, not retrying with GPU"
+                            }
+                        );
+                        if retryable {
+                            engine
+                                .load_model_with_params(model_path, WhisperModelParams::default())
+                                .map_err(|e| {
+                                    anyhow::anyhow!(
+                                        "Failed to load whisper model {}: {}",
+                                        model_id,
+                                        e
+                                    )
+                                })?;
+                        } else {
+                            return Err(anyhow::anyhow!(
+                                "Failed to load whisper model {}: {}",
+                                model_id,
+                                e
+                            ));
+                        }
+                    }
+                    Ok(())
+                })?;
+                Ok(LoadedEngine::Whisper(engine))
+            }
+            EngineType::Parakeet => {
+                let mut engine = ParakeetEngine::new();
+                engine
+                    .load_model_with_params(model_path, ParakeetModelParams::int8())
+                    .map_err(|e| {
+                        anyhow::anyhow!("Failed to load parakeet model {}: {}", model_id, e)
+                    })?;
+                Ok(LoadedEngine::Parakeet(engine))
+            }
+            EngineType::Moonshine => {
+                let mut engine = MoonshineEngine::new();
+                engine
+                    .load_model_with_params(
+                        model_path,
+                        MoonshineModelParams::variant(ModelVariant::Base),
+                    )
+                    .map_err(|e| {
+                        anyhow::anyhow!("Failed to load moonshine model {}: {}", model_id, e)
+                    })?;
+                Ok(LoadedEngine::Moonshine(engine))
+            }
+            EngineType::MoonshineStreaming => {
+                let mut engine = MoonshineStreamingEngine::new();
+                engine
+                    .load_model_with_params(model_path, StreamingModelParams::default())
+                    .map_err(|e| {
+                        anyhow::anyhow!(
+                            "Failed to load moonshine streaming model {}: {}",
+                            model_id,
+                            e
+                        )
+                    })?;
+                Ok(LoadedEngine::MoonshineStreaming(engine))
+            }
+            EngineType::SenseVoice => {
+                let mut engine = SenseVoiceEngine::new();
+                engine
+                    .load_model_with_params(model_path, SenseVoiceModelParams::int8())
+                    .map_err(|e| {
+                        anyhow::anyhow!("Failed to load SenseVoice model {}: {}", model_id, e)
+                    })?;
+                Ok(LoadedEngine::SenseVoice(engine))
+            }
+            // FlmWhisper (cfg-gated) / ApiWhisper / OpenRouterWhisper — external,
+            // never resident in this slot.
+            _ => Err(anyhow::anyhow!(
+                "Model '{}' is not a local engine — the Translator parallel slot \
+                 only hosts local engines (external engines use the shared path).",
+                model_id
+            )),
+        }
+    }
+
+    /// Run the local inference match for `engine`. A private copy of the
+    /// live-path match so `transcribe_expecting` stays byte-identical.
+    /// Callers wrap this in `catch_unwind`. External arms are unreachable
+    /// (this slot never holds them) but kept for match exhaustiveness.
+    fn run_engine_inference(
+        engine: &mut LoadedEngine,
+        audio: Vec<f32>,
+        settings: &AppSettings,
+        effective_translate: bool,
+    ) -> Result<transcribe_rs::TranscriptionResult> {
+        match engine {
+            LoadedEngine::Whisper(whisper_engine) => {
+                let params = WhisperInferenceParams {
+                    language: normalize_language_for_engine(&settings.selected_language),
+                    translate: effective_translate,
+                    ..Default::default()
+                };
+                // Same leaf Vulkan lock the GPU model-loads take — this Whisper
+                // inference must not overlap concurrent GPU device use (a load's
+                // Vulkan init on the shared iGPU). The translator slot mutex is
+                // released by the caller before inference and this lock never
+                // acquires it (or load_flight / CHUNK_TRANSCRIBE_LOCK), so the
+                // lock order stays acyclic.
+                with_vulkan_op_lock(|| whisper_engine.transcribe_samples(audio, Some(params)))
+                    .map_err(|e| anyhow::anyhow!("Whisper transcription failed: {}", e))
+            }
+            LoadedEngine::Parakeet(parakeet_engine) => {
+                let params = ParakeetInferenceParams {
+                    timestamp_granularity: TimestampGranularity::Segment,
+                    ..Default::default()
+                };
+                parakeet_engine
+                    .transcribe_samples(audio, Some(params))
+                    .map_err(|e| anyhow::anyhow!("Parakeet transcription failed: {}", e))
+            }
+            LoadedEngine::Moonshine(moonshine_engine) => moonshine_engine
+                .transcribe_samples(audio, None)
+                .map_err(|e| anyhow::anyhow!("Moonshine transcription failed: {}", e)),
+            LoadedEngine::MoonshineStreaming(streaming_engine) => streaming_engine
+                .transcribe_samples(audio, None)
+                .map_err(|e| anyhow::anyhow!("Moonshine streaming transcription failed: {}", e)),
+            LoadedEngine::SenseVoice(sense_voice_engine) => {
+                let language = match settings.selected_language.as_str() {
+                    "zh" | "zh-Hans" | "zh-Hant" => SenseVoiceLanguage::Chinese,
+                    "en" => SenseVoiceLanguage::English,
+                    "ja" => SenseVoiceLanguage::Japanese,
+                    "ko" => SenseVoiceLanguage::Korean,
+                    "yue" => SenseVoiceLanguage::Cantonese,
+                    _ => SenseVoiceLanguage::Auto,
+                };
+                let params = SenseVoiceInferenceParams {
+                    language,
+                    use_itn: true,
+                };
+                sense_voice_engine
+                    .transcribe_samples(audio, Some(params))
+                    .map_err(|e| anyhow::anyhow!("SenseVoice transcription failed: {}", e))
+            }
+            #[cfg(not(target_os = "macos"))]
+            LoadedEngine::FlmWhisper => Err(anyhow::anyhow!(
+                "FlmWhisper engine should use FLM manager path"
+            )),
+            LoadedEngine::ApiWhisper => {
+                Err(anyhow::anyhow!("ApiWhisper engine should use API path"))
+            }
+            LoadedEngine::OpenRouterWhisper => Err(anyhow::anyhow!(
+                "OpenRouterWhisper engine should use the OpenRouter path"
+            )),
+        }
+    }
+
+    /// Whether a model is resident in the Translator parallel slot.
+    pub fn is_translator_model_loaded(&self) -> bool {
+        self.lock_translator_engine().engine.is_some()
+    }
+
+    /// The model id currently resident in the Translator parallel slot.
+    pub fn get_current_translator_model(&self) -> Option<String> {
+        self.lock_translator_engine().model_id.clone()
+    }
+
+    /// Load `model_id` into the Translator parallel slot. Acquires
+    /// `load_flight` (serializing with every other loader) and REJECTS
+    /// external engine types — FLM/API/OpenRouter must keep the shared path
+    /// (one NPU can't host two contexts; HTTP is stateless). No-op if the
+    /// slot already holds this exact model. Emits no dictation model-state
+    /// events. Lock order: load_flight -> (with_vulkan_op_lock inside
+    /// build_local_engine) -> translator_engine (taken only AFTER the build
+    /// completes, never held across the build or the flight wait).
+    pub fn load_translator_model(&self, model_id: &str) -> Result<()> {
+        let _flight = self
+            .load_flight
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+
+        // Already the right model? Nothing to do.
+        {
+            let state = self.lock_translator_engine();
+            if state.engine.is_some() && state.model_id.as_deref() == Some(model_id) {
+                return Ok(());
+            }
+        }
+
+        let model_info = self
+            .model_manager
+            .get_model_info(model_id)
+            .ok_or_else(|| anyhow::anyhow!("Model not found: {}", model_id))?;
+
+        if model_info.engine_type.is_external() {
+            return Err(anyhow::anyhow!(
+                "Translator parallel slot is for local engines only; external \
+                 engine model '{}' must use the shared transcription path.",
+                model_id
+            ));
+        }
+        if !model_info.is_downloaded {
+            return Err(anyhow::anyhow!("Model not downloaded"));
+        }
+
+        let model_path = self.model_manager.get_model_path(model_id)?;
+        let load_start = std::time::Instant::now();
+        debug!("Translator: loading parallel model {}", model_id);
+        let loaded_engine = self.build_local_engine(model_id, &model_path, &model_info)?;
+
+        {
+            let mut state = self.lock_translator_engine();
+            state.engine = Some(loaded_engine);
+            state.model_id = Some(model_id.to_string());
+            state.instance += 1;
+        }
+        self.translator_last_activity.store(
+            SystemTime::now()
+                .duration_since(SystemTime::UNIX_EPOCH)
+                .unwrap()
+                .as_millis() as u64,
+            Ordering::Relaxed,
+        );
+        debug!(
+            "Translator: parallel model {} loaded (took {}ms)",
+            model_id,
+            load_start.elapsed().as_millis()
+        );
+        Ok(())
+    }
+
+    /// Unload the Translator parallel slot. Acquires `load_flight` then the
+    /// slot lock (never the reverse), matching `unload_model`. Only local
+    /// engine variants are ever resident here; the external arms are inert.
+    pub fn unload_translator_model(&self) -> Result<()> {
+        let _flight = self
+            .load_flight
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        let mut state = self.lock_translator_engine();
+        if let Some(ref mut loaded_engine) = state.engine {
+            match loaded_engine {
+                LoadedEngine::Whisper(e) => e.unload_model(),
+                LoadedEngine::Parakeet(e) => e.unload_model(),
+                LoadedEngine::Moonshine(e) => e.unload_model(),
+                LoadedEngine::MoonshineStreaming(e) => e.unload_model(),
+                LoadedEngine::SenseVoice(e) => e.unload_model(),
+                // External engines are never installed in this slot.
+                _ => {}
+            }
+        }
+        state.engine = None;
+        state.model_id = None;
+        state.instance += 1;
+        debug!("Translator: parallel model unloaded");
+        Ok(())
+    }
+
+    /// Immediate-unload hook for the Translator slot, mirroring
+    /// `maybe_unload_immediately`. Guarded by `is_batch_transcribing` so a
+    /// multi-segment file never drops the model between its own segments —
+    /// which in practice means `Immediately` is realized by the idle watcher
+    /// on the next tick after the batch flag clears, not literally per
+    /// segment. Kept for spec-compliance / defensiveness.
+    fn maybe_unload_translator_immediately(&self) {
+        if self.is_batch_transcribing.load(Ordering::Relaxed) {
+            return;
+        }
+        let settings = get_settings(&self.app_handle);
+        if settings.translator_model_unload_timeout == ModelUnloadTimeout::Immediately
+            && self.is_translator_model_loaded()
+        {
+            if let Err(e) = self.unload_translator_model() {
+                warn!("Failed to immediately unload translator model: {}", e);
+            }
+        }
+    }
+
+    /// Transcribe `audio` through the Translator parallel slot, revalidating
+    /// that the slot still holds `expected_model`. The caller (the Translator
+    /// batch worker) MUST already hold `CHUNK_TRANSCRIBE_LOCK` so local
+    /// inference serializes with the live pipeline (graceful iGPU
+    /// turn-taking). This method never touches `load_flight` or the chunk
+    /// lock — it takes the slot lock only briefly to take/put the engine,
+    /// exactly like `transcribe_expecting` (finding-8 instance guard).
+    pub fn transcribe_translator_expecting(
+        &self,
+        expected_model: &str,
+        audio: Vec<f32>,
+    ) -> Result<String> {
+        self.translator_last_activity.store(
+            SystemTime::now()
+                .duration_since(SystemTime::UNIX_EPOCH)
+                .unwrap()
+                .as_millis() as u64,
+            Ordering::Relaxed,
+        );
+
+        if audio.is_empty() {
+            self.maybe_unload_translator_immediately();
+            return Ok(String::new());
+        }
+
+        let settings = get_settings(&self.app_handle);
+        // Honor "translate to English" only when the Translator's model
+        // actually supports it (mirrors the live path's guard).
+        let effective_translate = settings.translate_to_english
+            && self
+                .model_manager
+                .get_model_info(expected_model)
+                .map(|m| m.supports_translation)
+                .unwrap_or(false);
+
+        // Take the engine out (revalidating the expected model), then release
+        // the slot lock before inference — no mutex held during the call.
+        let mut guard = self.lock_translator_engine();
+        let mut engine = match guard.engine.take() {
+            Some(e) => e,
+            None => {
+                return Err(anyhow::anyhow!(
+                    "Translator model is not loaded for transcription."
+                ));
+            }
+        };
+        // Clone the loaded id BEFORE the mismatch check so the error branch can
+        // put the engine back (mutable borrow) without a live immutable borrow
+        // of `guard` — mirrors the live path's `taken_model_id` clone (E0502).
+        let taken_model_id = guard.model_id.clone();
+        if !expected_model.is_empty() {
+            if let Some(loaded) = taken_model_id.as_deref() {
+                if loaded != expected_model {
+                    guard.engine = Some(engine);
+                    return Err(anyhow::anyhow!(
+                        "Loaded translator model '{}' does not match the expected \
+                         model '{}' (it changed mid-job) — please retry.",
+                        loaded,
+                        expected_model
+                    ));
+                }
+            }
+        }
+        let taken_instance = guard.instance;
+        drop(guard);
+
+        // Pad trailing silence for engines that drop final tokens on abrupt
+        // audio ends (Whisper untouched) — identical to the live path.
+        let audio = match &engine {
+            LoadedEngine::Whisper(_) => audio,
+            _ => pad_trailing_silence(audio, TRAILING_SILENCE_PAD_SAMPLES),
+        };
+
+        let transcribe_result = catch_unwind(AssertUnwindSafe(|| {
+            Self::run_engine_inference(&mut engine, audio, &settings, effective_translate)
+        }));
+
+        let result = match transcribe_result {
+            Ok(inner_result) => {
+                // Put the engine back UNLESS a concurrent load/unload mutated
+                // the slot (instance changed) — same instance-guard as the
+                // live path (finding 8).
+                let mut guard = self.lock_translator_engine();
+                if guard.engine.is_none() && guard.instance == taken_instance {
+                    guard.engine = Some(engine);
+                } else {
+                    info!(
+                        "Translator slot changed during transcription; dropping the \
+                         previous engine instead of restoring it"
+                    );
+                    drop(guard);
+                    drop(engine);
+                }
+                inner_result?
+            }
+            Err(panic_payload) => {
+                let panic_msg = if let Some(s) = panic_payload.downcast_ref::<&str>() {
+                    s.to_string()
+                } else if let Some(s) = panic_payload.downcast_ref::<String>() {
+                    s.clone()
+                } else {
+                    "unknown panic".to_string()
+                };
+                error!("Translator transcription engine panicked: {}", panic_msg);
+                // Clear the slot ONLY if our instance is still current.
+                {
+                    let mut state = self.lock_translator_engine();
+                    if state.instance == taken_instance {
+                        state.engine = None;
+                        state.model_id = None;
+                        state.instance += 1;
+                    }
+                }
+                return Err(anyhow::anyhow!(
+                    "Translator transcription engine panicked: {}. The model will \
+                     reload on next attempt.",
+                    panic_msg
+                ));
+            }
+        };
+
+        let corrected_result = if !settings.custom_words.is_empty() {
+            apply_custom_words(
+                &result.text,
+                &settings.custom_words,
+                settings.word_correction_threshold,
+            )
+        } else {
+            result.text
+        };
+        let filtered_result = filter_transcription_output(&corrected_result);
+
+        self.maybe_unload_translator_immediately();
+        Ok(filtered_result)
     }
 }
 

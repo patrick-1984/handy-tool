@@ -75,4 +75,30 @@ impl TranscriptionManager {
     pub fn set_live_transcribing(&self, _active: bool) {}
 
     pub fn set_batch_transcribing(&self, _active: bool) {}
+
+    // Translator dedicated parallel engine slot (T-300) — no-op stubs.
+
+    pub fn is_translator_model_loaded(&self) -> bool {
+        false
+    }
+
+    pub fn get_current_translator_model(&self) -> Option<String> {
+        None
+    }
+
+    pub fn load_translator_model(&self, _model_id: &str) -> Result<()> {
+        Ok(())
+    }
+
+    pub fn unload_translator_model(&self) -> Result<()> {
+        Ok(())
+    }
+
+    pub fn transcribe_translator_expecting(
+        &self,
+        _expected_model: &str,
+        _audio: Vec<f32>,
+    ) -> Result<String> {
+        Ok(String::new())
+    }
 }

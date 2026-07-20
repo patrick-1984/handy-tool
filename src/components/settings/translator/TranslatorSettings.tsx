@@ -8,6 +8,7 @@ import { SettingsGroup } from "../../ui/SettingsGroup";
 import { SettingContainer } from "../../ui/SettingContainer";
 import { ToggleSwitch } from "../../ui/ToggleSwitch";
 import { Dropdown } from "../../ui/Dropdown";
+import { Input } from "../../ui/Input";
 import { Button } from "../../ui/Button";
 import { useSettings } from "../../../hooks/useSettings";
 import { useSettingsStore } from "../../../stores/settingsStore";
@@ -15,6 +16,7 @@ import { useModelStore } from "../../../stores/modelStore";
 import { getTranslatedModelName } from "../../../lib/utils/modelTranslation";
 import {
   commands,
+  type ModelUnloadTimeout,
   type Result,
   type TranslatorPriority,
   type TranslatorStatus,
@@ -71,6 +73,86 @@ export const TranslatorSettings: React.FC = () => {
     value,
     label: t(`settings.translator.priority.options.${value}`),
   }));
+
+  // Model-unload timeout for the translator's own model — mirrors the main
+  // model unload setting (same option set + custom-seconds handling), bound to
+  // the dedicated translator keys.
+  const unloadTimeout = (getSetting("translator_model_unload_timeout") ??
+    "never") as ModelUnloadTimeout;
+  const unloadCustomSeconds =
+    (getSetting("translator_model_unload_custom_seconds") as number) ?? 300;
+  const unloadTimeoutOptions = [
+    {
+      value: "never" as ModelUnloadTimeout,
+      label: t("settings.advanced.modelUnload.options.never"),
+    },
+    {
+      value: "immediately" as ModelUnloadTimeout,
+      label: t("settings.advanced.modelUnload.options.immediately"),
+    },
+    {
+      value: "min2" as ModelUnloadTimeout,
+      label: t("settings.advanced.modelUnload.options.min2"),
+    },
+    {
+      value: "min5" as ModelUnloadTimeout,
+      label: t("settings.advanced.modelUnload.options.min5"),
+    },
+    {
+      value: "min10" as ModelUnloadTimeout,
+      label: t("settings.advanced.modelUnload.options.min10"),
+    },
+    {
+      value: "min15" as ModelUnloadTimeout,
+      label: t("settings.advanced.modelUnload.options.min15"),
+    },
+    {
+      value: "hour1" as ModelUnloadTimeout,
+      label: t("settings.advanced.modelUnload.options.hour1"),
+    },
+    {
+      value: "custom" as ModelUnloadTimeout,
+      label: t("settings.advanced.modelUnload.options.custom"),
+    },
+  ];
+  const unloadOptions =
+    settings?.debug_mode === true
+      ? [
+          ...unloadTimeoutOptions,
+          {
+            value: "sec5" as ModelUnloadTimeout,
+            label: t("settings.advanced.modelUnload.options.sec5"),
+          },
+        ]
+      : unloadTimeoutOptions;
+  const unloadUnitOptions = (["s", "m", "h"] as const).map((u) => ({
+    value: u,
+    label: t(`settings.advanced.modelUnload.units.${u}`),
+  }));
+
+  // Local state + commit-on-blur (repo text-input rule). Unit is derived from
+  // the stored seconds: largest unit that divides it cleanly.
+  const [unloadAmount, setUnloadAmount] = useState("5");
+  const [unloadUnit, setUnloadUnit] = useState<"s" | "m" | "h">("m");
+  useEffect(() => {
+    if (unloadCustomSeconds % 3600 === 0) {
+      setUnloadUnit("h");
+      setUnloadAmount(String(unloadCustomSeconds / 3600));
+    } else if (unloadCustomSeconds % 60 === 0) {
+      setUnloadUnit("m");
+      setUnloadAmount(String(unloadCustomSeconds / 60));
+    } else {
+      setUnloadUnit("s");
+      setUnloadAmount(String(unloadCustomSeconds));
+    }
+  }, [unloadCustomSeconds]);
+
+  const commitUnloadCustom = (nextUnit?: "s" | "m" | "h") => {
+    const u = nextUnit ?? unloadUnit;
+    const n = Math.max(1, Math.floor(Number(unloadAmount) || 0));
+    const secs = u === "h" ? n * 3600 : u === "m" ? n * 60 : n;
+    updateSetting("translator_model_unload_custom_seconds", secs);
+  };
 
   // Only transcription-capable models are offered (the same registry the
   // Models page shows) — an LLM chat provider can't transcribe audio. Models
@@ -204,6 +286,47 @@ export const TranslatorSettings: React.FC = () => {
             onSelect={(value) => updateSetting("translator_model", value)}
             disabled={isUpdating("translator_model")}
           />
+        </SettingContainer>
+        <SettingContainer
+          title={t("settings.translator.unload.title")}
+          description={t("settings.translator.unload.description")}
+          descriptionMode="tooltip"
+          grouped={true}
+        >
+          <div className="flex items-center gap-2">
+            <Dropdown
+              options={unloadOptions}
+              selectedValue={unloadTimeout}
+              onSelect={(value) =>
+                updateSetting(
+                  "translator_model_unload_timeout",
+                  value as ModelUnloadTimeout,
+                )
+              }
+              disabled={isUpdating("translator_model_unload_timeout")}
+            />
+            {unloadTimeout === "custom" && (
+              <>
+                <Input
+                  type="number"
+                  min={1}
+                  value={unloadAmount}
+                  onChange={(e) => setUnloadAmount(e.target.value)}
+                  onBlur={() => commitUnloadCustom()}
+                  className="w-20"
+                />
+                <Dropdown
+                  options={unloadUnitOptions}
+                  selectedValue={unloadUnit}
+                  onSelect={(value) => {
+                    setUnloadUnit(value as "s" | "m" | "h");
+                    commitUnloadCustom(value as "s" | "m" | "h");
+                  }}
+                  disabled={false}
+                />
+              </>
+            )}
+          </div>
         </SettingContainer>
         <SettingContainer
           title={t("settings.translator.status.title")}

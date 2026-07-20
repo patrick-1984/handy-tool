@@ -1,6 +1,6 @@
 [package]
 name = "handy"
-version = "0.47.0"
+version = "0.48.0"
 description = "Handy"
 authors = ["pr"]
 edition = "2024"
@@ -104,6 +104,13 @@ windows = { version = "0.61.3", features = [
   # CoCreateInstance/CoUninitialize and the IUIAutomation* COM interfaces.
   "Win32_System_Com",
   "Win32_UI_Accessibility",
+  # T-301: Jumper cursor save/restore (anchor.rs). GetCursorPos/SetCursorPos,
+  # GetClientRect/ClientToScreen live under WindowsAndMessaging (already on);
+  # these two add the nearest-monitor clamp (MonitorFromPoint/GetMonitorInfoW/
+  # MONITORINFO/HMONITOR) and the Per-Monitor-V2 DPI-awareness prerequisite
+  # check (GetThreadDpiAwarenessContext/GetAwarenessFromDpiAwarenessContext).
+  "Win32_Graphics_Gdi",
+  "Win32_UI_HiDpi",
 ] }
 
 [target.'cfg(target_os = "macos")'.dependencies]

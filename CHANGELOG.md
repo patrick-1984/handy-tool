@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.48.0] - 2026-07-20
+
+### Added
+
+- **Translator can use its own model, loaded in parallel.** The Translator's batch model can now differ from your live-transcription model and stay resident **at the same time** — e.g. dictation on the NPU (FLM) while the Translator runs a Whisper model on the GPU — instead of swapping one shared model in and out. They take turns gracefully on shared hardware (no GPU race), and the Translator model has its own idle-unload setting (unload / unload-after) like the main model. This also removes the model reload that could make stopping a recording hang.
+- **Jumper can save & restore the mouse cursor.** Optionally, jumping to a saved window also moves the mouse pointer to a spot you saved with the anchor. Per-flow opt-in (dictate and Transcribe & Submit have separate switches; the quick/hot slot follows the dictate switch). Two modes: **App-relative** (same spot inside the app window — follows it across moves, resizes, and different-DPI monitors; default) and **Screen-absolute** (a fixed monitor pixel). Multi-monitor aware; the cursor moves only after the paste, and never on a machine that isn't per-monitor-DPI aware. Windows only.
+
 ## [0.47.0] - 2026-07-20
 
 ### Changed

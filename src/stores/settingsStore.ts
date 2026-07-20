@@ -161,6 +161,16 @@ const settingUpdaters: {
     commands.changeJumperTrackSetting("submit", value as boolean),
   jumper_track_submit_slot: (value) =>
     commands.changeJumperTrackSlotSetting("submit", value as number),
+  jumper_save_cursor_output_enabled: (value) =>
+    commands.changeJumperSaveCursorSetting("output", value as boolean),
+  jumper_save_cursor_submit_enabled: (value) =>
+    commands.changeJumperSaveCursorSetting("submit", value as boolean),
+  jumper_cursor_mode: (value) =>
+    commands.changeJumperCursorModeSetting(value as string),
+  translator_model_unload_timeout: (value) =>
+    commands.changeTranslatorModelUnloadTimeout(value as string),
+  translator_model_unload_custom_seconds: (value) =>
+    commands.changeTranslatorModelUnloadCustomSeconds(value as number),
   translator_enabled: (value) =>
     commands.changeTranslatorEnabled(value as boolean),
   translator_priority: (value) =>

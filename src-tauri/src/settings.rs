@@ -397,6 +397,43 @@ pub struct SavedJumpSlot {
     pub window_class: String,
     /// Focused-control class captured with the slot.
     pub control_class: String,
+    /// Cursor position captured with the slot (T-301). `#[serde(default)]` so
+    /// pre-0.48 stores (no cursor) deserialize to `None`.
+    #[serde(default)]
+    pub cursor: Option<SavedCursor>,
+}
+
+/// Coordinate mode for Jumper cursor restore (T-301).
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type, Default)]
+pub enum CursorMode {
+    /// Restore to the same fraction of the anchor window's CLIENT area — same
+    /// UI spot even after the window moves/resizes or changes monitor DPI.
+    #[default]
+    AppRelative,
+    /// Restore to the same absolute (physical, virtual-screen) monitor pixel.
+    ScreenAbsolute,
+}
+
+/// A cursor position captured alongside a jump-slot anchor (T-301). Stored in
+/// BOTH representations so restore can pick the best available:
+///  - `abs_x/abs_y`: absolute physical pixel in virtual-screen space
+///    (ScreenAbsolute mode, and the fallback when the window can't be resolved).
+///  - `norm_x/norm_y`: fraction (0..1) of the anchor window's CLIENT area at
+///    capture (AppRelative) — resolution/DPI-independent, so it lands on the
+///    same UI spot after the window moves or rescales. `None` if the client
+///    rect was unavailable at capture.
+///
+/// NOTE (per Codex T-301 review): NO monitor-identity fields — a persisted
+/// monitor RECT is not stable identity; restore instead clamps to the nearest
+/// CURRENTLY-present monitor. All coords are PHYSICAL virtual-screen pixels
+/// (requires verified Per-Monitor-V2 DPI awareness at restore time).
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Type)]
+pub struct SavedCursor {
+    pub abs_x: i32,
+    pub abs_y: i32,
+    pub norm_x: Option<f64>,
+    pub norm_y: Option<f64>,
+    pub mode: CursorMode,
 }
 
 /// A frozen snapshot of the settings fields that affect HOW a transcription
@@ -848,6 +885,18 @@ pub struct AppSettings {
     /// One-time migration marker for the 0.46 per-flow track-output split.
     #[serde(default)]
     pub jumper_v3_migrated: bool,
+    /// Save & restore the mouse cursor on a jump, PER FLOW (T-301, 0.48+). When
+    /// on, the cursor is captured with the anchor and restored after the jump
+    /// activates the window (and, for delivery, AFTER the paste). The hot slot
+    /// (0) and manual sets follow the dictate/"output" toggle. Default off.
+    #[serde(default)]
+    pub jumper_save_cursor_output_enabled: bool,
+    #[serde(default)]
+    pub jumper_save_cursor_submit_enabled: bool,
+    /// Coordinate mode for cursor restore: AppRelative (same spot inside the
+    /// app; default) or ScreenAbsolute (fixed monitor pixel). Shared by flows.
+    #[serde(default)]
+    pub jumper_cursor_mode: CursorMode,
     /// Translator: watch folders and batch-transcribe new audio files into
     /// `.txt` sidecars using the currently selected engine.
     #[serde(default)]
@@ -866,6 +915,15 @@ pub struct AppSettings {
     /// is ASR-capable by construction — LLM chat providers are not offered).
     #[serde(default)]
     pub translator_model: String,
+    /// Idle-unload policy for the Translator's DEDICATED engine slot (used when
+    /// `translator_model` differs from the dictation model and is a local
+    /// engine, so both stay resident in parallel). Independent of the main
+    /// model's `model_unload_timeout`. Default Never.
+    #[serde(default)]
+    pub translator_model_unload_timeout: ModelUnloadTimeout,
+    /// Idle seconds for `translator_model_unload_timeout == Custom`.
+    #[serde(default = "default_model_unload_custom_seconds")]
+    pub translator_model_unload_custom_seconds: u64,
     /// Folder scan interval in seconds (no UI; edit settings_store.json).
     #[serde(default = "default_translator_poll_secs")]
     pub translator_poll_secs: u64,
@@ -1620,11 +1678,16 @@ pub fn get_default_settings() -> AppSettings {
         // Fresh installs are already on the current model — nothing to migrate.
         jumper_v2_migrated: true,
         jumper_v3_migrated: true,
+        jumper_save_cursor_output_enabled: false,
+        jumper_save_cursor_submit_enabled: false,
+        jumper_cursor_mode: CursorMode::AppRelative,
         translator_enabled: false,
         translator_folders: Vec::new(),
         translator_seeded: false,
         translator_priority: default_translator_priority(),
         translator_model: String::new(),
+        translator_model_unload_timeout: ModelUnloadTimeout::Never,
+        translator_model_unload_custom_seconds: default_model_unload_custom_seconds(),
         translator_poll_secs: default_translator_poll_secs(),
     }
 }

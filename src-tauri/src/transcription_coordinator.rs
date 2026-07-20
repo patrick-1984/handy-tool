@@ -176,6 +176,7 @@ impl TranscriptionCoordinator {
                                         &hotkey_string,
                                         s.anchor_action_output_idle,
                                         s.anchor_action_output_idle_slot,
+                                        s.jumper_save_cursor_output_enabled,
                                     );
                                 } else if !is_pressed
                                     && matches!(&stage, Stage::Recording(id) if id == &binding_id)
@@ -210,6 +211,7 @@ impl TranscriptionCoordinator {
                                             s.anchor_action_output_stop,
                                             s.anchor_action_output_stop_slot,
                                             true,
+                                            s.jumper_save_cursor_output_enabled,
                                         );
                                         stop(&app, &mut stage, &binding_id, &hotkey_string);
                                     }
@@ -240,6 +242,7 @@ impl TranscriptionCoordinator {
                                                 s.anchor_action_submit_stop,
                                                 s.anchor_action_submit_stop_slot,
                                                 true,
+                                                s.jumper_save_cursor_submit_enabled,
                                             );
                                             crate::clipboard::set_submit_override(
                                                 crate::clipboard::SubmitOverride {
@@ -269,6 +272,7 @@ impl TranscriptionCoordinator {
                                                 s.anchor_action_submit_idle,
                                                 s.anchor_action_submit_idle_slot,
                                                 false,
+                                                s.jumper_save_cursor_submit_enabled,
                                             );
                                             debug!(
                                                 "T-113: perform_anchor_action (submit-idle) took {:?}",
@@ -307,6 +311,7 @@ impl TranscriptionCoordinator {
                                                 &hotkey_string,
                                                 s.anchor_action_output_idle,
                                                 s.anchor_action_output_idle_slot,
+                                                s.jumper_save_cursor_output_enabled,
                                             );
                                         }
                                         Stage::Recording(id) if id == &binding_id => {
@@ -316,6 +321,7 @@ impl TranscriptionCoordinator {
                                                 s.anchor_action_output_stop,
                                                 s.anchor_action_output_stop_slot,
                                                 true,
+                                                s.jumper_save_cursor_output_enabled,
                                             );
                                             stop(&app, &mut stage, &binding_id, &hotkey_string);
                                         }
@@ -377,6 +383,7 @@ impl TranscriptionCoordinator {
                                     s.anchor_action_output_stop,
                                     s.anchor_action_output_stop_slot,
                                     true,
+                                    s.jumper_save_cursor_output_enabled,
                                 );
                                 stop(&app, &mut stage, &binding_id, &hotkey_string);
                             }
@@ -437,7 +444,13 @@ impl TranscriptionCoordinator {
 ///   verified DELIVERY (the paste itself IS the finish); Set/Clear are
 ///   DEFERRED and run only after the paste has fully completed — "finished"
 ///   means text delivered and clipboard restored, not "stop was pressed".
-fn perform_anchor_action(app: &AppHandle, action: AnchorAction, slot: u8, at_finish: bool) {
+fn perform_anchor_action(
+    app: &AppHandle,
+    action: AnchorAction,
+    slot: u8,
+    at_finish: bool,
+    save_cursor: bool,
+) {
     let slot = (slot as usize).min(crate::anchor::SLOT_COUNT - 1);
     match action {
         AnchorAction::None => {}
@@ -450,14 +463,25 @@ fn perform_anchor_action(app: &AppHandle, action: AnchorAction, slot: u8, at_fin
         }
         AnchorAction::Set => {
             if at_finish {
-                crate::anchor::arm_post_take_action(crate::anchor::PostTakeAction::Set, slot);
+                // T-301: carry the DRIVING flow's cursor policy (resolved by
+                // the caller — submit flow → submit toggle, output flow →
+                // output toggle) into the deferred on-finish Set.
+                crate::anchor::arm_post_take_action(
+                    crate::anchor::PostTakeAction::Set,
+                    slot,
+                    save_cursor,
+                );
             } else if let Err(e) = crate::anchor::set_slot(app, slot) {
                 warn!("Jumper action set failed: {}", e);
             }
         }
         AnchorAction::Clear => {
             if at_finish {
-                crate::anchor::arm_post_take_action(crate::anchor::PostTakeAction::Clear, slot);
+                crate::anchor::arm_post_take_action(
+                    crate::anchor::PostTakeAction::Clear,
+                    slot,
+                    save_cursor,
+                );
             } else {
                 crate::anchor::clear(app, slot);
             }
@@ -478,9 +502,10 @@ fn timed_idle_start(
     hotkey_string: &str,
     action: AnchorAction,
     slot: u8,
+    save_cursor: bool,
 ) {
     let t0 = Instant::now();
-    perform_anchor_action(app, action, slot, false);
+    perform_anchor_action(app, action, slot, false, save_cursor);
     debug!(
         "T-113: perform_anchor_action (start, '{binding_id}') took {:?}",
         t0.elapsed()

@@ -4,6 +4,7 @@ import { MicrophoneSelector } from "../MicrophoneSelector";
 import { ShortcutInput } from "../ShortcutInput";
 import { TranscribeAndSubmitSettings } from "../TranscribeAndSubmitSettings";
 import { JumperTrackToggle } from "../JumperTrackToggle";
+import { JumperSaveCursorToggle } from "../JumperSaveCursorToggle";
 import { JumperReturnFocusToggle } from "../JumperReturnFocusToggle";
 import { PasteMethodSetting } from "../PasteMethod";
 import { PasteMethodPttSetting } from "../PasteMethodPtt";
@@ -51,6 +52,7 @@ export const GeneralSettings: React.FC = () => {
           grouped={true}
         />
         <JumperTrackToggle flow="output" grouped={true} />
+        <JumperSaveCursorToggle flow="output" grouped={true} />
         <JumperReturnFocusToggle flow="output" grouped={true} />
       </SettingsGroup>
       <TranscribeAndSubmitSettings />

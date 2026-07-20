@@ -681,18 +681,12 @@ fn worker(app: AppHandle, shutdown: Arc<AtomicBool>, status: Arc<Mutex<Translato
             yield_now = true;
         }
         if yield_now {
-            // If batch was using a DIFFERENT model than dictation, hand the
-            // engine back warm: reload the dictation model now, while we're
-            // paused anyway, so the take doesn't pay the swap cost at stop.
-            if effective_model != settings.selected_model && !settings.selected_model.is_empty() {
-                let tm = app.state::<Arc<TranscriptionManager>>();
-                if tm.get_current_model().as_deref() == Some(effective_model.as_str()) {
-                    info!("Translator: restoring dictation model for live activity");
-                    if let Err(e) = tm.load_model(&settings.selected_model) {
-                        warn!("Translator: dictation-model restore failed: {e}");
-                    }
-                }
-            }
+            // Nothing to hand back: a LOCAL override model lives in its own
+            // dedicated engine slot (never displacing the dictation model), and
+            // an EXTERNAL override reloads through the normal load path when
+            // dictation next needs it. Removing the old yield-time dictation
+            // reload here (which borrowed the SHARED slot and thrashed the live
+            // engine) is what fixes the recording-stop hang (T-300).
             let reason = if stage == STAGE_PROCESSING {
                 "processing"
             } else {
@@ -777,27 +771,61 @@ fn worker(app: AppHandle, shutdown: Arc<AtomicBool>, status: Arc<Mutex<Translato
                 let range = job.segments[job.next_segment].clone();
                 let segment = job.samples[range].to_vec();
                 let tm = app.state::<Arc<TranscriptionManager>>();
-                // The Translator is the only engine user that starts cold:
-                // transcribe() waits for an in-flight load but never initiates
-                // one, so load here (NOT under the engine lock — live segments
-                // wait on the loading condvar exactly as they do for the
-                // recording-start background load).
-                if tm.get_current_model().as_deref() != Some(effective_model.as_str())
-                    && !effective_model.is_empty()
-                {
-                    if let Err(e) = tm.load_model(&effective_model) {
-                        warn!("Translator: model load failed: {e}");
-                    }
-                }
+                // Route decision (T-300): a LOCAL override model (one that
+                // differs from the dictation model) gets its own dedicated,
+                // resident engine slot so both models stay loaded in PARALLEL
+                // and never thrash the shared slot. The same-model case and
+                // ALL external engines (FLM/API/OpenRouter) keep the shared
+                // path — one NPU can't host two contexts and HTTP is
+                // stateless.
+                let use_parallel = !engine_external && effective_model != settings.selected_model;
+
                 // The batch worker's expectation is ITS model (the override,
                 // or the dictation model when unset) — `transcribe()` itself
                 // would assert the SELECTED model and wrongly reject override
                 // batches (pass-3 finding 8a revalidation).
-                let result = if engine_external {
+                let result = if use_parallel {
+                    // Load into the dedicated slot once (no-op if already
+                    // resident), OUTSIDE the chunk lock so we never hold it
+                    // while awaiting load_flight. Then transcribe UNDER the
+                    // chunk lock: local inference serializes with the live
+                    // pipeline (graceful iGPU turn-taking) while both models
+                    // stay resident. FLM(NPU)+Whisper(iGPU) run truly in
+                    // parallel because FLM is external and stays on the shared
+                    // path (never taking this lock).
+                    if tm.get_current_translator_model().as_deref()
+                        != Some(effective_model.as_str())
+                    {
+                        if let Err(e) = tm.load_translator_model(&effective_model) {
+                            warn!("Translator: parallel model load failed: {e}");
+                        }
+                    }
+                    let _serial = crate::actions::CHUNK_TRANSCRIBE_LOCK
+                        .lock()
+                        .unwrap_or_else(|poisoned| poisoned.into_inner());
+                    tm.transcribe_translator_expecting(&effective_model, segment)
+                } else if engine_external {
                     // External engines (HTTP/subprocess) aren't single-tenant —
                     // and must not hold the engine lock across a network call.
+                    // The Translator starts cold: transcribe() waits for an
+                    // in-flight load but never initiates one, so load here.
+                    if tm.get_current_model().as_deref() != Some(effective_model.as_str())
+                        && !effective_model.is_empty()
+                    {
+                        if let Err(e) = tm.load_model(&effective_model) {
+                            warn!("Translator: model load failed: {e}");
+                        }
+                    }
                     tm.transcribe_expecting(&effective_model, segment)
                 } else {
+                    // Same model as dictation: share the single dictation slot.
+                    if tm.get_current_model().as_deref() != Some(effective_model.as_str())
+                        && !effective_model.is_empty()
+                    {
+                        if let Err(e) = tm.load_model(&effective_model) {
+                            warn!("Translator: model load failed: {e}");
+                        }
+                    }
                     // Single-tenant local engine: serialize with live chunk
                     // workers and the stop-path final pass.
                     let _serial = crate::actions::CHUNK_TRANSCRIBE_LOCK
