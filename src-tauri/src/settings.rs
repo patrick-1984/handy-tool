@@ -285,6 +285,45 @@ impl ClipboardRestoreDelay {
     }
 }
 
+/// Extra delay inserted BEFORE the auto-submit key (Enter) when a "Transcribe &
+/// Submit" — or any anchored auto-submit — delivery had to JUMP the foreground
+/// to reach its target, added on top of the fixed ~50 ms base. A freshly
+/// activated window (especially an RDP/Citrix session) may still be committing
+/// the pasted text when the base 50 ms Enter fires, so the submit is missed.
+/// It applies ONLY on a real jump (target was not already foreground), so the
+/// already-focused case keeps its current snappiness. `None` reproduces the
+/// pre-0.53 behavior. Windows-only in effect (the Jumper is Windows-only).
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type)]
+#[serde(rename_all = "snake_case")]
+pub enum JumperSubmitDelay {
+    None,
+    Ms100,
+    Ms250,
+    Ms500,
+    Ms1000,
+    Ms2000,
+}
+
+impl Default for JumperSubmitDelay {
+    fn default() -> Self {
+        JumperSubmitDelay::Ms250
+    }
+}
+
+impl JumperSubmitDelay {
+    /// Extra milliseconds added on top of the base ~50 ms pre-submit settle.
+    pub fn to_ms(self) -> u64 {
+        match self {
+            JumperSubmitDelay::None => 0,
+            JumperSubmitDelay::Ms100 => 100,
+            JumperSubmitDelay::Ms250 => 250,
+            JumperSubmitDelay::Ms500 => 500,
+            JumperSubmitDelay::Ms1000 => 1000,
+            JumperSubmitDelay::Ms2000 => 2000,
+        }
+    }
+}
+
 /// What a recording shortcut ADDITIONALLY does to the anchor when pressed —
 /// configured separately for the idle press (nothing running) and the finish
 /// press (a transcription is in progress), per flow. `None` (default) keeps
@@ -808,6 +847,10 @@ pub struct AppSettings {
     /// "Transcribe & Submit" paste.
     #[serde(default)]
     pub submit_clipboard_restore_delay: ClipboardRestoreDelay,
+    /// Extra pre-submit delay when an anchored auto-submit delivery jumped the
+    /// foreground (Windows Jumper). See [`JumperSubmitDelay`]. Default `Ms250`.
+    #[serde(default)]
+    pub jumper_submit_delay: JumperSubmitDelay,
     /// Return focus after an anchored delivery, per finishing flow. The
     /// starting location is captured automatically every time a delivery
     /// begins (an internal, invisible slot) — no user slot is involved.
@@ -1782,6 +1825,7 @@ pub fn get_default_settings() -> AppSettings {
         submit_clipboard_handling: ClipboardHandling::default(),
         clipboard_restore_delay: ClipboardRestoreDelay::default(),
         submit_clipboard_restore_delay: ClipboardRestoreDelay::default(),
+        jumper_submit_delay: JumperSubmitDelay::default(),
         return_focus_output: default_return_focus(),
         return_focus_submit: default_return_focus(),
         anchor_return_focus: default_return_focus(),
@@ -2207,6 +2251,22 @@ mod tests {
         assert_eq!(
             get_default_settings().clipboard_restore_delay,
             ClipboardRestoreDelay::None
+        );
+    }
+
+    #[test]
+    fn jumper_submit_delay_maps_to_ms_and_defaults_to_250() {
+        assert_eq!(JumperSubmitDelay::None.to_ms(), 0);
+        assert_eq!(JumperSubmitDelay::Ms100.to_ms(), 100);
+        assert_eq!(JumperSubmitDelay::Ms250.to_ms(), 250);
+        assert_eq!(JumperSubmitDelay::Ms500.to_ms(), 500);
+        assert_eq!(JumperSubmitDelay::Ms1000.to_ms(), 1000);
+        assert_eq!(JumperSubmitDelay::Ms2000.to_ms(), 2000);
+        // Ships enabled: a real jump-settle by default, not None.
+        assert_eq!(JumperSubmitDelay::default(), JumperSubmitDelay::Ms250);
+        assert_eq!(
+            get_default_settings().jumper_submit_delay,
+            JumperSubmitDelay::Ms250
         );
     }
 

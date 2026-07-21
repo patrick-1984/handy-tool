@@ -398,6 +398,7 @@ pub fn run(cli_args: CliArgs) {
         shortcut::change_submit_clipboard_handling_setting,
         shortcut::change_clipboard_restore_delay_setting,
         shortcut::change_submit_clipboard_restore_delay_setting,
+        shortcut::change_jumper_submit_delay_setting,
         shortcut::get_shortcut_registration_failures,
         shortcut::change_jumper_persist_setting,
         shortcut::change_anchor_action_setting,
@@ -570,8 +571,13 @@ pub fn run(cli_args: CliArgs) {
         .plugin(
             LogBuilder::new()
                 .level(log::LevelFilter::Trace) // Set to most verbose level globally
-                .max_file_size(500_000)
-                .rotation_strategy(RotationStrategy::KeepOne)
+                // Persist logs across restarts: rotate by SIZE only (10 MB) and
+                // KEEP rotated files (KeepAll) instead of discarding all but one.
+                // The old 500 KB + KeepOne meant a normal session filled the file
+                // and the next launch rotated it away — so the log looked wiped
+                // on every restart. It still truncates by size, never on restart.
+                .max_file_size(10_000_000)
+                .rotation_strategy(RotationStrategy::KeepAll)
                 .clear_targets()
                 .targets([
                     // Console output respects RUST_LOG environment variable
@@ -632,6 +638,17 @@ pub fn run(cli_args: CliArgs) {
             let file_log_level: log::Level = tauri_log_level.into();
             // Store the file log level in the atomic for the filter to use
             FILE_LOG_LEVEL.store(file_log_level.to_level_filter() as u8, Ordering::Relaxed);
+
+            // Clean up any orphaned FLM subprocess a PREVIOUS run leaked — a
+            // crash or force-kill (incl. the installer's taskkill) bypasses
+            // FlmManager's Drop. Runs on every launch so we always clean after
+            // our own crash before doing anything else; signature-matched, so
+            // another app's flm (Lemonade/FLMTray) is untouched. No-op off
+            // Windows/Linux. Gated off macOS, where the flm module isn't
+            // compiled at all (managers/mod.rs).
+            #[cfg(not(target_os = "macos"))]
+            crate::managers::flm::FlmManager::kill_orphan_servers();
+
             let app_handle = app.handle().clone();
             app.manage(TranscriptionCoordinator::new(app_handle.clone()));
 

@@ -91,9 +91,86 @@ fn now_ms() -> u64 {
         .unwrap_or(0)
 }
 
+/// Outcome of a bounded orphan-sweep subprocess run.
+#[cfg(any(windows, target_os = "linux"))]
+enum SweepOutcome {
+    /// The sweep process exited with this status code (or -1 if the OS reported
+    /// none, e.g. terminated by a signal).
+    Exited(i32),
+    /// The sweep exceeded its deadline and was killed (a stuck WMI/PowerShell
+    /// must never stall app startup or a take).
+    TimedOut,
+    /// The sweep process could not even be spawned.
+    SpawnFailed(std::io::Error),
+    /// Waiting on the sweep process itself errored — distinct from a timeout so
+    /// a genuine wait failure is never silently reported as "timed out".
+    WaitFailed(std::io::Error),
+}
+
+/// Run an orphan-sweep command with a HARD deadline. Polls `try_wait`; on
+/// timeout the child is killed and reaped with a BOUNDED post-kill wait so a
+/// wedged reap can never turn the deadline into an unbounded block. Returns the
+/// exit code so the caller can tell a real failure from a benign one (e.g.
+/// `pkill` exit 1 = no matches); a `try_wait` error is reported as `WaitFailed`,
+/// never mislabeled as a timeout.
+#[cfg(any(windows, target_os = "linux"))]
+fn run_sweep_bounded(mut command: Command) -> SweepOutcome {
+    // Must exceed the sweep script's OWN internal kill+verify wait (~3 s) so a
+    // legitimately slow-but-succeeding sweep is not cut off as a timeout.
+    const SWEEP_DEADLINE: Duration = Duration::from_secs(8);
+    let mut child = match command.spawn() {
+        Ok(c) => c,
+        Err(e) => return SweepOutcome::SpawnFailed(e),
+    };
+    let start = Instant::now();
+    loop {
+        match child.try_wait() {
+            Ok(Some(status)) => return SweepOutcome::Exited(status.code().unwrap_or(-1)),
+            Ok(None) => {
+                if start.elapsed() >= SWEEP_DEADLINE {
+                    let _ = child.kill();
+                    // Bounded reap — never block indefinitely on the killed child.
+                    let reap_by = Instant::now() + Duration::from_millis(500);
+                    loop {
+                        match child.try_wait() {
+                            Ok(Some(_)) | Err(_) => break,
+                            Ok(None) if Instant::now() >= reap_by => break,
+                            Ok(None) => std::thread::sleep(Duration::from_millis(20)),
+                        }
+                    }
+                    return SweepOutcome::TimedOut;
+                }
+                std::thread::sleep(Duration::from_millis(50));
+            }
+            Err(e) => {
+                // A wait error must not leave the sweep process running — on
+                // Linux a still-live sweep could later match and KILL the
+                // replacement flm. Kill + bounded-reap before reporting.
+                let _ = child.kill();
+                let reap_by = Instant::now() + Duration::from_millis(500);
+                loop {
+                    match child.try_wait() {
+                        Ok(Some(_)) | Err(_) => break,
+                        Ok(None) if Instant::now() >= reap_by => break,
+                        Ok(None) => std::thread::sleep(Duration::from_millis(20)),
+                    }
+                }
+                return SweepOutcome::WaitFailed(e);
+            }
+        }
+    }
+}
+
 pub struct FlmManager {
     child: Option<Child>,
     model_name: String,
+    /// Windows Job Object (KILL_ON_JOB_CLOSE) holding the flm child so the OS
+    /// kills it if THIS process dies for any reason — the guarantee flm never
+    /// orphans. `None` when the job APIs failed (the sweep is the fallback).
+    /// Held only to keep the handle — and thus the job — alive for the
+    /// manager's (process's) lifetime.
+    #[cfg(windows)]
+    _job: Option<std::os::windows::io::OwnedHandle>,
 }
 
 impl FlmManager {
@@ -182,6 +259,135 @@ impl FlmManager {
         last != 0 && now_ms().saturating_sub(last) < FAILURE_COOLDOWN.as_millis() as u64
     }
 
+    /// Kill leftover `flm serve … --asr` processes from a PREVIOUS Handy run
+    /// that never got to stop cleanly. Our `Drop`/`stop()` kills the child on a
+    /// clean exit, but a crash or a force-kill (e.g. the installer's
+    /// `taskkill /F handy.exe`, or the OS killing us) bypasses `Drop` and
+    /// orphans the child. Stacked orphans squat port 52625 AND the single-tenant
+    /// NPU, so the next `flm serve` can't bind/init and fails with a context
+    /// error — exactly the "failed to start FLM" the user hit. This sweep runs
+    /// at startup and again right before every spawn, so orphans can never
+    /// compound into the many-instance mess that costs memory/stability.
+    ///
+    /// Matched by OUR exact invocation signature (`serve` + `--asr` + our port
+    /// `52625`) so another app's flm — Lemonade, FLMTray, or a standalone
+    /// `flm serve` on a different port — is NEVER touched. Best-effort: any
+    /// error is logged and swallowed; this must never block startup or a take.
+    /// There is only ever ONE Handy `flm serve` (a single shared port), so this
+    /// can never kill a second, still-wanted Handy FLM instance.
+    pub fn kill_orphan_servers() {
+        #[cfg(windows)]
+        {
+            // Match ONLY Handy's EXACT canonical command line — the regex is
+            // word-boundary-anchored before `serve` and END-anchored after
+            // `--asr 1` (`\bserve\s+--port\s+52625\s+--host\s+127\.0\.0\.1\s+--asr\s+1\s*$`)
+            // so `observe`, `--asr 10`, port `152625`, or our command followed by
+            // FOREIGN args can never match; the `Name -eq 'flm.exe'` filter also
+            // excludes the powershell host itself. Then kill the matches and WAIT
+            // (up to 3s) for them to actually exit — so their port 52625 / NPU is
+            // released before we spawn a replacement — exiting 1 if any survive
+            // so the caller logs a real failure (Stop-Process errors are hidden,
+            // but a surviving PID is the authoritative signal). Single-quoted
+            // regex + `$`-vars are literal to Rust, so the whole script survives
+            // the Rust -> Windows -> PowerShell argument boundary.
+            let script = "try { $m = @(Get-CimInstance Win32_Process -ErrorAction Stop | Where-Object { $_.Name -eq 'flm.exe' -and $_.CommandLine -match '^(?:\\x22[^\\x22]*flm(?:\\.exe)?\\x22|[^\\x22\\s]*flm(?:\\.exe)?)\\s+serve\\s+--port\\s+52625\\s+--host\\s+127\\.0\\.0\\.1\\s+--asr\\s+1\\s*$' }) } catch { exit 2 }; if ($m.Count -eq 0) { exit 0 }; $ids = @($m.ProcessId); foreach ($id in $ids) { Stop-Process -Id $id -Force -ErrorAction SilentlyContinue }; $deadline = (Get-Date).AddSeconds(3); while (@(Get-Process -Id $ids -ErrorAction SilentlyContinue).Count -gt 0 -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 100 }; if (@(Get-Process -Id $ids -ErrorAction SilentlyContinue).Count -gt 0) { exit 1 } else { exit 0 }";
+            let mut command = Command::new("powershell");
+            command.args(["-NoProfile", "-NonInteractive", "-Command", script]);
+            no_window(&mut command);
+            match run_sweep_bounded(command) {
+                SweepOutcome::Exited(0) => debug!("FLM orphan sweep completed"),
+                SweepOutcome::Exited(code) => warn!(
+                    "FLM orphan sweep did not confirm all orphans stopped (status {})",
+                    code
+                ),
+                SweepOutcome::TimedOut => warn!("FLM orphan sweep timed out and was killed"),
+                SweepOutcome::SpawnFailed(e) => warn!("FLM orphan sweep could not run: {}", e),
+                SweepOutcome::WaitFailed(e) => warn!("FLM orphan sweep wait failed: {}", e),
+            }
+        }
+        #[cfg(target_os = "linux")]
+        {
+            // Same exactness on Linux: the ERE matches Handy's full canonical
+            // command with whitespace classes and an END anchor (so `526250`,
+            // `--asr 10`, or trailing foreign args never match). TERM, verify,
+            // escalate to KILL, and exit 1 only if any survive — so a
+            // just-signalled orphan can't still hold port 52625 when we spawn a
+            // replacement. Run via `sh -c` for the terminate/verify loop. The
+            // regex's metacharacters (literal `[[:space:]]` text in the sh
+            // process's own argv is NOT whitespace) keep it from self-matching.
+            let script = "command -v pgrep >/dev/null 2>&1 && command -v pkill >/dev/null 2>&1 || exit 2; p='^([^[:space:]]*/)?flm[[:space:]]+serve[[:space:]]+--port[[:space:]]+52625[[:space:]]+--host[[:space:]]+127\\.0\\.0\\.1[[:space:]]+--asr[[:space:]]+1[[:space:]]*$'; pkill -TERM -f \"$p\"; for _ in $(seq 1 30); do pgrep -f \"$p\" >/dev/null 2>&1; s=$?; if [ $s -eq 1 ]; then exit 0; elif [ $s -gt 1 ]; then exit 2; fi; sleep 0.1; done; pkill -KILL -f \"$p\"; sleep 0.2; pgrep -f \"$p\" >/dev/null 2>&1; s=$?; if [ $s -eq 1 ]; then exit 0; elif [ $s -eq 0 ]; then exit 1; else exit 2; fi";
+            let mut command = Command::new("sh");
+            command.args(["-c", script]);
+            match run_sweep_bounded(command) {
+                SweepOutcome::Exited(0) => debug!("FLM orphan sweep completed"),
+                SweepOutcome::Exited(code) => warn!(
+                    "FLM orphan sweep did not confirm all orphans stopped (status {})",
+                    code
+                ),
+                SweepOutcome::TimedOut => warn!("FLM orphan sweep timed out and was killed"),
+                SweepOutcome::SpawnFailed(e) => warn!("FLM orphan sweep could not run: {}", e),
+                SweepOutcome::WaitFailed(e) => warn!("FLM orphan sweep wait failed: {}", e),
+            }
+        }
+    }
+
+    /// Bind the freshly-spawned flm `child` to a Windows Job Object with
+    /// KILL_ON_JOB_CLOSE and return the job handle for the manager to hold.
+    /// While that handle lives — i.e. while THIS Handy process lives — the child
+    /// is bound to the job; the instant Handy exits for ANY reason (clean quit,
+    /// panic, or an external force-kill/crash that bypasses `Drop`) the OS
+    /// closes our handles, the job's last handle closes, and flm is killed. That
+    /// is the real guarantee flm can never orphan; the sweep only mops up
+    /// orphans left by pre-fix versions. Best-effort — on any API error we log
+    /// and return `None` (the sweep is the fallback); never fails the FLM start.
+    #[cfg(windows)]
+    fn guard_child_with_job(child: &Child) -> Option<std::os::windows::io::OwnedHandle> {
+        use std::os::windows::io::{AsRawHandle, FromRawHandle, OwnedHandle};
+        use windows::Win32::Foundation::{CloseHandle, HANDLE};
+        use windows::Win32::System::JobObjects::{
+            AssignProcessToJobObject, CreateJobObjectW, JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
+            JOBOBJECT_EXTENDED_LIMIT_INFORMATION, JobObjectExtendedLimitInformation,
+            SetInformationJobObject,
+        };
+        unsafe {
+            let job = match CreateJobObjectW(None, windows::core::PCWSTR::null()) {
+                Ok(h) => h,
+                Err(e) => {
+                    warn!("FLM: CreateJobObject failed ({}); child not job-guarded", e);
+                    return None;
+                }
+            };
+            let mut info = JOBOBJECT_EXTENDED_LIMIT_INFORMATION::default();
+            info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+            if let Err(e) = SetInformationJobObject(
+                job,
+                JobObjectExtendedLimitInformation,
+                &info as *const _ as *const core::ffi::c_void,
+                std::mem::size_of::<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>() as u32,
+            ) {
+                warn!(
+                    "FLM: SetInformationJobObject failed ({}); child not job-guarded",
+                    e
+                );
+                let _ = CloseHandle(job);
+                return None;
+            }
+            let hprocess = HANDLE(child.as_raw_handle() as _);
+            if let Err(e) = AssignProcessToJobObject(job, hprocess) {
+                warn!(
+                    "FLM: AssignProcessToJobObject failed ({}); child not job-guarded",
+                    e
+                );
+                let _ = CloseHandle(job);
+                return None;
+            }
+            debug!("FLM child assigned to KILL_ON_JOB_CLOSE job object");
+            // Transfer ownership of the job HANDLE to an OwnedHandle so it (and
+            // thus the job) is closed exactly once, when FlmManager drops.
+            Some(OwnedHandle::from_raw_handle(job.0 as _))
+        }
+    }
+
     /// Start `flm serve` with the given model name and wait until the health endpoint responds.
     pub fn start_serve(model_name: &str) -> Result<Self> {
         if Self::recently_failed() {
@@ -199,6 +405,11 @@ impl FlmManager {
             model_name,
             flm_path.display()
         );
+
+        // Sweep any orphaned flm from a previous crashed/force-killed run
+        // BEFORE spawning ours, so we never stack instances on port 52625 / the
+        // NPU (the root cause of the "failed to start FLM" contention).
+        Self::kill_orphan_servers();
 
         // FLM (v0.9.21+) cannot load a Whisper model as the MAIN serve model —
         // `flm serve whisper-v3:turbo` fails with "Unsupported model family or
@@ -220,10 +431,25 @@ impl FlmManager {
         no_window(&mut command);
         let mut child = command.spawn().map_err(|e| {
             LAST_START_FAILURE_MS.store(now_ms(), std::sync::atomic::Ordering::Relaxed);
+            // error! so an FLM start failure is ALWAYS in the file log (release
+            // = INFO), not only surfaced as the red in-app toast.
+            error!("FLM failed to spawn: {}", e);
             anyhow::anyhow!("Failed to spawn FLM process: {}", e)
         })?;
 
         info!("FLM process spawned (pid: {:?})", child.id());
+
+        // Bind the child to a KILL_ON_JOB_CLOSE job so it dies with us even on a
+        // crash/force-kill that bypasses Drop — the primary anti-orphan
+        // guarantee. Known, accepted limit: there is a microsecond window
+        // between spawn() and this assignment in which a Handy crash would still
+        // orphan the child. Closing it fully needs creation-time assignment
+        // (raw CreateProcessW + PROC_THREAD_ATTRIBUTE_JOB_LIST), which would mean
+        // abandoning std::process::Command and its stdout/stderr pipe + wait
+        // handling relied on below — disproportionate for a µs window. The
+        // startup sweep (kill_orphan_servers) is the backstop for that window.
+        #[cfg(windows)]
+        let job = Self::guard_child_with_job(&child);
 
         // Spawn threads to continuously drain stdout/stderr so the FLM process
         // doesn't block on a full pipe buffer, and capture output for diagnostics.
@@ -285,6 +511,8 @@ impl FlmManager {
         let mut manager = FlmManager {
             child: Some(child),
             model_name: model_name.to_string(),
+            #[cfg(windows)]
+            _job: job,
         };
 
         // Poll readiness until the server answers. FLM ≥0.9.45 has no /health

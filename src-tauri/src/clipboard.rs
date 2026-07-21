@@ -68,6 +68,16 @@ static SUBMIT_OVERRIDE: Lazy<Mutex<Option<SubmitOverride>>> = Lazy::new(|| Mutex
 /// surfaced to the user as-is.
 const ANCHOR_FOCUS_LOST: &str = "__anchor_focus_lost_mid_paste__";
 
+/// Internal (non-configurable) grace kept AFTER the auto-submit key is injected
+/// and BEFORE `finish_delivery` may return focus — but ONLY when the delivery
+/// jumped the foreground and the flow will return focus. Windows `SendInput`
+/// only INSERTS the Enter into the target's input queue; returning focus to the
+/// previous window immediately (the default) can race that queued Enter so the
+/// target never processes it. This keeps the jumped-to target deliberately
+/// foreground just long enough to consume the Enter.
+#[cfg(windows)]
+const POST_SUBMIT_RETURN_FOCUS_GRACE_MS: u64 = 100;
+
 /// Arm the mailbox (T-116): the coordinator calls this synchronously on the
 /// Transcribe & Submit finishing press, BEFORE calling `stop()` — which is
 /// exactly where `take_submit_override()` below consumes it into the take's
@@ -1028,6 +1038,26 @@ fn paste_inner(
         ),
     };
 
+    // When an anchored auto-submit had to JUMP the foreground to its target,
+    // the target (especially an RDP/Citrix session) may still be committing the
+    // pasted text when the fixed 50 ms Enter fires. Add the user-configurable
+    // `jumper_submit_delay` on top of the base — ONLY on a real jump
+    // (`foreground_switched`), so the already-focused case keeps its current
+    // snappiness. 0 for non-anchored / non-jump / non-Windows deliveries.
+    let jump_submit_extra_ms: u64 = {
+        #[cfg(windows)]
+        {
+            anchor_guard_ref
+                .filter(|g| g.foreground_switched())
+                .map(|_| settings.jumper_submit_delay.to_ms())
+                .unwrap_or(0)
+        }
+        #[cfg(not(windows))]
+        {
+            0
+        }
+    };
+
     // Perform the paste + submit, capturing the outcome instead of returning
     // early — the anchored-delivery epilogue below must run on EVERY path or a
     // failure mid-paste strands focus at the anchor and leaves it armed.
@@ -1083,17 +1113,46 @@ fn paste_inner(
         }
 
         if do_submit {
-            std::thread::sleep(Duration::from_millis(50));
+            #[cfg(windows)]
+            log::debug!(
+                "submit timing: foreground_switched={}, pre_submit_extra_ms={}",
+                anchor_guard_ref
+                    .map(|g| g.foreground_switched())
+                    .unwrap_or(false),
+                jump_submit_extra_ms,
+            );
+            // Base ~50 ms settle + the jump-only extra.
+            std::thread::sleep(Duration::from_millis(50 + jump_submit_extra_ms));
             // T-103 (finding 1): re-verify immediately before the auto-submit
-            // keystroke too — the 50ms settle above is exactly the kind of
-            // gap a focus-stealing popup can land in after the paste itself
-            // already succeeded.
+            // keystroke too — the settle above is exactly the kind of gap a
+            // focus-stealing popup can land in after the paste itself already
+            // succeeded.
             if let Some(guard) = anchor_guard_ref {
                 if !crate::anchor::guard_still_foreground(guard) {
                     return Err(ANCHOR_FOCUS_LOST.to_string());
                 }
             }
             send_return_key(&mut enigo, submit_key)?;
+            // Post-Enter focus-return grace: keep the jumped-to target
+            // foreground briefly so it actually PROCESSES the just-injected
+            // Enter before the epilogue's `finish_delivery` returns focus to
+            // `prev_foreground`. Only when this delivery switched the foreground
+            // AND the flow will return focus — otherwise nothing is about to
+            // yank focus, so no grace is needed. Held under the same Enigo lock
+            // (intended: serializes against other synthesized input; runs on
+            // the pipeline thread, never the UI thread, and never blocks the
+            // user's own physical input).
+            #[cfg(windows)]
+            if let Some(guard) = anchor_guard_ref {
+                let will_return_focus = if submit_override.is_some() {
+                    settings.return_focus_submit
+                } else {
+                    settings.return_focus_output
+                };
+                if guard.foreground_switched() && will_return_focus {
+                    std::thread::sleep(Duration::from_millis(POST_SUBMIT_RETURN_FOCUS_GRACE_MS));
+                }
+            }
         }
         Ok(())
     })();

@@ -239,6 +239,24 @@ pub struct DeliveryGuard {
     /// focus/input op. `None` when no cursor was saved for this slot / flow.
     #[cfg(windows)]
     cursor: Option<crate::settings::SavedCursor>,
+    /// Whether this delivery had to SWITCH the foreground window to reach its
+    /// target (a real "jump"), i.e. the target was NOT already foreground at
+    /// `begin_delivery`. The paste pipeline uses this to add the configurable
+    /// `jumper_submit_delay` before the submit key AND a post-submit focus-
+    /// return grace — both needed ONLY on a jump (an immediate focus return
+    /// races the just-injected Enter when `prev_foreground != target_hwnd`).
+    #[cfg(windows)]
+    foreground_switched: bool,
+}
+
+impl DeliveryGuard {
+    /// True when this delivery switched the foreground to reach its target
+    /// (a jump) rather than the target already being foreground. Drives the
+    /// jump-only pre-submit delay and post-submit focus-return grace.
+    #[cfg(windows)]
+    pub fn foreground_switched(&self) -> bool {
+        self.foreground_switched
+    }
 }
 
 #[cfg(windows)]
@@ -2370,6 +2388,12 @@ mod win {
             target_control_class: target.control_class.clone(),
             target_app: target.app.clone(),
             slot,
+            // Did this delivery actually SWITCH the foreground to reach the
+            // target? `prev` was the foreground window captured before
+            // `activate_verified`; if it differs from the target, we jumped —
+            // so the submit path settles longer before Enter and holds focus
+            // briefly after it (the already-foreground case does neither).
+            foreground_switched: prev != target.hwnd,
             // T-301: snapshot the saved cursor into the guard — do NOT restore
             // here; `finish_delivery` restores it as the very last op.
             cursor: target.cursor,

@@ -16,6 +16,7 @@ import type {
   AutoSubmitKey,
   SubmitIdleBehavior,
   ClipboardHandling,
+  JumperSubmitDelay,
 } from "@/bindings";
 
 /**
@@ -80,6 +81,24 @@ export const TranscribeAndSubmitSettings: React.FC = React.memo(() => {
       value: "copy_to_clipboard",
       label: t("settings.advanced.clipboardHandling.options.copyToClipboard"),
     },
+  ];
+
+  // Windows-only (Jumper). Extra settle before Enter after a jump-to-focus
+  // submit, so the freshly-activated target commits the paste before Enter.
+  const jumperSubmitDelay = (getSetting("jumper_submit_delay") ||
+    "ms250") as JumperSubmitDelay;
+  const jumperSubmitDelayOptions = [
+    {
+      value: "none",
+      label: t(
+        "settings.general.transcribeAndSubmit.jumperSubmitDelay.options.none",
+      ),
+    },
+    { value: "ms100", label: "100 ms" },
+    { value: "ms250", label: "250 ms" },
+    { value: "ms500", label: "500 ms" },
+    { value: "ms1000", label: "1000 ms" },
+    { value: "ms2000", label: "2000 ms" },
   ];
 
   return (
@@ -161,6 +180,27 @@ export const TranscribeAndSubmitSettings: React.FC = React.memo(() => {
         descriptionMode="tooltip"
         grouped={true}
       />
+      {osType === "windows" && (
+        <SettingContainer
+          title={t(
+            "settings.general.transcribeAndSubmit.jumperSubmitDelay.title",
+          )}
+          description={t(
+            "settings.general.transcribeAndSubmit.jumperSubmitDelay.description",
+          )}
+          descriptionMode="tooltip"
+          grouped={true}
+        >
+          <Dropdown
+            options={jumperSubmitDelayOptions}
+            selectedValue={jumperSubmitDelay}
+            onSelect={(value) =>
+              updateSetting("jumper_submit_delay", value as JumperSubmitDelay)
+            }
+            disabled={isUpdating("jumper_submit_delay")}
+          />
+        </SettingContainer>
+      )}
       <AnchorActionSetting
         settingKey="anchor_action_submit_idle"
         moment="idle"

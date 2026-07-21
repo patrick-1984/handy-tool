@@ -1,10 +1,26 @@
 # Changelog
 
+## [0.53.0] - 2026-07-21
+
+### Added
+
+- **Configurable "Submit delay after jump" (Windows).** New setting in **General → Transcribe & Submit** that inserts an extra wait before the submit key (Enter) when a Transcribe & Submit — or any anchored auto-submit — jumps the foreground to an anchored target. Options: Off / 100 / 250 / 500 / 1000 / 2000 ms, default **250 ms**. Fixes the submit key being dropped when jumping into a freshly-activated window (especially RDP/Citrix), while leaving the already-in-target case instant.
+
+### Changed
+
+- **Transcription settings moved to the General page.** Transcription mode, Push-to-talk mode, GPU device, custom words, and "append trailing space" now sit in a **Transcription** group on General (right after the language settings) instead of Advanced. Engine-specific options (translate-to-English, API/OpenRouter endpoint config, cost report) stay in Advanced.
+
+### Fixed
+
+- **Transcribe & Submit often didn't submit when jumping to a target.** The Enter key was pressed a fixed 50 ms after the paste and — when the delivery had jumped the foreground — focus was returned to the previous window immediately afterward, racing the just-injected Enter so the target never processed it. (That is why it worked when you were already in the field but not when jumping, especially over RDP.) Now, ONLY on a real jump: an extra configurable settle (above) before Enter, plus a short internal grace that keeps the target foreground until it has processed the Enter before focus returns. The already-focused path is byte-for-byte unchanged.
+- **Orphaned FLM (NPU) processes are now cleaned up — and can no longer pile up.** A crash or a force-kill (including the installer's `taskkill`) bypassed the normal shutdown that stops Handy's `flm serve` child, leaking it. Leaked instances squat port 52625 and the single-tenant NPU, so the next start failed with a context error ("failed to start FLM") — and they compounded across restarts, wasting memory. Handy now sweeps its own orphaned `flm serve --asr` instances (matched by its exact port + args, so another app's flm — Lemonade/FLMTray — is never touched) on every launch and again right before each spawn, so it always cleans up after its own crash and never stacks instances.
+- **Logs no longer look wiped after a restart.** File logging kept only a tiny 500 KB window and a single rotation, so a normal session filled it and the next launch rotated it away — losing the history right when you needed it (e.g. to see an FLM failure that only showed as a red toast). Logs now rotate by size at 10 MB and keep rotated files, so history persists across restarts. FLM start failures are also logged at error level, not only surfaced in the UI.
+
 ## [0.52.2] - 2026-07-21
 
 ### Fixed
 
-- **Idle model-unload silently stopped after the first recording** (and could, in a rarer race, contribute to a hang). The transcription manager's background model-load path dropped a clone whose destructor tore down the *shared* idle-unload watcher thread — so after the first load, the "unload model after N minutes" setting stopped working for the rest of the session and the log filled with spurious "Shutting down TranscriptionManager" lines. Ownership is now tracked so only the real owner tears the watcher down (at app shutdown), and the teardown no longer holds a lock across the thread join.
+- **Idle model-unload silently stopped after the first recording** (and could, in a rarer race, contribute to a hang). The transcription manager's background model-load path dropped a clone whose destructor tore down the _shared_ idle-unload watcher thread — so after the first load, the "unload model after N minutes" setting stopped working for the rest of the session and the log filled with spurious "Shutting down TranscriptionManager" lines. Ownership is now tracked so only the real owner tears the watcher down (at app shutdown), and the teardown no longer holds a lock across the thread join.
 - **"Unload model" / model-load-status commands** requested the wrong managed type and would fail at runtime; corrected to match the registered state.
 
 ## [0.52.1] - 2026-07-21

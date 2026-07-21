@@ -2,24 +2,19 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ShowOverlay } from "../ShowOverlay";
 import { AppearanceSetting } from "../AppearanceSetting";
-import { CustomWords } from "../CustomWords";
 import { SettingsGroup } from "../../ui/SettingsGroup";
 import { StartHidden } from "../StartHidden";
 import { AutostartToggle } from "../AutostartToggle";
 import { ShowTrayIcon } from "../ShowTrayIcon";
 import { PostProcessingToggle } from "../PostProcessingToggle";
-import { AppendTrailingSpace } from "../AppendTrailingSpace";
 import { CrashResilientRecording } from "../CrashResilientRecording";
 import { OpenRecordingsFolder } from "../OpenRecordingsFolder";
 import { HistoryLimit } from "../HistoryLimit";
 import { RecordingRetentionPeriodSelector } from "../RecordingRetentionPeriod";
 import { ExperimentalToggle } from "../ExperimentalToggle";
-import { TranscriptionModeSetting } from "../TranscriptionModeSetting";
-import { TranscriptionModePttSetting } from "../TranscriptionModePttSetting";
 import { ApiTranscriptionSettings } from "../ApiTranscriptionSettings";
 import { OpenRouterTranscriptionSettings } from "../OpenRouterTranscriptionSettings";
 import { TranscriptionModelOptions } from "../TranscriptionModelOptions";
-import { GpuDeviceSelector } from "../GpuDeviceSelector";
 import { KeyboardImplementationSelector } from "../debug/KeyboardImplementationSelector";
 import { RegisteredLlmProviders } from "./RegisteredLlmProviders";
 import { McpSettings } from "./McpSettings";
@@ -101,19 +96,10 @@ export const AdvancedSettings: React.FC = () => {
             </SettingsGroup>
             <TranscribeAndSubmitSettings />
             <SettingsGroup title={t("settings.advanced.groups.transcription")}>
-              <TranscriptionModeSetting
-                descriptionMode="tooltip"
-                grouped={true}
-              />
-              <TranscriptionModePttSetting
-                descriptionMode="tooltip"
-                grouped={true}
-              />
               <TranscriptionModelOptions
                 descriptionMode="tooltip"
                 grouped={true}
               />
-              <GpuDeviceSelector descriptionMode="tooltip" grouped={true} />
               {selectedModel === "api-whisper" && (
                 <ApiTranscriptionSettings
                   descriptionMode="tooltip"
@@ -126,8 +112,6 @@ export const AdvancedSettings: React.FC = () => {
                   grouped={true}
                 />
               )}
-              <CustomWords descriptionMode="tooltip" grouped />
-              <AppendTrailingSpace descriptionMode="tooltip" grouped={true} />
               <TranscriptionCostReport />
             </SettingsGroup>
           </>

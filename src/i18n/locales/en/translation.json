@@ -301,6 +301,13 @@
         "clipboard": {
           "title": "Clipboard",
           "description": "Keep your existing clipboard after pasting, or leave the transcription on the clipboard."
+        },
+        "jumperSubmitDelay": {
+          "title": "Submit delay after jump (Windows)",
+          "description": "Extra wait before pressing the submit key when Transcribe & Submit jumps the foreground to an anchored target. A freshly activated window (especially RDP/Citrix) may still be applying the pasted text — or focus may return too soon — when Enter fires, so the submit is missed. Only applies after a jump; when you're already in the target, submit stays instant.",
+          "options": {
+            "none": "Off (instant)"
+          }
         }
       },
       "language": {

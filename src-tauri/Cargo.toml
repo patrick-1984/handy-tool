@@ -1,6 +1,6 @@
 [package]
 name = "handy"
-version = "0.52.2"
+version = "0.53.0"
 description = "Handy"
 authors = ["pr"]
 edition = "2024"
@@ -100,6 +100,12 @@ windows = { version = "0.61.3", features = [
   "Win32_UI_WindowsAndMessaging",
   "Win32_UI_Input_KeyboardAndMouse",
   "Win32_System_Threading",
+  # Anti-orphan (managers/flm.rs guard_child_with_job): bind the flm child to a
+  # KILL_ON_JOB_CLOSE Job Object so the OS kills it if Handy dies for any reason.
+  # CreateJobObjectW's signature references SECURITY_ATTRIBUTES, so it also needs
+  # Win32_Security (even though we pass None for the attributes).
+  "Win32_System_JobObjects",
+  "Win32_Security",
   # T-105: UI Automation IsPassword query (anchor.rs) — CoInitializeEx/
   # CoCreateInstance/CoUninitialize and the IUIAutomation* COM interfaces.
   "Win32_System_Com",

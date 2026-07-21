@@ -21,9 +21,9 @@ use tauri_plugin_autostart::ManagerExt;
 
 use crate::settings::{
     self, AnchorAction, AutoSubmitKey, ClipboardHandling, ClipboardRestoreDelay, CursorMode,
-    KeyboardImplementation, LLMPrompt, ModelUnloadTimeout, OverlayPosition, PasteMethod,
-    ShortcutBinding, SoundTheme, SubmitIdleBehavior, Theme, TranscriptionMode, TypingTool,
-    get_settings,
+    JumperSubmitDelay, KeyboardImplementation, LLMPrompt, ModelUnloadTimeout, OverlayPosition,
+    PasteMethod, ShortcutBinding, SoundTheme, SubmitIdleBehavior, Theme, TranscriptionMode,
+    TypingTool, get_settings,
 };
 use crate::tray;
 
@@ -1070,6 +1070,33 @@ pub fn change_submit_clipboard_restore_delay_setting(
 ) -> Result<(), String> {
     let mut settings = settings::get_settings(&app);
     settings.submit_clipboard_restore_delay = parse_clipboard_restore_delay(&delay);
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
+fn parse_jumper_submit_delay(value: &str) -> JumperSubmitDelay {
+    match value {
+        "none" => JumperSubmitDelay::None,
+        "ms100" => JumperSubmitDelay::Ms100,
+        "ms250" => JumperSubmitDelay::Ms250,
+        "ms500" => JumperSubmitDelay::Ms500,
+        "ms1000" => JumperSubmitDelay::Ms1000,
+        "ms2000" => JumperSubmitDelay::Ms2000,
+        other => {
+            warn!(
+                "Invalid jumper submit delay '{}', defaulting to ms250",
+                other
+            );
+            JumperSubmitDelay::Ms250
+        }
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn change_jumper_submit_delay_setting(app: AppHandle, delay: String) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    settings.jumper_submit_delay = parse_jumper_submit_delay(&delay);
     settings::write_settings(&app, settings);
     Ok(())
 }

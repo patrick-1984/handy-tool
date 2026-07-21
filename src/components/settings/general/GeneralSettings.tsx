@@ -9,6 +9,11 @@ import { useSettings } from "../../../hooks/useSettings";
 import { VolumeSlider } from "../VolumeSlider";
 import { MuteWhileRecording } from "../MuteWhileRecording";
 import { ModelSettingsCard } from "./ModelSettingsCard";
+import { TranscriptionModeSetting } from "../TranscriptionModeSetting";
+import { TranscriptionModePttSetting } from "../TranscriptionModePttSetting";
+import { GpuDeviceSelector } from "../GpuDeviceSelector";
+import { CustomWords } from "../CustomWords";
+import { AppendTrailingSpace } from "../AppendTrailingSpace";
 
 export const GeneralSettings: React.FC = () => {
   const { t } = useTranslation();
@@ -20,6 +25,13 @@ export const GeneralSettings: React.FC = () => {
         <ShortcutInput shortcutId="transcribe_ptt" grouped={true} />
       </SettingsGroup>
       <ModelSettingsCard />
+      <SettingsGroup title={t("settings.advanced.groups.transcription")}>
+        <TranscriptionModeSetting descriptionMode="tooltip" grouped={true} />
+        <TranscriptionModePttSetting descriptionMode="tooltip" grouped={true} />
+        <GpuDeviceSelector descriptionMode="tooltip" grouped={true} />
+        <CustomWords descriptionMode="tooltip" grouped />
+        <AppendTrailingSpace descriptionMode="tooltip" grouped={true} />
+      </SettingsGroup>
       <SettingsGroup title={t("settings.sound.title")}>
         <MicrophoneSelector descriptionMode="tooltip" grouped={true} />
         <MuteWhileRecording descriptionMode="tooltip" grouped={true} />
