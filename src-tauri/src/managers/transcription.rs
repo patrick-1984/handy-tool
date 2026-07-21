@@ -966,12 +966,10 @@ impl TranscriptionManager {
                 // Require a provider WITH an API key. The model is optional — it
                 // defaults to a known-good Whisper id at request time.
                 let settings = get_settings(&self.app_handle);
-                let has_key = settings
-                    .llm_provider(&settings.openrouter_transcription_provider_ref)
-                    .map(|p| !p.api_key.trim().is_empty())
-                    .unwrap_or(false);
-                if !has_key {
-                    let error_msg = "OpenRouter transcription needs a provider with an API key. Pick an OpenRouter provider (that has a key) in Advanced > Transcription.".to_string();
+                let has_config = !settings.openrouter_transcription_url.trim().is_empty()
+                    && !settings.openrouter_transcription_key.trim().is_empty();
+                if !has_config {
+                    let error_msg = "OpenRouter transcription needs a base URL and API key. Set them in Advanced > Providers.".to_string();
                     let _ = self.app_handle.emit(
                         "model-state-changed",
                         ModelStateEvent {
@@ -1260,19 +1258,16 @@ impl TranscriptionManager {
             if matches!(&engine_guard.engine, Some(LoadedEngine::OpenRouterWhisper)) {
                 Self::ensure_expected_model(&engine_guard, expected_model)?;
                 drop(engine_guard);
-                // Require the configured provider to exist AND carry a key — never
-                // send an unauthenticated request (which just 401s silently).
-                let provider = settings
-                    .llm_provider(&settings.openrouter_transcription_provider_ref)
-                    .filter(|p| !p.api_key.trim().is_empty())
-                    .ok_or_else(|| {
-                        anyhow::anyhow!(
-                            "OpenRouter transcription needs a provider with an API key. \
-                             Pick an OpenRouter provider (with a key) in Advanced > Transcription."
-                        )
-                    })?;
-                let base_url = provider.base_url.clone();
-                let api_key = provider.api_key.clone();
+                // T-308: dedicated OpenRouter URL + key (independent of the
+                // llm_providers registry). Never send an unauthenticated request.
+                let base_url = settings.openrouter_transcription_url.trim();
+                let api_key = settings.openrouter_transcription_key.trim();
+                if base_url.is_empty() || api_key.is_empty() {
+                    return Err(anyhow::anyhow!(
+                        "OpenRouter transcription needs a base URL and API key. \
+                         Set them in Advanced > Providers."
+                    ));
+                }
                 // Default to a known-good Whisper STT id when the user hasn't set one.
                 let model = {
                     let m = settings.openrouter_transcription_model.trim();
@@ -1284,14 +1279,22 @@ impl TranscriptionManager {
                 };
                 // Keep None ("auto") — the OpenRouter STT endpoint auto-detects.
                 let language = normalize_language_for_engine(&settings.selected_language);
+                // Translation is only meaningful on the Chat route (the STT
+                // endpoint has no translation control); gate on the global
+                // translate + the model's declared support.
+                let translate = matches!(
+                    settings.openrouter_transcription_route,
+                    crate::settings::OpenRouterTranscriptionRoute::Chat
+                ) && effective_translate;
                 let raw_text = crate::managers::openrouter_transcription::transcribe(
-                    &base_url,
-                    &api_key,
+                    base_url,
+                    api_key,
                     model,
                     &audio,
                     language.as_deref(),
                     settings.openrouter_transcription_route,
                     settings.openrouter_transcription_audio_format,
+                    translate,
                 )?;
                 let corrected = if !settings.custom_words.is_empty() {
                     apply_custom_words(

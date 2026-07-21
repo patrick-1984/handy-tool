@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.54.0] - 2026-07-21
+
+### Changed
+
+- **Custom transcription providers now have their own cards on the Providers page.** The **API Transcription (OpenAI-compatible)** and **OpenRouter Transcription** engines are each configured in an always-visible card under **Advanced → Providers** — no longer hidden in Advanced → Transcription behind having already selected that model (the confusing "I picked the model but can't find where to enter the URL/key" flow). OpenRouter transcription now has its own **API URL + API key** fields directly, decoupled from the registered LLM providers list. Existing setups migrate automatically on first launch: your previous OpenRouter provider's base URL and key are copied into the new dedicated fields (the referenced provider is left untouched for post-processing/model-testing).
+
 ## [0.53.0] - 2026-07-21
 
 ### Added

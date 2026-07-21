@@ -466,9 +466,17 @@ async changeApiTranscriptionModelSetting(model: string) : Promise<Result<null, s
     else return { status: "error", error: e  as any };
 }
 },
-async setOpenrouterTranscriptionProviderRef(providerId: string) : Promise<Result<null, string>> {
+async changeOpenrouterTranscriptionUrlSetting(url: string) : Promise<Result<null, string>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("set_openrouter_transcription_provider_ref", { providerId }) };
+    return { status: "ok", data: await TAURI_INVOKE("change_openrouter_transcription_url_setting", { url }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async changeOpenrouterTranscriptionKeySetting(key: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_openrouter_transcription_key_setting", { key }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -1362,7 +1370,7 @@ openrouter_transcription_provider_ref?: string;
  * Transcription model id (e.g. `openai/whisper-large-v3` or
  * `google/gemini-2.5-flash`).
  */
-openrouter_transcription_model?: string; openrouter_transcription_route?: OpenRouterTranscriptionRoute; openrouter_transcription_audio_format?: TranscriptionAudioFormat; 
+openrouter_transcription_model?: string; openrouter_transcription_route?: OpenRouterTranscriptionRoute; openrouter_transcription_audio_format?: TranscriptionAudioFormat; openrouter_transcription_url?: string; openrouter_transcription_key?: string; openrouter_transcription_language?: string; openrouter_transcription_translate_to_english?: boolean; api_transcription_language?: string; api_transcription_translate_to_english?: boolean; custom_asr_config_migrated?: boolean;
 /**
  * Saved prompts + presets for the model-testing tool.
  */

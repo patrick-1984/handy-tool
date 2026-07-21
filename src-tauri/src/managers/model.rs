@@ -736,7 +736,7 @@ impl ModelManager {
             ModelInfo {
                 id: "openrouter-transcription".to_string(),
                 name: "OpenRouter Transcription".to_string(),
-                description: "Transcribe with OpenRouter models (Whisper, Gemini, GPT-4o-audio). Configure in Advanced > Transcription.".to_string(),
+                description: "Transcribe with OpenRouter models (Whisper, Gemini, GPT-4o-audio). Configure in Advanced > Providers.".to_string(),
                 filename: String::new(),
                 url: None,
                 size_mb: 0,

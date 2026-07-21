@@ -58,6 +58,13 @@ pub fn take_session_cost() -> Option<f64> {
 const TRANSCRIBE_PROMPT: &str = "Transcribe this audio verbatim. Return only the \
 spoken text — no commentary, labels, timestamps, or surrounding quotation marks.";
 
+/// Chat-route English-translation prompt (T-308). The dedicated STT endpoint has
+/// no translation control, so translate-to-English is only offered on the Chat
+/// route, via this instruction.
+const TRANSLATE_PROMPT: &str = "Translate the speech in this audio into English. \
+Return only the English translation — no commentary, labels, timestamps, or \
+surrounding quotation marks.";
+
 /// Transcribe 16 kHz mono PCM via OpenRouter. `base_url` should be the
 /// OpenRouter API root (e.g. `https://openrouter.ai/api/v1`).
 pub fn transcribe(
@@ -68,6 +75,7 @@ pub fn transcribe(
     language: Option<&str>,
     route: OpenRouterTranscriptionRoute,
     audio_format: TranscriptionAudioFormat,
+    translate: bool,
 ) -> Result<String> {
     // The dedicated STT endpoint reliably accepts WAV; opus-in-ogg support varies
     // by model (Whisper rejects it), so force WAV for the STT route. The chat
@@ -96,7 +104,7 @@ pub fn transcribe(
         ),
         OpenRouterTranscriptionRoute::Chat => (
             format!("{}/chat/completions", base),
-            build_chat_body(model, &b64, fmt),
+            build_chat_body(model, &b64, fmt, translate),
         ),
     };
 
@@ -159,13 +167,18 @@ fn build_stt_body(
 }
 
 /// Body for the chat-completions `input_audio` route.
-fn build_chat_body(model: &str, b64: &str, format: &str) -> serde_json::Value {
+fn build_chat_body(model: &str, b64: &str, format: &str, translate: bool) -> serde_json::Value {
+    let prompt = if translate {
+        TRANSLATE_PROMPT
+    } else {
+        TRANSCRIBE_PROMPT
+    };
     serde_json::json!({
         "model": model,
         "messages": [{
             "role": "user",
             "content": [
-                { "type": "text", "text": TRANSCRIBE_PROMPT },
+                { "type": "text", "text": prompt },
                 { "type": "input_audio", "input_audio": { "data": b64, "format": format } }
             ]
         }],
@@ -286,7 +299,7 @@ mod tests {
 
     #[test]
     fn chat_body_has_text_then_audio_parts() {
-        let body = build_chat_body("google/gemini-2.5-flash", "QUJD", "wav");
+        let body = build_chat_body("google/gemini-2.5-flash", "QUJD", "wav", false);
         assert_eq!(body["model"], "google/gemini-2.5-flash");
         let content = &body["messages"][0]["content"];
         assert_eq!(content[0]["type"], "text");

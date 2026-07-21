@@ -1557,13 +1557,21 @@ pub fn change_api_transcription_model_setting(app: AppHandle, model: String) -> 
 
 #[tauri::command]
 #[specta::specta]
-pub fn set_openrouter_transcription_provider_ref(
+pub fn change_openrouter_transcription_url_setting(
     app: AppHandle,
-    provider_id: String,
+    url: String,
 ) -> Result<(), String> {
-    let mut settings = settings::get_settings(&app);
-    settings.openrouter_transcription_provider_ref = provider_id;
-    settings::write_settings(&app, settings);
+    settings::update_settings(&app, |s| s.openrouter_transcription_url = url);
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn change_openrouter_transcription_key_setting(
+    app: AppHandle,
+    key: String,
+) -> Result<(), String> {
+    settings::update_settings(&app, |s| s.openrouter_transcription_key = key);
     Ok(())
 }
 

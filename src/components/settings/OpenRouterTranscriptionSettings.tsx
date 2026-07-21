@@ -1,13 +1,11 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSettings } from "../../hooks/useSettings";
-import { Dropdown, SettingContainer } from "@/components/ui";
-import { SearchableModelSelect } from "./SearchableModelSelect";
-import {
-  commands,
-  type LlmProvider,
-  type OpenRouterTranscriptionRoute,
-  type TranscriptionAudioFormat,
+import { SettingContainer } from "../ui/SettingContainer";
+import { Dropdown } from "@/components/ui";
+import type {
+  OpenRouterTranscriptionRoute,
+  TranscriptionAudioFormat,
 } from "@/bindings";
 
 interface Props {
@@ -15,71 +13,79 @@ interface Props {
   grouped?: boolean;
 }
 
+const INPUT_CLASS =
+  "w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-blue-500 focus:outline-none";
+
 /**
- * Config for the "OpenRouter Transcription" engine. Only takes effect when that
- * model is selected in the Models page. OpenRouter uses JSON + base64 audio
- * (not OpenAI's multipart upload), so it has its own engine + this config.
+ * Config for the "OpenRouter Transcription" engine (T-308: dedicated base URL +
+ * API key, independent of the LLM providers registry). OpenRouter uses JSON +
+ * base64 audio (not OpenAI's multipart upload), so it has its own engine.
  */
 export const OpenRouterTranscriptionSettings: React.FC<Props> = React.memo(
   ({ descriptionMode = "tooltip", grouped = false }) => {
     const { t } = useTranslation();
     const { getSetting, updateSetting } = useSettings();
 
-    const providers =
-      (getSetting("llm_providers") as LlmProvider[] | undefined) ?? [];
-    // Only USABLE providers: an OpenRouter slot that's enabled and has an API key
-    // (a keyless slot would just 401). If none qualify, we surface a hint.
-    const openRouterProviders = providers
-      .map((p, idx) => ({ p, idx }))
-      .filter(
-        ({ p }) =>
-          p.kind === "openrouter" &&
-          p.enabled &&
-          (p.api_key ?? "").trim() !== "",
-      );
-
-    const providerRef =
-      (getSetting("openrouter_transcription_provider_ref") as string) ?? "";
+    const savedUrl =
+      (getSetting("openrouter_transcription_url") as string) ?? "";
+    const savedKey =
+      (getSetting("openrouter_transcription_key") as string) ?? "";
+    const savedModel =
+      (getSetting("openrouter_transcription_model") as string) ?? "";
     const route =
       (getSetting("openrouter_transcription_route") as string) ?? "stt";
     const audioFormat =
       (getSetting("openrouter_transcription_audio_format") as string) ?? "opus";
-    const model =
-      (getSetting("openrouter_transcription_model") as string) ?? "";
+
+    const [url, setUrl] = useState(savedUrl);
+    const [apiKey, setApiKey] = useState(savedKey);
+    const [model, setModel] = useState(savedModel);
+    useEffect(() => setUrl(savedUrl), [savedUrl]);
+    useEffect(() => setApiKey(savedKey), [savedKey]);
+    useEffect(() => setModel(savedModel), [savedModel]);
 
     return (
       <>
         <SettingContainer
-          title={t("settings.advanced.openRouterTranscription.provider.title")}
+          title={t("settings.advanced.openRouterTranscription.url.title")}
           description={t(
-            "settings.advanced.openRouterTranscription.provider.description",
+            "settings.advanced.openRouterTranscription.url.description",
           )}
           descriptionMode={descriptionMode}
           grouped={grouped}
         >
-          {openRouterProviders.length === 0 ? (
-            <p className="text-xs text-red-400 max-w-[260px]">
-              {t("settings.advanced.openRouterTranscription.provider.none")}
-            </p>
-          ) : (
-            <Dropdown
-              selectedValue={providerRef || null}
-              options={openRouterProviders.map(({ p, idx }) => ({
-                value: p.id,
-                label: `#${idx + 1} ${p.name}`,
-              }))}
-              onSelect={(value) =>
-                updateSetting(
-                  "openrouter_transcription_provider_ref",
-                  value ?? "",
-                )
-              }
-              placeholder={t(
-                "settings.advanced.openRouterTranscription.provider.placeholder",
-              )}
-              className="min-w-[260px]"
-            />
+          <input
+            type="text"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            onBlur={() => {
+              if (url !== savedUrl)
+                updateSetting("openrouter_transcription_url", url);
+            }}
+            placeholder="https://openrouter.ai/api/v1"
+            className={INPUT_CLASS}
+          />
+        </SettingContainer>
+
+        <SettingContainer
+          title={t("settings.advanced.openRouterTranscription.apiKey.title")}
+          description={t(
+            "settings.advanced.openRouterTranscription.apiKey.description",
           )}
+          descriptionMode={descriptionMode}
+          grouped={grouped}
+        >
+          <input
+            type="password"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            onBlur={() => {
+              if (apiKey !== savedKey)
+                updateSetting("openrouter_transcription_key", apiKey);
+            }}
+            placeholder="sk-or-..."
+            className={INPUT_CLASS}
+          />
         </SettingContainer>
 
         <SettingContainer
@@ -90,21 +96,16 @@ export const OpenRouterTranscriptionSettings: React.FC<Props> = React.memo(
           descriptionMode={descriptionMode}
           grouped={grouped}
         >
-          <SearchableModelSelect
+          <input
+            type="text"
             value={model}
-            // Pass the provider ref as the source key (not for fetching — that's
-            // fetchOverride) so switching provider invalidates the cached list.
-            providerId={providerRef || null}
-            fetchOverride={async () => {
-              const r =
-                await commands.listOpenrouterTranscriptionModels(providerRef);
-              return r.status === "ok" ? r.data : [];
+            onChange={(e) => setModel(e.target.value)}
+            onBlur={() => {
+              if (model !== savedModel)
+                updateSetting("openrouter_transcription_model", model);
             }}
-            onCommit={(v) => updateSetting("openrouter_transcription_model", v)}
-            placeholder={t(
-              "settings.advanced.openRouterTranscription.model.placeholder",
-            )}
-            className="min-w-[260px]"
+            placeholder="openai/whisper-large-v3"
+            className={INPUT_CLASS}
           />
         </SettingContainer>
 

@@ -661,6 +661,7 @@
       },
       "apiTranscription": {
         "title": "API Transcription",
+        "cardTitle": "API Transcription (OpenAI-compatible)",
         "url": {
           "title": "API URL",
           "description": "Base URL including version prefix (e.g. /v1) for the OpenAI-compatible speech-to-text API.",
@@ -767,11 +768,16 @@
         "persistPriceHint": "Keep this price even when the model changes (don't auto-fill from OpenRouter)"
       },
       "openRouterTranscription": {
-        "provider": {
-          "title": "OpenRouter provider",
-          "description": "Which registered OpenRouter provider supplies the API key for transcription. Add one under the Providers tab.",
-          "placeholder": "Select an OpenRouter provider",
-          "none": "No OpenRouter provider with an API key. Add/enable one under Advanced → Providers first, then pick it here."
+        "cardTitle": "OpenRouter Transcription",
+        "url": {
+          "title": "API URL",
+          "description": "OpenRouter API base URL, including /api/v1.",
+          "placeholder": "https://openrouter.ai/api/v1"
+        },
+        "apiKey": {
+          "title": "API Key",
+          "description": "Your OpenRouter API key (openrouter.ai/keys).",
+          "placeholder": "sk-or-..."
         },
         "model": {
           "title": "Transcription model",

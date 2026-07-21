@@ -208,8 +208,10 @@ const settingUpdaters: {
     commands.changeApiTranscriptionKeySetting(value as string),
   api_transcription_model: (value) =>
     commands.changeApiTranscriptionModelSetting(value as string),
-  openrouter_transcription_provider_ref: (value) =>
-    commands.setOpenrouterTranscriptionProviderRef(value as string),
+  openrouter_transcription_url: (value) =>
+    commands.changeOpenrouterTranscriptionUrlSetting(value as string),
+  openrouter_transcription_key: (value) =>
+    commands.changeOpenrouterTranscriptionKeySetting(value as string),
   openrouter_transcription_model: (value) =>
     commands.changeOpenrouterTranscriptionModelSetting(value as string),
   openrouter_transcription_route: (value) =>

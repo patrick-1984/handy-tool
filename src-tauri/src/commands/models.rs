@@ -131,7 +131,7 @@ pub async fn set_active_model(
         }
     }
 
-    // External/API engines are configured separately (Advanced > Transcription)
+    // External/API engines are configured separately (Advanced > Providers)
     // and validate/load lazily at transcription time. Selecting one must persist
     // even before it's configured — otherwise it's a select-then-configure
     // deadlock — so we save the selection first and treat an eager-load failure
@@ -229,12 +229,10 @@ fn is_model_usable(model: &ModelInfo, settings: &AppSettings) -> bool {
     match model.engine_type {
         EngineType::ApiWhisper => !settings.api_transcription_url.trim().is_empty(),
         EngineType::OpenRouterWhisper => {
-            let provider_ref = settings.openrouter_transcription_provider_ref.trim();
-            !provider_ref.is_empty()
-                && settings
-                    .llm_provider(provider_ref)
-                    .map(|p| !p.api_key.trim().is_empty())
-                    .unwrap_or(false)
+            // T-308: usable when the dedicated URL + API key are set (no longer
+            // tied to an `llm_providers` entry). Model is optional (defaults).
+            !settings.openrouter_transcription_url.trim().is_empty()
+                && !settings.openrouter_transcription_key.trim().is_empty()
         }
         #[cfg(not(target_os = "macos"))]
         EngineType::FlmWhisper => model.is_downloaded,
@@ -281,7 +279,7 @@ pub async fn cancel_download(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::settings::{LlmProvider, get_default_settings};
+    use crate::settings::get_default_settings;
 
     /// Minimal `ModelInfo` builder for the fields `is_model_usable` cares
     /// about; the rest are cosmetic (name/description/scores/etc.).
@@ -304,25 +302,6 @@ mod tests {
             is_recommended: false,
             supported_languages: Vec::new(),
             is_custom: false,
-        }
-    }
-
-    fn provider(id: &str, api_key: &str) -> LlmProvider {
-        LlmProvider {
-            id: id.to_string(),
-            kind: "openrouter".to_string(),
-            enabled: true,
-            name: "Test Provider".to_string(),
-            base_url: String::new(),
-            allow_base_url_edit: false,
-            api_key: api_key.to_string(),
-            model: String::new(),
-            supports_structured_output: false,
-            cost_input_per_million: 0.0,
-            cost_output_per_million: 0.0,
-            concurrency_group: String::new(),
-            sequential: false,
-            persist_price: false,
         }
     }
 
@@ -363,27 +342,24 @@ mod tests {
     }
 
     #[test]
-    fn openrouter_engine_requires_provider_ref_and_api_key() {
+    fn openrouter_engine_requires_url_and_api_key() {
+        // T-308: OpenRouter transcription now uses dedicated URL + key fields
+        // (decoupled from the llm_providers registry).
         let mut settings = get_default_settings();
         let m = model(EngineType::OpenRouterWhisper, true);
 
-        // Nothing configured.
+        // Fresh defaults ship the OpenRouter URL but no key → not usable.
+        settings.openrouter_transcription_key = String::new();
         assert!(!is_model_usable(&m, &settings));
 
-        // provider_ref set but no matching provider registered.
-        settings.openrouter_transcription_provider_ref = "missing-provider".to_string();
-        assert!(!is_model_usable(&m, &settings));
-
-        // Matching provider exists but has no API key yet.
-        settings.llm_providers.push(provider("or-provider", ""));
-        settings.openrouter_transcription_provider_ref = "or-provider".to_string();
-        assert!(!is_model_usable(&m, &settings));
-
-        // Provider has a key: usable, even though the transcription model
-        // itself is left unset (falls back to openai/whisper-large-v3).
-        settings.llm_providers.last_mut().unwrap().api_key = "sk-test".to_string();
-        assert!(settings.openrouter_transcription_model.is_empty());
+        // URL + key present → usable (model defaults to openai/whisper-large-v3).
+        settings.openrouter_transcription_url = "https://openrouter.ai/api/v1".to_string();
+        settings.openrouter_transcription_key = "sk-test".to_string();
         assert!(is_model_usable(&m, &settings));
+
+        // Whitespace-only URL must not count as usable even with a key.
+        settings.openrouter_transcription_url = "   ".to_string();
+        assert!(!is_model_usable(&m, &settings));
     }
 
     #[test]

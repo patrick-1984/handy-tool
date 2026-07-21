@@ -797,20 +797,45 @@ pub struct AppSettings {
     pub api_transcription_key: String,
     #[serde(default)]
     pub api_transcription_model: String,
+    /// T-308: per-provider (LOCAL) language + translate for the OpenAI-compatible
+    /// API transcription engine. Global `selected_language`/`translate_to_english`
+    /// apply ONLY to engines that can't be custom-configured; these override for
+    /// `ApiWhisper`. "auto" behaves as today (normalized, then "en" for the API).
+    #[serde(default = "default_selected_language")]
+    pub api_transcription_language: String,
+    #[serde(default)]
+    pub api_transcription_translate_to_english: bool,
     #[serde(default)]
     pub post_process_disable_thinking: bool,
-    /// Registry provider id (kind `openrouter`) supplying the base URL + API key
-    /// for OpenRouter transcription.
-    #[serde(default)]
+    /// DEPRECATED (T-308): legacy `llm_providers` id that used to supply the
+    /// OpenRouter transcription base URL + API key. Kept ONLY as a one-time
+    /// migration source into the dedicated fields below; `skip_serializing` so it
+    /// is dropped from the store after migration. No production read remains.
+    #[serde(default, skip_serializing)]
     pub openrouter_transcription_provider_ref: String,
+    /// T-308: dedicated OpenRouter transcription endpoint, independent of the
+    /// `llm_providers` registry.
+    #[serde(default = "default_openrouter_transcription_url")]
+    pub openrouter_transcription_url: String,
+    #[serde(default)]
+    pub openrouter_transcription_key: String,
     /// Transcription model id (e.g. `openai/whisper-large-v3` or
     /// `google/gemini-2.5-flash`).
-    #[serde(default)]
+    #[serde(default = "default_openrouter_transcription_model")]
     pub openrouter_transcription_model: String,
     #[serde(default)]
     pub openrouter_transcription_route: OpenRouterTranscriptionRoute,
     #[serde(default)]
     pub openrouter_transcription_audio_format: TranscriptionAudioFormat,
+    /// T-308: per-provider (LOCAL) language + translate for OpenRouter.
+    #[serde(default = "default_selected_language")]
+    pub openrouter_transcription_language: String,
+    #[serde(default)]
+    pub openrouter_transcription_translate_to_english: bool,
+    /// T-308 one-time migration guard (see `ensure_custom_asr_config`). Absent in
+    /// pre-0.54 stores → `false` → migration runs once; fresh installs get `true`.
+    #[serde(default)]
+    pub custom_asr_config_migrated: bool,
     /// Saved prompts + presets for the model-testing tool.
     #[serde(default)]
     pub model_test_library: ModelTestLibrary,
@@ -1074,6 +1099,14 @@ fn default_typing_start_delay_secs() -> u32 {
 /// sessions and some VM consoles.
 fn default_typing_key_delay_ms() -> u32 {
     15
+}
+
+fn default_openrouter_transcription_url() -> String {
+    "https://openrouter.ai/api/v1".to_string()
+}
+
+fn default_openrouter_transcription_model() -> String {
+    "openai/whisper-large-v3".to_string()
 }
 
 fn default_selected_language() -> String {
@@ -1497,6 +1530,52 @@ fn ensure_jumper_v2(settings: &mut AppSettings) -> bool {
     changed
 }
 
+/// T-308 one-time migration: move OpenRouter transcription config OFF the
+/// `llm_providers` registry into dedicated fields, and seed each configurable
+/// engine's LOCAL language/translate from the (previously global) values. Reads
+/// `openrouter_transcription_provider_ref` (a `skip_serializing` field), so it
+/// MUST run before any store write can drop it. Idempotent via
+/// `custom_asr_config_migrated`. Never mutates/deletes the referenced provider
+/// (it may still back post-processing / model-testing). Returns true if changed.
+fn ensure_custom_asr_config(settings: &mut AppSettings) -> bool {
+    if settings.custom_asr_config_migrated {
+        return false;
+    }
+    // Seed local language/translate from the global values (one-time).
+    settings.api_transcription_language = settings.selected_language.clone();
+    settings.api_transcription_translate_to_english = settings.translate_to_english;
+    settings.openrouter_transcription_language = settings.selected_language.clone();
+
+    // Resolve the legacy provider ref into the dedicated URL/key (copy regardless
+    // of enabled state). Collect into owned values so the immutable borrow ends
+    // before we mutate `settings`.
+    let provider_ref = settings.openrouter_transcription_provider_ref.clone();
+    let (legacy_url, legacy_key) = settings
+        .llm_provider(&provider_ref)
+        .map(|p| (p.base_url.clone(), p.api_key.clone()))
+        .unwrap_or_default();
+    if !legacy_url.is_empty() {
+        settings.openrouter_transcription_url = legacy_url;
+    } else if settings.openrouter_transcription_url.is_empty() {
+        settings.openrouter_transcription_url = default_openrouter_transcription_url();
+    }
+    settings.openrouter_transcription_key = legacy_key;
+
+    // Route governs OpenRouter translate: Chat can translate (inherit old global
+    // preference); Stt has no translation control (force off).
+    settings.openrouter_transcription_translate_to_english = matches!(
+        settings.openrouter_transcription_route,
+        OpenRouterTranscriptionRoute::Chat
+    ) && settings.translate_to_english;
+
+    if settings.openrouter_transcription_model.trim().is_empty() {
+        settings.openrouter_transcription_model = default_openrouter_transcription_model();
+    }
+
+    settings.custom_asr_config_migrated = true;
+    true
+}
+
 fn ensure_llm_defaults(settings: &mut AppSettings) -> bool {
     let mut changed = false;
 
@@ -1810,11 +1889,18 @@ pub fn get_default_settings() -> AppSettings {
         api_transcription_url: String::new(),
         api_transcription_key: String::new(),
         api_transcription_model: String::new(),
+        api_transcription_language: default_selected_language(),
+        api_transcription_translate_to_english: false,
         post_process_disable_thinking: false,
         openrouter_transcription_provider_ref: String::new(),
-        openrouter_transcription_model: String::new(),
+        openrouter_transcription_url: default_openrouter_transcription_url(),
+        openrouter_transcription_key: String::new(),
+        openrouter_transcription_model: default_openrouter_transcription_model(),
         openrouter_transcription_route: OpenRouterTranscriptionRoute::default(),
         openrouter_transcription_audio_format: TranscriptionAudioFormat::default(),
+        openrouter_transcription_language: default_selected_language(),
+        openrouter_transcription_translate_to_english: false,
+        custom_asr_config_migrated: true,
         model_test_library: ModelTestLibrary::default(),
         mcp_server_enabled: false,
         mcp_server_port: default_mcp_port(),
@@ -1956,7 +2042,7 @@ pub fn load_or_create_app_settings(app: &AppHandle) -> AppSettings {
     let mut settings = if let Some(settings_value) = store.get("settings") {
         // Parse the entire settings object
         match serde_json::from_value::<AppSettings>(settings_value) {
-            Ok(mut settings) => {
+            Ok(settings) => {
                 // Never Debug-dump the whole settings struct: it embeds LLM
                 // provider API keys, the API-transcription key, and the MCP
                 // bearer token, and dev builds write DEBUG logs to disk.
@@ -1965,11 +2051,9 @@ pub fn load_or_create_app_settings(app: &AppHandle) -> AppSettings {
                     settings.bindings.len(),
                     settings.llm_providers.len()
                 );
-                if ensure_default_bindings(&mut settings) {
-                    debug!("Settings updated with new bindings");
-                    store.set("settings", serde_json::to_value(&settings).unwrap());
-                }
-
+                // Migrations/defaults run AFTER the match (below), so nothing
+                // writes to the store before `ensure_custom_asr_config` reads
+                // the `skip_serializing` provider_ref (T-308 finding 1).
                 settings
             }
             Err(e) => {
@@ -1986,11 +2070,14 @@ pub fn load_or_create_app_settings(app: &AppHandle) -> AppSettings {
         default_settings
     };
 
-    if ensure_jumper_v2(&mut settings) {
-        store.set("settings", serde_json::to_value(&settings).unwrap());
-    }
-
-    if ensure_llm_defaults(&mut settings) {
+    // Migrations that read `skip_serializing` fields (provider_ref) MUST run
+    // before ANY store write drops them — so run them all here (the Ok arm no
+    // longer writes) and aggregate into a single write. asr-config first.
+    let asr_updated = ensure_custom_asr_config(&mut settings);
+    let bindings_updated = ensure_default_bindings(&mut settings);
+    let jumper_updated = ensure_jumper_v2(&mut settings);
+    let llm_updated = ensure_llm_defaults(&mut settings);
+    if asr_updated || bindings_updated || jumper_updated || llm_updated {
         store.set("settings", serde_json::to_value(&settings).unwrap());
     }
 
@@ -2020,9 +2107,11 @@ pub fn get_settings(app: &AppHandle) -> AppSettings {
     // MUST run before anything can write this struct back: the migration
     // sources are `skip_serializing` fields, so a write that happens before
     // the one-time migration would silently drop the old values.
+    // T-308: FIRST — reads the skip_serializing provider_ref before any write.
+    let asr_updated = ensure_custom_asr_config(&mut settings);
     let jumper_updated = ensure_jumper_v2(&mut settings);
     let bindings_updated = ensure_default_bindings(&mut settings);
-    if ensure_llm_defaults(&mut settings) || bindings_updated || jumper_updated {
+    if ensure_llm_defaults(&mut settings) || bindings_updated || jumper_updated || asr_updated {
         store.set("settings", serde_json::to_value(&settings).unwrap());
     }
 
