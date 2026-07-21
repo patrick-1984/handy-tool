@@ -180,7 +180,8 @@ struct EngineState {
     instance: u64,
 }
 
-#[derive(Clone)]
+// NOTE: Clone is implemented MANUALLY below (not derived) so `owns_watcher` can
+// be forced false on clones — see that field's doc + the `impl Clone`. T-307.
 pub struct TranscriptionManager {
     engine: Arc<Mutex<EngineState>>,
     /// Dedicated SECOND engine slot for the Translator folder-batch worker,
@@ -198,6 +199,16 @@ pub struct TranscriptionManager {
     translator_last_activity: Arc<AtomicU64>,
     shutdown_signal: Arc<AtomicBool>,
     watcher_handle: Arc<Mutex<Option<thread::JoinHandle<()>>>>,
+    /// True ONLY for the original manager built by `new()` (the one wrapped in
+    /// the Tauri-state `Arc`); forced false on every `clone()`. Guards `Drop`
+    /// (T-307): a transient by-value clone — the idle watcher's own captured
+    /// copy, or the throwaway clone `initiate_model_load` moves into its
+    /// background load thread — must NEVER signal shutdown or take/join the
+    /// SHARED watcher. Before this guard, the first background load's clone
+    /// dropping killed the sole idle-unload watcher for the rest of the session
+    /// (idle model-unload silently stopped) and could cross-thread-deadlock or
+    /// self-join on `watcher_handle`.
+    owns_watcher: bool,
     is_loading: Arc<Mutex<bool>>,
     loading_condvar: Arc<Condvar>,
     /// Single-flight guard held across the WHOLE of `load_model`, so every
@@ -222,6 +233,33 @@ pub struct TranscriptionManager {
     is_batch_transcribing: Arc<AtomicBool>,
     #[cfg(not(target_os = "macos"))]
     flm_manager: Arc<Mutex<Option<crate::managers::flm::FlmManager>>>,
+}
+
+impl Clone for TranscriptionManager {
+    // T-307: clones share all Arc-backed state but are NEVER the watcher owner
+    // (`owns_watcher: false`), so a clone's Drop is a no-op for the shared idle
+    // watcher. Only the original from `new()` tears it down, at real shutdown.
+    fn clone(&self) -> Self {
+        Self {
+            engine: Arc::clone(&self.engine),
+            translator_engine: Arc::clone(&self.translator_engine),
+            model_manager: Arc::clone(&self.model_manager),
+            app_handle: self.app_handle.clone(),
+            last_activity: Arc::clone(&self.last_activity),
+            translator_last_activity: Arc::clone(&self.translator_last_activity),
+            shutdown_signal: Arc::clone(&self.shutdown_signal),
+            watcher_handle: Arc::clone(&self.watcher_handle),
+            owns_watcher: false,
+            is_loading: Arc::clone(&self.is_loading),
+            loading_condvar: Arc::clone(&self.loading_condvar),
+            load_flight: Arc::clone(&self.load_flight),
+            external_select_gen: Arc::clone(&self.external_select_gen),
+            is_live_transcribing: Arc::clone(&self.is_live_transcribing),
+            is_batch_transcribing: Arc::clone(&self.is_batch_transcribing),
+            #[cfg(not(target_os = "macos"))]
+            flm_manager: Arc::clone(&self.flm_manager),
+        }
+    }
 }
 
 impl TranscriptionManager {
@@ -253,6 +291,8 @@ impl TranscriptionManager {
             )),
             shutdown_signal: Arc::new(AtomicBool::new(false)),
             watcher_handle: Arc::new(Mutex::new(None)),
+            // This original owns the watcher; clones do not (see impl Clone). T-307.
+            owns_watcher: true,
             is_loading: Arc::new(Mutex::new(false)),
             loading_condvar: Arc::new(Condvar::new()),
             load_flight: Arc::new(Mutex::new(())),
@@ -2037,13 +2077,32 @@ impl TranscriptionManager {
 
 impl Drop for TranscriptionManager {
     fn drop(&mut self) {
+        // T-307: only the ORIGINAL owner tears the shared idle watcher down. A
+        // transient by-value clone (the watcher's own captured copy, or the
+        // throwaway clone `initiate_model_load` moves into its background load
+        // thread) must NOT signal shutdown or take/join the shared handle —
+        // doing so killed the sole idle-unload watcher for the rest of the
+        // session and could cross-thread-deadlock / self-join on the mutex.
+        if !self.owns_watcher {
+            return;
+        }
+
         debug!("Shutting down TranscriptionManager");
 
         // Signal the watcher thread to shutdown
         self.shutdown_signal.store(true, Ordering::Relaxed);
 
+        // Take the handle in its OWN scope so the mutex guard is dropped BEFORE
+        // join() (Rust 2024 if-let temporary scoping would otherwise keep the
+        // guard locked across the join). Tolerate a poisoned lock.
+        let handle = self
+            .watcher_handle
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .take();
+
         // Wait for the thread to finish gracefully
-        if let Some(handle) = self.watcher_handle.lock().unwrap().take() {
+        if let Some(handle) = handle {
             if let Err(e) = handle.join() {
                 warn!("Failed to join idle watcher thread: {:?}", e);
             } else {

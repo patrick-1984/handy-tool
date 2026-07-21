@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.52.2] - 2026-07-21
+
+### Fixed
+
+- **Idle model-unload silently stopped after the first recording** (and could, in a rarer race, contribute to a hang). The transcription manager's background model-load path dropped a clone whose destructor tore down the *shared* idle-unload watcher thread — so after the first load, the "unload model after N minutes" setting stopped working for the rest of the session and the log filled with spurious "Shutting down TranscriptionManager" lines. Ownership is now tracked so only the real owner tears the watcher down (at app shutdown), and the teardown no longer holds a lock across the thread join.
+- **"Unload model" / model-load-status commands** requested the wrong managed type and would fail at runtime; corrected to match the registered state.
+
 ## [0.52.1] - 2026-07-21
 
 ### Fixed
