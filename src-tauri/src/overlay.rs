@@ -1,6 +1,6 @@
 use crate::settings;
 use crate::settings::OverlayPosition;
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use tauri::{AppHandle, Emitter, Manager};
 
 /// Generation counter incremented on every show, checked by delayed hide threads.
@@ -304,7 +304,12 @@ fn show_overlay_state(app_handle: &AppHandle, state: &str) {
     update_overlay_position(app_handle);
 
     if let Some(overlay_window) = app_handle.get_webview_window("recording_overlay") {
-        let _ = overlay_window.show();
+        // Mark visible ONLY if the native show actually succeeded, so the audio
+        // worker's emit_levels doesn't queue frames to a window that never
+        // appeared (T-306: it gates on this flag, never on a sync window getter).
+        if overlay_window.show().is_ok() {
+            OVERLAY_VISIBLE.store(true, Ordering::Relaxed);
+        }
 
         // On Windows, aggressively re-assert "topmost" in the native Z-order after showing
         #[cfg(target_os = "windows")]
@@ -346,6 +351,9 @@ pub fn update_overlay_position(app_handle: &AppHandle) {
 
 /// Hides the recording overlay window with fade-out animation
 pub fn hide_recording_overlay(app_handle: &AppHandle) {
+    // Stop the audio worker from emitting levels immediately (T-306), before any
+    // window work below — the actual native hide is delayed for the fade-out.
+    OVERLAY_VISIBLE.store(false, Ordering::Relaxed);
     // Always hide the overlay regardless of settings - if setting was changed while recording,
     // we still want to hide it properly
     if let Some(overlay_window) = app_handle.get_webview_window("recording_overlay") {
@@ -467,6 +475,17 @@ pub fn close_floating_transcription_window(app_handle: &AppHandle) {
 static LAST_MIC_LEVEL_EMIT_MS: AtomicU64 = AtomicU64::new(0);
 const MIC_LEVEL_EMIT_INTERVAL_MS: u64 = 33;
 
+/// Desired recording-overlay visibility, tracked process-locally (T-306). The
+/// audio worker's `emit_levels` MUST NOT call Tauri's synchronous
+/// `Window::is_visible()` getter: that getter posts a message to the main event
+/// loop and blocks on the reply, so if the main thread is simultaneously inside
+/// `cancel_current_operation` joining the recorder worker (which is what runs
+/// `emit_levels`), the two block on each other and the whole app hangs (the
+/// recording overlay freezes mid-frame). This flag lets the worker gate emits
+/// with a lock-free atomic instead. Set true when an overlay state is shown,
+/// false the instant a hide is requested.
+static OVERLAY_VISIBLE: AtomicBool = AtomicBool::new(false);
+
 /// Forwards mic spectrum levels to the recording overlay window.
 ///
 /// The overlay is the only `mic-level` consumer, so delivery targets it via
@@ -494,11 +513,14 @@ pub fn emit_levels(app_handle: &AppHandle, levels: &Vec<f32>) {
         return;
     }
 
-    if let Some(overlay_window) = app_handle.get_webview_window("recording_overlay") {
-        // No consumer is watching while the overlay is hidden.
-        if !overlay_window.is_visible().unwrap_or(true) {
-            return;
-        }
-        let _ = app_handle.emit_to("recording_overlay", "mic-level", levels);
+    // No consumer is watching while the overlay is hidden. Gate on the
+    // process-local flag — NEVER on `Window::is_visible()` here: this runs on
+    // the audio worker thread and that getter blocks on the main event loop,
+    // which deadlocks against `cancel_current_operation` joining this very
+    // worker on the main thread (T-306). `emit_to` only queues the event, so it
+    // is safe to call from the worker without touching the window handle.
+    if !OVERLAY_VISIBLE.load(Ordering::Relaxed) {
+        return;
     }
+    let _ = app_handle.emit_to("recording_overlay", "mic-level", levels);
 }

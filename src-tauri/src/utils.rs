@@ -20,11 +20,12 @@ pub fn cancel_current_operation(app: &AppHandle) {
     // Unregister the cancel shortcut asynchronously
     shortcut::unregister_cancel_shortcut(app);
 
-    // Cancel any ongoing recording
-    let audio_manager = app.state::<Arc<AudioRecordingManager>>();
-    let recording_was_active = audio_manager.is_recording();
-    audio_manager.cancel_recording();
-
+    // Commit take-cancellation BEFORE tearing down the recording device (T-306
+    // defense-in-depth): cancel_recording stops the mic stream and joins the
+    // recorder worker; committing the generation bump + intent clears first
+    // guarantees an in-flight pipeline skips its dispatch even if that teardown
+    // ever stalls.
+    //
     // Finding 7 (T-101 follow-up): bump the take-cancellation generation so
     // an in-flight pipeline — already past start(), possibly mid-transcribe
     // or mid-post-process, and already holding its OWN copies of
@@ -39,6 +40,11 @@ pub fn cancel_current_operation(app: &AppHandle) {
     // action must die with it — stranded, they would hijack a later paste.
     crate::anchor::clear_delivery_request();
     crate::anchor::clear_post_take_action();
+
+    // Cancel any ongoing recording
+    let audio_manager = app.state::<Arc<AudioRecordingManager>>();
+    let recording_was_active = audio_manager.is_recording();
+    audio_manager.cancel_recording();
 
     // Tear down any chunked-recording session (clears the chunk callback and
     // re-enables model unloading before maybe_unload_immediately below).

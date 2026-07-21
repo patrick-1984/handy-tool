@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.52.1] - 2026-07-21
+
+### Fixed
+
+- **App freeze when cancelling a recording** (overlay bar goes stale, requires force-restart). The recording overlay's audio-level updater was calling a synchronous window query from the audio worker thread; if you cancelled a recording at that instant, the main thread (tearing down the microphone) and the worker deadlocked on each other and the whole app hung. The updater now uses a lock-free visibility flag and never blocks on the UI thread. Cancellation also commits its state before any device teardown, as a safety margin.
+
 ## [0.52.0] - 2026-07-20
 
 ### Added
