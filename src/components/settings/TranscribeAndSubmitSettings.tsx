@@ -17,6 +17,7 @@ import type {
   SubmitIdleBehavior,
   ClipboardHandling,
   JumperSubmitDelay,
+  JumperPasteDelay,
 } from "@/bindings";
 
 /**
@@ -92,6 +93,22 @@ export const TranscribeAndSubmitSettings: React.FC = React.memo(() => {
       value: "none",
       label: t(
         "settings.general.transcribeAndSubmit.jumperSubmitDelay.options.none",
+      ),
+    },
+    { value: "ms100", label: "100 ms" },
+    { value: "ms250", label: "250 ms" },
+    { value: "ms500", label: "500 ms" },
+    { value: "ms1000", label: "1000 ms" },
+    { value: "ms2000", label: "2000 ms" },
+  ];
+
+  const jumperPasteDelay = (getSetting("jumper_paste_delay") ||
+    "ms250") as JumperPasteDelay;
+  const jumperPasteDelayOptions = [
+    {
+      value: "none",
+      label: t(
+        "settings.general.transcribeAndSubmit.jumperPasteDelay.options.none",
       ),
     },
     { value: "ms100", label: "100 ms" },
@@ -180,6 +197,27 @@ export const TranscribeAndSubmitSettings: React.FC = React.memo(() => {
         descriptionMode="tooltip"
         grouped={true}
       />
+      {osType === "windows" && (
+        <SettingContainer
+          title={t(
+            "settings.general.transcribeAndSubmit.jumperPasteDelay.title",
+          )}
+          description={t(
+            "settings.general.transcribeAndSubmit.jumperPasteDelay.description",
+          )}
+          descriptionMode="tooltip"
+          grouped={true}
+        >
+          <Dropdown
+            options={jumperPasteDelayOptions}
+            selectedValue={jumperPasteDelay}
+            onSelect={(value) =>
+              updateSetting("jumper_paste_delay", value as JumperPasteDelay)
+            }
+            disabled={isUpdating("jumper_paste_delay")}
+          />
+        </SettingContainer>
+      )}
       {osType === "windows" && (
         <SettingContainer
           title={t(

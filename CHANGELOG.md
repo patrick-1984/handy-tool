@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.55.0] - 2026-07-22
+
+### Added
+
+- **"Paste delay after jump" (Windows).** A new setting in **General → Transcribe & Submit** that inserts an extra wait *after* a Transcribe & Submit (or any anchored delivery) jumps the foreground to an anchored target and *before* the paste keystroke. A freshly-activated window — especially RDP/Citrix — can still be transitioning (completing activation, moving focus) when Ctrl+V fires, so the paste is swallowed and nothing appears. This is separate from the existing "Submit delay after jump" (which waits before the Enter key). Options: Off / 100 / 250 / 500 / 1000 / 2000 ms, default **250 ms**; only applies on a real jump — when you're already in the target, paste stays instant.
+
 ## [0.54.0] - 2026-07-21
 
 ### Changed

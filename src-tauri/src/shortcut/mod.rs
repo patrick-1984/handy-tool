@@ -21,9 +21,9 @@ use tauri_plugin_autostart::ManagerExt;
 
 use crate::settings::{
     self, AnchorAction, AutoSubmitKey, ClipboardHandling, ClipboardRestoreDelay, CursorMode,
-    JumperSubmitDelay, KeyboardImplementation, LLMPrompt, ModelUnloadTimeout, OverlayPosition,
-    PasteMethod, ShortcutBinding, SoundTheme, SubmitIdleBehavior, Theme, TranscriptionMode,
-    TypingTool, get_settings,
+    JumperPasteDelay, JumperSubmitDelay, KeyboardImplementation, LLMPrompt, ModelUnloadTimeout,
+    OverlayPosition, PasteMethod, ShortcutBinding, SoundTheme, SubmitIdleBehavior, Theme,
+    TranscriptionMode, TypingTool, get_settings,
 };
 use crate::tray;
 
@@ -1097,6 +1097,33 @@ fn parse_jumper_submit_delay(value: &str) -> JumperSubmitDelay {
 pub fn change_jumper_submit_delay_setting(app: AppHandle, delay: String) -> Result<(), String> {
     let mut settings = settings::get_settings(&app);
     settings.jumper_submit_delay = parse_jumper_submit_delay(&delay);
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
+fn parse_jumper_paste_delay(value: &str) -> JumperPasteDelay {
+    match value {
+        "none" => JumperPasteDelay::None,
+        "ms100" => JumperPasteDelay::Ms100,
+        "ms250" => JumperPasteDelay::Ms250,
+        "ms500" => JumperPasteDelay::Ms500,
+        "ms1000" => JumperPasteDelay::Ms1000,
+        "ms2000" => JumperPasteDelay::Ms2000,
+        other => {
+            warn!(
+                "Invalid jumper paste delay '{}', defaulting to ms250",
+                other
+            );
+            JumperPasteDelay::Ms250
+        }
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn change_jumper_paste_delay_setting(app: AppHandle, delay: String) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    settings.jumper_paste_delay = parse_jumper_paste_delay(&delay);
     settings::write_settings(&app, settings);
     Ok(())
 }

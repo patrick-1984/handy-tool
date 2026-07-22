@@ -324,6 +324,47 @@ impl JumperSubmitDelay {
     }
 }
 
+/// Extra wait AFTER a jump activates the target window and BEFORE the paste
+/// keystroke fires. `begin_delivery` already settles a fixed ~60 ms after
+/// activation, but a freshly-activated window — especially an RDP/Citrix
+/// session — may still be transitioning (completing activation / moving
+/// focus) when the Ctrl+V lands, so the paste is swallowed or goes nowhere.
+///
+/// Like [`JumperSubmitDelay`], it applies ONLY on a real jump (target was not
+/// already foreground), so the already-focused case keeps its snappiness.
+/// `None` reproduces the pre-0.55 behavior. Windows-only in effect.
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type)]
+#[serde(rename_all = "snake_case")]
+pub enum JumperPasteDelay {
+    None,
+    Ms100,
+    Ms250,
+    Ms500,
+    Ms1000,
+    Ms2000,
+}
+
+impl Default for JumperPasteDelay {
+    fn default() -> Self {
+        JumperPasteDelay::Ms250
+    }
+}
+
+impl JumperPasteDelay {
+    /// Extra milliseconds waited on top of the fixed ~60 ms post-activation
+    /// settle, before the paste keystroke, on a real jump.
+    pub fn to_ms(self) -> u64 {
+        match self {
+            JumperPasteDelay::None => 0,
+            JumperPasteDelay::Ms100 => 100,
+            JumperPasteDelay::Ms250 => 250,
+            JumperPasteDelay::Ms500 => 500,
+            JumperPasteDelay::Ms1000 => 1000,
+            JumperPasteDelay::Ms2000 => 2000,
+        }
+    }
+}
+
 /// What a recording shortcut ADDITIONALLY does to the anchor when pressed —
 /// configured separately for the idle press (nothing running) and the finish
 /// press (a transcription is in progress), per flow. `None` (default) keeps
@@ -876,6 +917,10 @@ pub struct AppSettings {
     /// foreground (Windows Jumper). See [`JumperSubmitDelay`]. Default `Ms250`.
     #[serde(default)]
     pub jumper_submit_delay: JumperSubmitDelay,
+    /// Extra post-jump, pre-PASTE settle when an anchored delivery jumped the
+    /// foreground (Windows Jumper). See [`JumperPasteDelay`]. Default `Ms250`.
+    #[serde(default)]
+    pub jumper_paste_delay: JumperPasteDelay,
     /// Return focus after an anchored delivery, per finishing flow. The
     /// starting location is captured automatically every time a delivery
     /// begins (an internal, invisible slot) — no user slot is involved.
@@ -1912,6 +1957,7 @@ pub fn get_default_settings() -> AppSettings {
         clipboard_restore_delay: ClipboardRestoreDelay::default(),
         submit_clipboard_restore_delay: ClipboardRestoreDelay::default(),
         jumper_submit_delay: JumperSubmitDelay::default(),
+        jumper_paste_delay: JumperPasteDelay::default(),
         return_focus_output: default_return_focus(),
         return_focus_submit: default_return_focus(),
         anchor_return_focus: default_return_focus(),
@@ -2356,6 +2402,22 @@ mod tests {
         assert_eq!(
             get_default_settings().jumper_submit_delay,
             JumperSubmitDelay::Ms250
+        );
+    }
+
+    #[test]
+    fn jumper_paste_delay_maps_to_ms_and_defaults_to_250() {
+        assert_eq!(JumperPasteDelay::None.to_ms(), 0);
+        assert_eq!(JumperPasteDelay::Ms100.to_ms(), 100);
+        assert_eq!(JumperPasteDelay::Ms250.to_ms(), 250);
+        assert_eq!(JumperPasteDelay::Ms500.to_ms(), 500);
+        assert_eq!(JumperPasteDelay::Ms1000.to_ms(), 1000);
+        assert_eq!(JumperPasteDelay::Ms2000.to_ms(), 2000);
+        // Ships enabled: a real post-jump paste settle by default, not None.
+        assert_eq!(JumperPasteDelay::default(), JumperPasteDelay::Ms250);
+        assert_eq!(
+            get_default_settings().jumper_paste_delay,
+            JumperPasteDelay::Ms250
         );
     }
 

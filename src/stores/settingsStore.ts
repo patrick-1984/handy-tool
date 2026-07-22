@@ -132,6 +132,8 @@ const settingUpdaters: {
     commands.changeSubmitClipboardRestoreDelaySetting(value as string),
   jumper_submit_delay: (value) =>
     commands.changeJumperSubmitDelaySetting(value as string),
+  jumper_paste_delay: (value) =>
+    commands.changeJumperPasteDelaySetting(value as string),
   return_focus_output: (value) =>
     commands.changeReturnFocusSetting("output", value as boolean),
   return_focus_submit: (value) =>

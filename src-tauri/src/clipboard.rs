@@ -976,13 +976,37 @@ fn paste_inner(
         None
     };
 
+    // After a real jump, the freshly-activated target (especially an
+    // RDP/Citrix session) may still be transitioning — completing activation,
+    // moving focus — when the paste keystroke fires, so the Ctrl+V is
+    // swallowed or lands nowhere. `begin_delivery` already settled a fixed
+    // ~60 ms; add the user-configurable `jumper_paste_delay` ON TOP, ONLY on a
+    // real jump (`foreground_switched`), so the already-focused case keeps its
+    // snappiness. Runs BEFORE the TOCTOU re-check below so a focus change
+    // during this wait is still caught before we paste.
+    #[cfg(windows)]
+    {
+        if let Some(guard) = anchor_guard.as_ref() {
+            if guard.foreground_switched() {
+                let extra_ms = settings.jumper_paste_delay.to_ms();
+                if extra_ms > 0 {
+                    log::debug!(
+                        "paste timing: post-jump settle before paste = {} ms",
+                        extra_ms
+                    );
+                    std::thread::sleep(Duration::from_millis(extra_ms));
+                }
+            }
+        }
+    }
+
     // TOCTOU close (T-103): `begin_delivery` verified activation/focus, then
     // settled 60ms before returning — a focus change in that gap (a popup
-    // stealing focus, the user clicking elsewhere) must not receive a blind
-    // paste. Re-check immediately before the paste keystroke and route a
-    // mismatch to the EXACT same fail-closed park path as a verification
-    // failure. One cheap syscall — no measurable latency on a normal
-    // delivery.
+    // stealing focus, the user clicking elsewhere), or during the post-jump
+    // settle just above, must not receive a blind paste. Re-check immediately
+    // before the paste keystroke and route a mismatch to the EXACT same
+    // fail-closed park path as a verification failure. One cheap syscall — no
+    // measurable latency on a normal delivery.
     #[cfg(windows)]
     {
         let focus_lost_before_paste = anchor_guard

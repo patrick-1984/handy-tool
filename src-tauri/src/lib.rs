@@ -399,6 +399,7 @@ pub fn run(cli_args: CliArgs) {
         shortcut::change_clipboard_restore_delay_setting,
         shortcut::change_submit_clipboard_restore_delay_setting,
         shortcut::change_jumper_submit_delay_setting,
+        shortcut::change_jumper_paste_delay_setting,
         shortcut::get_shortcut_registration_failures,
         shortcut::change_jumper_persist_setting,
         shortcut::change_anchor_action_setting,
