@@ -1130,6 +1130,61 @@ pub fn change_jumper_paste_delay_setting(app: AppHandle, delay: String) -> Resul
 
 #[tauri::command]
 #[specta::specta]
+pub fn change_jumper_submit_delay_remote_setting(
+    app: AppHandle,
+    delay: String,
+) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    settings.jumper_submit_delay_remote = parse_jumper_submit_delay(&delay);
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn change_jumper_paste_delay_remote_setting(
+    app: AppHandle,
+    delay: String,
+) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    settings.jumper_paste_delay_remote = parse_jumper_paste_delay(&delay);
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
+/// Replace the remote-desktop classifier list. Each entry is trimmed; blank
+/// entries and case-insensitive duplicates are dropped so the stored list is
+/// clean (the matcher ignores blanks anyway, but a tidy list keeps the UI
+/// honest). An empty result is allowed — it simply disables remote
+/// classification (all jumps use the local delays).
+#[tauri::command]
+#[specta::specta]
+pub fn set_jumper_remote_match_strings(app: AppHandle, strings: Vec<String>) -> Result<(), String> {
+    let mut seen: Vec<String> = Vec::new();
+    let mut cleaned: Vec<String> = Vec::new();
+    for raw in strings {
+        let trimmed = raw.trim();
+        if trimmed.is_empty() {
+            continue;
+        }
+        let lower = trimmed.to_ascii_lowercase();
+        if seen.contains(&lower) {
+            continue;
+        }
+        seen.push(lower);
+        cleaned.push(trimmed.to_string());
+    }
+    let mut settings = settings::get_settings(&app);
+    settings.jumper_remote_match_strings = cleaned;
+    settings::write_settings(&app, settings);
+    // Refresh the Jumper UI so the "Remote ✓" badges reflect the new list
+    // immediately, without waiting for a slot mutation.
+    crate::anchor::emit_anchor_changed(&app);
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 pub fn change_submit_key_setting(app: AppHandle, key: String) -> Result<(), String> {
     let mut settings = settings::get_settings(&app);
     let parsed = match key.as_str() {

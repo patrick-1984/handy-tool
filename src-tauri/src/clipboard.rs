@@ -176,6 +176,7 @@ fn paste_via_clipboard(
     paste_delay_ms: u64,
     restore_after_ms: Option<u64>,
     anchor_guard: Option<&crate::anchor::DeliveryGuard>,
+    remote_retry: bool,
 ) -> Result<(), String> {
     let clipboard = app_handle.clipboard();
     let clipboard_content = clipboard.read_text().unwrap_or_default();
@@ -218,8 +219,10 @@ fn paste_via_clipboard(
     // synthesized keystroke below — a focus change since `begin_delivery`'s
     // own check (or since the last re-check) must abort rather than paste
     // blind. No-op (`anchor_guard` is `None`) for every non-anchored paste.
+    // T-309: on a remote-desktop jump this tolerates the target still settling
+    // its inner focus (bounded retry) instead of parking immediately.
     if let Some(guard) = anchor_guard {
-        if !crate::anchor::guard_still_foreground(guard) {
+        if !crate::anchor::await_guard_ready(guard, remote_retry) {
             return Err(ANCHOR_FOCUS_LOST.to_string());
         }
     }
@@ -976,23 +979,41 @@ fn paste_inner(
         None
     };
 
+    // T-309: classify this delivery's target ONCE. `remote_jump` is true only
+    // on a real jump (`foreground_switched`) whose target matches the user's
+    // remote-desktop classifier — it selects the longer `*_remote` delays AND
+    // the bounded readiness retry in the per-keystroke re-checks below. An
+    // already-focused delivery or a local target keeps the snappy behavior.
+    #[cfg(windows)]
+    let remote_jump: bool = anchor_guard
+        .as_ref()
+        .map(|g| g.foreground_switched() && g.is_remote(&settings.jumper_remote_match_strings))
+        .unwrap_or(false);
+    #[cfg(not(windows))]
+    let remote_jump: bool = false;
+
     // After a real jump, the freshly-activated target (especially an
     // RDP/Citrix session) may still be transitioning — completing activation,
     // moving focus — when the paste keystroke fires, so the Ctrl+V is
     // swallowed or lands nowhere. `begin_delivery` already settled a fixed
-    // ~60 ms; add the user-configurable `jumper_paste_delay` ON TOP, ONLY on a
-    // real jump (`foreground_switched`), so the already-focused case keeps its
-    // snappiness. Runs BEFORE the TOCTOU re-check below so a focus change
-    // during this wait is still caught before we paste.
+    // ~60 ms; add the user-configurable paste delay ON TOP, ONLY on a real
+    // jump (`foreground_switched`) — the longer `*_remote` value for a remote
+    // target, else the local one. Runs BEFORE the TOCTOU re-check below so a
+    // focus change during this wait is still caught before we paste.
     #[cfg(windows)]
     {
         if let Some(guard) = anchor_guard.as_ref() {
             if guard.foreground_switched() {
-                let extra_ms = settings.jumper_paste_delay.to_ms();
+                let extra_ms = if remote_jump {
+                    settings.jumper_paste_delay_remote.to_ms()
+                } else {
+                    settings.jumper_paste_delay.to_ms()
+                };
                 if extra_ms > 0 {
                     log::debug!(
-                        "paste timing: post-jump settle before paste = {} ms",
-                        extra_ms
+                        "paste timing: post-jump settle before paste = {} ms (remote={})",
+                        extra_ms,
+                        remote_jump
                     );
                     std::thread::sleep(Duration::from_millis(extra_ms));
                 }
@@ -1011,7 +1032,7 @@ fn paste_inner(
     {
         let focus_lost_before_paste = anchor_guard
             .as_ref()
-            .map(|guard| !crate::anchor::guard_still_foreground(guard))
+            .map(|guard| !crate::anchor::await_guard_ready(guard, remote_jump))
             .unwrap_or(false);
         if focus_lost_before_paste {
             let reason = "focus changed before the paste keystroke (TOCTOU re-check)".to_string();
@@ -1073,7 +1094,13 @@ fn paste_inner(
         {
             anchor_guard_ref
                 .filter(|g| g.foreground_switched())
-                .map(|_| settings.jumper_submit_delay.to_ms())
+                .map(|_| {
+                    if remote_jump {
+                        settings.jumper_submit_delay_remote.to_ms()
+                    } else {
+                        settings.jumper_submit_delay.to_ms()
+                    }
+                })
                 .unwrap_or(0)
         }
         #[cfg(not(windows))]
@@ -1107,6 +1134,7 @@ fn paste_inner(
                         paste_delay_ms,
                         restore_after_ms,
                         anchor_guard_ref,
+                        remote_jump,
                     )?;
                 }
             }
@@ -1119,6 +1147,7 @@ fn paste_inner(
                     paste_delay_ms,
                     restore_after_ms,
                     anchor_guard_ref,
+                    remote_jump,
                 )?
             }
             PasteMethod::ExternalScript => {
@@ -1152,7 +1181,7 @@ fn paste_inner(
             // focus-stealing popup can land in after the paste itself already
             // succeeded.
             if let Some(guard) = anchor_guard_ref {
-                if !crate::anchor::guard_still_foreground(guard) {
+                if !crate::anchor::await_guard_ready(guard, remote_jump) {
                     return Err(ANCHOR_FOCUS_LOST.to_string());
                 }
             }

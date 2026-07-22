@@ -261,6 +261,114 @@ fn report_paste_failure(app: &AppHandle, text: &str, err: &str) {
     );
 }
 
+/// Paste the final transcript (+ optional submit) and run the deferred
+/// on-finish anchor action. Cancel-generation guarded before the paste AND
+/// again before the deferred action (the paste can block long enough for a
+/// Cancel to land in that gap). Platform-agnostic and thread-safe; the caller
+/// decides which thread it runs on (see [`dispatch_delivery`]).
+fn deliver_core(
+    ah: &AppHandle,
+    text: String,
+    is_ptt: bool,
+    delivery_intent: crate::anchor::DeliveryIntent,
+    submit_override: Option<crate::clipboard::SubmitOverride>,
+    take_gen: u64,
+    post_take_action: Option<(crate::anchor::PostTakeAction, usize, Option<u64>, bool)>,
+) {
+    if !take_generation_current(take_gen) {
+        debug!("Take cancelled mid-pipeline — skipping paste and post-take action");
+        return;
+    }
+    let park_text = text.clone();
+    match utils::paste(text, ah.clone(), is_ptt, delivery_intent, submit_override) {
+        Ok(()) => {
+            if take_generation_current(take_gen) {
+                crate::anchor::run_post_take_action(ah, post_take_action);
+            } else {
+                debug!("Take cancelled during paste — skipping deferred on-finish action");
+            }
+        }
+        Err(e) => report_paste_failure(ah, &park_text, &e),
+    }
+}
+
+/// Deliver the transcript, then hide the overlay + reset the tray. The paste
+/// carries bounded settle delays that are long for remote-desktop jump targets
+/// (T-309), so on Windows — where the paste path (Win32 activation + clipboard
+/// plugin + enigo SendInput) is thread-safe — it runs on a spawned thread to
+/// keep the delays off the Tauri event loop. On macOS/Linux enigo requires the
+/// main thread, so it runs there as before (the Jumper jump delays are
+/// Windows-only, so no long sleep sits on the loop there). Overlay-hide and
+/// tray-icon updates are already invoked off the main thread elsewhere in this
+/// pipeline, so calling them from the spawned thread is safe.
+fn dispatch_delivery(
+    ah: AppHandle,
+    text: String,
+    is_ptt: bool,
+    delivery_intent: crate::anchor::DeliveryIntent,
+    submit_override: Option<crate::clipboard::SubmitOverride>,
+    take_gen: u64,
+    post_take_action: Option<(crate::anchor::PostTakeAction, usize, Option<u64>, bool)>,
+) {
+    #[cfg(windows)]
+    {
+        std::thread::spawn(move || {
+            deliver_core(
+                &ah,
+                text,
+                is_ptt,
+                delivery_intent,
+                submit_override,
+                take_gen,
+                post_take_action,
+            );
+            // UI cleanup must run on the main thread: `change_tray_icon` reads
+            // the window theme via a synchronous Wry window getter, which
+            // deadlocks if called off the main loop (the 0.52.1 class). The
+            // blocking paste above already ran off the event loop; marshal just
+            // this quick cleanup back.
+            let ah_ui = ah.clone();
+            let _ = ah.run_on_main_thread(move || {
+                utils::hide_recording_overlay(&ah_ui);
+                change_tray_icon(&ah_ui, TrayIconState::Idle);
+            });
+        });
+    }
+    #[cfg(not(windows))]
+    {
+        let ah_main = ah.clone();
+        let ah_fb = ah.clone();
+        let park = text.clone();
+        ah.run_on_main_thread(move || {
+            deliver_core(
+                &ah_main,
+                text,
+                is_ptt,
+                delivery_intent,
+                submit_override,
+                take_gen,
+                post_take_action,
+            );
+            utils::hide_recording_overlay(&ah_main);
+            change_tray_icon(&ah_main, TrayIconState::Idle);
+        })
+        .unwrap_or_else(|e| {
+            // The paste never ran — park the text so it isn't lost, unless a
+            // Cancel landed for this take (a cancelled take must not surface
+            // its text even via this fallback).
+            if take_generation_current(take_gen) {
+                report_paste_failure(
+                    &ah_fb,
+                    &park,
+                    &format!("main-thread dispatch failed: {e:?}"),
+                );
+            }
+            utils::hide_recording_overlay(&ah_fb);
+            change_tray_icon(&ah_fb, TrayIconState::Idle);
+        });
+    }
+}
+
 /// Compute the unix-second timestamp for a new recording.
 fn now_ts() -> u64 {
     SystemTime::now()
@@ -1420,76 +1528,18 @@ impl ShortcutAction for TranscribeAction {
                 }
 
                 if !text.is_empty() {
-                    let ah_clone = ah.clone();
                     let is_ptt = binding_id == "transcribe_ptt";
-                    let paste_text = text.clone();
-                    let dispatch_park = text.clone();
-                    ah.run_on_main_thread(move || {
-                        // Finding 7: a Cancel that landed while this take was
-                        // transcribing/post-processing bumped TAKE_GEN — skip
-                        // the paste and the deferred on-finish action (but the
-                        // history save above already happened; the transcript
-                        // stays regardless).
-                        if !take_generation_current(take_gen) {
-                            debug!(
-                                "Take cancelled mid-pipeline — skipping paste and post-take action"
-                            );
-                            utils::hide_recording_overlay(&ah_clone);
-                            change_tray_icon(&ah_clone, TrayIconState::Idle);
-                            return;
-                        }
-                        let park_text = paste_text.clone();
-                        match utils::paste(
-                            paste_text,
-                            ah_clone.clone(),
-                            is_ptt,
-                            delivery_intent,
-                            submit_override,
-                        ) {
-                            Ok(()) => {
-                                // Finding 7(b): re-check the generation
-                                // immediately before the deferred on-finish
-                                // action too — the paste above can block for a
-                                // while (clipboard settle delay, keystroke
-                                // dispatch), long enough for a Cancel to land
-                                // in that gap. Checking only once, before the
-                                // paste, would let a Cancel that arrives DURING
-                                // the paste still run the Set/Clear action.
-                                if take_generation_current(take_gen) {
-                                    crate::anchor::run_post_take_action(
-                                        &ah_clone,
-                                        post_take_action,
-                                    )
-                                } else {
-                                    debug!(
-                                        "Take cancelled during paste — skipping deferred on-finish action"
-                                    );
-                                }
-                            }
-                            Err(e) => report_paste_failure(&ah_clone, &park_text, &e),
-                        }
-                        utils::hide_recording_overlay(&ah_clone);
-                        change_tray_icon(&ah_clone, TrayIconState::Idle);
-                    })
-                    .unwrap_or_else(|e| {
-                        // The paste never ran — park the text so it isn't
-                        // lost, UNLESS a Cancel landed for this take (finding
-                        // 7c): a cancelled take must not surface its text at
-                        // all, not even via this dispatch-failure fallback.
-                        if take_generation_current(take_gen) {
-                            report_paste_failure(
-                                &ah,
-                                &dispatch_park,
-                                &format!("main-thread dispatch failed: {e:?}"),
-                            );
-                        } else {
-                            debug!(
-                                "Take cancelled — skipping fallback park after main-thread dispatch failure"
-                            );
-                        }
-                        utils::hide_recording_overlay(&ah);
-                        change_tray_icon(&ah, TrayIconState::Idle);
-                    });
+                    // Off the event loop on Windows (long remote jump delays);
+                    // on the main thread elsewhere (enigo). See dispatch_delivery.
+                    dispatch_delivery(
+                        ah.clone(),
+                        text.clone(),
+                        is_ptt,
+                        delivery_intent,
+                        submit_override,
+                        take_gen,
+                        post_take_action,
+                    );
                 } else {
                     utils::hide_recording_overlay(&ah);
                     change_tray_icon(&ah, TrayIconState::Idle);
@@ -1702,82 +1752,19 @@ impl ShortcutAction for TranscribeAction {
                                 .await;
                             });
 
-                            // Paste the final text (either processed or original)
-                            let ah_clone = ah.clone();
-                            let paste_time = Instant::now();
+                            // Paste the final text (either processed or original).
+                            // Off the event loop on Windows (long remote jump
+                            // delays); on the main thread elsewhere (enigo).
                             let is_ptt = binding_id == "transcribe_ptt";
-                            let dispatch_park = final_text.clone();
-                            ah.run_on_main_thread(move || {
-                                // Finding 7: skip the paste and the deferred
-                                // on-finish action if a Cancel landed while
-                                // this take was still transcribing/
-                                // post-processing (TAKE_GEN bumped since our
-                                // snapshot) — the history save above already
-                                // ran regardless, so the transcript is kept.
-                                if !take_generation_current(take_gen) {
-                                    debug!(
-                                        "Take cancelled mid-pipeline — skipping paste and post-take action"
-                                    );
-                                    utils::hide_recording_overlay(&ah_clone);
-                                    change_tray_icon(&ah_clone, TrayIconState::Idle);
-                                    return;
-                                }
-                                let park_text = final_text.clone();
-                                match utils::paste(
-                                    final_text,
-                                    ah_clone.clone(),
-                                    is_ptt,
-                                    delivery_intent,
-                                    submit_override,
-                                ) {
-                                    Ok(()) => {
-                                        debug!(
-                                            "Text pasted successfully in {:?}",
-                                            paste_time.elapsed()
-                                        );
-                                        // Finding 7(b): re-check the generation
-                                        // immediately before the deferred
-                                        // on-finish action — the paste above
-                                        // can block long enough for a Cancel
-                                        // to land in that gap; a single
-                                        // pre-paste check would miss it.
-                                        if take_generation_current(take_gen) {
-                                            crate::anchor::run_post_take_action(
-                                                &ah_clone,
-                                                post_take_action,
-                                            );
-                                        } else {
-                                            debug!(
-                                                "Take cancelled during paste — skipping deferred on-finish action"
-                                            );
-                                        }
-                                    }
-                                    Err(e) => report_paste_failure(&ah_clone, &park_text, &e),
-                                }
-                                // Hide the overlay after transcription is complete
-                                utils::hide_recording_overlay(&ah_clone);
-                                change_tray_icon(&ah_clone, TrayIconState::Idle);
-                            })
-                            .unwrap_or_else(|e| {
-                                // The paste never ran — park the text so it
-                                // isn't lost, UNLESS a Cancel landed for this
-                                // take (finding 7c): a cancelled take must not
-                                // surface its text at all, not even via this
-                                // dispatch-failure fallback.
-                                if take_generation_current(take_gen) {
-                                    report_paste_failure(
-                                        &ah,
-                                        &dispatch_park,
-                                        &format!("main-thread dispatch failed: {e:?}"),
-                                    );
-                                } else {
-                                    debug!(
-                                        "Take cancelled — skipping fallback park after main-thread dispatch failure"
-                                    );
-                                }
-                                utils::hide_recording_overlay(&ah);
-                                change_tray_icon(&ah, TrayIconState::Idle);
-                            });
+                            dispatch_delivery(
+                                ah.clone(),
+                                final_text,
+                                is_ptt,
+                                delivery_intent,
+                                submit_override,
+                                take_gen,
+                                post_take_action,
+                            );
                         } else {
                             // Transcription returned empty (hallucinations filtered, filler-only, etc.)
                             // Still save the audio so long recordings aren't silently lost.

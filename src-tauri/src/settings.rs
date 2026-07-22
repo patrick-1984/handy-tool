@@ -365,6 +365,49 @@ impl JumperPasteDelay {
     }
 }
 
+/// Remote desktop sessions settle much slower than local windows, so the
+/// remote-target delays default higher than the local ones.
+fn default_jumper_submit_delay_remote() -> JumperSubmitDelay {
+    JumperSubmitDelay::Ms500
+}
+fn default_jumper_paste_delay_remote() -> JumperPasteDelay {
+    JumperPasteDelay::Ms1000
+}
+
+/// Default classifier substrings for remote-desktop jump targets. Chosen from
+/// the real identities RDP/Citrix clients present (msrdc, mstsc, Citrix.*),
+/// deliberately NOT matching local terminals/browsers. User-editable.
+fn default_jumper_remote_match_strings() -> Vec<String> {
+    vec![
+        "msrdc".to_string(),
+        "mstsc".to_string(),
+        "Citrix".to_string(),
+    ]
+}
+
+/// Classify a jump target as a REMOTE desktop session: true when ANY of the
+/// user's `match_strings` appears (case-insensitively) as a substring of the
+/// target's app name, top-level window class, or focused-control class. An
+/// empty match list is never remote. Pure + Windows-agnostic so it's directly
+/// unit-testable; the delivery path and the anchor-status builder both call it.
+pub fn is_remote_target(
+    app: &str,
+    window_class: &str,
+    control_class: &str,
+    match_strings: &[String],
+) -> bool {
+    let app = app.to_ascii_lowercase();
+    let window_class = window_class.to_ascii_lowercase();
+    let control_class = control_class.to_ascii_lowercase();
+    match_strings.iter().any(|raw| {
+        let needle = raw.trim().to_ascii_lowercase();
+        !needle.is_empty()
+            && (app.contains(&needle)
+                || window_class.contains(&needle)
+                || control_class.contains(&needle))
+    })
+}
+
 /// What a recording shortcut ADDITIONALLY does to the anchor when pressed —
 /// configured separately for the idle press (nothing running) and the finish
 /// press (a transcription is in progress), per flow. `None` (default) keeps
@@ -918,9 +961,26 @@ pub struct AppSettings {
     #[serde(default)]
     pub jumper_submit_delay: JumperSubmitDelay,
     /// Extra post-jump, pre-PASTE settle when an anchored delivery jumped the
-    /// foreground (Windows Jumper). See [`JumperPasteDelay`]. Default `Ms250`.
+    /// foreground (Windows Jumper) to a NON-remote (local) target. See
+    /// [`JumperPasteDelay`]. Default `Ms250`.
     #[serde(default)]
     pub jumper_paste_delay: JumperPasteDelay,
+    /// Same as [`jumper_submit_delay`], but used when the jump target is
+    /// classified as a REMOTE desktop session (see `jumper_remote_match_strings`).
+    /// Remote sessions (RDP/Citrix) settle much slower, so this defaults higher.
+    #[serde(default = "default_jumper_submit_delay_remote")]
+    pub jumper_submit_delay_remote: JumperSubmitDelay,
+    /// Same as [`jumper_paste_delay`], but used when the jump target is
+    /// classified as a REMOTE desktop session. Defaults higher.
+    #[serde(default = "default_jumper_paste_delay_remote")]
+    pub jumper_paste_delay_remote: JumperPasteDelay,
+    /// Case-insensitive substrings that classify a jump target as a REMOTE
+    /// desktop session (matched against the target's app/window-class/control-
+    /// class). When a jump target matches, the `*_remote` delays are used
+    /// instead of the local ones. Seeded with common RDP/Citrix identifiers;
+    /// fully user-editable (may be cleared). Windows-only in effect.
+    #[serde(default = "default_jumper_remote_match_strings")]
+    pub jumper_remote_match_strings: Vec<String>,
     /// Return focus after an anchored delivery, per finishing flow. The
     /// starting location is captured automatically every time a delivery
     /// begins (an internal, invisible slot) — no user slot is involved.
@@ -1958,6 +2018,9 @@ pub fn get_default_settings() -> AppSettings {
         submit_clipboard_restore_delay: ClipboardRestoreDelay::default(),
         jumper_submit_delay: JumperSubmitDelay::default(),
         jumper_paste_delay: JumperPasteDelay::default(),
+        jumper_submit_delay_remote: default_jumper_submit_delay_remote(),
+        jumper_paste_delay_remote: default_jumper_paste_delay_remote(),
+        jumper_remote_match_strings: default_jumper_remote_match_strings(),
         return_focus_output: default_return_focus(),
         return_focus_submit: default_return_focus(),
         anchor_return_focus: default_return_focus(),
@@ -2418,6 +2481,85 @@ mod tests {
         assert_eq!(
             get_default_settings().jumper_paste_delay,
             JumperPasteDelay::Ms250
+        );
+    }
+
+    #[test]
+    fn remote_target_classifier_matches_rdp_citrix_not_local() {
+        let seeds = default_jumper_remote_match_strings();
+        // The user's real REMOTE anchors must classify as remote…
+        assert!(is_remote_target(
+            "msrdc",
+            "TscShellContainerClass",
+            "IHWindowClass",
+            &seeds
+        ));
+        assert!(is_remote_target(
+            "mstsc",
+            "TscShellContainerClass",
+            "IHWindowClass",
+            &seeds
+        ));
+        assert!(is_remote_target(
+            "Citrix.DesktopViewer.App",
+            "WindowsForms10.Window.8.app.0.3553390_r3_ad1",
+            "CtxICADisp",
+            &seeds
+        ));
+        // …and the LOCAL ones must NOT.
+        assert!(!is_remote_target(
+            "WindowsTerminal",
+            "CASCADIA_HOSTING_WINDOW_CLASS",
+            "Windows.UI.Input.InputSite.WindowClass",
+            &seeds
+        ));
+        assert!(!is_remote_target(
+            "claude",
+            "Chrome_WidgetWin_1",
+            "Chrome_WidgetWin_1",
+            &seeds
+        ));
+    }
+
+    #[test]
+    fn remote_target_classifier_is_case_insensitive_and_matches_any_field() {
+        let seeds = vec!["ctxicadisp".to_string()]; // matches the control class only
+        assert!(is_remote_target(
+            "whatever",
+            "whatever",
+            "CtxICADisp",
+            &seeds
+        ));
+        // Case-insensitive on the needle side too.
+        assert!(is_remote_target(
+            "MSRDC.exe",
+            "x",
+            "y",
+            &["msrdc".to_string()]
+        ));
+    }
+
+    #[test]
+    fn remote_target_classifier_empty_or_blank_never_matches() {
+        assert!(!is_remote_target("msrdc", "x", "y", &[]));
+        // Blank/whitespace entries are ignored (never match everything).
+        assert!(!is_remote_target("msrdc", "x", "y", &["   ".to_string()]));
+    }
+
+    #[test]
+    fn default_remote_delays_are_longer_than_local() {
+        let d = get_default_settings();
+        assert_eq!(d.jumper_paste_delay_remote, JumperPasteDelay::Ms1000);
+        assert_eq!(d.jumper_submit_delay_remote, JumperSubmitDelay::Ms500);
+        assert!(d.jumper_paste_delay_remote.to_ms() > d.jumper_paste_delay.to_ms());
+        assert!(d.jumper_submit_delay_remote.to_ms() > d.jumper_submit_delay.to_ms());
+        assert_eq!(
+            d.jumper_remote_match_strings,
+            vec![
+                "msrdc".to_string(),
+                "mstsc".to_string(),
+                "Citrix".to_string()
+            ]
         );
     }
 

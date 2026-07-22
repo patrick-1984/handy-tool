@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.56.0] - 2026-07-23
+
+### Added
+
+- **RDP/Citrix-aware jump delays (Windows).** The post-jump paste and submit delays are now split into a **Local apps** value and a **Remote desktop** value, side by side (Advanced → Transcription). Remote desktop sessions settle far slower than local windows, so you can wait ~1 s for RDP/Citrix without slowing local jumps. A new **Remote desktop detection** list on the Jumper page classifies a target as remote when its app/window-class/control-class contains one of your match strings (seeded with `msrdc`, `mstsc`, `Citrix`; case-insensitive; editable). Matching anchors show a **Remote ✓** badge. The paste-delay control now also appears for pure **Transcribe** (it jumps + pastes too), not just Transcribe & Submit.
+
+### Fixed
+
+- **Transcribe (& Submit) sometimes failed to deliver into RDP/Citrix — "not pasted" / error toast.** The v0.55.0 post-jump wait runs before the strict focus re-check, and a freshly-activated remote-desktop window is often still moving focus between its inner controls at that moment, so the strict check aborted and parked the text. On a **remote** jump the re-check now tolerates the target still settling — it polls every 25 ms for up to 250 ms while the expected window stays foreground — instead of parking on the first transitional state. It still aborts immediately (and never reactivates) if a different window takes focus, and never pastes into a password field or a foreign window. Local jumps are unchanged.
+
 ## [0.55.0] - 2026-07-22
 
 ### Added

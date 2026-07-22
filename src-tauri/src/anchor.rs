@@ -188,6 +188,12 @@ pub struct AnchorStatus {
     pub app: String,
     pub control_class: String,
     pub stale: bool,
+    /// This slot's target matches the user's remote-desktop classifier
+    /// (`jumper_remote_match_strings`), so the UI shows a "remote" badge and
+    /// the delivery path uses the `*_remote` jump delays. Always `false` on
+    /// non-Windows (the Jumper is Windows-only).
+    #[serde(default)]
+    pub remote: bool,
 }
 
 /// Outcome of preparing an anchored delivery inside the paste pipeline.
@@ -256,6 +262,20 @@ impl DeliveryGuard {
     #[cfg(windows)]
     pub fn foreground_switched(&self) -> bool {
         self.foreground_switched
+    }
+
+    /// Whether this delivery's verified target is classified as a REMOTE
+    /// desktop session by the user's `jumper_remote_match_strings`. Drives the
+    /// choice between the local and `*_remote` jump delays in the paste
+    /// pipeline. Uses the identity `begin_delivery` already validated.
+    #[cfg(windows)]
+    pub fn is_remote(&self, match_strings: &[String]) -> bool {
+        crate::settings::is_remote_target(
+            &self.target_app,
+            &self.target_window_class,
+            &self.target_control_class,
+            match_strings,
+        )
     }
 }
 
@@ -607,7 +627,7 @@ mod win {
         empty_generation(&state, slot)
     }
 
-    fn emit_changed(app: &AppHandle) {
+    pub fn emit_changed(app: &AppHandle) {
         let _ = app.emit("anchor-changed", statuses(app));
     }
 
@@ -863,6 +883,8 @@ mod win {
     /// Live slots, with persisted-but-unresolved identities surfaced as
     /// `stale` entries so the UI can show them red.
     pub fn statuses(app: &AppHandle) -> Vec<Option<AnchorStatus>> {
+        let settings = crate::settings::get_settings(app);
+        let remotes = &settings.jumper_remote_match_strings;
         let live: Vec<Option<AnchorStatus>> = SLOTS
             .lock()
             .map(|state| {
@@ -874,13 +896,18 @@ mod win {
                             app: t.app.clone(),
                             control_class: t.control_class.clone(),
                             stale: false,
+                            remote: crate::settings::is_remote_target(
+                                &t.app,
+                                &t.window_class,
+                                &t.control_class,
+                                remotes,
+                            ),
                         })
                     })
                     .collect()
             })
             .unwrap_or_else(|_| vec![None; SLOT_COUNT]);
 
-        let settings = crate::settings::get_settings(app);
         if !settings.jumper_persist {
             return live;
         }
@@ -896,6 +923,12 @@ mod win {
                             app: s.app.clone(),
                             control_class: s.control_class.clone(),
                             stale: true,
+                            remote: crate::settings::is_remote_target(
+                                &s.app,
+                                &s.window_class,
+                                &s.control_class,
+                                remotes,
+                            ),
                         })
                 })
             })
@@ -1788,10 +1821,17 @@ mod win {
         };
         emit_changed(app);
         persist_current_slot(app, slot);
+        let remote = crate::settings::is_remote_target(
+            &target.app,
+            &target.window_class,
+            &target.control_class,
+            &crate::settings::get_settings(app).jumper_remote_match_strings,
+        );
         Ok(AnchorStatus {
             app: target.app,
             control_class: target.control_class,
             stale: false,
+            remote,
         })
     }
 
@@ -1976,10 +2016,17 @@ mod win {
         };
         emit_changed(app);
         persist_current_slot(app, slot);
+        let remote = crate::settings::is_remote_target(
+            &target.app,
+            &target.window_class,
+            &target.control_class,
+            &crate::settings::get_settings(app).jumper_remote_match_strings,
+        );
         Ok(AnchorStatus {
             app: target.app,
             control_class: target.control_class,
             stale: false,
+            remote,
         })
     }
 
@@ -2468,6 +2515,107 @@ mod win {
                 }
             }
             true
+        }
+    }
+
+    /// Liveness + identity re-check that does NOT require focus: is the
+    /// captured top-level window and control still alive AND still the SAME
+    /// window/control this guard was built for (live pid/tid/class == the
+    /// `begin_delivery` snapshot)? Same comparison `capture_target_from_guard`
+    /// uses. It gates the remote readiness retry so a DEAD or RECYCLED control
+    /// aborts immediately instead of being given ~250 ms during which Windows
+    /// could reuse the numeric HWND for an unrelated (possibly password)
+    /// control that would then satisfy `guard_still_foreground`'s raw-handle
+    /// checks.
+    fn guard_identity_intact(guard: &DeliveryGuard) -> bool {
+        unsafe {
+            let hwnd = HWND(guard.target_hwnd as _);
+            if !IsWindow(Some(hwnd)).as_bool() {
+                return false;
+            }
+            let control = HWND(guard.target_control as _);
+            if !IsWindow(Some(control)).as_bool() {
+                return false;
+            }
+            let mut live_window_pid = 0u32;
+            let live_window_tid = GetWindowThreadProcessId(hwnd, Some(&mut live_window_pid));
+            let mut live_control_pid = 0u32;
+            let live_control_tid = GetWindowThreadProcessId(control, Some(&mut live_control_pid));
+            if live_window_tid == 0 || live_control_tid == 0 {
+                return false;
+            }
+            let live_window_class = class_name(hwnd);
+            let live_control_class = class_name(control);
+            guard_identity_still_matches(
+                live_window_pid,
+                live_window_tid,
+                &live_window_class,
+                live_control_pid,
+                &live_control_class,
+                guard.target_pid,
+                guard.target_tid,
+                &guard.target_window_class,
+                &guard.target_control_class,
+            )
+        }
+    }
+
+    /// Safe-to-type test: the captured control's live identity STILL matches the
+    /// delivery snapshot AND the strict foreground/focus check passes — both
+    /// evaluated together with no wait between them, so nothing can die or be
+    /// recycled in the gap. Every "ready" acceptance goes through this.
+    fn guard_ready(guard: &DeliveryGuard) -> bool {
+        guard_identity_intact(guard) && guard_still_foreground(guard)
+    }
+
+    /// Bounded, fail-closed readiness wait run immediately before EACH
+    /// synthesized keystroke of an anchored delivery. Returns `true` only when
+    /// `guard_ready` passes (identity intact AND strict foreground/focus);
+    /// `false` means the caller must park.
+    ///
+    /// A freshly-JUMPED remote-desktop window (RDP/Citrix) is frequently still
+    /// moving focus between its inner controls when the first check runs, which
+    /// is exactly what tripped the fail-closed park after the post-jump wait
+    /// was added (v0.55.0). When `remote_retry` is set we poll every 25 ms for
+    /// up to ~250 ms — but ONLY while the expected top-level window stays
+    /// foreground AND the captured control's identity stays intact. The instant
+    /// a DIFFERENT top-level window is foreground, or the control dies/recycles,
+    /// we abort (never `SetForegroundWindow` to reclaim it). Non-remote
+    /// deliveries do a single `guard_ready` check, byte-identical to pre-0.56.
+    pub fn await_guard_ready(guard: &DeliveryGuard, remote_retry: bool) -> bool {
+        if guard_ready(guard) {
+            return true;
+        }
+        if !remote_retry {
+            return false;
+        }
+        let deadline = std::time::Instant::now() + std::time::Duration::from_millis(250);
+        loop {
+            // Retry ONLY a genuinely-settling SAME target. Abort now (no retry
+            // window) if a different top-level window owns the foreground — the
+            // user switched away; never reactivate it. And abort if the
+            // captured control is dead or its live identity no longer matches
+            // the delivery snapshot: without this, a destroyed control whose
+            // numeric HWND Windows recycles for a newly-focused sibling could
+            // pass `guard_still_foreground`'s raw-handle checks and let us paste
+            // into the wrong (possibly password) control. A dead control thus
+            // parks immediately, exactly as the pre-0.56 single check did.
+            if unsafe { GetForegroundWindow() }.0 as isize != guard.target_hwnd {
+                return false;
+            }
+            if !guard_identity_intact(guard) {
+                return false;
+            }
+            if std::time::Instant::now() >= deadline {
+                return false;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(25));
+            // Re-check identity AND foreground TOGETHER after the sleep — a
+            // control can die/recycle during the 25 ms, so accepting on the
+            // strict check alone here would reopen the reuse gap.
+            if guard_ready(guard) {
+                return true;
+            }
         }
     }
 
@@ -3351,6 +3499,39 @@ pub fn guard_still_foreground(guard: &DeliveryGuard) -> bool {
     {
         let _ = guard;
         true
+    }
+}
+
+/// Bounded readiness wait before a keystroke (T-309). Like
+/// [`guard_still_foreground`] but, when `remote_retry` is set, tolerates a
+/// freshly-jumped remote-desktop target still settling its inner focus by
+/// polling the strict check for up to ~250 ms — aborting immediately if a
+/// different top-level window takes the foreground. On non-Windows it is the
+/// same no-op `true` as `guard_still_foreground`.
+pub fn await_guard_ready(guard: &DeliveryGuard, remote_retry: bool) -> bool {
+    #[cfg(windows)]
+    {
+        win::await_guard_ready(guard, remote_retry)
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = (guard, remote_retry);
+        true
+    }
+}
+
+/// Re-emit the current slot statuses (`anchor-changed`) so the Jumper UI
+/// refreshes — e.g. after the remote-desktop classifier list changes, so the
+/// `Remote ✓` badges update without waiting for a slot mutation. No-op on
+/// non-Windows (the Jumper is Windows-only).
+pub fn emit_anchor_changed(app: &AppHandle) {
+    #[cfg(windows)]
+    {
+        win::emit_changed(app);
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = app;
     }
 }
 

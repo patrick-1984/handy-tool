@@ -134,6 +134,12 @@ const settingUpdaters: {
     commands.changeJumperSubmitDelaySetting(value as string),
   jumper_paste_delay: (value) =>
     commands.changeJumperPasteDelaySetting(value as string),
+  jumper_submit_delay_remote: (value) =>
+    commands.changeJumperSubmitDelayRemoteSetting(value as string),
+  jumper_paste_delay_remote: (value) =>
+    commands.changeJumperPasteDelayRemoteSetting(value as string),
+  jumper_remote_match_strings: (value) =>
+    commands.setJumperRemoteMatchStrings(value as string[]),
   return_focus_output: (value) =>
     commands.changeReturnFocusSetting("output", value as boolean),
   return_focus_submit: (value) =>

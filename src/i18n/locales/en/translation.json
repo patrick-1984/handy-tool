@@ -302,16 +302,21 @@
           "title": "Clipboard",
           "description": "Keep your existing clipboard after pasting, or leave the transcription on the clipboard."
         },
+        "jumperDelay": {
+          "off": "Off (instant)",
+          "local": "Local apps",
+          "remote": "Remote desktop"
+        },
         "jumperPasteDelay": {
           "title": "Paste delay after jump (Windows)",
-          "description": "Extra wait after Transcribe & Submit jumps the foreground to an anchored target and before the paste keystroke fires. A freshly activated window (especially RDP/Citrix) may still be transitioning — completing activation, moving focus — when Ctrl+V lands, so the paste is swallowed and nothing appears. Increase this if the paste sometimes doesn't come through after a jump. Only applies after a jump; when you're already in the target, paste stays instant.",
+          "description": "Extra wait after a jump activates the target window and before the paste keystroke fires. A freshly activated window — especially an RDP/Citrix session — may still be transitioning when Ctrl+V lands, so the paste is swallowed and nothing appears. Set a longer wait for Remote desktop targets (matched on the Jumper page) and a shorter one for Local apps. Shared by both Transcribe and Transcribe & Submit; only applies after a real jump — when you're already in the target, paste stays instant.",
           "options": {
             "none": "Off (instant)"
           }
         },
         "jumperSubmitDelay": {
           "title": "Submit delay after jump (Windows)",
-          "description": "Extra wait before pressing the submit key when Transcribe & Submit jumps the foreground to an anchored target. A freshly activated window (especially RDP/Citrix) may still be applying the pasted text — or focus may return too soon — when Enter fires, so the submit is missed. Only applies after a jump; when you're already in the target, submit stays instant.",
+          "description": "Extra wait before pressing the submit key (Enter) after a jump. A freshly activated window — especially RDP/Citrix — may still be applying the pasted text when Enter fires, so the submit is missed. Set a longer wait for Remote desktop targets and a shorter one for Local apps. Only applies after a real jump; when you're already in the target, submit stays instant.",
           "options": {
             "none": "Off (instant)"
           }
@@ -350,6 +355,17 @@
     },
     "jumper": {
       "windowsOnly": "The Jumper is available on Windows only.",
+      "remoteMatch": {
+        "groupTitle": "Remote desktop detection",
+        "title": "Remote match strings",
+        "description": "When a jump target's app, window class, or control class contains one of these (case-insensitive), it is treated as a remote desktop session and uses the longer 'Remote' jump delays (Advanced → Transcription). Add the identifiers your RDP/Citrix clients use — e.g. msrdc, mstsc, Citrix. An empty list treats every target as local.",
+        "placeholder": "e.g. msrdc",
+        "add": "Add",
+        "remove": "Remove {{value}}",
+        "duplicate": "'{{value}}' is already in the list",
+        "badge": "Remote ✓",
+        "badgeTooltip": "This target matches a remote match string, so it uses the Remote jump delays."
+      },
       "hot": {
         "title": "Hot slot (Anchor & Deliver)",
         "optionsMoved": {

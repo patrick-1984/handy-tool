@@ -11,6 +11,7 @@ import { Button } from "../../ui/Button";
 import { useSettings } from "../../../hooks/useSettings";
 import { useOsType } from "../../../hooks/useOsType";
 import { commands, type AnchorStatus, type CursorMode } from "@/bindings";
+import { RemoteMatchStrings } from "./RemoteMatchStrings";
 
 /**
  * The Jumper (Windows-only): eleven jump slots for desktop text fields. Slots 0
@@ -83,6 +84,14 @@ export const JumperSettings: React.FC = () => {
                 control: s.control_class,
               })}
         </span>
+        {s.remote && (
+          <span
+            className="text-xs px-1.5 py-0.5 rounded bg-logo-primary/20 text-logo-primary font-semibold whitespace-nowrap"
+            title={t("settings.jumper.remoteMatch.badgeTooltip")}
+          >
+            {t("settings.jumper.remoteMatch.badge")}
+          </span>
+        )}
         <Button size="sm" variant="secondary" onClick={() => testSlot(index)}>
           {t("settings.jumper.slot.test")}
         </Button>
@@ -200,6 +209,9 @@ export const JumperSettings: React.FC = () => {
 
   return (
     <div className="w-full space-y-6">
+      <SettingsGroup title={t("settings.jumper.remoteMatch.groupTitle")}>
+        <RemoteMatchStrings grouped={true} />
+      </SettingsGroup>
       <SettingsGroup title={t("settings.jumper.hot.title")}>
         <ShortcutInput shortcutId="anchor_set" grouped={true} />
         <ShortcutInput shortcutId="anchor_jump" grouped={true} />

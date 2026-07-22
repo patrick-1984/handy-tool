@@ -193,6 +193,27 @@
       "pushToTalk": {
         "label": "Nhấn để nói",
         "description": "Giữ để ghi âm, thả để dừng"
+      },
+      "transcribeAndSubmit": {
+        "jumperDelay": {
+          "off": "Off (instant)",
+          "local": "Local apps",
+          "remote": "Remote desktop"
+        },
+        "jumperPasteDelay": {
+          "title": "Paste delay after jump (Windows)",
+          "description": "Extra wait after a jump activates the target window and before the paste keystroke fires. A freshly activated window — especially an RDP/Citrix session — may still be transitioning when Ctrl+V lands, so the paste is swallowed and nothing appears. Set a longer wait for Remote desktop targets (matched on the Jumper page) and a shorter one for Local apps. Shared by both Transcribe and Transcribe & Submit; only applies after a real jump — when you're already in the target, paste stays instant.",
+          "options": {
+            "none": "Off (instant)"
+          }
+        },
+        "jumperSubmitDelay": {
+          "title": "Submit delay after jump (Windows)",
+          "description": "Extra wait before pressing the submit key (Enter) after a jump. A freshly activated window — especially RDP/Citrix — may still be applying the pasted text when Enter fires, so the submit is missed. Set a longer wait for Remote desktop targets and a shorter one for Local apps. Only applies after a real jump; when you're already in the target, submit stays instant.",
+          "options": {
+            "none": "Off (instant)"
+          }
+        }
       }
     },
     "sound": {
@@ -485,6 +506,19 @@
           "description": "Suy luận hiệu suất cao của mô hình nhận dạng giọng nói tự động Whisper của OpenAI",
           "details": "Handy sử dụng Whisper.cpp để xử lý chuyển đổi giọng nói thành văn bản nhanh, cục bộ. Cảm ơn công việc tuyệt vời của Georgi Gerganov và các cộng tác viên."
         }
+      }
+    },
+    "jumper": {
+      "remoteMatch": {
+        "groupTitle": "Remote desktop detection",
+        "title": "Remote match strings",
+        "description": "When a jump target's app, window class, or control class contains one of these (case-insensitive), it is treated as a remote desktop session and uses the longer 'Remote' jump delays (Advanced → Transcription). Add the identifiers your RDP/Citrix clients use — e.g. msrdc, mstsc, Citrix. An empty list treats every target as local.",
+        "placeholder": "e.g. msrdc",
+        "add": "Add",
+        "remove": "Remove {{value}}",
+        "duplicate": "'{{value}}' is already in the list",
+        "badge": "Remote ✓",
+        "badgeTooltip": "This target matches a remote match string, so it uses the Remote jump delays."
       }
     }
   },
