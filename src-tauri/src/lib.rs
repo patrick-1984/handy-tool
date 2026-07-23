@@ -393,6 +393,8 @@ pub fn run(cli_args: CliArgs) {
         shortcut::change_auto_submit_setting,
         shortcut::change_auto_submit_key_setting,
         shortcut::change_submit_paste_method_setting,
+        shortcut::change_paste_last_paste_method_setting,
+        shortcut::change_paste_last_clipboard_handling_setting,
         shortcut::change_submit_key_setting,
         shortcut::change_submit_idle_behavior_setting,
         shortcut::change_submit_clipboard_handling_setting,

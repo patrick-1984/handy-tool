@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.57.0] - 2026-07-23
+
+### Added
+
+- **"Paste last transcription" shortcut.** A new global shortcut (default **Ctrl+Alt+P**, configurable in **General**) that re-pastes the most recent transcription from history into the focused window — a manual fallback for when the automatic paste didn't land. It has its own **paste method** (Ctrl+V / Ctrl+Shift+V / Shift+Insert / Direct / None / External script) and **clipboard handling** (keep your clipboard or leave the transcription on it), independent of the global paste settings, so you can tune it per target app. Pastes the final text you received (post-processed when present, else the raw transcription); no anchor/jump and no submit key — just a plain paste where you're working.
+
 ## [0.56.0] - 2026-07-23
 
 ### Added

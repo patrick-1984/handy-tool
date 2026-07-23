@@ -333,6 +333,17 @@
       "pushToTalk": {
         "label": "Push To Talk",
         "description": "Hold to record, release to stop"
+      },
+      "pasteLast": {
+        "title": "Paste last transcription",
+        "pasteMethod": {
+          "title": "Paste method",
+          "description": "How the last transcription is pasted into the focused window when you press the shortcut. Use Shift+Insert or another method if Ctrl+V doesn't work in the target app."
+        },
+        "clipboard": {
+          "title": "Clipboard",
+          "description": "Keep your existing clipboard after pasting, or leave the transcription on the clipboard."
+        }
       }
     },
     "models": {

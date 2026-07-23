@@ -809,6 +809,28 @@ pub fn paste(
         true,
         delivery_intent,
         submit_override,
+        None,
+    )
+}
+
+/// Plain paste at the CURRENT focus with an EXPLICIT paste method + clipboard
+/// handling (never a global or a flow one-shot). Used by the "Paste Last
+/// Transcription" shortcut: no anchor/jump, no submit key — just re-paste the
+/// given text where the user is now, the way they configured.
+pub fn paste_manual(
+    text: String,
+    app_handle: AppHandle,
+    paste_method: PasteMethod,
+    clipboard_handling: ClipboardHandling,
+) -> Result<(), String> {
+    paste_inner(
+        text,
+        app_handle,
+        false,
+        false,
+        crate::anchor::DeliveryIntent::NONE,
+        None,
+        Some((paste_method, clipboard_handling)),
     )
 }
 
@@ -825,6 +847,7 @@ pub fn paste_plain(text: String, app_handle: AppHandle) -> Result<(), String> {
         false,
         crate::anchor::DeliveryIntent::NONE,
         None,
+        None,
     )
 }
 
@@ -835,6 +858,10 @@ fn paste_inner(
     flow_paste: bool,
     delivery_intent: crate::anchor::DeliveryIntent,
     submit_override: Option<SubmitOverride>,
+    // Explicit (method, clipboard_handling) override for a manual paste — forces
+    // both WITHOUT forcing a submit key (unlike `submit_override`). `None` = use
+    // the flow/global values.
+    manual_override: Option<(PasteMethod, ClipboardHandling)>,
 ) -> Result<(), String> {
     // The Jumper (and therefore `delivery_intent`) is Windows-only — silence
     // the unused-parameter warning on other platforms rather than threading
@@ -855,11 +882,15 @@ fn paste_inner(
     let forced_submit = submit_override.and_then(|o| o.submit);
     let clipboard_handling = submit_override
         .and_then(|o| o.clipboard)
+        .or(manual_override.map(|(_, c)| c))
         .unwrap_or(settings.clipboard_handling);
     let paste_method = match forced_submit {
         Some((method, _)) => method,
-        None if is_ptt => settings.paste_method_ptt,
-        None => settings.paste_method,
+        None => match manual_override {
+            Some((method, _)) => method,
+            None if is_ptt => settings.paste_method_ptt,
+            None => settings.paste_method,
+        },
     };
     let paste_delay_ms = settings.paste_delay_ms;
     // Base 50 ms settle + user-configured extra (per-shortcut override or global).
@@ -1076,6 +1107,10 @@ fn paste_inner(
     let (do_submit, submit_key) = match forced_submit {
         // Submit shortcut: always submit (unless paste itself is disabled).
         Some((_, key)) => (paste_method != PasteMethod::None, key),
+        // Manual paste (e.g. "Paste Last Transcription"): NEVER submit — it is a
+        // plain re-paste and must not press Enter even if the global
+        // auto-submit setting is on.
+        None if manual_override.is_some() => (false, settings.auto_submit_key),
         // Normal path: honor the global auto-submit setting.
         None => (
             should_send_auto_submit(settings.auto_submit, paste_method),

@@ -184,6 +184,22 @@ async changeSubmitPasteMethodSetting(method: string) : Promise<Result<null, stri
     else return { status: "error", error: e  as any };
 }
 },
+async changePasteLastPasteMethodSetting(method: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_paste_last_paste_method_setting", { method }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async changePasteLastClipboardHandlingSetting(handling: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_paste_last_clipboard_handling_setting", { handling }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async changeSubmitKeySetting(key: string) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("change_submit_key_setting", { key }) };
@@ -1376,7 +1392,7 @@ transcribe_gpu_device?: number; always_on_microphone?: boolean; selected_microph
  * windows via a Rust-side push since they have no settings store — see
  * `apply_theme_to_aux_windows` in lib.rs).
  */
-app_theme?: Theme; debug_mode?: boolean; log_level?: LogLevel; custom_words?: string[]; model_unload_timeout?: ModelUnloadTimeout; model_unload_custom_seconds?: number; word_correction_threshold?: number; history_limit?: number; recording_retention_period?: RecordingRetentionPeriod; paste_method?: PasteMethod; paste_method_ptt?: PasteMethod; clipboard_handling?: ClipboardHandling; auto_submit?: boolean; auto_submit_key?: AutoSubmitKey; post_process_enabled?: boolean; 
+app_theme?: Theme; debug_mode?: boolean; log_level?: LogLevel; custom_words?: string[]; model_unload_timeout?: ModelUnloadTimeout; model_unload_custom_seconds?: number; word_correction_threshold?: number; history_limit?: number; recording_retention_period?: RecordingRetentionPeriod; paste_method?: PasteMethod; paste_method_ptt?: PasteMethod; clipboard_handling?: ClipboardHandling; paste_last_paste_method?: PasteMethod; paste_last_clipboard_handling?: ClipboardHandling; auto_submit?: boolean; auto_submit_key?: AutoSubmitKey; post_process_enabled?: boolean; 
 /**
  * Unified registry of LLM providers powering token counting,
  * post-processing, and the model-testing tool. Aliased from the old

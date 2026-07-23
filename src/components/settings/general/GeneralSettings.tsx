@@ -14,6 +14,7 @@ import { TranscriptionModePttSetting } from "../TranscriptionModePttSetting";
 import { GpuDeviceSelector } from "../GpuDeviceSelector";
 import { CustomWords } from "../CustomWords";
 import { AppendTrailingSpace } from "../AppendTrailingSpace";
+import { PasteLastSettings } from "../PasteLastSettings";
 
 export const GeneralSettings: React.FC = () => {
   const { t } = useTranslation();
@@ -32,6 +33,7 @@ export const GeneralSettings: React.FC = () => {
         <CustomWords descriptionMode="tooltip" grouped />
         <AppendTrailingSpace descriptionMode="tooltip" grouped={true} />
       </SettingsGroup>
+      <PasteLastSettings />
       <SettingsGroup title={t("settings.sound.title")}>
         <MicrophoneSelector descriptionMode="tooltip" grouped={true} />
         <MuteWhileRecording descriptionMode="tooltip" grouped={true} />

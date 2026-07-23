@@ -1035,6 +1035,56 @@ pub fn change_submit_paste_method_setting(app: AppHandle, method: String) -> Res
     Ok(())
 }
 
+#[tauri::command]
+#[specta::specta]
+pub fn change_paste_last_paste_method_setting(
+    app: AppHandle,
+    method: String,
+) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    let parsed = match method.as_str() {
+        "ctrl_v" => PasteMethod::CtrlV,
+        "direct" => PasteMethod::Direct,
+        "none" => PasteMethod::None,
+        "shift_insert" => PasteMethod::ShiftInsert,
+        "ctrl_shift_v" => PasteMethod::CtrlShiftV,
+        "external_script" => PasteMethod::ExternalScript,
+        other => {
+            warn!(
+                "Invalid paste-last paste method '{}', defaulting to ctrl_v",
+                other
+            );
+            PasteMethod::CtrlV
+        }
+    };
+    settings.paste_last_paste_method = parsed;
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn change_paste_last_clipboard_handling_setting(
+    app: AppHandle,
+    handling: String,
+) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    let parsed = match handling.as_str() {
+        "dont_modify" => ClipboardHandling::DontModify,
+        "copy_to_clipboard" => ClipboardHandling::CopyToClipboard,
+        other => {
+            warn!(
+                "Invalid paste-last clipboard handling '{}', defaulting to dont_modify",
+                other
+            );
+            ClipboardHandling::DontModify
+        }
+    };
+    settings.paste_last_clipboard_handling = parsed;
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
 fn parse_clipboard_restore_delay(value: &str) -> ClipboardRestoreDelay {
     match value {
         "none" => ClipboardRestoreDelay::None,

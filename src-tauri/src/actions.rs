@@ -198,6 +198,33 @@ pub(crate) fn take_generation_current(snapshot: u64) -> bool {
     TAKE_GEN.load(Ordering::SeqCst) == snapshot
 }
 
+/// The most recent transcript handed to a delivery this session, set
+/// SYNCHRONOUSLY at delivery time. The "Paste Last Transcription" shortcut
+/// prefers this over `history.get_latest_entry()` to avoid a race: history is
+/// persisted on a spawned task, so an immediate manual re-paste could otherwise
+/// read the store before the new row lands and paste the PREVIOUS transcript.
+/// `None` until the first delivery (or after a restart) — the shortcut then
+/// falls back to history.
+static LAST_TRANSCRIPTION: Lazy<Mutex<Option<String>>> = Lazy::new(|| Mutex::new(None));
+
+/// Record the text just handed to a delivery (called synchronously, before the
+/// paste is dispatched, so it is always set by the time a manual re-paste could
+/// run).
+pub(crate) fn set_last_transcription(text: &str) {
+    if let Ok(mut guard) = LAST_TRANSCRIPTION.lock() {
+        *guard = Some(text.to_string());
+    }
+}
+
+/// The last delivered transcript this session, if any.
+pub(crate) fn last_transcription() -> Option<String> {
+    LAST_TRANSCRIPTION
+        .lock()
+        .ok()
+        .and_then(|g| g.clone())
+        .filter(|t| !t.trim().is_empty())
+}
+
 #[cfg(test)]
 mod take_generation_tests {
     use super::*;
@@ -310,6 +337,10 @@ fn dispatch_delivery(
     take_gen: u64,
     post_take_action: Option<(crate::anchor::PostTakeAction, usize, Option<u64>, bool)>,
 ) {
+    // Record synchronously (before dispatching the paste) so the "Paste Last
+    // Transcription" shortcut always re-pastes THIS take, never a stale one,
+    // regardless of when the async history save lands.
+    set_last_transcription(&text);
     #[cfg(windows)]
     {
         std::thread::spawn(move || {
@@ -1940,6 +1971,59 @@ impl ShortcutAction for JumpSlotAction {
     fn stop(&self, _app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {}
 }
 
+/// Paste-last: re-paste the most recent transcription from history into the
+/// currently-focused window. A manual fallback for when the automatic paste
+/// didn't land — no anchor/jump, no submit key, just a plain paste at current
+/// focus using the user's configured `paste_last_paste_method` +
+/// `paste_last_clipboard_handling`.
+struct PasteLastAction;
+impl ShortcutAction for PasteLastAction {
+    fn start(&self, app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {
+        // Prefer the in-memory last-delivered transcript (set synchronously at
+        // delivery time) — this is exactly what the user just got and avoids a
+        // race with the async history write. Fall back to history's latest row
+        // (e.g. after a restart, when memory is empty).
+        let text = if let Some(t) = last_transcription() {
+            t
+        } else {
+            let Some(hm) = app.try_state::<Arc<HistoryManager>>() else {
+                warn!("Paste last: history manager not initialized");
+                return;
+            };
+            match hm.get_latest_entry() {
+                Ok(Some(e)) => e
+                    .post_processed_text
+                    .filter(|t| !t.trim().is_empty())
+                    .unwrap_or(e.transcription_text),
+                Ok(None) => {
+                    info!("Paste last: history is empty — nothing to paste");
+                    return;
+                }
+                Err(e) => {
+                    warn!("Paste last: failed to read history: {}", e);
+                    return;
+                }
+            }
+        };
+        if text.trim().is_empty() {
+            info!("Paste last: latest transcription has no text");
+            return;
+        }
+        let settings = crate::settings::get_settings(app);
+        let method = settings.paste_last_paste_method;
+        let clipboard = settings.paste_last_clipboard_handling;
+        info!(
+            "Paste last: re-pasting {} chars via {:?}",
+            text.len(),
+            method
+        );
+        if let Err(e) = crate::clipboard::paste_manual(text, app.clone(), method, clipboard) {
+            warn!("Paste last failed: {}", e);
+        }
+    }
+    fn stop(&self, _app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {}
+}
+
 pub static ACTION_MAP: Lazy<HashMap<String, Arc<dyn ShortcutAction>>> = Lazy::new(|| {
     let mut map = HashMap::new();
     map.insert(
@@ -1971,6 +2055,10 @@ pub static ACTION_MAP: Lazy<HashMap<String, Arc<dyn ShortcutAction>>> = Lazy::ne
     map.insert(
         "type_text".to_string(),
         Arc::new(TypeTextAction) as Arc<dyn ShortcutAction>,
+    );
+    map.insert(
+        "paste_last".to_string(),
+        Arc::new(PasteLastAction) as Arc<dyn ShortcutAction>,
     );
     map.insert(
         "test".to_string(),

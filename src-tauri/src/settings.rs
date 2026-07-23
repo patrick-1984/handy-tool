@@ -829,6 +829,15 @@ pub struct AppSettings {
     pub paste_method_ptt: PasteMethod,
     #[serde(default)]
     pub clipboard_handling: ClipboardHandling,
+    /// Paste method for the "Paste Last Transcription" shortcut (`paste_last`),
+    /// independent of the global one so the manual re-paste can use whatever
+    /// works in the target app (e.g. Shift+Insert for a terminal).
+    #[serde(default = "default_submit_paste_method")]
+    pub paste_last_paste_method: PasteMethod,
+    /// Clipboard handling for the "Paste Last Transcription" shortcut — keep the
+    /// prior clipboard or leave the transcription on it. Independent of global.
+    #[serde(default)]
+    pub paste_last_clipboard_handling: ClipboardHandling,
     #[serde(default = "default_auto_submit")]
     pub auto_submit: bool,
     #[serde(default)]
@@ -1940,6 +1949,22 @@ pub fn get_default_settings() -> AppSettings {
         },
     );
 
+    // Paste-last: re-paste the most recent transcription from history into the
+    // focused window — a manual fallback when the automatic paste didn't land.
+    // Cross-platform; uses its own paste-method + clipboard-handling settings.
+    bindings.insert(
+        "paste_last".to_string(),
+        ShortcutBinding {
+            id: "paste_last".to_string(),
+            name: "Paste Last Transcription".to_string(),
+            description:
+                "Paste the most recent transcription from history into the focused window."
+                    .to_string(),
+            default_binding: "ctrl+alt+p".to_string(),
+            current_binding: "ctrl+alt+p".to_string(),
+        },
+    );
+
     AppSettings {
         bindings,
         push_to_talk: true,
@@ -1971,6 +1996,8 @@ pub fn get_default_settings() -> AppSettings {
         paste_method: PasteMethod::default(),
         paste_method_ptt: PasteMethod::default(),
         clipboard_handling: ClipboardHandling::default(),
+        paste_last_paste_method: default_submit_paste_method(),
+        paste_last_clipboard_handling: ClipboardHandling::default(),
         auto_submit: default_auto_submit(),
         auto_submit_key: AutoSubmitKey::default(),
         post_process_enabled: default_post_process_enabled(),
