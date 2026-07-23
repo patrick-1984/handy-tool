@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.58.0] - 2026-07-23
+
+### Fixed
+
+- **"Paste last transcription" now actually pastes.** The shortcut fires on key-press while its trigger modifiers (e.g. Ctrl+Alt) are still physically held, so the synthesized paste chord came out as Ctrl+Alt+V / Ctrl+Alt+Shift+Insert and the target ignored it — nothing appeared, for any paste method. It now waits (off the UI thread) for all modifier keys (Ctrl/Alt/Shift/Win) to be physically released — polling the real key state, bounded to ~2 s — before injecting the paste, so the correct chord lands. (The shortcut firing and the history text were never the problem; the content still comes from the last delivered transcript / the SQLite history, never the clipboard.)
+
 ## [0.57.0] - 2026-07-23
 
 ### Added

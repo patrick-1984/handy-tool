@@ -13,6 +13,64 @@ impl EnigoState {
     }
 }
 
+/// Wait until all keyboard modifier keys (Ctrl / Alt / Shift / Win) are
+/// PHYSICALLY released, so a synthesized keystroke isn't polluted by the
+/// modifiers of the global shortcut that triggered it. A shortcut fires on
+/// key-PRESS while its modifiers are still held, so injecting a paste chord
+/// immediately would send e.g. `Ctrl+Alt+V` instead of `Ctrl+V` (or
+/// `Ctrl+Alt+Shift+Insert` instead of `Shift+Insert`) and the target ignores
+/// it. Polls the real key state every ~10 ms and requires a short continuously-
+/// clear grace; bounded by `timeout_ms` (best-effort — returns after the
+/// timeout even if a key is somehow still held, rather than never pasting).
+/// Call this OFF the UI/event-loop thread (it sleeps). On non-Windows there is
+/// no cheap physical-state API wired here, so it uses a fixed grace like the
+/// Keyboard Typer.
+pub fn wait_for_modifiers_released(timeout_ms: u64) {
+    #[cfg(windows)]
+    {
+        use windows::Win32::UI::Input::KeyboardAndMouse::{
+            GetAsyncKeyState, VK_CONTROL, VK_LWIN, VK_MENU, VK_RWIN, VK_SHIFT,
+        };
+        // VK_CONTROL/VK_MENU/VK_SHIFT are the generic (either-side) modifiers;
+        // add both Win keys. High bit of GetAsyncKeyState = key currently down.
+        let vks: [i32; 5] = [
+            VK_CONTROL.0 as i32,
+            VK_MENU.0 as i32,
+            VK_SHIFT.0 as i32,
+            VK_LWIN.0 as i32,
+            VK_RWIN.0 as i32,
+        ];
+        let any_down = || {
+            vks.iter()
+                .any(|&vk| (unsafe { GetAsyncKeyState(vk) } as u16 & 0x8000) != 0)
+        };
+        let deadline = std::time::Instant::now() + std::time::Duration::from_millis(timeout_ms);
+        let mut clear_since: Option<std::time::Instant> = None;
+        loop {
+            let now = std::time::Instant::now();
+            if any_down() {
+                clear_since = None;
+            } else {
+                match clear_since {
+                    Some(t) if now.duration_since(t) >= std::time::Duration::from_millis(25) => {
+                        break;
+                    }
+                    Some(_) => {}
+                    None => clear_since = Some(now),
+                }
+            }
+            if now >= deadline {
+                break;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(10));
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        std::thread::sleep(std::time::Duration::from_millis(timeout_ms.min(400)));
+    }
+}
+
 /// Sends a Ctrl+V or Cmd+V paste command using platform-specific virtual key codes.
 /// This ensures the paste works regardless of keyboard layout (e.g., Russian, AZERTY, DVORAK).
 /// Note: On Wayland, this may not work - callers should check for Wayland and use alternative methods.

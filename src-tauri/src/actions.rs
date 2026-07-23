@@ -2012,14 +2012,41 @@ impl ShortcutAction for PasteLastAction {
         let settings = crate::settings::get_settings(app);
         let method = settings.paste_last_paste_method;
         let clipboard = settings.paste_last_clipboard_handling;
-        info!(
-            "Paste last: re-pasting {} chars via {:?}",
-            text.len(),
-            method
-        );
-        if let Err(e) = crate::clipboard::paste_manual(text, app.clone(), method, clipboard) {
-            warn!("Paste last failed: {}", e);
-        }
+        let app2 = app.clone();
+        // The shortcut fires on key-PRESS while its trigger modifiers (e.g.
+        // Ctrl+Alt) are still physically held — injecting the paste chord now
+        // would send Ctrl+Alt+V / Ctrl+Alt+Shift+Insert and the target would
+        // ignore it (this is why nothing pasted). Wait for the modifiers to be
+        // released on a spawned thread (never block the event loop), THEN
+        // paste. On Windows the paste path (clipboard plugin + enigo SendInput)
+        // is thread-safe, so paste on the worker; on macOS/Linux enigo must run
+        // on the main thread (same rule `dispatch_delivery` enforces), so
+        // marshal the paste back after the wait.
+        std::thread::spawn(move || {
+            crate::input::wait_for_modifiers_released(2000);
+            info!(
+                "Paste last: re-pasting {} chars via {:?}",
+                text.len(),
+                method
+            );
+            #[cfg(windows)]
+            {
+                if let Err(e) = crate::clipboard::paste_manual(text, app2, method, clipboard) {
+                    warn!("Paste last failed: {}", e);
+                }
+            }
+            #[cfg(not(windows))]
+            {
+                let app_main = app2.clone();
+                let _ = app2.run_on_main_thread(move || {
+                    if let Err(e) =
+                        crate::clipboard::paste_manual(text, app_main, method, clipboard)
+                    {
+                        warn!("Paste last failed: {}", e);
+                    }
+                });
+            }
+        });
     }
     fn stop(&self, _app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {}
 }
