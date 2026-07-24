@@ -52,7 +52,7 @@ pub fn wait_for_modifiers_released(timeout_ms: u64) {
                 clear_since = None;
             } else {
                 match clear_since {
-                    Some(t) if now.duration_since(t) >= std::time::Duration::from_millis(25) => {
+                    Some(t) if now.duration_since(t) >= std::time::Duration::from_millis(10) => {
                         break;
                     }
                     Some(_) => {}
@@ -62,14 +62,133 @@ pub fn wait_for_modifiers_released(timeout_ms: u64) {
             if now >= deadline {
                 break;
             }
-            std::thread::sleep(std::time::Duration::from_millis(10));
+            std::thread::sleep(std::time::Duration::from_millis(5));
         }
     }
     #[cfg(not(windows))]
     {
-        std::thread::sleep(std::time::Duration::from_millis(timeout_ms.min(400)));
+        std::thread::sleep(std::time::Duration::from_millis(timeout_ms.min(300)));
     }
 }
+
+/// Synthetically release any still-held keyboard modifiers so a paste fired the
+/// instant the shortcut key is released isn't polluted by a modifier the user
+/// is still holding (e.g. they let go of `O` but keep Ctrl+Alt down). The
+/// shortcut's own NON-modifier key is already up by the time this runs (it's
+/// what fired the Released event), and modifier keys do NOT auto-repeat, so
+/// after this key-UP the system treats them as released until the physical
+/// release (a harmless extra up). Releases BOTH left and right of each modifier
+/// explicitly (a held right Alt/AltGr or right Ctrl/Shift must be cleared too —
+/// the generic VKs map to left scan codes and would miss the right side), with
+/// the extended-key flag for right Ctrl/right Alt. Best-effort; no-op on
+/// non-Windows (that path uses a fixed grace instead).
+#[cfg(windows)]
+pub fn force_release_modifiers() {
+    use windows::Win32::UI::Input::KeyboardAndMouse::{
+        INPUT, INPUT_0, INPUT_KEYBOARD, KEYBDINPUT, KEYEVENTF_EXTENDEDKEY, KEYEVENTF_KEYUP,
+        SendInput, VIRTUAL_KEY, VK_LCONTROL, VK_LMENU, VK_LSHIFT, VK_LWIN, VK_RCONTROL, VK_RMENU,
+        VK_RSHIFT, VK_RWIN,
+    };
+    // (vk, is_extended) — right Ctrl and right Alt are extended keys.
+    let keys: [(VIRTUAL_KEY, bool); 8] = [
+        (VK_LCONTROL, false),
+        (VK_RCONTROL, true),
+        (VK_LMENU, false),
+        (VK_RMENU, true),
+        (VK_LSHIFT, false),
+        (VK_RSHIFT, false),
+        (VK_LWIN, false),
+        (VK_RWIN, false),
+    ];
+    let inputs: Vec<INPUT> = keys
+        .iter()
+        .map(|&(vk, ext)| {
+            let mut flags = KEYEVENTF_KEYUP;
+            if ext {
+                flags |= KEYEVENTF_EXTENDEDKEY;
+            }
+            INPUT {
+                r#type: INPUT_KEYBOARD,
+                Anonymous: INPUT_0 {
+                    ki: KEYBDINPUT {
+                        wVk: vk,
+                        wScan: 0,
+                        dwFlags: flags,
+                        time: 0,
+                        dwExtraInfo: 0,
+                    },
+                },
+            }
+        })
+        .collect();
+    let sent = unsafe { SendInput(&inputs, std::mem::size_of::<INPUT>() as i32) };
+    if sent as usize != inputs.len() {
+        log::warn!(
+            "force_release_modifiers: SendInput inserted {}/{} events",
+            sent,
+            inputs.len()
+        );
+    }
+}
+
+#[cfg(not(windows))]
+pub fn force_release_modifiers() {}
+
+/// Wait until the shortcut's PRIMARY (non-modifier) trigger key is physically
+/// up (bounded, best-effort). "Paste Last" fires on the Released event and must
+/// not inject while that key is still held — its typematic repeats would leak
+/// into the target. The Tauri backend only emits Released after the primary key
+/// is already up (so this returns immediately), but the HandyKeys backend can
+/// emit Released on a modifier change with the key still down — this makes
+/// Paste Last correct on both.
+///
+/// `primary_vk` is the known VK of the trigger key when we could map it;
+/// `None` means we couldn't identify it (an exotic key name), and we
+/// conservatively wait until NO non-modifier key at all is down — so the guard
+/// holds for ANY primary key without a per-key lookup table. Call OFF the UI
+/// thread. No-op on non-Windows.
+#[cfg(windows)]
+pub fn wait_for_key_released(primary_vk: Option<i32>, timeout_ms: u64) {
+    use windows::Win32::UI::Input::KeyboardAndMouse::GetAsyncKeyState;
+    let is_down = |vk: i32| (unsafe { GetAsyncKeyState(vk) } as u16 & 0x8000) != 0;
+    // Modifier VKs (generic + left/right + Win) — excluded from the "any
+    // non-modifier key down" scan; modifiers are handled separately by
+    // force_release_modifiers + wait_for_modifiers_released.
+    let is_modifier = |vk: i32| {
+        matches!(
+            vk,
+            0x10 | 0x11 | 0x12 | 0xA0 | 0xA1 | 0xA2 | 0xA3 | 0xA4 | 0xA5 | 0x5B | 0x5C
+        )
+    };
+    let still_held = || match primary_vk {
+        Some(vk) => is_down(vk),
+        None => (0x08..=0xFEu32).any(|vk| {
+            let vk = vk as i32;
+            !is_modifier(vk) && is_down(vk)
+        }),
+    };
+    let deadline = std::time::Instant::now() + std::time::Duration::from_millis(timeout_ms);
+    let mut clear_since: Option<std::time::Instant> = None;
+    loop {
+        let now = std::time::Instant::now();
+        if still_held() {
+            clear_since = None;
+        } else {
+            match clear_since {
+                Some(t) if now.duration_since(t) >= std::time::Duration::from_millis(10) => break,
+                Some(_) => {}
+                None => clear_since = Some(now),
+            }
+        }
+        if now >= deadline {
+            break;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(5));
+    }
+}
+
+#[cfg(not(windows))]
+pub fn wait_for_key_released(_primary_vk: Option<i32>, _timeout_ms: u64) {}
 
 /// Sends a Ctrl+V or Cmd+V paste command using platform-specific virtual key codes.
 /// This ensures the paste works regardless of keyboard layout (e.g., Russian, AZERTY, DVORAK).

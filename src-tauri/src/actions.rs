@@ -1971,6 +1971,70 @@ impl ShortcutAction for JumpSlotAction {
     fn stop(&self, _app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {}
 }
 
+/// Map the NON-modifier key of a `ctrl+alt+o`-style binding to its Win32
+/// virtual-key code: letters (VK_A..VK_Z), digits (VK_0..VK_9), F1..F24, and
+/// the common named keys (space/tab/enter/backspace/insert/delete). Returns
+/// `None` for any other exotic key, in which case Paste Last falls back to
+/// waiting until NO non-modifier key is down (still correct — see
+/// `input::wait_for_key_released`). Tolerates `KeyO`/`Digit1` code-style tokens.
+fn parse_primary_key_vk(shortcut: &str) -> Option<i32> {
+    let is_mod = |t: &str| {
+        matches!(
+            t,
+            "ctrl"
+                | "control"
+                | "alt"
+                | "option"
+                | "altgr"
+                | "shift"
+                | "super"
+                | "cmd"
+                | "command"
+                | "meta"
+                | "win"
+                | "windows"
+        )
+    };
+    let lower = shortcut.to_ascii_lowercase();
+    let primary = lower
+        .split('+')
+        .map(|t| t.trim())
+        .filter(|t| !t.is_empty() && !is_mod(t))
+        .next_back()?;
+    let key = primary
+        .strip_prefix("key")
+        .or_else(|| primary.strip_prefix("digit"))
+        .unwrap_or(primary);
+    // Named non-alphanumeric primaries that can auto-repeat.
+    match key {
+        "space" => return Some(0x20), // VK_SPACE
+        "tab" => return Some(0x09),   // VK_TAB
+        "enter" | "return" => return Some(0x0D),
+        "backspace" => return Some(0x08),
+        "insert" | "ins" => return Some(0x2D),
+        "delete" | "del" => return Some(0x2E),
+        _ => {}
+    }
+    // Function keys F1..F24 == VK_F1(0x70)..VK_F24(0x87).
+    if let Some(n) = key.strip_prefix('f').and_then(|d| d.parse::<u32>().ok()) {
+        if (1..=24).contains(&n) {
+            return Some(0x70 + (n as i32 - 1));
+        }
+    }
+    let mut chars = key.chars();
+    let c = chars.next()?;
+    if chars.next().is_some() {
+        return None; // unknown multi-char key — caller falls back to "no key down"
+    }
+    if c.is_ascii_alphabetic() {
+        Some(c.to_ascii_uppercase() as i32) // 'A'..'Z' == VK_A..VK_Z
+    } else if c.is_ascii_digit() {
+        Some(c as i32) // '0'..'9' == VK_0..VK_9
+    } else {
+        None
+    }
+}
+
 /// Paste-last: re-paste the most recent transcription from history into the
 /// currently-focused window. A manual fallback for when the automatic paste
 /// didn't land — no anchor/jump, no submit key, just a plain paste at current
@@ -1978,7 +2042,13 @@ impl ShortcutAction for JumpSlotAction {
 /// `paste_last_clipboard_handling`.
 struct PasteLastAction;
 impl ShortcutAction for PasteLastAction {
-    fn start(&self, app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {
+    // Fire on RELEASE, not press. By the time the shortcut's Released event
+    // arrives, its own (non-modifier) key is already up — so a held letter key
+    // can't auto-repeat into the target — and we only need to clear any
+    // modifier the user is still holding. This is the fastest CLEAN paste with
+    // no artificial wait (press-based would have to wait out the whole hold).
+    fn start(&self, _app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {}
+    fn stop(&self, app: &AppHandle, binding_id: &str, _shortcut_str: &str) {
         // Prefer the in-memory last-delivered transcript (set synchronously at
         // delivery time) — this is exactly what the user just got and avoids a
         // race with the async history write. Fall back to history's latest row
@@ -2012,18 +2082,25 @@ impl ShortcutAction for PasteLastAction {
         let settings = crate::settings::get_settings(app);
         let method = settings.paste_last_paste_method;
         let clipboard = settings.paste_last_clipboard_handling;
+        // The shortcut's own key must be up before we inject (else its repeats
+        // leak). The Tauri backend guarantees that on Released; the HandyKeys
+        // backend does not (it can fire Released on a modifier change), so we
+        // verify the trigger key independently. Instant when it's already up.
+        let primary_vk = settings
+            .bindings
+            .get(binding_id)
+            .and_then(|b| parse_primary_key_vk(&b.current_binding));
         let app2 = app.clone();
-        // The shortcut fires on key-PRESS while its trigger modifiers (e.g.
-        // Ctrl+Alt) are still physically held — injecting the paste chord now
-        // would send Ctrl+Alt+V / Ctrl+Alt+Shift+Insert and the target would
-        // ignore it (this is why nothing pasted). Wait for the modifiers to be
-        // released on a spawned thread (never block the event loop), THEN
-        // paste. On Windows the paste path (clipboard plugin + enigo SendInput)
-        // is thread-safe, so paste on the worker; on macOS/Linux enigo must run
-        // on the main thread (same rule `dispatch_delivery` enforces), so
-        // marshal the paste back after the wait.
+        // Off the event-loop thread (paste path sleeps/locks). The trigger key
+        // is already up (this runs on release); clear any modifier the user is
+        // still holding, brief confirm, then paste. On Windows the paste path
+        // (clipboard plugin + enigo SendInput) is thread-safe, so paste on the
+        // worker; on macOS/Linux enigo must run on the main thread (same rule
+        // `dispatch_delivery` enforces), so marshal the paste back.
         std::thread::spawn(move || {
-            crate::input::wait_for_modifiers_released(2000);
+            crate::input::wait_for_key_released(primary_vk, 2000);
+            crate::input::force_release_modifiers();
+            crate::input::wait_for_modifiers_released(300);
             info!(
                 "Paste last: re-pasting {} chars via {:?}",
                 text.len(),
@@ -2048,7 +2125,6 @@ impl ShortcutAction for PasteLastAction {
             }
         });
     }
-    fn stop(&self, _app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {}
 }
 
 pub static ACTION_MAP: Lazy<HashMap<String, Arc<dyn ShortcutAction>>> = Lazy::new(|| {

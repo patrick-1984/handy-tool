@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.59.0] - 2026-07-24
+
+### Changed
+
+- **"Paste last transcription" is now near-instant.** 0.58.0 fixed it by pasting on key-press and then *waiting* for you to release the trigger modifiers — which added up to ~1 s of lag when the key (or a macro key) was held. It now pastes the instant you **release** the shortcut: the trigger key is already up (so it can't leak repeated characters into the target) and any still-held modifier — including right Alt/AltGr — is cleared first, so the injected chord stays clean but fires immediately. (Content was never the bottleneck — it's read from the in-memory last-transcript buffer, SQLite only as a post-restart fallback, never the clipboard.)
+
 ## [0.58.0] - 2026-07-23
 
 ### Fixed
