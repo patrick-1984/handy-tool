@@ -310,8 +310,45 @@ impl TranscriptionCoordinator {
                                         }
                                     }
                                 } else {
-                                    match &stage {
-                                        Stage::Idle => {
+                                    // Plain Transcribe (or post-process Transcribe): FINISH a
+                                    // recording started by ANY binding, mirroring the Transcribe &
+                                    // Submit branch above — so a take started in Transcribe & Submit
+                                    // can be finished with plain Transcribe (and vice-versa). The
+                                    // old `Recording(id) if id == &binding_id` only matched the
+                                    // SAME binding, so a submit-started take fell into the
+                                    // "pipeline busy" arm here.
+                                    let active = if let Stage::Recording(id) = &stage {
+                                        Some(id.clone())
+                                    } else {
+                                        None
+                                    };
+                                    match active {
+                                        Some(rec_id) => {
+                                            let s = crate::settings::get_settings(&app);
+                                            // On-finish jump/anchor only when started AND finished
+                                            // via the same flow (T-302 #3). Output-style bindings
+                                            // (plain / post-process / PTT) are the "output" flow;
+                                            // only a submit-started take differs.
+                                            let same_flow = rec_id != "transcribe_and_submit";
+                                            if !(s.anchor_on_finish_require_same_flow && !same_flow)
+                                            {
+                                                perform_anchor_action(
+                                                    &app,
+                                                    s.anchor_action_output_stop,
+                                                    s.anchor_action_output_stop_slot,
+                                                    true,
+                                                    &s.jumper_save_cursor_slots,
+                                                );
+                                            }
+                                            // MUST stop the recorder's ACTUAL owner: stop_recording
+                                            // only stops when the id matches the one stored at
+                                            // start (audio.rs), else the recorder keeps running
+                                            // while we move to Processing. No submit override is
+                                            // armed (start() cleared it), so this is a plain output
+                                            // paste with no submit key.
+                                            stop(&app, &mut stage, &rec_id, &hotkey_string);
+                                        }
+                                        None if matches!(stage, Stage::Idle) => {
                                             let s = crate::settings::get_settings(&app);
                                             timed_idle_start(
                                                 &app,
@@ -323,18 +360,7 @@ impl TranscriptionCoordinator {
                                                 &s.jumper_save_cursor_slots,
                                             );
                                         }
-                                        Stage::Recording(id) if id == &binding_id => {
-                                            let s = crate::settings::get_settings(&app);
-                                            perform_anchor_action(
-                                                &app,
-                                                s.anchor_action_output_stop,
-                                                s.anchor_action_output_stop_slot,
-                                                true,
-                                                &s.jumper_save_cursor_slots,
-                                            );
-                                            stop(&app, &mut stage, &binding_id, &hotkey_string);
-                                        }
-                                        _ => {
+                                        None => {
                                             debug!(
                                                 "Ignoring press for '{binding_id}': pipeline busy"
                                             );

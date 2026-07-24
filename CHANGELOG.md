@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.60.0] - 2026-07-24
+
+### Fixed
+
+- **A recording can now be finished from either mode, both directions.** Previously a take started with **Transcribe & Submit** couldn't be stopped by pressing **Transcribe** (the press was ignored with a "busy" beep) — only the reverse worked. The Transcribe toggle now finishes a recording started by *any* binding (mirroring what Transcribe & Submit already did), finishing it as a plain output paste (no submit key). It stops the recording's actual owner so the recorder can't be left running, and honors the "only jump on finish if started the same way" setting symmetrically.
+
 ## [0.59.0] - 2026-07-24
 
 ### Changed
