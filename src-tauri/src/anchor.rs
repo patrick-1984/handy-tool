@@ -231,6 +231,12 @@ pub struct DeliveryGuard {
     target_pid: u32,
     #[cfg(windows)]
     target_tid: u32,
+    /// The captured CONTROL's own owning process (see `Target.control_pid`) —
+    /// may differ from `target_pid` for an out-of-process control host
+    /// (WebView2/Teams). Identity re-checks compare the live control pid to
+    /// THIS, not `target_pid`.
+    #[cfg(windows)]
+    target_control_pid: u32,
     #[cfg(windows)]
     target_window_class: String,
     #[cfg(windows)]
@@ -475,6 +481,14 @@ mod win {
         control: isize,
         pid: u32,
         tid: u32,
+        /// The CONTROL's own owning process. Usually == `pid`, but a control
+        /// hosted out-of-process (a WebView2 child, e.g. new MS Teams' message
+        /// field in `msedgewebview2.exe`) legitimately differs. Identity
+        /// re-validation compares the live control's pid against THIS, not the
+        /// window's `pid`, so a cross-process host is accepted while a handle
+        /// recycled by a different process is still rejected. Runtime-only
+        /// (never persisted — pids don't survive a reboot).
+        control_pid: u32,
         window_class: String,
         control_class: String,
         app: String,
@@ -1200,11 +1214,16 @@ mod win {
                 .unwrap_or(hwnd)
             };
             let control_class = class_name(control);
+            // Re-read the resolved control's OWN pid (may be a cross-process
+            // host — WebView2/Teams — distinct from the window pid above).
+            let mut control_pid = 0u32;
+            let _ = GetWindowThreadProcessId(control, Some(&mut control_pid));
             let target = Target {
                 hwnd: hwnd.0 as isize,
                 control: control.0 as isize,
                 pid,
                 tid,
+                control_pid,
                 window_class: saved.window_class.clone(),
                 control_class,
                 app: saved.app.clone(),
@@ -1717,6 +1736,11 @@ mod win {
                 hwnd
             };
             let control_class = class_name(control);
+            // The control may live in a DIFFERENT process than the top-level
+            // window (an out-of-process host — WebView2/Teams). Record its OWN
+            // pid so re-validation compares against it, not the window's pid.
+            let mut control_pid = 0u32;
+            let _ = GetWindowThreadProcessId(control, Some(&mut control_pid));
             if control_class.eq_ignore_ascii_case("Edit") {
                 let style = GetWindowLongW(control, GWL_STYLE);
                 if style & ES_PASSWORD != 0 {
@@ -1730,11 +1754,14 @@ mod win {
             // capture; any query failure (COM unavailable, UIA error, pid
             // mismatch) is treated as "not a password" (fail open on the
             // QUERY only) so a machine where UIA misbehaves never loses the
-            // ability to anchor at all. `pid` is this capture's own process
-            // — at capture time the currently UIA-focused element always
-            // belongs to it, so `uia_is_password` reliably resolves the real
-            // focused descendant instead of the classic-control host.
-            if uia_is_password(pid).unwrap_or(false) {
+            // ability to anchor at all. Use the CONTROL's own pid, not the
+            // window's: for an out-of-process host (WebView2 — new MS Teams)
+            // the UIA-focused element (the real HTML descendant) belongs to
+            // `control_pid`, so passing the window pid would pid-mismatch and
+            // fail open — leaving an HTML `<input type=password>` (which
+            // ES_PASSWORD cannot see) undetected. Same-process controls have
+            // `control_pid == pid`, so this is unchanged for them.
+            if uia_is_password(control_pid).unwrap_or(false) {
                 return Err("refusing to anchor a password field".into());
             }
             let app_name = process_name(pid).unwrap_or_else(|| "unknown".into());
@@ -1751,6 +1778,7 @@ mod win {
                 control: control.0 as isize,
                 pid,
                 tid,
+                control_pid,
                 window_class: class_name(hwnd),
                 control_class,
                 app: app_name,
@@ -1921,6 +1949,7 @@ mod win {
                 guard.target_pid,
                 guard.target_tid,
                 &guard.target_window_class,
+                guard.target_control_pid,
                 &guard.target_control_class,
             ) {
                 debug!(
@@ -1934,6 +1963,7 @@ mod win {
                 control: guard.target_control,
                 pid: guard.target_pid,
                 tid: guard.target_tid,
+                control_pid: guard.target_control_pid,
                 window_class: guard.target_window_class.clone(),
                 control_class: guard.target_control_class.clone(),
                 app: guard.target_app.clone(),
@@ -1963,12 +1993,18 @@ mod win {
         expected_pid: u32,
         expected_tid: u32,
         expected_window_class: &str,
+        expected_control_pid: u32,
         expected_control_class: &str,
     ) -> bool {
         live_window_pid == expected_pid
             && live_window_tid == expected_tid
             && live_window_class == expected_window_class
-            && live_control_pid == expected_pid
+            // Compare the control against its OWN captured pid, not the
+            // window's — a cross-process host (WebView2/MS Teams) legitimately
+            // owns the focused field in a different process than the top-level
+            // window. A control HWND recycled into a DIFFERENT process than the
+            // one captured still fails here (expected_control_pid mismatch).
+            && live_control_pid == expected_control_pid
             && live_control_class == expected_control_class
     }
 
@@ -2141,18 +2177,26 @@ mod win {
             }
             // The control HWND is even more recyclable than the top-level
             // window (child controls are torn down freely). Require the same
-            // owning PROCESS and the same class; a recycled handle with a
-            // different class must not receive keystrokes. Deliberately NOT
-            // the same thread: multi-threaded UIs (Citrix CtxICADisp, Windows
-            // Terminal's XAML input site, Chromium) legitimately host input
-            // controls on a different thread than their top-level window.
+            // owning PROCESS *the control itself had at capture* and the same
+            // class; a recycled handle with a different class must not receive
+            // keystrokes. Compare against the control's OWN captured pid, not
+            // the window's: a cross-process host (WebView2 — new MS Teams,
+            // Electron webviews) legitimately owns the focused field in a
+            // different process than its top-level window, so requiring
+            // window-pid == control-pid wrongly rejected the jump ("target
+            // field was replaced by another"). A control HWND recycled into a
+            // DIFFERENT process than the one captured still fails here.
+            // Deliberately NOT the same thread: multi-threaded UIs (Citrix
+            // CtxICADisp, Windows Terminal's XAML input site, Chromium)
+            // legitimately host input controls on a different thread than
+            // their top-level window.
             let control = HWND(t.control as _);
             if !IsWindow(Some(control)).as_bool() {
                 return Err(("target field no longer exists".into(), false));
             }
             let mut cpid = 0u32;
             let ctid = GetWindowThreadProcessId(control, Some(&mut cpid));
-            if cpid != t.pid || ctid == 0 {
+            if cpid != t.control_pid || ctid == 0 {
                 return Err(("target field was replaced by another".into(), false));
             }
             if class_name(control) != t.control_class {
@@ -2174,13 +2218,16 @@ mod win {
             // Same fail-open-on-query-failure contract as `capture_current_
             // target` — never capture/delivery-blocking on its own; only a
             // definite `true` refuses. Not window-gone, so `false` here.
-            // `t.pid` scopes the (desktop-wide) `GetFocusedElement()` query
-            // to this specific target: `validate()` runs BEFORE the target
-            // is re-activated, so whatever currently holds OS focus may well
-            // belong to an entirely different app — a pid mismatch there
-            // correctly yields "can't determine", not a false verdict about
-            // this control.
-            if uia_is_password(t.pid).unwrap_or(false) {
+            // `t.control_pid` scopes the (desktop-wide) `GetFocusedElement()`
+            // query to this specific target's CONTROL process (== the window
+            // pid except for an out-of-process WebView2 host): `validate()`
+            // runs BEFORE the target is re-activated, so whatever currently
+            // holds OS focus may well belong to an entirely different app — a
+            // pid mismatch there correctly yields "can't determine", not a
+            // false verdict about this control. Using the control pid (not the
+            // window pid) is what lets a cross-process HTML password field be
+            // seen at all here.
+            if uia_is_password(t.control_pid).unwrap_or(false) {
                 return Err(("target field became a password field".into(), false));
             }
             Ok(())
@@ -2403,7 +2450,11 @@ mod win {
         // caller's `BeginDelivery::Failed` contract) instead of landing in a
         // password box. `ES_PASSWORD`/`validate()`'s checks remain as
         // defense in depth; this closes the gap they could not reach.
-        if uia_is_password(target.pid).unwrap_or(false) {
+        // Use the control's own pid so an out-of-process WebView2 field (whose
+        // focused UIA element belongs to `control_pid`, not the window pid) is
+        // actually seen — otherwise an HTML `<input type=password>` (invisible
+        // to ES_PASSWORD) would fail open here. Same-process: control_pid==pid.
+        if uia_is_password(target.control_pid).unwrap_or(false) {
             warn!(
                 "Jump slot {} delivery aborted post-activation — UIA reports the focused control is a password field",
                 slot
@@ -2431,6 +2482,7 @@ mod win {
             // HWNDs above.
             target_pid: target.pid,
             target_tid: target.tid,
+            target_control_pid: target.control_pid,
             target_window_class: target.window_class.clone(),
             target_control_class: target.control_class.clone(),
             target_app: target.app.clone(),
@@ -2555,6 +2607,7 @@ mod win {
                 guard.target_pid,
                 guard.target_tid,
                 &guard.target_window_class,
+                guard.target_control_pid,
                 &guard.target_control_class,
             )
         }
@@ -2672,6 +2725,7 @@ mod win {
                 control: 1,
                 pid: 1,
                 tid: 1,
+                control_pid: 1,
                 window_class: "TestWindow".into(),
                 control_class: "TestControl".into(),
                 app: "test".into(),
@@ -2942,6 +2996,7 @@ mod win {
                 100,
                 200,
                 "Chrome_WidgetWin_1",
+                100,
                 "Edit",
             ));
         }
@@ -2961,6 +3016,7 @@ mod win {
                 100,
                 200,
                 "Chrome_WidgetWin_1",
+                100,
                 "Edit",
             ));
         }
@@ -2976,6 +3032,7 @@ mod win {
                 100,
                 200,
                 "Chrome_WidgetWin_1",
+                100,
                 "Edit",
             ));
         }
@@ -2991,14 +3048,17 @@ mod win {
                 100,
                 200,
                 "Chrome_WidgetWin_1",
+                100,
                 "Edit",
             ));
         }
 
-        /// The control's pid must match the snapshot too, even though its
-        /// THREAD deliberately is not compared (see the function doc — a
-        /// legitimately multi-threaded host like Citrix/Chromium/XAML can
-        /// run a control's thread separately from its window's).
+        /// The control's live pid must match the control's OWN captured pid,
+        /// even though its THREAD deliberately is not compared (see the
+        /// function doc — a legitimately multi-threaded host like
+        /// Citrix/Chromium/XAML can run a control's thread separately from its
+        /// window's). Here the control was captured in pid 100 and is now in
+        /// pid 999 → a foreign-process recycled handle → rejected.
         #[test]
         fn guard_identity_still_matches_rejects_control_pid_mismatch() {
             assert!(!guard_identity_still_matches(
@@ -3010,6 +3070,7 @@ mod win {
                 100,
                 200,
                 "Chrome_WidgetWin_1",
+                100,
                 "Edit",
             ));
         }
@@ -3025,7 +3086,51 @@ mod win {
                 100,
                 200,
                 "Chrome_WidgetWin_1",
+                100,
                 "Edit",
+            ));
+        }
+
+        /// Regression guard for the MS Teams / WebView2 fix: the focused
+        /// field is legitimately hosted in a DIFFERENT process
+        /// (`msedgewebview2.exe`) than the top-level window. Window pid = 100,
+        /// but the control's own captured pid = 500. When the live control is
+        /// still that same pid 500 the identity MUST match — the old code
+        /// compared the live control pid against the WINDOW pid (100) and
+        /// wrongly rejected this ("target field was replaced by another").
+        #[test]
+        fn guard_identity_still_matches_accepts_cross_process_control() {
+            assert!(guard_identity_still_matches(
+                100,
+                200,
+                "TeamsWebView",
+                500,
+                "Chrome_RenderWidgetHostHWND",
+                100,
+                200,
+                "TeamsWebView",
+                500,
+                "Chrome_RenderWidgetHostHWND",
+            ));
+        }
+
+        /// The same cross-process case, but the control HWND has been recycled
+        /// into yet another process (pid 777 ≠ the captured 500) — that is a
+        /// genuine foreign-process takeover and MUST still be rejected even
+        /// though the window identity is unchanged.
+        #[test]
+        fn guard_identity_still_matches_rejects_recycled_cross_process_control() {
+            assert!(!guard_identity_still_matches(
+                100,
+                200,
+                "TeamsWebView",
+                777,
+                "Chrome_RenderWidgetHostHWND",
+                100,
+                200,
+                "TeamsWebView",
+                500,
+                "Chrome_RenderWidgetHostHWND",
             ));
         }
 

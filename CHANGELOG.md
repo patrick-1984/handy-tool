@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.61.0] - 2026-07-30
+
+### Fixed
+
+- **You can now anchor and jump to the new Microsoft Teams message field** (and other WebView2/Electron-hosted fields). Setting an anchor on Teams and jumping to it always failed with *"target field was replaced by another"* while other apps worked. New Teams hosts its editable field in a separate WebView2 process (`msedgewebview2.exe`), and Handy's safety re-check required the focused field to live in the *same process* as the top-level window — so it wrongly rejected the cross-process field every time. Handy now records the field's **own** process at anchor time and checks against that, so a legitimately out-of-process input is accepted while a handle genuinely recycled into a *different* process is still rejected (all the other identity checks — window process/thread, class match, foreground — are unchanged).
+
+### Security
+
+- **Password-field refusal now covers WebView2/HTML password inputs too.** Handy already refuses to anchor or deliver into a password box; that check scans the focused UI-Automation element, but it was scoped to the top-level window's process, so a browser/Electron-hosted `<input type="password">` (which the classic Win32 password style can't see) was invisible to it. It's now scoped to the field's own process, closing a gap that the Teams cross-process fix above would otherwise have made reachable.
+
 ## [0.60.0] - 2026-07-24
 
 ### Fixed
