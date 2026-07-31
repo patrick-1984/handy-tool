@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.62.0] - 2026-08-01
+
+### Changed
+
+- **The Jumper "jump slot" picker is now always visible.** On the "Jump slot action on start / on finish" rows (both the Transcribe and the Transcribe & Submit groups), the dropdown that selects *which* slot to jump to / deliver into used to be hidden until you first changed the action away from "Do nothing" — so it looked like there was no way to choose the slot. It's now always shown, just greyed out until you pick an action, matching how the per-slot cursor-mode dropdown already behaves.
+
 ## [0.61.0] - 2026-07-30
 
 ### Fixed

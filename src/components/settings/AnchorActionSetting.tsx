@@ -83,14 +83,16 @@ export const AnchorActionSetting: React.FC<AnchorActionSettingProps> =
         grouped={grouped}
       >
         <div className="flex items-center gap-2">
-          {selected !== "none" && (
-            <Dropdown
-              options={slotOptions}
-              selectedValue={selectedSlot}
-              onSelect={(value) => updateSetting(slotKey, Number(value))}
-              disabled={isUpdating(slotKey)}
-            />
-          )}
+          {/* The target-slot picker is ALWAYS rendered so it's discoverable —
+              but greyed out (disabled) until an action other than "Do nothing"
+              is chosen, since a slot is meaningless with no action. Mirrors the
+              per-slot cursor-mode dropdown's always-visible-but-disabled UX. */}
+          <Dropdown
+            options={slotOptions}
+            selectedValue={selectedSlot}
+            onSelect={(value) => updateSetting(slotKey, Number(value))}
+            disabled={selected === "none" || isUpdating(slotKey)}
+          />
           <Dropdown
             options={options}
             selectedValue={selected}
