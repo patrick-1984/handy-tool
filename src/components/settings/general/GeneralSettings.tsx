@@ -15,6 +15,7 @@ import { GpuDeviceSelector } from "../GpuDeviceSelector";
 import { CustomWords } from "../CustomWords";
 import { AppendTrailingSpace } from "../AppendTrailingSpace";
 import { PasteLastSettings } from "../PasteLastSettings";
+import { CancelBehaviorSetting } from "../CancelBehaviorSetting";
 
 export const GeneralSettings: React.FC = () => {
   const { t } = useTranslation();
@@ -24,6 +25,7 @@ export const GeneralSettings: React.FC = () => {
       <SettingsGroup title={t("settings.general.title")}>
         <ShortcutInput shortcutId="transcribe" grouped={true} />
         <ShortcutInput shortcutId="transcribe_ptt" grouped={true} />
+        <CancelBehaviorSetting descriptionMode="tooltip" grouped={true} />
       </SettingsGroup>
       <ModelSettingsCard />
       <SettingsGroup title={t("settings.advanced.groups.transcription")}>

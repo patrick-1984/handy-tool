@@ -33,6 +33,11 @@ enum Command {
     Cancel {
         recording_was_active: bool,
     },
+    /// `CancelBehavior::FinishSilently`: the user cancelled but asked to keep
+    /// the transcript. Finish the take like a normal press and let it save to
+    /// history, but deliver nothing. Routed through the coordinator because it
+    /// is the only component that can read `Stage` coherently.
+    FinishSilently,
     ProcessingFinished,
     /// Commit a parked PTT release whose X11 auto-repeat grace window expired
     /// without a matching press (T-209). Stale if `generation` no longer
@@ -213,7 +218,7 @@ impl TranscriptionCoordinator {
                                             true,
                                             &s.jumper_save_cursor_slots,
                                         );
-                                        stop(&app, &mut stage, &binding_id, &hotkey_string);
+                                        stop(&app, &mut stage, &binding_id, &hotkey_string, false);
                                     }
                                 } else if is_pressed {
                                     // Held PTT while the pipeline is busy: the
@@ -265,7 +270,7 @@ impl TranscriptionCoordinator {
                                                         .to_ms(),
                                                 },
                                             );
-                                            stop(&app, &mut stage, &rec_id, &hotkey_string);
+                                            stop(&app, &mut stage, &rec_id, &hotkey_string, false);
                                         }
                                         None if matches!(stage, Stage::Idle) => {
                                             let s = crate::settings::get_settings(&app);
@@ -346,7 +351,7 @@ impl TranscriptionCoordinator {
                                             // while we move to Processing. No submit override is
                                             // armed (start() cleared it), so this is a plain output
                                             // paste with no submit key.
-                                            stop(&app, &mut stage, &rec_id, &hotkey_string);
+                                            stop(&app, &mut stage, &rec_id, &hotkey_string, false);
                                         }
                                         None if matches!(stage, Stage::Idle) => {
                                             let s = crate::settings::get_settings(&app);
@@ -388,6 +393,70 @@ impl TranscriptionCoordinator {
                             parked_ptt_release.clear();
                             schedule_unmute_cleanup(&app);
                         }
+                        Command::FinishSilently => {
+                            // Deliberately TOTAL over Stage. An earlier design
+                            // gated this on `audio_manager.is_recording()` at
+                            // the caller and no-op'd unless the coordinator saw
+                            // Recording — but the recorder stays "recording"
+                            // until the spawned pipeline task calls
+                            // stop_recording(), and an Input command already
+                            // queued ahead of us can move the stage to
+                            // Processing first. Either way the cancel would be
+                            // silently DROPPED and the take would paste, submit
+                            // and jump — the opposite of what the user asked
+                            // for. Every stage is therefore handled here.
+                            //
+                            // The actual suppression does NOT depend on this
+                            // command winning any race:
+                            // `cancel_current_operation` already armed the
+                            // "deliver nothing" marker synchronously before
+                            // queueing, so whichever `stop()` runs next — this
+                            // one, or a normal finishing Input that was queued
+                            // ahead of us — finishes silently. Its generation
+                            // bump additionally covers a take that is already
+                            // PAST its snapshot. (A bump alone is not enough:
+                            // a snapshot taken after it absorbs it — the
+                            // "finding 7(a)" trap.)
+                            match &stage {
+                                Stage::Recording(rec_id) => {
+                                    let rec_id = rec_id.clone();
+                                    // No perform_anchor_action: a silent finish
+                                    // must not jump or touch a slot.
+                                    debug!(
+                                        "FinishSilently: finishing recording '{rec_id}' with no delivery"
+                                    );
+                                    // A parked release belongs to the recording
+                                    // we are finishing right now (mirrors the
+                                    // Cancel arm below).
+                                    #[cfg(target_os = "linux")]
+                                    parked_ptt_release.clear();
+                                    stop(&app, &mut stage, &rec_id, "", true);
+                                }
+                                Stage::Processing => {
+                                    // Already past stop(), so this take is
+                                    // suppressed by whichever of the two
+                                    // mechanisms applies: it either consumed the
+                                    // marker the caller armed before queueing
+                                    // (it stopped after we armed), or it
+                                    // snapshotted the generation BEFORE the
+                                    // caller's bump and is caught by that. Both
+                                    // are already in effect; there is nothing
+                                    // left to do here. History still lands —
+                                    // exactly "cancel but keep the content".
+                                    // Deliberately NOT the discard teardown
+                                    // (end_chunked_session / tray+overlay reset /
+                                    // maybe_unload_immediately): those tear down
+                                    // a RECORDING, and doing them to a live
+                                    // pipeline would break it.
+                                    debug!(
+                                        "FinishSilently: pipeline already processing — suppressing its delivery only"
+                                    );
+                                }
+                                Stage::Idle => {
+                                    debug!("FinishSilently: nothing in flight");
+                                }
+                            }
+                        }
                         Command::ProcessingFinished => {
                             stage = Stage::Idle;
                             publish_stage(&stage);
@@ -420,7 +489,7 @@ impl TranscriptionCoordinator {
                                     true,
                                     &s.jumper_save_cursor_slots,
                                 );
-                                stop(&app, &mut stage, &binding_id, &hotkey_string);
+                                stop(&app, &mut stage, &binding_id, &hotkey_string, false);
                             }
                         }
                     }
@@ -462,6 +531,20 @@ impl TranscriptionCoordinator {
         {
             warn!("Transcription coordinator channel closed");
         }
+    }
+
+    /// `CancelBehavior::FinishSilently`: finish the take in flight without
+    /// delivering it. Handled for every stage (see the `FinishSilently` arm).
+    /// Returns whether the command was actually queued — the caller must fall
+    /// back to the discard teardown when it was not, or a live recording would
+    /// be left running with nothing able to stop it.
+    #[must_use]
+    pub fn notify_finish_silently(&self) -> bool {
+        if self.tx.send(Command::FinishSilently).is_err() {
+            warn!("Transcription coordinator channel closed");
+            return false;
+        }
+        true
     }
 
     pub fn notify_processing_finished(&self) {
@@ -577,6 +660,11 @@ fn start(app: &AppHandle, stage: &mut Stage, binding_id: &str, hotkey_string: &s
     // on-finish action.
     crate::anchor::clear_delivery_request();
     crate::anchor::clear_post_take_action();
+    // Nor a stranded "deliver nothing" marker. Arming is structurally paired
+    // with its consume in stop(), so this should never fire — but a leaked flag
+    // would silently swallow THIS take's paste, so bound the blast radius here
+    // (coordinator thread, the only thread allowed to write it).
+    crate::actions::clear_silent_take();
     let Some(action) = ACTION_MAP.get(binding_id) else {
         warn!("No action in ACTION_MAP for '{binding_id}'");
         return;
@@ -593,11 +681,24 @@ fn start(app: &AppHandle, stage: &mut Stage, binding_id: &str, hotkey_string: &s
     }
 }
 
-fn stop(app: &AppHandle, stage: &mut Stage, binding_id: &str, hotkey_string: &str) {
+/// Finish the active recording. `silent` marks the take "deliver nothing"
+/// (CancelBehavior::FinishSilently) — the transcript is still produced and
+/// saved to history, but no paste/clipboard/submit/jump follows.
+///
+/// The marker is armed HERE rather than at the call site, and deliberately
+/// AFTER the ACTION_MAP lookup: on the early-return path below `action.stop()`
+/// never runs, so nothing would consume an already-armed flag and it would
+/// linger to swallow a LATER take's paste. Arming between the successful lookup
+/// and the call that consumes it makes arm-without-consume structurally
+/// impossible.
+fn stop(app: &AppHandle, stage: &mut Stage, binding_id: &str, hotkey_string: &str, silent: bool) {
     let Some(action) = ACTION_MAP.get(binding_id) else {
         warn!("No action in ACTION_MAP for '{binding_id}'");
         return;
     };
+    if silent {
+        crate::actions::arm_silent_take();
+    }
     action.stop(app, binding_id, hotkey_string);
     *stage = Stage::Processing;
     publish_stage(stage);

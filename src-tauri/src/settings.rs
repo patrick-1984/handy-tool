@@ -450,6 +450,30 @@ impl Default for SubmitIdleBehavior {
     }
 }
 
+/// What the cancel affordances do to the take in progress. Governs EVERY
+/// cancel entry point — the Escape/`cancel` shortcut, the tray "Cancel" item,
+/// the in-app cancel command and `handy --cancel` — because they all funnel
+/// through [`crate::utils::cancel_current_operation`].
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type)]
+#[serde(rename_all = "snake_case")]
+pub enum CancelBehavior {
+    /// Throw the take away: the recorder is cancelled, the audio is discarded,
+    /// nothing is transcribed and nothing is saved. (Behavior before 0.63.0.)
+    DiscardRecording,
+    /// Finish the take exactly like a normal Transcribe press — transcribe it
+    /// and persist it to history — but deliver NOTHING: no paste, no clipboard
+    /// engagement of any kind, no submit key, and no Jumper anchor/jump action
+    /// (neither the on-finish action nor the deferred post-take action). The
+    /// "Paste Last Transcription" buffer is deliberately left untouched too.
+    FinishSilently,
+}
+
+impl Default for CancelBehavior {
+    fn default() -> Self {
+        CancelBehavior::FinishSilently
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type)]
 #[serde(rename_all = "snake_case")]
 pub enum RecordingRetentionPeriod {
@@ -954,6 +978,12 @@ pub struct AppSettings {
     /// recording.
     #[serde(default)]
     pub submit_idle_behavior: SubmitIdleBehavior,
+    /// What every cancel affordance (Escape shortcut, tray "Cancel", the in-app
+    /// cancel command, `handy --cancel`) does to the take in progress. Defaults
+    /// to [`CancelBehavior::FinishSilently`] — including for stores written
+    /// before 0.63.0, which deliberately adopt the new behavior on upgrade.
+    #[serde(default)]
+    pub cancel_behavior: CancelBehavior,
     /// Clipboard handling for pastes made by the "Transcribe & Submit" shortcut
     /// (independent of the global `clipboard_handling`).
     #[serde(default)]
@@ -2040,6 +2070,7 @@ pub fn get_default_settings() -> AppSettings {
         submit_paste_method: default_submit_paste_method(),
         submit_key: AutoSubmitKey::default(),
         submit_idle_behavior: SubmitIdleBehavior::default(),
+        cancel_behavior: CancelBehavior::default(),
         submit_clipboard_handling: ClipboardHandling::default(),
         clipboard_restore_delay: ClipboardRestoreDelay::default(),
         submit_clipboard_restore_delay: ClipboardRestoreDelay::default(),
@@ -2509,6 +2540,42 @@ mod tests {
             get_default_settings().jumper_paste_delay,
             JumperPasteDelay::Ms250
         );
+    }
+
+    /// Cancel keeps the transcript by default (0.63.0). Also pins the serde
+    /// wire names the frontend dropdown and the Tauri command parse against,
+    /// and the upgrade path: a settings store written before this field existed
+    /// deserializes to `FinishSilently`, so existing installs adopt the new
+    /// behavior rather than silently keeping the old discard.
+    #[test]
+    fn cancel_behavior_defaults_to_finish_silently_and_round_trips() {
+        assert_eq!(CancelBehavior::default(), CancelBehavior::FinishSilently);
+        assert_eq!(
+            get_default_settings().cancel_behavior,
+            CancelBehavior::FinishSilently
+        );
+
+        assert_eq!(
+            serde_json::to_string(&CancelBehavior::DiscardRecording).unwrap(),
+            "\"discard_recording\""
+        );
+        assert_eq!(
+            serde_json::to_string(&CancelBehavior::FinishSilently).unwrap(),
+            "\"finish_silently\""
+        );
+        assert_eq!(
+            serde_json::from_str::<CancelBehavior>("\"discard_recording\"").unwrap(),
+            CancelBehavior::DiscardRecording
+        );
+
+        // Missing field (pre-0.63.0 store) => the new default.
+        #[derive(Deserialize)]
+        struct Probe {
+            #[serde(default)]
+            cancel_behavior: CancelBehavior,
+        }
+        let probe: Probe = serde_json::from_str("{}").unwrap();
+        assert_eq!(probe.cancel_behavior, CancelBehavior::FinishSilently);
     }
 
     #[test]

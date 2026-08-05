@@ -433,6 +433,7 @@ pub fn run(cli_args: CliArgs) {
         shortcut::change_experimental_enabled_setting,
         shortcut::change_transcription_mode_setting,
         shortcut::change_transcription_mode_ptt_setting,
+        shortcut::change_cancel_behavior_setting,
         shortcut::change_transcribe_gpu_device_setting,
         shortcut::change_api_transcription_url_setting,
         shortcut::change_api_transcription_key_setting,

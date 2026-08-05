@@ -344,6 +344,14 @@
           "title": "Clipboard",
           "description": "Keep your existing clipboard after pasting, or leave the transcription on the clipboard."
         }
+      },
+      "cancelBehavior": {
+        "title": "Cancel behavior",
+        "description": "What cancelling does to the recording in progress — applies to the Escape shortcut, the tray \"Cancel\" item and 'handy --cancel'. \"Finish, save to history only\" stops the recording and transcribes it as usual, then does nothing else: no pasting, no clipboard changes, no submit key and no jump. The transcript and its audio are kept in History (delete the entry there to remove them). \"Discard recording\" throws the audio away without transcribing it.",
+        "options": {
+          "finishSilently": "Finish, save to history only",
+          "discardRecording": "Discard recording"
+        }
       }
     },
     "models": {

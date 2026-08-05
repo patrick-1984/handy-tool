@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.63.0] - 2026-08-01
+
+### Added
+
+- **"Cancel behavior" setting (General) — and cancelling now keeps your words by default.** Previously, cancelling always threw the recording away. There is now a choice, and the new default is **"Finish, save to history only"**: the recording stops and is transcribed exactly as if you had pressed Transcribe, the result is saved to **History** — and nothing is delivered. No pasting, no clipboard change, no submit/Enter key, no Jumper jump or slot action. It's the "I don't want this typed into whatever is in front of me, but don't throw away what I said" button. The old behavior is still one dropdown away as **"Discard recording"**.
+
+  The setting governs **every** way you cancel — the Escape shortcut, the tray **Cancel** item, the in-app cancel command and `handy --cancel` — so cancelling means the same thing however you trigger it. Cancelling *after* the recording has stopped (while it's still transcribing) now also just suppresses the delivery instead of tearing the pipeline down.
+
+  Scope of the "delivers nothing" guarantee: it is absolute for the whole time a recording is running — which is the entire window in which the Escape shortcut is even active, so pressing Escape always gets you the new behavior. The tray item and `handy --cancel` can also be used later, while a take is still transcribing, and those are suppressed too. What a cancel can *not* do is unwind a delivery that has already started: once the paste is under way (including while it is sitting in a configured Jumper paste/submit delay, which can be up to two seconds), the clipboard write and submit key may still land. That behavior is unchanged from previous versions and is not specific to this setting.
+
+### Changed
+
+- **Cancelling no longer discards your recording unless you ask it to.** This changes on upgrade, not just on fresh installs. Because a cancelled take is now *kept*, please note:
+  - The transcript **and its audio recording** are written to History (`{app_data}/recordings/`) and are subject to your recording-retention setting; compressed `.opus` recordings are also included in full backups. A mis-spoken or sensitive take is no longer thrown away — **delete the History entry** to remove both the text and the audio, or switch the setting to "Discard recording". (As before, a take that is both very short *and* empty is dropped without a row.)
+  - If your transcription engine is a **remote API** (API Transcription / OpenRouter), a cancelled take is still uploaded to that endpoint — cancelling no longer prevents the upload.
+  - If the take was started with the **post-processing** shortcut, LLM post-processing still runs on it, so it still costs that provider's tokens.
+  - The **"Paste last transcription"** shortcut is deliberately *not* updated by a silent finish, so it keeps re-pasting your last real delivery. (After an app restart it falls back to reading History, where a silently-finished take can surface — as can the tray's "Copy last transcript".)
+  - One deliberate exception: if the app's internal transcription coordinator is not reachable (it has crashed), cancelling falls back to the old discard behavior rather than risk leaving the microphone running with nothing able to stop it.
+
+### Fixed
+
+- **A cancelled take no longer poisons "Paste last transcription".** Cancelling while a transcription was already running still recorded that transcript as the "last delivered" one, so the manual re-paste shortcut would paste text that had never been delivered. The buffer is now only updated when a take is actually delivered.
+
 ## [0.62.0] - 2026-08-01
 
 ### Changed

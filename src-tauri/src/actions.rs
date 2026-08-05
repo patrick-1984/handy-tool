@@ -198,6 +198,69 @@ pub(crate) fn take_generation_current(snapshot: u64) -> bool {
     TAKE_GEN.load(Ordering::SeqCst) == snapshot
 }
 
+/// Take-scoped "deliver nothing" marker for `CancelBehavior::FinishSilently`
+/// (Escape → finish the take, keep the transcript, deliver nothing).
+///
+/// THREAD DISCIPLINE — asymmetric, and that asymmetry is load-bearing:
+///
+/// * ARM may happen from ANY thread. `cancel_current_operation` arms it
+///   synchronously on the caller's thread BEFORE queueing the coordinator
+///   command, because the take that must be suppressed is not necessarily the
+///   one the coordinator is about to see: a normal finishing `Input` (a
+///   Transcribe press, a PTT release) can already be queued AHEAD of us, and
+///   the coordinator will run that first. Arming pre-emptively means whichever
+///   `stop()` runs next consumes the marker and finishes silently. Arming is
+///   also the FAIL-CLOSED direction — a spurious arm suppresses a delivery,
+///   never causes one.
+/// * CLEAR/CONSUME happen ONLY on the coordinator thread (`take_silent_take()`
+///   inside `TranscribeAction::stop`, `clear_silent_take()` in `start()`).
+///   Clearing from another thread would race the consume: a second Escape
+///   landing while `TranscribeAction::stop` runs its multi-millisecond
+///   synchronous prologue could un-arm the marker and let the very take the
+///   user cancelled paste, submit and jump after all.
+///
+///   ONE documented exception: `cancel_current_operation` clears on its own
+///   thread when `notify_finish_silently()` reports the send FAILED. That is
+///   race-free rather than a violation — `Sender::send` only errs once the
+///   receiver has been dropped, which means the coordinator thread is gone and
+///   cannot be inside `stop()` consuming anything. The clear is what keeps the
+///   marker from stranding when we fall back to the discard teardown.
+///
+/// This marker — NOT the `TAKE_GEN` bump — is what suppresses a silent finish.
+/// A generation bump only invalidates snapshots taken BEFORE it, so it cannot
+/// suppress a take that snapshots AFTERWARDS (see the "finding 7(a)" comment at
+/// the `snapshot_take_generation()` call in `TranscribeAction::stop`: a
+/// post-bump snapshot absorbs the cancel). The bump remains the mechanism for a
+/// take that is ALREADY past that snapshot, so the two are complementary.
+///
+/// It is a plain flag rather than a generation because `TAKE_GEN` counts
+/// CANCELS, not takes: two consecutive silent finishes share a generation, so
+/// keying on one could not tell them apart.
+static SILENT_TAKE: AtomicBool = AtomicBool::new(false);
+
+/// Mark the next take-stop as "deliver nothing". Callable from ANY thread —
+/// arming is the fail-closed direction (see the [`SILENT_TAKE`] doc).
+pub(crate) fn arm_silent_take() {
+    SILENT_TAKE.store(true, Ordering::SeqCst);
+}
+
+/// CONSUME the silent marker: returns whether this take must deliver nothing,
+/// and disarms it in the same atomic step so it can never leak into a later
+/// take. Called once per take, synchronously, at the same stop()-time point
+/// `delivery_intent`/`post_take_action`/`submit_override` are captured.
+pub(crate) fn take_silent_take() -> bool {
+    SILENT_TAKE.swap(false, Ordering::SeqCst)
+}
+
+/// Belt-and-braces disarm at take START. If an arm ever failed to reach its
+/// consume, the stranded flag would silently swallow a LATER take's paste —
+/// the one catastrophic failure mode of this mechanism. Clearing here bounds
+/// any such leak to "never affects a take that has begun".
+/// Coordinator thread only (see the [`SILENT_TAKE`] doc).
+pub(crate) fn clear_silent_take() {
+    SILENT_TAKE.store(false, Ordering::SeqCst);
+}
+
 /// The most recent transcript handed to a delivery this session, set
 /// SYNCHRONOUSLY at delivery time. The "Paste Last Transcription" shortcut
 /// prefers this over `history.get_latest_entry()` to avoid a race: history is
@@ -273,6 +336,53 @@ mod take_generation_tests {
     }
 }
 
+#[cfg(test)]
+mod silent_take_tests {
+    use super::*;
+
+    /// `SILENT_TAKE` is process-global and cargo runs `#[test]`s in parallel,
+    /// so — exactly like `take_generation_tests` above — everything touching it
+    /// lives in ONE sequential body.
+    #[test]
+    fn silent_take_marker_semantics() {
+        // Baseline: nothing armed means a normal take delivers.
+        clear_silent_take();
+        assert!(!take_silent_take(), "an unarmed take must deliver normally");
+
+        // Arm → the very next take is silent.
+        arm_silent_take();
+        assert!(take_silent_take(), "an armed take must be marked silent");
+
+        // ...and the consume DISARMED it in the same step. This is the whole
+        // safety property: a leaked marker would silently swallow a LATER
+        // take's paste, which reads as "Handy stopped pasting" with no error.
+        assert!(
+            !take_silent_take(),
+            "consuming the marker must disarm it — a silent take must never leak into the next take"
+        );
+
+        // Arming twice (e.g. two Escapes before the stop lands) is idempotent,
+        // and still consumes exactly once.
+        arm_silent_take();
+        arm_silent_take();
+        assert!(take_silent_take());
+        assert!(
+            !take_silent_take(),
+            "a double arm must not survive one consume"
+        );
+
+        // The take-START disarm bounds any hypothetical leak: an armed marker
+        // that never reached its consume is cleared before the next recording
+        // can be finished.
+        arm_silent_take();
+        clear_silent_take();
+        assert!(
+            !take_silent_take(),
+            "clear_silent_take must drop a stranded marker so the next take delivers"
+        );
+    }
+}
+
 /// A failed paste must never silently swallow the take: park the text on the
 /// clipboard (best effort) and tell the user via a global toast. The text is
 /// also in History, but the toast is what stops the "where did my words go"
@@ -315,7 +425,21 @@ fn deliver_core(
                 debug!("Take cancelled during paste — skipping deferred on-finish action");
             }
         }
-        Err(e) => report_paste_failure(ah, &park_text, &e),
+        Err(e) => {
+            // Only rescue the text onto the clipboard if this take is still
+            // meant to be delivered. A Cancel can land DURING the paste (the
+            // check above has already passed by then), and parking would
+            // otherwise write the cancelled transcript to the user's clipboard
+            // — the one visible side effect a cancel is supposed to prevent.
+            // Losing the parked copy is acceptable here: the take is in
+            // History either way, and the user asked for it not to be
+            // delivered.
+            if take_generation_current(take_gen) {
+                report_paste_failure(ah, &park_text, &e);
+            } else {
+                debug!("Paste failed after the take was cancelled — not parking the text: {e}");
+            }
+        }
     }
 }
 
@@ -336,23 +460,41 @@ fn dispatch_delivery(
     submit_override: Option<crate::clipboard::SubmitOverride>,
     take_gen: u64,
     post_take_action: Option<(crate::anchor::PostTakeAction, usize, Option<u64>, bool)>,
+    silent: bool,
 ) {
+    // ONE predicate for "does this take deliver at all", so every present and
+    // future delivery side effect is gated by a single expression rather than
+    // drifting between two suppressors:
+    //   * `silent`  — CancelBehavior::FinishSilently: the user cancelled but
+    //     asked to keep the transcript. History has already been saved by the
+    //     caller; nothing may reach the focused window or the clipboard.
+    //   * take generation — a Cancel that landed mid-pipeline (the pre-existing
+    //     T-101 mechanism). `deliver_core` re-checks it too, since the paste can
+    //     be dispatched long before it runs.
+    let deliver = !silent && take_generation_current(take_gen);
     // Record synchronously (before dispatching the paste) so the "Paste Last
     // Transcription" shortcut always re-pastes THIS take, never a stale one,
-    // regardless of when the async history save lands.
-    set_last_transcription(&text);
+    // regardless of when the async history save lands. Skipped when nothing is
+    // delivered: a take that was never handed to a delivery must not become the
+    // "last delivered transcript" (this also stops a cancelled take from
+    // poisoning the buffer, which it previously did).
+    if deliver {
+        set_last_transcription(&text);
+    }
     #[cfg(windows)]
     {
         std::thread::spawn(move || {
-            deliver_core(
-                &ah,
-                text,
-                is_ptt,
-                delivery_intent,
-                submit_override,
-                take_gen,
-                post_take_action,
-            );
+            if deliver {
+                deliver_core(
+                    &ah,
+                    text,
+                    is_ptt,
+                    delivery_intent,
+                    submit_override,
+                    take_gen,
+                    post_take_action,
+                );
+            }
             // UI cleanup must run on the main thread: `change_tray_icon` reads
             // the window theme via a synchronous Wry window getter, which
             // deadlocks if called off the main loop (the 0.52.1 class). The
@@ -371,23 +513,27 @@ fn dispatch_delivery(
         let ah_fb = ah.clone();
         let park = text.clone();
         ah.run_on_main_thread(move || {
-            deliver_core(
-                &ah_main,
-                text,
-                is_ptt,
-                delivery_intent,
-                submit_override,
-                take_gen,
-                post_take_action,
-            );
+            if deliver {
+                deliver_core(
+                    &ah_main,
+                    text,
+                    is_ptt,
+                    delivery_intent,
+                    submit_override,
+                    take_gen,
+                    post_take_action,
+                );
+            }
             utils::hide_recording_overlay(&ah_main);
             change_tray_icon(&ah_main, TrayIconState::Idle);
         })
         .unwrap_or_else(|e| {
-            // The paste never ran — park the text so it isn't lost, unless a
-            // Cancel landed for this take (a cancelled take must not surface
-            // its text even via this fallback).
-            if take_generation_current(take_gen) {
+            // The paste never ran — park the text so it isn't lost, unless this
+            // take must not deliver: a cancelled take (generation bumped) or a
+            // silent finish must not surface its text even via this fallback.
+            // For a silent finish that is the difference between "no clipboard
+            // engagement at all" and quietly overwriting the user's clipboard.
+            if deliver {
                 report_paste_failure(
                     &ah_fb,
                     &park,
@@ -1332,6 +1478,14 @@ impl ShortcutAction for TranscribeAction {
         // the arming mailbox between the coordinator's finishing press and
         // this exact point.
         let submit_override = crate::clipboard::take_submit_override();
+        // Same take-ownership treatment for the "deliver nothing" marker armed
+        // by a CancelBehavior::FinishSilently cancel: CONSUMED here (disarmed in
+        // the same atomic step) and carried by value into the pipeline below, so
+        // it can never leak into a later take.
+        let silent = take_silent_take();
+        if silent {
+            info!("Cancel (finish silently): finishing this take with no delivery");
+        }
 
         tauri::async_runtime::spawn(async move {
             let _guard = FinishGuard(ah.clone());
@@ -1570,6 +1724,7 @@ impl ShortcutAction for TranscribeAction {
                         submit_override,
                         take_gen,
                         post_take_action,
+                        silent,
                     );
                 } else {
                     utils::hide_recording_overlay(&ah);
@@ -1795,6 +1950,7 @@ impl ShortcutAction for TranscribeAction {
                                 submit_override,
                                 take_gen,
                                 post_take_action,
+                                silent,
                             );
                         } else {
                             // Transcription returned empty (hallucinations filtered, filler-only, etc.)

@@ -1593,6 +1593,28 @@ pub fn change_experimental_enabled_setting(app: AppHandle, enabled: bool) -> Res
     Ok(())
 }
 
+/// What every cancel affordance (Escape shortcut, tray "Cancel", the in-app
+/// cancel command, `handy --cancel`) does to the take in progress.
+#[tauri::command]
+#[specta::specta]
+pub fn change_cancel_behavior_setting(app: AppHandle, behavior: String) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    settings.cancel_behavior = match behavior.as_str() {
+        "discard_recording" => settings::CancelBehavior::DiscardRecording,
+        "finish_silently" => settings::CancelBehavior::FinishSilently,
+        _ => {
+            log::warn!(
+                "Invalid cancel behavior '{}', defaulting to finish_silently",
+                behavior
+            );
+            settings::CancelBehavior::FinishSilently
+        }
+    };
+    log::info!("Cancel behavior changed to: {:?}", settings.cancel_behavior);
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
 #[tauri::command]
 #[specta::specta]
 pub fn change_transcription_mode_setting(app: AppHandle, mode: String) -> Result<(), String> {

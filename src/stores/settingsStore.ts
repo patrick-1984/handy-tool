@@ -208,6 +208,8 @@ const settingUpdaters: {
   app_language: (value) => commands.changeAppLanguageSetting(value as string),
   experimental_enabled: (value) =>
     commands.changeExperimentalEnabledSetting(value as boolean),
+  cancel_behavior: (value) =>
+    commands.changeCancelBehaviorSetting(value as string),
   transcription_mode: (value) =>
     commands.changeTranscriptionModeSetting(value as string),
   transcription_mode_ptt: (value) =>
