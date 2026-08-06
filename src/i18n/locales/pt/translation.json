@@ -13,7 +13,43 @@
     "postProcessing": "Pós-Processamento",
     "history": "Histórico",
     "debug": "Depuração",
-    "about": "Sobre"
+    "about": "Sobre",
+    "backup": "Cópia de segurança",
+    "currentAudio": "Áudio Atual",
+    "tokenCount": "Contagem de Tokens",
+    "keyboardTyper": "Digitador de Teclado",
+    "jumper": "Saltos",
+    "translator": "Tradutor",
+    "groups": {
+      "tools": "Ferramentas",
+      "config": "Configuração"
+    },
+    "modelTesting": "Teste de Modelos",
+    "resize": "Arraste para redimensionar",
+    "update": {
+      "checking": "Procurando atualizações…",
+      "available": "Handy Tool {{version}} está disponível",
+      "silentOn": "O Handy Tool fechará, atualizará e abrirá novamente.",
+      "silentOff": "Ative atualizações silenciosas para instalá-las automaticamente durante a janela.",
+      "enableSilent": "Ativar atualizações silenciosas",
+      "updateRestart": "Atualizar e reiniciar",
+      "later": "Mais tarde",
+      "updateNow": "Atualizar agora",
+      "downloading": "Baixando Handy Tool {{version}}…",
+      "percent": "{{percent}}%",
+      "ready": "A atualização {{version}} está pronta",
+      "waitingForIdle": "Aguardando o fim do ditado…",
+      "readyDetail": "O Handy Tool reiniciará para concluir a atualização.",
+      "waiting": "Aguardando…",
+      "restartInstall": "Reiniciar e instalar",
+      "installing": "Instalando atualização…",
+      "installingDetail": "O Handy Tool fechará e abrirá novamente.",
+      "failed": "Falha na atualização",
+      "failedDetail": "O Handy Tool não foi alterado. {{reason}}",
+      "unknownError": "Erro desconhecido",
+      "tryAgain": "Tentar novamente",
+      "downloadInstaller": "Baixar instalador"
+    }
   },
   "onboarding": {
     "subtitle": "Para começar, escolha um modelo de transcrição",
@@ -133,7 +169,11 @@
   "settings": {
     "modelSettings": {
       "title": "Configurações de {{model}}",
-      "noSettingsNeeded": "Este modelo funciona automaticamente sem necessidade de configuração."
+      "noSettingsNeeded": "Este modelo funciona automaticamente sem necessidade de configuração.",
+      "autoDetectLanguage": {
+        "description": "Este modelo detecta automaticamente o idioma falado e não pode ser fixado em um idioma específico. Para forçar um idioma, mude para um modelo Whisper, SenseVoice, FLM ou API.",
+        "value": "Detecção automática"
+      }
     },
     "general": {
       "title": "Geral",
@@ -147,26 +187,79 @@
         "bindings": {
           "transcribe": {
             "name": "Atalho de Transcrição",
-            "description": "O atalho de teclado para gravar e transcrever sua voz."
+            "description": "Pressione uma vez para iniciar a gravação e novamente para finalizar; a transcrição é entregue na janela que estava em foco. Padrão: Ctrl+Space. Segue o Modo de Transcrição e o Método de Colar da página Avançado — para gravar mantendo pressionado, use o Atalho de Pressionar para Falar."
           },
           "cancel": {
             "name": "Atalho de Cancelar",
-            "description": "O atalho de teclado para cancelar a gravação atual."
+            "description": "Cancela a gravação em andamento. Padrão: escape. O que cancelar realmente faz é decidido por Comportamento ao cancelar, na página Geral — Finalizar, salvar apenas no histórico ainda transcreve e armazena o texto, mas não entrega nada à sua janela, enquanto Descartar gravação joga o áudio fora — e o item Cancelar da bandeja segue a mesma configuração."
           },
           "transcribe_with_post_process": {
             "name": "Tecla de Pós-Processamento",
             "description": "Opcional: Uma tecla de atalho dedicada que sempre aplica pós-processamento com IA à sua transcrição."
+          },
+          "transcribe_ptt": {
+            "name": "Atalho de Pressionar para Falar",
+            "description": "Mantenha este atalho pressionado para gravar e solte para parar; o microfone desliga ao soltar, então qualquer coisa que você diga depois não pode vazar para o texto. Padrão: Ctrl+Alt+Space. Tem seu próprio Modo de Transcrição (PTT) e seu próprio Método de Colar (PTT), então pressionar-para-falar pode se comportar diferente do Atalho de Transcrição."
+          },
+          "type_text": {
+            "name": "Atalho de Digitar Texto",
+            "description": "Digita o que estiver na caixa do Digitador de Teclado na janela que estiver em foco; pressione novamente, ou Escape, para cancelar. Padrão: ctrl+alt+t. Começa depois de cerca de um segundo, em vez de esperar o Atraso inicial, porque pressionar um atalho significa que você já está na janela de destino — o botão Ir é o que usa a contagem regressiva completa."
+          },
+          "transcribe_and_submit": {
+            "name": "Atalho de Transcrever e Enviar",
+            "description": "Finaliza a gravação, cola a transcrição e depois pressiona a tecla de envio. Funciona mesmo que a gravação tenha sido iniciada com outro atalho."
+          },
+          "anchor_set": {
+            "name": "Definir Âncora",
+            "description": "Captura o campo de texto atualmente em foco como o destino Ativo 1. Padrão: ctrl+alt+k. Por si só não entrega nada — defina 'Ação do slot de salto ao finalizar' como 'Saltar / entregar no slot' com o slot definido para Ativo 1 (Avançado → Transcrição) para fazer sua próxima transcrição chegar lá. Caixas de senha e as próprias janelas do Handy Tool são recusadas."
+          },
+          "anchor_jump": {
+            "name": "Saltar para a Âncora",
+            "description": "Traz de volta ao foco a janela e o campo do Ativo 1 e não cola nada — uma tecla de 'voltar ao meu rascunho'. Padrão: ctrl+alt+j. Se 'Salvar posição do mouse' estiver ativado para este slot, o ponteiro também volta; nada acontece se o slot estiver vazio ou sua janela tiver sido fechada."
+          },
+          "jump_set_slot_1": {
+            "name": "Definir Slot de Salto 1",
+            "description": "Memoriza o campo atualmente em foco como slot estático 1, substituindo o que ele continha. Padrão: ctrl+alt+shift+1. O slot é apenas um marcador até que algo o use — salte até ele com 'Saltar para o Slot 1', ou aponte a 'Ação do slot de salto ao finalizar' de um fluxo (Avançado → Transcrição) para o Slot 1 para que as transcrições sejam entregues lá."
+          },
+          "jump_set_slot_2": {
+            "name": "Definir Slot de Salto 2",
+            "description": "Memoriza o campo atualmente em foco como slot estático 2, substituindo o que ele continha. Padrão: ctrl+alt+shift+2. Salte de volta com 'Saltar para o Slot 2', ou aponte a 'Ação do slot de salto ao finalizar' de um fluxo (Avançado → Transcrição) para o Slot 2 para que as transcrições sejam entregues lá."
+          },
+          "jump_set_slot_3": {
+            "name": "Definir Slot de Salto 3",
+            "description": "Memoriza o campo atualmente em foco como slot estático 3, substituindo o que ele continha. Padrão: ctrl+alt+shift+3. Salte de volta com 'Saltar para o Slot 3', ou aponte a 'Ação do slot de salto ao finalizar' de um fluxo (Avançado → Transcrição) para o Slot 3 para que as transcrições sejam entregues lá."
+          },
+          "jump_set_slot_4": {
+            "name": "Definir Slot de Salto 4",
+            "description": "Memoriza o campo atualmente em foco como slot estático 4, substituindo o que ele continha. Padrão: ctrl+alt+shift+4. Salte de volta com 'Saltar para o Slot 4', ou aponte a 'Ação do slot de salto ao finalizar' de um fluxo (Avançado → Transcrição) para o Slot 4 para que as transcrições sejam entregues lá."
+          },
+          "jump_slot_1": {
+            "name": "Saltar para o Slot 1",
+            "description": "Traz para o foco a janela e o campo do slot estático 1 e não entrega nada — navegação pura. Padrão: ctrl+alt+1. Se 'Salvar posição do mouse' estiver ativado para este slot, o ponteiro também é restaurado; nada acontece se o slot estiver vazio ou sua janela tiver sido fechada."
+          },
+          "jump_slot_2": {
+            "name": "Saltar para o Slot 2",
+            "description": "Traz para o foco a janela e o campo do slot estático 2 e não entrega nada — navegação pura. Padrão: ctrl+alt+2. Se 'Salvar posição do mouse' estiver ativado para este slot, o ponteiro também é restaurado; nada acontece se o slot estiver vazio ou sua janela tiver sido fechada."
+          },
+          "jump_slot_3": {
+            "name": "Saltar para o Slot 3",
+            "description": "Traz para o foco a janela e o campo do slot estático 3 e não entrega nada — navegação pura. Padrão: ctrl+alt+3. Se 'Salvar posição do mouse' estiver ativado para este slot, o ponteiro também é restaurado; nada acontece se o slot estiver vazio ou sua janela tiver sido fechada."
+          },
+          "jump_slot_4": {
+            "name": "Saltar para o Slot 4",
+            "description": "Traz para o foco a janela e o campo do slot estático 4 e não entrega nada — navegação pura. Padrão: ctrl+alt+4. Se 'Salvar posição do mouse' estiver ativado para este slot, o ponteiro também é restaurado; nada acontece se o slot estiver vazio ou sua janela tiver sido fechada."
           }
         },
         "errors": {
           "restore": "Falha ao restaurar atalho original",
           "set": "Falha ao definir atalho: {{error}}",
-          "reset": "Falha ao redefinir atalho para o valor original"
+          "reset": "Falha ao redefinir atalho para o valor original",
+          "registrationFailed": "Alguns atalhos não puderam ser registrados e estão inativos: {{bindings}}. Outro aplicativo pode já estar usando-os — escolha uma combinação diferente em Configurações."
         }
       },
       "language": {
         "title": "Idioma",
-        "description": "Selecione o idioma para reconhecimento de fala. Auto detectará automaticamente o idioma, enquanto selecionar um idioma específico pode melhorar a precisão para esse idioma.",
+        "description": "Informa ao motor qual idioma você está falando; definir o idioma costuma ser mais preciso do que Auto e evita que gravações curtas sejam detectadas no idioma errado. Padrão: Auto. Aplica-se ao modelo indicado no título deste cartão, e com Traduzir para Inglês ativado ele indica o idioma que você fala, não o idioma que você recebe de volta.",
         "descriptionUnsupported": "O modelo Parakeet detecta automaticamente o idioma. Não é necessária seleção manual.",
         "searchPlaceholder": "Buscar idiomas...",
         "noResults": "Nenhum idioma encontrado",
@@ -184,34 +277,128 @@
         },
         "jumperPasteDelay": {
           "title": "Paste delay after jump (Windows)",
-          "description": "Extra wait after a jump activates the target window and before the paste keystroke fires. A freshly activated window — especially an RDP/Citrix session — may still be transitioning when Ctrl+V lands, so the paste is swallowed and nothing appears. Set a longer wait for Remote desktop targets (matched on the Jumper page) and a shorter one for Local apps. Shared by both Transcribe and Transcribe & Submit; only applies after a real jump — when you're already in the target, paste stays instant.",
+          "description": "Espera extra depois que um salto traz a janela de destino para a frente e antes que a tecla de colar seja enviada, porque uma janela ativada há pouco ainda pode engolir teclas. Padrões: Local apps 250 ms, Remote desktop 1 s — qual coluna se aplica é decidido por Remote match strings na página Saltos. Só ocorre em um salto real; quando você já está no destino, colar permanece instantâneo, e os dois menus são compartilhados por Transcrever e Transcrever e Enviar.",
           "options": {
             "none": "Off (instant)"
           }
         },
         "jumperSubmitDelay": {
           "title": "Submit delay after jump (Windows)",
-          "description": "Extra wait before pressing the submit key (Enter) after a jump. A freshly activated window — especially RDP/Citrix — may still be applying the pasted text when Enter fires, so the submit is missed. Set a longer wait for Remote desktop targets and a shorter one for Local apps. Only applies after a real jump; when you're already in the target, submit stays instant.",
+          "description": "Espera extra entre colar e pressionar a tecla de envio quando a entrega precisou saltar, porque a janela recém-ativada ainda pode estar processando o texto colado e perder o Enter. Padrões: Local apps 250 ms, Remote desktop 500 ms — Remote match strings, na página Saltos, decide qual se aplica. Só ocorre depois de um salto real; se você já estava no destino, o envio permanece instantâneo.",
           "options": {
             "none": "Off (instant)"
           }
+        },
+        "title": "Transcrever e Enviar",
+        "pasteMethod": {
+          "title": "Método de colar",
+          "description": "A tecla de colar usada apenas pelo Atalho de Transcrever e Enviar, para que o único aplicativo em que você dita-e-envia possa se comportar diferente de todo o resto. Padrão: Área de Transferência (Ctrl+V). Substitui o Método de Colar para este fluxo — defina como Área de Transferência (Shift+Insert) se a caixa de mensagem daquele aplicativo ignorar Ctrl+V."
+        },
+        "submitKey": {
+          "title": "Tecla de envio",
+          "description": "A tecla pressionada imediatamente depois que este fluxo cola, para de fato enviar a mensagem ou executar o comando. Padrão: Enter. Este fluxo sempre envia — o Envio automático não se aplica a ele — então escolha Ctrl+Enter ou Super+Enter para aplicativos em que o Enter simples só insere uma nova linha."
+        },
+        "idleBehavior": {
+          "title": "Quando nenhuma gravação está ativa",
+          "description": "O que acontece quando você pressiona o Atalho de Transcrever e Enviar enquanto nada está sendo gravado. Padrão: Iniciar uma gravação, então uma pressão inicia e a próxima cola e envia. Escolha Não fazer nada para tornar esta tecla um finalizador puro: você inicia as gravações com o Atalho de Transcrição e pressiona esta apenas quando quiser que o resultado seja colado e enviado.",
+          "options": {
+            "startNormal": "Iniciar uma gravação",
+            "doNothing": "Não fazer nada"
+          }
+        },
+        "clipboard": {
+          "title": "Área de Transferência",
+          "description": "A política de área de transferência própria deste fluxo, independente de Manipulação da Área de Transferência: restaura sua área de transferência atual depois de colar, ou deixa a transcrição enviada nela de propósito. Padrão: Não Modificar Área de Transferência. Útil quando o ditado normal deve deixar sua área de transferência intacta, mas você quer uma cópia de tudo que enviou — ou o contrário."
         }
       },
       "pasteLast": {
         "title": "Paste last transcription",
         "pasteMethod": {
           "title": "Paste method",
-          "description": "How the last transcription is pasted into the focused window when you press the shortcut. Use Shift+Insert or another method if Ctrl+V doesn't work in the target app."
+          "description": "Como o atalho Paste last transcription coloca o texto na janela em foco. É independente do Método de Colar da página Avançado, então você pode ajustá-lo para aquele destino específico e difícil. Padrão: Área de Transferência (Ctrl+V) — tente Área de Transferência (Shift+Insert) em um terminal, Direto para digitar os caracteres em vez de colar, ou Nenhum para apenas colocar o texto na área de transferência e colá-lo manualmente."
         },
         "clipboard": {
           "title": "Clipboard",
-          "description": "Keep your existing clipboard after pasting, or leave the transcription on the clipboard."
+          "description": "Se colar novamente restaura sua área de transferência anterior depois, ou deixa a transcrição nela de propósito. Padrão: Não Modificar Área de Transferência, que copia o texto, cola, e depois restaura o que você tinha. Escolha Copiar para Área de Transferência para manter as palavras disponíveis após colar novamente; de qualquer forma, apenas o texto da área de transferência é salvo e restaurado, então uma imagem ou arquivo copiado se perde."
         }
+      },
+      "anchor": {
+        "title": "Ancorar e Entregar",
+        "deliveryFailed": "Falha na entrega ancorada: {{reason}}. Seu texto está na área de transferência e a âncora foi mantida.",
+        "status": {
+          "title": "Âncora atual",
+          "description": "Mostra para onde este slot ativo aponta atualmente, com Testar (salta até lá sem entregar nada) e Limpar; um selo 'Remote ✓' indica que o destino correspondeu às suas Remote match strings. Padrão: Nenhuma âncora definida — clique em um campo de texto e pressione o atalho Definir Âncora deste slot para armá-lo. Uma âncora nunca é consumida por uma entrega: ela permanece até você limpá-la ou sua janela ser fechada.",
+          "active": "Ancorado: {{app}} ({{control}})",
+          "none": "Nenhuma âncora definida",
+          "clear": "Limpar"
+        },
+        "keep": {
+          "label": "Manter âncora após a entrega",
+          "description": "Deixa a âncora armada após uma entrega bem-sucedida em vez de limpá-la, para ditado repetido no mesmo campo."
+        },
+        "returnFocus": {
+          "label": "Retornar o foco após a entrega",
+          "description": "Volta para a janela que você estava usando depois que o texto for entregue."
+        },
+        "actions": {
+          "options": {
+            "none": "Não fazer nada",
+            "jump": "Saltar / entregar no slot",
+            "set": "Definir slot para o foco atual",
+            "clear": "Limpar slot"
+          },
+          "idle": {
+            "title": "Ação do slot de salto ao iniciar",
+            "description": "O que este atalho faz adicionalmente com o slot escolhido no menu à esquerda no momento em que você o pressiona para iniciar uma gravação. Padrão: Não fazer nada, por isso o seletor de slot começa desativado. Saltar / entregar no slot leva você àquele campo memorizado antes de falar, Definir slot para o foco atual registra onde você está agora, e Limpar slot o esquece (somente Windows)."
+          },
+          "stop": {
+            "title": "Ação do slot de salto ao finalizar",
+            "description": "O que este atalho faz com o slot escolhido à esquerda quando a gravação termina. Padrão: Não fazer nada. Saltar / entregar no slot envia a transcrição para aquele campo memorizado, em vez de onde você tenha se distraído, para que você possa ler outra coisa enquanto dita; Definir slot para o foco atual e Limpar slot só são executados depois que o texto tiver sido entregue, e Só saltar ao finalizar se iniciado da mesma forma, na página Saltos, pode restringir quando um salto é permitido (somente Windows)."
+          }
+        }
+      },
+      "transcribeGroup": {
+        "title": "Transcrever"
+      },
+      "cancelBehavior": {
+        "title": "Comportamento ao cancelar",
+        "description": "Decide o que cancelar faz com a gravação em andamento — isso cobre o Atalho de Cancelar, o item \"Cancelar\" da bandeja e 'handy --cancel'. Padrão: \"Finalizar, salvar apenas no histórico\", que para e transcreve a gravação, mantém-na no Histórico junto com o áudio, e depois não entrega nada: sem colar, sem alteração na área de transferência, sem tecla de envio e sem salto. Escolha \"Descartar gravação\" se preferir que uma gravação cancelada seja descartada sem ser transcrita ou armazenada.",
+        "options": {
+          "finishSilently": "Finalizar, salvar apenas no histórico",
+          "discardRecording": "Descartar gravação"
+        }
+      },
+      "updates": {
+        "title": "Atualizações",
+        "checks": {
+          "label": "Procurar atualizações automaticamente",
+          "description": "Verificar uma vez por dia as versões públicas no GitHub."
+        },
+        "silent": {
+          "label": "Instalar atualizações silenciosamente",
+          "description": "Fechar, atualizar e abrir novamente na janela permitida. Desativado por padrão."
+        },
+        "time": {
+          "label": "Hora da atualização silenciosa",
+          "description": "Centro da janela permitida no horário local.",
+          "window": "Das {{start}} às {{end}}, hora local."
+        },
+        "jitter": {
+          "label": "Variação diária",
+          "description": "Escolher todos os dias outro horário dentro deste número de minutos.",
+          "minutes": "minutos"
+        },
+        "checkNow": "Verificar agora",
+        "checking": "Verificando…",
+        "upToDate": "O Handy Tool está atualizado.",
+        "lastChecked": "Última verificação: {{value}}",
+        "never": "Nunca",
+        "portableUnsupported": "Cópias portáteis não podem ser atualizadas no local. Baixe a versão portátil mais recente."
       }
     },
     "models": {
       "title": "Modelos de Transcrição",
-      "description": "Selecione um modelo de transcrição ou baixe modelos adicionais. Diferentes modelos oferecem diferentes níveis de precisão e velocidade.",
+      "description": "Escolha qual modelo de fala transcreve o seu ditado — os modelos diferem em precisão, velocidade e quanta memória ocupam enquanto carregados. Padrão: nada selecionado em uma instalação nova; a integração inicial baixa e seleciona seu primeiro modelo. Sua escolha também decide se Idioma e Traduzir para Inglês são oferecidos na página Geral, e o Tradutor usa esse mesmo modelo sempre que seu Modelo do lote for deixado em \"Mesmo do ditado (padrão)\".",
       "downloaded": "Baixados",
       "available": "Disponíveis para Download",
       "deleteConfirm": "Tem certeza de que deseja excluir {{modelName}}? Você precisará baixá-lo novamente para usá-lo.",
@@ -231,23 +418,23 @@
       "title": "Som",
       "microphone": {
         "title": "Microfone",
-        "description": "Selecione seu dispositivo de microfone preferido",
+        "description": "O dispositivo de entrada do qual o Handy grava. Tem efeito na sua próxima gravação, sem precisar reiniciar. Padrão: o dispositivo padrão do sistema — defina explicitamente quando alternar entre um fone de ouvido e o microfone embutido, e use o botão de redefinir para voltar à escolha do sistema.",
         "placeholder": "Selecionar microfone...",
         "loading": "Carregando..."
       },
       "audioFeedback": {
         "label": "Feedback de Áudio",
-        "description": "Reproduzir som quando a gravação iniciar e parar"
+        "description": "Reproduz um sinal curto quando a gravação começa e outro diferente quando ela termina, para que você saiba que o microfone está ativo sem olhar para a tela. Padrão: Desligado. Ativar habilita Dispositivo de Saída e Volume abaixo; os dois sons de sinal podem ser trocados pelos seus próprios arquivos em Tema de Som, na página Depuração."
       },
       "outputDevice": {
         "title": "Dispositivo de Saída",
-        "description": "Selecione seu dispositivo de saída de áudio preferido para sons de feedback",
+        "description": "Onde os sinais de início e parada são reproduzidos — não afeta qual microfone grava nem para onde outros aplicativos enviam o áudio. Padrão: o dispositivo padrão do sistema. Aponte para o seu fone de ouvido para que os sinais não saiam pelas caixas de som; o controle permanece desativado até que o Feedback de Áudio esteja ligado.",
         "placeholder": "Selecionar dispositivo de saída...",
         "loading": "Carregando..."
       },
       "volume": {
         "title": "Volume",
-        "description": "Ajustar o volume dos sons de feedback de áudio"
+        "description": "O quão altos são os sinais de início e parada, de 0 a 100 por cento. Padrão: 100%. Diminua se os sinais forem assustadores em um fone de ouvido; isso altera apenas os sons de sinal do próprio Handy, e permanece desativado até que o Feedback de Áudio esteja ligado."
       }
     },
     "advanced": {
@@ -257,27 +444,27 @@
         "output": "Saída",
         "transcription": "Transcrição",
         "history": "Histórico",
-        "experimental": "Experimental"
-      },
-      "experimentalToggle": {
-        "label": "Recursos Experimentais",
-        "description": "Ativar recursos experimentais que ainda estão em desenvolvimento."
+        "postProcessing": "Pós-Processamento",
+        "keyboardTyper": "Digitador de Teclado",
+        "tokenCountProviders": "Provedores de Contagem de Tokens",
+        "llmProviders": "Provedores de LLM Registrados",
+        "mcp": "MCP e CLI"
       },
       "startHidden": {
         "label": "Iniciar Oculto",
-        "description": "Iniciar na bandeja do sistema sem abrir a janela."
+        "description": "Inicia o Handy Tool sem nenhuma janela na tela — ele vai direto para a bandeja do sistema e o ditado funciona imediatamente. Padrão: Desligado. Combine com Iniciar na Inicialização para que o aplicativo esteja pronto no login sem nenhuma janela aparecer, e deixe Mostrar ícone na bandeja ligado, porque a bandeja passa a ser sua única forma de abrir a janela."
       },
       "autostart": {
         "label": "Iniciar na Inicialização",
-        "description": "Iniciar automaticamente o Handy quando você fizer login no seu computador."
+        "description": "Registra o Handy Tool para iniciar automaticamente quando você entra no Windows. Padrão: Desligado. Combine com Iniciar Oculto para que ele apareça discretamente na bandeja em vez de abrir sua janela."
       },
       "showTrayIcon": {
         "label": "Mostrar ícone na bandeja",
-        "description": "Exibir o ícone do Handy na bandeja do sistema."
+        "description": "Mostra o ícone do Handy Tool na bandeja do sistema, onde ele também sinaliza inatividade, gravação e transcrição, e oferece um menu para configurações, a última transcrição e para sair. Padrão: Ligado. Cuidado: com ele desligado, fechar a janela principal encerra o aplicativo em vez de ocultá-lo — e se Iniciar Oculto também estiver ligado, não há nada na tela para clicar."
       },
       "overlay": {
         "title": "Posição da Sobreposição",
-        "description": "Exibir sobreposição de feedback visual durante gravação e transcrição. No Linux, 'Nenhum' é recomendado.",
+        "description": "Mostra uma pequena sobreposição enquanto você dita, para que você veja que o Handy Tool está ouvindo e depois transcrevendo, posicionada na parte inferior ou superior da tela. Padrão: Inferior. Escolha Nenhum para desligá-la quando ela cobrir algo que você precisa ou incomodar um aplicativo em tela cheia.",
         "options": {
           "none": "Nenhum",
           "bottom": "Inferior",
@@ -286,7 +473,7 @@
       },
       "pasteMethod": {
         "title": "Método de Colar",
-        "description": "Escolha como o texto é inserido. Direto: simula digitação via entrada do sistema. Nenhum: ignora colar, apenas atualiza histórico/área de transferência.",
+        "description": "Escolhe a tecla que o ditado comum usa para entregar o texto na janela em foco; Direto digita os caracteres em vez de colar, e Nenhum não envia nada. Padrão: Área de Transferência (Ctrl+V). Exemplo: um terminal ou visualizador remoto que ignora Ctrl+V geralmente aceita Área de Transferência (Shift+Insert), e Nenhum combinado com Manipulação da Área de Transferência definida como Copiar para Área de Transferência deixa o texto pronto para você colar manualmente. Pressionar para falar ignora esta configuração e usa Método de Colar (PTT).",
         "options": {
           "clipboard": "Área de Transferência ({{modifier}}+V)",
           "clipboardCtrlShiftV": "Área de Transferência (Ctrl+Shift+V)",
@@ -299,14 +486,14 @@
       },
       "typingTool": {
         "title": "Ferramenta de digitação",
-        "description": "Escolha qual ferramenta de digitação do Linux usar para o método de colagem direta. Auto detectará e usará automaticamente a melhor ferramenta disponível para o seu sistema.",
+        "description": "Escolhe qual utilitário de injeção de entrada do Linux dá suporte ao método de colagem Direto. Padrão: Auto (Recomendado), que detecta a melhor ferramenta instalada. Só aparece na versão planejada para Linux e nunca é exibido no Windows.",
         "options": {
           "auto": "Auto (Recomendado)"
         }
       },
       "clipboardHandling": {
         "title": "Manipulação da Área de Transferência",
-        "description": "Não Modificar Área de Transferência preserva o conteúdo atual da área de transferência após a transcrição. Copiar para Área de Transferência deixa o resultado da transcrição na área de transferência após colar.",
+        "description": "Decide o que fica na sua área de transferência depois que um ditado comum cola o texto: Não Modificar Área de Transferência coloca a transcrição lá só o tempo suficiente para colar e depois restaura o texto anterior, enquanto Copiar para Área de Transferência deixa a transcrição lá de propósito. Padrão: Não Modificar Área de Transferência. Limitação honesta: apenas texto é restaurado, então uma imagem ou arquivo copiado se perde — e o Atraso de restauração da área de transferência não tem efeito nenhum, a menos que esta opção esteja definida como Não Modificar Área de Transferência.",
         "options": {
           "dontModify": "Não Modificar Área de Transferência",
           "copyToClipboard": "Copiar para Área de Transferência"
@@ -314,7 +501,7 @@
       },
       "autoSubmit": {
         "title": "Envio automático",
-        "description": "Envia automaticamente a combinação de teclas selecionada após a inserção do texto. Cmd+Enter aplica-se no macOS, enquanto Windows/Linux usam Super+Enter.",
+        "description": "Envia uma tecla de envio cerca de 50 ms depois de cada colagem comum, para que uma mensagem de chat ditada se envie sozinha. Padrão: Desligado. Os aplicativos divergem sobre qual tecla envia, então tente Ctrl+Enter se o Enter simples só adicionar uma nova linha; é ignorado quando o Método de Colar é Nenhum, e não governa o Atalho de Transcrever e Enviar, que sempre envia sua própria Tecla de envio.",
         "options": {
           "off": "Desativado",
           "enter": "Enter",
@@ -325,12 +512,13 @@
       },
       "translateToEnglish": {
         "label": "Traduzir para Inglês",
-        "description": "Traduzir automaticamente fala de outros idiomas para inglês durante a transcrição.",
-        "descriptionUnsupported": "Tradução não é suportada pelo modelo {{model}}."
+        "description": "Pede ao modelo uma saída em inglês em vez de transcrever o que você disse no idioma original. Padrão: Desligado. Deixe Idioma definido no idioma que você realmente fala — esta opção só aparece para modelos que suportam tradução.",
+        "descriptionUnsupported": "Tradução não é suportada pelo modelo {{model}}.",
+        "unsupported": "Não disponível para o modelo de transcrição selecionado."
       },
       "modelUnload": {
         "title": "Descarregar Modelo",
-        "description": "Liberar automaticamente memória GPU/CPU quando o modelo não for usado pelo tempo especificado",
+        "description": "Libera a RAM ou VRAM que o modelo de transcrição está ocupando depois que ele fica esse tempo sem uso; a próxima gravação então paga alguns segundos para recarregá-lo. Padrão: Nunca (manter carregado — início mais rápido), a escolha certa se você dita o dia inteiro. Escolha um tempo limite quando você dita em rajadas e quer a memória de volta entre elas — o motor de lote separado do Tradutor não é coberto aqui, ele é liberado por Descarregar modelo do lote após.",
         "options": {
           "never": "Nunca",
           "immediately": "Imediatamente",
@@ -339,16 +527,229 @@
           "min10": "Após 10 minutos",
           "min15": "Após 15 minutos",
           "hour1": "Após 1 hora",
-          "sec5": "Após 5 segundos (Depuração)"
+          "sec5": "Após 5 segundos (Depuração)",
+          "custom": "Personalizado…"
+        },
+        "units": {
+          "s": "segundos",
+          "m": "minutos",
+          "h": "horas"
         }
       },
       "customWords": {
         "title": "Palavras Personalizadas",
-        "description": "Adicione palavras que são frequentemente mal ouvidas ou mal escritas durante a transcrição. O sistema irá automaticamente corrigir palavras semelhantes para corresponder à sua lista.",
+        "description": "Uma lista de nomes, produtos e termos técnicos que o motor continua errando; depois de cada transcrição, o Handy encontra palavras com som semelhante e as substitui pela sua grafia. Padrão: vazio. Adicione palavras inteiras conforme você as encontra, e se ele começar a corrigir coisas que você não quis dizer, diminua o Limite de Correção de Palavras, na página Depuração.",
         "placeholder": "Adicionar uma palavra",
         "add": "Adicionar",
         "remove": "Remover {{word}}",
         "duplicate": "\"{{word}}\" já existe"
+      },
+      "tokenCountProviders": {
+        "hint": "Provedores para a página Contagem de Tokens. Dica: o modelo apenas seleciona o tokenizador — escolha o menor modelo da família que lhe interessa (por exemplo, qwen3:0.6b conta da mesma forma que qwen3:8b, mas carrega em uma fração do tempo). Os endpoints de contagem da Anthropic e do Gemini são gratuitos; servidores locais são consultados com uma sondagem de 1 token.",
+        "enable": "Habilitar este provedor",
+        "namePlaceholder": "Nome de exibição",
+        "baseUrl": "URL Base",
+        "apiKey": "Chave de API",
+        "apiKeyPlaceholder": "Opcional para servidores locais",
+        "model": "Modelo",
+        "refreshModels": "Carregar lista de modelos do endpoint",
+        "modelsError": "Não foi possível carregar os modelos",
+        "kinds": {
+          "gemini": "Gemini",
+          "anthropic": "Anthropic",
+          "openai_local": "tiktoken (offline)",
+          "openai_compatible": "Compatível com OpenAI"
+        }
+      },
+      "crashResilientRecording": {
+        "label": "Gravação recuperável após falhas",
+        "description": "Codifica sua fala em arquivos Opus compactos no disco enquanto você fala, em vez de manter tudo na memória, então uma falha, uma atualização forçada ou uma bateria descarregada ainda deixam uma gravação — ela é reparada e adicionada ao Histórico na próxima inicialização. Padrão: Ligado. Desligar grava áudio não compactado, que as cópias de segurança Dados completos (com áudio compactado) deliberadamente deixam de fora."
+      },
+      "openRecordingsFolder": {
+        "label": "Pasta de Gravações",
+        "description": "Abre a pasta que contém suas gravações e qualquer áudio recuperado após uma falha (%APPDATA%\\pr.handy\\recordings). Excluir Gravações Automaticamente faz limpeza aqui, mas só toca em arquivos que o próprio Handy criou — suas próprias anotações ou exportações nessa pasta nunca são renomeadas ou excluídas.",
+        "button": "Abrir Pasta"
+      },
+      "appearance": {
+        "title": "Aparência",
+        "description": "Define o tema de cores para todas as janelas do Handy Tool, incluindo a sobreposição de gravação e a janela flutuante de transcrição. Padrão: Sistema, que segue a configuração claro/escuro do Windows e continua acompanhando-a; Claro e Escuro fixam uma paleta e ignoram mudanças posteriores do sistema.",
+        "options": {
+          "system": "Sistema",
+          "light": "Claro",
+          "dark": "Escuro"
+        }
+      },
+      "pasteMethodPtt": {
+        "title": "Método de Colar (PTT)",
+        "description": "A mesma escolha de Método de Colar, mas usada apenas pelo Atalho de Pressionar para Falar, para que o modo de manter pressionado possa entregar de forma diferente da sua tecla de ditado normal. Padrão: Área de Transferência (Ctrl+V). Altere quando o aplicativo em que você usa pressionar-para-falar precisar de uma tecla de colar diferente da do aplicativo em que você dita o dia todo."
+      },
+      "clipboardRestoreDelay": {
+        "title": "Atraso de restauração da área de transferência",
+        "description": "Espera extra antes que o texto anterior da sua área de transferência seja restaurado após colar, somada aos 50 ms embutidos; não faz nada a menos que a configuração de área de transferência deste grupo (Manipulação da Área de Transferência aqui, ou Área de Transferência em Transcrever e Enviar) seja Não Modificar Área de Transferência. Padrão: Desligado (instantâneo). Aumente para cerca de 1 s se uma sessão Citrix ou RDP colar sua área de transferência antiga em vez do que você acabou de dizer — sessões remotas só buscam a área de transferência depois que a tecla de colar chega.",
+        "options": {
+          "none": "Nenhum (imediato)",
+          "ms250": "250 ms",
+          "ms500": "500 ms",
+          "ms1000": "1 segundo",
+          "ms2500": "2,5 segundos",
+          "ms5000": "5 segundos"
+        }
+      },
+      "transcriptionMode": {
+        "title": "Modo de Transcrição",
+        "description": "Tempo real mostra o texto se formando enquanto você ainda está falando; Pós-Gravação grava silenciosamente e transcreve em segundo plano. Padrão: Pós-Gravação. De qualquer forma, o áudio completo recebe uma passagem final quando você para, então o texto entregue é sempre o preciso, e o texto em tempo real é apenas uma pré-visualização — isso governa apenas o Atalho de Transcrição, e modelos de transcrição por API sempre se comportam como Pós-Gravação.",
+        "options": {
+          "live": "Tempo real",
+          "postRecording": "Pós-Gravação"
+        }
+      },
+      "transcriptionModePtt": {
+        "title": "Modo de Transcrição (PTT)",
+        "description": "A mesma escolha entre Tempo real e Pós-Gravação, aplicada apenas ao Atalho de Pressionar para Falar. Padrão: Tempo real — deliberadamente o oposto do Modo de Transcrição, porque as gravações mantidas são curtas e a pré-visualização aparece quase de imediato. O texto entregue ainda vem de uma passagem final sobre toda a gravação.",
+        "options": {
+          "live": "Tempo real",
+          "postRecording": "Pós-Gravação"
+        }
+      },
+      "gpuDevice": {
+        "title": "Dispositivo GPU",
+        "description": "Escolhe em qual adaptador gráfico o Whisper local transcreve, ou força o processamento somente por CPU. Padrão: Automático (Padrão); um adaptador que falha ao iniciar volta para Automático em vez de quebrar a transcrição. Altere para manter uma placa dedicada ocupada livre ou para contornar um driver com problema — tem efeito na próxima vez que o modelo for carregado, e só aparece no Windows enquanto um modelo Whisper estiver selecionado.",
+        "options": {
+          "auto": "Automático (Padrão)",
+          "cpu": "Somente CPU",
+          "device": "{{name}} (dispositivo {{index}})",
+          "deviceWithVram": "{{name}} (dispositivo {{index}}, {{vram}} GB)"
+        }
+      },
+      "apiTranscription": {
+        "title": "Transcrição por API",
+        "cardTitle": "Transcrição por API (compatível com OpenAI)",
+        "url": {
+          "title": "URL da API",
+          "description": "URL base de um servidor de fala compatível com OpenAI, incluindo o prefixo de versão — o Handy adiciona /audio/transcriptions a ela, então http://127.0.0.1:8000/v1 se torna http://127.0.0.1:8000/v1/audio/transcriptions. Padrão: vazio; preencha antes de escolher Transcrição por API (compatível com OpenAI) na página Modelos, ou a gravação falha. Este motor sempre envia a gravação inteira como um único arquivo WAV quando você para, então o Modo de Transcrição não tem efeito sobre ele.",
+          "placeholder": "http://127.0.0.1:8000/v1"
+        },
+        "apiKey": {
+          "title": "Chave da API",
+          "description": "Chave Bearer enviada em cada envio de áudio; deixe em branco para um servidor local que não verifica chave. Padrão: vazio. Ela é armazenada sem criptografia no seu arquivo de configurações e é incluída nas cópias de segurança.",
+          "placeholder": "sk-..."
+        },
+        "model": {
+          "title": "Modelo",
+          "description": "O id do modelo que o seu endpoint espera, enviado literalmente junto com o envio — whisper-1 para a OpenAI, ou o nome que o seu próprio servidor dá ao modelo. Padrão: vazio, o que envia um campo de modelo vazio; defina-o se o seu endpoint exigir um. Quando Idioma está em Auto, este motor envia inglês, então fixe Idioma se você dita em outro idioma.",
+          "placeholder": "whisper-1"
+        }
+      },
+      "tabs": {
+        "app": "Aplicativo",
+        "output": "Saída",
+        "transcription": "Transcrição",
+        "typer": "Digitador",
+        "providers": "Provedores",
+        "mcp": "MCP e CLI",
+        "history": "Histórico",
+        "postProcessing": "Pós-Processamento"
+      },
+      "mcp": {
+        "loading": "Carregando…",
+        "description": "Executa um pequeno servidor local para que o Claude (app e Code) e o comando handy possam usar as próprias ferramentas do Handy: contar tokens, digitar texto na janela em foco, ler o Histórico, executar testes de modelo e editar provedores. Padrão: Desligado; ativá-lo inicia o servidor imediatamente em 127.0.0.1 com a Porta e o Token abaixo, e nunca em uma interface de rede. Ressalva honesta: o token é armazenado em texto simples no seu arquivo de configurações, então qualquer programa em execução como você pode lê-lo e controlar o aplicativo.",
+        "enable": "Habilitar servidor MCP e CLI",
+        "running": "Em execução",
+        "stopped": "Parado",
+        "port": "Porta",
+        "token": "Token",
+        "show": "Mostrar",
+        "hide": "Ocultar",
+        "regenerate": "Regenerar",
+        "claudeApp": "App Claude (HTTP) — adicione um servidor MCP personalizado com esta URL:",
+        "authHeader": "…e este cabeçalho Authorization:",
+        "claudeCodeStdio": "Claude Code (stdio):",
+        "claudeCodeHttp": "Claude Code (HTTP):",
+        "cliTitle": "Companheiro de linha de comando",
+        "cliHint": "Copia o próprio executável do Handy para o seu PATH como handy, para que você possa executar handy model-test, handy token-count ou handy mcp --stdio em qualquer terminal contra o aplicativo em execução. Padrão: não instalado. O comando se comunica com o aplicativo pelo mesmo servidor local, então só funciona enquanto Habilitar servidor MCP e CLI estiver ligado; não está disponível no modo portátil.",
+        "installCli": "Instalar CLI",
+        "reinstallCli": "Reinstalar CLI"
+      },
+      "costReport": {
+        "title": "Relatório de custo de transcrição",
+        "description": "Custo por gravação (USD real do OpenRouter) e duração, resumidos por semana, mês e ano. Baixe o relatório completo — todas as gravações mais os resumos — como CSV.",
+        "download": "Baixar CSV",
+        "recalc": "Recalcular durações",
+        "recordings": "Gravações",
+        "daily": "Últimos 7 dias",
+        "colTimestamp": "Data/hora",
+        "colDuration": "Duração (HH:MM:SS)",
+        "colCost": "Custo (USD)",
+        "colPeriod": "Período",
+        "colCount": "Gravações",
+        "weekly": "Últimas 4 semanas",
+        "monthly": "Últimos 12 meses",
+        "yearly": "Por ano",
+        "total": "Total (todo o período)",
+        "allTime": "Todo o período",
+        "weekOf": "Semana de {{date}}",
+        "totalLine": "{{count}} gravações · {{duration}} · {{cost}}",
+        "empty": "Nenhuma gravação ainda"
+      },
+      "llmProviders": {
+        "hint": "Um único registro de provedores — nome, endpoint, chave, modelo e custo por milhão de tokens — compartilhado pela Contagem de Tokens, pelo Teste de Modelos e pelo Pós-Processamento. Cada slot mantém um id estável (#1, #2, …) que essas telas referenciam, então uma alteração aqui se aplica em todos os lugares; desmarcar Habilitar este provedor remove o slot dos três. Padrão: os três slots locais estão ativos e todo slot na nuvem está desativado até você colar uma chave.",
+        "enable": "Habilitar este provedor",
+        "namePlaceholder": "Nome do provedor",
+        "baseUrl": "URL Base",
+        "apiKey": "Chave de API",
+        "apiKeyPlaceholder": "Cole sua chave de API",
+        "model": "Modelo",
+        "modelPlaceholder": "Id do modelo",
+        "refreshModels": "Atualizar lista de modelos",
+        "modelsError": "Falhou",
+        "cost": "Custo / 1M",
+        "costInput": "entrada $",
+        "costOutput": "saída $",
+        "costAuto": "Reportado automaticamente pelo OpenRouter",
+        "concurrency": "Concorrência",
+        "sequential": "Executar sequencialmente dentro da família",
+        "family": "família",
+        "familyPlaceholder": "por exemplo, flm",
+        "kinds": {
+          "anthropic": "Anthropic",
+          "gemini": "Gemini",
+          "openai_local": "Local (tiktoken)",
+          "openai_compatible": "Compatível com OpenAI",
+          "openrouter": "OpenRouter",
+          "apple_intelligence": "Apple"
+        },
+        "persistPrice": "Persistir",
+        "persistPriceHint": "Mantém este preço mesmo quando o modelo mudar (não preenche automaticamente a partir do OpenRouter)"
+      },
+      "openRouterTranscription": {
+        "cardTitle": "Transcrição OpenRouter",
+        "url": {
+          "title": "URL da API",
+          "description": "A raiz da API do OpenRouter para onde as requisições de fala vão, incluindo /api/v1. Padrão: https://openrouter.ai/api/v1 — deixe como está a menos que você passe por um proxy. O Handy não envia nada enquanto este campo ou a Chave da API estiverem vazios.",
+          "placeholder": "https://openrouter.ai/api/v1"
+        },
+        "apiKey": {
+          "title": "Chave da API",
+          "description": "Sua chave do OpenRouter (openrouter.ai/keys), usada apenas por este motor de fala — é independente de qualquer entrada do OpenRouter em Provedores de LLM Registrados. Padrão: vazio, e sem ela a gravação falha em vez de enviar uma requisição sem autenticação. Ditar com este motor envia seu áudio ao OpenRouter e custa dinheiro por gravação; o valor real é registrado no Histórico e no Relatório de custo de transcrição.",
+          "placeholder": "sk-or-..."
+        },
+        "model": {
+          "title": "Modelo de transcrição",
+          "description": "O id do modelo do OpenRouter, digitado manualmente: ids no estilo openai/whisper-large-v3 para a rota Transcrição, ou um modelo de chat com suporte a áudio, como google/gemini-2.5-flash, para a rota Chat. Padrão: em branco, que recorre a openai/whisper-large-v3. Precisa combinar com Ponto de acesso — uma incompatibilidade normalmente volta como uma transcrição vazia em vez de um erro.",
+          "placeholder": "openai/whisper-large-v3"
+        },
+        "route": {
+          "title": "Ponto de acesso",
+          "description": "Escolhe para qual endpoint do OpenRouter o áudio vai. Transcrição (estilo Whisper) envia para o endpoint de fala dedicado; Modelo de chat (Gemini / GPT-4o-audio) coloca o áudio dentro de uma mensagem de chat, a única forma de modelos que não são de fala aceitarem-no. Padrão: Transcrição (estilo Whisper). Precisa combinar com Modelo de transcrição, e Traduzir para Inglês só é respeitado na rota Chat.",
+          "stt": "Transcrição (estilo Whisper)",
+          "chat": "Modelo de chat (Gemini / GPT-4o-audio)"
+        },
+        "format": {
+          "title": "Formato de áudio",
+          "description": "Como o áudio é codificado antes do envio: Opus é aproximadamente dez vezes menor que WAV, o que importa em um tether ou em uma conexão de hotel. Padrão: Opus — menor (recomendado). Só se aplica quando Ponto de acesso é Modelo de chat (Gemini / GPT-4o-audio); a rota Transcrição (estilo Whisper) sempre envia WAV, porque modelos estilo Whisper rejeitam Opus.",
+          "opus": "Opus — menor (recomendado)",
+          "wav": "WAV — mais compatível"
+        }
       }
     },
     "postProcessing": {
@@ -360,7 +761,8 @@
         "title": "API (Compatível com OpenAI)",
         "provider": {
           "title": "Provedor",
-          "description": "Selecione um provedor compatível com OpenAI."
+          "description": "Selecione um provedor compatível com OpenAI.",
+          "placeholder": "Selecione um provedor registrado"
         },
         "appleIntelligence": {
           "title": "Apple Intelligence",
@@ -387,7 +789,12 @@
           "placeholderWithOptions": "Buscar ou selecionar um modelo",
           "placeholderNoOptions": "Digite o nome de um modelo",
           "refreshModels": "Atualizar modelos"
-        }
+        },
+        "temperature": {
+          "title": "Temperatura",
+          "description": "Valores mais baixos são mais determinísticos e rígidos (0 = mais literal); valores mais altos são mais criativos."
+        },
+        "registryNote": "A chave de API, o modelo e a URL base do provedor são configurados em Avançado → Provedores de LLM Registrados."
       },
       "prompts": {
         "title": "Prompt",
@@ -409,6 +816,10 @@
         "cancel": "Cancelar",
         "selectToEdit": "Selecione um prompt acima para visualizar e editar seus detalhes.",
         "createFirst": "Clique em 'Criar Novo Prompt' acima para criar seu primeiro prompt de pós-processamento."
+      },
+      "disableThinking": {
+        "label": "Desativar Raciocínio",
+        "description": "Envia think: false para o modelo. Acelera as respostas, mas pode reduzir a capacidade de seguir instruções em modelos de raciocínio (por exemplo, Qwen3)."
       }
     },
     "history": {
@@ -420,34 +831,43 @@
       "save": "Salvar transcrição",
       "unsave": "Remover dos salvos",
       "delete": "Excluir entrada",
-      "deleteError": "Falha ao excluir entrada. Por favor, tente novamente."
+      "deleteError": "Falha ao excluir entrada. Por favor, tente novamente.",
+      "loadError": "Falha ao carregar o histórico: {{error}}",
+      "search": {
+        "placeholder": "Buscar no histórico (texto ou regex)...",
+        "clear": "Limpar busca",
+        "matches": "{{matched}} de {{total}}",
+        "regexBadge": ".*",
+        "regexActive": "A consulta está sendo tratada como uma expressão regular",
+        "noMatches": "Nenhuma entrada corresponde à sua busca."
+      }
     },
     "debug": {
       "title": "Depuração",
       "logDirectory": {
         "title": "Diretório de Logs",
-        "description": "Local onde os arquivos de log são armazenados"
+        "description": "Abre a pasta que contém os arquivos de log — o primeiro lugar a verificar quando algo falha sem dizer o motivo. Os logs giram a cada 10 MB e os arquivos antigos são mantidos em vez de sobrescritos, então a evidência sobrevive ao reinício que costuma seguir um problema. A quantidade de detalhes registrada aqui é definida pelo Nível de Log na página Depuração, que por padrão é Debug e pode incluir fragmentos da transcrição."
       },
       "logLevel": {
         "title": "Nível de Log",
-        "description": "Definir a verbosidade do registro"
+        "description": "Define quanto detalhe é gravado nos arquivos de log; a saída do console não é afetada. Padrão: Debug. Reduza para Info se não quiser conteúdo do ditado em disco — em Debug e Trace, fragmentos de transcrição e pré-visualizações de prompt podem aparecer nos arquivos que você abre em Diretório de Logs, na página Sobre."
       },
       "soundTheme": {
         "label": "Tema de Som",
-        "description": "Escolha um tema de som para feedback de início e parada de gravação"
+        "description": "Escolhe qual par de sons de sinal é reproduzido quando uma gravação começa e termina. Padrão: Marimba. Você só ouvirá algo enquanto o Feedback de Áudio estiver ligado (página Geral), e Personalizado só aparece nesta lista quando existem arquivos WAV personalizados de início e parada na pasta de recursos dos dados do aplicativo."
       },
       "wordCorrectionThreshold": {
         "title": "Limite de Correção de Palavras",
-        "description": "Sensibilidade para correções de palavras personalizadas"
+        "description": "Com que intensidade uma transcrição é reescrita para corresponder às entradas em Palavras Personalizadas, na página Geral. Padrão: 0,18. Aumente se nomes e termos técnicos ainda voltarem distorcidos; diminua se o Handy Tool começar a substituir palavras que você realmente disse — com Palavras Personalizadas vazio, este controle não faz nada."
       },
       "historyLimit": {
         "title": "Limite de Histórico",
-        "description": "Número máximo de entradas de histórico a manter",
+        "description": "Quantas transcrições o Histórico mantém antes que as mais antigas sejam removidas junto com seu áudio. Padrão: 5 entradas — deliberadamente baixo, então aumente se você espera consultar coisas dias depois. Só tem algum efeito enquanto Excluir Gravações Automaticamente estiver definido como Manter as últimas, e entradas marcadas com Salvar transcrição são mantidas independentemente e nunca contam para esse limite.",
         "entries": "entradas"
       },
       "recordingRetention": {
         "title": "Excluir Gravações Automaticamente",
-        "description": "Excluir automaticamente gravações antigas para economizar espaço",
+        "description": "Controla a limpeza automática do Histórico: quando uma entrada expira, sua linha e seu arquivo de áudio são ambos excluídos. Padrão: Manter as últimas, que mantém apenas as entradas mais novas permitidas pelo Limite de Histórico (5 por padrão) — as opções de tempo mantêm tudo dos últimos 3 dias, 2 semanas ou 3 meses, e Nunca não exclui nada. A limpeza roda depois que cada nova transcrição é salva e novamente quando você altera qualquer uma das duas configurações, sempre preserva entradas marcadas com Salvar transcrição, e só remove arquivos de áudio que o próprio Handy Tool criou.",
         "never": "Nunca",
         "preserveLimit": "Manter as últimas {{count}}",
         "days3": "Após 3 dias",
@@ -457,27 +877,27 @@
       },
       "alwaysOnMicrophone": {
         "label": "Microfone Sempre Ativo",
-        "description": "Manter microfone ativo para resposta mais rápida"
+        "description": "Mantém o fluxo do microfone aberto entre gravações, em vez de abri-lo cada vez que você pressiona um atalho de gravação. Padrão: Desligado. Ative se a primeira sílaba de uma gravação estiver sendo cortada — o preço é que o indicador de microfone do sistema fica aceso o tempo todo em que o Handy Tool está em execução, não só enquanto você dita."
       },
       "clamshellMicrophone": {
         "title": "Microfone em Modo Fechado",
-        "description": "Microfone a usar quando a tampa do laptop está fechada"
+        "description": "Escolhe um dispositivo de entrada diferente para quando a tampa do notebook está fechada, para máquinas acopladas cujo microfone embutido fica inutilizável nesse estado. Padrão: nenhum, então o Microfone da página Geral é sempre usado. A detecção de tampa fechada é exclusiva do macOS e as versões para macOS ainda estão planejadas, então isto não tem efeito na versão para Windows."
       },
       "postProcessingToggle": {
         "label": "Pós-Processamento",
-        "description": "Habilitar refinamento de texto com IA após a transcrição"
+        "description": "Ativa a etapa opcional de refinamento por IA e adiciona uma página Pós-Processamento à barra lateral, onde você escolhe o provedor e o prompt. Padrão: Desligado. Seu Atalho de Transcrição normal não é afetado — o refinamento roda apenas na Tecla de Pós-Processamento separada, e o Histórico mantém a transcrição bruta ao lado da processada."
       },
       "muteWhileRecording": {
         "label": "Silenciar Durante Gravação",
-        "description": "Silenciar áudio do sistema durante a gravação"
+        "description": "Silencia o áudio do sistema durante toda a gravação, para que música ou vídeo nas suas caixas de som não vazem para o microfone. Padrão: Desligado. Ative se você dita usando caixas de som em vez de fone de ouvido; o som volta por conta própria quando a gravação termina."
       },
       "appendTrailingSpace": {
         "label": "Adicionar Espaço Final",
-        "description": "Adicionar um espaço após a transcrição colada"
+        "description": "Adiciona um espaço ao final de cada transcrição entregue, para que dois ditados seguidos não saiam como \"...um.Dois\". Padrão: Desligado. Ative se você dita em pequenas rajadas no mesmo campo; deixe desligado onde um espaço perdido importa, como uma caixa de busca ou um comando de terminal."
       },
       "keyboardImplementation": {
         "title": "Keyboard Implementation",
-        "description": "Choose the keyboard shortcut backend.",
+        "description": "Escolhe qual backend registra os atalhos globais do Handy Tool no sistema operacional. Padrão: Tauri Global Shortcut. Alterne para Handy Keys quando um atalho que você definiu nunca disparar porque outro programa já possui essa combinação ou o Windows recusa o registro — todos os atalhos são reregistrados ao alternar, e a mudança é revertida se isso falhar.",
         "bindingsReset": "Keyboard shortcuts were incompatible and reset to defaults"
       },
       "paths": {
@@ -487,28 +907,23 @@
       },
       "pasteDelay": {
         "title": "Atraso de colagem",
-        "description": "Atraso antes de enviar a tecla de colar (em milissegundos). Aumente se o texto errado estiver sendo colado."
+        "description": "Por quanto tempo o Handy Tool espera, depois de colocar a transcrição na área de transferência, antes de enviar a tecla de colar. Padrão: 60 ms. Aumente se um aplicativo lento colar o conteúdo anterior da área de transferência em vez do texto novo; essa espera é diferente de Paste delay after jump (Windows), que só se aplica quando um slot do Jumper acabou de ativar outra janela."
       }
     },
     "about": {
       "title": "Sobre",
       "version": {
         "title": "Versão",
-        "description": "Versão atual do Handy"
+        "description": "A versão do Handy Tool que você está usando; informe-a sempre que relatar um problema. Windows x64 é a única versão lançada — macOS e Linux estão planejados, e os recursos do Jumper são exclusivos do Windows mesmo depois disso. Nada aqui verifica por conta própria se há uma versão mais nova; use Atualizações quando quiser verificar."
       },
       "appDataDirectory": {
         "title": "Diretório de Dados do App",
-        "description": "Local onde o Handy armazena seus dados"
+        "description": "Abre a única pasta que contém tudo o que o Handy Tool mantém: configurações (incluindo as chaves de API dos seus provedores e prompts) em um arquivo JSON, transcrições em um banco de dados SQLite, gravações, modelos baixados e logs rotacionados. Padrão: %APPDATA%\\pr.handy em uma instalação normal do Windows. Nada nela é criptografado pelo Handy Tool — as permissões do sistema de arquivos são a única proteção — então esta também é a pasta a copiar, ou limpar, quando você passar o computador para outra pessoa."
       },
       "sourceCode": {
         "title": "Código Fonte",
         "description": "Visualizar código fonte e contribuir",
         "button": "Ver no GitHub"
-      },
-      "supportDevelopment": {
-        "title": "Apoiar o Desenvolvimento",
-        "description": "Ajude-nos a continuar construindo o Handy",
-        "button": "Doar"
       },
       "acknowledgments": {
         "title": "Agradecimentos",
@@ -516,21 +931,180 @@
           "title": "Whisper.cpp",
           "description": "Inferência de alto desempenho do modelo de reconhecimento automático de fala Whisper da OpenAI",
           "details": "O Handy usa Whisper.cpp para processamento rápido e local de fala para texto. Agradecemos ao incrível trabalho de Georgi Gerganov e colaboradores."
+        },
+        "handy": {
+          "title": "Handy",
+          "description": "O aplicativo original de código aberto de fala para texto sobre o qual este projeto foi construído",
+          "details": "Handy Tool é um fork do Handy, criado por CJ Pais (github.com/cjpais/Handy, handy.computer). Foi assumido a partir da versão v0.8.1 do projeto original (março de 2026) e vem sendo desenvolvido de forma independente por Patrick R. Muito obrigado a CJ e aos colaboradores do Handy pela base sobre a qual este projeto se apoia."
         }
+      },
+      "updates": {
+        "title": "Atualizações",
+        "description": "Ver releases abre a página de releases do projeto no GitHub, no seu navegador, para você comparar com Versão. O Handy Tool não tem atualizador e nunca verifica por um novo lançamento em segundo plano — atualizar é sempre algo que você escolhe fazer.",
+        "button": "Ver releases"
       }
     },
     "jumper": {
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "When a jump target's app, window class, or control class contains one of these (case-insensitive), it is treated as a remote desktop session and uses the longer 'Remote' jump delays (Advanced → Transcription). Add the identifiers your RDP/Citrix clients use — e.g. msrdc, mstsc, Citrix. An empty list treats every target as local.",
+        "description": "Um destino de salto cujo aplicativo, classe de janela ou classe de controle contiver um destes fragmentos (sem diferenciar maiúsculas/minúsculas) é tratado como uma área de trabalho remota, então usa o valor Remote de 'Paste delay after jump (Windows)' e 'Submit delay after jump (Windows)', em Avançado → Transcrição, em vez do valor Local. Padrão: msrdc, mstsc, Citrix. Adicione o nome do processo que o seu cliente RDP ou Citrix usa se as entregas nele continuarem sendo engolidas; uma lista vazia trata todo destino como local.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
         "duplicate": "'{{value}}' is already in the list",
         "badge": "Remote ✓",
         "badgeTooltip": "This target matches a remote match string, so it uses the Remote jump delays."
+      },
+      "windowsOnly": "Os saltos estão disponíveis apenas no Windows.",
+      "hot": {
+        "title": "Slot ativo (Ancorar e Entregar)",
+        "optionsMoved": {
+          "title": "Opções de entrega",
+          "description": "Não é uma configuração — é um indicador. O que um salto realmente faz com um slot é configurado por fluxo em Avançado → Transcrição: 'Ação do slot de salto ao iniciar', 'Ação do slot de salto ao finalizar', 'Rastrear local da última saída' e 'Retornar o foco após a entrega' existem uma vez para Transcrever e outra vez para Transcrever e Enviar.",
+          "hint": "Configurado nos grupos Transcrever e Transcrever e Enviar na página Geral."
+        }
+      },
+      "hot2": {
+        "title": "Segundo slot ativo (Ancorar e Entregar)"
+      },
+      "slot": {
+        "title": "Slot estático {{index}}",
+        "status": "Destino do slot {{index}}",
+        "description": "Mostra para onde este slot numerado aponta, com Testar (salta até lá sem entregar nada) e Limpar. Padrão: nenhum destino — foque um campo ao qual você volta com frequência, pressione o atalho Definir deste slot (ctrl+alt+shift+1 … 9), e salte de volta a qualquer momento com ctrl+alt+1 … 9. Um slot memoriza uma janela e um campo, não uma aba do navegador ou a posição do cursor de texto, e permanece definido após as entregas.",
+        "test": "Testar",
+        "testFailed": "Falha no salto: {{reason}}",
+        "stale": "Salvo: {{app}} ({{control}}) — janela ainda não encontrada"
+      },
+      "persist": {
+        "label": "Lembrar slots entre reinicializações",
+        "description": "Memoriza o destino de cada slot entre reinicializações do aplicativo. Padrão: Desligado. O Windows não consegue manter um identificador de janela entre reinicializações, então o Handy salva a identidade de cada slot (aplicativo, além do tipo de janela e campo) e reencontra a janela correspondente ao iniciar, e novamente no momento em que você usa o slot — um slot salvo cujo aplicativo não está em execução aparece em vermelho até reaparecer.",
+        "groupTitle": "Persistência"
+      },
+      "slotNames": {
+        "hot": "Ativo 1",
+        "hot2": "Ativo 2",
+        "static": "Slot {{index}}"
+      },
+      "track": {
+        "label": "Rastrear local da última saída",
+        "description": "Somente Windows. Depois que este fluxo cola uma transcrição, o slot escolhido em 'Salvar local em' é substituído pelo campo onde o texto realmente chegou, então seu próximo salto para esse slot retorna ao último local em que você ditou. Padrão: Desligado. Ative quando quiser que um slot te siga em vez de defini-lo manualmente — Transcrição e Transcrever e Enviar rastreiam de forma independente, e a captura ocorre antes de qualquer 'Retornar o foco após a entrega'.",
+        "slot": {
+          "title": "Salvar local em",
+          "description": "Qual slot de salto 'Rastrear local da última saída' substitui depois de cada entrega deste fluxo. Padrão: Ativo 1. Aponte para um slot estático (Slot 1 a Slot 9) se você não quiser que o rastreamento automático continue substituindo a âncora ativa que você definiu manualmente com Definir Âncora."
+        }
+      },
+      "saveCursor": {
+        "label": "Restaurar posição do cursor do mouse",
+        "description": "Depois que este fluxo entregar uma transcrição, memorize a posição do cursor do mouse e mova o ponteiro de volta para lá quando você saltar. Independente do interruptor do outro fluxo; o modo de posição abaixo é compartilhado entre os dois fluxos.",
+        "perSlot": "Salvar posição do mouse",
+        "perSlotDescription": "Também registra a posição do cursor do mouse quando este slot é definido ou rastreado, e move o ponteiro de volta para lá quando você salta para este slot — depois de colar, para não interferir na entrega. Padrão: Desligado. Ative para um slot em outro monitor, assim teclado e mouse chegam juntos; isso habilita o 'Modo de posição do cursor' próprio deste slot, abaixo, e cada slot tem seu próprio par de interruptores.",
+        "mode": {
+          "title": "Modo de posição do cursor",
+          "description": "Escolhe como a posição salva do cursor deste slot é medida. Padrão: Relativo ao aplicativo (segue a janela) — restaura o mesmo ponto dentro da janela de destino mesmo depois que ela tiver sido movida, redimensionada, ou arrastada para um monitor com DPI diferente. Escolha Absoluto na tela (coordenadas exatas) para algo que nunca se move, como um painel fixo; o menu fica desativado até que 'Salvar posição do mouse' esteja ligado para este slot.",
+          "appRelative": "Relativo ao aplicativo (segue a janela)",
+          "screenAbsolute": "Absoluto na tela (coordenadas exatas)"
+        }
+      },
+      "returnFocus": {
+        "label": "Retornar o foco após a entrega",
+        "description": "Depois de uma entrega que precisou saltar, o foco volta para a janela em que você estava quando a entrega começou — capturada automaticamente, sem slot para configurar. Padrão: Ligado. É condicional: se você mesmo trocou de janela enquanto o Handy Tool estava trabalhando, ele te deixa onde você escolheu ficar, e cada fluxo decide isso separadamente (somente Windows)."
+      },
+      "requireSameFlow": {
+        "groupTitle": "Comportamento ao finalizar",
+        "label": "Só saltar ao finalizar se iniciado da mesma forma",
+        "description": "Quando ativado, a 'Ação do slot de salto ao finalizar' de um fluxo só é disparada se a gravação tiver sido iniciada e finalizada com o mesmo atalho. Padrão: Desligado. Exemplo: iniciar com Transcrever e finalizar com Transcrever e Enviar não gera salto — colar e enviar ainda acontecem, apenas o salto é bloqueado. Ative se alternar entre os dois atalhos continuar te teleportando para algum lugar inesperado."
       }
+    },
+    "translator": {
+      "title": "Tradutor",
+      "enabled": {
+        "label": "Monitorar pastas",
+        "description": "Ative para transcrever cada novo arquivo .wav, .ogg ou .opus que chegar em uma pasta monitorada para um arquivo .txt ao lado, usando as configurações atuais de Modelo, Idioma e Traduzir para Inglês. Padrão: desligado. Arquivos já presentes em uma pasta quando o monitoramento começa são deliberadamente ignorados, e as próprias pastas são escolhidas em Adicionar uma pasta."
+      },
+      "priority": {
+        "title": "Prioridade",
+        "description": "Decide quem recebe o motor de fala quando um arquivo de pasta e o seu próprio ditado o querem no mesmo momento. Padrão: Ditado em tempo real primeiro — o lote pausa no próximo limite de segmento no instante em que você pressiona gravar e retoma depois, então nenhum progresso do lote é perdido. Lote de pastas primeiro mantém o lote em execução e seu texto em tempo real chega um pouco mais tarde; Por ordem de chegada deixa o arquivo em andamento terminar, depois executa sua gravação antes que o próximo arquivo comece.",
+        "options": {
+          "live_first": "Ditado em tempo real primeiro",
+          "folder_first": "Lote de pastas primeiro",
+          "fifo": "Por ordem de chegada"
+        }
+      },
+      "model": {
+        "title": "Modelo do lote",
+        "description": "Qual modelo de fala transcreve os arquivos nas suas pastas monitoradas; modelos marcados com um globo também podem traduzir para inglês, o que exige Traduzir para Inglês ativado. Padrão: Mesmo do ditado (padrão), reaproveitando o que estiver selecionado na página Modelos. Escolha um modelo local diferente e ele carrega em um slot próprio, ao lado do modelo de ditado — trabalho em lote em um motor, ditado ainda instantâneo no outro — ao custo de memória extra, que Descarregar modelo do lote após pode devolver.",
+        "sameAsDictation": "Mesmo do ditado (padrão)",
+        "translates": "{{name}} — pode traduzir para inglês"
+      },
+      "unload": {
+        "title": "Descarregar modelo do lote após",
+        "description": "Por quanto tempo a cópia própria do modelo de lote do Tradutor permanece na memória depois que a fila fica quieta; descarregar libera a RAM ou VRAM, e mantê-lo carregado evita uma recarga quando o próximo arquivo chegar. Padrão: Nunca (manter carregado — início mais rápido). Só tem efeito quando o Modelo do lote indica um modelo local diferente do seu modelo de ditado — caso contrário, prevalece a configuração principal Descarregar Modelo."
+      },
+      "status": {
+        "title": "Status",
+        "description": "O que o Tradutor está fazendo agora. As transcrições concluídas são gravadas ao lado do arquivo de áudio com o mesmo nome e extensão .txt.",
+        "disabled": "Desativado",
+        "idle": "Monitorando — nada a fazer",
+        "queued": "{{count}} arquivo(s) na fila",
+        "working": "{{file}} — segmento {{segment}}/{{total}}",
+        "workingIndeterminate": "{{file}}",
+        "paused": {
+          "live": "pausado para ditado em tempo real",
+          "processing": "pausado enquanto uma gravação está sendo finalizada"
+        },
+        "counters": "{{done}} concluído(s), {{failed}} com falha nesta sessão"
+      },
+      "folders": {
+        "title": "Pastas monitoradas",
+        "none": "Nenhuma pasta",
+        "emptyTitle": "Nenhuma pasta monitorada",
+        "emptyDescription": "Adicione uma pasta para começar a monitorá-la em busca de novas gravações.",
+        "addTitle": "Adicionar uma pasta",
+        "addDescription": "Abre um seletor de pasta; a partir daí, qualquer novo arquivo de áudio que aparecer nessa pasta é colocado na fila e sua transcrição é gravada ao lado como um .txt. Padrão: sua pasta de gravações do Handy é adicionada automaticamente na primeira vez que o Tradutor inicia. Adicionar uma pasta não faz nada até que Monitorar pastas esteja ligado, e o que já estiver na pasta é ignorado — apenas arquivos que chegarem depois são transcritos.",
+        "add": "Adicionar pasta",
+        "remove": "Parar de monitorar esta pasta",
+        "addFailed": "Não foi possível adicionar a pasta: {{reason}}",
+        "operationFailed": "Não foi possível atualizar a pasta: {{reason}}",
+        "toggleAriaLabel": "Monitorar pasta {{name}}",
+        "removeAriaLabel": "Parar de monitorar a pasta {{name}}"
+      }
+    },
+    "currentAudio": {
+      "streamingHint": "O texto aparece progressivamente enquanto você fala somente quando o atalho pressionado — Transcrever ou Pressionar para falar — está definido como Ao vivo e você está usando um modelo local.",
+      "finalHint": "No modo Pós-gravação, ou com a transcrição por API ou OpenRouter, a transcrição completa aparece de uma só vez quando a gravação termina; defina o modo de cada atalho em",
+      "advancedTranscription": "Avançado → Transcrição",
+      "finalHintSuffix": ".",
+      "title": "Áudio Atual",
+      "idle": "Inicie a gravação para ver a transcrição em tempo real",
+      "recording": "Ouvindo...",
+      "openFloating": "Abrir janela flutuante",
+      "copy": "Copiar",
+      "copied": "Copiado"
+    },
+    "backup": {
+      "description": "Exporte os dados do Handy Tool como um arquivo compactado. Modelos baixados e áudio grande não compactado (WAV/FLAC) são sempre excluídos.",
+      "configTitle": "Configuração + histórico",
+      "configHint": "Exporta suas configurações mais o banco de dados do histórico de transcrições (datas/horas, texto, custo, duração) e nenhum áudio, então o arquivo permanece pequeno. Use antes de uma grande mudança de configuração, ou para levar seus atalhos, provedores e prompts para outro computador. O arquivo não é criptografado e contém as chaves de API dos seus provedores e o token do servidor MCP em texto simples — trate o arquivo como um segredo.",
+      "exportConfig": "Exportar configuração + histórico",
+      "fullTitle": "Dados completos (com áudio compactado)",
+      "fullHint": "Tudo o que há na exportação de configuração, mais suas gravações compactadas (.opus/.ogg) — um arquivo muito maior, e que ainda contém suas chaves de API em texto simples. Modelos baixados, áudio WAV/FLAC não compactado e arquivos de blocos em andamento são sempre excluídos, então gravações feitas com a Gravação recuperável após falhas desligada aparecem como linhas de histórico sem áudio no arquivo.",
+      "exportFull": "Exportar backup completo",
+      "saved": "Salvo em {{path}}",
+      "restoreTitle": "Restaurar a partir de backup",
+      "restoreHint": "Escolha um arquivo de backup do Handy Tool (.tar.gz) e marque o que deseja recuperar — Configuração e histórico (configurações, banco de dados do histórico) e Gravações (arquivos de áudio) são independentes, então você pode restaurar um sem o outro, e ambos começam marcados. Somente entradas que o Handy Tool reconhece são extraídas, e o que é restaurado substitui o que você tem agora. Restaurar configurações ou histórico exige reiniciar: use o botão Reiniciar o Handy Tool agora que aparece, ou o aplicativo em execução vai sobrescrevê-los na próxima gravação.",
+      "restoreConfig": "Configuração e histórico (configurações, banco de dados do histórico)",
+      "restoreRecordings": "Gravações (arquivos de áudio)",
+      "restoreButton": "Restaurar a partir de backup…",
+      "restoreDone": "Restaurado — configurações: {{settings}} · histórico: {{history}} · gravações: {{recordings}}",
+      "restartHint": "Reinicie o Handy Tool para carregar as configurações/histórico restaurados (até então, o aplicativo em execução pode sobrescrevê-los).",
+      "restartNow": "Reiniciar o Handy Tool agora"
+    },
+    "modelPicker": {
+      "refresh": "Buscar / atualizar lista de modelos",
+      "loading": "Carregando modelos…",
+      "error": "Falha ao carregar modelos",
+      "noMatches": "Nenhum modelo correspondente — digite para usar um id personalizado"
     }
   },
   "common": {
@@ -553,7 +1127,13 @@
     "off": "Desligado",
     "yes": "Sim",
     "no": "Não",
-    "noOptionsFound": "Nenhuma opção encontrada"
+    "noOptionsFound": "Nenhuma opção encontrada",
+    "delay": {
+      "off": "Desativado (instantâneo)",
+      "ms": "{{ms}} ms",
+      "seconds": "{{seconds}} s"
+    },
+    "selectOption": "Selecione uma opção…"
   },
   "accessibility": {
     "permissionsRequired": "Permissões de Acessibilidade Necessárias",
@@ -566,10 +1146,175 @@
   },
   "appLanguage": {
     "title": "Idioma da Aplicação",
-    "description": "Alterar o idioma da interface do Handy"
+    "description": "Alterna toda a interface, incluindo o menu da bandeja, para um dos 17 idiomas incluídos. Padrão: o idioma de exibição do Windows, com retorno ao inglês quando esse idioma não estiver incluído. Este é apenas o idioma da interface — não tem relação com o idioma que você fala, que é definido por Idioma na página Geral."
   },
   "overlay": {
     "transcribing": "Transcrevendo...",
-    "processing": "Processando..."
+    "processing": "Processando...",
+    "openFloatingWindow": "Abrir janela de transcrição"
+  },
+  "brand": {
+    "name": "Handy",
+    "suffix": "TOOL"
+  },
+  "toasts": {
+    "pasteFailed": "Falha ao colar a transcrição: {{reason}}. O texto foi salvo no Histórico.",
+    "pasteFailedParked": "Falha ao colar a transcrição: {{reason}}. O texto está na área de transferência (e no Histórico) — cole-o manualmente.",
+    "transcriptionFailed": "Falha na transcrição: {{reason}}. Verifique se o modelo selecionado está funcionando e tente novamente."
+  },
+  "flm": {
+    "notInstalled": "O FLM não está instalado. Instale o FastFlowLM para usar modelos acelerados por NPU.",
+    "npuAccelerated": "Acelerado por NPU"
+  },
+  "tokenCount": {
+    "configureProviders": "Configurar provedores",
+    "noProviders": "Nenhum provedor configurado.",
+    "title": "Contagem de Tokens",
+    "placeholder": "Cole o texto aqui para contar os tokens...",
+    "tokenizer": "Tokenizador",
+    "count": "Contar",
+    "countAll": "Contar com todos",
+    "countAllTitle": "Conta com cada provedor habilitado, um por vez — indicado quando os slots compartilham um único serviço local que precisa carregar/descarregar cada modelo",
+    "countAllParallel": "Contar com todos (em paralelo)",
+    "countAllParallelTitle": "Consulta todos os provedores habilitados ao mesmo tempo — mais rápido quando os serviços são independentes",
+    "counting": "Contando... {{done}}/{{total}}",
+    "cancelSweep": "Cancelar",
+    "openFile": "Abrir arquivo...",
+    "fileTooLarge": "O arquivo é muito grande (máx. 10 MB).",
+    "loadedFile": "Carregado: {{name}}",
+    "providerOption": "{{name}} (provedor)",
+    "chipDisabled": "Não configurado — ative com Habilitar este provedor em Avançado > Provedores > Provedores de LLM Registrados.",
+    "chips": {
+      "cl100k_base": "cl100k (GPT-4)",
+      "o200k_base": "o200k (GPT-4o)",
+      "estimate": "Estimativa"
+    },
+    "activeProvider": "Contando com: {{name}} — {{model}} ({{url}})",
+    "activeLocal": "Contando localmente com: {{tokenizer}}",
+    "sweepSummary": "{{ok}} de {{total}} provedores responderam",
+    "showFailed": "mostrar {{count}} com falha",
+    "hideFailed": "ocultar falhas",
+    "table": {
+      "provider": "Provedor",
+      "model": "Modelo",
+      "tokens": "Tokens",
+      "delta": "Δ vs menor",
+      "time": "Tempo"
+    },
+    "tokens": "tokens",
+    "characters": "caracteres",
+    "words": "palavras",
+    "options": {
+      "cl100k_base": "Conta o texto da caixa com o tokenizador exato do GPT-4 e GPT-3.5 (cl100k_base), totalmente neste computador — nada é enviado e funciona offline. Use para modelos da OpenAI até o GPT-4; para os mais novos, use o200k (GPT-4o).",
+      "o200k_base": "Conta o texto da caixa com o tokenizador exato do GPT-4o e o1 (o200k_base), totalmente neste computador — nada é enviado e funciona offline. Use para modelos atuais da OpenAI; modelos mais antigos, GPT-4 e GPT-3.5, tokenizam com cl100k (GPT-4).",
+      "estimate": "Uma estimativa local aproximada de cerca de 1,3 token por palavra, sem tokenizador e sem chamada de rede. Use quando o modelo que lhe interessa não tem um contador exato aqui, e trate-a apenas como uma referência aproximada — ela é deliberadamente excluída da coluna \"Δ vs menor\" para que um número aproximado não distorça a comparação entre os contadores exatos."
+    }
+  },
+  "keyboardTyper": {
+    "title": "Digitador de Teclado",
+    "description": "Envia este texto para a janela em foco como teclas simuladas individuais, então funciona onde colar é bloqueado — consoles remotos, visualizadores de VM, prompts de senha. Pressione Ir e você recebe a contagem regressiva do Atraso inicial (10 s por padrão) para clicar primeiro na janela de destino; pressione o Atalho de Digitar Texto quando você já estiver no destino, e a digitação começa depois de cerca de um segundo. O texto vive apenas na memória — nunca é gravado nas suas configurações, no Histórico ou nos logs.",
+    "placeholder": "Digite o texto a ser digitado...",
+    "go": "Ir",
+    "cancel": "Cancelar",
+    "startDelay": {
+      "label": "Atraso inicial",
+      "unit": "s",
+      "preset": "{{seconds}}s",
+      "presetTitle": "Começar a digitar em {{seconds}} segundos"
+    },
+    "keyDelay": {
+      "label": "Atraso entre teclas",
+      "unit": "ms"
+    },
+    "shortcut": {
+      "label": "Atalho:",
+      "unset": "não definido",
+      "hint": "(altere em Configurações Avançadas; pressione novamente para cancelar)"
+    },
+    "status": {
+      "idle": "Clique em Ir e depois foque a janela de destino — ou use o atalho diretamente no aplicativo de destino.",
+      "countdown": "A digitação começa em {{seconds}}s... (Esc cancela)",
+      "typing": "Digitando... {{typed}}/{{total}} caracteres (Esc cancela)",
+      "done": "Concluído — {{total}} caracteres digitados.",
+      "cancelled": "Cancelado.",
+      "error": "Erro: {{message}}"
+    }
+  },
+  "modelTesting": {
+    "configureProviders": "Configurar provedores",
+    "description": "Envia um prompt para cada modelo marcado em Executar e exibe as respostas lado a lado com contagem de tokens, custo e tempo de ida e volta; modelos marcados em Avaliador então pontuam todas essas respostas usando o seu prompt de avaliação. Padrão: nada selecionado e ambos os prompts vazios. A lista vem de Avançado > Provedores de LLM Registrados, então uma execução usa suas próprias chaves de API — seu prompt sai deste computador e, para provedores pagos, custa dinheiro de verdade.",
+    "providersLabel": "Modelos",
+    "selectAll": "Selecionar todos para executar",
+    "clear": "Limpar",
+    "run": "Executar",
+    "judge": "Avaliador",
+    "costPerM": "entrada ${{input}} · saída ${{output}} /1M",
+    "noProviders": "Nenhum provedor com suporte a chat configurado. Adicione um em Avançado → Provedores de LLM Registrados.",
+    "mainPromptLabel": "Prompt para todos os modelos",
+    "mainPromptPlaceholder": "O prompt enviado a cada modelo selecionado…",
+    "judgePromptLabel": "Prompt do avaliador / árbitro (opcional)",
+    "judgePromptPlaceholder": "Instruções para o painel de avaliação. Ele recebe a entrada original mais a resposta de cada modelo (marcada em XML).",
+    "temperatureLabel": "Temperatura",
+    "modelParams": "Modelos",
+    "judgeParams": "Avaliador",
+    "runButton": "Executar teste",
+    "cancelButton": "Cancelar",
+    "runningMain": "Consultando modelos…",
+    "runningJudge": "Executando painel de avaliação…",
+    "summaryTitle": "Resumo",
+    "judgePanelTitle": "Painel de Avaliação",
+    "answersTitle": "Respostas",
+    "colModel": "Modelo",
+    "colInput": "Tok. entrada",
+    "colOutput": "Tok. saída",
+    "colCost": "Custo",
+    "colTime": "Tempo",
+    "roundTrip": "Ida e volta (mais longo)",
+    "totalCost": "Custo total",
+    "errorPrefix": "Erro",
+    "artifactLabel": "Artefato Markdown",
+    "copyMarkdown": "Copiar Markdown",
+    "copied": "Copiado!",
+    "saveMarkdown": "Salvar…",
+    "status": {
+      "mainStart": "Consultando {{count}} modelo(s)…",
+      "judgeStart": "Executando painel de avaliação ({{count}} avaliador(es))…",
+      "done": "Concluído.",
+      "cancelled": "Cancelado.",
+      "activity": "Atividade da execução"
+    },
+    "library": {
+      "preset": "Predefinição",
+      "presetPlaceholder": "Carregar uma predefinição…",
+      "pick": "Prompts salvos…",
+      "save": "Salvar",
+      "delete": "Excluir selecionado",
+      "namePlaceholder": "Nome…",
+      "confirm": "Salvar",
+      "cancel": "Cancelar",
+      "editCustom": "Editar / personalizado"
+    },
+    "thinking": {
+      "label": "Raciocínio",
+      "auto": "Automático",
+      "on": "Ativado",
+      "off": "Desativado"
+    },
+    "image": {
+      "label": "Imagem (opcional, para modelos de visão)",
+      "drop": "Clique ou arraste uma imagem aqui para anexar",
+      "remove": "Remover",
+      "tooLarge": "A imagem é muito grande (máx. {{mb}} MB)."
+    },
+    "save": "Salvar",
+    "saveAs": "Salvar como…",
+    "saveTo": "Salvar em {{path}}",
+    "saveDisabled": "Use “Salvar como…” primeiro para escolher um local"
+  },
+  "floating": {
+    "waiting": "Aguardando transcrição…",
+    "listening": "Ouvindo…",
+    "copy": "Copiar",
+    "copied": "Copiado"
   }
 }

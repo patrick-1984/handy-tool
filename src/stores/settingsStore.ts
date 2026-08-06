@@ -67,6 +67,30 @@ const settingUpdaters: {
   start_hidden: (value) => commands.changeStartHiddenSetting(value as boolean),
   autostart_enabled: (value) =>
     commands.changeAutostartSetting(value as boolean),
+  automatic_update_checks: async (value) => {
+    const result = await commands.changeAutomaticUpdateChecksSetting(
+      value as boolean,
+    );
+    if (result.status === "error") throw new Error(result.error);
+  },
+  automatic_silent_updates: async (value) => {
+    const result = await commands.changeAutomaticSilentUpdatesSetting(
+      value as boolean,
+    );
+    if (result.status === "error") throw new Error(result.error);
+  },
+  silent_update_time_local: async (value) => {
+    const result = await commands.changeSilentUpdateTimeLocalSetting(
+      value as string,
+    );
+    if (result.status === "error") throw new Error(result.error);
+  },
+  silent_update_jitter_minutes: async (value) => {
+    const result = await commands.changeSilentUpdateJitterMinutesSetting(
+      value as number,
+    );
+    if (result.status === "error") throw new Error(result.error);
+  },
   push_to_talk: (value) => commands.changePttSetting(value as boolean),
   typing_start_delay_secs: (value) =>
     commands.changeTypingStartDelaySetting(value as number),
@@ -206,8 +230,6 @@ const settingUpdaters: {
     commands.changeCrashResilientRecordingSetting(value as boolean),
   log_level: (value) => commands.setLogLevel(value as any),
   app_language: (value) => commands.changeAppLanguageSetting(value as string),
-  experimental_enabled: (value) =>
-    commands.changeExperimentalEnabledSetting(value as boolean),
   cancel_behavior: (value) =>
     commands.changeCancelBehaviorSetting(value as string),
   transcription_mode: (value) =>

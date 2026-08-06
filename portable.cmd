@@ -2,28 +2,27 @@
 setlocal EnableDelayedExpansion
 
 :: ============================================================
-:: Handy Tool - Portable Distribution Packager (T-114)
+:: Handy Tool - Portable Distribution Packager
 :: ============================================================
 :: Assembles a portable ZIP from an EXISTING release build output
 :: (C:\tmp\hb\release\handy.exe + resources). It does NOT build the
-:: app itself -- run build.cmd first (per project convention, that
-:: script is run manually, not from Claude Code).
+:: app itself -- run build.cmd first (run that manually first).
 ::
 :: Output: C:\tmp\hb\release\Handy-Tool-{version}-portable.zip
 :: (same folder the NSIS/MSI installers already land in)
 ::
-:: What "portable" means today (T-114 done-partial):
+:: What "portable" means today (partial support):
 ::   - No installer, no admin rights required to run it.
 ::   - The ZIP can be extracted to any folder (USB stick, network
 ::     share, etc.) and run via handy.exe directly.
-::   - A `portable.marker` file is dropped next to handy.exe. The
-::     Rust side does NOT yet act on this marker (see
-::     tickets\T-114-portable-distribution.md for the precise wiring
-::     spec) -- until that lands, a portable-launched handy.exe still
-::     writes settings/history/models/recordings to the normal Windows
-::     per-user profile location (%APPDATA%\pr.handy), NOT beside the
-::     exe. This script packages the files; it cannot change where the
-::     already-built handy.exe decides to read/write app data.
+::   - A `portable.marker` file is dropped next to handy.exe, and the
+::     Rust side DOES act on it: when the marker is present, settings,
+::     history, downloaded models, recordings and logs all live in the
+::     `data\` folder beside the exe instead of %APPDATA%\pr.handy
+::     (see portable::portable_data_dir, consulted from lib.rs). If
+::     `data\` cannot be written -- a read-only drive, for instance --
+::     the app falls back to the normal per-user profile location and
+::     logs a warning. See docs/tools/backup-and-portable.md.
 ::   - NOT a "no registry writes" guarantee: if the user enables
 ::     autostart in Settings, Handy Tool writes a Run-key registry entry
 ::     on every startup regardless of how it was packaged/launched (see
@@ -51,7 +50,7 @@ set "CONF=src-tauri\tauri.conf.json"
 
 if not exist "%SRC_EXE%" (
     echo ERROR: %SRC_EXE% not found.
-    echo Run build.cmd first ^(the user runs this manually -- see CLAUDE.md^).
+    echo Run build.cmd first ^(see BUILD.md^).
     exit /b 1
 )
 
@@ -67,7 +66,7 @@ if not exist "%CONF%" (
 )
 
 :: --- Read version from tauri.conf.json (single source of truth; kept in
-::     sync with package.json / Cargo.toml per CLAUDE.md "Version Bumping") ---
+::     sync with package.json / Cargo.toml) ---
 for /f "usebackq delims=" %%V in (`powershell -NoProfile -Command "(Get-Content -Raw '%CONF%' | ConvertFrom-Json).version"`) do set "VERSION=%%V"
 
 if "!VERSION!"=="" (
@@ -194,9 +193,9 @@ if errorlevel 1 (
     exit /b 1
 )
 
-:: --- Portable marker: presence of this file is what a future Rust change
-:: (see the ticket) will use to redirect app-data to .\data instead of
-:: %APPDATA%\pr.handy. It is inert today -- see header comment and README. ---
+:: --- Portable marker: the Rust side reads this file's presence and
+:: redirects app-data to .\data instead of %APPDATA%\pr.handy
+:: (portable::portable_data_dir). See header comment and README. ---
 type nul > "%PKGDIR%\portable.marker"
 if errorlevel 1 (
     echo ERROR: Failed to create portable.marker.
@@ -314,14 +313,14 @@ echo Program Files. Autostart, if enabled in Settings, still writes a
 echo Windows registry Run entry pointing at this location -- disable
 echo autostart in Settings if you want a fully registry-free run. True
 echo portable-mode isolation ^(no registry touched under any setting^) is
-echo pending -- see T-114 in the source repo.
+echo pending -- see docs/tools/backup-and-portable.md.
 echo.
 echo RUNNING IT
 echo ----------
 echo Just double-click handy.exe. No installer runs and nothing is written
 echo to Program Files, and you can delete this folder at any time to
 echo remove the app binary itself ^(your app data, per the note above, is
-echo separate and lives under %%APPDATA%%\pr.handy\ until T-114's Rust-side
+echo separate and lives under %%APPDATA%%\pr.handy\ until the portable-mode Rust
 echo change ships^). If you enabled autostart, disable it in Settings before
 echo deleting this folder, or you'll be left with a stale registry Run
 echo entry pointing at a folder that no longer exists.

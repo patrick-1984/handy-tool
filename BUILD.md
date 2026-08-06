@@ -2,9 +2,9 @@
 
 This guide covers how to set up the development environment and build Handy Tool from source.
 
-> The repository vendors its two patched speech dependencies (`transcribe-rs-local/`,
-> `whisper-rs-local/` — see [Local dependency forks](#local-dependency-forks)), so a plain
-> clone contains everything the build needs.
+**Only the Windows x64 build is produced, tested and released.** The macOS and Linux sections
+below cover source targets that are planned and not shipped. Building on them is unsupported and
+unverified: no macOS or Linux build has been produced, and no download exists for either.
 
 ## Prerequisites
 
@@ -13,31 +13,31 @@ This guide covers how to set up the development environment and build Handy Tool
 - [Rust](https://rustup.rs/) (latest stable)
 - [Bun](https://bun.sh/) package manager
 - [Tauri Prerequisites](https://tauri.app/start/prerequisites/)
-- CMake and Ninja (whisper.cpp is built from source)
 
 ### Platform-Specific Requirements
 
-#### Windows (primary, tested)
+#### Windows
 
-- Visual Studio Build Tools with the C++ workload. **The included `.cmd` scripts expect
-  Visual Studio 18 (2026) Build Tools** at the default install path — for VS 2022 (17.x),
-  edit the `VCVARS` line at the top of each script, or run `bun run tauri build` from a
-  developer prompt instead.
-- A [Vulkan SDK](https://vulkan.lunarg.com/) (auto-detected under `C:\VulkanSDK\*`) — Whisper GPU acceleration
-- **LLVM/libclang 18.x** for bindgen. LLVM 22+ mis-parses whisper.cpp headers and breaks the
-  `whisper-rs-sys` build (`error[E0080]: ... 1_usize - 304_usize`). Point `LIBCLANG_PATH` at an
-  LLVM 18 `bin` directory.
-- Keep the Cargo build path short: whisper.cpp's Vulkan shader builds exceed the MSVC 250-char
-  path limit under deep folders. The included `build.cmd` / `check.cmd` scripts set
-  `CARGO_TARGET_DIR=C:\tmp\hb` for this reason.
+- Microsoft C++ Build Tools
+- Visual Studio 2019/2022 with C++ development tools
+- Or Visual Studio Build Tools 2019/2022
 
-#### macOS (untested in this fork)
+#### macOS (planned — no build is produced or released)
 
-- Xcode Command Line Tools: `xcode-select --install`
+The macOS target has never been built or run. Treat the following as a starting point, not a
+supported path.
 
-#### Linux (untested in this fork)
+- Xcode Command Line Tools
+- Install with: `xcode-select --install`
 
-- Build essentials, ALSA, GTK, WebKit, Vulkan:
+#### Linux (planned — no build is produced or released)
+
+The Linux target has never been built or run. The dependency sets below are prepared for that
+work and are unverified.
+
+- Build essentials
+- ALSA development libraries
+- Install with:
 
   ```bash
   # Ubuntu/Debian
@@ -72,48 +72,53 @@ cd handy-tool
 bun install
 ```
 
-### 3. Voice-activity-detection model
-
-The Silero VAD model ships in the repository (`src-tauri/resources/models/silero_vad_v4.onnx`).
-If it is ever missing, restore it with:
+### 3. Start Dev Server
 
 ```bash
-curl -o src-tauri/resources/models/silero_vad_v4.onnx https://blob.handy.computer/silero_vad_v4.onnx
+bun tauri dev
 ```
 
-### 4. Start the Dev Server
+## Signed updater release builds
 
-```bash
-bun run tauri dev
-# If a cmake policy error appears on macOS:
-CMAKE_POLICY_VERSION_MINIMUM=3.5 bun run tauri dev
-```
+Release builds create signed Tauri updater artifacts. The private key lives outside
+version control at `.keys/handy-updater.key`; the path is gitignored, and the key was
+generated without a passphrase. Before running the local production build, supply it
+through the `TAURI_SIGNING_PRIVATE_KEY` environment variable. Never print or echo the
+private key, copy it into a source file, or commit it:
 
-### 5. Release build
-
-```bash
+```powershell
+$env:TAURI_SIGNING_PRIVATE_KEY = Get-Content -Raw .keys/handy-updater.key
 bun run tauri build
+Remove-Item Env:TAURI_SIGNING_PRIVATE_KEY
 ```
 
-On Windows you can also use the convenience scripts (they configure the compiler environment,
-Vulkan SDK, LLVM 18 libclang, and the short build path automatically):
+The updater key has no passphrase, so `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` is
+not required. Its matching public key is already embedded in
+`src-tauri/tauri.conf.json`. Back up `.keys/handy-updater.key` securely: if it is
+lost, existing installations can never accept another signed update.
 
-```bat
-check.cmd     :: cargo check + frontend lint (fast gate)
-build.cmd     :: full release build (NSIS + MSI installers)
-unittest.cmd  :: Rust unit tests against the release artifacts
+Windows produces an NSIS installer only. The MSI target was dropped because the
+updater installs NSIS packages silently in place. The Windows updater channel
+publishes the generated NSIS setup executable, its signature, and a `latest.json`
+manifest to the public GitHub release.
+
+After the signed build, prepare the three release assets locally:
+
+```powershell
+bun run generate:updater-manifest
 ```
 
-Installers land in `C:\tmp\hb\release\bundle\nsis\` and `...\msi\`.
+The command reads the sole NSIS setup executable and its generated `.sig`,
+copies them to `src-tauri/target/release-artifacts/` using the stable
+`Handy.Tool_<version>_x64-setup.exe` name, and writes `latest.json` with both
+`windows-x86_64-nsis` and compatibility `windows-x86_64` entries. Upload all
+three files to the matching `v<version>` GitHub release before publishing it.
+Use `--installer <path>` if more than one NSIS installer is present and
+`--notes "..."` to set release notes.
 
-## Local dependency forks
+## Portable package (Windows)
 
-Two speech dependencies are vendored inside this repository and referenced by path from
-`src-tauri/Cargo.toml`:
-
-- **`transcribe-rs-local/`** — fork of [transcribe-rs](https://github.com/cjpais/transcribe-rs)
-  updated for whisper-rs 0.15 (API renames, segment iteration).
-- **`whisper-rs-local/`** — clone of [whisper-rs](https://codeberg.org/tazz4843/whisper-rs)
-  v0.15.1 carrying whisper.cpp v1.8.2+ with Vulkan support and a CMake 4.x compatibility patch.
-
-They build as part of the normal workspace — no extra steps.
+`portable.cmd` at the repository root assembles the portable ZIP from a completed
+release build. It packages the existing binary and resources; it does not build
+the application. For what the package contains, see
+[docs/portable.md](docs/portable.md).

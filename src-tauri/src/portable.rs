@@ -250,6 +250,16 @@ pub fn portable_data_dir() -> Option<PathBuf> {
         .clone()
 }
 
+/// Detect the marker itself, even when the portable data directory is not
+/// writable. The updater must never turn a portable launch into an installed
+/// copy merely because portable storage initialization failed.
+pub fn portable_marker_present() -> bool {
+    std::env::current_exe()
+        .ok()
+        .and_then(|exe| exe.parent().map(|dir| dir.join("portable.marker")))
+        .is_some_and(|marker| marker.is_file())
+}
+
 /// Drop-in replacement for `app_handle.path().app_data_dir()` (and, for
 /// callers that used `app_config_dir()`, an equally valid substitute — see
 /// `backup.rs`, where both collapse to the same portable dir) that redirects

@@ -11,8 +11,13 @@ import "./App.css";
 import AccessibilityPermissions from "./components/AccessibilityPermissions";
 import Footer from "./components/footer";
 import Onboarding, { AccessibilityOnboarding } from "./components/onboarding";
-import { Sidebar, SidebarSection, SECTIONS_CONFIG } from "./components/Sidebar";
+import {
+  Sidebar,
+  type SidebarSection,
+  SECTIONS_CONFIG,
+} from "./components/Sidebar";
 import { useSettings } from "./hooks/useSettings";
+import { useNavStore } from "./stores/navStore";
 import { useSettingsStore } from "./stores/settingsStore";
 import { commands } from "@/bindings";
 import { getLanguageDirection, initializeRTL } from "@/lib/utils/rtl";
@@ -33,8 +38,8 @@ function App() {
   // Track if this is a returning user who just needs to grant permissions
   // (vs a new user who needs full onboarding including model selection)
   const [isReturningUser, setIsReturningUser] = useState(false);
-  const [currentSection, setCurrentSection] =
-    useState<SidebarSection>("general");
+  const currentSection = useNavStore((state) => state.currentSection);
+  const setCurrentSection = useNavStore((state) => state.setCurrentSection);
   const { settings, updateSetting } = useSettings();
   const direction = getLanguageDirection(i18n.language);
   // Resolved (never "system") light/dark value driving this window's

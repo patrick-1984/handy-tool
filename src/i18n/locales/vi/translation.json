@@ -1,7 +1,7 @@
 {
   "tray": {
     "settings": "Cài đặt...",
-    "copyLastTranscript": "Sao chép bản chép lời mới nhất",
+    "copyLastTranscript": "Sao chép bản phiên âm mới nhất",
     "unloadModel": "Dỡ mô hình",
     "quit": "Thoát",
     "cancel": "Hủy"
@@ -13,10 +13,46 @@
     "postProcessing": "Xử lý sau",
     "history": "Lịch sử",
     "debug": "Gỡ lỗi",
-    "about": "Giới thiệu"
+    "about": "Giới thiệu",
+    "backup": "Sao lưu",
+    "currentAudio": "Âm thanh hiện tại",
+    "tokenCount": "Đếm Token",
+    "keyboardTyper": "Bộ gõ bàn phím",
+    "jumper": "Jumper",
+    "translator": "Trình dịch",
+    "groups": {
+      "tools": "Công cụ",
+      "config": "Cấu hình"
+    },
+    "modelTesting": "Kiểm tra mô hình",
+    "resize": "Kéo để đổi kích thước",
+    "update": {
+      "checking": "Đang kiểm tra bản cập nhật…",
+      "available": "Đã có Handy Tool {{version}}",
+      "silentOn": "Handy Tool sẽ đóng, cập nhật rồi mở lại.",
+      "silentOff": "Bật cập nhật âm thầm để tự động cài đặt trong khung giờ cập nhật.",
+      "enableSilent": "Bật cập nhật âm thầm",
+      "updateRestart": "Cập nhật và khởi động lại",
+      "later": "Để sau",
+      "updateNow": "Cập nhật ngay",
+      "downloading": "Đang tải Handy Tool {{version}}…",
+      "percent": "{{percent}}%",
+      "ready": "Bản cập nhật {{version}} đã sẵn sàng",
+      "waitingForIdle": "Đang chờ đọc chính tả kết thúc…",
+      "readyDetail": "Handy Tool sẽ khởi động lại để hoàn tất cập nhật.",
+      "waiting": "Đang chờ…",
+      "restartInstall": "Khởi động lại và cài đặt",
+      "installing": "Đang cài đặt bản cập nhật…",
+      "installingDetail": "Handy Tool sẽ đóng rồi mở lại.",
+      "failed": "Cập nhật thất bại",
+      "failedDetail": "Handy Tool không bị thay đổi. {{reason}}",
+      "unknownError": "Lỗi không xác định",
+      "tryAgain": "Thử lại",
+      "downloadInstaller": "Tải bộ cài"
+    }
   },
   "onboarding": {
-    "subtitle": "Để bắt đầu, hãy chọn một mô hình chuyển đổi giọng nói",
+    "subtitle": "Để bắt đầu, hãy chọn một mô hình phiên âm",
     "recommended": "Đề xuất",
     "download": "Tải xuống",
     "downloading": "Đang tải xuống...",
@@ -69,7 +105,7 @@
       },
       "breeze-asr": {
         "name": "Breeze ASR",
-        "description": "Tối ưu hóa cho tiếng Quan Thoại Đài Loan. Hỗ trợ chuyển đổi ngôn ngữ."
+        "description": "Tối ưu hóa cho tiếng Quan Thoại Đài Loan. Hỗ trợ chuyển mã ngôn ngữ."
       },
       "sense-voice-int8": {
         "name": "SenseVoice",
@@ -85,11 +121,11 @@
       "description": "Handy cần một số quyền để hoạt động bình thường.",
       "microphone": {
         "title": "Quyền truy cập Micrô",
-        "description": "Cần thiết để nghe giọng nói của bạn để chuyển đổi."
+        "description": "Cần thiết để thu giọng nói của bạn nhằm phiên âm."
       },
       "accessibility": {
         "title": "Quyền truy cập Trợ năng",
-        "description": "Cần thiết để nhập văn bản đã chuyển đổi vào các ứng dụng của bạn."
+        "description": "Cần thiết để nhập văn bản phiên âm vào các ứng dụng của bạn."
       },
       "grant": "Cấp quyền",
       "granted": "Đã cấp",
@@ -133,11 +169,15 @@
   "settings": {
     "modelSettings": {
       "title": "Cài đặt {{model}}",
-      "noSettingsNeeded": "Mô hình này hoạt động tự động mà không cần cấu hình."
+      "noSettingsNeeded": "Mô hình này hoạt động tự động mà không cần cấu hình.",
+      "autoDetectLanguage": {
+        "description": "Mô hình này tự động phát hiện ngôn ngữ được nói và không thể cố định vào một ngôn ngữ cụ thể. Để ép buộc một ngôn ngữ, hãy chuyển sang mô hình Whisper, SenseVoice, FLM hoặc API.",
+        "value": "Tự động phát hiện"
+      }
     },
     "models": {
-      "title": "Mô hình chuyển đổi",
-      "description": "Chọn mô hình chuyển đổi hoặc tải thêm mô hình. Các mô hình khác nhau có mức độ chính xác và tốc độ khác nhau.",
+      "title": "Mô hình phiên âm",
+      "description": "Chọn model giọng nói nào phiên âm việc đọc chính tả của bạn — các model khác nhau về độ chính xác, tốc độ và lượng bộ nhớ chiếm khi được tải. Mặc định: không có gì được chọn trên bản cài mới; onboarding sẽ tải và chọn model đầu tiên cho bạn. Lựa chọn của bạn cũng quyết định Language và Translate to English có được hiển thị ở trang General hay không, và Translator dùng cùng model này bất cứ khi nào Batch model của nó để ở \"Same as dictation (default)\".",
       "downloaded": "Đã tải xuống",
       "available": "Có thể tải xuống",
       "deleteConfirm": "Bạn có chắc chắn muốn xóa {{modelName}}? Bạn sẽ cần tải lại để sử dụng.",
@@ -157,34 +197,87 @@
       "title": "Chung",
       "shortcut": {
         "title": "Phím tắt Handy",
-        "description": "Cấu hình phím tắt để kích hoạt ghi âm chuyển đổi giọng nói thành văn bản",
+        "description": "Cấu hình phím tắt để bắt đầu ghi âm và phiên âm giọng nói thành văn bản",
         "loading": "Đang tải phím tắt...",
         "none": "Chưa cấu hình phím tắt",
         "notFound": "Không tìm thấy phím tắt",
         "pressKeys": "Nhấn phím...",
         "bindings": {
           "transcribe": {
-            "name": "Phím tắt chuyển đổi",
-            "description": "Phím tắt để ghi âm và chuyển đổi giọng nói của bạn."
+            "name": "Phím tắt phiên âm",
+            "description": "Nhấn một lần để bắt đầu ghi âm và lần nữa để kết thúc; bản phiên âm được gửi vào cửa sổ đang focus. Mặc định: Ctrl+Space. Nó theo Transcription Mode và Paste Method ở trang Advanced — để ghi âm khi giữ phím, dùng Push-to-Talk Shortcut."
           },
           "cancel": {
             "name": "Phím tắt hủy",
-            "description": "Phím tắt để hủy bản ghi hiện tại."
+            "description": "Hủy bản ghi âm đang thực hiện. Mặc định: escape. Việc hủy thực sự làm gì do Cancel behavior ở trang General quyết định — Finish, save to history only vẫn phiên âm và lưu văn bản nhưng không gửi gì vào cửa sổ của bạn, còn Discard recording bỏ luôn âm thanh — và mục Cancel trên tray theo cùng cài đặt này."
           },
           "transcribe_with_post_process": {
             "name": "Phím tắt xử lý sau",
-            "description": "Tùy chọn: Phím tắt chuyên dụng luôn áp dụng xử lý sau bằng AI cho bản chuyển đổi của bạn."
+            "description": "Tùy chọn: Phím tắt chuyên dụng luôn áp dụng xử lý sau bằng AI cho bản phiên âm của bạn."
+          },
+          "transcribe_ptt": {
+            "name": "Phím tắt nhấn để nói",
+            "description": "Giữ phím tắt này để ghi âm và thả ra để dừng; micro tắt ngay khi thả, nên bất cứ gì bạn nói sau đó không thể lẫn vào văn bản. Mặc định: Ctrl+Alt+Space. Nó có Transcription Mode (PTT) và Paste Method (PTT) riêng, nên push-to-talk có thể hoạt động khác với Transcribe Shortcut."
+          },
+          "type_text": {
+            "name": "Phím tắt gõ văn bản",
+            "description": "Gõ nội dung trong ô Keyboard Typer vào cửa sổ đang focus; nhấn lại, hoặc Escape, để hủy. Mặc định: ctrl+alt+t. Bắt đầu sau khoảng một giây thay vì chờ hết Start delay, vì nhấn một phím tắt nghĩa là bạn đã ở trong cửa sổ mục tiêu — nút Go là nút dùng đếm ngược đầy đủ."
+          },
+          "transcribe_and_submit": {
+            "name": "Phím tắt Phiên âm & Gửi",
+            "description": "Kết thúc ghi âm, dán bản phiên âm, rồi nhấn phím gửi. Hoạt động ngay cả khi bản ghi được bắt đầu bằng một phím tắt khác."
+          },
+          "anchor_set": {
+            "name": "Đặt điểm neo",
+            "description": "Ghi nhận ô nhập văn bản bạn đang chọn làm đích Hot 1. Mặc định: ctrl+alt+k. Tự nó không gửi gì cả — đặt 'Jump slot action on finish' thành 'Jump / deliver to slot' với ô nhảy là Hot 1 (Advanced → Transcription) để bản phiên âm tiếp theo của bạn được gửi đến đó. Hộp mật khẩu và các cửa sổ riêng của Handy bị từ chối."
+          },
+          "anchor_jump": {
+            "name": "Nhảy đến điểm neo",
+            "description": "Đưa cửa sổ và ô nhập của Hot 1 về focus và không dán gì cả — một phím 'về lại bản nháp của tôi'. Mặc định: ctrl+alt+j. Nếu 'Save mouse position' được bật cho ô này, con trỏ chuột cũng được đưa về; không có gì xảy ra nếu ô nhảy trống hoặc cửa sổ của nó đã đóng."
+          },
+          "jump_set_slot_1": {
+            "name": "Đặt ô nhảy 1",
+            "description": "Ghi nhớ ô nhập bạn đang chọn làm ô nhảy tĩnh số 1, thay thế nội dung cũ. Mặc định: ctrl+alt+shift+1. Ô nhảy chỉ là một đánh dấu cho đến khi được dùng — nhảy đến nó bằng 'Jump to Slot 1', hoặc đặt 'Jump slot action on finish' của một luồng (Advanced → Transcription) trỏ đến Slot 1 để phiên âm được gửi đến đó."
+          },
+          "jump_set_slot_2": {
+            "name": "Đặt ô nhảy 2",
+            "description": "Ghi nhớ ô nhập bạn đang chọn làm ô nhảy tĩnh số 2, thay thế nội dung cũ. Mặc định: ctrl+alt+shift+2. Nhảy về bằng 'Jump to Slot 2', hoặc đặt 'Jump slot action on finish' của một luồng (Advanced → Transcription) trỏ đến Slot 2 để phiên âm được gửi đến đó."
+          },
+          "jump_set_slot_3": {
+            "name": "Đặt ô nhảy 3",
+            "description": "Ghi nhớ ô nhập bạn đang chọn làm ô nhảy tĩnh số 3, thay thế nội dung cũ. Mặc định: ctrl+alt+shift+3. Nhảy về bằng 'Jump to Slot 3', hoặc đặt 'Jump slot action on finish' của một luồng (Advanced → Transcription) trỏ đến Slot 3 để phiên âm được gửi đến đó."
+          },
+          "jump_set_slot_4": {
+            "name": "Đặt ô nhảy 4",
+            "description": "Ghi nhớ ô nhập bạn đang chọn làm ô nhảy tĩnh số 4, thay thế nội dung cũ. Mặc định: ctrl+alt+shift+4. Nhảy về bằng 'Jump to Slot 4', hoặc đặt 'Jump slot action on finish' của một luồng (Advanced → Transcription) trỏ đến Slot 4 để phiên âm được gửi đến đó."
+          },
+          "jump_slot_1": {
+            "name": "Nhảy đến ô 1",
+            "description": "Đưa cửa sổ và ô nhập của ô nhảy tĩnh số 1 về focus và không gửi gì — chỉ điều hướng thuần túy. Mặc định: ctrl+alt+1. Nếu 'Save mouse position' được bật cho ô này, con trỏ chuột cũng được khôi phục; không có gì xảy ra nếu ô nhảy trống hoặc cửa sổ của nó đã đóng."
+          },
+          "jump_slot_2": {
+            "name": "Nhảy đến ô 2",
+            "description": "Đưa cửa sổ và ô nhập của ô nhảy tĩnh số 2 về focus và không gửi gì — chỉ điều hướng thuần túy. Mặc định: ctrl+alt+2. Nếu 'Save mouse position' được bật cho ô này, con trỏ chuột cũng được khôi phục; không có gì xảy ra nếu ô nhảy trống hoặc cửa sổ của nó đã đóng."
+          },
+          "jump_slot_3": {
+            "name": "Nhảy đến ô 3",
+            "description": "Đưa cửa sổ và ô nhập của ô nhảy tĩnh số 3 về focus và không gửi gì — chỉ điều hướng thuần túy. Mặc định: ctrl+alt+3. Nếu 'Save mouse position' được bật cho ô này, con trỏ chuột cũng được khôi phục; không có gì xảy ra nếu ô nhảy trống hoặc cửa sổ của nó đã đóng."
+          },
+          "jump_slot_4": {
+            "name": "Nhảy đến ô 4",
+            "description": "Đưa cửa sổ và ô nhập của ô nhảy tĩnh số 4 về focus và không gửi gì — chỉ điều hướng thuần túy. Mặc định: ctrl+alt+4. Nếu 'Save mouse position' được bật cho ô này, con trỏ chuột cũng được khôi phục; không có gì xảy ra nếu ô nhảy trống hoặc cửa sổ của nó đã đóng."
           }
         },
         "errors": {
           "restore": "Không thể khôi phục phím tắt gốc",
           "set": "Không thể đặt phím tắt: {{error}}",
-          "reset": "Không thể đặt lại phím tắt về giá trị gốc"
+          "reset": "Không thể đặt lại phím tắt về giá trị gốc",
+          "registrationFailed": "Một số phím tắt không thể đăng ký được và đang không hoạt động: {{bindings}}. Có thể một ứng dụng khác đang sử dụng chúng — hãy chọn tổ hợp phím khác trong Cài đặt."
         }
       },
       "language": {
         "title": "Ngôn ngữ",
-        "description": "Chọn ngôn ngữ để nhận dạng giọng nói. Tự động sẽ tự động xác định ngôn ngữ, trong khi chọn một ngôn ngữ cụ thể có thể cải thiện độ chính xác cho ngôn ngữ đó.",
+        "description": "Cho engine biết bạn nói ngôn ngữ nào; chỉ định rõ thường chính xác hơn Auto và tránh việc các đoạn ngắn bị nhận sai ngôn ngữ. Mặc định: Auto. Áp dụng cho model được nêu ở tiêu đề thẻ này, và khi Translate to English được bật thì đây là ngôn ngữ bạn nói, không phải ngôn ngữ bạn nhận được.",
         "descriptionUnsupported": "Mô hình Parakeet tự động phát hiện ngôn ngữ. Không cần chọn thủ công.",
         "searchPlaceholder": "Tìm kiếm ngôn ngữ...",
         "noResults": "Không tìm thấy ngôn ngữ",
@@ -202,52 +295,146 @@
         },
         "jumperPasteDelay": {
           "title": "Paste delay after jump (Windows)",
-          "description": "Extra wait after a jump activates the target window and before the paste keystroke fires. A freshly activated window — especially an RDP/Citrix session — may still be transitioning when Ctrl+V lands, so the paste is swallowed and nothing appears. Set a longer wait for Remote desktop targets (matched on the Jumper page) and a shorter one for Local apps. Shared by both Transcribe and Transcribe & Submit; only applies after a real jump — when you're already in the target, paste stays instant.",
+          "description": "Thời gian chờ thêm sau khi một lần nhảy đưa cửa sổ mục tiêu lên trước và trước khi phím dán được gửi, vì một cửa sổ vừa được kích hoạt vẫn có thể nuốt mất phím. Mặc định: Local apps 250 ms, Remote desktop 1 s — cột nào áp dụng do Remote match strings ở trang Jumper quyết định. Chỉ chạy khi có một lần nhảy thực sự; khi bạn đã ở sẵn trong mục tiêu, việc dán vẫn diễn ra ngay lập tức, và cả hai dropdown được dùng chung bởi Transcribe và Transcribe & Submit.",
           "options": {
             "none": "Off (instant)"
           }
         },
         "jumperSubmitDelay": {
           "title": "Submit delay after jump (Windows)",
-          "description": "Extra wait before pressing the submit key (Enter) after a jump. A freshly activated window — especially RDP/Citrix — may still be applying the pasted text when Enter fires, so the submit is missed. Set a longer wait for Remote desktop targets and a shorter one for Local apps. Only applies after a real jump; when you're already in the target, submit stays instant.",
+          "description": "Thời gian chờ thêm giữa lúc dán và phím submit khi việc gửi phải nhảy, vì cửa sổ vừa được kích hoạt có thể vẫn đang xử lý văn bản dán và làm mất phím Enter. Mặc định: Local apps 250 ms, Remote desktop 500 ms — Remote match strings ở trang Jumper quyết định giá trị nào áp dụng. Chỉ chạy sau một lần nhảy thực sự; nếu bạn đã ở sẵn trong mục tiêu, việc gửi vẫn diễn ra ngay lập tức.",
           "options": {
             "none": "Off (instant)"
           }
-        }
-      },
-      "pasteLast": {
-        "title": "Paste last transcription",
+        },
+        "title": "Phiên âm & Gửi",
         "pasteMethod": {
-          "title": "Paste method",
-          "description": "How the last transcription is pasted into the focused window when you press the shortcut. Use Shift+Insert or another method if Ctrl+V doesn't work in the target app."
+          "title": "Phương thức dán",
+          "description": "Phím dán dùng riêng cho Transcribe & Submit Shortcut, để ứng dụng bạn đọc-chính-tả-và-gửi có thể khác biệt so với những nơi khác. Mặc định: Clipboard (Ctrl+V). Nó ghi đè Paste Method cho luồng này — đặt thành Clipboard (Shift+Insert) nếu hộp tin nhắn của ứng dụng đó bỏ qua Ctrl+V."
+        },
+        "submitKey": {
+          "title": "Phím gửi",
+          "description": "Phím được nhấn ngay sau khi luồng này dán, để thực sự gửi tin nhắn hoặc chạy lệnh. Mặc định: Enter. Luồng này luôn gửi — Auto Submit không áp dụng cho nó — nên chọn Ctrl+Enter hoặc Super+Enter cho các ứng dụng mà Enter thường chỉ tạo dòng mới."
+        },
+        "idleBehavior": {
+          "title": "Khi không có bản ghi nào đang hoạt động",
+          "description": "Điều gì xảy ra khi bạn nhấn Transcribe & Submit Shortcut lúc không có gì đang được ghi âm. Mặc định: Start a recording, để một lần nhấn bắt đầu và lần sau dán và gửi. Chọn Do nothing để phím này chỉ là phím kết thúc: bạn bắt đầu bằng Transcribe Shortcut và chỉ nhấn phím này khi muốn kết quả được dán và gửi.",
+          "options": {
+            "startNormal": "Bắt đầu ghi âm",
+            "doNothing": "Không làm gì"
+          }
         },
         "clipboard": {
           "title": "Clipboard",
-          "description": "Keep your existing clipboard after pasting, or leave the transcription on the clipboard."
+          "description": "Chính sách khay nhớ tạm riêng của luồng này, độc lập với Clipboard Handling: khôi phục khay nhớ tạm hiện có của bạn sau khi dán, hoặc chủ ý giữ bản phiên âm đã gửi ở đó. Mặc định: Don't Modify Clipboard. Hữu ích khi việc đọc chính tả thông thường nên để khay nhớ tạm của bạn yên nhưng bạn muốn một bản sao của mọi thứ đã gửi — hoặc ngược lại."
         }
+      },
+      "pasteLast": {
+        "title": "Dán bản phiên âm gần nhất",
+        "pasteMethod": {
+          "title": "Paste method",
+          "description": "Cách phím tắt Paste Last Transcription đưa văn bản vào cửa sổ đang focus. Tách biệt với Paste Method ở trang Advanced, nên bạn có thể tinh chỉnh riêng cho một mục tiêu khó chiều. Mặc định: Clipboard (Ctrl+V) — thử Clipboard (Shift+Insert) trong terminal, Direct để gõ từng ký tự thay vì dán, hoặc None để chỉ đặt văn bản vào khay nhớ tạm và bạn dán bằng tay."
+        },
+        "clipboard": {
+          "title": "Clipboard",
+          "description": "Liệu việc dán lại có đưa nội dung khay nhớ tạm cũ trở lại sau đó, hay chủ ý giữ bản phiên âm ở đó. Mặc định: Don't Modify Clipboard, sao chép văn bản, dán, rồi khôi phục nội dung cũ. Chọn Copy to Clipboard để giữ lại từ ngữ sau khi dán lại; dù chọn cách nào chỉ văn bản khay nhớ tạm được lưu và khôi phục, nên hình ảnh hoặc file đã sao chép sẽ mất."
+        }
+      },
+      "anchor": {
+        "title": "Neo & Gửi",
+        "deliveryFailed": "Gửi theo điểm neo không thành công: {{reason}}. Văn bản của bạn đang ở trên clipboard và điểm neo vẫn được giữ.",
+        "status": {
+          "title": "Điểm neo hiện tại",
+          "description": "Hiện ô nhảy nóng này đang trỏ tới đâu, với Test (nhảy đến đó mà không gửi gì) và Clear; huy hiệu 'Remote ✓' nghĩa là mục tiêu khớp với Remote match strings của bạn. Mặc định: No anchor set — nhấp vào một ô nhập văn bản và nhấn phím tắt Set Anchor của ô nhảy này để kích hoạt. Một anchor không bị dùng hết bởi một lần gửi: nó tồn tại đến khi bạn xoá hoặc cửa sổ của nó đóng.",
+          "active": "Đã neo: {{app}} ({{control}})",
+          "none": "Chưa đặt điểm neo",
+          "clear": "Xóa"
+        },
+        "keep": {
+          "label": "Giữ điểm neo sau khi gửi",
+          "description": "Giữ điểm neo ở trạng thái kích hoạt sau khi gửi thành công thay vì xóa nó, để đọc chính tả lặp lại vào cùng một trường."
+        },
+        "returnFocus": {
+          "label": "Trả tiêu điểm sau khi gửi",
+          "description": "Chuyển trở lại cửa sổ bạn đang dùng ngay sau khi văn bản được gửi."
+        },
+        "actions": {
+          "options": {
+            "none": "Không làm gì",
+            "jump": "Nhảy / gửi đến ô",
+            "set": "Đặt ô theo tiêu điểm hiện tại",
+            "clear": "Xóa ô"
+          },
+          "idle": {
+            "title": "Hành động ô nhảy khi bắt đầu",
+            "description": "Điều phím tắt này làm thêm với ô nhảy được chọn trong dropdown bên trái vào lúc bạn nhấn nó để bắt đầu ghi âm. Mặc định: Do nothing, đó là lý do trình chọn ô nhảy ban đầu bị mờ. Jump / deliver to slot đưa bạn vào ô nhập đã ghi nhớ đó trước khi bạn nói, Set slot to current focus ghi lại nơi bạn đang ở, và Clear slot xoá nó (chỉ Windows)."
+          },
+          "stop": {
+            "title": "Hành động ô nhảy khi kết thúc",
+            "description": "Điều phím tắt này làm với ô nhảy được chọn bên trái khi bản ghi kết thúc. Mặc định: Do nothing. Jump / deliver to slot gửi bản phiên âm vào ô nhập đã ghi nhớ đó thay vì nơi bạn đang ở, để bạn có thể đọc thứ khác trong lúc đọc chính tả; Set slot to current focus và Clear slot chỉ chạy sau khi văn bản đã được gửi, và Only jump on finish if started the same way ở trang Jumper có thể thu hẹp khi nào được phép nhảy (chỉ Windows)."
+          }
+        }
+      },
+      "transcribeGroup": {
+        "title": "Phiên âm"
+      },
+      "cancelBehavior": {
+        "title": "Hành vi khi hủy",
+        "description": "Quyết định việc hủy sẽ làm gì với bản ghi âm đang thực hiện — áp dụng cho Cancel Shortcut, mục \"Cancel\" trên tray và 'handy --cancel'. Mặc định: \"Finish, save to history only\", nghĩa là dừng và phiên âm bản ghi, giữ lại trong History cùng với audio, sau đó không gửi kết quả đi đâu cả: không dán, không đổi khay nhớ tạm, không gửi phím submit, không nhảy. Chọn \"Discard recording\" nếu bạn muốn bản ghi bị hủy bỏ mà không được phiên âm hay lưu lại.",
+        "options": {
+          "finishSilently": "Kết thúc, chỉ lưu vào lịch sử",
+          "discardRecording": "Bỏ bản ghi"
+        }
+      },
+      "updates": {
+        "title": "Bản cập nhật",
+        "checks": {
+          "label": "Tự động kiểm tra bản cập nhật",
+          "description": "Kiểm tra bản phát hành công khai trên GitHub mỗi ngày một lần."
+        },
+        "silent": {
+          "label": "Cài đặt cập nhật âm thầm",
+          "description": "Đóng, cập nhật rồi mở lại trong khung giờ cho phép. Mặc định tắt."
+        },
+        "time": {
+          "label": "Giờ cập nhật âm thầm",
+          "description": "Thời điểm giữa của khung giờ địa phương.",
+          "window": "{{start}}–{{end}} giờ địa phương."
+        },
+        "jitter": {
+          "label": "Ngẫu nhiên hằng ngày",
+          "description": "Mỗi ngày chọn thời điểm khác trong phạm vi số phút này.",
+          "minutes": "phút"
+        },
+        "checkNow": "Kiểm tra ngay",
+        "checking": "Đang kiểm tra…",
+        "upToDate": "Handy Tool đã được cập nhật.",
+        "lastChecked": "Lần kiểm tra cuối: {{value}}",
+        "never": "Chưa bao giờ",
+        "portableUnsupported": "Bản di động không thể cập nhật tại chỗ. Hãy tải bản di động mới nhất."
       }
     },
     "sound": {
       "title": "Âm thanh",
       "microphone": {
         "title": "Micrô",
-        "description": "Chọn thiết bị micrô ưa thích của bạn",
+        "description": "Thiết bị đầu vào Handy ghi âm từ đó. Có hiệu lực từ lần ghi âm tiếp theo, không cần khởi động lại. Mặc định: thiết bị mặc định của hệ thống — chỉ định rõ khi bạn chuyển giữa tai nghe và mảng mic tích hợp, dùng nút reset để về lại lựa chọn hệ thống.",
         "placeholder": "Chọn micrô...",
         "loading": "Đang tải..."
       },
       "audioFeedback": {
         "label": "Phản hồi âm thanh",
-        "description": "Phát âm thanh khi bắt đầu và kết thúc ghi âm"
+        "description": "Phát một tiếng báo ngắn khi ghi âm bắt đầu và một tiếng khác khi kết thúc, để bạn biết micro đang hoạt động mà không cần nhìn màn hình. Mặc định: Tắt. Bật lên sẽ mở khoá Output Device và Volume dưới đây; hai tiếng báo có thể được thay bằng file riêng của bạn qua Sound Theme ở trang Debug."
       },
       "outputDevice": {
         "title": "Thiết bị đầu ra",
-        "description": "Chọn thiết bị đầu ra âm thanh ưa thích của bạn cho âm thanh phản hồi",
+        "description": "Nơi phát tiếng báo bắt đầu và kết thúc — không ảnh hưởng đến micro nào ghi âm hoặc nơi các ứng dụng khác gửi âm thanh. Mặc định: thiết bị mặc định của hệ thống. Đặt vào tai nghe để tiếng báo không phát ra từ loa; điều khiển này mờ đi cho đến khi Audio Feedback được bật.",
         "placeholder": "Chọn thiết bị đầu ra...",
         "loading": "Đang tải..."
       },
       "volume": {
         "title": "Âm lượng",
-        "description": "Điều chỉnh âm lượng của âm thanh phản hồi"
+        "description": "Âm lượng của tiếng báo bắt đầu và kết thúc, từ 0 đến 100 phần trăm. Mặc định: 100%. Giảm nếu tiếng báo gây giật mình khi dùng tai nghe; chỉ thay đổi âm báo riêng của Handy, và mờ đi cho đến khi Audio Feedback được bật."
       }
     },
     "advanced": {
@@ -255,29 +442,29 @@
       "groups": {
         "app": "Ứng dụng",
         "output": "Đầu ra",
-        "transcription": "Chuyển đổi",
+        "transcription": "Phiên âm",
         "history": "Lịch sử",
-        "experimental": "Thử nghiệm"
-      },
-      "experimentalToggle": {
-        "label": "Tính năng thử nghiệm",
-        "description": "Bật các tính năng thử nghiệm đang trong quá trình phát triển."
+        "postProcessing": "Xử lý sau",
+        "keyboardTyper": "Bộ gõ bàn phím",
+        "tokenCountProviders": "Nhà cung cấp đếm Token",
+        "llmProviders": "Nhà cung cấp LLM đã đăng ký",
+        "mcp": "MCP & CLI"
       },
       "startHidden": {
         "label": "Khởi động ẩn",
-        "description": "Khởi động vào khay hệ thống mà không mở cửa sổ."
+        "description": "Khởi động Handy Tool mà không hiện cửa sổ nào — nó vào thẳng tray hệ thống và việc đọc chính tả hoạt động ngay. Mặc định: Tắt. Kết hợp với Launch on Startup để ứng dụng sẵn sàng khi đăng nhập mà không có cửa sổ xuất hiện, và giữ Show Tray Icon bật, vì tray sẽ là cách duy nhất để mở cửa sổ."
       },
       "autostart": {
         "label": "Khởi động cùng hệ thống",
-        "description": "Tự động khởi động Handy khi bạn đăng nhập vào máy tính."
+        "description": "Đăng ký Handy Tool tự khởi động khi bạn đăng nhập Windows. Mặc định: Tắt. Kết hợp với Start Hidden để nó xuất hiện lặng lẽ trên tray thay vì mở cửa sổ."
       },
       "showTrayIcon": {
         "label": "Hiển thị biểu tượng khay",
-        "description": "Hiển thị biểu tượng Handy trong khay hệ thống."
+        "description": "Hiện biểu tượng Handy Tool trên tray hệ thống, nơi nó cũng báo trạng thái nghỉ, ghi âm và đang phiên âm, cùng menu để mở cài đặt, xem bản phiên âm gần nhất và thoát. Mặc định: Bật. Lưu ý: khi tắt, đóng cửa sổ chính sẽ thoát ứng dụng thay vì ẩn nó — và nếu Start Hidden cũng bật thì không có gì trên màn hình để nhấn."
       },
       "overlay": {
         "title": "Vị trí lớp phủ",
-        "description": "Hiển thị lớp phủ phản hồi trực quan trong quá trình ghi âm và chuyển đổi. Trên Linux, 'Không có' được khuyến nghị.",
+        "description": "Hiện một lớp phủ nhỏ khi bạn đọc chính tả để bạn thấy Handy Tool đang lắng nghe rồi đang phiên âm, đặt ở dưới hoặc trên màn hình. Mặc định: Bottom. Chọn None để tắt khi nó che mất thứ bạn cần hoặc cản ứng dụng toàn màn hình.",
         "options": {
           "none": "Không có",
           "bottom": "Dưới",
@@ -286,7 +473,7 @@
       },
       "pasteMethod": {
         "title": "Phương thức dán",
-        "description": "Chọn cách chèn văn bản. Trực tiếp: mô phỏng gõ phím qua đầu vào hệ thống. Không có: bỏ qua dán, chỉ cập nhật lịch sử/clipboard.",
+        "description": "Chọn phím dán mà việc đọc chính tả thông thường dùng để gửi văn bản vào cửa sổ đang focus; Direct gõ từng ký tự thay vì dán, và None không gửi gì cả. Mặc định: Clipboard (Ctrl+V). Ví dụ: một terminal hoặc trình xem từ xa bỏ qua Ctrl+V thường nhận Clipboard (Shift+Insert), và None kết hợp với Clipboard Handling đặt là Copy to Clipboard để sẵn văn bản cho bạn dán bằng tay. Push-to-talk bỏ qua cài đặt này và dùng Paste Method (PTT).",
         "options": {
           "clipboard": "Clipboard ({{modifier}}+V)",
           "clipboardCtrlShiftV": "Clipboard (Ctrl+Shift+V)",
@@ -299,14 +486,14 @@
       },
       "typingTool": {
         "title": "Công cụ gõ",
-        "description": "Chọn công cụ gõ trên Linux cho phương thức dán trực tiếp. Auto sẽ tự động phát hiện và dùng công cụ tốt nhất có sẵn cho hệ thống của bạn.",
+        "description": "Chọn công cụ đưa ký tự vào (input-injection) trên Linux đứng sau phương thức dán Direct. Mặc định: Auto (Recommended), tự dò công cụ tốt nhất đã cài. Chỉ xuất hiện trong bản Linux dự kiến và không bao giờ hiện trên Windows.",
         "options": {
           "auto": "Auto (Khuyến nghị)"
         }
       },
       "clipboardHandling": {
         "title": "Xử lý Clipboard",
-        "description": "Không sửa đổi Clipboard giữ nguyên nội dung clipboard hiện tại sau khi chuyển đổi. Sao chép vào Clipboard để lại kết quả chuyển đổi trong clipboard sau khi dán.",
+        "description": "Quyết định điều gì còn lại trên khay nhớ tạm sau khi đọc chính tả thông thường dán xong: Don't Modify Clipboard chỉ đặt bản phiên âm ở đó vừa đủ để dán rồi khôi phục nội dung khay nhớ tạm trước đó, còn Copy to Clipboard chủ ý giữ bản phiên âm ở đó. Mặc định: Don't Modify Clipboard. Hạn chế cần biết: chỉ văn bản được khôi phục, nên một hình ảnh hoặc tệp đã sao chép sẽ mất — và Clipboard restore delay không có tác dụng gì trừ khi cài đặt này được đặt thành Don't Modify Clipboard.",
         "options": {
           "dontModify": "Không sửa đổi Clipboard",
           "copyToClipboard": "Sao chép vào Clipboard"
@@ -314,7 +501,7 @@
       },
       "autoSubmit": {
         "title": "Gửi tự động",
-        "description": "Tự động gửi tổ hợp phím đã chọn sau khi chèn văn bản. Cmd+Enter áp dụng trên macOS, còn Windows/Linux dùng Super+Enter.",
+        "description": "Gửi phím submit khoảng 50 ms sau mỗi lần dán thông thường, để tin nhắn chat đọc chính tả tự động được gửi. Mặc định: Tắt. Các ứng dụng khác nhau về phím gửi, nên thử Ctrl+Enter nếu Enter thường chỉ thêm dòng mới; bị bỏ qua khi Paste Method là None, và không chi phối Transcribe & Submit Shortcut, luồng này luôn gửi Submit key riêng của nó.",
         "options": {
           "off": "Tắt",
           "enter": "Enter",
@@ -325,12 +512,13 @@
       },
       "translateToEnglish": {
         "label": "Dịch sang tiếng Anh",
-        "description": "Tự động dịch giọng nói từ các ngôn ngữ khác sang tiếng Anh trong quá trình chuyển đổi.",
-        "descriptionUnsupported": "Mô hình {{model}} không hỗ trợ dịch thuật."
+        "description": "Yêu cầu model trả kết quả tiếng Anh thay vì phiên âm theo ngôn ngữ bạn nói. Mặc định: Tắt. Giữ Language đúng ngôn ngữ bạn thực sự nói — công tắc này chỉ hiện với các model hỗ trợ dịch.",
+        "descriptionUnsupported": "Mô hình {{model}} không hỗ trợ dịch thuật.",
+        "unsupported": "Không khả dụng cho mô hình phiên âm đã chọn."
       },
       "modelUnload": {
         "title": "Giải phóng mô hình",
-        "description": "Tự động giải phóng bộ nhớ GPU/CPU khi mô hình không được sử dụng trong thời gian quy định",
+        "description": "Giải phóng RAM hoặc VRAM mà model phiên âm đang giữ sau khi không dùng đến trong khoảng thời gian này; lần ghi âm tiếp theo sẽ mất vài giây để tải lại. Mặc định: Never (giữ tải — khởi động nhanh nhất), phù hợp nếu bạn đọc chính tả suốt cả ngày. Chọn một thời hạn khi bạn đọc chính tả theo cụm và muốn lấy lại bộ nhớ ở giữa — engine theo lô riêng của Translator không thuộc phạm vi này, nó được giải phóng bởi Unload batch model after.",
         "options": {
           "never": "Không bao giờ",
           "immediately": "Ngay lập tức",
@@ -339,16 +527,229 @@
           "min10": "Sau 10 phút",
           "min15": "Sau 15 phút",
           "hour1": "Sau 1 giờ",
-          "sec5": "Sau 5 giây (Gỡ lỗi)"
+          "sec5": "Sau 5 giây (Gỡ lỗi)",
+          "custom": "Tùy chỉnh…"
+        },
+        "units": {
+          "s": "giây",
+          "m": "phút",
+          "h": "giờ"
         }
       },
       "customWords": {
         "title": "Từ tùy chỉnh",
-        "description": "Thêm các từ thường bị nghe nhầm hoặc viết sai trong quá trình chuyển đổi. Hệ thống sẽ tự động sửa các từ có âm thanh tương tự để khớp với danh sách của bạn.",
+        "description": "Danh sách tên riêng, sản phẩm và thuật ngữ mà engine liên tục nhận sai; sau mỗi bản phiên âm Handy tìm các từ nghe giống và thay bằng cách viết của bạn. Mặc định: trống. Thêm nguyên từ khi gặp phải, và nếu nó bắt đầu sửa những thứ bạn không có ý đó, giảm Word Correction Threshold ở trang Debug.",
         "placeholder": "Thêm một từ",
         "add": "Thêm",
         "remove": "Xóa {{word}}",
         "duplicate": "\"{{word}}\" đã tồn tại"
+      },
+      "tokenCountProviders": {
+        "hint": "Các nhà cung cấp cho trang Đếm Token. Mẹo: mô hình chỉ chọn tokenizer — hãy chọn mô hình nhỏ nhất trong dòng bạn quan tâm (ví dụ qwen3:0.6b đếm giống qwen3:8b nhưng tải nhanh hơn nhiều). Các điểm cuối đếm của Anthropic và Gemini là miễn phí; các máy chủ cục bộ được truy vấn bằng một thử nghiệm 1 token.",
+        "enable": "Bật nhà cung cấp này",
+        "namePlaceholder": "Tên hiển thị",
+        "baseUrl": "URL cơ sở",
+        "apiKey": "Khóa API",
+        "apiKeyPlaceholder": "Không bắt buộc cho máy chủ cục bộ",
+        "model": "Mô hình",
+        "refreshModels": "Tải danh sách mô hình từ điểm cuối",
+        "modelsError": "Không thể tải mô hình",
+        "kinds": {
+          "gemini": "Gemini",
+          "anthropic": "Anthropic",
+          "openai_local": "tiktoken (ngoại tuyến)",
+          "openai_compatible": "Tương thích OpenAI"
+        }
+      },
+      "crashResilientRecording": {
+        "label": "Ghi âm an toàn khi gặp lỗi",
+        "description": "Mã hoá giọng nói của bạn thành file Opus gọn nhẹ trên đĩa trong lúc bạn nói thay vì giữ toàn bộ trong bộ nhớ, để một sự cố treo, cập nhật cưỡng ép hoặc hết pin vẫn giữ lại bản ghi âm — nó được sửa và thêm vào History ở lần khởi động tiếp theo. Mặc định: Bật. Tắt đi sẽ ghi âm thanh không nén, và điều này bị Full data (with compressed audio) khi sao lưu chủ ý bỏ qua."
+      },
+      "openRecordingsFolder": {
+        "label": "Thư mục ghi âm",
+        "description": "Mở thư mục chứa bản ghi âm của bạn và bất kỳ âm thanh nào được khôi phục sau một sự cố treo (%APPDATA%\\pr.handy\\recordings). Auto-Delete Recordings dọn dẹp ở đây, nhưng chỉ đụng đến các file do Handy tạo ra — ghi chú hay tệp xuất riêng của bạn trong thư mục đó không bao giờ bị đổi tên hoặc xoá.",
+        "button": "Mở thư mục"
+      },
+      "appearance": {
+        "title": "Giao diện",
+        "description": "Đặt tông màu cho mọi cửa sổ Handy Tool, bao gồm lớp phủ ghi âm và cửa sổ phiên âm nổi. Mặc định: System, theo cài đặt sáng/tối của Windows và tiếp tục theo dõi; Light và Dark cố định một bảng màu và bỏ qua thay đổi hệ điều hành sau đó.",
+        "options": {
+          "system": "Hệ thống",
+          "light": "Sáng",
+          "dark": "Tối"
+        }
+      },
+      "pasteMethodPtt": {
+        "title": "Phương thức dán (PTT)",
+        "description": "Lựa chọn giống Paste Method, nhưng chỉ dùng bởi Push-to-Talk Shortcut, để hold-to-talk có thể gửi khác với việc đọc chính tả thông thường của bạn. Mặc định: Clipboard (Ctrl+V). Đổi khi ứng dụng bạn push-to-talk vào cần phím dán khác với ứng dụng bạn đọc chính tả suốt ngày."
+      },
+      "clipboardRestoreDelay": {
+        "title": "Độ trễ khôi phục Clipboard",
+        "description": "Thời gian chờ thêm trước khi văn bản khay nhớ tạm cũ của bạn được khôi phục sau một lần dán, cộng thêm vào 50 ms có sẵn; không có tác dụng gì trừ khi cài đặt khay nhớ tạm của nhóm này (Clipboard Handling ở đây, hoặc Clipboard dưới Transcribe & Submit) là Don't Modify Clipboard. Mặc định: Off (instant). Tăng lên khoảng 1 giây nếu một phiên Citrix hoặc RDP dán lại khay nhớ tạm cũ thay vì thứ bạn vừa nói — các phiên remote chỉ lấy khay nhớ tạm sau khi phím dán đã đến.",
+        "options": {
+          "none": "Không (ngay lập tức)",
+          "ms250": "250 ms",
+          "ms500": "500 ms",
+          "ms1000": "1 giây",
+          "ms2500": "2,5 giây",
+          "ms5000": "5 giây"
+        }
+      },
+      "transcriptionMode": {
+        "title": "Chế độ phiên âm",
+        "description": "Live hiện văn bản đang hình thành khi bạn còn đang nói; Post-Recording ghi âm lặng lẽ và phiên âm ở nền. Mặc định: Post-Recording. Dù chọn cách nào, toàn bộ âm thanh vẫn được xử lý một lượt cuối khi bạn dừng, nên văn bản được gửi luôn là bản chính xác nhất và văn bản trực tiếp chỉ là bản xem trước — điều này chỉ chi phối Transcribe Shortcut, và các model phiên âm qua API luôn hoạt động như Post-Recording.",
+        "options": {
+          "live": "Trực tiếp",
+          "postRecording": "Sau khi ghi"
+        }
+      },
+      "transcriptionModePtt": {
+        "title": "Chế độ phiên âm (PTT)",
+        "description": "Cùng lựa chọn Live-hoặc-Post-Recording, chỉ áp dụng cho Push-to-Talk Shortcut. Mặc định: Live — cố ý ngược với Transcription Mode, vì các đoạn ghi âm giữ phím thường ngắn và bản xem trước hiện ra gần như ngay lập tức. Văn bản được gửi vẫn đến từ một lượt xử lý cuối trên toàn bộ bản ghi.",
+        "options": {
+          "live": "Trực tiếp",
+          "postRecording": "Sau khi ghi"
+        }
+      },
+      "gpuDevice": {
+        "title": "Thiết bị GPU",
+        "description": "Chọn card đồ hoạ nào Whisper cục bộ dùng để phiên âm, hoặc buộc chỉ xử lý bằng CPU. Mặc định: Auto (Default); nếu một card khởi động thất bại sẽ tự về Auto thay vì làm hỏng phiên âm. Đổi để giữ một card rời đang bận rảnh tay hoặc để tránh driver lỗi — có hiệu lực từ lần model tải tiếp theo, và chỉ xuất hiện trên Windows khi một model Whisper đang được chọn.",
+        "options": {
+          "auto": "Tự động (Mặc định)",
+          "cpu": "Chỉ CPU",
+          "device": "{{name}} (thiết bị {{index}})",
+          "deviceWithVram": "{{name}} (thiết bị {{index}}, {{vram}} GB)"
+        }
+      },
+      "apiTranscription": {
+        "title": "Phiên âm qua API",
+        "cardTitle": "Phiên âm qua API (Tương thích OpenAI)",
+        "url": {
+          "title": "URL API",
+          "description": "URL gốc của một server giọng nói tương thích OpenAI, bao gồm tiền tố phiên bản — Handy thêm /audio/transcriptions vào sau, nên http://127.0.0.1:8000/v1 trở thành http://127.0.0.1:8000/v1/audio/transcriptions. Mặc định: trống; điền trước khi chọn API Transcription (OpenAI-compatible) ở trang Models, nếu không bản ghi sẽ thất bại. Engine này luôn tải toàn bộ bản ghi âm dưới dạng một file WAV khi bạn dừng, nên Transcription Mode không có tác dụng với nó.",
+          "placeholder": "http://127.0.0.1:8000/v1"
+        },
+        "apiKey": {
+          "title": "Khóa API",
+          "description": "Khoá bearer được gửi cùng mỗi lần tải lên; để trống nếu server cục bộ không kiểm tra khoá. Mặc định: trống. Nó được lưu không mã hoá trong file cài đặt của bạn và có trong các bản sao lưu.",
+          "placeholder": "sk-..."
+        },
+        "model": {
+          "title": "Mô hình",
+          "description": "Id model mà endpoint của bạn mong đợi, gửi nguyên văn cùng lần tải lên — whisper-1 cho OpenAI, hoặc tên mà server của bạn đặt cho model của nó. Mặc định: trống, gửi trường model rỗng; đặt nếu endpoint của bạn yêu cầu. Khi Language là Auto, engine này gửi tiếng Anh, nên hãy cố định Language nếu bạn đọc chính tả bằng ngôn ngữ khác.",
+          "placeholder": "whisper-1"
+        }
+      },
+      "tabs": {
+        "app": "Ứng dụng",
+        "output": "Đầu ra",
+        "transcription": "Phiên âm",
+        "typer": "Bộ gõ",
+        "providers": "Nhà cung cấp",
+        "mcp": "MCP & CLI",
+        "history": "Lịch sử",
+        "postProcessing": "Xử lý sau"
+      },
+      "mcp": {
+        "loading": "Đang tải…",
+        "description": "Chạy một server cục bộ nhỏ để Claude (app và Code) và lệnh handy có thể dùng các công cụ riêng của Handy: đếm token, gõ văn bản vào cửa sổ đang focus, đọc History, chạy kiểm thử model và sửa nhà cung cấp. Mặc định: Tắt; bật lên sẽ khởi động server ngay trên 127.0.0.1 với Port và Token dưới đây, không bao giờ trên giao diện mạng. Cảnh báo cần biết: token được lưu dạng văn bản thuần trong file cài đặt của bạn, nên bất kỳ chương trình chạy dưới quyền bạn cũng có thể đọc và điều khiển ứng dụng.",
+        "enable": "Bật máy chủ MCP & CLI",
+        "running": "Đang chạy",
+        "stopped": "Đã dừng",
+        "port": "Cổng",
+        "token": "Token",
+        "show": "Hiện",
+        "hide": "Ẩn",
+        "regenerate": "Tạo lại",
+        "claudeApp": "Ứng dụng Claude (HTTP) — thêm một máy chủ MCP tùy chỉnh với URL này:",
+        "authHeader": "…và tiêu đề Authorization này:",
+        "claudeCodeStdio": "Claude Code (stdio):",
+        "claudeCodeHttp": "Claude Code (HTTP):",
+        "cliTitle": "Công cụ dòng lệnh đi kèm",
+        "cliHint": "Sao chép chương trình Handy vào PATH của bạn dưới tên handy, để bạn có thể chạy handy model-test, handy token-count hoặc handy mcp --stdio từ bất kỳ terminal nào với ứng dụng đang chạy. Mặc định: chưa cài. Lệnh này giao tiếp với ứng dụng qua cùng server cục bộ, nên chỉ hoạt động khi Enable MCP & CLI server được bật; không có sẵn ở bản portable.",
+        "installCli": "Cài đặt CLI",
+        "reinstallCli": "Cài đặt lại CLI"
+      },
+      "costReport": {
+        "title": "Báo cáo chi phí phiên âm",
+        "description": "Chi phí (USD thực tế từ OpenRouter) và thời lượng theo từng bản ghi, tổng hợp theo tuần, tháng và năm. Tải xuống báo cáo đầy đủ — mọi bản ghi cùng các bản tổng hợp — dưới dạng CSV.",
+        "download": "Tải CSV",
+        "recalc": "Tính lại thời lượng",
+        "recordings": "Bản ghi",
+        "daily": "7 ngày qua",
+        "colTimestamp": "Thời điểm",
+        "colDuration": "Thời lượng (HH:MM:SS)",
+        "colCost": "Chi phí (USD)",
+        "colPeriod": "Kỳ",
+        "colCount": "Bản ghi",
+        "weekly": "4 tuần qua",
+        "monthly": "12 tháng qua",
+        "yearly": "Theo năm",
+        "total": "Tổng (mọi lúc)",
+        "allTime": "Mọi lúc",
+        "weekOf": "Tuần của {{date}}",
+        "totalLine": "{{count}} bản ghi · {{duration}} · {{cost}}",
+        "empty": "Chưa có bản ghi nào"
+      },
+      "llmProviders": {
+        "hint": "Một danh mục nhà cung cấp — tên, endpoint, khoá, model và chi phí trên mỗi triệu token — dùng chung cho Token Count, Model Testing và Post Process. Mỗi ô giữ một id cố định (#1, #2, …) mà các màn hình đó tham chiếu, nên thay đổi ở đây áp dụng ở mọi nơi; bỏ tick Enable this provider sẽ gỡ ô đó khỏi cả ba nơi. Mặc định: ba ô cục bộ được bật và mọi ô nhà cung cấp cloud đều tắt cho đến khi bạn dán khoá.",
+        "enable": "Bật nhà cung cấp này",
+        "namePlaceholder": "Tên nhà cung cấp",
+        "baseUrl": "URL cơ sở",
+        "apiKey": "Khóa API",
+        "apiKeyPlaceholder": "Dán khóa API của bạn",
+        "model": "Mô hình",
+        "modelPlaceholder": "Id mô hình",
+        "refreshModels": "Làm mới danh sách mô hình",
+        "modelsError": "Thất bại",
+        "cost": "Chi phí / 1M",
+        "costInput": "vào $",
+        "costOutput": "ra $",
+        "costAuto": "Được báo cáo tự động bởi OpenRouter",
+        "concurrency": "Đồng thời",
+        "sequential": "Chạy tuần tự trong cùng nhóm",
+        "family": "nhóm",
+        "familyPlaceholder": "ví dụ: flm",
+        "kinds": {
+          "anthropic": "Anthropic",
+          "gemini": "Gemini",
+          "openai_local": "Cục bộ (tiktoken)",
+          "openai_compatible": "Tương thích OpenAI",
+          "openrouter": "OpenRouter",
+          "apple_intelligence": "Apple"
+        },
+        "persistPrice": "Giữ cố định",
+        "persistPriceHint": "Giữ mức giá này ngay cả khi mô hình thay đổi (không tự động điền từ OpenRouter)"
+      },
+      "openRouterTranscription": {
+        "cardTitle": "Phiên âm qua OpenRouter",
+        "url": {
+          "title": "URL API",
+          "description": "Gốc API OpenRouter mà yêu cầu giọng nói được gửi đến, bao gồm /api/v1. Mặc định: https://openrouter.ai/api/v1 — giữ nguyên trừ khi bạn dùng qua proxy. Handy không gửi gì cả khi giá trị này hoặc API Key để trống.",
+          "placeholder": "https://openrouter.ai/api/v1"
+        },
+        "apiKey": {
+          "title": "Khóa API",
+          "description": "Khoá OpenRouter của bạn (openrouter.ai/keys), chỉ dùng cho engine giọng nói này — tách biệt với bất kỳ mục OpenRouter nào trong Registered LLM Providers. Mặc định: trống, và nếu không có nó bản ghi âm sẽ thất bại thay vì gửi yêu cầu không xác thực. Đọc chính tả bằng engine này tải âm thanh của bạn lên OpenRouter và tốn tiền theo mỗi bản ghi âm; số tiền thực tế được ghi trong History và trong Transcription cost report.",
+          "placeholder": "sk-or-..."
+        },
+        "model": {
+          "title": "Mô hình phiên âm",
+          "description": "Id model của OpenRouter, nhập bằng tay: dạng id kiểu openai/whisper-large-v3 cho tuyến Transcription, hoặc một model chat hỗ trợ âm thanh như google/gemini-2.5-flash cho tuyến Chat. Mặc định: trống, sẽ dùng lại openai/whisper-large-v3. Phải khớp với Endpoint — nếu không khớp thường trả về một bản phiên âm trống thay vì báo lỗi.",
+          "placeholder": "openai/whisper-large-v3"
+        },
+        "route": {
+          "title": "Điểm cuối",
+          "description": "Chọn endpoint OpenRouter nào nhận âm thanh. Transcription (Whisper-style) gửi đến endpoint giọng nói chuyên dụng; Chat model (Gemini / GPT-4o-audio) đặt âm thanh trong một tin nhắn chat, đây là cách duy nhất để các model không phải model giọng nói chấp nhận nó. Mặc định: Transcription (Whisper-style). Phải khớp với Transcription model, và Translate to English chỉ được áp dụng trên tuyến Chat.",
+          "stt": "Phiên âm (kiểu Whisper)",
+          "chat": "Mô hình trò chuyện (Gemini / GPT-4o-audio)"
+        },
+        "format": {
+          "title": "Định dạng âm thanh",
+          "description": "Cách âm thanh được mã hoá trước khi tải lên: Opus nhỏ hơn WAV khoảng mười lần, điều này quan trọng khi dùng mạng chia sẻ hoặc wifi khách sạn. Mặc định: Opus — smaller (recommended). Chỉ áp dụng khi Endpoint là Chat model (Gemini / GPT-4o-audio); tuyến Transcription (Whisper-style) luôn gửi WAV, vì các model kiểu Whisper từ chối Opus.",
+          "opus": "Opus — nhỏ hơn (khuyến nghị)",
+          "wav": "WAV — tương thích nhất"
+        }
       }
     },
     "postProcessing": {
@@ -360,7 +761,8 @@
         "title": "API (Tương thích OpenAI)",
         "provider": {
           "title": "Nhà cung cấp",
-          "description": "Chọn một nhà cung cấp tương thích OpenAI."
+          "description": "Chọn một nhà cung cấp tương thích OpenAI.",
+          "placeholder": "Chọn một nhà cung cấp đã đăng ký"
         },
         "appleIntelligence": {
           "title": "Apple Intelligence",
@@ -387,13 +789,18 @@
           "placeholderWithOptions": "Tìm kiếm hoặc chọn một mô hình",
           "placeholderNoOptions": "Nhập tên mô hình",
           "refreshModels": "Làm mới mô hình"
-        }
+        },
+        "temperature": {
+          "title": "Nhiệt độ",
+          "description": "Thấp hơn cho kết quả nhất quán và chắc chắn hơn (0 = sát nghĩa nhất); cao hơn cho kết quả sáng tạo hơn."
+        },
+        "registryNote": "Khóa API, mô hình và URL cơ sở của nhà cung cấp được cấu hình trong Nâng cao → Nhà cung cấp LLM đã đăng ký."
       },
       "prompts": {
         "title": "Prompt",
         "selectedPrompt": {
           "title": "Prompt đã chọn",
-          "description": "Chọn một mẫu để tinh chỉnh bản ghi hoặc tạo mới. Sử dụng ${output} trong văn bản prompt để tham chiếu bản ghi đã chụp."
+          "description": "Chọn một mẫu để tinh chỉnh bản phiên âm hoặc tạo mới. Sử dụng ${output} trong văn bản prompt để tham chiếu bản phiên âm đã thu được."
         },
         "noPrompts": "Không có prompt nào",
         "selectPrompt": "Chọn một prompt",
@@ -401,53 +808,66 @@
         "promptLabel": "Nhãn Prompt",
         "promptLabelPlaceholder": "Nhập tên prompt",
         "promptInstructions": "Hướng dẫn Prompt",
-        "promptInstructionsPlaceholder": "Viết hướng dẫn để chạy sau khi chuyển đổi. Ví dụ: Cải thiện ngữ pháp và độ rõ ràng cho văn bản sau: ${output}",
-        "promptTip": "Mẹo: Sử dụng <code>${output}</code> để chèn văn bản đã chuyển đổi vào prompt của bạn.",
+        "promptInstructionsPlaceholder": "Viết hướng dẫn để chạy sau khi phiên âm. Ví dụ: Cải thiện ngữ pháp và độ rõ ràng cho văn bản sau: ${output}",
+        "promptTip": "Mẹo: Sử dụng <code>${output}</code> để chèn văn bản phiên âm vào prompt của bạn.",
         "updatePrompt": "Cập nhật Prompt",
         "deletePrompt": "Xóa Prompt",
         "createPrompt": "Tạo Prompt",
         "cancel": "Hủy",
         "selectToEdit": "Chọn một prompt ở trên để xem và chỉnh sửa chi tiết.",
         "createFirst": "Nhấn 'Tạo Prompt mới' ở trên để tạo prompt xử lý sau đầu tiên của bạn."
+      },
+      "disableThinking": {
+        "label": "Tắt suy luận",
+        "description": "Gửi think: false đến mô hình. Giúp tăng tốc phản hồi nhưng có thể làm giảm khả năng tuân theo hướng dẫn đối với các mô hình có suy luận (ví dụ Qwen3)."
       }
     },
     "history": {
       "title": "Lịch sử",
       "openFolder": "Mở thư mục ghi âm",
       "loading": "Đang tải lịch sử...",
-      "empty": "Chưa có bản ghi nào. Bắt đầu ghi âm để xây dựng lịch sử của bạn!",
-      "copyToClipboard": "Sao chép bản ghi vào clipboard",
-      "save": "Lưu bản ghi",
+      "empty": "Chưa có bản phiên âm nào. Bắt đầu ghi âm để xây dựng lịch sử của bạn!",
+      "copyToClipboard": "Sao chép bản phiên âm vào clipboard",
+      "save": "Lưu bản phiên âm",
       "unsave": "Xóa khỏi đã lưu",
       "delete": "Xóa mục",
-      "deleteError": "Không thể xóa mục. Vui lòng thử lại."
+      "deleteError": "Không thể xóa mục. Vui lòng thử lại.",
+      "loadError": "Không thể tải lịch sử: {{error}}",
+      "search": {
+        "placeholder": "Tìm trong lịch sử (văn bản hoặc regex)...",
+        "clear": "Xóa tìm kiếm",
+        "matches": "{{matched}} trong {{total}}",
+        "regexBadge": ".*",
+        "regexActive": "Truy vấn đang được xử lý như một biểu thức chính quy",
+        "noMatches": "Không có mục nào khớp với tìm kiếm của bạn."
+      }
     },
     "debug": {
       "title": "Gỡ lỗi",
       "logDirectory": {
         "title": "Thư mục nhật ký",
-        "description": "Vị trí lưu trữ các tệp nhật ký"
+        "description": "Mở thư mục chứa file log — nơi đầu tiên cần xem khi có lỗi mà không rõ nguyên nhân. Log xoay vòng ở 10 MB và các file cũ được giữ lại thay vì bị ghi đè, nên bằng chứng còn sau lần khởi động lại thường xảy ra sau một sự cố. Mức độ chi tiết ở đây do Log Level ở trang Debug quyết định, mặc định là Debug và có thể bao gồm các đoạn phiên âm."
       },
       "logLevel": {
         "title": "Mức nhật ký",
-        "description": "Đặt mức độ chi tiết của nhật ký"
+        "description": "Đặt mức độ chi tiết được ghi vào các file log; đầu ra trên console không bị ảnh hưởng. Mặc định: Debug. Giảm xuống Info nếu bạn không muốn nội dung đọc chính tả nằm trên đĩa — ở mức Debug và Trace, các đoạn phiên âm và bản xem trước prompt có thể xuất hiện trong các file bạn mở từ Log Directory ở trang About."
       },
       "soundTheme": {
         "label": "Chủ đề âm thanh",
-        "description": "Chọn chủ đề âm thanh cho phản hồi bắt đầu và kết thúc ghi âm"
+        "description": "Chọn cặp tiếng báo nào phát khi bắt đầu và kết thúc ghi âm. Mặc định: Marimba. Bạn chỉ nghe được khi Audio Feedback được bật (trang General), và Custom chỉ xuất hiện trong danh sách này khi cả hai file WAV bắt đầu và kết thúc tuỳ chỉnh đã tồn tại trong thư mục resources của app-data."
       },
       "wordCorrectionThreshold": {
         "title": "Ngưỡng sửa từ",
-        "description": "Độ nhạy cho việc sửa từ tùy chỉnh"
+        "description": "Mức độ dễ dàng một bản phiên âm bị viết lại để khớp với các mục trong Custom Words ở trang General. Mặc định: 0.18. Tăng lên nếu tên riêng và thuật ngữ vẫn bị nhận sai; giảm xuống nếu Handy Tool bắt đầu thay thế những từ bạn thực sự đã nói — khi Custom Words để trống, thanh trượt này không có tác dụng gì."
       },
       "historyLimit": {
         "title": "Giới hạn lịch sử",
-        "description": "Số lượng mục lịch sử tối đa cần giữ",
+        "description": "Số bản phiên âm History giữ lại trước khi các mục cũ nhất bị xoá cùng với file âm thanh của chúng. Mặc định: 5 mục — cố ý thấp, nên tăng lên nếu bạn dự định tra lại sau nhiều ngày. Chỉ có tác dụng khi Auto-Delete Recordings được đặt thành Keep latest, và các mục bạn đánh dấu Save transcription luôn được giữ và không bị tính vào giới hạn này.",
         "entries": "mục"
       },
       "recordingRetention": {
         "title": "Tự động xóa ghi âm",
-        "description": "Tự động xóa các bản ghi âm cũ để tiết kiệm dung lượng",
+        "description": "Kiểm soát việc tự động dọn dẹp History: khi một mục hết hạn, cả dòng và file âm thanh của nó đều bị xoá. Mặc định: Keep latest, chỉ giữ những mục mới nhất theo History Limit (mặc định 5) — các tùy chọn theo thời gian giữ mọi thứ trong 3 ngày, 2 tuần hoặc 3 tháng gần nhất, và Never không xoá gì cả. Dọn dẹp chạy sau mỗi bản phiên âm mới được lưu và lại khi bạn đổi một trong hai cài đặt, luôn bỏ qua các mục được đánh dấu Save transcription, và chỉ xoá các file âm thanh do chính Handy Tool tạo ra.",
         "never": "Không bao giờ",
         "preserveLimit": "Giữ {{count}} bản mới nhất",
         "days3": "Sau 3 ngày",
@@ -457,27 +877,27 @@
       },
       "alwaysOnMicrophone": {
         "label": "Micrô luôn bật",
-        "description": "Giữ micrô hoạt động để phản hồi nhanh hơn"
+        "description": "Giữ luồng micro mở giữa các lần ghi âm thay vì mở lại mỗi khi bạn nhấn phím tắt ghi âm. Mặc định: Tắt. Bật nếu âm tiết đầu tiên của một bản ghi bị mất — cái giá là biểu tượng micro hệ thống của bạn sáng liên tục suốt thời gian Handy Tool chạy, không chỉ khi bạn đọc chính tả."
       },
       "clamshellMicrophone": {
         "title": "Micrô chế độ gập",
-        "description": "Micrô sử dụng khi nắp laptop được đóng"
+        "description": "Chọn một thiết bị đầu vào khác cho lúc nắp laptop đóng, dành cho máy để dock mà micro tích hợp không dùng được trong tình huống đó. Mặc định: none, nên Microphone ở trang General luôn được dùng. Việc nhận biết nắp đóng chỉ dành cho macOS và bản macOS vẫn đang được dự kiến, nên điều này không có tác dụng gì trên bản Windows."
       },
       "postProcessingToggle": {
         "label": "Xử lý sau",
-        "description": "Bật tinh chỉnh văn bản bằng AI sau khi chuyển đổi"
+        "description": "Bật bước xử lý AI làm sạch tùy chọn và thêm trang Post Process vào thanh bên, nơi bạn chọn nhà cung cấp và câu prompt. Mặc định: Tắt. Transcribe Shortcut bình thường của bạn không bị ảnh hưởng — việc làm sạch chỉ chạy trên Post-Processing Hotkey riêng, và History giữ bản phiên âm gốc bên cạnh bản đã xử lý."
       },
       "muteWhileRecording": {
         "label": "Tắt tiếng khi ghi âm",
-        "description": "Tắt tiếng âm thanh hệ thống trong khi ghi âm"
+        "description": "Tắt tiếng âm thanh hệ thống trong suốt mỗi lần ghi âm, để nhạc hoặc video từ loa không lẫn vào micro. Mặc định: Tắt. Bật nếu bạn đọc chính tả qua loa thay vì tai nghe; âm thanh tự phục hồi khi bản ghi kết thúc."
       },
       "appendTrailingSpace": {
         "label": "Thêm dấu cách cuối",
-        "description": "Thêm một dấu cách sau bản ghi đã dán"
+        "description": "Thêm một dấu cách vào cuối mỗi bản phiên âm được gửi, để hai lần đọc chính tả liên tiếp không dính liền thành \"...one.Two\". Mặc định: Tắt. Bật nếu bạn đọc chính tả theo từng đoạn ngắn vào cùng một ô; để tắt nếu một dấu cách thừa gây vấn đề, như ô tìm kiếm hoặc lệnh terminal."
       },
       "keyboardImplementation": {
         "title": "Keyboard Implementation",
-        "description": "Choose the keyboard shortcut backend.",
+        "description": "Chọn backend nào đăng ký các phím tắt toàn cục của Handy Tool với hệ điều hành. Mặc định: Tauri Global Shortcut. Chuyển sang Handy Keys khi một phím tắt bạn đặt không bao giờ kích hoạt vì chương trình khác đã chiếm tổ hợp đó hoặc Windows từ chối đăng ký — mọi phím tắt được đăng ký lại khi bạn chuyển, và thay đổi sẽ được hoàn tác nếu thất bại.",
         "bindingsReset": "Keyboard shortcuts were incompatible and reset to defaults"
       },
       "paths": {
@@ -487,50 +907,204 @@
       },
       "pasteDelay": {
         "title": "Độ trễ dán",
-        "description": "Độ trễ trước khi gửi phím dán (tính bằng mili giây). Tăng nếu văn bản sai đang được dán."
+        "description": "Thời gian Handy Tool chờ sau khi đặt bản phiên âm vào khay nhớ tạm trước khi gửi phím dán. Mặc định: 60 ms. Tăng lên nếu một ứng dụng chậm dán lại nội dung khay nhớ tạm cũ thay vì văn bản mới; đây là thời gian chờ khác với Paste delay after jump (Windows), chỉ áp dụng khi một ô nhảy Jumper vừa kích hoạt một cửa sổ khác."
       }
     },
     "about": {
       "title": "Giới thiệu",
       "version": {
         "title": "Phiên bản",
-        "description": "Phiên bản hiện tại của Handy"
+        "description": "Bản build Handy Tool bạn đang chạy; nêu ra khi báo lỗi. Windows x64 là bản duy nhất được phát hành — macOS và Linux đang được dự kiến, và các tính năng Jumper chỉ dành cho Windows dù sau đó. Không có gì ở đây tự kiểm tra bản mới hơn; dùng Updates khi bạn muốn xem."
       },
       "appDataDirectory": {
         "title": "Thư mục dữ liệu ứng dụng",
-        "description": "Vị trí Handy lưu trữ dữ liệu"
+        "description": "Mở thư mục duy nhất chứa mọi thứ Handy Tool lưu giữ: cài đặt (kể cả khoá API nhà cung cấp và prompt của bạn) trong file JSON, bản phiên âm trong cơ sở dữ liệu SQLite, bản ghi âm, model đã tải và log đã xoay vòng. Mặc định: %APPDATA%\\pr.handy trên bản cài Windows thông thường. Không có gì trong đó được Handy Tool mã hoá — quyền hệ thống file là bảo vệ duy nhất — nên đây cũng là thư mục cần sao chép, hoặc xoá, khi bạn chuyển giao máy."
       },
       "sourceCode": {
         "title": "Mã nguồn",
         "description": "Xem mã nguồn và đóng góp",
         "button": "Xem trên GitHub"
       },
-      "supportDevelopment": {
-        "title": "Hỗ trợ phát triển",
-        "description": "Giúp chúng tôi tiếp tục xây dựng Handy",
-        "button": "Quyên góp"
-      },
       "acknowledgments": {
         "title": "Lời cảm ơn",
         "whisper": {
           "title": "Whisper.cpp",
           "description": "Suy luận hiệu suất cao của mô hình nhận dạng giọng nói tự động Whisper của OpenAI",
-          "details": "Handy sử dụng Whisper.cpp để xử lý chuyển đổi giọng nói thành văn bản nhanh, cục bộ. Cảm ơn công việc tuyệt vời của Georgi Gerganov và các cộng tác viên."
+          "details": "Handy sử dụng Whisper.cpp để xử lý phiên âm giọng nói thành văn bản nhanh chóng và cục bộ. Cảm ơn công việc tuyệt vời của Georgi Gerganov và các cộng tác viên."
+        },
+        "handy": {
+          "title": "Handy",
+          "description": "Ứng dụng phiên âm giọng nói thành văn bản mã nguồn mở nguyên bản mà dự án này được xây dựng dựa trên",
+          "details": "Handy Tool là một bản fork của Handy, được tạo bởi CJ Pais (github.com/cjpais/Handy, handy.computer). Nó được tiếp quản tại phiên bản gốc v0.8.1 (tháng 3 năm 2026) và đã được phát triển tiếp một cách độc lập bởi Patrick R. Xin cảm ơn rất nhiều CJ và những người đóng góp cho Handy vì nền tảng mà dự án này đứng trên đó."
         }
+      },
+      "updates": {
+        "title": "Cập nhật",
+        "description": "Check releases mở trang phát hành GitHub của dự án trong trình duyệt để bạn so sánh với Version. Handy Tool không có bộ cập nhật và không bao giờ tự kiểm tra bản phát hành mới ở nền — cập nhật luôn là điều bạn tự chọn thực hiện.",
+        "button": "Kiểm tra bản phát hành"
       }
     },
     "jumper": {
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "When a jump target's app, window class, or control class contains one of these (case-insensitive), it is treated as a remote desktop session and uses the longer 'Remote' jump delays (Advanced → Transcription). Add the identifiers your RDP/Citrix clients use — e.g. msrdc, mstsc, Citrix. An empty list treats every target as local.",
+        "description": "Một mục tiêu nhảy mà ứng dụng, lớp cửa sổ, hoặc lớp điều khiển chứa một trong các đoạn này (không phân biệt hoa thường) được coi là remote desktop, nên nó dùng giá trị Remote của 'Paste delay after jump (Windows)' và 'Submit delay after jump (Windows)' ở Advanced → Transcription thay vì giá trị Local. Mặc định: msrdc, mstsc, Citrix. Thêm tên tiến trình mà ứng dụng RDP hoặc Citrix của bạn dùng nếu việc gửi vào đó liên tục bị mất; một danh sách trống coi mọi mục tiêu là local.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
         "duplicate": "'{{value}}' is already in the list",
         "badge": "Remote ✓",
         "badgeTooltip": "This target matches a remote match string, so it uses the Remote jump delays."
+      },
+      "windowsOnly": "Jumper chỉ khả dụng trên Windows.",
+      "hot": {
+        "title": "Ô nóng (Neo & Gửi)",
+        "optionsMoved": {
+          "title": "Tùy chọn gửi",
+          "description": "Không phải một cài đặt — chỉ là biển báo. Một lần nhảy thực sự làm gì với một ô nhảy được cấu hình theo từng luồng ở Advanced → Transcription: 'Jump slot action on start', 'Jump slot action on finish', 'Track last output location' và 'Return focus after delivery' mỗi thứ tồn tại một lần cho Transcribe và một lần cho Transcribe & Submit.",
+          "hint": "Được cấu hình trong các nhóm Phiên âm và Phiên âm & Gửi trên trang Chung."
+        }
+      },
+      "hot2": {
+        "title": "Ô nóng thứ hai (Neo & Gửi)"
+      },
+      "slot": {
+        "title": "Ô cố định {{index}}",
+        "status": "Đích của ô {{index}}",
+        "description": "Hiện ô nhảy đánh số này đang trỏ tới đâu, với Test (nhảy đến đó mà không gửi gì) và Clear. Mặc định: no target — focus vào một ô nhập bạn thường quay lại, nhấn phím tắt Set của ô nhảy này (ctrl+alt+shift+1 … 9), và nhảy về bất cứ lúc nào bằng ctrl+alt+1 … 9. Một ô nhảy ghi nhớ một cửa sổ và một ô nhập, không phải một tab trình duyệt hay vị trí con trỏ văn bản, và nó tồn tại qua các lần gửi.",
+        "test": "Kiểm tra",
+        "testFailed": "Nhảy không thành công: {{reason}}",
+        "stale": "Đã lưu: {{app}} ({{control}}) — chưa tìm thấy cửa sổ"
+      },
+      "persist": {
+        "label": "Nhớ các ô qua các lần khởi động lại",
+        "description": "Ghi nhớ mục tiêu của mọi ô nhảy qua các lần khởi động lại ứng dụng. Mặc định: Tắt. Windows không thể giữ handle cửa sổ qua khởi động lại, nên Handy lưu danh tính của mỗi ô nhảy (ứng dụng cùng loại cửa sổ và ô nhập) và tìm lại cửa sổ khớp khi khởi động và mỗi lần bạn dùng ô nhảy — một ô đã lưu mà ứng dụng chưa chạy sẽ hiện màu đỏ cho đến khi nó xuất hiện lại.",
+        "groupTitle": "Duy trì"
+      },
+      "slotNames": {
+        "hot": "Nóng 1",
+        "hot2": "Nóng 2",
+        "static": "Ô {{index}}"
+      },
+      "track": {
+        "label": "Theo dõi vị trí đầu ra cuối",
+        "description": "Chỉ Windows. Sau khi luồng này dán một bản phiên âm, ô nhảy được chọn trong 'Save location into' bị ghi đè bằng ô nhập mà văn bản thực sự đã đến, để lần nhảy tới ô đó sẽ đưa bạn về nơi đọc chính tả gần nhất. Mặc định: Tắt. Bật khi bạn muốn một ô nhảy tự động theo dõi bạn thay vì đặt bằng tay — Transcribe và Transcribe & Submit theo dõi độc lập, và việc ghi nhận diễn ra trước bất kỳ 'Return focus after delivery'.",
+        "slot": {
+          "title": "Lưu vị trí vào",
+          "description": "Ô nhảy nào 'Track last output location' ghi đè sau mỗi lần gửi bởi luồng này. Mặc định: Hot 1. Trỏ đến một ô nhảy tĩnh (Slot 1 đến Slot 9) nếu bạn không muốn việc theo dõi tự động tiếp tục ghi đè lên anchor nóng bạn đặt bằng tay với Set Anchor."
+        }
+      },
+      "saveCursor": {
+        "label": "Khôi phục vị trí con trỏ chuột",
+        "description": "Sau khi luồng này gửi một bản phiên âm, hãy ghi nhớ vị trí con trỏ chuột và di chuyển con trỏ trở lại đó khi bạn nhảy. Độc lập với công tắc của luồng khác; chế độ vị trí bên dưới được chia sẻ giữa cả hai luồng.",
+        "perSlot": "Lưu vị trí chuột",
+        "perSlotDescription": "Cũng ghi lại vị trí con trỏ chuột khi ô nhảy này được đặt hoặc theo dõi, và đưa con trỏ về đó khi bạn nhảy đến ô này — sau khi dán, để không làm ảnh hưởng đến việc gửi kết quả. Mặc định: Tắt. Bật cho một ô nhảy ở màn hình khác để bàn phím và chuột cùng đến nơi; nó bật 'Cursor position mode' riêng của ô này ở dưới, và mỗi ô nhảy có cặp công tắc riêng.",
+        "mode": {
+          "title": "Chế độ vị trí con trỏ",
+          "description": "Chọn cách đo vị trí con trỏ chuột đã lưu của ô nhảy này. Mặc định: App-relative (follows the window) — khôi phục cùng vị trí trong cửa sổ mục tiêu ngay cả sau khi cửa sổ đã di chuyển, đổi kích thước, hoặc kéo sang màn hình có DPI khác. Chọn Screen-absolute (exact coordinates) cho thứ không bao giờ di chuyển, như một dashboard cố định; dropdown mờ đi cho đến khi 'Save mouse position' của ô này được bật.",
+          "appRelative": "Tương đối theo ứng dụng (theo cửa sổ)",
+          "screenAbsolute": "Tuyệt đối theo màn hình (tọa độ chính xác)"
+        }
+      },
+      "returnFocus": {
+        "label": "Trả tiêu điểm sau khi gửi",
+        "description": "Sau một lần gửi cần nhảy, focus trở về cửa sổ bạn đang ở khi việc gửi bắt đầu — được ghi nhận tự động, không cần thiết lập ô nhảy nào. Mặc định: Bật. Có điều kiện: nếu bạn tự chuyển cửa sổ trong lúc Handy Tool đang xử lý, nó sẽ để bạn ở nơi bạn đã chọn, và mỗi luồng quyết định điều này riêng biệt (chỉ Windows)."
+      },
+      "requireSameFlow": {
+        "groupTitle": "Hành vi khi kết thúc",
+        "label": "Chỉ nhảy khi kết thúc nếu bắt đầu theo cùng cách",
+        "description": "Khi bật, 'Jump slot action on finish' của một luồng chỉ chạy nếu bản ghi được bắt đầu và kết thúc bằng cùng một phím tắt. Mặc định: Tắt. Ví dụ: bắt đầu bằng Transcribe và kết thúc bằng Transcribe & Submit thì sẽ không có nhảy — việc dán và gửi vẫn diễn ra, chỉ có việc nhảy bị chặn. Bật nếu việc dùng lẫn hai phím tắt liên tục đưa bạn đến nơi không mong muốn."
       }
+    },
+    "translator": {
+      "title": "Trình dịch",
+      "enabled": {
+        "label": "Theo dõi thư mục",
+        "description": "Bật để phiên âm mọi file .wav, .ogg hoặc .opus mới xuất hiện trong một thư mục được theo dõi thành file .txt bên cạnh, dùng model, Language và Translate to English hiện tại của bạn. Mặc định: tắt. Các file đã có sẵn trong thư mục khi bắt đầu theo dõi sẽ chủ ý được bỏ qua, còn thư mục được chọn ở Add a folder."
+      },
+      "priority": {
+        "title": "Mức ưu tiên",
+        "description": "Quyết định ai được dùng engine giọng nói khi một file trong thư mục và việc đọc chính tả của bạn cùng cần nó lúc đó. Mặc định: Live dictation first — việc xử lý theo lô dừng lại ở điểm ranh giới đoạn kế tiếp ngay khi bạn nhấn ghi âm và tiếp tục sau đó, nên không mất tiến độ theo lô. Folder batch first giữ việc xử lý theo lô tiếp tục và văn bản trực tiếp của bạn đến muộn hơn chút; First come, first served để file đang xử lý hoàn tất, rồi chạy bản ghi của bạn trước khi file tiếp theo bắt đầu.",
+        "options": {
+          "live_first": "Ưu tiên đọc chính tả trực tiếp",
+          "folder_first": "Lô thư mục trước",
+          "fifo": "Đến trước, xử lý trước"
+        }
+      },
+      "model": {
+        "title": "Mô hình xử lý theo lô",
+        "description": "Model giọng nói nào phiên âm các file trong thư mục theo dõi của bạn; các model có biểu tượng địa cầu cũng có thể dịch sang tiếng Anh, cần bật Translate to English. Mặc định: Same as dictation (default), dùng lại model đang chọn ở trang Models. Chọn một model cục bộ khác thì nó sẽ tải vào một ô riêng cùng với model đọc chính tả — xử lý theo lô trên một engine, đọc chính tả vẫn tức thì trên engine khác — đổi lại tốn thêm bộ nhớ, có thể được Unload batch model after trả lại.",
+        "sameAsDictation": "Giống mô hình đọc chính tả (mặc định)",
+        "translates": "{{name}} — có thể dịch sang tiếng Anh"
+      },
+      "unload": {
+        "title": "Giải phóng mô hình theo lô sau",
+        "description": "Bản sao model theo lô riêng của Translator lưu trong bộ nhớ bao lâu sau khi hàng đợi ngừng hoạt động; giải phóng trả lại RAM hoặc VRAM, còn giữ lại tránh phải tải lại khi có tệp mới. Mặc định: Never (giữ tải — khởi động nhanh nhất). Chỉ có tác dụng khi Batch model chỉ định một model cục bộ khác với model đọc chính tả của bạn — nếu không thì cài đặt Unload Model chính sẽ chi phối."
+      },
+      "status": {
+        "title": "Trạng thái",
+        "description": "Việc Trình dịch đang làm ngay lúc này. Các bản phiên âm đã hoàn tất được ghi bên cạnh tệp âm thanh với cùng tên và phần mở rộng .txt.",
+        "disabled": "Tắt",
+        "idle": "Đang theo dõi — không có việc gì để làm",
+        "queued": "{{count}} tệp đang chờ",
+        "working": "{{file}} — đoạn {{segment}}/{{total}}",
+        "workingIndeterminate": "{{file}}",
+        "paused": {
+          "live": "tạm dừng để đọc chính tả trực tiếp",
+          "processing": "tạm dừng khi một bản ghi đang kết thúc"
+        },
+        "counters": "{{done}} hoàn tất, {{failed}} thất bại trong phiên này"
+      },
+      "folders": {
+        "title": "Thư mục được theo dõi",
+        "none": "Không có thư mục",
+        "emptyTitle": "Không có thư mục nào được theo dõi",
+        "emptyDescription": "Thêm một thư mục để bắt đầu theo dõi các bản ghi mới trong đó.",
+        "addTitle": "Thêm thư mục",
+        "addDescription": "Mở trình chọn thư mục; từ đó mọi file âm thanh mới xuất hiện trong thư mục đó sẽ được đưa vào hàng đợi và bản phiên âm được ghi bên cạnh dưới dạng .txt. Mặc định: thư mục ghi âm Handy của bạn được thêm sẵn lần đầu Translator chạy. Thêm một thư mục không có tác dụng gì cho đến khi Watch folders được bật, và những gì đã có sẵn trong thư mục sẽ bị bỏ qua — chỉ file xuất hiện sau đó mới được phiên âm.",
+        "add": "Thêm thư mục",
+        "remove": "Ngừng theo dõi thư mục này",
+        "addFailed": "Không thể thêm thư mục: {{reason}}",
+        "operationFailed": "Không thể cập nhật thư mục: {{reason}}",
+        "toggleAriaLabel": "Theo dõi thư mục {{name}}",
+        "removeAriaLabel": "Ngừng theo dõi thư mục {{name}}"
+      }
+    },
+    "currentAudio": {
+      "streamingHint": "Văn bản chỉ xuất hiện dần khi bạn nói nếu phím tắt đã nhấn — Phiên âm hoặc Nhấn để nói — được đặt thành Trực tiếp và bạn đang dùng mô hình cục bộ.",
+      "finalHint": "Ở chế độ Sau khi ghi hoặc khi dùng phiên âm qua API hay OpenRouter, toàn bộ bản phiên âm xuất hiện cùng lúc khi kết thúc ghi âm; đặt chế độ cho từng phím tắt trong",
+      "advancedTranscription": "Nâng cao → Phiên âm",
+      "finalHintSuffix": ".",
+      "title": "Âm thanh hiện tại",
+      "idle": "Bắt đầu ghi âm để xem bản phiên âm trực tiếp",
+      "recording": "Đang nghe...",
+      "openFloating": "Mở cửa sổ nổi",
+      "copy": "Sao chép",
+      "copied": "Đã sao chép"
+    },
+    "backup": {
+      "description": "Xuất dữ liệu Handy Tool của bạn dưới dạng một tệp lưu trữ đã nén. Các mô hình đã tải xuống và âm thanh không nén lớn (WAV/FLAC) luôn bị loại trừ.",
+      "configTitle": "Cấu hình + lịch sử",
+      "configHint": "Xuất cài đặt của bạn cùng cơ sở dữ liệu lịch sử phiên âm (thời gian, văn bản, chi phí, thời lượng) và không có âm thanh, nên file nhỏ gọn. Dùng trước một thay đổi cấu hình lớn, hoặc để chuyển phím tắt, nhà cung cấp và prompt sang máy khác. File lưu trữ không mã hoá và chứa khoá API nhà cung cấp cùng token server MCP của bạn dạng văn bản thuần — hãy coi file này như một bí mật.",
+      "exportConfig": "Xuất cấu hình + lịch sử",
+      "fullTitle": "Dữ liệu đầy đủ (kèm âm thanh đã nén)",
+      "fullHint": "Mọi thứ trong bản xuất configuration cộng thêm các bản ghi âm đã nén của bạn (.opus/.ogg) — file lớn hơn nhiều, và vẫn chứa khoá API của bạn dạng văn bản thuần. Model đã tải, âm thanh WAV/FLAC không nén và các file chunk đang xử lý luôn bị loại trừ, nên các bản ghi thực hiện khi Crash-Safe Recording bị tắt sẽ xuất hiện thành dòng lịch sử không có âm thanh trong file lưu trữ.",
+      "exportFull": "Xuất bản sao lưu đầy đủ",
+      "saved": "Đã lưu vào {{path}}",
+      "restoreTitle": "Khôi phục từ bản sao lưu",
+      "restoreHint": "Chọn một file lưu trữ sao lưu Handy Tool (.tar.gz) và tick những gì cần khôi phục — Configuration & history (cài đặt, cơ sở dữ liệu lịch sử) và Recordings (file âm thanh) độc lập với nhau, nên bạn có thể chọn một trong hai, và cả hai bắt đầu được tick sẵn. Chỉ những mục Handy Tool nhận diện được mới được trích xuất, và những gì được khôi phục sẽ thay thế nội dung hiện tại. Khôi phục cài đặt hoặc lịch sử cần khởi động lại: dùng nút Restart Handy Tool now xuất hiện, nếu không ứng dụng đang chạy sẽ ghi đè chúng ở lần lưu tiếp theo.",
+      "restoreConfig": "Cấu hình & lịch sử (cài đặt, DB lịch sử)",
+      "restoreRecordings": "Bản ghi (tệp âm thanh)",
+      "restoreButton": "Khôi phục từ bản sao lưu…",
+      "restoreDone": "Đã khôi phục — cài đặt: {{settings}} · lịch sử: {{history}} · bản ghi: {{recordings}}",
+      "restartHint": "Khởi động lại Handy Tool để tải cài đặt/lịch sử đã khôi phục (trước đó ứng dụng đang chạy có thể ghi đè lên chúng).",
+      "restartNow": "Khởi động lại Handy Tool ngay"
+    },
+    "modelPicker": {
+      "refresh": "Lấy / làm mới danh sách mô hình",
+      "loading": "Đang tải mô hình…",
+      "error": "Không thể tải mô hình",
+      "noMatches": "Không có mô hình khớp — nhập để dùng id tùy chỉnh"
     }
   },
   "common": {
@@ -554,11 +1128,16 @@
     "yes": "Có",
     "no": "Không",
     "noOptionsFound": "Không tìm thấy tùy chọn",
-    "selectOption": "Chọn một tùy chọn…"
+    "selectOption": "Chọn một tùy chọn…",
+    "delay": {
+      "off": "Tắt (tức thì)",
+      "ms": "{{ms}} ms",
+      "seconds": "{{seconds}} giây"
+    }
   },
   "accessibility": {
     "permissionsRequired": "Cần quyền truy cập",
-    "permissionsDescription": "Handy cần quyền truy cập để gõ văn bản đã chuyển đổi.",
+    "permissionsDescription": "Handy cần quyền truy cập để gõ văn bản phiên âm.",
     "openSettings": "Mở Cài đặt Hệ thống",
     "dismiss": "Bỏ qua"
   },
@@ -567,10 +1146,10 @@
   },
   "appLanguage": {
     "title": "Ngôn ngữ ứng dụng",
-    "description": "Thay đổi ngôn ngữ giao diện của Handy"
+    "description": "Chuyển toàn bộ giao diện, bao gồm menu tray, sang một trong 17 ngôn ngữ có sẵn. Mặc định: ngôn ngữ hiển thị Windows của bạn, chuyển về tiếng Anh nếu ngôn ngữ đó chưa có. Đây chỉ là ngôn ngữ giao diện — không liên quan đến ngôn ngữ bạn nói, được cài đặt bằng Language ở trang General."
   },
   "overlay": {
-    "transcribing": "Đang chuyển đổi...",
+    "transcribing": "Đang phiên âm...",
     "processing": "Đang xử lý...",
     "openFloatingWindow": "Mở cửa sổ phiên âm"
   },
@@ -579,5 +1158,163 @@
     "listening": "Đang nghe…",
     "copy": "Sao chép",
     "copied": "Đã sao chép"
+  },
+  "brand": {
+    "name": "Handy",
+    "suffix": "TOOL"
+  },
+  "toasts": {
+    "pasteFailed": "Dán bản phiên âm không thành công: {{reason}}. Văn bản đã được lưu trong Lịch sử.",
+    "pasteFailedParked": "Dán bản phiên âm không thành công: {{reason}}. Văn bản đang ở trên clipboard (và trong Lịch sử) — hãy dán thủ công.",
+    "transcriptionFailed": "Phiên âm không thành công: {{reason}}. Hãy kiểm tra xem mô hình đã chọn có hoạt động không, rồi thử lại."
+  },
+  "flm": {
+    "notInstalled": "FLM chưa được cài đặt. Hãy cài FastFlowLM để dùng các mô hình gia tốc NPU.",
+    "npuAccelerated": "Gia tốc NPU"
+  },
+  "tokenCount": {
+    "configureProviders": "Cấu hình nhà cung cấp",
+    "noProviders": "Chưa cấu hình nhà cung cấp nào.",
+    "title": "Đếm Token",
+    "placeholder": "Dán văn bản vào đây để đếm token...",
+    "tokenizer": "Tokenizer",
+    "count": "Đếm",
+    "countAll": "Đếm với tất cả",
+    "countAllTitle": "Đếm với từng nhà cung cấp đã bật, lần lượt một — phù hợp khi các ô cùng chia sẻ một dịch vụ cục bộ phải tải/gỡ từng mô hình",
+    "countAllParallel": "Đếm với tất cả (song song)",
+    "countAllParallelTitle": "Truy vấn mọi nhà cung cấp đã bật cùng lúc — nhanh nhất khi các dịch vụ độc lập với nhau",
+    "counting": "Đang đếm... {{done}}/{{total}}",
+    "cancelSweep": "Hủy",
+    "openFile": "Mở tệp...",
+    "fileTooLarge": "Tệp quá lớn (tối đa 10 MB).",
+    "loadedFile": "Đã tải: {{name}}",
+    "providerOption": "{{name}} (nhà cung cấp)",
+    "chipDisabled": "Chưa được cấu hình — bật bằng Enable this provider trong Advanced > Providers > Registered LLM Providers.",
+    "chips": {
+      "cl100k_base": "cl100k (GPT-4)",
+      "o200k_base": "o200k (GPT-4o)",
+      "estimate": "Ước tính"
+    },
+    "activeProvider": "Đang đếm với: {{name}} — {{model}} ({{url}})",
+    "activeLocal": "Đang đếm cục bộ với: {{tokenizer}}",
+    "sweepSummary": "{{ok}} trong {{total}} nhà cung cấp đã phản hồi",
+    "showFailed": "hiện {{count}} thất bại",
+    "hideFailed": "ẩn thất bại",
+    "table": {
+      "provider": "Nhà cung cấp",
+      "model": "Mô hình",
+      "tokens": "Token",
+      "delta": "Δ so với nhỏ nhất",
+      "time": "Thời gian"
+    },
+    "tokens": "token",
+    "characters": "ký tự",
+    "words": "từ",
+    "options": {
+      "cl100k_base": "Đếm số token trong ô văn bản bằng đúng bộ token hoá của GPT-4 và GPT-3.5 (cl100k_base), thực hiện hoàn toàn trên máy này — không có gì được tải lên và hoạt động ngay cả khi ngoại tuyến. Dùng cho các model OpenAI đến GPT-4; với các model mới hơn hãy dùng o200k (GPT-4o).",
+      "o200k_base": "Đếm số token trong ô văn bản bằng đúng bộ token hoá của GPT-4o và o1 (o200k_base), thực hiện hoàn toàn trên máy này — không có gì được tải lên và hoạt động ngay cả khi ngoại tuyến. Dùng cho các model OpenAI hiện tại; các model GPT-4 và GPT-3.5 cũ hơn dùng bộ token hoá cl100k (GPT-4).",
+      "estimate": "Ước lượng thô cục bộ khoảng 1,3 token mỗi từ, không dùng bộ token hoá và không gọi mạng. Dùng khi model bạn quan tâm không có bộ đếm chính xác ở đây, và chỉ coi đây là con số ước chừng — nó bị loại khỏi cột \"Δ vs smallest\" một cách chủ ý để con số thô không làm lệch so sánh giữa các bộ đếm chính xác."
+    }
+  },
+  "keyboardTyper": {
+    "title": "Bộ gõ bàn phím",
+    "description": "Gửi văn bản này vào cửa sổ đang focus dưới dạng các lần gõ phím mô phỏng riêng lẻ, nên hoạt động ở nơi việc dán bị chặn — remote console, VM viewer, hộp thoại mật khẩu. Nhấn Go để có đếm ngược Start delay (mặc định 10 giây) để bạn nhấp vào cửa sổ mục tiêu trước; nhấn Type Text Shortcut khi bạn đã ở trong mục tiêu và việc gõ bắt đầu sau khoảng một giây thay vào đó. Văn bản chỉ tồn tại trong bộ nhớ — không bao giờ được ghi vào cài đặt, History, hay log của bạn.",
+    "placeholder": "Nhập văn bản cần gõ...",
+    "go": "Bắt đầu",
+    "cancel": "Hủy",
+    "startDelay": {
+      "label": "Độ trễ bắt đầu",
+      "unit": "s",
+      "preset": "{{seconds}}s",
+      "presetTitle": "Bắt đầu gõ sau {{seconds}} giây"
+    },
+    "keyDelay": {
+      "label": "Độ trễ giữa các phím",
+      "unit": "ms"
+    },
+    "shortcut": {
+      "label": "Phím tắt:",
+      "unset": "chưa đặt",
+      "hint": "(thay đổi trong Cài đặt nâng cao; nhấn lại để hủy)"
+    },
+    "status": {
+      "idle": "Nhấp Bắt đầu, rồi chọn tiêu điểm vào cửa sổ đích — hoặc dùng phím tắt trực tiếp trong ứng dụng đích.",
+      "countdown": "Bắt đầu gõ sau {{seconds}}s... (Esc để hủy)",
+      "typing": "Đang gõ... {{typed}}/{{total}} ký tự (Esc để hủy)",
+      "done": "Hoàn tất — đã gõ {{total}} ký tự.",
+      "cancelled": "Đã hủy.",
+      "error": "Lỗi: {{message}}"
+    }
+  },
+  "modelTesting": {
+    "configureProviders": "Cấu hình nhà cung cấp",
+    "description": "Gửi một prompt đến mọi model bạn tick dưới Run và xếp các câu trả lời song song với số token, chi phí và thời gian phản hồi; các model tick dưới Judge sau đó chấm điểm tất cả câu trả lời đó bằng prompt giám khảo của bạn. Mặc định: không có gì được chọn và cả hai prompt để trống. Danh sách lấy từ Advanced > Registered LLM Providers, nên một lần chạy dùng khoá API của riêng bạn — prompt của bạn ra khỏi máy này và, với các nhà cung cấp trả phí, tốn tiền thật.",
+    "providersLabel": "Mô hình",
+    "selectAll": "Chọn tất cả để chạy",
+    "clear": "Xóa",
+    "run": "Chạy",
+    "judge": "Đánh giá",
+    "costPerM": "vào ${{input}} · ra ${{output}} /1M",
+    "noProviders": "Chưa có nhà cung cấp hỗ trợ chat nào được cấu hình. Thêm một nhà cung cấp trong Nâng cao → Nhà cung cấp LLM đã đăng ký.",
+    "mainPromptLabel": "Prompt cho tất cả mô hình",
+    "mainPromptPlaceholder": "Prompt được gửi đến mọi mô hình đã chọn…",
+    "judgePromptLabel": "Prompt đánh giá / trọng tài (không bắt buộc)",
+    "judgePromptPlaceholder": "Hướng dẫn cho hội đồng đánh giá. Hội đồng nhận đầu vào gốc cùng câu trả lời của mọi mô hình (được gắn thẻ XML).",
+    "temperatureLabel": "Nhiệt độ",
+    "modelParams": "Mô hình",
+    "judgeParams": "Đánh giá",
+    "runButton": "Chạy kiểm tra",
+    "cancelButton": "Hủy",
+    "runningMain": "Đang truy vấn mô hình…",
+    "runningJudge": "Đang chạy hội đồng đánh giá…",
+    "summaryTitle": "Tóm tắt",
+    "judgePanelTitle": "Hội đồng đánh giá",
+    "answersTitle": "Câu trả lời",
+    "colModel": "Mô hình",
+    "colInput": "Token vào",
+    "colOutput": "Token ra",
+    "colCost": "Chi phí",
+    "colTime": "Thời gian",
+    "roundTrip": "Thời gian phản hồi (lâu nhất)",
+    "totalCost": "Tổng chi phí",
+    "errorPrefix": "Lỗi",
+    "artifactLabel": "Tài liệu Markdown",
+    "copyMarkdown": "Sao chép Markdown",
+    "copied": "Đã sao chép!",
+    "saveMarkdown": "Lưu…",
+    "status": {
+      "mainStart": "Đang truy vấn {{count}} mô hình…",
+      "judgeStart": "Đang chạy hội đồng đánh giá ({{count}} giám khảo)…",
+      "done": "Xong.",
+      "cancelled": "Đã hủy.",
+      "activity": "Hoạt động của lượt chạy"
+    },
+    "library": {
+      "preset": "Mẫu có sẵn",
+      "presetPlaceholder": "Tải một mẫu có sẵn…",
+      "pick": "Prompt đã lưu…",
+      "save": "Lưu",
+      "delete": "Xóa mục đã chọn",
+      "namePlaceholder": "Tên…",
+      "confirm": "Lưu",
+      "cancel": "Hủy",
+      "editCustom": "Chỉnh sửa / tùy chỉnh"
+    },
+    "thinking": {
+      "label": "Suy luận",
+      "auto": "Tự động",
+      "on": "Bật",
+      "off": "Tắt"
+    },
+    "image": {
+      "label": "Hình ảnh (không bắt buộc, cho mô hình thị giác)",
+      "drop": "Nhấp hoặc kéo một hình ảnh vào đây để đính kèm",
+      "remove": "Xóa",
+      "tooLarge": "Hình ảnh quá lớn (tối đa {{mb}} MB)."
+    },
+    "save": "Lưu",
+    "saveAs": "Lưu thành…",
+    "saveTo": "Lưu vào {{path}}",
+    "saveDisabled": "Dùng “Lưu thành…” trước để chọn vị trí"
   }
 }

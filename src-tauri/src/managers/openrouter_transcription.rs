@@ -133,13 +133,14 @@ pub fn transcribe(
     };
     if text.is_empty() {
         // A 2xx with no text usually means a route/model mismatch (e.g. an STT
-        // model on the chat route). Surface the raw response to make it diagnosable.
+        // model on the chat route). Keep the raw response below the release
+        // default because providers may echo user speech in response fields.
         let snippet: String = value.to_string().chars().take(400).collect();
         log::warn!(
-            "OpenRouter transcription returned empty text (route {:?}); response: {}",
-            route,
-            snippet
+            "OpenRouter transcription returned empty text (route {:?})",
+            route
         );
+        debug!("OpenRouter empty transcription response: {}", snippet);
     }
     debug!("OpenRouter transcription result ({} chars)", text.len());
     Ok(text)
@@ -221,12 +222,17 @@ fn post_json(url: &str, api_key: &str, body: &serde_json::Value) -> Result<serde
     let payload = serde_json::to_string(body)?;
     let response = match req.send_string(&payload) {
         Ok(r) => r,
-        // ureq returns non-2xx as Error::Status; its Display drops the body, so
-        // read it to surface OpenRouter's actual reason (bad model, no audio
-        // support, out of credits, …) instead of just a status code.
+        // ureq returns non-2xx as Error::Status; retain its body as debug-only
+        // diagnostics because provider errors can echo user speech.
         Err(ureq::Error::Status(code, resp)) => {
             let body = resp.into_string().unwrap_or_default();
-            anyhow::bail!("{}: HTTP {} — {}", url, code, body.trim());
+            debug!(
+                "OpenRouter transcription error response (HTTP {}, {} chars): {}",
+                code,
+                body.chars().count(),
+                body.chars().take(400).collect::<String>()
+            );
+            anyhow::bail!("{}: HTTP {}", url, code);
         }
         Err(e) => anyhow::bail!("{}: {}", url, e),
     };

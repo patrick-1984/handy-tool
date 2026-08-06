@@ -13,7 +13,43 @@
     "postProcessing": "Post-traitement",
     "history": "Historique",
     "debug": "Débogage",
-    "about": "À propos"
+    "about": "À propos",
+    "backup": "Sauvegarde",
+    "currentAudio": "Audio en cours",
+    "tokenCount": "Comptage de tokens",
+    "keyboardTyper": "Frappe clavier",
+    "jumper": "Jumper",
+    "translator": "Traducteur",
+    "groups": {
+      "tools": "Outils",
+      "config": "Configuration"
+    },
+    "modelTesting": "Test de modèles",
+    "resize": "Faire glisser pour redimensionner",
+    "update": {
+      "checking": "Recherche de mises à jour…",
+      "available": "Handy Tool {{version}} est disponible",
+      "silentOn": "Handy Tool va se fermer, se mettre à jour puis se rouvrir.",
+      "silentOff": "Activez les mises à jour silencieuses pour une installation automatique pendant la plage prévue.",
+      "enableSilent": "Activer les mises à jour silencieuses",
+      "updateRestart": "Mettre à jour et redémarrer",
+      "later": "Plus tard",
+      "updateNow": "Mettre à jour maintenant",
+      "downloading": "Téléchargement de Handy Tool {{version}}…",
+      "percent": "{{percent}} %",
+      "ready": "La mise à jour {{version}} est prête",
+      "waitingForIdle": "Attente de la fin de la dictée…",
+      "readyDetail": "Handy Tool va redémarrer pour terminer la mise à jour.",
+      "waiting": "Attente…",
+      "restartInstall": "Redémarrer et installer",
+      "installing": "Installation de la mise à jour…",
+      "installingDetail": "Handy Tool va se fermer et se rouvrir.",
+      "failed": "Échec de la mise à jour",
+      "failedDetail": "Handy Tool n’a pas été modifié. {{reason}}",
+      "unknownError": "Erreur inconnue",
+      "tryAgain": "Réessayer",
+      "downloadInstaller": "Télécharger l’installateur"
+    }
   },
   "onboarding": {
     "subtitle": "Pour commencer, choisissez un modèle de transcription",
@@ -133,11 +169,15 @@
   "settings": {
     "modelSettings": {
       "title": "Paramètres de {{model}}",
-      "noSettingsNeeded": "Ce modèle fonctionne automatiquement sans configuration nécessaire."
+      "noSettingsNeeded": "Ce modèle fonctionne automatiquement sans configuration nécessaire.",
+      "autoDetectLanguage": {
+        "description": "Ce modèle détecte automatiquement la langue parlée et ne peut pas être limité à une langue spécifique. Pour imposer une langue, passez à un modèle Whisper, SenseVoice, FLM ou API.",
+        "value": "Détection automatique"
+      }
     },
     "models": {
       "title": "Modèles de Transcription",
-      "description": "Sélectionnez un modèle de transcription ou téléchargez des modèles supplémentaires. Différents modèles offrent différents niveaux de précision et de vitesse.",
+      "description": "Choisissez quel modèle vocal transcrit votre dictée — les modèles diffèrent en précision, vitesse et mémoire occupée une fois chargés. Par défaut : rien sélectionné sur une installation neuve ; l'accueil télécharge et sélectionne votre premier modèle. Votre choix décide aussi si Langue et Traduire en anglais sont proposés sur la page Général, et le Traducteur utilise ce même modèle tant que son Modèle de lot reste sur « Identique à la dictée (par défaut) ».",
       "downloaded": "Téléchargés",
       "available": "Disponibles au Téléchargement",
       "deleteConfirm": "Êtes-vous sûr de vouloir supprimer {{modelName}} ? Vous devrez le télécharger à nouveau pour l'utiliser.",
@@ -165,26 +205,79 @@
         "bindings": {
           "transcribe": {
             "name": "Raccourci de Transcription",
-            "description": "Le raccourci clavier pour enregistrer et transcrire votre voix."
+            "description": "Appuyez une fois pour démarrer l'enregistrement et à nouveau pour terminer ; la transcription est livrée dans la fenêtre qui avait le focus. Par défaut : Ctrl+Espace. Il suit le Mode de transcription et la Méthode de collage de la page Avancé — pour un enregistrement en maintenant la touche, utilisez plutôt le Raccourci Appuyer pour parler."
           },
           "cancel": {
             "name": "Raccourci d'Annulation",
-            "description": "Le raccourci clavier pour annuler l'enregistrement en cours."
+            "description": "Annule la prise en cours. Par défaut : escape. Ce que l'annulation fait réellement est décidé par le Comportement de l'annulation sur la page Général — Terminer, enregistrer uniquement dans l'historique transcrit et conserve toujours le texte mais ne livre rien à votre fenêtre, tandis qu'Abandonner l'enregistrement jette l'audio — et l'élément Annuler de la barre système suit le même réglage."
           },
           "transcribe_with_post_process": {
             "name": "Raccourci de post-traitement",
             "description": "Facultatif : Un raccourci dédié qui applique toujours le post-traitement IA à votre transcription."
+          },
+          "transcribe_ptt": {
+            "name": "Raccourci Appuyer pour parler",
+            "description": "Maintenez ce raccourci pour enregistrer et relâchez pour arrêter ; le microphone se coupe au relâchement, donc rien de ce que vous dites après ne peut se glisser dans le texte. Par défaut : Ctrl+Alt+Espace. Il a son propre Mode de transcription (PTT) et sa propre Méthode de collage (PTT), pour que l'Appuyer pour parler puisse se comporter différemment du Raccourci de Transcription."
+          },
+          "type_text": {
+            "name": "Raccourci de frappe de texte",
+            "description": "Tape le contenu de la zone Frappe clavier dans la fenêtre qui a actuellement le focus ; appuyez à nouveau, ou sur Échap, pour annuler. Par défaut : ctrl+alt+t. Démarre après environ une seconde plutôt que d'attendre tout le Délai de démarrage, car appuyer sur un raccourci signifie que vous êtes déjà dans la fenêtre cible — c'est le bouton Lancer qui utilise le compte à rebours complet."
+          },
+          "transcribe_and_submit": {
+            "name": "Raccourci Transcrire et envoyer",
+            "description": "Termine l'enregistrement, colle la transcription, puis appuie sur la touche d'envoi. Fonctionne même si l'enregistrement a été démarré avec un autre raccourci."
+          },
+          "anchor_set": {
+            "name": "Définir l'ancre",
+            "description": "Capture le champ de texte actuellement actif comme destination Rapide 1. Par défaut : ctrl+alt+k. Seul, il ne livre rien — réglez « Action sur l'emplacement à la fin » sur « Sauter / livrer vers l'emplacement » avec l'emplacement réglé sur Rapide 1 (Avancé → Transcription) pour que votre prochaine transcription y arrive. Les champs de mot de passe et les propres fenêtres de Handy sont refusés."
+          },
+          "anchor_jump": {
+            "name": "Aller à l'ancre",
+            "description": "Ramène au premier plan la fenêtre et le champ de Rapide 1 et ne colle rien — une touche « retour à mon brouillon ». Par défaut : ctrl+alt+j. Si « Enregistrer la position de la souris » est activé pour cet emplacement, le pointeur revient aussi ; rien ne se passe si l'emplacement est vide ou si sa fenêtre a été fermée."
+          },
+          "jump_set_slot_1": {
+            "name": "Définir l'emplacement de saut 1",
+            "description": "Mémorise le champ actuellement actif comme emplacement fixe 1, en remplaçant ce qu'il contenait. Par défaut : ctrl+alt+maj+1. L'emplacement n'est qu'un signet jusqu'à ce qu'on l'utilise — sautez-y avec « Aller à l'emplacement 1 », ou réglez « Action sur l'emplacement à la fin » d'un flux (Avancé → Transcription) sur l'emplacement 1 pour que les transcriptions y soient livrées."
+          },
+          "jump_set_slot_2": {
+            "name": "Définir l'emplacement de saut 2",
+            "description": "Mémorise le champ actuellement actif comme emplacement fixe 2, en remplaçant ce qu'il contenait. Par défaut : ctrl+alt+maj+2. Sautez-y à nouveau avec « Aller à l'emplacement 2 », ou réglez « Action sur l'emplacement à la fin » d'un flux (Avancé → Transcription) sur l'emplacement 2 pour que les transcriptions y soient livrées."
+          },
+          "jump_set_slot_3": {
+            "name": "Définir l'emplacement de saut 3",
+            "description": "Mémorise le champ actuellement actif comme emplacement fixe 3, en remplaçant ce qu'il contenait. Par défaut : ctrl+alt+maj+3. Sautez-y à nouveau avec « Aller à l'emplacement 3 », ou réglez « Action sur l'emplacement à la fin » d'un flux (Avancé → Transcription) sur l'emplacement 3 pour que les transcriptions y soient livrées."
+          },
+          "jump_set_slot_4": {
+            "name": "Définir l'emplacement de saut 4",
+            "description": "Mémorise le champ actuellement actif comme emplacement fixe 4, en remplaçant ce qu'il contenait. Par défaut : ctrl+alt+maj+4. Sautez-y à nouveau avec « Aller à l'emplacement 4 », ou réglez « Action sur l'emplacement à la fin » d'un flux (Avancé → Transcription) sur l'emplacement 4 pour que les transcriptions y soient livrées."
+          },
+          "jump_slot_1": {
+            "name": "Aller à l'emplacement 1",
+            "description": "Ramène au premier plan la fenêtre et le champ de l'emplacement fixe 1 et ne livre rien — pure navigation. Par défaut : ctrl+alt+1. Si « Enregistrer la position de la souris » est activé pour cet emplacement, le pointeur est aussi restauré ; rien ne se passe si l'emplacement est vide ou si sa fenêtre a été fermée."
+          },
+          "jump_slot_2": {
+            "name": "Aller à l'emplacement 2",
+            "description": "Ramène au premier plan la fenêtre et le champ de l'emplacement fixe 2 et ne livre rien — pure navigation. Par défaut : ctrl+alt+2. Si « Enregistrer la position de la souris » est activé pour cet emplacement, le pointeur est aussi restauré ; rien ne se passe si l'emplacement est vide ou si sa fenêtre a été fermée."
+          },
+          "jump_slot_3": {
+            "name": "Aller à l'emplacement 3",
+            "description": "Ramène au premier plan la fenêtre et le champ de l'emplacement fixe 3 et ne livre rien — pure navigation. Par défaut : ctrl+alt+3. Si « Enregistrer la position de la souris » est activé pour cet emplacement, le pointeur est aussi restauré ; rien ne se passe si l'emplacement est vide ou si sa fenêtre a été fermée."
+          },
+          "jump_slot_4": {
+            "name": "Aller à l'emplacement 4",
+            "description": "Ramène au premier plan la fenêtre et le champ de l'emplacement fixe 4 et ne livre rien — pure navigation. Par défaut : ctrl+alt+4. Si « Enregistrer la position de la souris » est activé pour cet emplacement, le pointeur est aussi restauré ; rien ne se passe si l'emplacement est vide ou si sa fenêtre a été fermée."
           }
         },
         "errors": {
           "restore": "Échec de la restauration du raccourci original",
           "set": "Échec de la définition du raccourci : {{error}}",
-          "reset": "Échec de la réinitialisation du raccourci à sa valeur d'origine"
+          "reset": "Échec de la réinitialisation du raccourci à sa valeur d'origine",
+          "registrationFailed": "Certains raccourcis n'ont pas pu être enregistrés et sont inactifs : {{bindings}}. Une autre application les utilise peut-être déjà — choisissez une autre combinaison dans les paramètres."
         }
       },
       "language": {
         "title": "Langue",
-        "description": "Sélectionnez la langue pour la reconnaissance vocale. Auto déterminera automatiquement la langue, tandis que sélectionner une langue spécifique peut améliorer la précision pour cette langue.",
+        "description": "Indique au moteur la langue que vous parlez ; la préciser est généralement plus fiable qu'Auto et évite que de courtes prises soient détectées dans la mauvaise langue. Par défaut : Auto. S'applique au modèle nommé dans l'en-tête de cette carte, et avec « Traduire en anglais » activé, c'est la langue que vous parlez qui est visée, pas celle que vous obtenez en retour.",
         "descriptionUnsupported": "Le modèle Parakeet détecte automatiquement la langue. Aucune sélection manuelle n'est nécessaire.",
         "searchPlaceholder": "Rechercher des langues...",
         "noResults": "Aucune langue trouvée",
@@ -202,52 +295,146 @@
         },
         "jumperPasteDelay": {
           "title": "Paste delay after jump (Windows)",
-          "description": "Extra wait after a jump activates the target window and before the paste keystroke fires. A freshly activated window — especially an RDP/Citrix session — may still be transitioning when Ctrl+V lands, so the paste is swallowed and nothing appears. Set a longer wait for Remote desktop targets (matched on the Jumper page) and a shorter one for Local apps. Shared by both Transcribe and Transcribe & Submit; only applies after a real jump — when you're already in the target, paste stays instant.",
+          "description": "Attente supplémentaire après qu'un saut a ramené la fenêtre cible au premier plan et avant que la frappe de collage ne se déclenche, car une fenêtre activée il y a un instant avale encore les frappes. Par défaut : 250 ms pour les applications locales, 1 seconde pour le bureau distant — la colonne qui s'applique est décidée par « Remote match strings » sur la page Jumper. Ne s'exécute jamais que lors d'un vrai saut ; quand vous êtes déjà sur la cible, le collage reste instantané, et les deux menus déroulants sont partagés par Transcrire et Transcrire et envoyer.",
           "options": {
             "none": "Off (instant)"
           }
         },
         "jumperSubmitDelay": {
           "title": "Submit delay after jump (Windows)",
-          "description": "Extra wait before pressing the submit key (Enter) after a jump. A freshly activated window — especially RDP/Citrix — may still be applying the pasted text when Enter fires, so the submit is missed. Set a longer wait for Remote desktop targets and a shorter one for Local apps. Only applies after a real jump; when you're already in the target, submit stays instant.",
+          "description": "Attente supplémentaire entre le collage et la touche d'envoi lorsque la livraison a dû sauter, car la fenêtre juste activée peut encore être en train de valider le texte collé et perdre la touche Entrée. Par défaut : 250 ms pour les applications locales, 500 ms pour le bureau distant — « Remote match strings » sur la page Jumper décide laquelle s'applique. Ne s'exécute qu'après un vrai saut ; si vous étiez déjà sur la cible, l'envoi reste instantané.",
           "options": {
             "none": "Off (instant)"
           }
+        },
+        "title": "Transcrire et envoyer",
+        "pasteMethod": {
+          "title": "Méthode de collage",
+          "description": "La frappe de collage utilisée uniquement par le Raccourci Transcrire et envoyer, pour que la seule application dans laquelle vous dictez-et-envoyez puisse se comporter différemment des autres. Par défaut : Presse-papiers (Ctrl+V). Elle remplace la Méthode de collage pour ce flux — réglez-la sur Presse-papiers (Shift+Insert) si la zone de message de cette application ignore Ctrl+V."
+        },
+        "submitKey": {
+          "title": "Touche d'envoi",
+          "description": "La touche appuyée immédiatement après le collage par ce flux, pour réellement envoyer le message ou exécuter la commande. Par défaut : Entrée. Ce flux envoie toujours — l'Envoi automatique ne s'applique pas à lui — donc choisissez Ctrl+Entrée ou Super+Entrée pour les applications où Entrée seule ne fait qu'insérer un saut de ligne."
+        },
+        "idleBehavior": {
+          "title": "Quand aucun enregistrement n'est en cours",
+          "description": "Ce qui se passe quand vous appuyez sur le Raccourci Transcrire et envoyer alors que rien n'est en cours d'enregistrement. Par défaut : Démarrer un enregistrement, si bien qu'un appui démarre et le suivant colle et envoie. Choisissez Ne rien faire pour que cette touche ne serve qu'à terminer : vous démarrez les prises avec le Raccourci de Transcription et n'appuyez sur celle-ci que lorsque vous voulez que ce résultat soit collé et envoyé.",
+          "options": {
+            "startNormal": "Démarrer un enregistrement",
+            "doNothing": "Ne rien faire"
+          }
+        },
+        "clipboard": {
+          "title": "Presse-papiers",
+          "description": "La politique de presse-papiers propre à ce flux, indépendante de Gestion du presse-papiers : restaurer votre presse-papiers existant après le collage, ou y laisser délibérément la transcription envoyée. Par défaut : Ne pas modifier le presse-papiers. Utile quand la dictée normale doit laisser votre presse-papiers intact mais que vous voulez une copie de tout ce que vous avez envoyé — ou l'inverse."
         }
       },
       "pasteLast": {
         "title": "Paste last transcription",
         "pasteMethod": {
           "title": "Paste method",
-          "description": "How the last transcription is pasted into the focused window when you press the shortcut. Use Shift+Insert or another method if Ctrl+V doesn't work in the target app."
+          "description": "Comment le raccourci « Paste last transcription » place le texte dans la fenêtre active. Ce réglage est distinct de la Méthode de collage de la page Avancé, pour pouvoir l'ajuster pour cette seule cible récalcitrante. Par défaut : Presse-papiers (Ctrl+V) — essayez Presse-papiers (Shift+Insert) dans un terminal, Direct pour taper les caractères au lieu de coller, ou Aucun pour seulement placer le texte dans le presse-papiers afin de le coller vous-même."
         },
         "clipboard": {
           "title": "Clipboard",
-          "description": "Keep your existing clipboard after pasting, or leave the transcription on the clipboard."
+          "description": "Selon que le nouveau collage restaure ensuite votre presse-papiers précédent, ou laisse délibérément la transcription dedans. Par défaut : Ne pas modifier le presse-papiers, qui copie le texte, le colle, puis restaure ce que vous aviez. Choisissez Copier dans le presse-papiers pour garder les mots disponibles après ce collage ; dans les deux cas, seul le texte du presse-papiers est sauvegardé et restauré, donc une image ou un fichier copié est perdu."
         }
+      },
+      "anchor": {
+        "title": "Ancre et livraison",
+        "deliveryFailed": "La livraison ancrée a échoué : {{reason}}. Votre texte est dans le presse-papiers et l'ancre a été conservée.",
+        "status": {
+          "title": "Ancre actuelle",
+          "description": "Montre ce que cible actuellement cet emplacement rapide, avec Tester (y sauter sans rien livrer) et Effacer ; un badge « Remote ✓ » signifie que la cible correspond à vos Remote match strings. Par défaut : Aucune ancre définie — cliquez dans un champ de texte et appuyez sur le raccourci Définir l'ancre de cet emplacement pour l'armer. Une ancre n'est jamais consommée par une livraison : elle reste jusqu'à ce que vous l'effaciez ou que sa fenêtre se ferme.",
+          "active": "Ancré : {{app}} ({{control}})",
+          "none": "Aucune ancre définie",
+          "clear": "Effacer"
+        },
+        "keep": {
+          "label": "Conserver l'ancre après la livraison",
+          "description": "Laisse l'ancre armée après une livraison réussie au lieu de l'effacer, pour dicter plusieurs fois dans le même champ."
+        },
+        "returnFocus": {
+          "label": "Rendre le focus après la livraison",
+          "description": "Revient à la fenêtre que vous utilisiez une fois le texte livré."
+        },
+        "actions": {
+          "options": {
+            "none": "Ne rien faire",
+            "jump": "Sauter / livrer vers l'emplacement",
+            "set": "Définir l'emplacement sur le focus actuel",
+            "clear": "Effacer l'emplacement"
+          },
+          "idle": {
+            "title": "Action sur l'emplacement au démarrage",
+            "description": "Ce que ce raccourci fait en plus avec l'emplacement choisi dans le menu déroulant à gauche au moment où vous l'appuyez pour démarrer une prise. Par défaut : Ne rien faire, ce qui explique que le sélecteur d'emplacement démarre grisé. Sauter / livrer vers l'emplacement vous déplace dans ce champ mémorisé avant même de parler, Définir l'emplacement sur le focus actuel enregistre où vous êtes en ce moment, et Effacer l'emplacement l'oublie (Windows uniquement)."
+          },
+          "stop": {
+            "title": "Action sur l'emplacement à la fin",
+            "description": "Ce que fait ce raccourci avec l'emplacement choisi à gauche quand la prise se termine. Par défaut : Ne rien faire. Sauter / livrer vers l'emplacement envoie la transcription dans ce champ mémorisé plutôt que là où vous avez dérivé, pour que vous puissiez lire autre chose en dictant ; Définir l'emplacement sur le focus actuel et Effacer l'emplacement ne s'exécutent qu'après le collage du texte. « Sauter à la fin uniquement si démarré de la même façon » sur la page Jumper peut restreindre les cas où un saut est autorisé (Windows uniquement)."
+          }
+        }
+      },
+      "transcribeGroup": {
+        "title": "Transcrire"
+      },
+      "cancelBehavior": {
+        "title": "Comportement de l'annulation",
+        "description": "Décide de ce que fait l'annulation à l'enregistrement en cours — cela couvre le Raccourci d'Annulation, l'élément « Annuler » de la barre système et « handy --cancel ». Par défaut : « Terminer, enregistrer uniquement dans l'historique », qui arrête et transcrit la prise, la conserve dans l'Historique avec son audio, puis ne livre rien du tout : pas de collage, pas de changement de presse-papiers, pas de touche d'envoi et pas de saut. Choisissez « Abandonner l'enregistrement » si vous préférez qu'une prise annulée soit jetée sans être transcrite ni conservée.",
+        "options": {
+          "finishSilently": "Terminer, enregistrer uniquement dans l'historique",
+          "discardRecording": "Abandonner l'enregistrement"
+        }
+      },
+      "updates": {
+        "title": "Mises à jour",
+        "checks": {
+          "label": "Rechercher automatiquement les mises à jour",
+          "description": "Vérifier une fois par jour les versions publiques sur GitHub."
+        },
+        "silent": {
+          "label": "Installer silencieusement les mises à jour",
+          "description": "Fermer, mettre à jour et rouvrir pendant la plage autorisée. Désactivé par défaut."
+        },
+        "time": {
+          "label": "Heure de mise à jour silencieuse",
+          "description": "Centre de la plage autorisée en heure locale.",
+          "window": "De {{start}} à {{end}}, heure locale."
+        },
+        "jitter": {
+          "label": "Décalage quotidien aléatoire",
+          "description": "Choisir chaque jour une autre heure dans ce nombre de minutes.",
+          "minutes": "minutes"
+        },
+        "checkNow": "Vérifier maintenant",
+        "checking": "Vérification…",
+        "upToDate": "Handy Tool est à jour.",
+        "lastChecked": "Dernière vérification : {{value}}",
+        "never": "Jamais",
+        "portableUnsupported": "Les versions portables ne peuvent pas être mises à jour sur place. Téléchargez la dernière version portable."
       }
     },
     "sound": {
       "title": "Son",
       "microphone": {
         "title": "Microphone",
-        "description": "Sélectionnez votre périphérique d'entrée audio",
+        "description": "Le périphérique d'entrée depuis lequel Handy enregistre. Prend effet dès votre prochaine prise, sans redémarrage. Par défaut : le périphérique par défaut du système — définissez-le explicitement quand vous alternez entre un casque et le micro intégré, et utilisez le bouton de réinitialisation pour revenir au choix du système.",
         "placeholder": "Sélectionner un microphone...",
         "loading": "Chargement..."
       },
       "audioFeedback": {
         "label": "Signal sonore",
-        "description": "Jouer un son au début et à la fin de l'enregistrement"
+        "description": "Joue un court signal au démarrage de l'enregistrement et un autre à l'arrêt, pour savoir que le micro est actif sans regarder l'écran. Désactivé par défaut. L'activer déverrouille Périphérique de sortie et Volume ci-dessous ; les deux sons peuvent être remplacés par vos propres fichiers via Thème sonore sur la page Débogage."
       },
       "outputDevice": {
         "title": "Périphérique de sortie",
-        "description": "Sélectionnez votre périphérique de sortie audio pour le signal sonore",
+        "description": "Là où les signaux de début et de fin sont joués — cela n'affecte pas le microphone qui enregistre ni la destination de l'audio des autres applications. Par défaut : le périphérique par défaut du système. Pointez-le vers votre casque pour que les signaux ne sortent pas des enceintes ; le contrôle reste grisé jusqu'à ce que le Signal sonore soit activé.",
         "placeholder": "Sélectionner un périphérique de sortie...",
         "loading": "Chargement..."
       },
       "volume": {
         "title": "Volume",
-        "description": "Ajuster le volume du signal sonore"
+        "description": "Le volume des signaux de début et de fin, de 0 à 100 %. Par défaut : 100 %. Baissez-le si les signaux surprennent dans un casque ; il ne change que les sons propres à Handy, et reste grisé jusqu'à ce que le Signal sonore soit activé."
       }
     },
     "advanced": {
@@ -257,27 +444,27 @@
         "output": "Sortie",
         "transcription": "Transcription",
         "history": "Historique",
-        "experimental": "Expérimental"
-      },
-      "experimentalToggle": {
-        "label": "Fonctionnalités Expérimentales",
-        "description": "Activer les fonctionnalités expérimentales encore en développement."
+        "postProcessing": "Post-traitement",
+        "keyboardTyper": "Frappe clavier",
+        "tokenCountProviders": "Fournisseurs de comptage de tokens",
+        "llmProviders": "Fournisseurs LLM enregistrés",
+        "mcp": "MCP et CLI"
       },
       "startHidden": {
         "label": "Démarrer masqué",
-        "description": "Lancer dans la barre système sans ouvrir la fenêtre."
+        "description": "Démarre Handy Tool sans aucune fenêtre à l'écran — il va directement dans la barre système et la dictée fonctionne immédiatement. Désactivé par défaut. Associez-le à Lancer au démarrage pour que l'application soit prête à la connexion sans qu'aucune fenêtre apparaisse, et laissez Afficher l'icône de la barre activé, car la barre système devient alors votre seul moyen d'ouvrir la fenêtre."
       },
       "autostart": {
         "label": "Lancer au démarrage",
-        "description": "Démarrer automatiquement Handy lorsque vous vous connectez à votre ordinateur."
+        "description": "Enregistre Handy Tool pour qu'il se lance automatiquement quand vous vous connectez à Windows. Désactivé par défaut. Combinez-le avec Démarrer masqué pour qu'il apparaisse discrètement dans la barre système au lieu d'ouvrir sa fenêtre."
       },
       "showTrayIcon": {
         "label": "Afficher l'icône de la barre",
-        "description": "Afficher l'icône de Handy dans la barre système."
+        "description": "Affiche l'icône de Handy Tool dans la barre système, où elle signale aussi les états inactif, enregistrement et transcription, et propose un menu pour les paramètres, la dernière transcription et pour quitter. Activé par défaut. Attention : si elle est désactivée, fermer la fenêtre principale quitte l'application au lieu de la masquer — et si Démarrer masqué est également activé, il n'y a plus rien à l'écran sur quoi cliquer."
       },
       "overlay": {
         "title": "Position de la fenêtre d'enregistrement",
-        "description": "Afficher un retour visuel pendant l'enregistrement et la transcription. Sur Linux, 'Aucune' est recommandé.",
+        "description": "Affiche une petite fenêtre pendant que vous dictez, pour voir que Handy Tool écoute puis transcrit, placée en bas ou en haut de l'écran. Par défaut : Bas. Choisissez Aucune pour la désactiver quand elle cache quelque chose dont vous avez besoin ou gêne une application plein écran.",
         "options": {
           "none": "Aucune",
           "bottom": "Bas",
@@ -286,7 +473,7 @@
       },
       "pasteMethod": {
         "title": "Méthode de collage",
-        "description": "Choisissez comment le texte est inséré. Direct : simule la frappe via l'entrée système. Aucun : ignore le collage, met uniquement à jour l'historique/presse-papiers.",
+        "description": "Choisit la frappe utilisée par la dictée ordinaire pour livrer le texte dans la fenêtre active ; Direct tape les caractères au lieu de coller, et Aucun n'envoie rien du tout. Par défaut : Presse-papiers (Ctrl+V). Exemple : un terminal ou un client distant qui ignore Ctrl+V accepte généralement Presse-papiers (Shift+Insert), et Aucun combiné à Gestion du presse-papiers réglé sur Copier dans le presse-papiers laisse le texte prêt à être collé à la main. L'Appuyer pour parler ignore ce réglage et utilise Méthode de collage (PTT).",
         "options": {
           "clipboard": "Presse-papiers ({{modifier}}+V)",
           "clipboardCtrlShiftV": "Presse-papiers (Ctrl+Shift+V)",
@@ -299,14 +486,14 @@
       },
       "typingTool": {
         "title": "Outil de frappe",
-        "description": "Choisissez quel outil de frappe Linux utiliser pour la méthode de collage direct. Auto détectera et utilisera automatiquement le meilleur outil disponible pour votre système.",
+        "description": "Choisit quel utilitaire Linux d'injection de saisie prend en charge la méthode de collage Direct. Par défaut : Auto (Recommandé), qui détecte automatiquement le meilleur outil installé. N'apparaît que dans la version Linux prévue et n'est jamais affiché sous Windows.",
         "options": {
           "auto": "Auto (Recommandé)"
         }
       },
       "clipboardHandling": {
         "title": "Gestion du presse-papiers",
-        "description": "Ne pas modifier le presse-papiers préserve le contenu actuel de votre presse-papiers après la transcription. Copier dans le presse-papiers laisse le résultat de la transcription dans votre presse-papiers après le collage.",
+        "description": "Décide ce qui reste dans votre presse-papiers après un collage de dictée normal : « Ne pas modifier le presse-papiers » n'y place la transcription que le temps du collage puis restaure votre presse-papiers précédent, tandis que « Copier dans le presse-papiers » y laisse délibérément la transcription. Par défaut : « Ne pas modifier le presse-papiers ». Limite honnête : seul le texte est restauré, donc une image ou un fichier copié est perdu — et le Délai de restauration du presse-papiers n'a aucun effet sauf si ce réglage est sur « Ne pas modifier le presse-papiers ».",
         "options": {
           "dontModify": "Ne pas modifier le presse-papiers",
           "copyToClipboard": "Copier dans le presse-papiers"
@@ -314,7 +501,7 @@
       },
       "autoSubmit": {
         "title": "Envoi automatique",
-        "description": "Envoie automatiquement la combinaison de touches sélectionnée après l'insertion du texte. Cmd+Enter s'applique sur macOS, tandis que Windows/Linux utilisent Super+Enter.",
+        "description": "Envoie une touche d'envoi environ 50 ms après chaque collage ordinaire, pour qu'un message de chat dicté s'envoie de lui-même. Désactivé par défaut. Les applications ne sont pas toutes d'accord sur la touche qui envoie, donc essayez Ctrl+Entrée si Entrée seule ne fait qu'ajouter un saut de ligne ; ce réglage est ignoré quand la Méthode de collage est Aucun, et il ne régit pas le Raccourci Transcrire et envoyer, qui envoie toujours sa propre touche d'envoi.",
         "options": {
           "off": "Désactivé",
           "enter": "Entrée",
@@ -325,12 +512,13 @@
       },
       "translateToEnglish": {
         "label": "Traduire en anglais",
-        "description": "Traduire automatiquement la parole d'autres langues vers l'anglais pendant la transcription.",
-        "descriptionUnsupported": "La traduction n'est pas prise en charge par le modèle {{model}}."
+        "description": "Demande au modèle une sortie en anglais au lieu de transcrire ce que vous avez dit dans sa langue d'origine. Désactivé par défaut. Laissez Langue réglée sur la langue que vous parlez réellement — ce commutateur n'apparaît que pour les modèles prenant en charge la traduction.",
+        "descriptionUnsupported": "La traduction n'est pas prise en charge par le modèle {{model}}.",
+        "unsupported": "Non disponible pour le modèle de transcription sélectionné."
       },
       "modelUnload": {
         "title": "Décharger le modèle",
-        "description": "Libérer automatiquement la mémoire GPU/CPU lorsque le modèle n'a pas été utilisé pendant le temps spécifié",
+        "description": "Libère la RAM ou la VRAM occupée par le modèle de transcription une fois qu'il est resté inutilisé aussi longtemps ; la prise suivante paie alors quelques secondes de rechargement. Par défaut : Jamais (rester chargé — démarrage le plus rapide), le bon choix si vous dictez toute la journée. Choisissez un délai si vous dictez par salves et voulez récupérer la mémoire entre-temps — le moteur de lot séparé du Traducteur n'est pas couvert ici, il est libéré par « Décharger le modèle de lot après ».",
         "options": {
           "never": "Jamais",
           "immediately": "Immédiatement",
@@ -339,16 +527,229 @@
           "min10": "Après 10 minutes",
           "min15": "Après 15 minutes",
           "hour1": "Après 1 heure",
-          "sec5": "Après 5 secondes (Débogage)"
+          "sec5": "Après 5 secondes (Débogage)",
+          "custom": "Personnalisé…"
+        },
+        "units": {
+          "s": "secondes",
+          "m": "minutes",
+          "h": "heures"
         }
       },
       "customWords": {
         "title": "Mots personnalisés",
-        "description": "Ajoutez des mots souvent mal entendus ou mal orthographiés lors de la transcription. Le système corrigera automatiquement les mots similaires pour correspondre à votre liste.",
+        "description": "Une liste de noms, produits et jargon que le moteur n'arrête pas de mal comprendre ; après chaque transcription, Handy repère les mots à consonance proche et les remplace par votre orthographe. Par défaut : vide. Ajoutez les mots entiers au fur et à mesure que vous les rencontrez, et si l'outil commence à corriger des mots que vous n'aviez pas visés, baissez le Seuil de correction des mots sur la page Débogage.",
         "placeholder": "Ajouter un mot",
         "add": "Ajouter",
         "remove": "Supprimer {{word}}",
         "duplicate": "\"{{word}}\" existe déjà"
+      },
+      "tokenCountProviders": {
+        "hint": "Fournisseurs pour la page Comptage de tokens. Astuce : le modèle ne sert qu'à sélectionner le tokenizer — choisissez le plus petit modèle de la famille qui vous intéresse (par ex. qwen3:0.6b compte de la même façon que qwen3:8b mais se charge en une fraction du temps). Les points de terminaison de comptage Anthropic et Gemini sont gratuits ; les serveurs locaux sont sondés avec une requête d'1 token.",
+        "enable": "Activer ce fournisseur",
+        "namePlaceholder": "Nom d'affichage",
+        "baseUrl": "URL de base",
+        "apiKey": "Clé API",
+        "apiKeyPlaceholder": "Facultatif pour les serveurs locaux",
+        "model": "Modèle",
+        "refreshModels": "Charger la liste des modèles depuis le point de terminaison",
+        "modelsError": "Impossible de charger les modèles",
+        "kinds": {
+          "gemini": "Gemini",
+          "anthropic": "Anthropic",
+          "openai_local": "tiktoken (hors ligne)",
+          "openai_compatible": "Compatible OpenAI"
+        }
+      },
+      "crashResilientRecording": {
+        "label": "Enregistrement résistant aux plantages",
+        "description": "Encode votre voix dans des fichiers Opus compacts sur le disque au fur et à mesure que vous parlez, au lieu de tout garder en mémoire, si bien qu'un plantage, une mise à jour forcée ou une batterie à plat laisse tout de même un enregistrement — il est réparé et ajouté à l'Historique au prochain lancement. Activé par défaut. Le désactiver enregistre de l'audio non compressé, que les sauvegardes « Données complètes (avec audio compressé) » excluent volontairement."
+      },
+      "openRecordingsFolder": {
+        "label": "Dossier des enregistrements",
+        "description": "Ouvre le dossier qui contient vos enregistrements et tout audio récupéré après un plantage (%APPDATA%\\pr.handy\\recordings). Suppression automatique des enregistrements y fait le ménage, mais ne touche jamais qu'aux fichiers créés par Handy lui-même — vos propres notes ou exports dans ce dossier ne sont jamais renommés ni supprimés.",
+        "button": "Ouvrir le dossier"
+      },
+      "appearance": {
+        "title": "Apparence",
+        "description": "Définit le thème de couleur pour toutes les fenêtres de Handy Tool, y compris la fenêtre d'enregistrement et la fenêtre de transcription flottante. Par défaut : Système, qui suit le réglage clair/sombre de Windows et continue à le suivre ; Clair et Sombre figent une palette et ignorent les changements ultérieurs du système.",
+        "options": {
+          "system": "Système",
+          "light": "Clair",
+          "dark": "Sombre"
+        }
+      },
+      "pasteMethodPtt": {
+        "title": "Méthode de collage (PTT)",
+        "description": "Le même choix que Méthode de collage, mais utilisé uniquement par le Raccourci Appuyer pour parler, pour que le maintien-pour-parler puisse livrer différemment de votre touche de dictée normale. Par défaut : Presse-papiers (Ctrl+V). Changez-le quand l'application dans laquelle vous appuyez-pour-parler a besoin d'une frappe de collage différente de celle où vous dictez toute la journée."
+      },
+      "clipboardRestoreDelay": {
+        "title": "Délai de restauration du presse-papiers",
+        "description": "Attente supplémentaire avant que votre ancien texte de presse-papiers soit restauré après un collage, ajoutée aux 50 ms intégrées ; sans effet sauf si le réglage de presse-papiers de ce groupe (Gestion du presse-papiers ici, ou Presse-papiers sous Transcrire et envoyer) est Ne pas modifier le presse-papiers. Par défaut : Désactivé (instantané). Augmentez-le à environ 1 seconde si une session Citrix ou RDP colle votre ancien presse-papiers au lieu de ce que vous venez de dire — les sessions distantes ne récupèrent le presse-papiers qu'après l'arrivée de la frappe de collage.",
+        "options": {
+          "none": "Aucun (immédiat)",
+          "ms250": "250 ms",
+          "ms500": "500 ms",
+          "ms1000": "1 seconde",
+          "ms2500": "2,5 secondes",
+          "ms5000": "5 secondes"
+        }
+      },
+      "transcriptionMode": {
+        "title": "Mode de transcription",
+        "description": "En direct affiche le texte se construire pendant que vous parlez encore ; Après enregistrement enregistre silencieusement et transcrit en arrière-plan. Par défaut : Après enregistrement. Dans les deux cas, l'audio complet reçoit une passe finale à l'arrêt, donc le texte livré est toujours le plus précis et le texte en direct n'est qu'un aperçu — ce réglage ne gouverne que le Raccourci de Transcription, et les modèles de transcription API se comportent toujours comme Après enregistrement.",
+        "options": {
+          "live": "En direct",
+          "postRecording": "Après enregistrement"
+        }
+      },
+      "transcriptionModePtt": {
+        "title": "Mode de transcription (PTT)",
+        "description": "Le même choix En direct / Après enregistrement, appliqué uniquement au Raccourci Appuyer pour parler. Par défaut : En direct — délibérément l'inverse du Mode de transcription, car les prises maintenues sont courtes et l'aperçu apparaît presque instantanément. Le texte livré provient toujours d'une passe finale sur l'enregistrement complet.",
+        "options": {
+          "live": "En direct",
+          "postRecording": "Après enregistrement"
+        }
+      },
+      "gpuDevice": {
+        "title": "Périphérique GPU",
+        "description": "Choisit sur quel adaptateur graphique le Whisper local transcrit, ou force un traitement CPU uniquement. Par défaut : Auto (par défaut) ; un adaptateur qui échoue au démarrage revient sur Auto plutôt que de casser la transcription. Changez-le pour laisser libre une carte dédiée occupée ou pour contourner un pilote défectueux — prend effet au prochain chargement du modèle, et n'apparaît sous Windows que lorsqu'un modèle Whisper est sélectionné.",
+        "options": {
+          "auto": "Auto (par défaut)",
+          "cpu": "CPU uniquement",
+          "device": "{{name}} (périphérique {{index}})",
+          "deviceWithVram": "{{name}} (périphérique {{index}}, {{vram}} Go)"
+        }
+      },
+      "apiTranscription": {
+        "title": "Transcription API",
+        "cardTitle": "Transcription API (compatible OpenAI)",
+        "url": {
+          "title": "URL de l'API",
+          "description": "URL de base d'un serveur vocal compatible OpenAI, incluant le préfixe de version — Handy y ajoute /audio/transcriptions, donc http://127.0.0.1:8000/v1 devient http://127.0.0.1:8000/v1/audio/transcriptions. Par défaut : vide ; renseignez-la avant de choisir Transcription API (compatible OpenAI) sur la page Modèles, sinon la prise échoue. Ce moteur envoie toujours l'enregistrement entier en un seul fichier WAV à l'arrêt, donc le Mode de transcription n'a aucun effet sur lui.",
+          "placeholder": "http://127.0.0.1:8000/v1"
+        },
+        "apiKey": {
+          "title": "Clé API",
+          "description": "Clé Bearer envoyée à chaque envoi ; laissez-la vide pour un serveur local qui n'en vérifie pas. Par défaut : vide. Elle est stockée non chiffrée dans votre fichier de paramètres et incluse dans les sauvegardes.",
+          "placeholder": "sk-..."
+        },
+        "model": {
+          "title": "Modèle",
+          "description": "L'identifiant de modèle attendu par votre point de terminaison, envoyé tel quel avec l'envoi — whisper-1 pour OpenAI, ou le nom que votre propre serveur donne à son modèle. Par défaut : vide, ce qui envoie un champ modèle vide ; renseignez-le si votre point de terminaison en exige un. Quand Langue est sur Auto, ce moteur envoie l'anglais, donc fixez Langue si vous dictez dans une autre langue.",
+          "placeholder": "whisper-1"
+        }
+      },
+      "tabs": {
+        "app": "Application",
+        "output": "Sortie",
+        "transcription": "Transcription",
+        "typer": "Frappe",
+        "providers": "Fournisseurs",
+        "mcp": "MCP et CLI",
+        "history": "Historique",
+        "postProcessing": "Post-traitement"
+      },
+      "mcp": {
+        "loading": "Chargement…",
+        "description": "Exécute un petit serveur local pour que Claude (application et Code) et la commande handy puissent utiliser les propres outils de Handy : compter des tokens, taper du texte dans la fenêtre active, lire l'Historique, exécuter des tests de modèles et modifier les fournisseurs. Désactivé par défaut ; l'activer démarre le serveur immédiatement sur 127.0.0.1 avec le Port et le Jeton ci-dessous, et jamais sur une interface réseau. Mise en garde honnête : le jeton est stocké en texte clair dans votre fichier de paramètres, donc tout programme exécuté sous votre compte peut le lire et piloter l'application.",
+        "enable": "Activer le serveur MCP et CLI",
+        "running": "En cours d'exécution",
+        "stopped": "Arrêté",
+        "port": "Port",
+        "token": "Jeton",
+        "show": "Afficher",
+        "hide": "Masquer",
+        "regenerate": "Régénérer",
+        "claudeApp": "Application Claude (HTTP) — ajoutez un serveur MCP personnalisé avec cette URL :",
+        "authHeader": "…et cet en-tête Authorization :",
+        "claudeCodeStdio": "Claude Code (stdio) :",
+        "claudeCodeHttp": "Claude Code (HTTP) :",
+        "cliTitle": "Compagnon en ligne de commande",
+        "cliHint": "Copie l'exécutable de Handy lui-même sur votre PATH sous le nom handy, pour pouvoir exécuter handy model-test, handy token-count ou handy mcp --stdio depuis n'importe quel terminal contre l'application en cours. Par défaut : non installé. La commande communique avec l'application via ce même serveur local, donc elle ne fonctionne que tant qu'« Activer le serveur MCP et CLI » est actif ; indisponible en mode portable.",
+        "installCli": "Installer le CLI",
+        "reinstallCli": "Réinstaller le CLI"
+      },
+      "costReport": {
+        "title": "Rapport de coût de transcription",
+        "description": "Coût par enregistrement (USD réel via OpenRouter) et durée, résumés par semaine, mois et année. Téléchargez le rapport complet — chaque enregistrement plus les résumés — au format CSV.",
+        "download": "Télécharger le CSV",
+        "recalc": "Recalculer les durées",
+        "recordings": "Enregistrements",
+        "daily": "7 derniers jours",
+        "colTimestamp": "Horodatage",
+        "colDuration": "Durée (HH:MM:SS)",
+        "colCost": "Coût (USD)",
+        "colPeriod": "Période",
+        "colCount": "Enregistrements",
+        "weekly": "4 dernières semaines",
+        "monthly": "12 derniers mois",
+        "yearly": "Par année",
+        "total": "Total (depuis toujours)",
+        "allTime": "Depuis toujours",
+        "weekOf": "Semaine du {{date}}",
+        "totalLine": "{{count}} enregistrements · {{duration}} · {{cost}}",
+        "empty": "Aucun enregistrement pour l'instant"
+      },
+      "llmProviders": {
+        "hint": "Un seul registre de fournisseurs — nom, point de terminaison, clé, modèle et coût par million de tokens — partagé par Comptage de tokens, Test de modèles et Post-traitement. Chaque emplacement garde un identifiant stable (#1, #2, …) que ces écrans référencent, donc une modification ici s'applique partout ; décocher « Activer ce fournisseur » retire l'emplacement des trois. Par défaut, les trois emplacements locaux sont activés et chaque emplacement cloud est désactivé jusqu'à ce que vous colliez une clé.",
+        "enable": "Activer ce fournisseur",
+        "namePlaceholder": "Nom du fournisseur",
+        "baseUrl": "URL de base",
+        "apiKey": "Clé API",
+        "apiKeyPlaceholder": "Collez votre clé API",
+        "model": "Modèle",
+        "modelPlaceholder": "Identifiant du modèle",
+        "refreshModels": "Actualiser la liste des modèles",
+        "modelsError": "Échec",
+        "cost": "Coût / 1 M",
+        "costInput": "entrée $",
+        "costOutput": "sortie $",
+        "costAuto": "Signalé automatiquement par OpenRouter",
+        "concurrency": "Concurrence",
+        "sequential": "Exécuter séquentiellement au sein de la famille",
+        "family": "famille",
+        "familyPlaceholder": "par ex. flm",
+        "kinds": {
+          "anthropic": "Anthropic",
+          "gemini": "Gemini",
+          "openai_local": "Local (tiktoken)",
+          "openai_compatible": "Compatible OpenAI",
+          "openrouter": "OpenRouter",
+          "apple_intelligence": "Apple"
+        },
+        "persistPrice": "Conserver",
+        "persistPriceHint": "Conserver ce prix même en cas de changement de modèle (ne pas le remplir automatiquement depuis OpenRouter)"
+      },
+      "openRouterTranscription": {
+        "cardTitle": "Transcription OpenRouter",
+        "url": {
+          "title": "URL de l'API",
+          "description": "Racine de l'API OpenRouter vers laquelle vont les requêtes vocales, incluant /api/v1. Par défaut : https://openrouter.ai/api/v1 — laissez tel quel sauf si vous passez par un proxy. Handy n'envoie rien du tout tant que ce champ ou la Clé API est vide.",
+          "placeholder": "https://openrouter.ai/api/v1"
+        },
+        "apiKey": {
+          "title": "Clé API",
+          "description": "Votre clé OpenRouter (openrouter.ai/keys), utilisée uniquement par ce moteur vocal — distincte de toute entrée OpenRouter sous Fournisseurs LLM enregistrés. Par défaut : vide, et sans elle la prise échoue plutôt que d'envoyer une requête non authentifiée. Dicter avec ce moteur envoie votre audio à OpenRouter et coûte de l'argent par enregistrement ; le montant réel est enregistré dans l'Historique et dans le Rapport de coût de transcription.",
+          "placeholder": "sk-or-..."
+        },
+        "model": {
+          "title": "Modèle de transcription",
+          "description": "L'identifiant du modèle OpenRouter, saisi à la main : des identifiants au format openai/whisper-large-v3 pour la route Transcription (style Whisper), ou un modèle de chat capable de traiter l'audio comme google/gemini-2.5-flash pour la route Modèle de chat. Par défaut : vide, avec repli sur openai/whisper-large-v3. Il doit correspondre au Point de terminaison — une incohérence se traduit généralement par une transcription vide plutôt que par une erreur.",
+          "placeholder": "openai/whisper-large-v3"
+        },
+        "route": {
+          "title": "Point de terminaison",
+          "description": "Choisit vers quel point de terminaison OpenRouter l'audio est envoyé. Transcription (style Whisper) envoie au point de terminaison vocal dédié ; Modèle de chat (Gemini / GPT-4o-audio) place l'audio dans un message de chat, seule façon pour les modèles qui ne sont pas des modèles vocaux de l'accepter. Par défaut : Transcription (style Whisper). Doit correspondre au Modèle de transcription, et « Traduire en anglais » n'est honoré que sur la route Modèle de chat.",
+          "stt": "Transcription (style Whisper)",
+          "chat": "Modèle de chat (Gemini / GPT-4o-audio)"
+        },
+        "format": {
+          "title": "Format audio",
+          "description": "Comment l'audio est encodé avant l'envoi : Opus est environ dix fois plus léger que le WAV, ce qui compte sur un partage de connexion ou une connexion d'hôtel. Par défaut : Opus — plus léger (recommandé). Ne s'applique que lorsque le Point de terminaison est Modèle de chat (Gemini / GPT-4o-audio) ; la route Transcription (style Whisper) envoie toujours du WAV, car les modèles de style Whisper rejettent Opus.",
+          "opus": "Opus — plus léger (recommandé)",
+          "wav": "WAV — le plus compatible"
+        }
       }
     },
     "postProcessing": {
@@ -360,7 +761,8 @@
         "title": "API (Compatible OpenAI)",
         "provider": {
           "title": "Fournisseur",
-          "description": "Sélectionnez un fournisseur compatible OpenAI."
+          "description": "Sélectionnez un fournisseur compatible OpenAI.",
+          "placeholder": "Sélectionnez un fournisseur enregistré"
         },
         "appleIntelligence": {
           "title": "Apple Intelligence",
@@ -387,7 +789,12 @@
           "placeholderWithOptions": "Rechercher ou sélectionner un modèle",
           "placeholderNoOptions": "Tapez un nom de modèle",
           "refreshModels": "Actualiser les modèles"
-        }
+        },
+        "temperature": {
+          "title": "Température",
+          "description": "Plus la valeur est basse, plus le résultat est déterministe et rigoureux (0 = le plus littéral) ; plus elle est haute, plus il est créatif."
+        },
+        "registryNote": "La clé API, le modèle et l'URL de base du fournisseur sont configurés dans Avancé → Fournisseurs LLM enregistrés."
       },
       "prompts": {
         "title": "Prompt",
@@ -409,6 +816,10 @@
         "cancel": "Annuler",
         "selectToEdit": "Sélectionnez un prompt ci-dessus pour voir et modifier ses détails.",
         "createFirst": "Cliquez sur 'Créer un nouveau prompt' ci-dessus pour créer votre premier prompt de post-traitement."
+      },
+      "disableThinking": {
+        "label": "Désactiver la réflexion",
+        "description": "Envoie think: false au modèle. Accélère les réponses mais peut réduire le respect des instructions pour les modèles à réflexion (par ex. Qwen3)."
       }
     },
     "history": {
@@ -420,34 +831,43 @@
       "save": "Enregistrer la transcription",
       "unsave": "Retirer des favoris",
       "delete": "Supprimer l'entrée",
-      "deleteError": "Échec de la suppression de l'entrée. Veuillez réessayer."
+      "deleteError": "Échec de la suppression de l'entrée. Veuillez réessayer.",
+      "loadError": "Échec du chargement de l'historique : {{error}}",
+      "search": {
+        "placeholder": "Rechercher dans l'historique (texte ou regex)...",
+        "clear": "Effacer la recherche",
+        "matches": "{{matched}} sur {{total}}",
+        "regexBadge": ".*",
+        "regexActive": "La requête est traitée comme une expression régulière",
+        "noMatches": "Aucune entrée ne correspond à votre recherche."
+      }
     },
     "debug": {
       "title": "Débogage",
       "logDirectory": {
         "title": "Répertoire des journaux",
-        "description": "Emplacement où les fichiers journaux sont stockés"
+        "description": "Ouvre le dossier contenant les fichiers journaux — le premier endroit à consulter quand quelque chose a échoué sans explication. Les journaux tournent à 10 Mo et les anciens fichiers sont conservés plutôt qu'écrasés, si bien que les preuves survivent au redémarrage qui suit généralement un problème. Le niveau de détail qui y figure est fixé par le Niveau de journalisation de la page Débogage, réglé par défaut sur Debug, qui peut inclure des fragments de transcription."
       },
       "logLevel": {
         "title": "Niveau de journalisation",
-        "description": "Définir le niveau de détail de la journalisation"
+        "description": "Définit le niveau de détail écrit dans les fichiers journaux ; la sortie console n'est pas affectée. Par défaut : Debug. Baissez-le à Info si vous ne voulez pas de contenu de dictée sur le disque — aux niveaux Debug et Trace, des fragments de transcription et des aperçus de prompt peuvent apparaître dans les fichiers ouverts depuis Répertoire des journaux sur la page À propos."
       },
       "soundTheme": {
         "label": "Thème sonore",
-        "description": "Choisir un thème sonore pour les retours de début et de fin d'enregistrement"
+        "description": "Choisit quelle paire de sons est jouée au démarrage et à l'arrêt d'un enregistrement. Par défaut : Marimba. Vous n'entendrez quelque chose que si le Signal sonore est activé (page Général), et Personnalisé n'apparaît dans cette liste qu'une fois que les fichiers WAV personnalisés de début et de fin existent tous deux dans le dossier resources des données de l'application."
       },
       "wordCorrectionThreshold": {
         "title": "Seuil de correction des mots",
-        "description": "Sensibilité pour les corrections de mots personnalisés"
+        "description": "À quel point une transcription est réécrite pour correspondre aux entrées de Mots personnalisés sur la page Général. Par défaut : 0,18. Augmentez-le si les noms et le jargon reviennent encore déformés ; baissez-le si Handy Tool commence à remplacer des mots que vous avez réellement prononcés — avec Mots personnalisés vide, ce curseur n'a aucun effet."
       },
       "historyLimit": {
         "title": "Limite d'historique",
-        "description": "Nombre maximum d'entrées d'historique à conserver",
+        "description": "Combien de transcriptions l'Historique conserve avant que les plus anciennes ne soient supprimées avec leur audio. Par défaut : 5 entrées — délibérément bas, donc augmentez-le si vous pensez rechercher des choses des jours plus tard. N'a d'effet que lorsque Suppression automatique des enregistrements est réglée sur Conserver les plus récents, et les entrées marquées avec Enregistrer la transcription sont conservées quoi qu'il arrive et ne comptent jamais dans cette limite.",
         "entries": "entrées"
       },
       "recordingRetention": {
         "title": "Suppression automatique des enregistrements",
-        "description": "Supprimer automatiquement les anciens enregistrements pour économiser de l'espace",
+        "description": "Contrôle le nettoyage automatique de l'Historique : quand une entrée expire, sa ligne et son fichier audio sont tous deux supprimés. Par défaut : Conserver les plus récents, qui ne garde que les entrées les plus récentes autorisées par la Limite d'historique (5 par défaut) — les options de durée conservent plutôt tout ce qui date des 3 derniers jours, des 2 dernières semaines ou des 3 derniers mois, et Jamais ne supprime rien du tout. Le nettoyage s'exécute après l'enregistrement de chaque nouvelle transcription et à nouveau quand vous changez l'un ou l'autre réglage, épargne toujours les entrées marquées avec Enregistrer la transcription, et ne supprime jamais que les fichiers audio créés par Handy Tool lui-même.",
         "never": "Jamais",
         "preserveLimit": "Conserver les {{count}} plus récents",
         "days3": "Après 3 jours",
@@ -457,27 +877,27 @@
       },
       "alwaysOnMicrophone": {
         "label": "Microphone toujours actif",
-        "description": "Garder le microphone actif pour une réponse plus rapide"
+        "description": "Garde le flux du microphone ouvert entre les prises au lieu de le rouvrir chaque fois que vous appuyez sur un raccourci d'enregistrement. Désactivé par défaut. Activez-le si la première syllabe d'une prise est coupée — le prix à payer est que l'indicateur de microphone du système reste allumé pendant toute l'exécution de Handy Tool, pas seulement quand vous dictez."
       },
       "clamshellMicrophone": {
         "title": "Microphone en mode fermé",
-        "description": "Microphone à utiliser lorsque le couvercle du portable est fermé"
+        "description": "Choisit un périphérique d'entrée différent pour quand le capot d'un portable est fermé, pour les machines en station d'accueil dont le microphone intégré devient alors inutilisable. Par défaut : aucun, donc Microphone sur la page Général est toujours utilisé. La détection du capot fermé est réservée à macOS, dont la version est encore prévue, donc ceci n'a aucun effet sur la version Windows."
       },
       "postProcessingToggle": {
         "label": "Post-traitement",
-        "description": "Activer l'affinage du texte par IA après la transcription"
+        "description": "Active la passe de nettoyage IA optionnelle et ajoute une page Post-traitement à la barre latérale, où vous choisissez le fournisseur et le prompt. Désactivé par défaut. Votre Raccourci de Transcription habituel n'est pas affecté — le nettoyage ne s'exécute que sur le Raccourci de post-traitement séparé, et l'Historique conserve la transcription brute à côté de la version traitée."
       },
       "muteWhileRecording": {
         "label": "Muet pendant l'enregistrement",
-        "description": "Couper le son du système pendant l'enregistrement"
+        "description": "Coupe le son du système pendant toute la durée de chaque enregistrement, pour que la musique ou une vidéo sur vos enceintes ne s'infiltre pas dans le microphone. Désactivé par défaut. Activez-le si vous dictez avec des enceintes plutôt qu'un casque ; le son revient de lui-même à l'arrêt de l'enregistrement."
       },
       "appendTrailingSpace": {
         "label": "Ajouter un espace final",
-        "description": "Ajouter un espace après la transcription collée"
+        "description": "Ajoute un espace à la fin de chaque transcription livrée, pour que deux dictées à la suite ne donnent pas « ...un.Deux ». Désactivé par défaut. Activez-le si vous dictez par courtes salves dans le même champ ; laissez-le désactivé là où un espace superflu pose problème, comme un champ de recherche ou une commande de terminal."
       },
       "keyboardImplementation": {
         "title": "Keyboard Implementation",
-        "description": "Choose the keyboard shortcut backend.",
+        "description": "Choisit quel moteur enregistre les raccourcis globaux de Handy Tool auprès du système d'exploitation. Par défaut : Tauri Global Shortcut. Passez à Handy Keys quand un raccourci que vous avez défini ne se déclenche jamais parce qu'un autre programme possède déjà la combinaison ou que Windows refuse l'enregistrement — tous les raccourcis sont réenregistrés lors du changement, et la modification est annulée si cela échoue.",
         "bindingsReset": "Keyboard shortcuts were incompatible and reset to defaults"
       },
       "paths": {
@@ -487,28 +907,23 @@
       },
       "pasteDelay": {
         "title": "Délai de collage",
-        "description": "Délai avant l'envoi de la touche de collage (en millisecondes). Augmentez si le mauvais texte est collé."
+        "description": "Combien de temps Handy Tool attend après avoir placé la transcription dans le presse-papiers avant d'envoyer la frappe de collage. Par défaut : 60 ms. Augmentez-le si une application lente colle l'ancien contenu du presse-papiers au lieu du nouveau texte ; il s'agit d'une attente différente de « Paste delay after jump (Windows) », qui ne s'applique que lorsqu'un emplacement Jumper vient d'activer une autre fenêtre."
       }
     },
     "about": {
       "title": "À propos",
       "version": {
         "title": "Version",
-        "description": "Version actuelle de Handy"
+        "description": "La version de Handy Tool que vous exécutez ; mentionnez-la chaque fois que vous signalez un problème. Windows x64 est la seule version publiée — macOS et Linux sont prévus, et les fonctionnalités Jumper resteront réservées à Windows même après cela. Rien ici ne vérifie automatiquement une nouvelle version ; utilisez Mises à jour quand vous voulez vérifier."
       },
       "appDataDirectory": {
         "title": "Emplacement des données de l'application",
-        "description": "Emplacement où Handy stocke ses données"
+        "description": "Ouvre le dossier unique qui contient tout ce que Handy Tool conserve : les paramètres (y compris vos clés API de fournisseurs et vos prompts) dans un fichier JSON, les transcriptions dans une base SQLite, les enregistrements, les modèles téléchargés et les journaux archivés. Par défaut : %APPDATA%\\pr.handy sur une installation Windows normale. Rien n'y est chiffré par Handy Tool — les permissions du système de fichiers sont la seule protection — c'est donc aussi le dossier à copier, ou à vider, quand vous transmettez la machine."
       },
       "sourceCode": {
         "title": "Code source",
         "description": "Voir le code source et contribuer",
         "button": "Voir sur GitHub"
-      },
-      "supportDevelopment": {
-        "title": "Soutenir le développement",
-        "description": "Aidez-nous à continuer à construire Handy",
-        "button": "Faire un don"
       },
       "acknowledgments": {
         "title": "Remerciements",
@@ -516,21 +931,180 @@
           "title": "Whisper.cpp",
           "description": "Inférence haute performance du modèle de reconnaissance vocale automatique Whisper d'OpenAI",
           "details": "Handy utilise Whisper.cpp pour un traitement rapide et local de la parole en texte. Merci au travail incroyable de Georgi Gerganov et des contributeurs."
+        },
+        "handy": {
+          "title": "Handy",
+          "description": "L'application open source de reconnaissance vocale originale sur laquelle ce projet est basé",
+          "details": "Handy Tool est un fork de Handy, créé par CJ Pais (github.com/cjpais/Handy, handy.computer). Il a été repris à partir de la version amont v0.8.1 (mars 2026) et a été développé indépendamment depuis par Patrick R. Un grand merci à CJ et aux contributeurs de Handy pour les bases sur lesquelles ce projet s'appuie."
         }
+      },
+      "updates": {
+        "title": "Mises à jour",
+        "description": "Voir les versions ouvre la page des versions GitHub du projet dans votre navigateur, pour la comparer à Version. Handy Tool n'a pas de système de mise à jour et ne vérifie jamais de nouvelle version en arrière-plan — la mise à jour est toujours une démarche volontaire.",
+        "button": "Voir les versions"
       }
     },
     "jumper": {
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "When a jump target's app, window class, or control class contains one of these (case-insensitive), it is treated as a remote desktop session and uses the longer 'Remote' jump delays (Advanced → Transcription). Add the identifiers your RDP/Citrix clients use — e.g. msrdc, mstsc, Citrix. An empty list treats every target as local.",
+        "description": "Une cible de saut dont l'application, la classe de fenêtre ou la classe de contrôle contient l'un de ces fragments (insensible à la casse) est traitée comme un bureau distant, et utilise donc la valeur Remote de « Paste delay after jump (Windows) » et « Submit delay after jump (Windows) » sur Avancé → Transcription au lieu de la valeur Local. Par défaut : msrdc, mstsc, Citrix. Ajoutez le nom de processus utilisé par votre client RDP ou Citrix si les livraisons y sont sans cesse avalées ; une liste vide traite chaque cible comme locale.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
         "duplicate": "'{{value}}' is already in the list",
         "badge": "Remote ✓",
         "badgeTooltip": "This target matches a remote match string, so it uses the Remote jump delays."
+      },
+      "windowsOnly": "Le Jumper est disponible uniquement sur Windows.",
+      "hot": {
+        "title": "Emplacement rapide (Ancre et livraison)",
+        "optionsMoved": {
+          "title": "Options de livraison",
+          "description": "Pas un réglage — un panneau indicateur. Ce qu'un saut fait réellement avec un emplacement se configure par flux sur Avancé → Transcription : « Action sur l'emplacement au démarrage », « Action sur l'emplacement à la fin », « Suivre le dernier emplacement de sortie » et « Rendre le focus après la livraison » existent chacun une fois pour Transcrire et une fois pour Transcrire et envoyer.",
+          "hint": "Configurés dans les groupes Transcrire et Transcrire et envoyer de la page Général."
+        }
+      },
+      "hot2": {
+        "title": "Deuxième emplacement rapide (Ancre et livraison)"
+      },
+      "slot": {
+        "title": "Emplacement fixe {{index}}",
+        "status": "Cible de l'emplacement {{index}}",
+        "description": "Montre ce que cible cet emplacement numéroté, avec Tester (y sauter sans rien livrer) et Effacer. Par défaut : aucune cible — donnez le focus à un champ où vous revenez souvent, appuyez sur le raccourci Définir de cet emplacement (ctrl+alt+maj+1 … 9), et sautez-y à nouveau à tout moment avec ctrl+alt+1 … 9. Un emplacement mémorise une fenêtre et un champ, pas un onglet de navigateur ni une position de curseur, et il survit aux livraisons.",
+        "test": "Tester",
+        "testFailed": "Le saut a échoué : {{reason}}",
+        "stale": "Enregistré : {{app}} ({{control}}) — fenêtre introuvable pour l'instant"
+      },
+      "persist": {
+        "label": "Mémoriser les emplacements entre les redémarrages",
+        "description": "Mémorise la cible de chaque emplacement entre les redémarrages de l'application. Désactivé par défaut. Windows ne peut pas conserver un handle de fenêtre entre deux redémarrages, donc Handy enregistre l'identité de chaque emplacement (application, plus type de fenêtre et de champ) et retrouve la fenêtre correspondante au démarrage — puis à nouveau au moment où vous utilisez l'emplacement. Un emplacement enregistré dont l'application n'est pas lancée s'affiche en rouge jusqu'à ce qu'elle réapparaisse.",
+        "groupTitle": "Persistance"
+      },
+      "slotNames": {
+        "hot": "Rapide 1",
+        "hot2": "Rapide 2",
+        "static": "Emplacement {{index}}"
+      },
+      "track": {
+        "label": "Suivre le dernier emplacement de sortie",
+        "description": "Windows uniquement. Une fois que ce flux a collé une transcription, l'emplacement choisi dans « Enregistrer l'emplacement dans » est écrasé par le champ où le texte est réellement arrivé, pour que votre prochain saut vers cet emplacement vous ramène au dernier endroit dicté. Désactivé par défaut. Activez-le quand vous voulez qu'un emplacement vous suive au lieu de le définir à la main — Transcrire et Transcrire et envoyer effectuent ce suivi indépendamment, et la capture a lieu avant tout « Rendre le focus après la livraison ».",
+        "slot": {
+          "title": "Enregistrer l'emplacement dans",
+          "description": "Quel emplacement de saut « Suivre le dernier emplacement de sortie » écrase après chaque livraison de ce flux. Par défaut : Rapide 1. Pointez-le vers un emplacement fixe (Emplacement 1 à Emplacement 9) si vous ne voulez pas que le suivi automatique continue d'écraser l'ancre rapide que vous avez définie à la main avec Définir l'ancre."
+        }
+      },
+      "saveCursor": {
+        "label": "Restaurer la position du curseur de la souris",
+        "description": "Une fois que ce flux a livré une transcription, mémorise la position du curseur de la souris et replace le pointeur à cet endroit quand vous sautez. Indépendant du commutateur de l'autre flux ; le mode de position ci-dessous est partagé entre les deux flux.",
+        "perSlot": "Enregistrer la position de la souris",
+        "perSlotDescription": "Enregistre aussi la position du curseur de la souris quand cet emplacement est défini ou suivi, et replace le pointeur à cet endroit quand vous sautez vers cet emplacement — après le collage, pour ne pas perturber la livraison. Désactivé par défaut. Activez-le pour un emplacement situé sur un autre écran afin que le clavier et la souris arrivent ensemble ; cela active le « Mode de position du curseur » propre à cet emplacement ci-dessous, et chaque emplacement a sa propre paire de commutateurs.",
+        "mode": {
+          "title": "Mode de position du curseur",
+          "description": "Choisit comment la position enregistrée du curseur pour cet emplacement est mesurée. Par défaut : Relatif à l'application (suit la fenêtre) — restaure le même point dans la fenêtre cible même après qu'elle a été déplacée, redimensionnée, ou glissée vers un écran avec une résolution DPI différente. Choisissez Absolu à l'écran (coordonnées exactes) pour quelque chose qui ne bouge jamais, comme un tableau de bord fixe ; le menu déroulant reste grisé jusqu'à ce que « Enregistrer la position de la souris » soit activé pour cet emplacement.",
+          "appRelative": "Relatif à l'application (suit la fenêtre)",
+          "screenAbsolute": "Absolu à l'écran (coordonnées exactes)"
+        }
+      },
+      "returnFocus": {
+        "label": "Rendre le focus après la livraison",
+        "description": "Après une livraison qui a dû sauter, le focus revient à la fenêtre où vous étiez au début de la livraison — capturée automatiquement, sans emplacement à configurer. Activé par défaut. C'est conditionnel : si vous avez vous-même changé de fenêtre pendant que Handy Tool travaillait, il vous laisse où vous avez choisi d'être, et chaque flux décide cela séparément (Windows uniquement)."
+      },
+      "requireSameFlow": {
+        "groupTitle": "Comportement à la fin",
+        "label": "Sauter à la fin uniquement si démarré de la même façon",
+        "description": "Une fois activé, « Action sur l'emplacement à la fin » d'un flux ne se déclenche que si la prise a été démarrée et terminée avec le même raccourci. Désactivé par défaut. Exemple : démarrer avec Transcrire et terminer avec Transcrire et envoyer ne produit aucun saut — le collage et l'envoi ont tout de même lieu, seul le saut est conditionné. Activez-le si mélanger les deux raccourcis vous téléporte sans cesse là où vous ne l'attendiez pas."
       }
+    },
+    "translator": {
+      "title": "Traducteur",
+      "enabled": {
+        "label": "Surveiller des dossiers",
+        "description": "Activez pour transcrire chaque nouveau fichier .wav, .ogg ou .opus qui arrive dans un dossier surveillé en un fichier .txt à côté, en utilisant votre modèle, votre Langue et vos réglages « Traduire en anglais » actuels. Désactivé par défaut. Les fichiers déjà présents dans un dossier au démarrage de la surveillance sont volontairement laissés intacts, et les dossiers eux-mêmes se choisissent sous Ajouter un dossier."
+      },
+      "priority": {
+        "title": "Priorité",
+        "description": "Décide qui obtient le moteur vocal quand un fichier de dossier et votre propre dictée le réclament au même moment. Par défaut : Dictée en direct en premier — le lot se met en pause à la prochaine limite de segment dès que vous appuyez sur enregistrer, puis reprend ensuite, sans perdre de progression du lot. Lot de dossiers en premier laisse le lot continuer et votre texte en direct arrive un peu plus tard ; Premier arrivé, premier servi laisse le fichier en cours se terminer, puis exécute votre prise avant que le fichier suivant ne démarre.",
+        "options": {
+          "live_first": "Dictée en direct en premier",
+          "folder_first": "Lot de dossiers en premier",
+          "fifo": "Premier arrivé, premier servi"
+        }
+      },
+      "model": {
+        "title": "Modèle de lot",
+        "description": "Quel modèle vocal transcrit les fichiers de vos dossiers surveillés ; les modèles marqués d'un globe peuvent aussi traduire en anglais, ce qui nécessite que « Traduire en anglais » soit activé. Par défaut : Identique à la dictée (par défaut), qui reprend ce qui est sélectionné sur la page Modèles. Choisissez un modèle local différent et il se charge dans son propre emplacement à côté du modèle de dictée — le traitement par lot tourne sur un moteur, la dictée reste instantanée sur l'autre — au prix d'une mémoire supplémentaire, que « Décharger le modèle de lot après » peut restituer.",
+        "sameAsDictation": "Identique à la dictée (par défaut)",
+        "translates": "{{name}} — peut traduire en anglais"
+      },
+      "unload": {
+        "title": "Décharger le modèle de lot après",
+        "description": "Combien de temps la propre copie du modèle de lot du Traducteur reste en mémoire après que la file d'attente redevienne silencieuse ; la décharger libère la RAM ou la VRAM, la garder chargée évite un rechargement à l'arrivée du fichier suivant. Par défaut : Jamais (rester chargé — démarrage le plus rapide). Cela n'a d'effet que lorsque « Modèle de lot » désigne un modèle local différent de votre modèle de dictée — sinon c'est le réglage principal « Décharger le modèle » qui s'applique."
+      },
+      "status": {
+        "title": "État",
+        "description": "Ce que fait le Traducteur en ce moment. Les transcriptions terminées sont écrites à côté du fichier audio, avec le même nom et l'extension .txt.",
+        "disabled": "Désactivé",
+        "idle": "Surveillance — rien à faire",
+        "queued": "{{count}} fichier(s) en attente",
+        "working": "{{file}} — segment {{segment}}/{{total}}",
+        "workingIndeterminate": "{{file}}",
+        "paused": {
+          "live": "en pause pour la dictée en direct",
+          "processing": "en pause pendant la finalisation d'un enregistrement"
+        },
+        "counters": "{{done}} terminé(s), {{failed}} échoué(s) cette session"
+      },
+      "folders": {
+        "title": "Dossiers surveillés",
+        "none": "Aucun dossier",
+        "emptyTitle": "Aucun dossier surveillé",
+        "emptyDescription": "Ajoutez un dossier pour commencer à le surveiller pour de nouveaux enregistrements.",
+        "addTitle": "Ajouter un dossier",
+        "addDescription": "Ouvre un sélecteur de dossier ; à partir de là, tout nouveau fichier audio apparaissant dans ce dossier est mis en file d'attente et sa transcription est écrite à côté en .txt. Par défaut : votre dossier d'enregistrements Handy est ajouté pour vous au premier démarrage du Traducteur. Ajouter un dossier ne fait rien jusqu'à ce que « Surveiller des dossiers » soit activé, et ce qui se trouve déjà dans le dossier est ignoré — seuls les fichiers qui arrivent ensuite sont transcrits.",
+        "add": "Ajouter un dossier",
+        "remove": "Arrêter de surveiller ce dossier",
+        "addFailed": "Impossible d'ajouter le dossier : {{reason}}",
+        "operationFailed": "Impossible de mettre à jour le dossier : {{reason}}",
+        "toggleAriaLabel": "Surveiller le dossier {{name}}",
+        "removeAriaLabel": "Arrêter de surveiller le dossier {{name}}"
+      }
+    },
+    "currentAudio": {
+      "streamingHint": "Le texte s’affiche progressivement pendant que vous parlez uniquement si le raccourci utilisé — Transcrire ou Appuyer pour parler — est réglé sur En direct et si vous utilisez un modèle local.",
+      "finalHint": "En mode Après l’enregistrement, ou avec la transcription via API ou OpenRouter, la transcription complète s’affiche en une seule fois à la fin de l’enregistrement ; réglez le mode de chaque raccourci dans",
+      "advancedTranscription": "Avancé → Transcription",
+      "finalHintSuffix": ".",
+      "title": "Audio en cours",
+      "idle": "Démarrez un enregistrement pour voir la transcription en direct",
+      "recording": "Écoute en cours...",
+      "openFloating": "Ouvrir la fenêtre flottante",
+      "copy": "Copier",
+      "copied": "Copié"
+    },
+    "backup": {
+      "description": "Exportez les données de Handy Tool sous forme d'archive compressée. Les modèles téléchargés et les fichiers audio non compressés volumineux (WAV/FLAC) sont toujours exclus.",
+      "configTitle": "Configuration + historique",
+      "configHint": "Exporte vos paramètres plus la base de l'historique des transcriptions (horodatages, texte, coût, durée) et aucun audio, donc le fichier reste léger. Utilisez-le avant un gros changement de configuration, ou pour transporter vos raccourcis, fournisseurs et prompts vers une autre machine. L'archive n'est pas chiffrée et contient vos clés API de fournisseurs et le jeton du serveur MCP en texte clair — traitez ce fichier comme un secret.",
+      "exportConfig": "Exporter la configuration + l'historique",
+      "fullTitle": "Données complètes (avec audio compressé)",
+      "fullHint": "Tout ce qui figure dans l'export de configuration plus vos enregistrements compressés (.opus/.ogg) — un fichier bien plus volumineux, qui contient toujours vos clés API en texte clair. Les modèles téléchargés, l'audio WAV/FLAC non compressé et les fichiers de blocs en cours sont toujours exclus, donc les prises enregistrées avec Enregistrement résistant aux plantages désactivé apparaissent comme des lignes d'historique sans audio dans l'archive.",
+      "exportFull": "Exporter la sauvegarde complète",
+      "saved": "Enregistré dans {{path}}",
+      "restoreTitle": "Restaurer depuis une sauvegarde",
+      "restoreHint": "Choisissez une archive de sauvegarde Handy Tool (.tar.gz) et cochez ce qu'il faut restaurer — Configuration et historique (paramètres, base de l'historique) et Enregistrements (fichiers audio) sont indépendants, vous pouvez donc prendre l'un sans l'autre, et les deux sont cochés par défaut. Seules les entrées reconnues par Handy Tool sont extraites, et ce qui est restauré remplace ce que vous avez actuellement. Restaurer les paramètres ou l'historique nécessite un redémarrage : utilisez le bouton Redémarrer Handy Tool maintenant qui apparaît, sinon l'application en cours d'exécution les écrasera à sa prochaine sauvegarde.",
+      "restoreConfig": "Configuration et historique (paramètres, base de l'historique)",
+      "restoreRecordings": "Enregistrements (fichiers audio)",
+      "restoreButton": "Restaurer depuis une sauvegarde…",
+      "restoreDone": "Restauré — paramètres : {{settings}} · historique : {{history}} · enregistrements : {{recordings}}",
+      "restartHint": "Redémarrez Handy Tool pour charger les paramètres/l'historique restaurés (en attendant, l'application en cours d'exécution pourrait les écraser).",
+      "restartNow": "Redémarrer Handy Tool maintenant"
+    },
+    "modelPicker": {
+      "refresh": "Récupérer / actualiser la liste des modèles",
+      "loading": "Chargement des modèles…",
+      "error": "Échec du chargement des modèles",
+      "noMatches": "Aucun modèle correspondant — tapez pour utiliser un identifiant personnalisé"
     }
   },
   "common": {
@@ -554,7 +1128,12 @@
     "yes": "Oui",
     "no": "Non",
     "noOptionsFound": "Aucune option trouvée",
-    "selectOption": "Sélectionnez une option…"
+    "selectOption": "Sélectionnez une option…",
+    "delay": {
+      "off": "Désactivé (instantané)",
+      "ms": "{{ms}} ms",
+      "seconds": "{{seconds}} s"
+    }
   },
   "accessibility": {
     "permissionsRequired": "Autorisations d'accessibilité requises",
@@ -567,7 +1146,7 @@
   },
   "appLanguage": {
     "title": "Langue de l'application",
-    "description": "Changer la langue de l'interface de Handy"
+    "description": "Change toute l'interface, y compris le menu de la barre système, vers l'une des 17 langues livrées. Par défaut : la langue d'affichage de Windows, avec repli sur l'anglais si cette langue n'est pas livrée. C'est uniquement la langue de l'interface — elle n'a rien à voir avec la langue que vous parlez, définie par Langue sur la page Général."
   },
   "overlay": {
     "transcribing": "Transcription...",
@@ -579,5 +1158,163 @@
     "listening": "Écoute en cours…",
     "copy": "Copier",
     "copied": "Copié"
+  },
+  "brand": {
+    "name": "Handy",
+    "suffix": "TOOL"
+  },
+  "toasts": {
+    "pasteFailed": "Le collage de la transcription a échoué : {{reason}}. Le texte est enregistré dans l'historique.",
+    "pasteFailedParked": "Le collage de la transcription a échoué : {{reason}}. Le texte est dans votre presse-papiers (et dans l'historique) — collez-le manuellement.",
+    "transcriptionFailed": "La transcription a échoué : {{reason}}. Vérifiez que le modèle sélectionné fonctionne, puis réessayez."
+  },
+  "flm": {
+    "notInstalled": "FLM n'est pas installé. Installez FastFlowLM pour utiliser des modèles accélérés par NPU.",
+    "npuAccelerated": "Accéléré par NPU"
+  },
+  "tokenCount": {
+    "configureProviders": "Configurer les fournisseurs",
+    "noProviders": "Aucun fournisseur configuré.",
+    "title": "Comptage de tokens",
+    "placeholder": "Collez le texte ici pour compter les tokens...",
+    "tokenizer": "Tokenizer",
+    "count": "Compter",
+    "countAll": "Compter avec tous",
+    "countAllTitle": "Compte avec chaque fournisseur activé, un par un — idéal quand plusieurs fournisseurs partagent un même service local qui doit charger/décharger chaque modèle",
+    "countAllParallel": "Compter avec tous (en parallèle)",
+    "countAllParallelTitle": "Interroge tous les fournisseurs activés en même temps — le plus rapide lorsque les services sont indépendants",
+    "counting": "Comptage... {{done}}/{{total}}",
+    "cancelSweep": "Annuler",
+    "openFile": "Ouvrir un fichier...",
+    "fileTooLarge": "Le fichier est trop volumineux (max 10 Mo).",
+    "loadedFile": "Chargé : {{name}}",
+    "providerOption": "{{name}} (fournisseur)",
+    "chipDisabled": "Non configuré — activez-le avec « Activer ce fournisseur » sous Avancé > Fournisseurs > Fournisseurs LLM enregistrés.",
+    "chips": {
+      "cl100k_base": "cl100k (GPT-4)",
+      "o200k_base": "o200k (GPT-4o)",
+      "estimate": "Estimation"
+    },
+    "activeProvider": "Comptage avec : {{name}} — {{model}} ({{url}})",
+    "activeLocal": "Comptage local avec : {{tokenizer}}",
+    "sweepSummary": "{{ok}} fournisseurs sur {{total}} ont répondu",
+    "showFailed": "afficher {{count}} échecs",
+    "hideFailed": "masquer les échecs",
+    "table": {
+      "provider": "Fournisseur",
+      "model": "Modèle",
+      "tokens": "Tokens",
+      "delta": "Δ par rapport au plus petit",
+      "time": "Temps"
+    },
+    "tokens": "tokens",
+    "characters": "caractères",
+    "words": "mots",
+    "options": {
+      "cl100k_base": "Compte le texte de la zone avec le tokenizer exact de GPT-4 et GPT-3.5 (cl100k_base), entièrement sur cette machine — rien n'est envoyé et cela fonctionne hors ligne. Utilisez-le pour les modèles OpenAI jusqu'à GPT-4 ; pour les plus récents, utilisez o200k (GPT-4o).",
+      "o200k_base": "Compte le texte de la zone avec le tokenizer exact de GPT-4o et o1 (o200k_base), entièrement sur cette machine — rien n'est envoyé et cela fonctionne hors ligne. Utilisez-le pour les modèles OpenAI actuels ; les modèles GPT-4 et GPT-3.5 plus anciens utilisent cl100k (GPT-4).",
+      "estimate": "Une estimation locale approximative d'environ 1,3 token par mot, sans tokenizer ni appel réseau. Utilisez-la quand le modèle qui vous intéresse n'a pas de compteur exact ici, et considérez-la comme un ordre de grandeur seulement — elle est volontairement exclue de la colonne « Δ par rapport au plus petit » pour qu'un chiffre approximatif ne fausse pas la comparaison entre les compteurs exacts."
+    }
+  },
+  "keyboardTyper": {
+    "title": "Frappe clavier",
+    "description": "Envoie ce texte à la fenêtre active sous forme de frappes simulées individuelles, pour que cela fonctionne là où le collage est bloqué — consoles distantes, visionneuses de VM, invites de mot de passe. Appuyez sur Lancer pour obtenir le compte à rebours du Délai de démarrage (10 s par défaut) et pour d'abord cliquer dans la fenêtre cible ; appuyez sur le Raccourci de frappe de texte quand vous êtes déjà dans la cible, la frappe démarre alors après environ une seconde. Le texte ne vit qu'en mémoire — il n'est jamais écrit dans vos paramètres, dans l'Historique ni dans les journaux.",
+    "placeholder": "Entrez le texte à taper...",
+    "go": "Lancer",
+    "cancel": "Annuler",
+    "startDelay": {
+      "label": "Délai de démarrage",
+      "unit": "s",
+      "preset": "{{seconds}} s",
+      "presetTitle": "Commencer à taper dans {{seconds}} secondes"
+    },
+    "keyDelay": {
+      "label": "Délai entre les touches",
+      "unit": "ms"
+    },
+    "shortcut": {
+      "label": "Raccourci :",
+      "unset": "non défini",
+      "hint": "(modifiez-le dans les paramètres Avancé ; appuyez à nouveau pour annuler)"
+    },
+    "status": {
+      "idle": "Cliquez sur Lancer, puis donnez le focus à la fenêtre cible — ou utilisez directement le raccourci dans l'application cible.",
+      "countdown": "La frappe démarre dans {{seconds}} s... (Échap annule)",
+      "typing": "Frappe en cours... {{typed}}/{{total}} caractères (Échap annule)",
+      "done": "Terminé — {{total}} caractères tapés.",
+      "cancelled": "Annulé.",
+      "error": "Erreur : {{message}}"
+    }
+  },
+  "modelTesting": {
+    "configureProviders": "Configurer les fournisseurs",
+    "description": "Envoie un même prompt à chaque modèle coché sous Exécuter et présente les réponses côte à côte avec le nombre de tokens, le coût et le temps aller-retour ; les modèles cochés sous Juge notent ensuite toutes ces réponses à l'aide de votre prompt de juge. Par défaut : rien n'est sélectionné et les deux prompts sont vides. La liste provient de Avancé > Fournisseurs LLM enregistrés, donc une exécution utilise vos propres clés API — votre prompt quitte cette machine et, pour les fournisseurs payants, coûte réellement de l'argent.",
+    "providersLabel": "Modèles",
+    "selectAll": "Tout sélectionner pour exécuter",
+    "clear": "Effacer",
+    "run": "Exécuter",
+    "judge": "Juge",
+    "costPerM": "entrée ${{input}} · sortie ${{output}} /1M",
+    "noProviders": "Aucun fournisseur compatible chat configuré. Ajoutez-en un dans Avancé → Fournisseurs LLM enregistrés.",
+    "mainPromptLabel": "Prompt pour tous les modèles",
+    "mainPromptPlaceholder": "Le prompt envoyé à chaque modèle sélectionné…",
+    "judgePromptLabel": "Prompt du juge / arbitre (facultatif)",
+    "judgePromptPlaceholder": "Instructions pour le panel de juges. Il reçoit l'entrée d'origine ainsi que la réponse de chaque modèle (balisée en XML).",
+    "temperatureLabel": "Température",
+    "modelParams": "Modèles",
+    "judgeParams": "Juge",
+    "runButton": "Lancer le test",
+    "cancelButton": "Annuler",
+    "runningMain": "Interrogation des modèles…",
+    "runningJudge": "Exécution du panel de juges…",
+    "summaryTitle": "Résumé",
+    "judgePanelTitle": "Panel de juges",
+    "answersTitle": "Réponses",
+    "colModel": "Modèle",
+    "colInput": "Tok. entrée",
+    "colOutput": "Tok. sortie",
+    "colCost": "Coût",
+    "colTime": "Temps",
+    "roundTrip": "Aller-retour (le plus long)",
+    "totalCost": "Coût total",
+    "errorPrefix": "Erreur",
+    "artifactLabel": "Artefact Markdown",
+    "copyMarkdown": "Copier le Markdown",
+    "copied": "Copié !",
+    "saveMarkdown": "Enregistrer…",
+    "status": {
+      "mainStart": "Interrogation de {{count}} modèle(s)…",
+      "judgeStart": "Exécution du panel de juges ({{count}} juge(s))…",
+      "done": "Terminé.",
+      "cancelled": "Annulé.",
+      "activity": "Activité de l'exécution"
+    },
+    "library": {
+      "preset": "Préréglage",
+      "presetPlaceholder": "Charger un préréglage…",
+      "pick": "Prompts enregistrés…",
+      "save": "Enregistrer",
+      "delete": "Supprimer la sélection",
+      "namePlaceholder": "Nom…",
+      "confirm": "Enregistrer",
+      "cancel": "Annuler",
+      "editCustom": "Modifier / personnalisé"
+    },
+    "thinking": {
+      "label": "Réflexion",
+      "auto": "Auto",
+      "on": "Activé",
+      "off": "Désactivé"
+    },
+    "image": {
+      "label": "Image (facultatif, pour les modèles de vision)",
+      "drop": "Cliquez ou déposez une image ici pour la joindre",
+      "remove": "Retirer",
+      "tooLarge": "L'image est trop volumineuse (max {{mb}} Mo)."
+    },
+    "save": "Enregistrer",
+    "saveAs": "Enregistrer sous…",
+    "saveTo": "Enregistrer dans {{path}}",
+    "saveDisabled": "Utilisez « Enregistrer sous… » d'abord pour choisir un emplacement"
   }
 }

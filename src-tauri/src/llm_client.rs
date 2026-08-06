@@ -488,10 +488,12 @@ pub async fn send_chat_completion_with_schema(
             .await
             .unwrap_or_else(|e| e.into_bytes());
         let error_text = String::from_utf8_lossy(&error_bytes);
-        return Err(format!(
-            "API request failed with status {}: {}",
-            status, error_text
-        ));
+        debug!(
+            "Post-process: error response body ({} chars): {}",
+            error_text.chars().count(),
+            error_text.chars().take(500).collect::<String>()
+        );
+        return Err(format!("API request failed with status {}", status));
     }
 
     let body_bytes = read_body_capped(response, MAX_RESPONSE_BYTES, REQUEST_TIMEOUT).await?;

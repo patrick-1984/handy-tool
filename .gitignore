@@ -23,24 +23,12 @@ dist-ssr
 *.suo
 *.ntvs*
 *.njsproj
+*.sln
 *.sw?
 
-# Build outputs
 /target/
-src-tauri/target/
-src-tauri/gen/schemas/
 recording_*
-
-# Local agent/tooling state (never published)
-.claude/
-.agents/
-.loki/
 .crush/
-_bmad/
-_bmad-output/
-CLAUDE.md
-AGENTS.md
-CRUSH.md
 
 # Playwright
 playwright-report/
@@ -49,3 +37,12 @@ blob-report/
 
 .direnv
 .envrc
+
+# Tauri updater signing keys — NEVER commit (private key)
+.keys/
+*.key
+*.key.pub
+
+\n# internal docs authoring workspace
+.docs-work/
+

@@ -1,34 +1,47 @@
-# Handy Tool
+# Handy Tool documentation
 
-**Press a key. Speak. Your words land exactly where you need them — typed, pasted, or submitted.**
+This page is the index. Every description of what Handy Tool does lives in the [Feature catalog](features.md); everything here is a door to a page.
 
-Handy Tool is a cross-platform desktop speech-to-text app (Windows, macOS, Linux) built with Tauri 2 — a Rust core with a React interface. It runs your transcription **locally by default**: your voice never has to leave your machine, and the app works offline. When you want cloud quality instead, point it at any OpenAI-compatible endpoint or OpenRouter with two settings.
+## The path
 
-It began as a fork of [Handy](https://github.com/cjpais/Handy) **v0.8.1** (March 2026), created by **[CJ Pais](https://github.com/cjpais)** — the foundation this project stands on — and has since been developed independently by Patrick R, growing a substantially reworked recording pipeline, new productivity tools, and a hardened shortcut system.
+Nine numbered rungs, in order. Each one is short, and each one ends at a point where you can stop.
 
-## Why it exists
+- [01 — Install and say your first words](start/01-install.md) — install, download one model, dictate one sentence.
+- [02 — Trust the safety net](start/02-first-words.md) — rehearse Escape and read the History page.
+- [03 — Make five choices](start/03-make-it-yours.md) — the five settings worth changing on day one.
+- [04 — Two keys, not one](start/04-two-keys-not-one.md) — add the second dictation key and use both.
+- [05 — Your first jump](start/05-your-first-jump.md) — mark a field, bury it, come back to it *{Windows only}*.
+- [06 — Nothing gets lost](start/06-nothing-gets-lost.md) — practice recovering a take on purpose.
+- [07 — The buttons you already own](start/07-mouse-buttons.md) — map the spare buttons on your mouse.
+- [08 — The deck](start/08-the-deck.md) — the 6-, 9-, and 12-key layouts, and how to program them.
+- [09 — Where next](start/09-where-next.md) — the menu of everything you have not tried yet.
 
-Dictation tools usually fail in one of three ways: they send your audio to someone else's server, they lose your words when something crashes, or they dump text wherever the cursor happens to be and leave the cleanup to you. Handy Tool is built around fixing all three — local processing, crash-resilient recording, and precise delivery of the result (paste method, auto-submit, clipboard preservation, remote-session support).
+## The tools
 
-## Documentation
+- [Transcription](tools/transcription.md) — set up the everyday dictation key and its delivery options.
+- [Transcribe & Submit](tools/transcribe-and-submit.md) — set up the second dictation key and its submit options.
+- [Jumper](tools/jumper.md) — set up anchors and jump slots *{Windows only}*.
+- [Remote desktops](tools/remote-desktops.md) — tune the delivery timings used inside RDP and Citrix sessions.
+- [History and recovery](tools/history-and-recovery.md) — set retention, and find an earlier take.
+- [Providers](tools/providers.md) — configure local engines and remote endpoints.
+- [Keyboard Typer](tools/keyboard-typer.md) — prepare text for keystroke delivery.
+- [Model Testing](tools/model-testing.md) — run one prompt across providers and read the report.
+- [Token Count](tools/token-count.md) — count a prompt before you spend it.
+- [Translator](tools/translator.md) — watch a folder and transcribe it in batches.
+- [MCP and CLI](tools/mcp-and-cli.md) — enable the loopback server and install the `handy` command.
+- [Backup and portable mode](tools/backup-and-portable.md) — export, restore, or carry a setup on a stick.
 
-| Document                             | What it covers                                                                                                 |
-| ------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
-| [Features](features.md)              | Every feature, framed as the problem it solves — recording, transcription modes, engines, delivery, resilience |
-| [Tools](tools.md)                    | The built-in toolbox: Model Testing & Judge, Keyboard Typer, Token Counter, MCP/CLI server                     |
-| [Improvements](improvements.md)      | The engineering journey — what was rebuilt, why, and what it bought                                            |
-| [Portable Distribution](portable.md) | Running Handy Tool from a folder/USB stick with no installer — current status and how to build the ZIP         |
+## The reference shelf
 
-## At a glance
-
-- **One-keystroke dictation** anywhere in the OS, with configurable global shortcuts (toggle, push-to-talk, and finish-and-submit variants)
-- **Local engines**: Whisper (GPU-accelerated via Vulkan/Metal), NVIDIA Parakeet, Moonshine, SenseVoice — plus NPU-accelerated FLM, any OpenAI-compatible API, and OpenRouter
-- **Near-real-time transcription**: live mode transcribes while you speak
-- **Crash-resilient recording**: audio is written to compact Opus chunks as you talk; a crash mid-dictation loses nothing
-- **Precise delivery**: per-shortcut paste method (Ctrl+V / Shift+Insert / direct typing), optional auto-submit key, clipboard preservation with remote-session-aware restore delay
-- **A toolbox for LLM work**: side-by-side model testing with a judge panel, token counting across providers, a secure keyboard typer, and an MCP server so agents can drive the app
-- **17 interface languages**
-
-## Privacy posture
-
-Local models process audio entirely on your machine. History, settings, and recordings live in your user profile and never sync anywhere. The optional MCP/CLI server binds to `127.0.0.1` only and requires a bearer token. API keys you configure are write-only through the MCP surface — they can be set, never read back.
+- [Feature catalog](features.md) — every capability, described once.
+- [Settings reference](reference/settings/index.md) — every screen, control, breadcrumb, and shipped default.
+- [Shortcut reference](reference/shortcuts.md) — every bindable action and its default chord.
+- [Command-line reference](reference/cli.md) — flags, companion subcommands, and examples.
+- [Glossary](reference/glossary.md) — the vocabulary these pages use.
+- [Privacy and data flow](privacy.md) — the audited storage and network boundaries.
+- [What runs today, and what is planned](features.md#what-runs-today-and-what-is-planned) — the platform answer for a macOS or Linux reader.
+- [Pick the engine that fits the machine](features.md#pick-the-engine-that-fits-the-machine) — which model or endpoint suits your hardware.
+- [Speak any language, get English](features.md#speak-any-language-get-english) — spoken language and translation.
+- [The engineering journey](improvements.md) — how the guarantees were built.
+- [Changelog](../CHANGELOG.md) — the version-by-version record.
+- [Documentation contract](_contract.md) — the maintenance rules for this documentation set.

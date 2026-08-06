@@ -965,20 +965,22 @@ async fn post_process_transcription(settings: &AppSettings, transcription: &str)
                             );
                             return Some(result);
                         } else {
+                            let preview: String = content.chars().take(500).collect();
                             error!(
-                                "Post-process: structured output response missing '{}' field, raw: {}",
-                                TRANSCRIPTION_FIELD,
-                                &content[..content.len().min(500)]
+                                "Post-process: structured output response missing '{}' field",
+                                TRANSCRIPTION_FIELD
                             );
+                            debug!("Post-process: malformed structured response: {}", preview);
                             return Some(strip_thinking_tags(&strip_invisible_chars(&content)));
                         }
                     }
                     Err(e) => {
+                        let preview: String = content.chars().take(500).collect();
                         error!(
-                            "Post-process: failed to parse structured output JSON: {}. Raw: {}",
-                            e,
-                            &content[..content.len().min(500)]
+                            "Post-process: failed to parse structured output JSON: {}",
+                            e
                         );
+                        debug!("Post-process: unparseable structured response: {}", preview);
                         return Some(strip_thinking_tags(&strip_invisible_chars(&content)));
                     }
                 }

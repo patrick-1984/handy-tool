@@ -13,7 +13,43 @@
     "postProcessing": "Post Proceso",
     "history": "Historial",
     "debug": "Depuración",
-    "about": "Acerca de"
+    "about": "Acerca de",
+    "backup": "Copia de seguridad",
+    "currentAudio": "Audio Actual",
+    "tokenCount": "Conteo de Tokens",
+    "keyboardTyper": "Escritura de Teclado",
+    "jumper": "Jumper",
+    "translator": "Traductor",
+    "groups": {
+      "tools": "Herramientas",
+      "config": "Configuración"
+    },
+    "modelTesting": "Prueba de Modelos",
+    "resize": "Arrastra para cambiar el tamaño",
+    "update": {
+      "checking": "Buscando actualizaciones…",
+      "available": "Handy Tool {{version}} está disponible",
+      "silentOn": "Handy Tool se cerrará, actualizará y volverá a abrirse.",
+      "silentOff": "Activa las actualizaciones silenciosas para instalarlas automáticamente durante la ventana.",
+      "enableSilent": "Activar actualizaciones silenciosas",
+      "updateRestart": "Actualizar y reiniciar",
+      "later": "Más tarde",
+      "updateNow": "Actualizar ahora",
+      "downloading": "Descargando Handy Tool {{version}}…",
+      "percent": "{{percent}} %",
+      "ready": "La actualización {{version}} está lista",
+      "waitingForIdle": "Esperando a que termine el dictado…",
+      "readyDetail": "Handy Tool se reiniciará para finalizar la actualización.",
+      "waiting": "Esperando…",
+      "restartInstall": "Reiniciar e instalar",
+      "installing": "Instalando actualización…",
+      "installingDetail": "Handy Tool se cerrará y volverá a abrirse.",
+      "failed": "Error de actualización",
+      "failedDetail": "Handy Tool no se modificó. {{reason}}",
+      "unknownError": "Error desconocido",
+      "tryAgain": "Reintentar",
+      "downloadInstaller": "Descargar instalador"
+    }
   },
   "onboarding": {
     "subtitle": "Para comenzar, elige un modelo de transcripción",
@@ -133,11 +169,15 @@
   "settings": {
     "modelSettings": {
       "title": "Configuración de {{model}}",
-      "noSettingsNeeded": "Este modelo funciona automáticamente sin necesidad de configuración."
+      "noSettingsNeeded": "Este modelo funciona automáticamente sin necesidad de configuración.",
+      "autoDetectLanguage": {
+        "description": "Este modelo detecta el idioma hablado automáticamente y no se puede fijar a un idioma específico. Para forzar un idioma, cambia a un modelo Whisper, SenseVoice, FLM o API.",
+        "value": "Detectado automáticamente"
+      }
     },
     "models": {
       "title": "Modelos de Transcripción",
-      "description": "Selecciona un modelo de transcripción o descarga modelos adicionales. Diferentes modelos ofrecen distintos niveles de precisión y velocidad.",
+      "description": "Elige qué modelo de voz transcribe tu dictado: los modelos difieren en precisión, velocidad y cuánta memoria retienen mientras están cargados. Predeterminado: nada seleccionado en una instalación nueva; la incorporación descarga y selecciona tu primer modelo. Tu elección también decide si Idioma y Traducir al Inglés se ofrecen en la página General, y el Traductor usa este mismo modelo siempre que su Modelo por lotes se deje en \"Igual que el dictado (predeterminado)\".",
       "downloaded": "Descargados",
       "available": "Disponibles para Descargar",
       "deleteConfirm": "¿Estás seguro de que deseas eliminar {{modelName}}? Necesitarás descargarlo de nuevo para usarlo.",
@@ -165,26 +205,79 @@
         "bindings": {
           "transcribe": {
             "name": "Atajo de Transcripción",
-            "description": "El atajo de teclado para grabar y transcribir tu voz."
+            "description": "Presiona una vez para empezar a grabar y otra vez para terminar; la transcripción se entrega en la ventana que tenía el enfoque. Predeterminado: Ctrl+Espacio. Sigue el Modo de Transcripción y el Método de Pegado de la página Avanzado; para mantener presionado en vez de alternar, usa el Atajo de Presionar para Hablar."
           },
           "cancel": {
             "name": "Atajo de Cancelar",
-            "description": "El atajo de teclado para cancelar la grabación actual."
+            "description": "Cancela la toma en curso. Predeterminado: escape. Lo que realmente hace cancelar lo decide Comportamiento de cancelar en la página General: \"Terminar, guardar solo en el historial\" sigue transcribiendo y guardando el texto pero no entrega nada a tu ventana, mientras que \"Descartar grabación\" desecha el audio; el elemento Cancelar de la bandeja sigue el mismo ajuste."
           },
           "transcribe_with_post_process": {
             "name": "Tecla de Post Procesamiento",
             "description": "Opcional: Una tecla de acceso rápido dedicada que siempre aplica post procesamiento con IA a tu transcripción."
+          },
+          "transcribe_ptt": {
+            "name": "Atajo de Presionar para Hablar",
+            "description": "Mantén presionado este atajo para grabar y suéltalo para detener; el micrófono se apaga al soltar, así que nada de lo que digas después puede filtrarse al texto. Predeterminado: Ctrl+Alt+Espacio. Tiene su propio Modo de Transcripción (PTT) y su propio Método de Pegado (PTT), así que presionar para hablar puede comportarse distinto del Atajo de Transcripción."
+          },
+          "type_text": {
+            "name": "Atajo de Escribir Texto",
+            "description": "Escribe lo que haya en el cuadro de Escritura de Teclado en la ventana que tiene el enfoque ahora mismo; presiónalo de nuevo, o Escape, para cancelar. Predeterminado: ctrl+alt+t. Empieza cerca de un segundo después en vez de esperar el Retraso de inicio completo, porque presionar un atajo significa que ya estás en la ventana de destino; el botón Iniciar es el que usa la cuenta atrás completa."
+          },
+          "transcribe_and_submit": {
+            "name": "Atajo de Transcribir y Enviar",
+            "description": "Termina la grabación, pega la transcripción y luego presiona la tecla de envío. Funciona incluso si la grabación se inició con otro atajo."
+          },
+          "anchor_set": {
+            "name": "Fijar Ancla",
+            "description": "Captura el campo de texto que tienes enfocado ahora mismo como el destino Rápida 1. Predeterminado: ctrl+alt+k. Por sí solo no entrega nada: pon 'Acción de ranura al finalizar' en 'Saltar / entregar a la ranura' con la ranura fijada en Rápida 1 (Avanzado → Transcripción) para que tu próxima transcripción llegue allí. Los cuadros de contraseña y las propias ventanas de Handy se rechazan."
+          },
+          "anchor_jump": {
+            "name": "Saltar al Ancla",
+            "description": "Trae de vuelta al primer plano la ventana y el campo de Rápida 1 y no pega nada: una tecla de 'volver a mi borrador'. Predeterminado: ctrl+alt+j. Si 'Guardar posición del mouse' está activado para esta ranura, el puntero también vuelve; no ocurre nada si la ranura está vacía o su ventana se cerró."
+          },
+          "jump_set_slot_1": {
+            "name": "Fijar Ranura 1",
+            "description": "Memoriza el campo que tienes enfocado ahora mismo como la ranura estática 1, reemplazando lo que contuviera. Predeterminado: ctrl+alt+shift+1. La ranura es solo un marcador hasta que algo la usa: salta a ella con 'Saltar a la Ranura 1', o dirige la 'Acción de ranura al finalizar' de un flujo (Avanzado → Transcripción) a la Ranura 1 para que las transcripciones se entreguen allí."
+          },
+          "jump_set_slot_2": {
+            "name": "Fijar Ranura 2",
+            "description": "Memoriza el campo que tienes enfocado ahora mismo como la ranura estática 2, reemplazando lo que contuviera. Predeterminado: ctrl+alt+shift+2. Vuelve con 'Saltar a la Ranura 2', o dirige la 'Acción de ranura al finalizar' de un flujo (Avanzado → Transcripción) a la Ranura 2 para que las transcripciones se entreguen allí."
+          },
+          "jump_set_slot_3": {
+            "name": "Fijar Ranura 3",
+            "description": "Memoriza el campo que tienes enfocado ahora mismo como la ranura estática 3, reemplazando lo que contuviera. Predeterminado: ctrl+alt+shift+3. Vuelve con 'Saltar a la Ranura 3', o dirige la 'Acción de ranura al finalizar' de un flujo (Avanzado → Transcripción) a la Ranura 3 para que las transcripciones se entreguen allí."
+          },
+          "jump_set_slot_4": {
+            "name": "Fijar Ranura 4",
+            "description": "Memoriza el campo que tienes enfocado ahora mismo como la ranura estática 4, reemplazando lo que contuviera. Predeterminado: ctrl+alt+shift+4. Vuelve con 'Saltar a la Ranura 4', o dirige la 'Acción de ranura al finalizar' de un flujo (Avanzado → Transcripción) a la Ranura 4 para que las transcripciones se entreguen allí."
+          },
+          "jump_slot_1": {
+            "name": "Saltar a la Ranura 1",
+            "description": "Trae al primer plano la ventana y el campo de la ranura estática 1 y no entrega nada: navegación pura. Predeterminado: ctrl+alt+1. Si 'Guardar posición del mouse' está activado para esta ranura, el puntero también se restaura; no ocurre nada si la ranura está vacía o su ventana se cerró."
+          },
+          "jump_slot_2": {
+            "name": "Saltar a la Ranura 2",
+            "description": "Trae al primer plano la ventana y el campo de la ranura estática 2 y no entrega nada: navegación pura. Predeterminado: ctrl+alt+2. Si 'Guardar posición del mouse' está activado para esta ranura, el puntero también se restaura; no ocurre nada si la ranura está vacía o su ventana se cerró."
+          },
+          "jump_slot_3": {
+            "name": "Saltar a la Ranura 3",
+            "description": "Trae al primer plano la ventana y el campo de la ranura estática 3 y no entrega nada: navegación pura. Predeterminado: ctrl+alt+3. Si 'Guardar posición del mouse' está activado para esta ranura, el puntero también se restaura; no ocurre nada si la ranura está vacía o su ventana se cerró."
+          },
+          "jump_slot_4": {
+            "name": "Saltar a la Ranura 4",
+            "description": "Trae al primer plano la ventana y el campo de la ranura estática 4 y no entrega nada: navegación pura. Predeterminado: ctrl+alt+4. Si 'Guardar posición del mouse' está activado para esta ranura, el puntero también se restaura; no ocurre nada si la ranura está vacía o su ventana se cerró."
           }
         },
         "errors": {
           "restore": "Error al restaurar el atajo original",
           "set": "Error al configurar el atajo: {{error}}",
-          "reset": "Error al restablecer el atajo al valor original"
+          "reset": "Error al restablecer el atajo al valor original",
+          "registrationFailed": "Algunos atajos no se pudieron registrar y están inactivos: {{bindings}}. Es posible que otra aplicación ya los esté usando: elige una combinación distinta en Configuración."
         }
       },
       "language": {
         "title": "Idioma",
-        "description": "Selecciona el idioma para el reconocimiento de voz. Auto detectará automáticamente el idioma, mientras que seleccionar un idioma específico puede mejorar la precisión para ese idioma.",
+        "description": "Le indica al motor qué idioma estás hablando; nombrarlo suele ser más preciso que Auto y evita que las tomas cortas se detecten en el idioma equivocado. Predeterminado: Auto. Se aplica al modelo nombrado en el encabezado de esta tarjeta, y con Traducir al Inglés activado significa el idioma que hablas, no el idioma que recibes.",
         "descriptionUnsupported": "El modelo Parakeet detecta automáticamente el idioma. No se necesita selección manual.",
         "searchPlaceholder": "Buscar idiomas...",
         "noResults": "No se encontraron idiomas",
@@ -202,52 +295,146 @@
         },
         "jumperPasteDelay": {
           "title": "Paste delay after jump (Windows)",
-          "description": "Extra wait after a jump activates the target window and before the paste keystroke fires. A freshly activated window — especially an RDP/Citrix session — may still be transitioning when Ctrl+V lands, so the paste is swallowed and nothing appears. Set a longer wait for Remote desktop targets (matched on the Jumper page) and a shorter one for Local apps. Shared by both Transcribe and Transcribe & Submit; only applies after a real jump — when you're already in the target, paste stays instant.",
+          "description": "Espera adicional después de que un salto trae al frente la ventana de destino y antes de que se dispare la pulsación de pegado, porque una ventana activada hace un instante todavía puede tragarse las pulsaciones. Predeterminados: apps locales 250 ms, escritorio remoto 1 s; qué columna se aplica lo decide 'Remote match strings' en la página Jumper. Solo se ejecuta en un salto real; cuando ya estás en el destino, pegar sigue siendo instantáneo, y ambos desplegables los comparten Transcribir y Transcribir y Enviar.",
           "options": {
             "none": "Off (instant)"
           }
         },
         "jumperSubmitDelay": {
           "title": "Submit delay after jump (Windows)",
-          "description": "Extra wait before pressing the submit key (Enter) after a jump. A freshly activated window — especially RDP/Citrix — may still be applying the pasted text when Enter fires, so the submit is missed. Set a longer wait for Remote desktop targets and a shorter one for Local apps. Only applies after a real jump; when you're already in the target, submit stays instant.",
+          "description": "Espera adicional entre el pegado y la tecla de envío cuando la entrega tuvo que saltar, porque la ventana recién activada puede seguir confirmando el texto pegado y perderse el Enter. Predeterminados: apps locales 250 ms, escritorio remoto 500 ms; 'Remote match strings' en la página Jumper decide cuál se aplica. Solo se ejecuta después de un salto real; si ya estabas en el destino, enviar sigue siendo instantáneo.",
           "options": {
             "none": "Off (instant)"
           }
+        },
+        "title": "Transcribir y Enviar",
+        "pasteMethod": {
+          "title": "Método de pegado",
+          "description": "La pulsación de pegado que usa solo el Atajo de Transcribir y Enviar, así la única app en la que dictas y envías puede comportarse distinto de todas las demás. Predeterminado: Portapapeles (Ctrl+V). Sustituye a Método de Pegado para este flujo; configúralo en Portapapeles (Shift+Insert) si el cuadro de mensajes de esa app ignora Ctrl+V."
+        },
+        "submitKey": {
+          "title": "Tecla de envío",
+          "description": "La tecla que se presiona justo después de que este flujo pega, para enviar realmente el mensaje o ejecutar el comando. Predeterminado: Enter. Este flujo siempre envía (Envío automático no se le aplica), así que elige Ctrl+Enter o Super+Enter para apps donde Enter simple solo inserta una línea nueva."
+        },
+        "idleBehavior": {
+          "title": "Cuando no hay ninguna grabación activa",
+          "description": "Qué ocurre al presionar el Atajo de Transcribir y Enviar cuando no se está grabando nada. Predeterminado: Iniciar una grabación, así una pulsación empieza y la siguiente pega y envía. Elige No hacer nada para que esta tecla sea un finalizador puro: inicias las tomas con el Atajo de Transcripción y presionas esta solo cuando quieres que ese resultado se pegue y se envíe.",
+          "options": {
+            "startNormal": "Iniciar una grabación",
+            "doNothing": "No hacer nada"
+          }
+        },
+        "clipboard": {
+          "title": "Portapapeles",
+          "description": "La política de portapapeles propia de este flujo, independiente de Manejo del Portapapeles: restaura tu portapapeles existente después de pegar, o deja a propósito la transcripción enviada en él. Predeterminado: No Modificar Portapapeles. Útil cuando el dictado normal debe dejar tu portapapeles en paz pero quieres una copia de todo lo que enviaste, o al revés."
         }
       },
       "pasteLast": {
         "title": "Paste last transcription",
         "pasteMethod": {
           "title": "Paste method",
-          "description": "How the last transcription is pasted into the focused window when you press the shortcut. Use Shift+Insert or another method if Ctrl+V doesn't work in the target app."
+          "description": "Cómo el atajo 'Paste last transcription' coloca el texto en la ventana enfocada. Es independiente del Método de Pegado de la página Avanzado, así que puedes ajustarlo para ese único destino problemático. Predeterminado: Portapapeles (Ctrl+V); prueba Portapapeles (Shift+Insert) en una terminal, Directo para escribir los caracteres en vez de pegarlos, o Ninguno para solo colocar el texto en el portapapeles y pegarlo tú mismo."
         },
         "clipboard": {
           "title": "Clipboard",
-          "description": "Keep your existing clipboard after pasting, or leave the transcription on the clipboard."
+          "description": "Si volver a pegar restaura después tu portapapeles anterior, o deja la transcripción en él a propósito. Predeterminado: No Modificar Portapapeles, que copia el texto, lo pega y luego restaura lo que tenías. Elige Copiar al Portapapeles para conservar las palabras disponibles después de volver a pegar; en ambos casos solo se guarda y restaura texto del portapapeles, así que una imagen o archivo copiado se pierde."
         }
+      },
+      "anchor": {
+        "title": "Anclaje y Entrega",
+        "deliveryFailed": "Falló la entrega anclada: {{reason}}. Tu texto está en el portapapeles y el ancla se mantuvo.",
+        "status": {
+          "title": "Ancla actual",
+          "description": "Muestra a qué apunta ahora esta ranura rápida, con Probar (saltar allí sin entregar nada) y Borrar; una insignia 'Remote ✓' significa que el destino coincidió con tus 'Remote match strings'. Predeterminado: Sin ancla fijada; haz clic en un campo de texto y presiona el atajo Fijar Ancla de esta ranura para activarla. Una entrega nunca consume el ancla: permanece hasta que la borras o su ventana se cierra.",
+          "active": "Anclado: {{app}} ({{control}})",
+          "none": "No hay ancla fijada",
+          "clear": "Borrar"
+        },
+        "keep": {
+          "label": "Mantener el ancla después de la entrega",
+          "description": "Deja el ancla activada tras una entrega exitosa en lugar de borrarla, para dictar repetidamente en el mismo campo."
+        },
+        "returnFocus": {
+          "label": "Volver al enfoque anterior tras la entrega",
+          "description": "Vuelve a la ventana que estabas usando una vez entregado el texto."
+        },
+        "actions": {
+          "options": {
+            "none": "No hacer nada",
+            "jump": "Saltar / entregar a la ranura",
+            "set": "Fijar la ranura al enfoque actual",
+            "clear": "Borrar ranura"
+          },
+          "idle": {
+            "title": "Acción de ranura al iniciar",
+            "description": "Qué hace además este atajo con la ranura elegida en el desplegable de la izquierda en el momento en que lo presionas para iniciar una toma. Predeterminado: No hacer nada, por lo que el selector de ranura empieza desactivado. Saltar / entregar a la ranura te mueve a ese campo recordado antes de que hables, Fijar la ranura al enfoque actual registra dónde estás ahora mismo, y Borrar ranura la olvida (solo Windows)."
+          },
+          "stop": {
+            "title": "Acción de ranura al finalizar",
+            "description": "Qué hace este atajo con la ranura elegida a la izquierda cuando termina la toma. Predeterminado: No hacer nada. Saltar / entregar a la ranura envía la transcripción a ese campo recordado en vez de a donde hayas derivado, así puedes leer otra cosa mientras dictas; Fijar la ranura al enfoque actual y Borrar ranura se ejecutan solo después de que el texto se entregó, y 'Saltar al finalizar solo si se inició de la misma forma' en la página Jumper puede acotar cuándo se permite un salto (solo Windows)."
+          }
+        }
+      },
+      "transcribeGroup": {
+        "title": "Transcribir"
+      },
+      "cancelBehavior": {
+        "title": "Comportamiento de cancelar",
+        "description": "Decide qué le hace cancelar a la grabación en curso: esto cubre el Atajo de Cancelar, el elemento \"Cancelar\" de la bandeja y 'handy --cancel'. Predeterminado: \"Terminar, guardar solo en el historial\", que detiene y transcribe la toma, la conserva en Historial junto con su audio, y luego no entrega nada en absoluto: sin pegado, sin cambio de portapapeles, sin tecla de envío, sin salto. Elige \"Descartar grabación\" si prefieres que una toma cancelada se deseche sin transcribirla ni guardarla.",
+        "options": {
+          "finishSilently": "Terminar, guardar solo en el historial",
+          "discardRecording": "Descartar grabación"
+        }
+      },
+      "updates": {
+        "title": "Actualizaciones",
+        "checks": {
+          "label": "Buscar actualizaciones automáticamente",
+          "description": "Comprobar una vez al día las versiones públicas de GitHub."
+        },
+        "silent": {
+          "label": "Instalar actualizaciones silenciosamente",
+          "description": "Cerrar, actualizar y volver a abrir durante la ventana permitida. Desactivado de forma predeterminada."
+        },
+        "time": {
+          "label": "Hora de actualización silenciosa",
+          "description": "Centro de la ventana permitida en hora local.",
+          "window": "De {{start}} a {{end}}, hora local."
+        },
+        "jitter": {
+          "label": "Variación diaria",
+          "description": "Elegir cada día otra hora dentro de este número de minutos.",
+          "minutes": "minutos"
+        },
+        "checkNow": "Buscar ahora",
+        "checking": "Comprobando…",
+        "upToDate": "Handy Tool está actualizado.",
+        "lastChecked": "Última comprobación: {{value}}",
+        "never": "Nunca",
+        "portableUnsupported": "Las copias portátiles no se pueden actualizar en el sitio. Descarga la última versión portátil."
       }
     },
     "sound": {
       "title": "Sonido",
       "microphone": {
         "title": "Micrófono",
-        "description": "Selecciona tu dispositivo de micrófono preferido",
+        "description": "El dispositivo de entrada desde el que Handy graba. Tiene efecto en tu próxima toma, sin reinicio. Predeterminado: el dispositivo predeterminado del sistema; fíjalo explícitamente cuando alternes entre unos auriculares y el arreglo integrado, y usa el botón de restablecer para volver a la elección del sistema.",
         "placeholder": "Seleccionar micrófono...",
         "loading": "Cargando..."
       },
       "audioFeedback": {
         "label": "Retroalimentación de Audio",
-        "description": "Reproducir sonido cuando la grabación inicia y se detiene"
+        "description": "Reproduce una señal corta cuando empieza la grabación y otra distinta cuando se detiene, así sabes que el micrófono está activo sin mirar la pantalla. Predeterminado: Desactivado. Activarlo habilita Dispositivo de Salida y Volumen de abajo; los dos sonidos de señal se pueden cambiar por tus propios archivos con Tema de Sonido en la página de Depuración."
       },
       "outputDevice": {
         "title": "Dispositivo de Salida",
-        "description": "Selecciona tu dispositivo de salida de audio preferido para los sonidos de retroalimentación",
+        "description": "Dónde suenan las señales de inicio y detención: no afecta qué micrófono graba ni a dónde envían audio otras apps. Predeterminado: el dispositivo predeterminado del sistema. Dirígelo a tus auriculares para que las señales no salgan por los altavoces; el control permanece desactivado hasta que Retroalimentación de Audio esté activada.",
         "placeholder": "Seleccionar dispositivo de salida...",
         "loading": "Cargando..."
       },
       "volume": {
         "title": "Volumen",
-        "description": "Ajusta el volumen de los sonidos de retroalimentación de audio"
+        "description": "Qué tan fuertes son las señales de inicio y de detención, de 0 a 100 por ciento. Predeterminado: 100%. Bájalo si las señales sobresaltan con auriculares; solo cambia los sonidos de señal propios de Handy, y permanece desactivado hasta que Retroalimentación de Audio esté activada."
       }
     },
     "advanced": {
@@ -257,27 +444,27 @@
         "output": "Salida",
         "transcription": "Transcripción",
         "history": "Historial",
-        "experimental": "Experimental"
-      },
-      "experimentalToggle": {
-        "label": "Funciones Experimentales",
-        "description": "Habilitar funciones experimentales que aún están en desarrollo."
+        "postProcessing": "Post Proceso",
+        "keyboardTyper": "Escritura de Teclado",
+        "tokenCountProviders": "Proveedores de Conteo de Tokens",
+        "llmProviders": "Proveedores LLM Registrados",
+        "mcp": "MCP y CLI"
       },
       "startHidden": {
         "label": "Iniciar Oculto",
-        "description": "Lanzar en la bandeja del sistema sin abrir la ventana."
+        "description": "Inicia Handy Tool sin ninguna ventana en pantalla: va directo a la bandeja del sistema y el dictado funciona de inmediato. Predeterminado: Desactivado. Combínalo con Iniciar al Arranque para que la app esté lista al iniciar sesión sin que aparezca una ventana, y deja Mostrar Icono de Bandeja activado, porque entonces la bandeja es tu única forma de abrir la ventana."
       },
       "autostart": {
         "label": "Iniciar al Arranque",
-        "description": "Iniciar Handy automáticamente cuando inicies sesión en tu computadora."
+        "description": "Registra Handy Tool para que se inicie automáticamente al iniciar sesión en Windows. Predeterminado: Desactivado. Combínalo con Iniciar Oculto para que aparezca en silencio en la bandeja en vez de abrir su ventana."
       },
       "showTrayIcon": {
         "label": "Mostrar Icono de Bandeja",
-        "description": "Mostrar el icono de Handy en la bandeja del sistema."
+        "description": "Muestra el icono de Handy Tool en la bandeja del sistema, donde también indica inactivo, grabando y transcribiendo, y ofrece un menú para la configuración, la última transcripción y salir. Predeterminado: Activado. Cuidado: con esto desactivado, cerrar la ventana principal cierra la app en vez de ocultarla, y si Iniciar Oculto también está activado no habrá nada en pantalla para hacer clic."
       },
       "overlay": {
         "title": "Posición de Superposición",
-        "description": "Mostrar superposición de retroalimentación visual durante la grabación y transcripción. En Linux se recomienda 'Ninguna'.",
+        "description": "Muestra una pequeña superposición mientras dictas para que veas que Handy Tool está escuchando y luego transcribiendo, ubicada en la parte inferior o superior de la pantalla. Predeterminado: Abajo. Elige Ninguna para desactivarla cuando cubre algo que necesitas o interfiere con una app a pantalla completa.",
         "options": {
           "none": "Ninguna",
           "bottom": "Abajo",
@@ -286,7 +473,7 @@
       },
       "pasteMethod": {
         "title": "Método de Pegado",
-        "description": "Elige cómo se inserta el texto. Directo: simula escritura mediante entrada del sistema. Ninguno: omite el pegado, solo actualiza historial/portapapeles.",
+        "description": "Elige la pulsación que usa el dictado normal para entregar el texto en la ventana enfocada; Directo escribe los caracteres en vez de pegar, y Ninguno no envía nada en absoluto. Predeterminado: Portapapeles (Ctrl+V). Ejemplo: una terminal o visor remoto que ignora Ctrl+V suele aceptar Portapapeles (Shift+Insert), y Ninguno combinado con Manejo del Portapapeles en Copiar al Portapapeles deja el texto listo para que lo pegues a mano. Presionar para hablar ignora este ajuste y usa Método de Pegado (PTT).",
         "options": {
           "clipboard": "Portapapeles ({{modifier}}+V)",
           "clipboardCtrlShiftV": "Portapapeles (Ctrl+Shift+V)",
@@ -299,14 +486,14 @@
       },
       "typingTool": {
         "title": "Herramienta de Escritura",
-        "description": "Elige qué herramienta de escritura de Linux usar para el método de pegado directo. Auto detectará y usará automáticamente la mejor herramienta disponible para tu sistema.",
+        "description": "Elige qué utilidad de inyección de teclado de Linux respalda el método de pegado Directo. Predeterminado: Auto (Recomendado), que detecta la mejor herramienta instalada. Solo aparece en la compilación planeada para Linux y nunca se muestra en Windows.",
         "options": {
           "auto": "Auto (Recomendado)"
         }
       },
       "clipboardHandling": {
         "title": "Manejo del Portapapeles",
-        "description": "No Modificar Portapapeles conserva el contenido actual de tu portapapeles después de la transcripción. Copiar al Portapapeles deja el resultado de la transcripción en tu portapapeles después de pegar.",
+        "description": "Decide qué queda en tu portapapeles después de un dictado normal: No Modificar Portapapeles pone allí la transcripción solo el tiempo necesario para pegarla y luego restaura tu portapapeles anterior, mientras que Copiar al Portapapeles la deja allí a propósito. Predeterminado: No Modificar Portapapeles. Límite real: solo se restaura texto, así que una imagen o archivo copiado se pierde, y Retraso de restauración del portapapeles no tiene ningún efecto salvo que esto esté en No Modificar Portapapeles.",
         "options": {
           "dontModify": "No Modificar Portapapeles",
           "copyToClipboard": "Copiar al Portapapeles"
@@ -314,7 +501,7 @@
       },
       "autoSubmit": {
         "title": "Envío automático",
-        "description": "Envía automáticamente la combinación de teclas seleccionada después de insertar el texto. Cmd+Enter se aplica en macOS, mientras que Windows/Linux usan Super+Enter.",
+        "description": "Envía una tecla de envío unos 50 ms después de cada pegado normal, para que un mensaje de chat dictado se envíe solo. Predeterminado: Desactivado. Las apps no se ponen de acuerdo en qué tecla envía, así que prueba Ctrl+Enter si Enter simple solo agrega una línea nueva; se ignora cuando Método de Pegado es Ninguno, y no rige el Atajo de Transcribir y Enviar, que siempre envía su propia Tecla de envío.",
         "options": {
           "off": "Desactivado",
           "enter": "Enter",
@@ -325,12 +512,13 @@
       },
       "translateToEnglish": {
         "label": "Traducir al Inglés",
-        "description": "Traducir automáticamente el habla de otros idiomas al inglés durante la transcripción.",
-        "descriptionUnsupported": "La traducción no es compatible con el modelo {{model}}."
+        "description": "Le pide al modelo una salida en inglés en vez de transcribir lo que dijiste en su propio idioma. Predeterminado: Desactivado. Deja Idioma configurado en el idioma que realmente hablas; este interruptor solo aparece para modelos que admiten traducción.",
+        "descriptionUnsupported": "La traducción no es compatible con el modelo {{model}}.",
+        "unsupported": "No disponible para el modelo de transcripción seleccionado."
       },
       "modelUnload": {
         "title": "Descargar Modelo",
-        "description": "Liberar automáticamente la memoria GPU/CPU cuando el modelo no se ha usado durante el tiempo especificado",
+        "description": "Libera la RAM o VRAM que retiene el modelo de transcripción una vez que ha estado sin usarse durante este tiempo; la próxima toma paga entonces unos segundos para recargarlo. Predeterminado: Nunca (mantenerlo cargado, el inicio más rápido), la opción correcta si dictas durante todo el día. Elige un tiempo de espera si dictas en ráfagas y quieres recuperar la memoria entre ellas; el motor por lotes independiente del Traductor no se cubre aquí, lo libera Descargar modelo por lotes después de.",
         "options": {
           "never": "Nunca",
           "immediately": "Inmediatamente",
@@ -339,16 +527,229 @@
           "min10": "Después de 10 minutos",
           "min15": "Después de 15 minutos",
           "hour1": "Después de 1 hora",
-          "sec5": "Después de 5 segundos (Depuración)"
+          "sec5": "Después de 5 segundos (Depuración)",
+          "custom": "Personalizado…"
+        },
+        "units": {
+          "s": "segundos",
+          "m": "minutos",
+          "h": "horas"
         }
       },
       "customWords": {
         "title": "Palabras Personalizadas",
-        "description": "Agrega palabras que a menudo se escuchan mal o se escriben incorrectamente durante la transcripción. El sistema corregirá automáticamente palabras similares para que coincidan con tu lista.",
+        "description": "Una lista de nombres, productos y jerga que el motor sigue entendiendo mal; después de cada transcripción, Handy encuentra palabras de sonido similar y las sustituye por tu forma de escribirlas. Predeterminado: vacío. Agrega palabras completas a medida que las encuentres, y si empieza a corregir cosas que no querías, baja el Umbral de Corrección de Palabras en la página de Depuración.",
         "placeholder": "Agregar una palabra",
         "add": "Agregar",
         "remove": "Eliminar {{word}}",
         "duplicate": "\"{{word}}\" ya existe"
+      },
+      "tokenCountProviders": {
+        "hint": "Proveedores para la página de Conteo de Tokens. Consejo: el modelo solo selecciona el tokenizador; elige el modelo más pequeño de la familia que te interese (por ejemplo, qwen3:0.6b cuenta igual que qwen3:8b pero carga en una fracción del tiempo). Los endpoints de conteo de Anthropic y Gemini son gratuitos; los servidores locales se consultan con una sonda de 1 token.",
+        "enable": "Habilitar este proveedor",
+        "namePlaceholder": "Nombre visible",
+        "baseUrl": "URL Base",
+        "apiKey": "Clave API",
+        "apiKeyPlaceholder": "Opcional para servidores locales",
+        "model": "Modelo",
+        "refreshModels": "Cargar lista de modelos desde el endpoint",
+        "modelsError": "No se pudieron cargar los modelos",
+        "kinds": {
+          "gemini": "Gemini",
+          "anthropic": "Anthropic",
+          "openai_local": "tiktoken (sin conexión)",
+          "openai_compatible": "Compatible con OpenAI"
+        }
+      },
+      "crashResilientRecording": {
+        "label": "Grabación recuperable tras fallos",
+        "description": "Codifica tu voz en archivos Opus compactos en el disco mientras hablas en vez de retenerlo todo en memoria, así que un fallo, una actualización forzada o una batería agotada todavía dejan una grabación: se repara y se agrega al Historial en el siguiente inicio. Predeterminado: Activado. Desactivarlo graba audio sin comprimir, algo que las copias de seguridad de Datos completos (con audio comprimido) excluyen a propósito."
+      },
+      "openRecordingsFolder": {
+        "label": "Carpeta de Grabaciones",
+        "description": "Abre la carpeta que contiene tus grabaciones y cualquier audio recuperado tras un fallo (%APPDATA%\\pr.handy\\recordings). Eliminación automática de grabaciones limpia aquí, pero solo toca archivos que Handy creó él mismo: tus propias notas o exportaciones en esa carpeta nunca se renombran ni se eliminan.",
+        "button": "Abrir Carpeta"
+      },
+      "appearance": {
+        "title": "Apariencia",
+        "description": "Fija el tema de color para todas las ventanas de Handy Tool, incluidas la superposición de grabación y la ventana flotante de transcripción. Predeterminado: Sistema, que sigue tu configuración de claro/oscuro de Windows y continúa rastreándola; Claro y Oscuro fijan una paleta e ignoran cambios posteriores del sistema.",
+        "options": {
+          "system": "Sistema",
+          "light": "Claro",
+          "dark": "Oscuro"
+        }
+      },
+      "pasteMethodPtt": {
+        "title": "Método de Pegado (PTT)",
+        "description": "La misma elección que Método de Pegado, pero usada solo por el Atajo de Presionar para Hablar, así presionar-para-hablar puede entregar de forma distinta a tu tecla de dictado normal. Predeterminado: Portapapeles (Ctrl+V). Cámbialo cuando la app en la que usas presionar-para-hablar necesite una pulsación de pegado distinta de la app en la que dictas todo el día."
+      },
+      "clipboardRestoreDelay": {
+        "title": "Retraso de restauración del portapapeles",
+        "description": "Espera adicional antes de restaurar tu texto de portapapeles anterior después de un pegado, sumada a los 50 ms integrados; no hace nada salvo que el ajuste de portapapeles de este grupo (Manejo del Portapapeles aquí, o Portapapeles en Transcribir y Enviar) sea No Modificar Portapapeles. Predeterminado: Desactivado (instantáneo). Súbelo a alrededor de 1 s si una sesión Citrix o RDP pega tu portapapeles anterior en vez de lo que acabas de dictar: las sesiones remotas solo obtienen el portapapeles después de que llega la pulsación de pegado.",
+        "options": {
+          "none": "Ninguno (inmediato)",
+          "ms250": "250 ms",
+          "ms500": "500 ms",
+          "ms1000": "1 segundo",
+          "ms2500": "2.5 segundos",
+          "ms5000": "5 segundos"
+        }
+      },
+      "transcriptionMode": {
+        "title": "Modo de Transcripción",
+        "description": "En Vivo muestra el texto formándose mientras todavía estás hablando; Posgrabación graba en silencio y transcribe en segundo plano. Predeterminado: Posgrabación. De cualquier forma, el audio completo recibe una pasada final al detenerte, así que el texto entregado siempre es el preciso y el texto en vivo es solo una vista previa; esto rige solo el Atajo de Transcripción, y los modelos de transcripción por API siempre se comportan como Posgrabación.",
+        "options": {
+          "live": "En vivo",
+          "postRecording": "Posgrabación"
+        }
+      },
+      "transcriptionModePtt": {
+        "title": "Modo de Transcripción (PTT)",
+        "description": "La misma elección entre En Vivo y Posgrabación, aplicada solo al Atajo de Presionar para Hablar. Predeterminado: En Vivo, deliberadamente lo opuesto de Modo de Transcripción, porque las tomas mantenidas son cortas y la vista previa aparece casi al instante. El texto entregado sigue viniendo de una pasada final sobre la grabación completa.",
+        "options": {
+          "live": "En vivo",
+          "postRecording": "Posgrabación"
+        }
+      },
+      "gpuDevice": {
+        "title": "Dispositivo GPU",
+        "description": "Elige en qué adaptador gráfico transcribe el Whisper local, o fuerza el procesamiento solo con CPU. Predeterminado: Auto (Predeterminado); un adaptador que falla al iniciar vuelve a Auto en vez de romper la transcripción. Cámbialo para mantener libre una tarjeta discreta ocupada o para evitar un controlador defectuoso; tiene efecto la próxima vez que se cargue el modelo, y solo aparece en Windows mientras hay un modelo Whisper seleccionado.",
+        "options": {
+          "auto": "Auto (Predeterminado)",
+          "cpu": "Solo CPU",
+          "device": "{{name}} (dispositivo {{index}})",
+          "deviceWithVram": "{{name}} (dispositivo {{index}}, {{vram}} GB)"
+        }
+      },
+      "apiTranscription": {
+        "title": "Transcripción por API",
+        "cardTitle": "Transcripción por API (compatible con OpenAI)",
+        "url": {
+          "title": "URL de la API",
+          "description": "URL base de un servidor de voz compatible con OpenAI, incluido el prefijo de versión: Handy le agrega /audio/transcriptions, así que http://127.0.0.1:8000/v1 se convierte en http://127.0.0.1:8000/v1/audio/transcriptions. Predeterminado: vacío; complétala antes de elegir Transcripción por API (compatible con OpenAI) en la página de Modelos, o la toma falla. Este motor siempre sube la grabación completa como un único archivo WAV al detenerse, así que Modo de Transcripción no tiene efecto sobre él.",
+          "placeholder": "http://127.0.0.1:8000/v1"
+        },
+        "apiKey": {
+          "title": "Clave API",
+          "description": "Clave Bearer enviada con cada subida; déjala vacía para un servidor local que no comprueba ninguna. Predeterminado: vacío. Se guarda sin cifrar en tu archivo de configuración y se incluye en las copias de seguridad.",
+          "placeholder": "sk-..."
+        },
+        "model": {
+          "title": "Modelo",
+          "description": "El id del modelo que espera tu endpoint, enviado tal cual con la subida: whisper-1 para OpenAI, o el nombre que tu propio servidor le dé a su modelo. Predeterminado: vacío, lo que envía un campo de modelo vacío; configúralo si tu endpoint lo requiere. Cuando Idioma es Auto, este motor envía inglés, así que fija Idioma si dictas en otro idioma.",
+          "placeholder": "whisper-1"
+        }
+      },
+      "tabs": {
+        "app": "Aplicación",
+        "output": "Salida",
+        "transcription": "Transcripción",
+        "typer": "Escritura",
+        "providers": "Proveedores",
+        "mcp": "MCP y CLI",
+        "history": "Historial",
+        "postProcessing": "Post Proceso"
+      },
+      "mcp": {
+        "loading": "Cargando…",
+        "description": "Ejecuta un pequeño servidor local para que Claude (app y Code) y el comando handy puedan usar las propias herramientas de Handy: contar tokens, escribir texto en la ventana enfocada, leer el Historial, ejecutar pruebas de modelos y editar proveedores. Predeterminado: Desactivado; activarlo inicia el servidor de inmediato en 127.0.0.1 con el Puerto y el Token de abajo, y nunca en una interfaz de red. Advertencia honesta: el token se guarda en texto plano en tu archivo de configuración, así que cualquier programa que se ejecute como tú puede leerlo y controlar la app.",
+        "enable": "Habilitar servidor MCP y CLI",
+        "running": "En ejecución",
+        "stopped": "Detenido",
+        "port": "Puerto",
+        "token": "Token",
+        "show": "Mostrar",
+        "hide": "Ocultar",
+        "regenerate": "Regenerar",
+        "claudeApp": "App de Claude (HTTP): agrega un servidor MCP personalizado con esta URL:",
+        "authHeader": "…y este encabezado de Authorization:",
+        "claudeCodeStdio": "Claude Code (stdio):",
+        "claudeCodeHttp": "Claude Code (HTTP):",
+        "cliTitle": "Complemento de línea de comandos",
+        "cliHint": "Copia el propio ejecutable de Handy a tu PATH como handy, así puedes ejecutar handy model-test, handy token-count o handy mcp --stdio desde cualquier terminal contra la app en ejecución. Predeterminado: no instalado. El comando habla con la app a través del mismo servidor local, así que solo funciona mientras 'Habilitar servidor MCP y CLI' esté activado; no está disponible en modo portátil.",
+        "installCli": "Instalar CLI",
+        "reinstallCli": "Reinstalar CLI"
+      },
+      "costReport": {
+        "title": "Informe de costos de transcripción",
+        "description": "Costo (USD real de OpenRouter) y duración por grabación, resumidos por semana, mes y año. Descarga el informe completo (cada grabación más los resúmenes) como CSV.",
+        "download": "Descargar CSV",
+        "recalc": "Recalcular duraciones",
+        "recordings": "Grabaciones",
+        "daily": "Últimos 7 días",
+        "colTimestamp": "Fecha y hora",
+        "colDuration": "Duración (HH:MM:SS)",
+        "colCost": "Costo (USD)",
+        "colPeriod": "Período",
+        "colCount": "Grabaciones",
+        "weekly": "Últimas 4 semanas",
+        "monthly": "Últimos 12 meses",
+        "yearly": "Por año",
+        "total": "Total (todo el tiempo)",
+        "allTime": "Todo el tiempo",
+        "weekOf": "Semana del {{date}}",
+        "totalLine": "{{count}} grabaciones · {{duration}} · {{cost}}",
+        "empty": "Aún no hay grabaciones"
+      },
+      "llmProviders": {
+        "hint": "Un único registro de proveedores (nombre, endpoint, clave, modelo y costo por millón de tokens) compartido por Conteo de Tokens, Prueba de Modelos y Post Proceso. Cada ranura conserva un id estable (#1, #2, …) que esas pantallas referencian, así que un cambio aquí se aplica en todas partes; desmarcar 'Habilitar este proveedor' quita la ranura de las tres. Predeterminado: las tres ranuras locales están activadas y cada ranura en la nube está desactivada hasta que pegues una clave.",
+        "enable": "Habilitar este proveedor",
+        "namePlaceholder": "Nombre del proveedor",
+        "baseUrl": "URL Base",
+        "apiKey": "Clave API",
+        "apiKeyPlaceholder": "Pega tu clave API",
+        "model": "Modelo",
+        "modelPlaceholder": "Id del modelo",
+        "refreshModels": "Actualizar lista de modelos",
+        "modelsError": "Falló",
+        "cost": "Costo / 1M",
+        "costInput": "entrada $",
+        "costOutput": "salida $",
+        "costAuto": "Informado automáticamente por OpenRouter",
+        "concurrency": "Concurrencia",
+        "sequential": "Ejecutar secuencialmente dentro de la familia",
+        "family": "familia",
+        "familyPlaceholder": "p. ej. flm",
+        "kinds": {
+          "anthropic": "Anthropic",
+          "gemini": "Gemini",
+          "openai_local": "Local (tiktoken)",
+          "openai_compatible": "Compatible con OpenAI",
+          "openrouter": "OpenRouter",
+          "apple_intelligence": "Apple"
+        },
+        "persistPrice": "Mantener",
+        "persistPriceHint": "Mantén este precio incluso cuando el modelo cambie (no autocompletar desde OpenRouter)"
+      },
+      "openRouterTranscription": {
+        "cardTitle": "Transcripción OpenRouter",
+        "url": {
+          "title": "URL de la API",
+          "description": "Raíz de la API de OpenRouter a la que van las solicitudes de voz, incluido /api/v1. Predeterminado: https://openrouter.ai/api/v1; déjala así salvo que uses un proxy. Handy no envía nada mientras esto o Clave API estén vacíos.",
+          "placeholder": "https://openrouter.ai/api/v1"
+        },
+        "apiKey": {
+          "title": "Clave API",
+          "description": "Tu clave de OpenRouter (openrouter.ai/keys), usada solo por este motor de voz: es independiente de cualquier entrada de OpenRouter en Proveedores LLM Registrados. Predeterminado: vacío, y sin ella la toma falla en vez de enviar una solicitud sin autenticar. Dictar con este motor sube tu audio a OpenRouter y cuesta dinero por grabación; el monto real se registra en Historial y en Informe de costos de transcripción.",
+          "placeholder": "sk-or-..."
+        },
+        "model": {
+          "title": "Modelo de transcripción",
+          "description": "El id del modelo de OpenRouter, escrito a mano: ids del estilo openai/whisper-large-v3 para la ruta de Transcripción, o un modelo de chat con capacidad de audio como google/gemini-2.5-flash para la ruta Chat. Predeterminado: vacío, lo que recurre a openai/whisper-large-v3. Tiene que coincidir con Punto de conexión; un desajuste suele volver como una transcripción vacía en vez de un error.",
+          "placeholder": "openai/whisper-large-v3"
+        },
+        "route": {
+          "title": "Punto de conexión",
+          "description": "Elige a qué endpoint de OpenRouter va el audio. Transcripción (estilo Whisper) envía al endpoint de voz dedicado; Modelo de chat (Gemini / GPT-4o-audio) coloca el audio dentro de un mensaje de chat, la única forma en que lo aceptan los modelos que no son de voz. Predeterminado: Transcripción (estilo Whisper). Debe coincidir con Modelo de transcripción, y Traducir al Inglés solo se respeta en la ruta Chat.",
+          "stt": "Transcripción (estilo Whisper)",
+          "chat": "Modelo de chat (Gemini / GPT-4o-audio)"
+        },
+        "format": {
+          "title": "Formato de audio",
+          "description": "Cómo se codifica el audio antes de subirlo: Opus es aproximadamente diez veces más pequeño que WAV, lo cual importa con una conexión compartida o de hotel. Predeterminado: Opus — más pequeño (recomendado). Esto solo se aplica cuando Punto de conexión es Modelo de chat (Gemini / GPT-4o-audio); la ruta Transcripción (estilo Whisper) siempre envía WAV, porque los modelos de estilo Whisper rechazan Opus.",
+          "opus": "Opus — más pequeño (recomendado)",
+          "wav": "WAV — el más compatible"
+        }
       }
     },
     "postProcessing": {
@@ -360,7 +761,8 @@
         "title": "API (Compatible con OpenAI)",
         "provider": {
           "title": "Proveedor",
-          "description": "Selecciona un proveedor compatible con OpenAI."
+          "description": "Selecciona un proveedor compatible con OpenAI.",
+          "placeholder": "Selecciona un proveedor registrado"
         },
         "appleIntelligence": {
           "title": "Apple Intelligence",
@@ -387,7 +789,12 @@
           "placeholderWithOptions": "Buscar o seleccionar un modelo",
           "placeholderNoOptions": "Escribe un nombre de modelo",
           "refreshModels": "Actualizar modelos"
-        }
+        },
+        "temperature": {
+          "title": "Temperatura",
+          "description": "Un valor más bajo es más determinista y firme (0 = más literal); un valor más alto es más creativo."
+        },
+        "registryNote": "La clave API, el modelo y la URL base del proveedor se configuran en Avanzado → Proveedores LLM Registrados."
       },
       "prompts": {
         "title": "Prompt",
@@ -409,6 +816,10 @@
         "cancel": "Cancelar",
         "selectToEdit": "Selecciona un prompt arriba para ver y editar sus detalles.",
         "createFirst": "Haz clic en 'Crear Nuevo Prompt' arriba para crear tu primer prompt de post procesamiento."
+      },
+      "disableThinking": {
+        "label": "Desactivar Razonamiento",
+        "description": "Envía think: false al modelo. Acelera las respuestas, pero puede reducir el seguimiento de instrucciones en modelos de razonamiento (por ejemplo, Qwen3)."
       }
     },
     "history": {
@@ -420,34 +831,43 @@
       "save": "Guardar transcripción",
       "unsave": "Eliminar de guardados",
       "delete": "Eliminar entrada",
-      "deleteError": "Error al eliminar la entrada. Por favor, intenta de nuevo."
+      "deleteError": "Error al eliminar la entrada. Por favor, intenta de nuevo.",
+      "loadError": "Error al cargar el historial: {{error}}",
+      "search": {
+        "placeholder": "Buscar en el historial (texto o regex)...",
+        "clear": "Limpiar búsqueda",
+        "matches": "{{matched}} de {{total}}",
+        "regexBadge": ".*",
+        "regexActive": "La consulta se está tratando como una expresión regular",
+        "noMatches": "Ninguna entrada coincide con tu búsqueda."
+      }
     },
     "debug": {
       "title": "Depuración",
       "logDirectory": {
         "title": "Directorio de Registros",
-        "description": "Ubicación donde se almacenan los archivos de registro"
+        "description": "Abre la carpeta que contiene los registros de archivo: el primer lugar donde mirar cuando algo falla sin decir por qué. Los registros rotan a los 10 MB y los archivos antiguos se conservan en vez de sobrescribirse, así que la evidencia sobrevive al reinicio que suele seguir a un problema. Cuánto detalle llega aquí lo decide Nivel de Registro en la página de Depuración, que por defecto es Debug y puede incluir fragmentos de transcripción."
       },
       "logLevel": {
         "title": "Nivel de Registro",
-        "description": "Establece el nivel de detalle del registro"
+        "description": "Fija cuánto detalle se escribe en los archivos de registro; la salida de la consola no se ve afectada. Predeterminado: Debug. Bájalo a Info si no quieres contenido de dictado en el disco; en Debug y Trace, fragmentos de transcripción y vistas previas de prompts pueden aparecer en los archivos que abres desde Directorio de Registros en la página Acerca de."
       },
       "soundTheme": {
         "label": "Tema de Sonido",
-        "description": "Elige un tema de sonido para la retroalimentación de inicio y parada de grabación"
+        "description": "Elige qué par de señales sonoras se reproduce cuando una grabación empieza y termina. Predeterminado: Marimba. Solo las oirás mientras Retroalimentación de Audio esté activada (página General), y Personalizado aparece en esta lista solo cuando existen archivos WAV personalizados de inicio y detención en la carpeta de recursos de datos de la app."
       },
       "wordCorrectionThreshold": {
         "title": "Umbral de Corrección de Palabras",
-        "description": "Sensibilidad para correcciones de palabras personalizadas"
+        "description": "Con cuánta insistencia se reescribe una transcripción para que coincida con las entradas de Palabras Personalizadas en la página General. Predeterminado: 0.18. Súbelo si los nombres y la jerga siguen saliendo mal; bájalo si Handy Tool empieza a reemplazar palabras que realmente dijiste; con Palabras Personalizadas vacío, este deslizador no hace nada en absoluto."
       },
       "historyLimit": {
         "title": "Límite de Historial",
-        "description": "Número máximo de entradas de historial a conservar",
+        "description": "Cuántas transcripciones conserva el Historial antes de eliminar las más antiguas junto con su audio. Predeterminado: 5 entradas, deliberadamente bajo, así que súbelo si esperas buscar cosas días después. Solo tiene efecto mientras Eliminación automática de grabaciones esté en Mantener las últimas, y las entradas que marcas con Guardar transcripción se conservan siempre y no cuentan para este límite.",
         "entries": "entradas"
       },
       "recordingRetention": {
         "title": "Eliminación automática de grabaciones",
-        "description": "Eliminar automáticamente grabaciones antiguas para ahorrar espacio",
+        "description": "Controla la limpieza automática del Historial: cuando una entrada caduca, se eliminan tanto su fila como su archivo de audio. Predeterminado: Mantener las últimas, que conserva solo las entradas más nuevas permitidas por Límite de Historial (5 de forma predeterminada); las opciones de tiempo conservan en cambio todo lo de los últimos 3 días, 2 semanas o 3 meses, y Nunca no elimina nada en absoluto. La limpieza se ejecuta después de guardar cada transcripción nueva y otra vez al cambiar cualquiera de los dos ajustes, siempre respeta las entradas marcadas con Guardar transcripción, y solo elimina archivos de audio que Handy Tool creó él mismo.",
         "never": "Nunca",
         "preserveLimit": "Mantener las últimas {{count}}",
         "days3": "Después de 3 días",
@@ -457,27 +877,27 @@
       },
       "alwaysOnMicrophone": {
         "label": "Micrófono Siempre Activo",
-        "description": "Mantener el micrófono activo para una respuesta más rápida"
+        "description": "Mantiene abierto el flujo del micrófono entre tomas en vez de abrirlo cada vez que presionas un atajo de grabación. Predeterminado: Desactivado. Actívalo si la primera sílaba de una toma se corta; el precio es que el indicador de micrófono de tu sistema queda encendido todo el tiempo que Handy Tool está en ejecución, no solo mientras dictas."
       },
       "clamshellMicrophone": {
         "title": "Micrófono en Modo Clamshell",
-        "description": "Micrófono a usar cuando la tapa del portátil está cerrada"
+        "description": "Elige un dispositivo de entrada distinto para cuando la tapa de un portátil está cerrada, para equipos acoplados cuyo micrófono integrado queda inutilizable así. Predeterminado: ninguno, así que siempre se usa Micrófono de la página General. La detección de tapa cerrada es exclusiva de macOS y las compilaciones de macOS aún están planeadas, así que esto no tiene efecto en la compilación de Windows."
       },
       "postProcessingToggle": {
         "label": "Post Procesamiento",
-        "description": "Habilitar refinamiento de texto impulsado por IA después de la transcripción"
+        "description": "Activa el paso opcional de limpieza con IA y agrega una página de Post Proceso a la barra lateral, donde eliges el proveedor y el prompt. Predeterminado: Desactivado. Tu Atajo de Transcripción normal no se ve afectado: la limpieza solo se ejecuta con la Tecla de Post Procesamiento independiente, y el Historial conserva la transcripción sin procesar junto a la procesada."
       },
       "muteWhileRecording": {
         "label": "Silenciar Durante la Grabación",
-        "description": "Silenciar el audio del sistema durante la grabación"
+        "description": "Silencia el audio de tu sistema durante cada grabación, así la música o un video de tus altavoces no puede filtrarse al micrófono. Predeterminado: Desactivado. Actívalo si dictas con altavoces en vez de auriculares; el sonido vuelve solo cuando termina la grabación."
       },
       "appendTrailingSpace": {
         "label": "Agregar Espacio Final",
-        "description": "Agregar un espacio después de la transcripción pegada"
+        "description": "Agrega un espacio al final de cada transcripción entregada, para que dos dictados seguidos no queden como \"...uno.Dos\". Predeterminado: Desactivado. Actívalo si dictas en ráfagas cortas en el mismo campo; déjalo desactivado donde un espacio de más importe, como un buscador o un comando de terminal."
       },
       "keyboardImplementation": {
         "title": "Keyboard Implementation",
-        "description": "Choose the keyboard shortcut backend.",
+        "description": "Elige qué backend registra los atajos globales de Handy Tool con el sistema operativo. Predeterminado: Tauri Global Shortcut. Cambia a Handy Keys cuando un atajo que configuraste nunca se dispara porque otro programa ya posee esa combinación o Windows rechaza el registro; todos los atajos se vuelven a registrar cuando cambias, y el cambio se revierte si eso falla.",
         "bindingsReset": "Keyboard shortcuts were incompatible and reset to defaults"
       },
       "paths": {
@@ -487,28 +907,23 @@
       },
       "pasteDelay": {
         "title": "Retraso de pegado",
-        "description": "Retraso antes de enviar la pulsación de tecla de pegar (en milisegundos). Aumente si se está pegando texto incorrecto."
+        "description": "Cuánto espera Handy Tool después de poner la transcripción en el portapapeles antes de enviar la pulsación de pegado. Predeterminado: 60 ms. Aumenta este valor si una app lenta pega el contenido anterior de tu portapapeles en vez del texto nuevo; es una espera distinta de 'Paste delay after jump (Windows)', que solo se aplica cuando una ranura de Jumper acaba de activar otra ventana."
       }
     },
     "about": {
       "title": "Acerca de",
       "version": {
         "title": "Versión",
-        "description": "Versión actual de Handy"
+        "description": "La versión de Handy Tool que estás usando; cítala siempre que reportes un problema. Windows x64 es la única compilación publicada; macOS y Linux están planeados, y las funciones de Jumper serán exclusivas de Windows incluso después de eso. Nada aquí busca una versión más nueva por sí solo; usa Actualizaciones cuando quieras comprobarlo."
       },
       "appDataDirectory": {
         "title": "Directorio de Datos de la Aplicación",
-        "description": "Ubicación donde Handy almacena sus datos"
+        "description": "Abre la única carpeta que contiene todo lo que guarda Handy Tool: la configuración (incluidas las claves API de tus proveedores y los prompts) en un archivo JSON, las transcripciones en una base de datos SQLite, las grabaciones, los modelos descargados y los registros rotados. Predeterminado: %APPDATA%\\pr.handy en una instalación normal de Windows. Nada de esto está cifrado por Handy Tool (los permisos del sistema de archivos son la única protección), así que esta es también la carpeta a copiar, o a borrar, cuando entregues el equipo a otra persona."
       },
       "sourceCode": {
         "title": "Código Fuente",
         "description": "Ver código fuente y contribuir",
         "button": "Ver en GitHub"
-      },
-      "supportDevelopment": {
-        "title": "Apoyar el Desarrollo",
-        "description": "Ayúdanos a continuar construyendo Handy",
-        "button": "Donar"
       },
       "acknowledgments": {
         "title": "Reconocimientos",
@@ -516,21 +931,180 @@
           "title": "Whisper.cpp",
           "description": "Inferencia de alto rendimiento del modelo de reconocimiento automático de voz Whisper de OpenAI",
           "details": "Handy usa Whisper.cpp para procesamiento de voz a texto rápido y local. Gracias al increíble trabajo de Georgi Gerganov y colaboradores."
+        },
+        "handy": {
+          "title": "Handy",
+          "description": "La app original de código abierto de voz a texto sobre la que se construye este proyecto",
+          "details": "Handy Tool es un fork de Handy, creado por CJ Pais (github.com/cjpais/Handy, handy.computer). Se tomó a partir de la versión original v0.8.1 (marzo de 2026) y ha sido desarrollado de forma independiente por Patrick R. Muchas gracias a CJ y a los colaboradores de Handy por la base sobre la que se sostiene este proyecto."
         }
+      },
+      "updates": {
+        "title": "Actualizaciones",
+        "description": "Ver lanzamientos abre la página de lanzamientos de GitHub del proyecto en tu navegador para que puedas compararla con Versión. Handy Tool no tiene actualizador y nunca comprueba en segundo plano si hay un nuevo lanzamiento: actualizar siempre es algo que decides hacer tú.",
+        "button": "Ver lanzamientos"
       }
     },
     "jumper": {
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "When a jump target's app, window class, or control class contains one of these (case-insensitive), it is treated as a remote desktop session and uses the longer 'Remote' jump delays (Advanced → Transcription). Add the identifiers your RDP/Citrix clients use — e.g. msrdc, mstsc, Citrix. An empty list treats every target as local.",
+        "description": "Un destino de salto cuya app, clase de ventana o clase de control contiene uno de estos fragmentos (sin distinguir mayúsculas) se trata como un escritorio remoto, así que usa el valor Remote de 'Paste delay after jump (Windows)' y 'Submit delay after jump (Windows)' en Avanzado → Transcripción en vez del Local. Predeterminado: msrdc, mstsc, Citrix. Agrega el nombre de proceso que use tu cliente de RDP o Citrix si las entregas hacia él se siguen perdiendo; una lista vacía trata todos los destinos como locales.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
         "duplicate": "'{{value}}' is already in the list",
         "badge": "Remote ✓",
         "badgeTooltip": "This target matches a remote match string, so it uses the Remote jump delays."
+      },
+      "windowsOnly": "Jumper solo está disponible en Windows.",
+      "hot": {
+        "title": "Ranura rápida (Anclaje y Entrega)",
+        "optionsMoved": {
+          "title": "Opciones de entrega",
+          "description": "No es un ajuste, es una señal. Lo que realmente hace un salto con una ranura se configura por flujo en Avanzado → Transcripción: 'Acción de ranura al iniciar', 'Acción de ranura al finalizar', 'Rastrear última ubicación de salida' y 'Volver al enfoque anterior tras la entrega' existen una vez para Transcribir y otra vez para Transcribir y Enviar.",
+          "hint": "Se configuran en los grupos Transcribir y Transcribir y Enviar de la página General."
+        }
+      },
+      "hot2": {
+        "title": "Segunda ranura rápida (Anclaje y Entrega)"
+      },
+      "slot": {
+        "title": "Ranura estática {{index}}",
+        "status": "Destino de la ranura {{index}}",
+        "description": "Muestra a qué apunta esta ranura numerada, con Probar (saltar allí sin entregar nada) y Borrar. Predeterminado: sin destino; enfoca un campo al que vuelves a menudo, presiona el atajo Fijar de esta ranura (ctrl+alt+shift+1 … 9), y vuelve en cualquier momento con ctrl+alt+1 … 9. Una ranura recuerda una ventana y un campo, no una pestaña del navegador ni una posición del cursor, y sobrevive a las entregas.",
+        "test": "Probar",
+        "testFailed": "El salto falló: {{reason}}",
+        "stale": "Guardado: {{app}} ({{control}}) — ventana aún no encontrada"
+      },
+      "persist": {
+        "label": "Recordar ranuras entre reinicios",
+        "description": "Recuerda el destino de cada ranura entre reinicios de la app. Predeterminado: Desactivado. Windows no puede conservar un identificador de ventana entre reinicios, así que Handy guarda la identidad de cada ranura (aplicación más tipo de ventana y campo) y vuelve a encontrar la ventana correspondiente al iniciarse y otra vez en el momento en que usas la ranura; una ranura guardada cuya app no esté en ejecución se muestra en rojo hasta que reaparezca.",
+        "groupTitle": "Persistencia"
+      },
+      "slotNames": {
+        "hot": "Rápida 1",
+        "hot2": "Rápida 2",
+        "static": "Ranura {{index}}"
+      },
+      "track": {
+        "label": "Rastrear última ubicación de salida",
+        "description": "Solo en Windows. Después de que este flujo pega una transcripción, la ranura elegida en 'Guardar ubicación en' se sobrescribe con el campo donde realmente aterrizó el texto, así tu próximo salto a esa ranura vuelve al último lugar donde dictaste. Predeterminado: Desactivado. Actívalo cuando quieras que una ranura te siga en vez de fijarla a mano: Transcribir y Transcribir y Enviar rastrean de forma independiente, y la captura ocurre antes de cualquier 'Volver al enfoque anterior tras la entrega'.",
+        "slot": {
+          "title": "Guardar ubicación en",
+          "description": "Qué ranura de salto sobrescribe 'Rastrear última ubicación de salida' después de cada entrega de este flujo. Predeterminado: Rápida 1. Dirígelo a una ranura estática (Ranura 1 a Ranura 9) si no quieres que el rastreo automático siga sobrescribiendo el ancla rápida que fijaste a mano con Fijar Ancla."
+        }
+      },
+      "saveCursor": {
+        "label": "Restaurar posición del cursor del mouse",
+        "description": "Después de que este flujo entregue una transcripción, recuerda la posición del cursor del mouse y mueve el puntero de vuelta allí cuando saltes. Es independiente del interruptor del otro flujo; el modo de posición de abajo es compartido entre ambos flujos.",
+        "perSlot": "Guardar posición del mouse",
+        "perSlotDescription": "También registra la posición del puntero del mouse cuando esta ranura se fija o se rastrea, y mueve el puntero de vuelta allí cuando saltas a esta ranura, después del pegado, para que no pueda alterar la entrega. Predeterminado: Desactivado. Actívalo para una ranura en otro monitor, así el teclado y el mouse llegan juntos; habilita el 'Modo de posición del cursor' de abajo para esta ranura, y cada ranura tiene su propio par de interruptores.",
+        "mode": {
+          "title": "Modo de posición del cursor",
+          "description": "Elige cómo se mide la posición guardada del puntero de esta ranura. Predeterminado: Relativo a la app (sigue a la ventana): restaura el mismo punto dentro de la ventana de destino incluso después de moverla, redimensionarla o arrastrarla a un monitor con otro DPI. Elige Absoluto de pantalla (coordenadas exactas) para algo que nunca se mueve, como un panel fijo; el desplegable permanece desactivado hasta que 'Guardar posición del mouse' esté activado para esta ranura.",
+          "appRelative": "Relativo a la app (sigue a la ventana)",
+          "screenAbsolute": "Absoluto de pantalla (coordenadas exactas)"
+        }
+      },
+      "returnFocus": {
+        "label": "Volver al enfoque anterior tras la entrega",
+        "description": "Después de una entrega que tuvo que saltar, el enfoque vuelve a la ventana en la que estabas cuando empezó la entrega, capturada automáticamente, sin necesidad de configurar ninguna ranura. Predeterminado: Activado. Es condicional: si cambiaste de ventana tú mismo mientras Handy Tool trabajaba, te deja donde elegiste estar, y cada flujo lo decide por separado (solo Windows)."
+      },
+      "requireSameFlow": {
+        "groupTitle": "Comportamiento al finalizar",
+        "label": "Saltar al finalizar solo si se inició de la misma forma",
+        "description": "Cuando está activado, la 'Acción de ranura al finalizar' de un flujo solo se dispara si la toma se inició y terminó con el mismo atajo. Ejemplo: iniciar con Transcribir y terminar con Transcribir y Enviar no produce salto; el pegado y el envío siguen ocurriendo, solo el salto queda condicionado. Actívalo si mezclar los dos atajos te sigue teletransportando a un lugar inesperado."
       }
+    },
+    "translator": {
+      "title": "Traductor",
+      "enabled": {
+        "label": "Vigilar carpetas",
+        "description": "Activa para transcribir cada archivo .wav, .ogg u .opus nuevo que llegue a una carpeta vigilada a un archivo .txt junto a él, usando tu modelo, Idioma y ajustes de Traducir al Inglés actuales. Predeterminado: desactivado. Los archivos que ya están en una carpeta cuando empieza la vigilancia se dejan a propósito sin tocar, y las carpetas en sí se eligen en Agregar una carpeta."
+      },
+      "priority": {
+        "title": "Prioridad",
+        "description": "Decide quién obtiene el motor de voz cuando un archivo de carpeta y tu propio dictado lo quieren en el mismo instante. Predeterminado: Dictado en vivo primero: el lote se pausa en el siguiente límite de segmento en el instante en que presionas grabar y se reanuda después, así que no se pierde progreso del lote. Lote de carpeta primero mantiene el lote en marcha y tu texto en vivo llega un poco más tarde; Por orden de llegada deja que el archivo en curso termine, y luego ejecuta tu toma antes del siguiente archivo.",
+        "options": {
+          "live_first": "Dictado en vivo primero",
+          "folder_first": "Lote de carpeta primero",
+          "fifo": "Por orden de llegada"
+        }
+      },
+      "model": {
+        "title": "Modelo por lotes",
+        "description": "Qué modelo de voz transcribe los archivos de tus carpetas vigiladas; los modelos marcados con un globo también pueden traducir al inglés, lo que requiere activar Traducir al Inglés. Predeterminado: Igual que el dictado (predeterminado), reutilizando lo que esté seleccionado en la página de Modelos. Elige un modelo local distinto y se carga en una ranura propia junto al modelo de dictado (trabajo por lotes en un motor, dictado siempre instantáneo en el otro) al costo de memoria adicional, que Descargar modelo por lotes después de puede devolver.",
+        "sameAsDictation": "Igual que el dictado (predeterminado)",
+        "translates": "{{name}} — puede traducir al inglés"
+      },
+      "unload": {
+        "title": "Descargar modelo por lotes después de",
+        "description": "Cuánto tiempo permanece en memoria la copia propia del modelo por lotes del Traductor después de que la cola queda en silencio; descargarlo libera la RAM o VRAM, mantenerlo cargado evita una recarga cuando llega el siguiente archivo. Predeterminado: Nunca (mantenerlo cargado, el inicio más rápido). Solo tiene efecto cuando 'Modelo por lotes' indica un modelo local distinto al de tu dictado; en caso contrario rige el ajuste principal Descargar Modelo."
+      },
+      "status": {
+        "title": "Estado",
+        "description": "Qué está haciendo el Traductor ahora mismo. Las transcripciones terminadas se escriben junto al archivo de audio con el mismo nombre y extensión .txt.",
+        "disabled": "Desactivado",
+        "idle": "Vigilando — nada que hacer",
+        "queued": "{{count}} archivo(s) en cola",
+        "working": "{{file}} — segmento {{segment}}/{{total}}",
+        "workingIndeterminate": "{{file}}",
+        "paused": {
+          "live": "pausado por dictado en vivo",
+          "processing": "pausado mientras una grabación termina"
+        },
+        "counters": "{{done}} completados, {{failed}} fallidos en esta sesión"
+      },
+      "folders": {
+        "title": "Carpetas vigiladas",
+        "none": "Sin carpetas",
+        "emptyTitle": "Sin carpetas vigiladas",
+        "emptyDescription": "Agrega una carpeta para empezar a vigilarla en busca de grabaciones nuevas.",
+        "addTitle": "Agregar una carpeta",
+        "addDescription": "Abre un selector de carpetas; desde entonces, cualquier archivo de audio nuevo que aparezca en esa carpeta se pone en cola y su transcripción se escribe junto a él como un .txt. Predeterminado: tu carpeta de grabaciones de Handy se agrega por ti la primera vez que se inicia el Traductor. Agregar una carpeta no hace nada hasta que Vigilar carpetas esté activado, y lo que ya hay en la carpeta se ignora: solo se transcriben los archivos que llegan después.",
+        "add": "Agregar carpeta",
+        "remove": "Dejar de vigilar esta carpeta",
+        "addFailed": "No se pudo agregar la carpeta: {{reason}}",
+        "operationFailed": "No se pudo actualizar la carpeta: {{reason}}",
+        "toggleAriaLabel": "Vigilar la carpeta {{name}}",
+        "removeAriaLabel": "Dejar de vigilar la carpeta {{name}}"
+      }
+    },
+    "currentAudio": {
+      "streamingHint": "El texto aparece progresivamente mientras hablas solo cuando el atajo que pulsaste — Transcribir o Pulsar para hablar — está configurado como En vivo y usas un modelo local.",
+      "finalHint": "En el modo Posterior a la grabación, o con la transcripción por API u OpenRouter, la transcripción completa aparece de una vez al finalizar la grabación; configura el modo de cada atajo en",
+      "advancedTranscription": "Avanzado → Transcripción",
+      "finalHintSuffix": ".",
+      "title": "Audio Actual",
+      "idle": "Comienza a grabar para ver la transcripción en vivo",
+      "recording": "Escuchando...",
+      "openFloating": "Abrir ventana flotante",
+      "copy": "Copiar",
+      "copied": "Copiado"
+    },
+    "backup": {
+      "description": "Exporta los datos de Handy Tool como un archivo comprimido. Los modelos descargados y el audio grande sin comprimir (WAV/FLAC) siempre se excluyen.",
+      "configTitle": "Configuración + historial",
+      "configHint": "Exporta tu configuración más la base de datos del historial de transcripciones (fechas, texto, costo, duración) y ningún audio, así el archivo se mantiene pequeño. Úsalo antes de un gran cambio de configuración, o para llevar tus atajos, proveedores y prompts a otra máquina. El archivo no está cifrado y contiene tus claves API de proveedores y el token del servidor MCP en texto plano: trátalo como un secreto.",
+      "exportConfig": "Exportar configuración + historial",
+      "fullTitle": "Datos completos (con audio comprimido)",
+      "fullHint": "Todo lo de la exportación de configuración más tus grabaciones comprimidas (.opus/.ogg): un archivo mucho más grande, y aun así contiene tus claves API en texto plano. Los modelos descargados, el audio WAV/FLAC sin comprimir y los archivos de fragmento en curso siempre se excluyen, así que las tomas grabadas con Grabación recuperable tras fallos desactivada aparecen como filas de historial sin audio en el archivo.",
+      "exportFull": "Exportar copia de seguridad completa",
+      "saved": "Guardado en {{path}}",
+      "restoreTitle": "Restaurar desde copia de seguridad",
+      "restoreHint": "Elige un archivo de copia de seguridad de Handy Tool (.tar.gz) y marca qué recuperar. Configuración y historial (ajustes, base de datos de historial) y Grabaciones (archivos de audio) son independientes, así que puedes traer uno sin el otro, y ambos empiezan marcados. Solo se extraen las entradas que Handy Tool reconoce, y lo restaurado reemplaza lo que tienes ahora. Restaurar configuración o historial requiere reiniciar: usa el botón Reiniciar Handy Tool ahora que aparece, o la app en ejecución los sobrescribirá en su próximo guardado.",
+      "restoreConfig": "Configuración e historial (ajustes, base de datos del historial)",
+      "restoreRecordings": "Grabaciones (archivos de audio)",
+      "restoreButton": "Restaurar desde copia de seguridad…",
+      "restoreDone": "Restaurado — configuración: {{settings}} · historial: {{history}} · grabaciones: {{recordings}}",
+      "restartHint": "Reinicia Handy Tool para cargar la configuración/historial restaurados (hasta entonces, la app en ejecución podría sobrescribirlos).",
+      "restartNow": "Reiniciar Handy Tool ahora"
+    },
+    "modelPicker": {
+      "refresh": "Obtener / actualizar lista de modelos",
+      "loading": "Cargando modelos…",
+      "error": "Error al cargar los modelos",
+      "noMatches": "Ningún modelo coincide — escribe para usar un id personalizado"
     }
   },
   "common": {
@@ -554,7 +1128,12 @@
     "yes": "Sí",
     "no": "No",
     "noOptionsFound": "No se encontraron opciones",
-    "selectOption": "Selecciona una opción…"
+    "selectOption": "Selecciona una opción…",
+    "delay": {
+      "off": "Desactivado (instantáneo)",
+      "ms": "{{ms}} ms",
+      "seconds": "{{seconds}} s"
+    }
   },
   "accessibility": {
     "permissionsRequired": "Se Requieren Permisos de Accesibilidad",
@@ -567,7 +1146,7 @@
   },
   "appLanguage": {
     "title": "Idioma de la aplicación",
-    "description": "Cambia el idioma de la interfaz de Handy"
+    "description": "Cambia toda la interfaz, incluido el menú de la bandeja, a uno de los 17 idiomas incluidos. Predeterminado: el idioma de visualización de Windows, y si ese idioma no está incluido, recurre al inglés. Este es solo el idioma de la interfaz: no tiene nada que ver con el idioma que hablas, que se configura con Idioma en la página General."
   },
   "overlay": {
     "transcribing": "Transcribiendo...",
@@ -579,5 +1158,163 @@
     "listening": "Escuchando…",
     "copy": "Copiar",
     "copied": "Copiado"
+  },
+  "brand": {
+    "name": "Handy",
+    "suffix": "TOOL"
+  },
+  "toasts": {
+    "pasteFailed": "No se pudo pegar la transcripción: {{reason}}. El texto se guardó en el Historial.",
+    "pasteFailedParked": "No se pudo pegar la transcripción: {{reason}}. El texto está en tu portapapeles (y en el Historial); pégalo manualmente.",
+    "transcriptionFailed": "La transcripción falló: {{reason}}. Comprueba que el modelo seleccionado funcione y vuelve a intentarlo."
+  },
+  "flm": {
+    "notInstalled": "FLM no está instalado. Instala FastFlowLM para usar modelos acelerados por NPU.",
+    "npuAccelerated": "Acelerado por NPU"
+  },
+  "tokenCount": {
+    "configureProviders": "Configurar proveedores",
+    "noProviders": "No hay proveedores configurados.",
+    "title": "Conteo de Tokens",
+    "placeholder": "Pega el texto aquí para contar tokens...",
+    "tokenizer": "Tokenizador",
+    "count": "Contar",
+    "countAll": "Contar con todos",
+    "countAllTitle": "Cuenta con cada proveedor habilitado uno a la vez; adecuado cuando varios comparten un mismo servicio local que debe cargar/descargar cada modelo",
+    "countAllParallel": "Contar con todos (en paralelo)",
+    "countAllParallelTitle": "Consulta a todos los proveedores habilitados al mismo tiempo; lo más rápido cuando los servicios son independientes",
+    "counting": "Contando... {{done}}/{{total}}",
+    "cancelSweep": "Cancelar",
+    "openFile": "Abrir archivo...",
+    "fileTooLarge": "El archivo es demasiado grande (máx. 10 MB).",
+    "loadedFile": "Cargado: {{name}}",
+    "providerOption": "{{name}} (proveedor)",
+    "chipDisabled": "No configurado: actívalo con 'Habilitar este proveedor' en Avanzado > Proveedores > Proveedores LLM Registrados.",
+    "chips": {
+      "cl100k_base": "cl100k (GPT-4)",
+      "o200k_base": "o200k (GPT-4o)",
+      "estimate": "Estimación"
+    },
+    "activeProvider": "Contando con: {{name}} — {{model}} ({{url}})",
+    "activeLocal": "Contando localmente con: {{tokenizer}}",
+    "sweepSummary": "{{ok}} de {{total}} proveedores respondieron",
+    "showFailed": "mostrar {{count}} fallidos",
+    "hideFailed": "ocultar fallidos",
+    "table": {
+      "provider": "Proveedor",
+      "model": "Modelo",
+      "tokens": "Tokens",
+      "delta": "Δ vs el menor",
+      "time": "Tiempo"
+    },
+    "tokens": "tokens",
+    "characters": "caracteres",
+    "words": "palabras",
+    "options": {
+      "cl100k_base": "Cuenta el texto del cuadro con el tokenizador exacto de GPT-4 y GPT-3.5 (cl100k_base), totalmente en esta máquina: no se sube nada y funciona sin conexión. Úsalo para modelos de OpenAI hasta GPT-4; para los más nuevos usa o200k (GPT-4o).",
+      "o200k_base": "Cuenta el texto del cuadro con el tokenizador exacto de GPT-4o y o1 (o200k_base), totalmente en esta máquina: no se sube nada y funciona sin conexión. Úsalo para los modelos actuales de OpenAI; los modelos GPT-4 y GPT-3.5 más antiguos tokenizan con cl100k (GPT-4).",
+      "estimate": "Una estimación local aproximada de unos 1,3 tokens por palabra, sin tokenizador y sin llamadas de red. Úsala cuando el modelo que te interesa no tiene un contador exacto aquí, y trátala solo como una referencia aproximada: se excluye a propósito de la columna \"Δ vs el menor\" para que un número aproximado no distorsione la comparación entre los contadores exactos."
+    }
+  },
+  "keyboardTyper": {
+    "title": "Escritura de Teclado",
+    "description": "Envía este texto a la ventana enfocada como pulsaciones de teclado simuladas individuales, así funciona donde el pegado está bloqueado: consolas remotas, visores de VM, cuadros de contraseña. Presiona Iniciar y obtienes la cuenta atrás de Retraso de inicio (10 s por defecto) para hacer clic primero en la ventana de destino; presiona el Atajo de Escribir Texto cuando ya estés en el destino y la escritura empieza cerca de un segundo después en su lugar. El texto vive solo en memoria: nunca se escribe en tu configuración, en el Historial ni en los registros.",
+    "placeholder": "Ingresa el texto a escribir...",
+    "go": "Iniciar",
+    "cancel": "Cancelar",
+    "startDelay": {
+      "label": "Retraso de inicio",
+      "unit": "s",
+      "preset": "{{seconds}}s",
+      "presetTitle": "Empezar a escribir en {{seconds}} segundos"
+    },
+    "keyDelay": {
+      "label": "Retraso entre teclas",
+      "unit": "ms"
+    },
+    "shortcut": {
+      "label": "Atajo:",
+      "unset": "no configurado",
+      "hint": "(cámbialo en la configuración Avanzada; presiónalo de nuevo para cancelar)"
+    },
+    "status": {
+      "idle": "Haz clic en Iniciar y luego enfoca la ventana de destino, o usa el atajo directamente en la app de destino.",
+      "countdown": "La escritura comienza en {{seconds}}s... (Esc cancela)",
+      "typing": "Escribiendo... {{typed}}/{{total}} caracteres (Esc cancela)",
+      "done": "Listo — se escribieron {{total}} caracteres.",
+      "cancelled": "Cancelado.",
+      "error": "Error: {{message}}"
+    }
+  },
+  "modelTesting": {
+    "configureProviders": "Configurar proveedores",
+    "description": "Envía un mismo prompt a cada modelo que marques bajo Ejecutar y coloca las respuestas una junto a otra con conteo de tokens, costo y tiempo de ida y vuelta; los modelos marcados bajo Juez luego califican todas esas respuestas usando tu prompt de juez. Predeterminado: nada seleccionado y ambos prompts vacíos. La lista viene de Avanzado > Proveedores LLM Registrados, así que una ejecución usa tus propias claves API: tu prompt sale de esta máquina y, para proveedores de pago, cuesta dinero real.",
+    "providersLabel": "Modelos",
+    "selectAll": "Seleccionar todos para ejecutar",
+    "clear": "Limpiar",
+    "run": "Ejecutar",
+    "judge": "Juez",
+    "costPerM": "entrada ${{input}} · salida ${{output}} /1M",
+    "noProviders": "No hay proveedores con capacidad de chat configurados. Agrega uno en Avanzado → Proveedores LLM Registrados.",
+    "mainPromptLabel": "Prompt para todos los modelos",
+    "mainPromptPlaceholder": "El prompt que se envía a cada modelo seleccionado…",
+    "judgePromptLabel": "Prompt del juez / árbitro (opcional)",
+    "judgePromptPlaceholder": "Instrucciones para el panel de jueces. Recibe la entrada original más la respuesta de cada modelo (etiquetadas en XML).",
+    "temperatureLabel": "Temperatura",
+    "modelParams": "Modelos",
+    "judgeParams": "Juez",
+    "runButton": "Ejecutar prueba",
+    "cancelButton": "Cancelar",
+    "runningMain": "Consultando modelos…",
+    "runningJudge": "Ejecutando panel de jueces…",
+    "summaryTitle": "Resumen",
+    "judgePanelTitle": "Panel de Jueces",
+    "answersTitle": "Respuestas",
+    "colModel": "Modelo",
+    "colInput": "Tok entrada",
+    "colOutput": "Tok salida",
+    "colCost": "Costo",
+    "colTime": "Tiempo",
+    "roundTrip": "Ida y vuelta (el más largo)",
+    "totalCost": "Costo total",
+    "errorPrefix": "Error",
+    "artifactLabel": "Artefacto Markdown",
+    "copyMarkdown": "Copiar Markdown",
+    "copied": "¡Copiado!",
+    "saveMarkdown": "Guardar…",
+    "status": {
+      "mainStart": "Consultando {{count}} modelo(s)…",
+      "judgeStart": "Ejecutando panel de jueces ({{count}} juez/jueces)…",
+      "done": "Listo.",
+      "cancelled": "Cancelado.",
+      "activity": "Actividad de la ejecución"
+    },
+    "library": {
+      "preset": "Preajuste",
+      "presetPlaceholder": "Cargar un preajuste…",
+      "pick": "Prompts guardados…",
+      "save": "Guardar",
+      "delete": "Eliminar seleccionado",
+      "namePlaceholder": "Nombre…",
+      "confirm": "Guardar",
+      "cancel": "Cancelar",
+      "editCustom": "Editar / personalizado"
+    },
+    "thinking": {
+      "label": "Razonamiento",
+      "auto": "Auto",
+      "on": "Activado",
+      "off": "Desactivado"
+    },
+    "image": {
+      "label": "Imagen (opcional, para modelos de visión)",
+      "drop": "Haz clic o arrastra una imagen aquí para adjuntar",
+      "remove": "Eliminar",
+      "tooLarge": "La imagen es demasiado grande (máx. {{mb}} MB)."
+    },
+    "save": "Guardar",
+    "saveAs": "Guardar como…",
+    "saveTo": "Guardar en {{path}}",
+    "saveDisabled": "Usa “Guardar como…” primero para elegir una ubicación"
   }
 }

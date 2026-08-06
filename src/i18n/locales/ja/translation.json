@@ -13,7 +13,43 @@
     "postProcessing": "後処理",
     "history": "履歴",
     "debug": "デバッグ",
-    "about": "概要"
+    "about": "概要",
+    "backup": "バックアップ",
+    "currentAudio": "現在の音声",
+    "tokenCount": "トークン数",
+    "keyboardTyper": "キーボードタイパー",
+    "jumper": "ジャンパー",
+    "translator": "トランスレーター",
+    "groups": {
+      "tools": "ツール",
+      "config": "設定"
+    },
+    "modelTesting": "モデルテスト",
+    "resize": "ドラッグしてサイズ変更",
+    "update": {
+      "checking": "アップデートを確認中…",
+      "available": "Handy Tool {{version}} を利用できます",
+      "silentOn": "Handy Tool を終了し、更新して再起動します。",
+      "silentOff": "サイレント更新を有効にすると、更新時間帯に自動インストールされます。",
+      "enableSilent": "サイレント更新を有効化",
+      "updateRestart": "更新して再起動",
+      "later": "後で",
+      "updateNow": "今すぐ更新",
+      "downloading": "Handy Tool {{version}} をダウンロード中…",
+      "percent": "{{percent}}%",
+      "ready": "更新 {{version}} の準備ができました",
+      "waitingForIdle": "音声入力の完了を待っています…",
+      "readyDetail": "更新を完了するため Handy Tool を再起動します。",
+      "waiting": "待機中…",
+      "restartInstall": "再起動してインストール",
+      "installing": "アップデートをインストール中…",
+      "installingDetail": "Handy Tool を終了して再起動します。",
+      "failed": "アップデートに失敗しました",
+      "failedDetail": "Handy Tool は変更されていません。{{reason}}",
+      "unknownError": "不明なエラー",
+      "tryAgain": "再試行",
+      "downloadInstaller": "インストーラーをダウンロード"
+    }
   },
   "onboarding": {
     "subtitle": "開始するには、文字起こしモデルを選択してください",
@@ -133,11 +169,15 @@
   "settings": {
     "modelSettings": {
       "title": "{{model}} 設定",
-      "noSettingsNeeded": "このモデルは設定不要で自動的に動作します。"
+      "noSettingsNeeded": "このモデルは設定不要で自動的に動作します。",
+      "autoDetectLanguage": {
+        "description": "このモデルは話されている言語を自動的に検出し、特定の言語に固定することはできません。言語を指定するには、Whisper、SenseVoice、FLM、またはAPIモデルに切り替えてください。",
+        "value": "自動検出"
+      }
     },
     "models": {
       "title": "転写モデル",
-      "description": "転写モデルを選択するか、追加のモデルをダウンロードします。異なるモデルは精度と速度のレベルが異なります。",
+      "description": "音声入力を文字起こしする音声モデルを選びます — モデルは精度、速度、ロード中に保持するメモリ量が異なります。デフォルト: 新規インストール時は何も選択されておらず、オンボーディングが最初のモデルをダウンロードして選択します。この選択は General ページで「言語」と「英語に翻訳」が提供されるかどうかも決め、Translator は「バッチモデル」が「音声入力と同じ(デフォルト)」のままの場合、この同じモデルを使用します。",
       "downloaded": "ダウンロード済み",
       "available": "ダウンロード可能",
       "deleteConfirm": "{{modelName}}を削除してもよろしいですか？再度使用するにはダウンロードが必要です。",
@@ -165,26 +205,79 @@
         "bindings": {
           "transcribe": {
             "name": "文字起こしショートカット",
-            "description": "音声を録音して文字起こしするためのキーボードショートカット。"
+            "description": "1回押すと録音を開始し、もう1回押すと終了します。文字起こしはフォーカスがあったウィンドウに配信されます。デフォルト: Ctrl+Space。これは「文字起こしモード」と Advanced ページの「貼り付け方法」に従います — 押し続けて録音する場合はプッシュトゥトークショートカットを使ってください。"
           },
           "cancel": {
             "name": "キャンセルショートカット",
-            "description": "現在の録音をキャンセルするためのキーボードショートカット。"
+            "description": "進行中の取得をキャンセルします。デフォルト: escape。キャンセルが実際に何を行うかは General ページの「キャンセル動作」で決まります — 「完了して履歴のみ保存」は文字起こしと保存を行いますがウィンドウへの配信は行わず、「録音を破棄」は音声を捨てます — トレイのキャンセル項目も同じ設定に従います。"
           },
           "transcribe_with_post_process": {
             "name": "後処理ホットキー",
             "description": "オプション：文字起こしに常にAI後処理を適用する専用ホットキー。"
+          },
+          "transcribe_ptt": {
+            "name": "プッシュトゥトークショートカット",
+            "description": "このショートカットを押し続けると録音し、離すと停止します。離すとマイクは冷却されるため、その後言ったことがテキストに漏れることはありません。デフォルト: Ctrl+Alt+Space。これは独自の「文字起こしモード(PTT)」と独自の「貼り付け方法(PTT)」を持ち、プッシュトゥトークは文字起こしショートカットとは異なる動作ができます。"
+          },
+          "type_text": {
+            "name": "テキスト入力ショートカット",
+            "description": "キーボードタイパーのボックスにあるものをフォーカス中のウィンドウに入力します。もう一度押すか Escape でキャンセルします。デフォルト: ctrl+alt+t。開始遅延を待たずに約1秒後に始まります。ショートカットを押すということは、すでに対象ウィンドウにいることを意味するためです。フルカウントダウンを使うのは Go ボタンのほうです。"
+          },
+          "transcribe_and_submit": {
+            "name": "文字起こし＆送信ショートカット",
+            "description": "録音を終了し、文字起こしを貼り付けてから送信キーを押します。別のショートカットで開始した録音でも機能します。"
+          },
+          "anchor_set": {
+            "name": "アンカーを設定",
+            "description": "現在フォーカスしているテキストフィールドを Hot 1 の宛先として取得します。デフォルト: ctrl+alt+k。これ単独では何も配信しません — 「終了時のジャンプスロット動作」を「ジャンプ / スロットへ配信」に設定し、スロットを Hot 1 にすることで(高度 → 文字起こし)、次の文字起こしがそこへ届くようになります。パスワードボックスと Handy 自身のウィンドウは拒否されます。"
+          },
+          "anchor_jump": {
+            "name": "アンカーへジャンプ",
+            "description": "Hot 1 のウィンドウとフィールドを再びフォーカスに戻し、何も貼り付けません — 「自分の下書きに戻る」キーです。デフォルト: ctrl+alt+j。このスロットで「マウス位置を保存」がオンの場合、ポインタも戻ります。スロットが空か、そのウィンドウが閉じている場合は何も起こりません。"
+          },
+          "jump_set_slot_1": {
+            "name": "ジャンプスロット1を設定",
+            "description": "現在フォーカスしているフィールドを静的スロット1として記憶し、そこに入っていた内容を置き換えます。デフォルト: ctrl+alt+shift+1。このスロットは「ジャンプスロット1へジャンプ」で使用するか、フローの「終了時のジャンプスロット動作」(高度 → 文字起こし)をスロット1に向けて文字起こしをそこへ配信するまで、単なるブックマークです。"
+          },
+          "jump_set_slot_2": {
+            "name": "ジャンプスロット2を設定",
+            "description": "現在フォーカスしているフィールドを静的スロット2として記憶し、そこに入っていた内容を置き換えます。デフォルト: ctrl+alt+shift+2。「ジャンプスロット2へジャンプ」で戻るか、フローの「終了時のジャンプスロット動作」(高度 → 文字起こし)をスロット2に向けて文字起こしをそこへ配信させてください。"
+          },
+          "jump_set_slot_3": {
+            "name": "ジャンプスロット3を設定",
+            "description": "現在フォーカスしているフィールドを静的スロット3として記憶し、そこに入っていた内容を置き換えます。デフォルト: ctrl+alt+shift+3。「ジャンプスロット3へジャンプ」で戻るか、フローの「終了時のジャンプスロット動作」(高度 → 文字起こし)をスロット3に向けて文字起こしをそこへ配信させてください。"
+          },
+          "jump_set_slot_4": {
+            "name": "ジャンプスロット4を設定",
+            "description": "現在フォーカスしているフィールドを静的スロット4として記憶し、そこに入っていた内容を置き換えます。デフォルト: ctrl+alt+shift+4。「ジャンプスロット4へジャンプ」で戻るか、フローの「終了時のジャンプスロット動作」(高度 → 文字起こし)をスロット4に向けて文字起こしをそこへ配信させてください。"
+          },
+          "jump_slot_1": {
+            "name": "スロット1へジャンプ",
+            "description": "静的スロット1のウィンドウとフィールドをフォーカスに戻し、何も配信しません — 純粋なナビゲーションです。デフォルト: ctrl+alt+1。このスロットで「マウス位置を保存」がオンの場合、ポインタも復元されます。スロットが空か、そのウィンドウが閉じている場合は何も起こりません。"
+          },
+          "jump_slot_2": {
+            "name": "スロット2へジャンプ",
+            "description": "静的スロット2のウィンドウとフィールドをフォーカスに戻し、何も配信しません — 純粋なナビゲーションです。デフォルト: ctrl+alt+2。このスロットで「マウス位置を保存」がオンの場合、ポインタも復元されます。スロットが空か、そのウィンドウが閉じている場合は何も起こりません。"
+          },
+          "jump_slot_3": {
+            "name": "スロット3へジャンプ",
+            "description": "静的スロット3のウィンドウとフィールドをフォーカスに戻し、何も配信しません — 純粋なナビゲーションです。デフォルト: ctrl+alt+3。このスロットで「マウス位置を保存」がオンの場合、ポインタも復元されます。スロットが空か、そのウィンドウが閉じている場合は何も起こりません。"
+          },
+          "jump_slot_4": {
+            "name": "スロット4へジャンプ",
+            "description": "静的スロット4のウィンドウとフィールドをフォーカスに戻し、何も配信しません — 純粋なナビゲーションです。デフォルト: ctrl+alt+4。このスロットで「マウス位置を保存」がオンの場合、ポインタも復元されます。スロットが空か、そのウィンドウが閉じている場合は何も起こりません。"
           }
         },
         "errors": {
           "restore": "元のショートカットを復元できませんでした",
           "set": "ショートカットを設定できませんでした: {{error}}",
-          "reset": "ショートカットを元の値にリセットできませんでした"
+          "reset": "ショートカットを元の値にリセットできませんでした",
+          "registrationFailed": "一部のショートカットを登録できず、無効になっています: {{bindings}}。他のアプリが既に使用している可能性があります — 設定で別の組み合わせを選んでください。"
         }
       },
       "language": {
         "title": "言語",
-        "description": "音声認識の言語を選択してください。自動を選択すると言語を自動的に判定します。特定の言語を選択すると、その言語の精度が向上する場合があります。",
+        "description": "話している言語をエンジンに伝えます。指定するほうが通常「自動」より正確で、短い発話が誤った言語として検出されるのを防ぎます。デフォルト: 自動。このカードの見出しに名前のあるモデルに適用され、「英語に翻訳」がオンの場合は話す言語を指しており、返ってくる言語ではありません。",
         "descriptionUnsupported": "Parakeetモデルは言語を自動的に検出します。手動選択は不要です。",
         "searchPlaceholder": "言語を検索...",
         "noResults": "言語が見つかりません",
@@ -202,52 +295,146 @@
         },
         "jumperPasteDelay": {
           "title": "Paste delay after jump (Windows)",
-          "description": "Extra wait after a jump activates the target window and before the paste keystroke fires. A freshly activated window — especially an RDP/Citrix session — may still be transitioning when Ctrl+V lands, so the paste is swallowed and nothing appears. Set a longer wait for Remote desktop targets (matched on the Jumper page) and a shorter one for Local apps. Shared by both Transcribe and Transcribe & Submit; only applies after a real jump — when you're already in the target, paste stays instant.",
+          "description": "ジャンプが対象ウィンドウを前面に持ってきた後、貼り付けキー操作が発火するまでの追加待機時間です。アクティブ化されたばかりのウィンドウはまだキーストロークを取り込んでしまうためです。デフォルト: ローカルアプリ 250 ms、リモートデスクトップ 1 秒 — どちらの列が適用されるかは Jumper ページの「リモート一致文字列」で決まります。これは実際にジャンプが行われたときにのみ動作し、すでに対象にいる場合は貼り付けは即座のままで、両方のドロップダウンは文字起こしと文字起こし&送信で共有されます。",
           "options": {
             "none": "Off (instant)"
           }
         },
         "jumperSubmitDelay": {
           "title": "Submit delay after jump (Windows)",
-          "description": "Extra wait before pressing the submit key (Enter) after a jump. A freshly activated window — especially RDP/Citrix — may still be applying the pasted text when Enter fires, so the submit is missed. Set a longer wait for Remote desktop targets and a shorter one for Local apps. Only applies after a real jump; when you're already in the target, submit stays instant.",
+          "description": "配信がジャンプを必要とした場合に、貼り付けと送信キーの間に追加される待機時間です。アクティブ化されたばかりのウィンドウが貼り付けたテキストをまだ確定中で、Enter を取り落とす可能性があるためです。デフォルト: ローカルアプリ 250 ms、リモートデスクトップ 500 ms — どちらが適用されるかは Jumper ページの「リモート一致文字列」で決まります。これは実際にジャンプが行われた後にのみ動作し、すでに対象にいた場合は送信は即座のままです。",
           "options": {
             "none": "Off (instant)"
           }
+        },
+        "title": "文字起こし＆送信",
+        "pasteMethod": {
+          "title": "貼り付け方法",
+          "description": "文字起こし&送信ショートカットのみで使用される貼り付けキー操作で、この一つのアプリの動作を他とは別に設定できます。デフォルト: クリップボード(Ctrl+V)。これはこのフローに対して「貼り付け方法」を上書きします。そのアプリのメッセージボックスが Ctrl+V を無視する場合は「クリップボード(Shift+Insert)」に設定してください。"
+        },
+        "submitKey": {
+          "title": "送信キー",
+          "description": "このフローが貼り付けた直後に押されるキーで、実際にメッセージの送信やコマンドの実行を行います。デフォルト: Enter。このフローは常に送信を行います — 自動送信はこれには適用されません — 通常の Enter が改行しか挿入しないアプリでは Ctrl+Enter や Super+Enter を選んでください。"
+        },
+        "idleBehavior": {
+          "title": "録音中でないときの動作",
+          "description": "何も録音していないときに文字起こし&送信ショートカットを押すと何が起きるかです。デフォルト: 録音を開始する。これにより1回目の押下で開始、2回目の押下で貼り付けと送信が行われます。「何もしない」を選ぶと、このキーを純粋な完了専用キーにできます。文字起こしショートカットで録音を開始し、結果を貼り付けて送信したいときだけこのキーを押します。",
+          "options": {
+            "startNormal": "録音を開始",
+            "doNothing": "何もしない"
+          }
+        },
+        "clipboard": {
+          "title": "クリップボード",
+          "description": "「クリップボードハンドリング」とは独立した、このフロー独自のクリップボードポリシーです。貼り付け後に既存のクリップボードを復元するか、送信した文字起こしを意図的にそこに残します。デフォルト: クリップボードを変更しない。通常の音声入力はクリップボードに触れず、送信したすべてのコピーが欲しい場合(またはその逆)に便利です。"
         }
       },
       "pasteLast": {
         "title": "Paste last transcription",
         "pasteMethod": {
           "title": "Paste method",
-          "description": "How the last transcription is pasted into the focused window when you press the shortcut. Use Shift+Insert or another method if Ctrl+V doesn't work in the target app."
+          "description": "「最後の文字起こしを貼り付け」ショートカットがテキストをフォーカス中のウィンドウに配置する方法です。これは Advanced ページの「貼り付け方法」とは別で、一つの手のかかる対象に合わせて調整できます。デフォルト: クリップボード(Ctrl+V) — ターミナルでは「クリップボード(Shift+Insert)」、貼り付けではなく文字を直接入力するなら「直接入力」、テキストをクリップボードに置くだけで手で貼り付けたいなら「なし」を試してください。"
         },
         "clipboard": {
           "title": "Clipboard",
-          "description": "Keep your existing clipboard after pasting, or leave the transcription on the clipboard."
+          "description": "再貼り付け後にクリップボードを以前の内容に戻すか、意図的に文字起こしをそこに残すかです。デフォルト: クリップボードを変更しない。これはテキストをコピー、貼り付け、そして元の内容を復元します。「クリップボードにコピー」を選ぶと再貼り付け後もその言葉を使えるようにしておけます。どちらの場合もクリップボードのテキストのみが保存・復元され、画像やコピーしたファイルは失われます。"
         }
+      },
+      "anchor": {
+        "title": "アンカーと配信",
+        "deliveryFailed": "アンカー配信に失敗しました: {{reason}}。テキストはクリップボードにあり、アンカーは保持されています。",
+        "status": {
+          "title": "現在のアンカー",
+          "description": "このホットスロットが現在指しているものを表示し、テスト(何も配信せずそこへジャンプ)とクリアがあります。「Remote ✓」バッジは対象がリモート一致文字列に一致したことを示します。デフォルト: アンカー未設定。テキストフィールドをクリックし、このスロットのアンカー設定ショートカットを押して有効化します。アンカーは配信によって消費されることはありません。クリアするか、そのウィンドウが閉じるまで保持されます。",
+          "active": "アンカー済み: {{app}} ({{control}})",
+          "none": "アンカーが設定されていません",
+          "clear": "クリア"
+        },
+        "keep": {
+          "label": "配信後もアンカーを保持",
+          "description": "配信成功後にアンカーを解除せずそのまま保持し、同じフィールドへ繰り返し音声入力できるようにします。"
+        },
+        "returnFocus": {
+          "label": "配信後にフォーカスを戻す",
+          "description": "テキストが配信された後、元に使用していたウィンドウに戻ります。"
+        },
+        "actions": {
+          "options": {
+            "none": "何もしない",
+            "jump": "スロットへジャンプ／配信",
+            "set": "現在のフォーカスをスロットに設定",
+            "clear": "スロットをクリア"
+          },
+          "idle": {
+            "title": "開始時のジャンプスロット動作",
+            "description": "取得を開始するために押した瞬間、左のドロップダウンで選択したスロットに対してこのショートカットが追加で行うことです。デフォルト: 何もしない。そのためスロットピッカーは最初はグレー表示です。「ジャンプ / スロットへ配信」は話す前にその記憶したフィールドへ移動します。「スロットを現在のフォーカスに設定」は今いる場所を記録し、「スロットをクリア」はそれを忘れます(Windows のみ)。"
+          },
+          "stop": {
+            "title": "終了時のジャンプスロット動作",
+            "description": "取得が終了したときに、左で選択したスロットに対してこのショートカットが行うことです。デフォルト: 何もしない。「ジャンプ / スロットへ配信」は、他所へ移動していても文字起こしをその記憶したフィールドに送ります。「スロットを現在のフォーカスに設定」と「スロットをクリア」はテキストが配信された後に実行され、Jumper ページの「同じフローで開始した場合のみ終了時にジャンプ」でジャンプが許可される条件を絞れます(Windows のみ)。"
+          }
+        }
+      },
+      "transcribeGroup": {
+        "title": "文字起こし"
+      },
+      "cancelBehavior": {
+        "title": "キャンセル動作",
+        "description": "キャンセルが進行中の録音に対して何を行うかを決めます。これはキャンセルショートカット、トレイの「キャンセル」項目、`handy --cancel` に適用されます。デフォルト: 「完了して履歴のみ保存」。これは録音を停止して文字起こしを行い、音声とともに履歴に保持しますが、貼り付け・クリップボード変更・送信キー・ジャンプは一切行いません。キャンセルされた録音を文字起こしも保存もせず破棄したい場合は「録音を破棄」を選んでください。",
+        "options": {
+          "finishSilently": "終了して履歴のみ保存",
+          "discardRecording": "録音を破棄"
+        }
+      },
+      "updates": {
+        "title": "アップデート",
+        "checks": {
+          "label": "アップデートを自動確認",
+          "description": "公開 GitHub リリースを1日1回確認します。"
+        },
+        "silent": {
+          "label": "サイレントアップデートをインストール",
+          "description": "許可時間内に終了、更新、再起動します。初期設定では無効です。"
+        },
+        "time": {
+          "label": "サイレント更新時刻",
+          "description": "ローカル時刻での許可時間帯の中心です。",
+          "window": "現地時刻 {{start}}～{{end}}。"
+        },
+        "jitter": {
+          "label": "毎日のランダム化",
+          "description": "毎日、この分数の範囲内で異なる時刻を選びます。",
+          "minutes": "分"
+        },
+        "checkNow": "今すぐ確認",
+        "checking": "確認中…",
+        "upToDate": "Handy Tool は最新です。",
+        "lastChecked": "最終確認: {{value}}",
+        "never": "なし",
+        "portableUnsupported": "ポータブル版は上書き更新できません。最新のポータブル版をダウンロードしてください。"
       }
     },
     "sound": {
       "title": "サウンド",
       "microphone": {
         "title": "マイク",
-        "description": "使用するマイクデバイスを選択",
+        "description": "Handy が録音する入力デバイスです。次の録音から反映され、再起動は不要です。デフォルト: システムのデフォルトデバイス。ヘッドセットと内蔵アレイを切り替える場合は明示的に設定し、リセットボタンでシステムの選択に戻せます。",
         "placeholder": "マイクを選択...",
         "loading": "読み込み中..."
       },
       "audioFeedback": {
         "label": "音声フィードバック",
-        "description": "録音の開始と停止時にサウンドを再生"
+        "description": "録音開始時に短い合図音、終了時に別の合図音を再生し、画面を見ずにマイクが起動していることがわかるようにします。デフォルト: オフ。オンにすると下の出力デバイスと音量が有効になります。2つの合図音は Debug ページの「サウンドテーマ」で独自のファイルに置き換えられます。"
       },
       "outputDevice": {
         "title": "出力デバイス",
-        "description": "フィードバックサウンド用の音声出力デバイスを選択",
+        "description": "開始・終了の合図音が再生される場所です。どのマイクが録音するか、他のアプリがどこへ音声を送るかには影響しません。デフォルト: システムのデフォルトデバイス。合図がスピーカーから鳴らないようにヘッドセットに向けてください。この項目は Audio Feedback がオンになるまでグレー表示です。",
         "placeholder": "出力デバイスを選択...",
         "loading": "読み込み中..."
       },
       "volume": {
         "title": "音量",
-        "description": "音声フィードバックの音量を調整"
+        "description": "開始・終了の合図音の大きさで、0から100パーセントです。デフォルト: 100%。ヘッドセットで合図が驚くほど大きい場合は下げてください。これは Handy 独自の合図音のみを変更し、Audio Feedback がオンになるまでグレー表示のままです。"
       }
     },
     "advanced": {
@@ -257,27 +444,27 @@
         "output": "出力",
         "transcription": "文字起こし",
         "history": "履歴",
-        "experimental": "実験的"
-      },
-      "experimentalToggle": {
-        "label": "実験的機能",
-        "description": "まだ開発中の実験的機能を有効にします。"
+        "postProcessing": "後処理",
+        "keyboardTyper": "キーボードタイパー",
+        "tokenCountProviders": "トークン数プロバイダー",
+        "llmProviders": "登録済みLLMプロバイダー",
+        "mcp": "MCP & CLI"
       },
       "startHidden": {
         "label": "非表示で起動",
-        "description": "ウィンドウを開かずにシステムトレイに起動。"
+        "description": "画面上にウィンドウを表示せずに Handy Tool を起動します — 直接システムトレイに入り、音声入力は即座に使用可能です。デフォルト: オフ。「起動時に自動起動」と組み合わせると、サインイン時にウィンドウを表示せずアプリが準備できます。「トレイアイコンを表示」はオンのままにしてください。トレイがウィンドウを開く唯一の手段になるためです。"
       },
       "autostart": {
         "label": "起動時に実行",
-        "description": "コンピューターにログインしたときにHandyを自動的に起動。"
+        "description": "Windows にサインインしたときに Handy Tool を自動的に起動するよう登録します。デフォルト: オフ。「非表示で起動」と組み合わせると、ウィンドウを開かずにトレイに静かに立ち上がります。"
       },
       "showTrayIcon": {
         "label": "トレイアイコンを表示",
-        "description": "システムトレイにHandyのアイコンを表示します。"
+        "description": "システムトレイに Handy Tool のアイコンを表示します。アイコンはアイドル・録音中・文字起こし中も示し、設定・最新の文字起こし・終了のメニューを提供します。デフォルト: オン。注意: オフにするとメインウィンドウを閉じるとアプリが終了します(トレイに隠れません)。また「非表示で起動」も同時にオンの場合、クリックする対象が画面上に何もなくなります。"
       },
       "overlay": {
         "title": "オーバーレイ位置",
-        "description": "録音と文字起こし中に視覚的なフィードバックオーバーレイを表示。Linuxでは「なし」を推奨。",
+        "description": "音声入力中に小さなオーバーレイを表示し、Handy Tool が聞き取り中か文字起こし中かがわかるようにします。画面下部または上部に配置できます。デフォルト: 下部。何かを覆ってしまう、または全画面アプリの邪魔になる場合は「なし」を選んでオフにしてください。",
         "options": {
           "none": "なし",
           "bottom": "下",
@@ -286,7 +473,7 @@
       },
       "pasteMethod": {
         "title": "貼り付け方法",
-        "description": "テキストの挿入方法を選択。直接：システム入力でタイピングをシミュレート。なし：貼り付けをスキップし、履歴/クリップボードのみ更新。",
+        "description": "通常の音声入力がフォーカス中のウィンドウにテキストを配信するために使うキー操作を選びます。「直接入力」は貼り付けの代わりに文字を直接入力し、「なし」は何も送信しません。デフォルト: クリップボード(Ctrl+V)。例: Ctrl+V を無視するターミナルやリモートビューアは通常「クリップボード(Shift+Insert)」を受け付けます。「なし」を「クリップボードハンドリング」の「クリップボードにコピー」と組み合わせると、手で貼り付けられるようテキストを準備できます。プッシュトゥトークはこの設定を無視して「貼り付け方法(PTT)」を使います。",
         "options": {
           "clipboard": "クリップボード ({{modifier}}+V)",
           "clipboardCtrlShiftV": "クリップボード (Ctrl+Shift+V)",
@@ -299,14 +486,14 @@
       },
       "typingTool": {
         "title": "タイピングツール",
-        "description": "直接貼り付け方式で使用する Linux のタイピングツールを選択します。Auto は自動的に最適なツールを検出して使用します。",
+        "description": "「直接入力」貼り付け方法を支える Linux の入力注入ユーティリティを選びます。デフォルト: 自動(推奨)で、インストールされている最適なツールを検出します。これは予定されている Linux 版でのみ表示され、Windows では表示されません。",
         "options": {
           "auto": "Auto（推奨）"
         }
       },
       "clipboardHandling": {
         "title": "クリップボードの処理",
-        "description": "クリップボードを変更しないを選択すると、文字起こし後も現在のクリップボード内容が保持されます。クリップボードにコピーを選択すると、貼り付け後も文字起こし結果がクリップボードに残ります。",
+        "description": "通常の音声入力が貼り付けを行った後、クリップボードに何を残すかを決めます。「クリップボードを変更しない」は貼り付けに必要な間だけ文字起こしを置き、その後は以前のクリップボードを復元します。「クリップボードにコピー」は文字起こしを意図的にそこに残します。デフォルト: クリップボードを変更しない。正直な制限: 復元されるのはテキストのみで、コピーした画像やファイルは失われます。また「クリップボード復元の遅延」は、これが「クリップボードを変更しない」に設定されている場合にのみ効果があります。",
         "options": {
           "dontModify": "クリップボードを変更しない",
           "copyToClipboard": "クリップボードにコピー"
@@ -314,7 +501,7 @@
       },
       "autoSubmit": {
         "title": "自動送信",
-        "description": "テキスト挿入後に選択したキーの組み合わせを自動的に送信します。macOSではCmd+Enter、Windows/LinuxではSuper+Enterが適用されます。",
+        "description": "通常の貼り付けのたびに約50ミリ秒後に送信キーを送り、音声入力したチャットメッセージが自動的に送信されるようにします。デフォルト: オフ。アプリによって送信キーが異なるため、Enter だけでは改行しか追加されない場合は Ctrl+Enter を試してください。「貼り付け方法」が「なし」の場合は無視され、常に独自の送信キーを使う文字起こし&送信ショートカットには適用されません。",
         "options": {
           "off": "オフ",
           "enter": "Enter",
@@ -325,12 +512,13 @@
       },
       "translateToEnglish": {
         "label": "英語に翻訳",
-        "description": "文字起こし中に他の言語から英語に自動的に翻訳。",
-        "descriptionUnsupported": "翻訳は{{model}}モデルではサポートされていません。"
+        "description": "話した言語のまま文字起こしする代わりに、モデルに英語の出力を求めます。デフォルト: オフ。実際に話している言語に「言語」を設定したままにしてください — このトグルは翻訳をサポートするモデルにのみ表示されます。",
+        "descriptionUnsupported": "翻訳は{{model}}モデルではサポートされていません。",
+        "unsupported": "選択した文字起こしモデルでは利用できません。"
       },
       "modelUnload": {
         "title": "モデルのアンロード",
-        "description": "指定時間モデルが使用されていない場合、GPU/CPUメモリを自動的に解放",
+        "description": "文字起こしモデルが一定時間使用されずに座っていた後、保持している RAM または VRAM を解放します。次回の録音では数秒のロード時間を再度支払うことになります。デフォルト: なし(ロードを保持 — 最速起動)。これは一日中音声入力する場合に適した選択です。区切って音声入力しメモリを間で戻したい場合はタイムアウトを選んでください — Translator の別のバッチエンジンはここでは扱われず、「バッチモデルのアンロード時間」で解放されます。",
         "options": {
           "never": "しない",
           "immediately": "即座に",
@@ -339,16 +527,229 @@
           "min10": "10分後",
           "min15": "15分後",
           "hour1": "1時間後",
-          "sec5": "5秒後（デバッグ）"
+          "sec5": "5秒後（デバッグ）",
+          "custom": "カスタム..."
+        },
+        "units": {
+          "s": "秒",
+          "m": "分",
+          "h": "時間"
         }
       },
       "customWords": {
         "title": "カスタム単語",
-        "description": "よく誤認識または誤入力される単語を追加します。システムは自動的に類似した発音の単語をリストに合わせて修正します。",
+        "description": "エンジンが繰り返し間違える名前・製品名・専門用語のリストです。各文字起こしの後、Handy は似た響きの単語を見つけてあなたの綴りに置き換えます。デフォルト: 空欄。単語に出会うたびに全単語を追加してください。意図しないものを補正し始めた場合は Debug ページの「単語補正のしきい値」を下げてください。",
         "placeholder": "単語を追加",
         "add": "追加",
         "remove": "{{word}}を削除",
         "duplicate": "「{{word}}」は既に存在します"
+      },
+      "tokenCountProviders": {
+        "hint": "トークン数ページで使用するプロバイダーです。ヒント: モデルはトークナイザーの選択にのみ影響します — 気になるファミリーの中で最も小さいモデルを選んでください（例: qwen3:0.6bはqwen3:8bと同じカウント結果になりますが、読み込みはごく短時間で済みます）。AnthropicとGeminiのカウント用エンドポイントは無料です。ローカルサーバーには1トークンのプローブでクエリします。",
+        "enable": "このプロバイダーを有効化",
+        "namePlaceholder": "表示名",
+        "baseUrl": "ベースURL",
+        "apiKey": "APIキー",
+        "apiKeyPlaceholder": "ローカルサーバーの場合は省略可能",
+        "model": "モデル",
+        "refreshModels": "エンドポイントからモデルリストを読み込む",
+        "modelsError": "モデルを読み込めませんでした",
+        "kinds": {
+          "gemini": "Gemini",
+          "anthropic": "Anthropic",
+          "openai_local": "tiktoken（オフライン）",
+          "openai_compatible": "OpenAI互換"
+        }
+      },
+      "crashResilientRecording": {
+        "label": "クラッシュセーフ録音",
+        "description": "話している間、すべてをメモリに保持する代わりに、音声をコンパクトな Opus ファイルとしてディスクに符号化します。そのためクラッシュ、強制アップデート、電池切れが起きても録音は残り、次回起動時に修復され履歴に追加されます。デフォルト: オン。オフにすると非圧縮音声で録音され、これは「フルデータ(圧縮音声付き)」バックアップから意図的に除外されます。"
+      },
+      "openRecordingsFolder": {
+        "label": "録音フォルダ",
+        "description": "録音と、クラッシュ後に復旧した音声を保持するフォルダを開きます(%APPDATA%\\pr.handy\\recordings)。「録音の自動削除」はここでクリーンアップを行いますが、Handy が自身で作成したファイルのみに触れます — このフォルダにある自分のメモやエクスポートは名前を変更されたり削除されたりしません。",
+        "button": "フォルダを開く"
+      },
+      "appearance": {
+        "title": "外観",
+        "description": "録音オーバーレイやフローティング文字起こしウィンドウを含む、すべての Handy Tool ウィンドウの配色テーマを設定します。デフォルト: システム。これは Windows のライト/ダーク設定に従い、追跡を続けます。ライトとダークは1つの配色に固定し、後の OS の変更を無視します。",
+        "options": {
+          "system": "システム",
+          "light": "ライト",
+          "dark": "ダーク"
+        }
+      },
+      "pasteMethodPtt": {
+        "title": "貼り付け方法（PTT）",
+        "description": "「貼り付け方法」と同じ選択ですが、プッシュトゥトークショートカットでのみ使用されるため、押しっぱなしトークを通常の音声入力とは別に配信できます。デフォルト: クリップボード(Ctrl+V)。プッシュトゥトークで入力するアプリが、一日中音声入力するアプリとは異なる貼り付けキー操作を必要とする場合に変更してください。"
+      },
+      "clipboardRestoreDelay": {
+        "title": "クリップボード復元の遅延",
+        "description": "貼り付け後に以前のクリップボードのテキストが復元されるまでの追加待機時間で、組み込みの50 msに加算されます。このグループのクリップボード設定(ここでの「クリップボードハンドリング」、または「文字起こし&送信」下の「クリップボード」)が「クリップボードを変更しない」でない限り効果はありません。デフォルト: オフ(即時)。Citrix や RDP セッションが今話した内容の代わりに古いクリップボードを貼り付ける場合は、約1秒に上げてください — リモートセッションは貼り付けキー操作が届いた後にのみクリップボードを取得します。",
+        "options": {
+          "none": "なし（即時）",
+          "ms250": "250ミリ秒",
+          "ms500": "500ミリ秒",
+          "ms1000": "1秒",
+          "ms2500": "2.5秒",
+          "ms5000": "5秒"
+        }
+      },
+      "transcriptionMode": {
+        "title": "文字起こしモード",
+        "description": "「ライブ」は話している間にテキストが構築されていく様子を表示し、「録音後」は静かに録音してバックグラウンドで文字起こしします。デフォルト: 録音後。どちらの場合も停止時に音声全体に対して最終パスが実行されるため、配信されるテキストは常に正確なもので、ライブテキストはプレビューにすぎません — これは文字起こしショートカットのみを制御し、API 文字起こしモデルは常に録音後として動作します。",
+        "options": {
+          "live": "ライブ",
+          "postRecording": "録音後"
+        }
+      },
+      "transcriptionModePtt": {
+        "title": "文字起こしモード（PTT）",
+        "description": "同じ「ライブか録音後か」の選択を、プッシュトゥトークショートカットにのみ適用します。デフォルト: ライブ — 「文字起こしモード」の逆が意図的に選ばれています。保持した取得は短く、プレビューがほぼ即座に表示されるためです。配信されるテキストは、それでも録音全体の最終パスから来ます。",
+        "options": {
+          "live": "ライブ",
+          "postRecording": "録音後"
+        }
+      },
+      "gpuDevice": {
+        "title": "GPUデバイス",
+        "description": "ローカルの Whisper がどのグラフィックアダプターで文字起こしするか、または CPU 専用処理を強制するかを選びます。デフォルト: 自動(デフォルト)。起動に失敗したアダプターは、文字起こしを壊す代わりに自動へフォールバックします。忙しい単体GPUを空けておく、または不良ドライバーを回避するために変更します — これは次にモデルがロードされるときに反映され、Windows で Whisper モデルが選択されているときのみ表示されます。",
+        "options": {
+          "auto": "自動（デフォルト）",
+          "cpu": "CPUのみ",
+          "device": "{{name}}（デバイス{{index}}）",
+          "deviceWithVram": "{{name}}（デバイス{{index}}、{{vram}} GB）"
+        }
+      },
+      "apiTranscription": {
+        "title": "API文字起こし",
+        "cardTitle": "API文字起こし（OpenAI互換）",
+        "url": {
+          "title": "API URL",
+          "description": "OpenAI 互換の音声サーバーのベース URL で、バージョンプレフィックスを含みます — Handy は /audio/transcriptions を末尾に追加するため、http://127.0.0.1:8000/v1 は http://127.0.0.1:8000/v1/audio/transcriptions になります。デフォルト: 空欄。Models ページで API Transcription(OpenAI互換)を選ぶ前に入力してください。そうしないと録音が失敗します。このエンジンは常に停止時に録音全体を1つの WAV ファイルとしてアップロードするため、「文字起こしモード」はこれには影響しません。",
+          "placeholder": "http://127.0.0.1:8000/v1"
+        },
+        "apiKey": {
+          "title": "APIキー",
+          "description": "アップロードごとに送信されるベアラーキーです。チェックを行わないローカルサーバーの場合は空欄にしてください。デフォルト: 空欄。これは設定ファイルに暗号化されずに保存され、バックアップに含まれます。",
+          "placeholder": "sk-..."
+        },
+        "model": {
+          "title": "モデル",
+          "description": "エンドポイントが期待するモデル id で、アップロードとともにそのまま送信されます — OpenAI の場合は whisper-1、または独自サーバーがモデルに付けた名前です。デフォルト: 空欄で、空のモデルフィールドを送信します。エンドポイントが必要とする場合は設定してください。「言語」が自動の場合、このエンジンは英語を送信するため、別の言語で音声入力する場合は「言語」を固定してください。",
+          "placeholder": "whisper-1"
+        }
+      },
+      "tabs": {
+        "app": "アプリ",
+        "output": "出力",
+        "transcription": "文字起こし",
+        "typer": "タイパー",
+        "providers": "プロバイダー",
+        "mcp": "MCP & CLI",
+        "history": "履歴",
+        "postProcessing": "後処理"
+      },
+      "mcp": {
+        "loading": "読み込み中...",
+        "description": "小さなローカルサーバーを実行し、Claude(app と Code)と handy コマンドが Handy 自身のツール(トークンカウント、フォーカス中のウィンドウへのテキスト入力、履歴の読み込み、モデルテストの実行、プロバイダーの編集)を使えるようにします。デフォルト: オフ。オンにするとすぐに 127.0.0.1 上で下記のポートとトークンでサーバーが起動し、ネットワークインターフェースには決して公開されません。正直な注意点: トークンは設定ファイルにプレーンテキストで保存されるため、あなたとして動作するプログラムはそれを読み取ってアプリを操作できます。",
+        "enable": "MCP & CLIサーバーを有効化",
+        "running": "実行中",
+        "stopped": "停止中",
+        "port": "ポート",
+        "token": "トークン",
+        "show": "表示",
+        "hide": "隠す",
+        "regenerate": "再生成",
+        "claudeApp": "Claudeアプリ（HTTP） — 次のURLでカスタムMCPサーバーを追加してください:",
+        "authHeader": "...そしてこのAuthorizationヘッダーを追加してください:",
+        "claudeCodeStdio": "Claude Code（stdio）:",
+        "claudeCodeHttp": "Claude Code（HTTP）:",
+        "cliTitle": "コマンドラインコンパニオン",
+        "cliHint": "Handy 自身の実行ファイルを handy として PATH にコピーし、実行中のアプリに対して任意のターミナルから handy model-test、handy token-count、handy mcp --stdio を実行できるようにします。デフォルト: 未インストール。このコマンドは実行中のアプリと同じローカルサーバーで通信するため、「MCP & CLI サーバーを有効にする」がオンの間のみ動作し、ポータブルモードでは利用できません。",
+        "installCli": "CLIをインストール",
+        "reinstallCli": "CLIを再インストール"
+      },
+      "costReport": {
+        "title": "文字起こしコストレポート",
+        "description": "録音ごとのコスト（OpenRouterからの実際のUSD）と長さを、週・月・年ごとに集計します。すべての録音と集計を含む完全なレポートをCSVとしてダウンロードできます。",
+        "download": "CSVをダウンロード",
+        "recalc": "長さを再計算",
+        "recordings": "録音",
+        "daily": "過去7日間",
+        "colTimestamp": "タイムスタンプ",
+        "colDuration": "長さ（HH:MM:SS）",
+        "colCost": "コスト（USD）",
+        "colPeriod": "期間",
+        "colCount": "録音数",
+        "weekly": "過去4週間",
+        "monthly": "過去12ヶ月",
+        "yearly": "年別",
+        "total": "合計（全期間）",
+        "allTime": "全期間",
+        "weekOf": "{{date}}の週",
+        "totalLine": "{{count}}件の録音 · {{duration}} · {{cost}}",
+        "empty": "まだ録音がありません"
+      },
+      "llmProviders": {
+        "hint": "名前、エンドポイント、キー、モデル、100万トークンあたりのコストを持つ1つのプロバイダー登録簿で、トークンカウント、モデルテスト、ポストプロセスで共有されます。各スロットは安定した id(#1、#2、…)を保持し、これらの画面が参照するため、ここでの変更はすべてに反映されます。「このプロバイダーを有効にする」のチェックを外すと、そのスロットは3つすべてから削除されます。デフォルト: 3つのローカルスロットは有効、クラウド系スロットはキーを貼り付けるまで無効です。",
+        "enable": "このプロバイダーを有効化",
+        "namePlaceholder": "プロバイダー名",
+        "baseUrl": "ベースURL",
+        "apiKey": "APIキー",
+        "apiKeyPlaceholder": "APIキーを貼り付けてください",
+        "model": "モデル",
+        "modelPlaceholder": "モデルID",
+        "refreshModels": "モデルリストを更新",
+        "modelsError": "失敗",
+        "cost": "コスト / 100万",
+        "costInput": "入力 $",
+        "costOutput": "出力 $",
+        "costAuto": "OpenRouterによって自動的に報告されます",
+        "concurrency": "並行実行",
+        "sequential": "同じファミリー内で順次実行",
+        "family": "ファミリー",
+        "familyPlaceholder": "例: flm",
+        "kinds": {
+          "anthropic": "Anthropic",
+          "gemini": "Gemini",
+          "openai_local": "ローカル（tiktoken）",
+          "openai_compatible": "OpenAI互換",
+          "openrouter": "OpenRouter",
+          "apple_intelligence": "Apple"
+        },
+        "persistPrice": "固定",
+        "persistPriceHint": "モデルが変更されてもこの価格を保持します（OpenRouterからの自動入力を行いません）"
+      },
+      "openRouterTranscription": {
+        "cardTitle": "OpenRouter文字起こし",
+        "url": {
+          "title": "API URL",
+          "description": "音声リクエストが送られる OpenRouter API のルートで、/api/v1 を含みます。デフォルト: https://openrouter.ai/api/v1 — プロキシを経由しない限りそのままにしてください。これか API キーが空の間、Handy は何も送信しません。",
+          "placeholder": "https://openrouter.ai/api/v1"
+        },
+        "apiKey": {
+          "title": "APIキー",
+          "description": "あなたの OpenRouter キー(openrouter.ai/keys)で、この音声エンジンのみに使用されます — 登録済み LLM プロバイダー下の OpenRouter エントリとは別です。デフォルト: 空欄で、これがないと未認証のリクエストを送る代わりに録音が失敗します。このエンジンで音声入力すると音声が OpenRouter にアップロードされ、録音ごとに料金が発生します。実際の金額は履歴と文字起こしコストレポートに記録されます。",
+          "placeholder": "sk-or-..."
+        },
+        "model": {
+          "title": "文字起こしモデル",
+          "description": "手入力する OpenRouter のモデル id です。「文字起こし」ルートには openai/whisper-large-v3 形式の id、「チャット」ルートには google/gemini-2.5-flash のような音声対応チャットモデルを指定します。デフォルト: 空欄で、openai/whisper-large-v3 にフォールバックします。これはエンドポイントと一致している必要があります。不一致は通常エラーではなく空の文字起こしになって返ってきます。",
+          "placeholder": "openai/whisper-large-v3"
+        },
+        "route": {
+          "title": "エンドポイント",
+          "description": "音声がどの OpenRouter エンドポイントへ送られるかを選びます。「文字起こし(Whisperスタイル)」は専用の音声エンドポイントへポストします。「チャットモデル(Gemini / GPT-4o-audio)」は音声をチャットメッセージ内に入れます。これは音声モデルでないモデルが音声を受け付ける唯一の方法です。デフォルト: 文字起こし(Whisperスタイル)。これは「文字起こしモデル」と一致している必要があり、「英語に翻訳」はチャットルートでのみ有効です。",
+          "stt": "文字起こし（Whisper形式）",
+          "chat": "チャットモデル（Gemini / GPT-4o-audio）"
+        },
+        "format": {
+          "title": "音声フォーマット",
+          "description": "アップロード前に音声をどう符号化するかです。Opus は WAV よりおよそ10倍小さく、テザリングやホテルの接続で重要になります。デフォルト: Opus — 小さい(推奨)。これはエンドポイントが「チャットモデル(Gemini / GPT-4o-audio)」の場合にのみ適用されます。「文字起こし(Whisperスタイル)」ルートは常に WAV を送信します。Whisperスタイルのモデルは Opus を拒否するためです。",
+          "opus": "Opus — 小サイズ（推奨）",
+          "wav": "WAV — 互換性最高"
+        }
       }
     },
     "postProcessing": {
@@ -360,7 +761,8 @@
         "title": "API（OpenAI互換）",
         "provider": {
           "title": "プロバイダー",
-          "description": "OpenAI互換のプロバイダーを選択。"
+          "description": "OpenAI互換のプロバイダーを選択。",
+          "placeholder": "登録済みプロバイダーを選択"
         },
         "appleIntelligence": {
           "title": "Apple Intelligence",
@@ -387,7 +789,12 @@
           "placeholderWithOptions": "モデルを検索または選択",
           "placeholderNoOptions": "モデル名を入力",
           "refreshModels": "モデルを更新"
-        }
+        },
+        "temperature": {
+          "title": "温度",
+          "description": "低いほど決定的で厳密になります（0が最も忠実）。高いほど創造的になります。"
+        },
+        "registryNote": "プロバイダーのAPIキー、モデル、ベースURLは詳細設定→登録済みLLMプロバイダーで設定します。"
       },
       "prompts": {
         "title": "プロンプト",
@@ -409,6 +816,10 @@
         "cancel": "キャンセル",
         "selectToEdit": "上からプロンプトを選択して、詳細を表示・編集します。",
         "createFirst": "上の「新しいプロンプトを作成」をクリックして、最初の後処理プロンプトを作成してください。"
+      },
+      "disableThinking": {
+        "label": "思考を無効化",
+        "description": "モデルにthink: falseを送信します。応答が速くなりますが、思考モデル（例: Qwen3）では指示への追従性が下がる場合があります。"
       }
     },
     "history": {
@@ -420,34 +831,43 @@
       "save": "文字起こしを保存",
       "unsave": "保存から削除",
       "delete": "エントリーを削除",
-      "deleteError": "エントリーの削除に失敗しました。もう一度お試しください。"
+      "deleteError": "エントリーの削除に失敗しました。もう一度お試しください。",
+      "loadError": "履歴の読み込みに失敗しました: {{error}}",
+      "search": {
+        "placeholder": "履歴を検索（テキストまたは正規表現）...",
+        "clear": "検索をクリア",
+        "matches": "{{total}}件中{{matched}}件",
+        "regexBadge": ".*",
+        "regexActive": "クエリは正規表現として処理されています",
+        "noMatches": "検索に一致するエントリーがありません。"
+      }
     },
     "debug": {
       "title": "デバッグ",
       "logDirectory": {
         "title": "ログディレクトリ",
-        "description": "ログファイルの保存場所"
+        "description": "ファイルログを保存しているフォルダを開きます。何かが理由なく失敗したときに最初に確認する場所です。ログは10MBでローテーションされ、古いファイルは上書きされずに保持されるため、問題の後に続く再起動を経ても証拠が残ります。ここに記録される詳細度は Debug ページの「ログレベル」で設定され、デフォルトは Debug で文字起こしの断片が含まれる場合があります。"
       },
       "logLevel": {
         "title": "ログレベル",
-        "description": "ログの詳細度を設定"
+        "description": "ログファイルに書き込まれる詳細度を設定します。コンソール出力には影響しません。デフォルト: Debug。ディスクに音声入力の内容を残したくない場合は Info に下げてください — Debug と Trace では、About ページの「ログディレクトリ」から開くファイルに文字起こしの断片やプロンプトのプレビューが現れることがあります。"
       },
       "soundTheme": {
         "label": "サウンドテーマ",
-        "description": "録音開始・停止フィードバックのサウンドテーマを選択"
+        "description": "録音の開始・終了時に再生される合図音のペアを選びます。デフォルト: Marimba。General ページの Audio Feedback がオンの間だけ音が聞こえます。「カスタム」は、カスタムの開始・終了 WAV ファイルの両方がアプリデータのリソースフォルダに存在するときにのみ、このリストに表示されます。"
       },
       "wordCorrectionThreshold": {
         "title": "単語修正しきい値",
-        "description": "カスタム単語修正の感度"
+        "description": "文字起こしが General ページの「カスタムワード」のエントリに一致するようどれだけ積極的に書き換えられるかです。デフォルト: 0.18。名前や専門用語がまだ誤って返ってくる場合は上げてください。実際に言った言葉を Handy Tool が置き換え始めた場合は下げてください — カスタムワードが空の場合、このスライダーは何の効果もありません。"
       },
       "historyLimit": {
         "title": "履歴上限",
-        "description": "保持する履歴エントリーの最大数",
+        "description": "最も古いエントリが音声とともに削除される前に、履歴が保持する文字起こしの数です。デフォルト: 5件 — 意図的に少なくしてあるので、数日後に見返す予定なら増やしてください。これは「録音の自動削除」が「最新を保持」に設定されている間のみ効果があり、「文字起こしを保存」でマークしたエントリは無関係に保持され、カウントされません。",
         "entries": "件"
       },
       "recordingRetention": {
         "title": "録音の自動削除",
-        "description": "古い録音を自動的に削除して容量を節約",
+        "description": "履歴の自動クリーンアップを制御します。エントリが期限切れになると、その行と音声ファイルの両方が削除されます。デフォルト: 最新を保持で、履歴の上限(デフォルト5)で許可される最新のエントリのみを保持します。時間指定のオプションは代わりに過去3日、2週間、3か月のすべてを保持し、「なし」は何も削除しません。クリーンアップは新しい文字起こしが保存された後、およびいずれかの設定を変更したときに実行され、「文字起こしを保存」でマークされたエントリは常に保護され、Handy Tool 自身が作成した音声ファイルのみを削除します。",
         "never": "しない",
         "preserveLimit": "最新{{count}}件を保持",
         "days3": "3日後",
@@ -457,27 +877,27 @@
       },
       "alwaysOnMicrophone": {
         "label": "マイク常時オン",
-        "description": "より速い応答のためにマイクをアクティブに保つ"
+        "description": "録音ショートカットを押すたびに開く代わりに、取得の間もマイクストリームを開いたままにします。デフォルト: オフ。取得の最初の音節が欠ける場合はオンにしてください。代償として、Handy Tool が動作している間はシステムのマイクインジケーターが常に点灯し続けます(音声入力中だけではありません)。"
       },
       "clamshellMicrophone": {
         "title": "クラムシェルマイク",
-        "description": "ノートパソコンの蓋を閉じたときに使用するマイク"
+        "description": "ノートPCの蓋が閉じているときに別の入力デバイスを選びます。内蔵マイクがその状態で使えないドッキング済みマシン向けです。デフォルト: なしで、General ページの「マイク」が常に使用されます。蓋閉じ検出は macOS 専用で、macOS 版はまだ予定中のため、これは Windows 版には効果がありません。"
       },
       "postProcessingToggle": {
         "label": "後処理",
-        "description": "文字起こし後のAIによるテキスト改善を有効化"
+        "description": "任意の AI クリーンアップパスをオンにし、プロバイダーとプロンプトを選ぶポストプロセスページをサイドバーに追加します。デフォルト: オフ。通常の文字起こしショートカットには影響しません — クリーンアップは別のポストプロセスホットキーでのみ実行され、履歴には処理済みのものと一緒に元の文字起こしも保持されます。"
       },
       "muteWhileRecording": {
         "label": "録音中にミュート",
-        "description": "録音中にシステムオーディオをミュート"
+        "description": "各録音の間、システム音声をミュートし、スピーカーからの音楽や動画がマイクに混入しないようにします。デフォルト: オフ。ヘッドセットではなくスピーカーで音声入力する場合はオンにしてください。録音が終わると音は自動的に元に戻ります。"
       },
       "appendTrailingSpace": {
         "label": "末尾にスペースを追加",
-        "description": "貼り付けた文字起こしの後にスペースを追加"
+        "description": "配信されるすべての文字起こしの末尾にスペースを1つ追加し、連続する2回の音声入力が「...one.Two」のようにならないようにします。デフォルト: オフ。同じフィールドに短い区切りで音声入力する場合はオンにしてください。余分なスペースが問題になる検索ボックスやターミナルコマンドではオフのままにしてください。"
       },
       "keyboardImplementation": {
         "title": "Keyboard Implementation",
-        "description": "Choose the keyboard shortcut backend.",
+        "description": "Handy Tool のグローバルショートカットをオペレーティングシステムに登録するバックエンドを選びます。デフォルト: Tauri Global Shortcut。設定したショートカットが、他のプログラムが既にその組み合わせを所有しているために発火しない場合や、Windows が登録を拒否する場合は Handy Keys に切り替えてください — 切り替えるとすべてのショートカットが再登録され、失敗した場合は変更が元に戻されます。",
         "bindingsReset": "Keyboard shortcuts were incompatible and reset to defaults"
       },
       "paths": {
@@ -487,28 +907,23 @@
       },
       "pasteDelay": {
         "title": "貼り付け遅延",
-        "description": "貼り付けキー送信前の遅延（ミリ秒）。間違ったテキストが貼り付けられる場合は増やしてください。"
+        "description": "Handy Tool が文字起こしをクリップボードに置いた後、貼り付けキー操作を送るまでの待機時間です。デフォルト: 60 ms。動作の遅いアプリが新しいテキストの代わりに以前のクリップボード内容を貼り付けてしまう場合は、これを増やしてください。これは「ジャンプ後の貼り付け遅延(Windows)」とは別の待機で、ジャンプスロットが別のウィンドウをアクティブ化した直後にのみ適用されます。"
       }
     },
     "about": {
       "title": "概要",
       "version": {
         "title": "バージョン",
-        "description": "Handyの現在のバージョン"
+        "description": "実行中の Handy Tool のビルドです。問題を報告するときは常に引用してください。Windows x64 のみがリリースされています — macOS と Linux は予定中で、Jumper 機能はその後も Windows 専用です。ここでは新しいバージョンの自動チェックは行われません。確認したいときは「更新」を使ってください。"
       },
       "appDataDirectory": {
         "title": "アプリデータディレクトリ",
-        "description": "Handyがデータを保存する場所"
+        "description": "Handy Tool が保持するすべてのものが入った単一のフォルダを開きます: JSON ファイルの設定(プロバイダーの API キーとプロンプトを含む)、SQLite データベースの文字起こし、録音、ダウンロードしたモデル、ローテーションされたログです。デフォルト: 通常の Windows インストールでは %APPDATA%\\pr.handy。Handy Tool はこの中の何も暗号化しません — ファイルシステムの権限だけが保護です — そのため、マシンを譛渡すときはこのフォルダをコピーするか消去してください。"
       },
       "sourceCode": {
         "title": "ソースコード",
         "description": "ソースコードを見て貢献する",
         "button": "GitHubで見る"
-      },
-      "supportDevelopment": {
-        "title": "開発を支援",
-        "description": "Handyの開発を支援してください",
-        "button": "寄付する"
       },
       "acknowledgments": {
         "title": "謝辞",
@@ -516,21 +931,180 @@
           "title": "Whisper.cpp",
           "description": "OpenAIのWhisper自動音声認識モデルの高性能推論",
           "details": "Handyは高速でローカルな音声からテキストへの変換にWhisper.cppを使用しています。Georgi Gerganov氏と貢献者の皆様の素晴らしい仕事に感謝します。"
+        },
+        "handy": {
+          "title": "Handy",
+          "description": "本プロジェクトの基盤となったオリジナルのオープンソース音声認識アプリ",
+          "details": "Handy Toolは、CJ Pais氏（github.com/cjpais/Handy、handy.computer）によって作成されたHandyのフォークです。アップストリームのv0.8.1（2026年3月）の時点で引き継がれ、その後Patrick R.によって独自に開発が続けられています。本プロジェクトの土台を築いてくれたCJ氏とHandyの貢献者の皆様に深く感謝します。"
         }
+      },
+      "updates": {
+        "title": "更新",
+        "description": "「リリースを確認」はブラウザでプロジェクトの GitHub リリースページを開き、Version と比較できます。Handy Tool にはアップデーターがなく、バックグラウンドで新しいリリースを確認することはありません — 更新は常に自分で選ぶものです。",
+        "button": "リリースを確認"
       }
     },
     "jumper": {
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "When a jump target's app, window class, or control class contains one of these (case-insensitive), it is treated as a remote desktop session and uses the longer 'Remote' jump delays (Advanced → Transcription). Add the identifiers your RDP/Citrix clients use — e.g. msrdc, mstsc, Citrix. An empty list treats every target as local.",
+        "description": "アプリ、ウィンドウクラス、またはコントロールクラスにこれらの断片のいずれかを含むジャンプ対象(大文字小文字を区別しない)はリモートデスクトップとして扱われ、Advanced → 文字起こし の「ジャンプ後の貼り付け遅延(Windows)」と「ジャンプ後の送信遅延(Windows)」のローカル値の代わりにリモート値を使用します。デフォルト: msrdc、mstsc、Citrix。RDP や Citrix クライアントへの配信が取り込まれない場合は、そのプロセス名を追加してください。空のリストはすべての対象をローカルとして扱います。",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
         "duplicate": "'{{value}}' is already in the list",
         "badge": "Remote ✓",
         "badgeTooltip": "This target matches a remote match string, so it uses the Remote jump delays."
+      },
+      "windowsOnly": "ジャンパーはWindowsでのみ使用できます。",
+      "hot": {
+        "title": "ホットスロット（アンカーと配信）",
+        "optionsMoved": {
+          "title": "配信オプション",
+          "description": "設定項目ではなく案内です。ジャンプが実際にスロットに対して何を行うかは、Advanced → 文字起こし でフローごとに設定されます: 「開始時のジャンプスロット動作」「終了時のジャンプスロット動作」「最後の出力位置を追跡」「配信後にフォーカスを戻す」は、それぞれ文字起こしと文字起こし&送信の両方に1つずつ存在します。",
+          "hint": "一般ページの「文字起こし」および「文字起こし＆送信」グループで設定します。"
+        }
+      },
+      "hot2": {
+        "title": "第2ホットスロット（アンカーと配信）"
+      },
+      "slot": {
+        "title": "固定スロット{{index}}",
+        "status": "スロット{{index}}のターゲット",
+        "description": "この番号付きスロットが指しているものを表示し、テスト(何も配信せずそこへジャンプ)とクリアがあります。デフォルト: 対象なし。何度も戻るフィールドにフォーカスし、このスロットの設定ショートカット(ctrl+alt+shift+1〜9)を押し、いつでも ctrl+alt+1〜9 で戻れます。スロットが記憶するのはウィンドウとフィールドで、ブラウザのタブやテキストカーソル位置ではありません。配信をまたいでも保持されます。",
+        "test": "テスト",
+        "testFailed": "ジャンプに失敗しました: {{reason}}",
+        "stale": "保存済み: {{app}} ({{control}}) — ウィンドウが見つかりません"
+      },
+      "persist": {
+        "label": "再起動後もスロットを記憶する",
+        "description": "アプリの再起動をまたいで各スロットの対象を記憶します。デフォルト: オフ。Windows は再起動をまたいでウィンドウハンドルを保持できないため、Handy は各スロットの識別情報(アプリケーションとウィンドウおよびフィールドの種類)を保存し、起動時とそのスロットを使用する瞬間に一致するウィンドウを再検出します。アプリが実行されていない保存済みスロットは、再表示されるまで赤く表示されます。",
+        "groupTitle": "永続化"
+      },
+      "slotNames": {
+        "hot": "ホット1",
+        "hot2": "ホット2",
+        "static": "スロット{{index}}"
+      },
+      "track": {
+        "label": "最後の出力先を記録",
+        "description": "Windows のみ。このフローが文字起こしを貼り付けた後、「保存先」で選択したスロットは、実際にテキストが着地したフィールドで上書きされます。そのため次にそのスロットへジャンプすると、最後に音声入力した場所に戻ります。デフォルト: オフ。手動で設定する代わりにスロットが自動的についてくるようにしたいときにオンにしてください。文字起こしと文字起こし&送信は独立して追跡し、この取得は「配信後にフォーカスを戻す」より前に行われます。",
+        "slot": {
+          "title": "保存先",
+          "description": "「最後の出力位置を追跡」がこのフローの配信ごとに上書きするジャンプスロットです。デフォルト: Hot 1。自動追跡が Set Anchor で手動設定したホットアンカーを上書きし続けるのを避けたい場合は、静的スロット(スロット1〜9)を指定してください。"
+        }
+      },
+      "saveCursor": {
+        "label": "マウスカーソル位置を復元",
+        "description": "このフローが文字起こしを配信した後、マウスカーソルの位置を記憶し、ジャンプした際にポインターをその位置へ戻します。もう一方のフローのスイッチとは独立していますが、下の位置モードは両方のフローで共有されます。",
+        "perSlot": "マウス位置を保存",
+        "perSlotDescription": "このスロットが設定または追跡されたときにマウスポインタの位置も記録し、このスロットへジャンプしたときにポインタをその位置へ戻します。貼り付けの後に行われるため、配信を妨げることはありません。デフォルト: オフ。別のモニターにあるスロットでオンにすると、キーボードとマウスが一緒に到着します。これによりこのスロット専用の「カーソル位置モード」(下記)が有効になり、すべてのスロットに個別のスイッチのペアがあります。",
+        "mode": {
+          "title": "カーソル位置モード",
+          "description": "このスロットの保存されたポインタ位置をどう測定するかを選びます。デフォルト: アプリ相対(ウィンドウに追従) — ウィンドウが移動、サイズ変更、または DPI の異なるモニターへドラッグされた後でも対象ウィンドウ内の同じ位置を復元します。決して動かない固定ダッシュボードなどには「画面絶対(正確な座標)」を選んでください。このドロップダウンは、このスロットの「マウス位置を保存」がオンになるまでグレー表示です。",
+          "appRelative": "アプリ相対（ウィンドウに追従）",
+          "screenAbsolute": "画面絶対（正確な座標）"
+        }
+      },
+      "returnFocus": {
+        "label": "配信後にフォーカスを戻す",
+        "description": "ジャンプを必要とした配信の後、配信開始時にいたウィンドウへ自動的にフォーカスが戻ります — スロットの設定は不要です。デフォルト: オン。これは条件付きです。Handy Tool が作業中に自分でウィンドウを切り替えた場合は、あなたが選んだ場所に留まります。各フローはこれを個別に決定します(Windows のみ)。"
+      },
+      "requireSameFlow": {
+        "groupTitle": "終了時の動作",
+        "label": "開始時と同じ方法の場合のみ終了時にジャンプ",
+        "description": "オンにすると、フローの「終了時のジャンプスロット動作」は、その取得が同じショートカットで開始・終了した場合にのみ発火します。デフォルト: オフ。例: 文字起こしで開始し文字起こし&送信で終了した場合、ジャンプは行われません — 貼り付けと送信はそれでも行われ、ジャンプのみが制限されます。2つのショートカットを混ぜると予期しない場所へテレポートされる場合はオンにしてください。"
       }
+    },
+    "translator": {
+      "title": "トランスレーター",
+      "enabled": {
+        "label": "フォルダを監視",
+        "description": "監視フォルダに現れる新しい .wav、.ogg、.opus ファイルすべてを、現在のモデル、言語、英語に翻訳の設定を使って隣の .txt ファイルに文字起こしします。デフォルト: オフ。監視開始時に既にフォルダにあるファイルは意図的に無視されます。フォルダ自体は「フォルダを追加」で選びます。"
+      },
+      "priority": {
+        "title": "優先度",
+        "description": "フォルダのファイルとあなた自身の音声入力が同時に音声エンジンを必要としたときにどちらを優先するかを決めます。デフォルト: ライブ音声入力優先 — 録音を押した瞬間にバッチが次のセグメント境界で一時停止し、その後再開するため、バッチの進行は失われません。「フォルダバッチ優先」はバッチを実行し続け、あなたのライブテキストは少し後に届きます。「先着順」は進行中のファイルを完了させ、その後あなたの取得を実行し、次のファイルを始めます。",
+        "options": {
+          "live_first": "ライブ音声入力優先",
+          "folder_first": "フォルダバッチ優先",
+          "fifo": "先着順"
+        }
+      },
+      "model": {
+        "title": "バッチモデル",
+        "description": "監視フォルダ内のファイルを文字起こしする音声モデルです。地球アイコン付きのモデルは英語への翻訳も可能で、「英語に翻訳」をオンにする必要があります。デフォルト: 音声入力と同じ(デフォルト)で、Models ページで選択されているものを再利用します。別のローカルモデルを選ぶと、音声入力モデルと並んで独自のスロットにロードされます — 一方のエンジンでバッチ処理、もう一方で音声入力は即座のまま — その代償として追加のメモリが必要になりますが、これは「バッチモデルのアンロード時間」で解放できます。",
+        "sameAsDictation": "音声入力と同じ（デフォルト）",
+        "translates": "{{name}} — 英語に翻訳可能"
+      },
+      "unload": {
+        "title": "バッチモデルをアンロードするまでの時間",
+        "description": "キューが静かになった後、Translator 独自のバッチモデルのコピーがメモリに残る時間です。アンロードすると RAM または VRAM が解放され、ロードを保持すると次のファイルが来たときの再読み込みを回避できます。デフォルト: なし(ロードを保持 — 最速起動)。これは「バッチモデル」がお使いの音声入力モデルと異なるローカルモデルを指定している場合にのみ効果があり、それ以外はメインの「モデルをアンロード」設定が優先されます。"
+      },
+      "status": {
+        "title": "状態",
+        "description": "トランスレーターが現在行っている処理です。完了した文字起こしは、音声ファイルと同じ名前で拡張子が.txtのファイルとして隣に書き出されます。",
+        "disabled": "オフ",
+        "idle": "監視中 — 処理待ちはありません",
+        "queued": "{{count}}件のファイルが待機中",
+        "working": "{{file}} — セグメント {{segment}}/{{total}}",
+        "workingIndeterminate": "{{file}}",
+        "paused": {
+          "live": "ライブ音声入力のため一時停止中",
+          "processing": "録音の終了処理中のため一時停止中"
+        },
+        "counters": "このセッションで完了 {{done}} 件、失敗 {{failed}} 件"
+      },
+      "folders": {
+        "title": "監視フォルダ",
+        "none": "フォルダがありません",
+        "emptyTitle": "監視フォルダがありません",
+        "emptyDescription": "フォルダを追加すると、新しい録音の監視を開始します。",
+        "addTitle": "フォルダを追加",
+        "addDescription": "フォルダピッカーを開きます。以降、そのフォルダに現れる新しい音声ファイルはキューに入れられ、その文字起こしは隣に .txt として書き出されます。デフォルト: Translator が最初に起動したとき、お使いの Handy 録音フォルダが自動的に追加されます。フォルダを追加しても「フォルダを監視」がオンになるまでは何も起こらず、すでにフォルダにあるものは無視されます — その後に到着したファイルのみが文字起こしされます。",
+        "add": "フォルダを追加",
+        "remove": "このフォルダの監視を停止",
+        "addFailed": "フォルダを追加できませんでした: {{reason}}",
+        "operationFailed": "フォルダを更新できませんでした: {{reason}}",
+        "toggleAriaLabel": "フォルダ{{name}}を監視",
+        "removeAriaLabel": "フォルダ{{name}}の監視を停止"
+      }
+    },
+    "currentAudio": {
+      "streamingHint": "テキストが発話に合わせて順次表示されるのは、押したショートカット（文字起こしまたはプッシュ・トゥ・トーク）が「ライブ」に設定され、ローカルモデルを使用している場合のみです。",
+      "finalHint": "録音後モード、または API 文字起こし／OpenRouter 文字起こしでは、録音終了時に文字起こし全文が一度に表示されます。各ショートカットのモードは次の場所で設定できます：",
+      "advancedTranscription": "詳細設定 → 文字起こし",
+      "finalHintSuffix": "。",
+      "title": "現在の音声",
+      "idle": "録音を開始するとライブ文字起こしが表示されます",
+      "recording": "聞き取り中...",
+      "openFloating": "フローティングウィンドウを開く",
+      "copy": "コピー",
+      "copied": "コピーしました"
+    },
+    "backup": {
+      "description": "Handy Toolのデータを圧縮アーカイブとして書き出します。ダウンロード済みモデルおよび大きな非圧縮音声（WAV/FLAC）は常に除外されます。",
+      "configTitle": "設定＋履歴",
+      "configHint": "設定と文字起こし履歴データベース(タイムスタンプ、テキスト、コスト、時間)をエクスポートし、音声は含めないためファイルは小さいままです。大きな設定変更の前や、ショートカット・プロバイダー・プロンプトを別のマシンに持って行く前に使用してください。アーカイブは暗号化されておらず、プロバイダーの API キーと MCP サーバートークンがプレーンテキストで含まれます — このファイルは機密情報として扱ってください。",
+      "exportConfig": "設定＋履歴を書き出す",
+      "fullTitle": "フルデータ（圧縮音声付き）",
+      "fullHint": "設定エクスポートのすべてに加えて、圧縮された録音(.opus/.ogg)を含みます — ずっと大きなファイルで、依然として API キーがプレーンテキストで含まれます。ダウンロードしたモデル、非圧縮の WAV/FLAC 音声、進行中のチャンクファイルは常に除外されるため、Crash-Safe Recording をオフにして録音した取得はアーカイブ内では音声なしの履歴行として現れます。",
+      "exportFull": "フルバックアップを書き出す",
+      "saved": "{{path}}に保存しました",
+      "restoreTitle": "バックアップから復元",
+      "restoreHint": "Handy Tool のバックアップアーカイブ(.tar.gz)を選び、復元する内容にチェックを入れます。「設定と履歴」(設定、履歴DB)と「録音」(音声ファイル)は独立しているため、片方だけ復元することもでき、両方が最初からチェックされています。Handy Tool が認識したエントリのみが展開され、復元されたものは現在の内容を置き換えます。設定または履歴の復元には再起動が必要です。表示される「Handy Toolを今すぐ再起動」ボタンを使うか、実行中のアプリが次の保存でそれらを上書きします。",
+      "restoreConfig": "設定＆履歴（設定、履歴DB）",
+      "restoreRecordings": "録音（音声ファイル）",
+      "restoreButton": "バックアップから復元...",
+      "restoreDone": "復元しました — 設定: {{settings}} · 履歴: {{history}} · 録音: {{recordings}}",
+      "restartHint": "復元した設定/履歴を読み込むにはHandy Toolを再起動してください（それまでは実行中のアプリが上書きする可能性があります）。",
+      "restartNow": "今すぐHandy Toolを再起動"
+    },
+    "modelPicker": {
+      "refresh": "モデルリストを取得／更新",
+      "loading": "モデルを読み込み中...",
+      "error": "モデルの読み込みに失敗しました",
+      "noMatches": "一致するモデルがありません — カスタムIDを入力してください"
     }
   },
   "common": {
@@ -553,7 +1127,13 @@
     "off": "オフ",
     "yes": "はい",
     "no": "いいえ",
-    "noOptionsFound": "オプションが見つかりません"
+    "noOptionsFound": "オプションが見つかりません",
+    "delay": {
+      "off": "オフ（即時）",
+      "ms": "{{ms}} ミリ秒",
+      "seconds": "{{seconds}} 秒"
+    },
+    "selectOption": "オプションを選択..."
   },
   "accessibility": {
     "permissionsRequired": "アクセシビリティ権限が必要です",
@@ -566,10 +1146,175 @@
   },
   "appLanguage": {
     "title": "アプリケーション言語",
-    "description": "Handyインターフェースの言語を変更"
+    "description": "トレイメニューを含むインターフェース全体を、出荷済みの17言語のいずれかに切り替えます。デフォルト: お使いの Windows の表示言語、対応していない場合は英語にフォールバックします。これはインターフェース言語のみであり、話す言語には関係ありません。話す言語は General ページの「言語」で設定します。"
   },
   "overlay": {
     "transcribing": "文字起こし中...",
-    "processing": "処理中..."
+    "processing": "処理中...",
+    "openFloatingWindow": "文字起こしウィンドウを開く"
+  },
+  "brand": {
+    "name": "Handy",
+    "suffix": "TOOL"
+  },
+  "toasts": {
+    "pasteFailed": "文字起こしの貼り付けに失敗しました: {{reason}}。テキストは履歴に保存されています。",
+    "pasteFailedParked": "文字起こしの貼り付けに失敗しました: {{reason}}。テキストはクリップボードに（履歴にも）あります — 手動で貼り付けてください。",
+    "transcriptionFailed": "文字起こしに失敗しました: {{reason}}。選択したモデルが正常に動作しているか確認して、もう一度お試しください。"
+  },
+  "flm": {
+    "notInstalled": "FLMがインストールされていません。NPUアクセラレーションモデルを使用するにはFastFlowLMをインストールしてください。",
+    "npuAccelerated": "NPUアクセラレーション"
+  },
+  "tokenCount": {
+    "configureProviders": "プロバイダーを設定",
+    "noProviders": "プロバイダーが設定されていません。",
+    "title": "トークン数",
+    "placeholder": "トークンをカウントするテキストをここに貼り付けてください...",
+    "tokenizer": "トークナイザー",
+    "count": "カウント",
+    "countAll": "すべてでカウント",
+    "countAllTitle": "有効なすべてのプロバイダーで1つずつカウントします — 各モデルを読み込み/アンロードする必要がある1つのローカルサービスをスロットが共有する場合に適しています",
+    "countAllParallel": "すべてでカウント（並列）",
+    "countAllParallelTitle": "有効なすべてのプロバイダーに同時にクエリします — サービスが独立している場合に最速です",
+    "counting": "カウント中... {{done}}/{{total}}",
+    "cancelSweep": "キャンセル",
+    "openFile": "ファイルを開く...",
+    "fileTooLarge": "ファイルが大きすぎます（最大10MB）。",
+    "loadedFile": "読み込み済み: {{name}}",
+    "providerOption": "{{name}}（プロバイダー）",
+    "chipDisabled": "設定されていません — 高度 > プロバイダー > 登録済み LLM プロバイダー の「このプロバイダーを有効にする」で有効にしてください。",
+    "chips": {
+      "cl100k_base": "cl100k（GPT-4）",
+      "o200k_base": "o200k（GPT-4o）",
+      "estimate": "推定"
+    },
+    "activeProvider": "カウント中: {{name}} — {{model}} ({{url}})",
+    "activeLocal": "ローカルでカウント中: {{tokenizer}}",
+    "sweepSummary": "{{total}}件中{{ok}}件のプロバイダーが応答しました",
+    "showFailed": "失敗した{{count}}件を表示",
+    "hideFailed": "失敗を隠す",
+    "table": {
+      "provider": "プロバイダー",
+      "model": "モデル",
+      "tokens": "トークン数",
+      "delta": "Δ 最小との差",
+      "time": "時間"
+    },
+    "tokens": "トークン",
+    "characters": "文字",
+    "words": "語",
+    "options": {
+      "cl100k_base": "ボックス内のテキストを GPT-4 と GPT-3.5 の正確なトークナイザー(cl100k_base)でカウントします。すべてこの端末上で行われ、アップロードは一切なくオフラインで動作します。GPT-4 までの OpenAI モデルにはこれを使用し、より新しいモデルには o200k(GPT-4o)を使用してください。",
+      "o200k_base": "ボックス内のテキストを GPT-4o と o1 の正確なトークナイザー(o200k_base)でカウントします。すべてこの端末上で行われ、アップロードは一切なくオフラインで動作します。現行の OpenAI モデルにはこれを使用してください。古い GPT-4 や GPT-3.5 モデルは cl100k(GPT-4)でトークン化します。",
+      "estimate": "トークナイザーもネットワーク呼び出しもなしに、単語あたり約1.3トークンというおおよそのローカル推定です。ここに正確なカウンターがないモデルを気にする場合に使用し、目安程度に扱ってください。比較を偏らせないよう、意図的に「最小値との差分」列からは除外されています。"
+    }
+  },
+  "keyboardTyper": {
+    "title": "キーボードタイパー",
+    "description": "このテキストを個々のシミュレートされたキーストロークとしてフォーカス中のウィンドウに送信するため、貼り付けがブロックされる場所(リモートコンソール、VM ビューア、パスワードプロンプト)でも動作します。「Go」を押すと開始遅延カウントダウン(デフォルト10秒)が始まり、その間に対象ウィンドウをクリックできます。すでに対象にいる場合は「テキスト入力ショートカット」を押すと約1秒後に入力が始まります。このテキストはメモリ上にのみ存在し、設定・履歴・ログには一切書き込まれません。",
+    "placeholder": "入力するテキストを入力してください...",
+    "go": "開始",
+    "cancel": "キャンセル",
+    "startDelay": {
+      "label": "開始までの遅延",
+      "unit": "秒",
+      "preset": "{{seconds}}秒",
+      "presetTitle": "{{seconds}}秒後に入力を開始"
+    },
+    "keyDelay": {
+      "label": "キー間隔",
+      "unit": "ミリ秒"
+    },
+    "shortcut": {
+      "label": "ショートカット:",
+      "unset": "未設定",
+      "hint": "（詳細設定で変更できます。再度押すとキャンセルします）"
+    },
+    "status": {
+      "idle": "「開始」をクリックしてから対象のウィンドウにフォーカスしてください — または対象アプリで直接ショートカットを使用してください。",
+      "countdown": "{{seconds}}秒後に入力を開始します...（Escでキャンセル）",
+      "typing": "入力中... {{typed}}/{{total}}文字（Escでキャンセル）",
+      "done": "完了 — {{total}}文字を入力しました。",
+      "cancelled": "キャンセルしました。",
+      "error": "エラー: {{message}}"
+    }
+  },
+  "modelTesting": {
+    "configureProviders": "プロバイダーを設定",
+    "description": "「実行」でチェックしたすべてのモデルに1つのプロンプトを送り、トークン数・コスト・応答時間とともに回答を並べて表示します。「判定」でチェックしたモデルは、あなたの判定プロンプトを使ってこれらすべての回答を採点します。デフォルト: 何も選択されておらず、両方のプロンプトが空です。リストは Advanced > 登録済み LLM プロバイダー から来るため、実行はあなた自身の API キーを使用します — あなたのプロンプトはこの端末から離れ、有料プロバイダーの場合は実際にお金がかかります。",
+    "providersLabel": "モデル",
+    "selectAll": "実行対象をすべて選択",
+    "clear": "クリア",
+    "run": "実行",
+    "judge": "ジャッジ",
+    "costPerM": "入力 ${{input}} · 出力 ${{output}} /100万",
+    "noProviders": "チャット対応のプロバイダーが設定されていません。詳細設定→登録済みLLMプロバイダーで追加してください。",
+    "mainPromptLabel": "すべてのモデル用のプロンプト",
+    "mainPromptPlaceholder": "選択したすべてのモデルに送信されるプロンプト...",
+    "judgePromptLabel": "ジャッジ／裁定プロンプト（省略可能）",
+    "judgePromptPlaceholder": "ジャッジパネルへの指示です。元の入力と各モデルの回答（XMLタグ付き）を受け取ります。",
+    "temperatureLabel": "温度",
+    "modelParams": "モデル",
+    "judgeParams": "ジャッジ",
+    "runButton": "テストを実行",
+    "cancelButton": "キャンセル",
+    "runningMain": "モデルに問い合わせ中...",
+    "runningJudge": "ジャッジパネルを実行中...",
+    "summaryTitle": "サマリー",
+    "judgePanelTitle": "ジャッジパネル",
+    "answersTitle": "回答",
+    "colModel": "モデル",
+    "colInput": "入力トークン",
+    "colOutput": "出力トークン",
+    "colCost": "コスト",
+    "colTime": "時間",
+    "roundTrip": "往復時間（最長）",
+    "totalCost": "合計コスト",
+    "errorPrefix": "エラー",
+    "artifactLabel": "Markdownアーティファクト",
+    "copyMarkdown": "Markdownをコピー",
+    "copied": "コピーしました！",
+    "saveMarkdown": "保存...",
+    "status": {
+      "mainStart": "{{count}}件のモデルに問い合わせ中...",
+      "judgeStart": "ジャッジパネルを実行中（{{count}}件のジャッジ）...",
+      "done": "完了しました。",
+      "cancelled": "キャンセルしました。",
+      "activity": "実行アクティビティ"
+    },
+    "library": {
+      "preset": "プリセット",
+      "presetPlaceholder": "プリセットを読み込む...",
+      "pick": "保存済みプロンプト...",
+      "save": "保存",
+      "delete": "選択項目を削除",
+      "namePlaceholder": "名前...",
+      "confirm": "保存",
+      "cancel": "キャンセル",
+      "editCustom": "編集／カスタム"
+    },
+    "thinking": {
+      "label": "思考",
+      "auto": "自動",
+      "on": "オン",
+      "off": "オフ"
+    },
+    "image": {
+      "label": "画像（省略可能、ビジョンモデル用）",
+      "drop": "クリックまたは画像をここにドラッグして添付",
+      "remove": "削除",
+      "tooLarge": "画像が大きすぎます（最大{{mb}}MB）。"
+    },
+    "save": "保存",
+    "saveAs": "名前を付けて保存...",
+    "saveTo": "{{path}}に保存",
+    "saveDisabled": "先に「名前を付けて保存...」で保存先を選んでください"
+  },
+  "floating": {
+    "waiting": "文字起こしを待っています...",
+    "listening": "聞き取り中...",
+    "copy": "コピー",
+    "copied": "コピーしました"
   }
 }

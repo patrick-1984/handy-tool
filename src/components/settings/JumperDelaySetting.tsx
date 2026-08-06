@@ -4,6 +4,7 @@ import { Dropdown } from "../ui/Dropdown";
 import { SettingContainer } from "../ui/SettingContainer";
 import { useSettings } from "../../hooks/useSettings";
 import { useOsType } from "../../hooks/useOsType";
+import { buildDelayOptions } from "../../lib/utils/delayOptions";
 import type { JumperPasteDelay, JumperSubmitDelay } from "@/bindings";
 
 interface JumperDelaySettingProps {
@@ -25,7 +26,7 @@ interface JumperDelaySettingProps {
  */
 export const JumperDelaySetting: React.FC<JumperDelaySettingProps> = React.memo(
   ({ kind, descriptionMode = "tooltip", grouped = true }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const osType = useOsType();
     const { getSetting, updateSetting, isUpdating } = useSettings();
 
@@ -49,17 +50,9 @@ export const JumperDelaySetting: React.FC<JumperDelaySettingProps> = React.memo(
       | JumperPasteDelay
       | JumperSubmitDelay;
 
-    const options = [
-      {
-        value: "none",
-        label: t("settings.general.transcribeAndSubmit.jumperDelay.off"),
-      },
-      { value: "ms100", label: "100 ms" },
-      { value: "ms250", label: "250 ms" },
-      { value: "ms500", label: "500 ms" },
-      { value: "ms1000", label: "1000 ms" },
-      { value: "ms2000", label: "2000 ms" },
-    ];
+    // Built per dropdown so each keeps its own off-scale value visible.
+    const localOptions = buildDelayOptions(t, i18n.language, localValue);
+    const remoteOptions = buildDelayOptions(t, i18n.language, remoteValue);
 
     const titleKey =
       kind === "paste"
@@ -83,7 +76,7 @@ export const JumperDelaySetting: React.FC<JumperDelaySettingProps> = React.memo(
               {t("settings.general.transcribeAndSubmit.jumperDelay.local")}
             </span>
             <Dropdown
-              options={options}
+              options={localOptions}
               selectedValue={localValue}
               onSelect={(value) =>
                 updateSetting(
@@ -99,7 +92,7 @@ export const JumperDelaySetting: React.FC<JumperDelaySettingProps> = React.memo(
               {t("settings.general.transcribeAndSubmit.jumperDelay.remote")}
             </span>
             <Dropdown
-              options={options}
+              options={remoteOptions}
               selectedValue={remoteValue}
               onSelect={(value) =>
                 updateSetting(

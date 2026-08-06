@@ -8,6 +8,7 @@ import {
   type LlmProvider,
 } from "@/bindings";
 import { useSettings } from "../../../hooks/useSettings";
+import { useNavStore } from "@/stores/navStore";
 
 const PROVIDER_PREFIX = "provider:";
 
@@ -17,10 +18,13 @@ const actionButtonClass =
   "px-4 py-1.5 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors";
 const secondaryButtonClass =
   "px-3 py-1.5 rounded-md border border-zinc-700 bg-zinc-800 text-zinc-100 text-sm hover:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer";
+const providerLinkClass =
+  "text-xs text-logo-primary/85 hover:text-logo-primary hover:underline transition-colors cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-logo-primary";
 
 export const TokenCountPage: React.FC = () => {
   const { t } = useTranslation();
   const { getSetting } = useSettings();
+  const navigateTo = useNavStore((state) => state.navigateTo);
   const [text, setText] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
   const [activeOption, setActiveOption] = useState("cl100k_base");
@@ -225,7 +229,27 @@ export const TokenCountPage: React.FC = () => {
             </button>
           );
         })}
+        <button
+          type="button"
+          className={providerLinkClass}
+          onClick={() => navigateTo("advanced", "providers")}
+        >
+          {t("tokenCount.configureProviders")}
+        </button>
       </div>
+
+      {providers.length === 0 && (
+        <div className="flex items-center gap-2 text-sm text-text/50">
+          <span>{t("tokenCount.noProviders")}</span>
+          <button
+            type="button"
+            className={providerLinkClass}
+            onClick={() => navigateTo("advanced", "providers")}
+          >
+            {t("tokenCount.configureProviders")}
+          </button>
+        </div>
+      )}
 
       {/* Layer 2: bulk actions */}
       <div className="flex items-center gap-3 flex-wrap">

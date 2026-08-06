@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Dropdown } from "../ui/Dropdown";
 import { SettingContainer } from "../ui/SettingContainer";
 import { useSettings } from "../../hooks/useSettings";
+import { buildDelayOptions } from "../../lib/utils/delayOptions";
 import type { ClipboardRestoreDelay } from "@/bindings";
 
 interface ClipboardRestoreDelayProps {
@@ -20,17 +21,14 @@ interface ClipboardRestoreDelayProps {
  */
 export const ClipboardRestoreDelaySetting: React.FC<ClipboardRestoreDelayProps> =
   React.memo(({ settingKey, descriptionMode = "tooltip", grouped = false }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { getSetting, updateSetting, isUpdating } = useSettings();
 
     const selected = (getSetting(settingKey) ||
       "none") as ClipboardRestoreDelay;
-    const options = (
-      ["none", "ms250", "ms500", "ms1000", "ms2500", "ms5000"] as const
-    ).map((value) => ({
-      value,
-      label: t(`settings.advanced.clipboardRestoreDelay.options.${value}`),
-    }));
+    // `selected` is passed through so a legacy ms2500/ms5000 store still shows
+    // its real value instead of collapsing to the "Select an option…" placeholder.
+    const options = buildDelayOptions(t, i18n.language, selected);
 
     return (
       <SettingContainer

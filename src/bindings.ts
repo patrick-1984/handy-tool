@@ -69,6 +69,38 @@ async changeAutostartSetting(enabled: boolean) : Promise<Result<null, string>> {
     else return { status: "error", error: e  as any };
 }
 },
+async changeAutomaticUpdateChecksSetting(enabled: boolean) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_automatic_update_checks_setting", { enabled }) };
+} catch (e: unknown) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: String(e) };
+}
+},
+async changeAutomaticSilentUpdatesSetting(enabled: boolean) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_automatic_silent_updates_setting", { enabled }) };
+} catch (e: unknown) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: String(e) };
+}
+},
+async changeSilentUpdateTimeLocalSetting(value: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_silent_update_time_local_setting", { value }) };
+} catch (e: unknown) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: String(e) };
+}
+},
+async changeSilentUpdateJitterMinutesSetting(minutes: number) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_silent_update_jitter_minutes_setting", { minutes }) };
+} catch (e: unknown) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: String(e) };
+}
+},
 async changeTranslateToEnglishSetting(enabled: boolean) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("change_translate_to_english_setting", { enabled }) };
@@ -453,14 +485,6 @@ async setModelUnloadCustomSeconds(seconds: number) : Promise<void> {
 async changePostProcessEnabledSetting(enabled: boolean) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("change_post_process_enabled_setting", { enabled }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
-async changeExperimentalEnabledSetting(enabled: boolean) : Promise<Result<null, string>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("change_experimental_enabled_setting", { enabled }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -1358,6 +1382,25 @@ async restoreBackup(archivePath: string, includeConfig: boolean, includeRecordin
 async restartApp() : Promise<void> {
     await TAURI_INVOKE("restart_app");
 },
+async getUpdaterStatus() : Promise<UpdaterStatus> {
+    return await TAURI_INVOKE("get_updater_status");
+},
+async checkForUpdates() : Promise<Result<UpdaterStatus, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("check_for_updates") };
+} catch (e: unknown) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: String(e) };
+}
+},
+async installAvailableUpdate() : Promise<Result<UpdaterStatus, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("install_available_update") };
+} catch (e: unknown) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: String(e) };
+}
+},
 /**
  * Stub implementation for non-macOS platforms
  * Always returns false since laptop detection is macOS-specific
@@ -1382,7 +1425,7 @@ async isLaptop() : Promise<Result<boolean, string>> {
 
 /** user-defined types **/
 
-export type AppSettings = { bindings: Partial<{ [key in string]: ShortcutBinding }>; push_to_talk: boolean; audio_feedback: boolean; audio_feedback_volume?: number; sound_theme?: SoundTheme; start_hidden?: boolean; autostart_enabled?: boolean; typing_start_delay_secs?: number; typing_key_delay_ms?: number; selected_model?: string;
+export type AppSettings = { bindings: Partial<{ [key in string]: ShortcutBinding }>; push_to_talk: boolean; audio_feedback: boolean; audio_feedback_volume?: number; sound_theme?: SoundTheme; start_hidden?: boolean; autostart_enabled?: boolean; automatic_update_checks?: boolean; automatic_silent_updates?: boolean; silent_update_time_local?: string; silent_update_jitter_minutes?: number; typing_start_delay_secs?: number; typing_key_delay_ms?: number; selected_model?: string;
 /**
  * Vulkan GPU device selection for local Whisper transcription (T-212).
  * Sentinel-encoded rather than a parallel accelerator enum: `-1`
@@ -1416,7 +1459,7 @@ post_process_provider_ref?: string;
 /**
  * Sampling temperature for post-processing (0.0 = most deterministic).
  */
-post_process_temperature?: number; post_process_prompts?: LLMPrompt[]; post_process_selected_prompt_id?: string | null; mute_while_recording?: boolean; append_trailing_space?: boolean; crash_resilient_recording?: boolean; app_language?: string; experimental_enabled?: boolean; keyboard_implementation?: KeyboardImplementation; show_tray_icon?: boolean; paste_delay_ms?: number; typing_tool?: TypingTool; external_script_path: string | null; transcription_mode?: TranscriptionMode; transcription_mode_ptt?: TranscriptionMode; api_transcription_url?: string; api_transcription_key?: string; api_transcription_model?: string; post_process_disable_thinking?: boolean; 
+post_process_temperature?: number; post_process_prompts?: LLMPrompt[]; post_process_selected_prompt_id?: string | null; mute_while_recording?: boolean; append_trailing_space?: boolean; crash_resilient_recording?: boolean; app_language?: string; keyboard_implementation?: KeyboardImplementation; show_tray_icon?: boolean; paste_delay_ms?: number; typing_tool?: TypingTool; external_script_path: string | null; transcription_mode?: TranscriptionMode; transcription_mode_ptt?: TranscriptionMode; api_transcription_url?: string; api_transcription_key?: string; api_transcription_model?: string; post_process_disable_thinking?: boolean; 
 /**
  * Registry provider id (kind `openrouter`) supplying the base URL + API key
  * for OpenRouter transcription.
@@ -1452,9 +1495,9 @@ export type SubmitIdleBehavior = "start_normal" | "do_nothing" | "start_and_subm
  * cancel command, `handy --cancel`) do to the take in progress.
  */
 export type CancelBehavior = "discard_recording" | "finish_silently"
-export type ClipboardRestoreDelay = "none" | "ms250" | "ms500" | "ms1000" | "ms2500" | "ms5000"
-export type JumperSubmitDelay = "none" | "ms100" | "ms250" | "ms500" | "ms1000" | "ms2000"
-export type JumperPasteDelay = "none" | "ms100" | "ms250" | "ms500" | "ms1000" | "ms2000"
+export type ClipboardRestoreDelay = "none" | "ms100" | "ms200" | "ms250" | "ms300" | "ms400" | "ms500" | "ms600" | "ms700" | "ms800" | "ms900" | "ms1000" | "ms1500" | "ms2000" | "ms2500" | "ms5000"
+export type JumperSubmitDelay = "none" | "ms100" | "ms200" | "ms250" | "ms300" | "ms400" | "ms500" | "ms600" | "ms700" | "ms800" | "ms900" | "ms1000" | "ms1500" | "ms2000"
+export type JumperPasteDelay = "none" | "ms100" | "ms200" | "ms250" | "ms300" | "ms400" | "ms500" | "ms600" | "ms700" | "ms800" | "ms900" | "ms1000" | "ms1500" | "ms2000"
 export type RegistrationFailure = { id: string; binding: string; error: string }
 export type AnchorStatus = { app: string; control_class: string; stale: boolean; remote: boolean }
 export type SavedJumpSlot = { app: string; window_class: string; control_class: string; cursor?: SavedCursor | null }
@@ -1464,6 +1507,7 @@ export type AnchorAction = "none" | "jump" | "set" | "clear"
 export type TranslatorPriority = "live_first" | "folder_first" | "fifo"
 export type TranslatorFolder = { path: string; enabled: boolean }
 export type TranslatorStatus = { enabled: boolean; queue: string[]; queue_len: number; current_file: string | null; current_segment: number; current_total_segments: number; paused_reason: string | null; done_count: number; failed_count: number }
+export type UpdaterStatus = { state: string; version: string | null; notes: string | null; downloaded_bytes: number | null; total_bytes: number | null; progress_percent: number | null; waiting_for_idle: boolean; error_code: string | null; error_detail: string | null; last_checked_at: string | null; releases_url: string }
 export type BindingResponse = { success: boolean; binding: ShortcutBinding | null; error: string | null }
 /**
  * One provider's result for a single prompt.

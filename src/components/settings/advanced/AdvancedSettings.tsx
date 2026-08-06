@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ShowOverlay } from "../ShowOverlay";
 import { AppearanceSetting } from "../AppearanceSetting";
@@ -11,7 +11,6 @@ import { CrashResilientRecording } from "../CrashResilientRecording";
 import { OpenRecordingsFolder } from "../OpenRecordingsFolder";
 import { HistoryLimit } from "../HistoryLimit";
 import { RecordingRetentionPeriodSelector } from "../RecordingRetentionPeriod";
-import { ExperimentalToggle } from "../ExperimentalToggle";
 import { ApiTranscriptionSettings } from "../ApiTranscriptionSettings";
 import { OpenRouterTranscriptionSettings } from "../OpenRouterTranscriptionSettings";
 import { TranscriptionModelOptions } from "../TranscriptionModelOptions";
@@ -30,6 +29,7 @@ import { ClipboardHandlingSetting } from "../ClipboardHandling";
 import { AutoSubmit } from "../AutoSubmit";
 import { ClipboardRestoreDelaySetting } from "../ClipboardRestoreDelay";
 import { AnchorActionSetting } from "../AnchorActionSetting";
+import { useNavStore } from "@/stores/navStore";
 
 const TABS = [
   "app",
@@ -37,13 +37,26 @@ const TABS = [
   "providers",
   "mcp",
   "history",
-  "experimental",
+  "postProcessing",
 ] as const;
-type TabId = (typeof TABS)[number];
+export type TabId = (typeof TABS)[number];
 
 export const AdvancedSettings: React.FC = () => {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<TabId>("app");
+  const pendingAdvancedTab = useNavStore((state) => state.pendingAdvancedTab);
+  const consumePendingAdvancedTab = useNavStore(
+    (state) => state.consumePendingAdvancedTab,
+  );
+  const [activeTab, setActiveTab] = useState<TabId>(
+    () => pendingAdvancedTab ?? "app",
+  );
+
+  useEffect(() => {
+    const pendingTab = consumePendingAdvancedTab();
+    if (pendingTab !== null) {
+      setActiveTab(pendingTab);
+    }
+  }, [pendingAdvancedTab, consumePendingAdvancedTab]);
 
   const renderTab = () => {
     switch (activeTab) {
@@ -55,7 +68,10 @@ export const AdvancedSettings: React.FC = () => {
             <AutostartToggle descriptionMode="tooltip" grouped={true} />
             <ShowTrayIcon descriptionMode="tooltip" grouped={true} />
             <ShowOverlay descriptionMode="tooltip" grouped={true} />
-            <ExperimentalToggle descriptionMode="tooltip" grouped={true} />
+            <KeyboardImplementationSelector
+              descriptionMode="tooltip"
+              grouped={true}
+            />
           </SettingsGroup>
         );
       case "transcription":
@@ -141,14 +157,10 @@ export const AdvancedSettings: React.FC = () => {
             />
           </SettingsGroup>
         );
-      case "experimental":
+      case "postProcessing":
         return (
-          <SettingsGroup title={t("settings.advanced.groups.experimental")}>
+          <SettingsGroup title={t("settings.advanced.groups.postProcessing")}>
             <PostProcessingToggle descriptionMode="tooltip" grouped={true} />
-            <KeyboardImplementationSelector
-              descriptionMode="tooltip"
-              grouped={true}
-            />
           </SettingsGroup>
         );
     }

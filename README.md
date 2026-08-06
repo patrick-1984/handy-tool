@@ -1,48 +1,57 @@
 # Handy Tool
 
-**Press a key. Speak. Your words land exactly where you need them — typed, pasted, or submitted.**
+Handy Tool 1.0.0 is a local-first dictation tool for Windows: press a key, speak, and the words land in the field you were working in, in the form that field expects.
 
-Handy Tool is a cross-platform desktop speech-to-text app (Windows, macOS, Linux) built with Tauri 2 — a Rust core with a React interface. It runs your transcription **locally by default**: your voice never has to leave your machine, and the app works offline. When you want cloud quality instead, point it at any OpenAI-compatible endpoint or OpenRouter with two settings.
-
-It began as a fork of [Handy](https://github.com/cjpais/Handy) **v0.8.1** (March 2026), created by **[CJ Pais](https://github.com/cjpais)** — the foundation this project stands on — and has since been developed independently by Patrick R, growing a substantially reworked recording pipeline, new productivity tools, and a hardened shortcut system.
-
-> **Platform note:** development and testing happen on **Windows**. macOS and Linux code paths are inherited from upstream and kept compiling, but are currently untested — treat those builds as experimental.
-
-## Why it exists
-
-Dictation tools usually fail in one of three ways: they send your audio to someone else's server, they lose your words when something crashes, or they dump text wherever the cursor happens to be and leave the cleanup to you. Handy Tool is built around fixing all three — local processing, crash-resilient recording, and precise delivery of the result (paste method, auto-submit, clipboard preservation, remote-session support).
-
-## Documentation
-
-| Document                             | What it covers                                                                                                 |
-| ------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
-| [Features](docs/features.md)         | Every feature, framed as the problem it solves — recording, transcription modes, engines, delivery, resilience |
-| [Tools](docs/tools.md)               | The built-in toolbox: Model Testing & Judge, Keyboard Typer, Token Counter, MCP/CLI server                     |
-| [Improvements](docs/improvements.md) | The engineering journey — what was rebuilt, why, and what it bought                                            |
-| [Building](BUILD.md)                 | Build instructions for all platforms                                                                           |
+It exists because of an escalation. “I type too slowly. My brain is faster than my hands.” You start dictating, and then the promotion arrives: “Wait — I can run more than one session.” Soon it is, “Actually, five sessions and two remote hosts.” Then the cost catches up with the throughput: “…and now I’m losing it.” The terminal you need is buried, your left hand keeps traveling to Enter, one thought lands in the wrong session, and a stray key threatens a long take. Handy Tool is the set of pieces that keeps that escalation from collapsing: capture the thought, preserve it, and deliver it to the work that needs it.
 
 ## At a glance
 
-- **One-keystroke dictation** anywhere in the OS, with configurable global shortcuts (toggle, push-to-talk, and finish-and-submit variants)
-- **Local engines**: Whisper (GPU-accelerated via Vulkan/Metal), NVIDIA Parakeet, Moonshine, SenseVoice — plus NPU-accelerated FLM, any OpenAI-compatible API, and OpenRouter
-- **Near-real-time transcription**: live mode transcribes while you speak
-- **Crash-resilient recording**: audio is written to compact Opus chunks as you talk; a crash mid-dictation loses nothing
-- **Precise delivery**: per-shortcut paste method (Ctrl+V / Shift+Insert / direct typing), optional auto-submit key, clipboard preservation with remote-session-aware restore delay
-- **The Jumper**: anchor text fields anywhere on the desktop and deliver dictation into them — five slots, per-flow actions, verified focus before any keystroke
-- **The Translator**: watch folders and batch-transcribe new recordings into `.txt` sidecars, sharing the engine with live dictation under a configurable priority policy
-- **A toolbox for LLM work**: side-by-side model testing with a judge panel, token counting across providers, a secure keyboard typer, and an MCP server so agents can drive the app
-- **17 interface languages**
+- [Press one key, speak, and the text appears where you were typing](docs/features.md#press-one-key-and-speak)
+- [Dictate and send in one keystroke](docs/features.md#dictate-and-send-in-one-keystroke)
+- [Send it where you were](docs/features.md#send-it-where-you-were)
+- [Your remote session pastes the right thing](docs/features.md#your-remote-session-pastes-the-right-thing)
+- [A crash mid-dictation costs you nothing](docs/features.md#a-crash-mid-dictation-costs-you-nothing)
+- [Pick the engine that fits the machine](docs/features.md#pick-the-engine-that-fits-the-machine)
+- [When paste is blocked, type it instead](docs/features.md#when-paste-is-blocked-type-it-instead)
+- [Which model is actually better at my task?](docs/features.md#which-model-is-actually-better-at-my-task)
+- [A folder of recordings, transcribed while you sleep](docs/features.md#a-folder-of-recordings-transcribed-while-you-sleep)
+- [Let an agent drive the app](docs/features.md#let-an-agent-drive-the-app)
 
-## Installing
+## Built for your left hand
 
-Grab the latest Windows installer from [Releases](https://github.com/patrick-1984/handy-tool/releases). To build from source, see [BUILD.md](BUILD.md).
+Moving between large screens and apps buried under other windows costs time. While your right hand stays on the mouse, your left hand travels to Enter, you look down, and the flow breaks again when you come back for another chord. Put one key per intent on a small programmable pad under your resting left hand: speak, submit, cancel, recover, or jump without hunting across the keyboard. “It’s almost a meme at this point — the dedicated Claude keyboard. Joke and not a joke.” The serious point is that fixed keys turn repeated multi-key sequences into movements you can make without looking. For simple tasks, plain keyboard shortcuts are completely fine. [Build the deck when the ordinary shortcuts start getting in your way](docs/start/08-the-deck.md).
 
-## Privacy posture
+## Install
 
-Local models process audio entirely on your machine. History, settings, and recordings live in your user profile and never sync anywhere. The optional MCP/CLI server binds to `127.0.0.1` only and requires a bearer token. API keys you configure are write-only through the MCP surface — they can be set, never read back.
+Handy Tool 1.0.0 is the first public release. It is distributed as a Windows x64 NSIS installer.
 
-## License and acknowledgments
+1. Download the Windows x64 `.exe` from the [latest release](https://github.com/patrick-1984/handy-tool/releases/latest).
+2. Run the installer. It is currently unsigned, so Windows SmartScreen may show a warning. If you downloaded it from the repository above, select **More info**, verify the file you chose, then select **Run anyway**.
+3. Complete the first-run onboarding and grant microphone access.
+4. Choose and download a transcription model. A fresh installation has no model selected, and the download starts only after you choose one. Model downloads range from hundreds of megabytes to multiple gigabytes.
 
-MIT — see [LICENSE](LICENSE). Vendored third-party code keeps its own licenses in place: whisper.cpp is MIT, whisper-rs is Unlicense/MIT, transcribe-rs is MIT, some ggml GPU-backend sources carry Apache-2.0 WITH LLVM-exception headers, and the bundled Rajdhani font is SIL OFL 1.1 (`src/assets/fonts/`).
+## Defaults at a glance
 
-Handy Tool is a fork of [Handy](https://github.com/cjpais/Handy) by [CJ Pais](https://github.com/cjpais) ([handy.computer](https://handy.computer)). Huge thanks to CJ and the Handy contributors for the foundation this project stands on. Speech recognition is powered by [whisper.cpp](https://github.com/ggerganov/whisper.cpp) (Georgi Gerganov and contributors) via a vendored [whisper-rs](https://codeberg.org/tazz4843/whisper-rs), plus [transcribe-rs](https://github.com/cjpais/transcribe-rs) for the Parakeet/Moonshine/SenseVoice engines.
+[Defaults — what you get out of the box](docs/features.md#defaults) is the single day-one reference for the shipped shortcuts, clipboard handling, paste and submit keys, delivery delays, Escape behavior, recording retention, local storage, and network behavior. Read it before your first take if you want every keypress to be predictable.
+
+## Platform status
+
+| Platform    | 1.0.0 status                                             |
+| ----------- | -------------------------------------------------------- |
+| Windows x64 | Built, tested, and released                              |
+| macOS       | Planned — in the queue; no build is produced or released |
+| Linux       | Planned — in the queue; no build is produced or released |
+
+The Jumper family is Windows-only by construction. For the complete boundary, see [What runs today, and what is planned](docs/features.md#what-runs-today-and-what-is-planned).
+
+## Documentation
+
+- [Documentation hub](docs/README.md) — choose the learning path, a tool, or a reference page.
+- [01 — Install and say your first words](docs/start/01-install.md) — the first rung of the learning path, which runs from the first model to your own working setup.
+- [Feature catalog](docs/features.md) — look up each capability by the problem it removes.
+- [Changelog](CHANGELOG.md) — the version-by-version record of the work that led to 1.0.0.
+- [Build from source](BUILD.md) — prepare the development toolchain and build the application.
+
+## License and lineage
+
+Handy Tool is released under the [MIT License](LICENSE). It began as a fork of [cjpais/Handy](https://github.com/cjpais/Handy), created by CJ Pais, and is now developed independently. That upstream project and its contributors provided the foundation this repository builds on.

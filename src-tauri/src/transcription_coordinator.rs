@@ -39,6 +39,10 @@ enum Command {
     /// is the only component that can read `Stage` coherently.
     FinishSilently,
     ProcessingFinished,
+    PrepareForUpdate {
+        reply: Sender<bool>,
+    },
+    ReleaseUpdateReservation,
     /// Commit a parked PTT release whose X11 auto-repeat grace window expired
     /// without a matching press (T-209). Stale if `generation` no longer
     /// matches the parked entry.
@@ -63,6 +67,7 @@ enum Stage {
 /// lag the coordinator by an instruction, so engine calls must still
 /// serialize through `actions::CHUNK_TRANSCRIBE_LOCK`.
 static PIPELINE_STAGE: std::sync::atomic::AtomicU8 = std::sync::atomic::AtomicU8::new(0);
+static UPDATE_PENDING: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
 pub const STAGE_IDLE: u8 = 0;
 pub const STAGE_RECORDING: u8 = 1;
@@ -70,6 +75,10 @@ pub const STAGE_PROCESSING: u8 = 2;
 
 pub fn pipeline_stage() -> u8 {
     PIPELINE_STAGE.load(std::sync::atomic::Ordering::SeqCst)
+}
+
+pub fn update_pending() -> bool {
+    UPDATE_PENDING.load(std::sync::atomic::Ordering::SeqCst)
 }
 
 fn publish_stage(stage: &Stage) {
@@ -111,6 +120,7 @@ impl TranscriptionCoordinator {
         thread::spawn(move || {
             let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 let mut stage = Stage::Idle;
+                let mut update_reserved = false;
                 // Per-binding: a rapid press of binding B must not be eaten by
                 // a just-processed press of binding A.
                 let mut last_press: std::collections::HashMap<String, Instant> =
@@ -132,6 +142,12 @@ impl TranscriptionCoordinator {
                             is_pressed,
                             enqueued_at,
                         } => {
+                            if update_reserved && is_pressed && is_transcribe_binding(&binding_id) {
+                                debug!(
+                                    "Ignoring recording request while an update owns the pipeline reservation"
+                                );
+                                continue;
+                            }
                             // T-113 (finding 9): queue delay from send_input()
                             // to this dequeue — the gap upstream of every
                             // other timing point already in this file.
@@ -464,6 +480,17 @@ impl TranscriptionCoordinator {
                             parked_ptt_release.clear();
                             schedule_unmute_cleanup(&app);
                         }
+                        Command::PrepareForUpdate { reply } => {
+                            let idle = matches!(stage, Stage::Idle);
+                            if idle {
+                                update_reserved = true;
+                            }
+                            let _ = reply.send(idle);
+                        }
+                        Command::ReleaseUpdateReservation => {
+                            update_reserved = false;
+                            UPDATE_PENDING.store(false, std::sync::atomic::Ordering::SeqCst);
+                        }
                         #[cfg(target_os = "linux")]
                         Command::CommitPttRelease {
                             binding_id,
@@ -507,6 +534,10 @@ impl TranscriptionCoordinator {
     /// Send a keyboard/signal input event for a transcribe binding.
     /// PTT behavior is derived from the binding_id (transcribe_ptt = PTT mode).
     pub fn send_input(&self, binding_id: &str, hotkey_string: &str, is_pressed: bool) {
+        if is_pressed && is_transcribe_binding(binding_id) && update_pending() {
+            debug!("Rejecting recording request while an update is waiting to install");
+            return;
+        }
         if self
             .tx
             .send(Command::Input {
@@ -519,6 +550,38 @@ impl TranscriptionCoordinator {
         {
             warn!("Transcription coordinator channel closed");
         }
+    }
+
+    /// Atomically closes the gate to new recordings, then asks the coordinator
+    /// thread whether its authoritative stage is idle. Inputs already queued
+    /// ahead of this barrier are observed before the reservation is granted.
+    pub fn try_reserve_for_update(&self) -> bool {
+        UPDATE_PENDING.store(true, std::sync::atomic::Ordering::SeqCst);
+        let (reply_tx, reply_rx) = mpsc::channel();
+        if self
+            .tx
+            .send(Command::PrepareForUpdate { reply: reply_tx })
+            .is_err()
+        {
+            UPDATE_PENDING.store(false, std::sync::atomic::Ordering::SeqCst);
+            return false;
+        }
+        match reply_rx.recv_timeout(Duration::from_secs(2)) {
+            Ok(true) => true,
+            _ => {
+                // The prepare command may still be queued and grant the
+                // reservation after our timeout. Queue a matching release so
+                // a slow coordinator can never remain permanently reserved.
+                let _ = self.tx.send(Command::ReleaseUpdateReservation);
+                UPDATE_PENDING.store(false, std::sync::atomic::Ordering::SeqCst);
+                false
+            }
+        }
+    }
+
+    pub fn release_update_reservation(&self) {
+        let _ = self.tx.send(Command::ReleaseUpdateReservation);
+        UPDATE_PENDING.store(false, std::sync::atomic::Ordering::SeqCst);
     }
 
     pub fn notify_cancel(&self, recording_was_active: bool) {

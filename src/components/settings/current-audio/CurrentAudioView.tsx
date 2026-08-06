@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { listen } from "@tauri-apps/api/event";
 import { SettingsGroup } from "@/components/ui/SettingsGroup";
 import { commands } from "@/bindings";
+import { useNavStore } from "@/stores/navStore";
 import { writeText } from "@tauri-apps/plugin-clipboard-manager";
 import { ExternalLink, Copy, Check } from "lucide-react";
 
@@ -18,6 +19,7 @@ export const CurrentAudioView: React.FC = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [copied, setCopied] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const navigateTo = useNavStore((state) => state.navigateTo);
 
   const handleCopy = useCallback(async () => {
     const text = chunks.join(" ").trim();
@@ -150,6 +152,18 @@ export const CurrentAudioView: React.FC = () => {
               </button>
             )}
           </div>
+          <p className="mt-3 text-xs leading-relaxed text-mid-gray">
+            {t("settings.currentAudio.streamingHint")} {" "}
+            {t("settings.currentAudio.finalHint")} {" "}
+            <button
+              type="button"
+              onClick={() => navigateTo("advanced", "transcription")}
+              className="cursor-pointer rounded-sm underline underline-offset-2 transition-colors hover:text-white focus-visible:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/60"
+            >
+              {t("settings.currentAudio.advancedTranscription")}
+            </button>
+            {t("settings.currentAudio.finalHintSuffix")}
+          </p>
         </div>
       </SettingsGroup>
     </div>

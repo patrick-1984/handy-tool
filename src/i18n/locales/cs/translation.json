@@ -13,7 +13,43 @@
     "postProcessing": "Následné zpracování",
     "history": "Historie",
     "debug": "Ladění",
-    "about": "O aplikaci"
+    "about": "O aplikaci",
+    "backup": "Záloha",
+    "currentAudio": "Aktuální zvuk",
+    "tokenCount": "Počet tokenů",
+    "keyboardTyper": "Psaní na klávesnici",
+    "jumper": "Přechody",
+    "translator": "Překladač",
+    "groups": {
+      "tools": "Nástroje",
+      "config": "Konfigurace"
+    },
+    "modelTesting": "Testování modelů",
+    "resize": "Táhněte pro změnu velikosti",
+    "update": {
+      "checking": "Kontroluji aktualizace…",
+      "available": "Je dostupný Handy Tool {{version}}",
+      "silentOn": "Handy Tool se zavře, aktualizuje a znovu otevře.",
+      "silentOff": "Zapněte tiché aktualizace pro automatickou instalaci v časovém okně.",
+      "enableSilent": "Zapnout tiché aktualizace",
+      "updateRestart": "Aktualizovat a restartovat",
+      "later": "Později",
+      "updateNow": "Aktualizovat nyní",
+      "downloading": "Stahuji Handy Tool {{version}}…",
+      "percent": "{{percent}} %",
+      "ready": "Aktualizace {{version}} je připravena",
+      "waitingForIdle": "Čekám na dokončení diktování…",
+      "readyDetail": "Handy Tool se restartuje a dokončí aktualizaci.",
+      "waiting": "Čekám…",
+      "restartInstall": "Restartovat a instalovat",
+      "installing": "Instaluji aktualizaci…",
+      "installingDetail": "Handy Tool se zavře a znovu otevře.",
+      "failed": "Aktualizace selhala",
+      "failedDetail": "Handy Tool nebyl změněn. {{reason}}",
+      "unknownError": "Neznámá chyba",
+      "tryAgain": "Zkusit znovu",
+      "downloadInstaller": "Stáhnout instalátor"
+    }
   },
   "onboarding": {
     "subtitle": "Pro začátek vyberte model pro přepis",
@@ -133,11 +169,15 @@
   "settings": {
     "modelSettings": {
       "title": "Nastavení {{model}}",
-      "noSettingsNeeded": "Tento model funguje automaticky bez nutnosti konfigurace."
+      "noSettingsNeeded": "Tento model funguje automaticky bez nutnosti konfigurace.",
+      "autoDetectLanguage": {
+        "description": "Tento model automaticky rozpozná mluvený jazyk a nelze jej omezit na konkrétní jazyk. Chcete-li jazyk vynutit, přepněte na model Whisper, SenseVoice, FLM nebo API.",
+        "value": "Automaticky rozpoznáno"
+      }
     },
     "models": {
       "title": "Modely přepisu",
-      "description": "Vyberte model přepisu nebo stáhněte další modely. Různé modely nabízejí různé úrovně přesnosti a rychlosti.",
+      "description": "Vyberte, který model přepisuje vaše diktování — modely se liší v přesnosti, rychlosti a v tom, kolik paměti zabírají po načtení. Výchozí: nic vybráno na čisté instalaci; onboarding stáhne a vybere váš první model. Vaše volba také určuje, zda se na stránce Obecné nabízí Jazyk a Překládat do angličtiny, a Překladač používá stejný model, kdykoli má jeho Dávkový model ponecháno na „Stejný jako pro diktování (výchozí)“.",
       "downloaded": "Staženo",
       "available": "K dispozici ke stažení",
       "deleteConfirm": "Opravdu chcete smazat {{modelName}}? Pro opětovné použití jej budete muset znovu stáhnout.",
@@ -165,26 +205,79 @@
         "bindings": {
           "transcribe": {
             "name": "Zkratka přepisu",
-            "description": "Klávesová zkratka pro nahrávání a přepis vašeho hlasu."
+            "description": "Jedním stiskem zahájíte nahrávání, druhým je ukončíte; přepis se doručí do okna, které bylo zaměřené. Výchozí: Ctrl+Space. Řídí se Režimem přepisu a Způsobem vložení ze stránky Pokročilé — pro nahrávání podržením místo toho použijte Zkratku Stisk a mluv."
           },
           "cancel": {
             "name": "Zkratka zrušení",
-            "description": "Klávesová zkratka pro zrušení aktuálního nahrávání."
+            "description": "Zruší právě probíhající nahrávání. Výchozí: escape. Co zrušení skutečně udělá, určuje Chování při zrušení na stránce Obecné — „Ukončit, uložit jen do historie“ přepis stále vytvoří a uloží, ale nic nedoručí do vašeho okna, zatímco „Zahodit nahrávku“ zvuk zahodí — a stejné nastavení platí i pro položku Zrušit v systémové liště."
           },
           "transcribe_with_post_process": {
             "name": "Klávesa pro následné zpracování",
             "description": "Volitelné: Vyhrazená klávesová zkratka, která vždy použije AI následné zpracování na váš přepis."
+          },
+          "transcribe_ptt": {
+            "name": "Zkratka Stisk a mluv",
+            "description": "Podržte tuto zkratku pro nahrávání a uvolněte pro zastavení; mikrofon při uvolnění okamžitě ztichne, takže vše řečené poté nemůže uniknout do textu. Výchozí: Ctrl+Alt+Space. Má vlastní Režim přepisu (PTT) a vlastní Způsob vložení (PTT), takže se stisk a mluv může chovat jinak než Zkratka přepisu."
+          },
+          "type_text": {
+            "name": "Zkratka pro psaní textu",
+            "description": "Napíše, co je v poli Psaní na klávesnici, do okna, které má právě zaměření; stiskněte znovu, nebo Escape, pro zrušení. Výchozí: ctrl+alt+t. Začne přibližně za sekundu místo čekání na celé Zpoždění spuštění, protože stisk zkratky znamená, že už jste v cílovém okně — plný odpočet používá jen tlačítko Spustit."
+          },
+          "transcribe_and_submit": {
+            "name": "Zkratka Přepsat a odeslat",
+            "description": "Ukončí nahrávání, vloží přepis a poté stiskne klávesu pro odeslání. Funguje i tehdy, když bylo nahrávání spuštěno jinou zkratkou."
+          },
+          "anchor_set": {
+            "name": "Nastavit kotvu",
+            "description": "Zachytí aktuálně zaměřené textové pole jako cíl Aktivní 1. Výchozí: ctrl+alt+k. Samo o sobě nic nedoručí — nastavte „Akci skokového slotu při ukončení“ na „Přejít / doručit do slotu“ se slotem Aktivní 1 (Pokročilé → Přepis), aby do něj váš další přepis dorazil. Přihlašovací pole a vlastní okna Handy jsou odmítnuta."
+          },
+          "anchor_jump": {
+            "name": "Přejít na kotvu",
+            "description": "Vrátí zaměření zpět na okno a pole Aktivní 1 a nic nevloží — klávesa „zpět k rozepsanému textu“. Výchozí: ctrl+alt+j. Pokud je pro tento slot zapnuto „Uložit pozici myši“, vrátí se i kurzor; nic se nestane, pokud je slot prázdný nebo jeho okno bylo zavřeno."
+          },
+          "jump_set_slot_1": {
+            "name": "Nastavit skokový slot 1",
+            "description": "Uloží aktuálně zaměřené pole jako statický slot 1 a přepíše, co v něm bylo dosud. Výchozí: ctrl+alt+shift+1. Slot je pouhá záložka, dokud jej něco nevyužije — přejděte na něj zkratkou „Přejít do slotu 1“, nebo v postupu nastavte „Akci skokového slotu při ukončení“ (Pokročilé → Přepis) na Slot 1, aby se do něj doručovaly přepisy."
+          },
+          "jump_set_slot_2": {
+            "name": "Nastavit skokový slot 2",
+            "description": "Uloží aktuálně zaměřené pole jako statický slot 2 a přepíše, co v něm bylo dosud. Výchozí: ctrl+alt+shift+2. Přejděte na něj zkratkou „Přejít do slotu 2“, nebo v postupu nastavte „Akci skokového slotu při ukončení“ (Pokročilé → Přepis) na Slot 2, aby se do něj doručovaly přepisy."
+          },
+          "jump_set_slot_3": {
+            "name": "Nastavit skokový slot 3",
+            "description": "Uloží aktuálně zaměřené pole jako statický slot 3 a přepíše, co v něm bylo dosud. Výchozí: ctrl+alt+shift+3. Přejděte na něj zkratkou „Přejít do slotu 3“, nebo v postupu nastavte „Akci skokového slotu při ukončení“ (Pokročilé → Přepis) na Slot 3, aby se do něj doručovaly přepisy."
+          },
+          "jump_set_slot_4": {
+            "name": "Nastavit skokový slot 4",
+            "description": "Uloží aktuálně zaměřené pole jako statický slot 4 a přepíše, co v něm bylo dosud. Výchozí: ctrl+alt+shift+4. Přejděte na něj zkratkou „Přejít do slotu 4“, nebo v postupu nastavte „Akci skokového slotu při ukončení“ (Pokročilé → Přepis) na Slot 4, aby se do něj doručovaly přepisy."
+          },
+          "jump_slot_1": {
+            "name": "Přejít do slotu 1",
+            "description": "Zaměří okno a pole statického slotu 1 a nic nevloží — čistá navigace. Výchozí: ctrl+alt+1. Pokud je pro tento slot zapnuto „Uložit pozici myši“, obnoví se i kurzor; nic se nestane, pokud je slot prázdný nebo jeho okno bylo zavřeno."
+          },
+          "jump_slot_2": {
+            "name": "Přejít do slotu 2",
+            "description": "Zaměří okno a pole statického slotu 2 a nic nevloží — čistá navigace. Výchozí: ctrl+alt+2. Pokud je pro tento slot zapnuto „Uložit pozici myši“, obnoví se i kurzor; nic se nestane, pokud je slot prázdný nebo jeho okno bylo zavřeno."
+          },
+          "jump_slot_3": {
+            "name": "Přejít do slotu 3",
+            "description": "Zaměří okno a pole statického slotu 3 a nic nevloží — čistá navigace. Výchozí: ctrl+alt+3. Pokud je pro tento slot zapnuto „Uložit pozici myši“, obnoví se i kurzor; nic se nestane, pokud je slot prázdný nebo jeho okno bylo zavřeno."
+          },
+          "jump_slot_4": {
+            "name": "Přejít do slotu 4",
+            "description": "Zaměří okno a pole statického slotu 4 a nic nevloží — čistá navigace. Výchozí: ctrl+alt+4. Pokud je pro tento slot zapnuto „Uložit pozici myši“, obnoví se i kurzor; nic se nestane, pokud je slot prázdný nebo jeho okno bylo zavřeno."
           }
         },
         "errors": {
           "restore": "Nepodařilo se obnovit původní zkratku",
           "set": "Nepodařilo se nastavit zkratku: {{error}}",
-          "reset": "Nepodařilo se vrátit zkratku na původní hodnotu"
+          "reset": "Nepodařilo se vrátit zkratku na původní hodnotu",
+          "registrationFailed": "Některé zkratky se nepodařilo zaregistrovat a jsou neaktivní: {{bindings}}. Možná je již používá jiná aplikace — vyberte v nastavení jinou kombinaci."
         }
       },
       "language": {
         "title": "Jazyk",
-        "description": "Vyberte jazyk rozpoznávání řeči. Auto jazyk určí automaticky, zatímco výběr konkrétního jazyka může zlepšit přesnost.",
+        "description": "Sdělí modelu, jakým jazykem mluvíte; jeho zadání bývá přesnější než Auto a zabrání tomu, aby byly krátké nahrávky rozpoznány jako špatný jazyk. Výchozí: Auto. Platí pro model uvedený v názvu této karty, a při zapnutém Překládat do angličtiny určuje jazyk, kterým mluvíte, ne jazyk výsledného textu.",
         "descriptionUnsupported": "Model Parakeet rozpozná jazyk automaticky. Ruční výběr není potřeba.",
         "searchPlaceholder": "Hledat jazyky...",
         "noResults": "Žádné jazyky nenalezeny",
@@ -202,52 +295,146 @@
         },
         "jumperPasteDelay": {
           "title": "Paste delay after jump (Windows)",
-          "description": "Extra wait after a jump activates the target window and before the paste keystroke fires. A freshly activated window — especially an RDP/Citrix session — may still be transitioning when Ctrl+V lands, so the paste is swallowed and nothing appears. Set a longer wait for Remote desktop targets (matched on the Jumper page) and a shorter one for Local apps. Shared by both Transcribe and Transcribe & Submit; only applies after a real jump — when you're already in the target, paste stays instant.",
+          "description": "Dodatečné čekání po tom, co přechod přivede cílové okno do popředí, a před odeslání klávesy pro vložení, protože okno aktivované před okamžikem může stisky kláves ještě polykat. Výchozí: Místní aplikace 250 ms, Vzdálená plocha 1 s — který sloupec platí, určují Řetězce pro rozpoznání vzdálené plochy na stránce Přechody. Uplatní se jen po skutečném přechodu; jste-li v cíli už předtím, vložení zůstává okamžité, a obě nabídky sdílejí Přepis i Přepsat a odeslat.",
           "options": {
             "none": "Off (instant)"
           }
         },
         "jumperSubmitDelay": {
           "title": "Submit delay after jump (Windows)",
-          "description": "Extra wait before pressing the submit key (Enter) after a jump. A freshly activated window — especially RDP/Citrix — may still be applying the pasted text when Enter fires, so the submit is missed. Set a longer wait for Remote desktop targets and a shorter one for Local apps. Only applies after a real jump; when you're already in the target, submit stays instant.",
+          "description": "Dodatečné čekání mezi vložením a klávesou pro odeslání, když doručení musel předcházet přechod, protože právě aktivované okno může přepis ještě zpracovávat. Výchozí: Místní aplikace 250 ms, Vzdálená plocha 500 ms — které se použije, určují Řetězce pro rozpoznání vzdálené plochy na stránce Přechody. Uplatní se jen po skutečném přechodu; pokud jste v cíli byli už předtím, odeslání zůstává okamžité.",
           "options": {
             "none": "Off (instant)"
           }
+        },
+        "title": "Přepsat a odeslat",
+        "pasteMethod": {
+          "title": "Způsob vložení",
+          "description": "Klávesa pro vložení použitá pouze pro zkratku Přepsat a odeslat, takže se právě jedna aplikace, do které diktujete a odesíláte, může chovat jinak než všechny ostatní. Výchozí: Schránka (Ctrl+V). Přepisuje Způsob vložení pro tento postup — zvolte Schránka (Shift+Insert), pokud okno zprávy dané aplikace Ctrl+V ignoruje."
+        },
+        "submitKey": {
+          "title": "Klávesa pro odeslání",
+          "description": "Klávesa stisknutá hned po vložení tímto postupem, která zprávu skutečně odešle nebo příkaz spustí. Výchozí: Enter. Tento postup odešle vždy — Automatické odeslání na něj nemá vliv — takže pro aplikace, kde samotný Enter jen vloží nový řádek, zvolte Ctrl+Enter nebo Super+Enter."
+        },
+        "idleBehavior": {
+          "title": "Když neprobíhá žádné nahrávání",
+          "description": "Co se stane při stisku zkratky Přepsat a odeslat, když právě nic nenahráváte. Výchozí: Zahájit nahrávání — jeden stisk spustí nahrávání a další vloží a odešle přepis. Zvolte Nedělat nic, aby tato klávesa byla čistý finišer: nahrávání spouštíte zkratkou přepisu a tuto stisknete jen tehdy, když chcete výsledek vložit a odeslat.",
+          "options": {
+            "startNormal": "Zahájit nahrávání",
+            "doNothing": "Nedělat nic"
+          }
+        },
+        "clipboard": {
+          "title": "Schránka",
+          "description": "Vlastní politika schránky tohoto postupu, nezávislá na Práci se schránkou: obnoví váš předchozí obsah po vložení, nebo úmyslně ponechá odeslaný přepis ve schránce. Výchozí: Neměnit schránku. Užitečné, když má běžné diktování schránku nechat na pokoji, ale chcete kopii všeho, co jste odeslali — nebo naopak."
         }
       },
       "pasteLast": {
         "title": "Paste last transcription",
         "pasteMethod": {
           "title": "Paste method",
-          "description": "How the last transcription is pasted into the focused window when you press the shortcut. Use Shift+Insert or another method if Ctrl+V doesn't work in the target app."
+          "description": "Jak zkratka Vložit poslední přepis vkládá text do zaměřeného okna. Je nezávislá na Způsobu vložení na stránce Pokročilé, takže ji lze doladit jen pro jeden problematický cíl. Výchozí: Schránka (Ctrl+V) — v terminálu zkuste Schránka (Shift+Insert), Přímé pro napsání znaků místo vložení, nebo Žádné, aby se text jen umístil do schránky a vy jej vložili sami."
         },
         "clipboard": {
           "title": "Clipboard",
-          "description": "Keep your existing clipboard after pasting, or leave the transcription on the clipboard."
+          "description": "Zda se po opětovném vložení do schránky vrátí předchozí obsah, nebo v ní úmyslně zůstane přepis. Výchozí: Neměnit schránku — text se zkopíruje, vloží a poté se obnoví to, co jste měli předtím. Zvolte Kopírovat do schránky, aby text zůstal dostupný i po opětovném vložení; v obou případech se ukládá a obnovuje jen textová schránka, takže obrázek nebo zkopírovaný soubor se ztratí."
         }
+      },
+      "anchor": {
+        "title": "Kotva a doručení",
+        "deliveryFailed": "Doručení do kotvy se nezdařilo: {{reason}}. Text je ve schránce a kotva byla zachována.",
+        "status": {
+          "title": "Aktuální kotva",
+          "description": "Zobrazuje, na co tento aktivní slot právě ukazuje, s tlačítky Test (přejde tam bez doručení) a Vymazat; odznak „Remote ✓“ znamená, že se cíl shoduje s vašimi Řetězci pro rozpoznání vzdálené plochy. Výchozí: Kotva nenastavena — klikněte do textového pole a stiskněte zkratku Nastavit kotvu tohoto slotu, abyste jej aktivovali. Doručením se kotva nikdy nespotřebuje: zůstává, dokud ji nevymažete nebo se nezavře její okno.",
+          "active": "Ukotveno: {{app}} ({{control}})",
+          "none": "Kotva nenastavena",
+          "clear": "Vymazat"
+        },
+        "keep": {
+          "label": "Zachovat kotvu po doručení",
+          "description": "Po úspěšném doručení nechá kotvu aktivní místo jejího zrušení, pro opakované diktování do stejného pole."
+        },
+        "returnFocus": {
+          "label": "Vrátit zaměření po doručení",
+          "description": "Po doručení textu se vrátí zpět do okna, které jste používali."
+        },
+        "actions": {
+          "options": {
+            "none": "Nedělat nic",
+            "jump": "Přejít / doručit do slotu",
+            "set": "Nastavit slot na aktuální zaměření",
+            "clear": "Vymazat slot"
+          },
+          "idle": {
+            "title": "Akce skokového slotu při zahájení",
+            "description": "Co tato zkratka navíc udělá se slotem vybraným v nabídce vlevo ve chvíli, kdy jí zahájíte nové nahrávání. Výchozí: Nedělat nic, proto je výběr slotu zpočátku neaktivní. „Přejít / doručit do slotu“ vás před promluvou přenese do zapamatovaného pole, „Nastavit slot na aktuální zaměření“ zapamatuje, kde právě jste, a „Vymazat slot“ jej zapomene (jen Windows)."
+          },
+          "stop": {
+            "title": "Akce skokového slotu při ukončení",
+            "description": "Co tato zkratka udělá se slotem vybraným vlevo, když se nahrávka ukončí. Výchozí: Nedělat nic. „Přejít / doručit do slotu“ odešle přepis do zapamatovaného pole místo tam, kam jste mezitím odešli, takže můžete při diktování číst něco jiného; „Nastavit slot na aktuální zaměření“ a „Vymazat slot“ proběhnou až po doručení textu, a „Při ukončení přejít jen při stejné zkratce“ na stránce Přechody může omezit, kdy je přechod povolen (jen Windows)."
+          }
+        }
+      },
+      "transcribeGroup": {
+        "title": "Přepis"
+      },
+      "cancelBehavior": {
+        "title": "Chování při zrušení",
+        "description": "Určuje, co zrušení udělá s probíhajícím nahráváním — platí pro zkratku zrušení (Escape), položku „Zrušit“ v systémové liště a příkaz handy --cancel. Výchozí: „Ukončit, uložit jen do historie“ — nahrávání se zastaví a přepíše jako obvykle, zvuk i přepis zůstanou v Historii, ale nic se dál nestane: žádné vkládání, žádná změna schránky, žádná klávesa pro odeslání, žádný přechod. Zvolte „Zahodit nahrávku“, pokud má zrušená nahrávka zmizet bez přepisu a uložení.",
+        "options": {
+          "finishSilently": "Ukončit, uložit jen do historie",
+          "discardRecording": "Zahodit nahrávku"
+        }
+      },
+      "updates": {
+        "title": "Aktualizace",
+        "checks": {
+          "label": "Automaticky kontrolovat aktualizace",
+          "description": "Jednou denně zkontrolovat veřejná vydání na GitHubu."
+        },
+        "silent": {
+          "label": "Instalovat aktualizace tiše",
+          "description": "V povoleném okně aplikaci zavřít, aktualizovat a znovu otevřít. Výchozí stav je vypnuto."
+        },
+        "time": {
+          "label": "Čas tiché aktualizace",
+          "description": "Střed povoleného místního časového okna.",
+          "window": "{{start}}–{{end}} místního času."
+        },
+        "jitter": {
+          "label": "Denní náhodný posun",
+          "description": "Každý den zvolit jiný čas v tomto rozsahu minut.",
+          "minutes": "minut"
+        },
+        "checkNow": "Zkontrolovat nyní",
+        "checking": "Kontroluji…",
+        "upToDate": "Handy Tool je aktuální.",
+        "lastChecked": "Poslední kontrola: {{value}}",
+        "never": "Nikdy",
+        "portableUnsupported": "Přenosnou verzi nelze aktualizovat na místě. Stáhněte nejnovější přenosnou verzi."
       }
     },
     "sound": {
       "title": "Zvuk",
       "microphone": {
         "title": "Mikrofon",
-        "description": "Vyberte preferované zařízení mikrofonu",
+        "description": "Vstupní zařízení, ze kterého Handy nahrává. Uplatní se od dalšího nahrávání, bez restartu. Výchozí: výchozí zařízení systému — nastavte jej explicitně při přechodu mezi náhlavní soupravou a vestavěným polem mikrofonů, a tlačítkem reset se vraťte k volbě systému.",
         "placeholder": "Vyberte mikrofon...",
         "loading": "Načítání..."
       },
       "audioFeedback": {
         "label": "Zvuková odezva",
-        "description": "Přehrát zvuk při zahájení a ukončení nahrávání"
+        "description": "Přehraje krátký zvuk při zahájení nahrávání a jiný při jeho ukončení, abyste bez pohledu na obrazovku poznali, že je mikrofon aktivní. Výchozí: Vypnuto. Zapnutím se aktivují Výstupní zařízení a Hlasitost níže; oba zvuky lze nahradit vlastními soubory pomocí Zvukového motivu na stránce Ladění."
       },
       "outputDevice": {
         "title": "Výstupní zařízení",
-        "description": "Vyberte preferované výstupní zařízení pro zvuky odezvy",
+        "description": "Kam se přehrávají zvuky při zahájení a ukončení — neovlivňuje, ze kterého mikrofonu se nahrává, ani kam jiné aplikace posílají zvuk. Výchozí: výchozí zařízení systému. Nasměrujte jej na náhlavní soupravu, aby zvuky nešly z reproduktorů; ovládání zůstává neaktivní, dokud není zapnutá Zvuková odezva.",
         "placeholder": "Vyberte výstupní zařízení...",
         "loading": "Načítání..."
       },
       "volume": {
         "title": "Hlasitost",
-        "description": "Upravte hlasitost zvukové odezvy"
+        "description": "Jak hlasité jsou zvuky při zahájení a ukončení, od 0 do 100 procent. Výchozí: 100 %. Ztlumte, pokud vás zvuky v náhlavní soupravě zaskočí; ovlivňuje jen vlastní zvuky Handy a zůstává neaktivní, dokud není zapnutá Zvuková odezva."
       }
     },
     "advanced": {
@@ -257,27 +444,27 @@
         "output": "Výstup",
         "transcription": "Přepis",
         "history": "Historie",
-        "experimental": "Experimentální"
-      },
-      "experimentalToggle": {
-        "label": "Experimentální funkce",
-        "description": "Povolit experimentální funkce, které jsou stále ve vývoji."
+        "postProcessing": "Následné zpracování",
+        "keyboardTyper": "Psaní na klávesnici",
+        "tokenCountProviders": "Poskytovatelé počtu tokenů",
+        "llmProviders": "Registrovaní poskytovatelé LLM",
+        "mcp": "MCP a CLI"
       },
       "startHidden": {
         "label": "Spouštět skrytě",
-        "description": "Spustit do systémové lišty bez otevření okna."
+        "description": "Spustí Handy Tool bez okna na obrazovce — přejde přímo do systémové lišty a diktování funguje okamžitě. Výchozí: Vypnuto. Zkombinujte se Spouštět při startu, aby byla aplikace připravena hned po přihlášení bez zobrazení okna, a ponechte zapnuté Zobrazit ikonu v systémové liště, protože lišta je pak vaší jedinou cestou k otevření okna."
       },
       "autostart": {
         "label": "Spouštět při startu",
-        "description": "Automaticky spustit Handy po přihlášení do počítače."
+        "description": "Zaregistruje Handy Tool ke spuštění automaticky po přihlášení do Windows. Výchozí: Vypnuto. Zkombinujte se Spouštět skrytě, aby se aplikace tiše objevila v systémové liště místo otevření okna."
       },
       "showTrayIcon": {
         "label": "Zobrazit ikonu v systémové liště",
-        "description": "Zobrazit ikonu Handy v systémové liště."
+        "description": "Zobrazí ikonu Handy Tool v systémové liště, kde také signalizuje nečinnost, nahrávání a přepis, a nabízí menu pro nastavení, poslední přepis a ukončení. Výchozí: Zapnuto. Pozor: je-li vypnuto, zavření hlavního okna aplikaci ukončí místo skrytí — a pokud je zapnuté i Spouštět skrytě, nezbude na obrazovce nic, na co kliknout."
       },
       "overlay": {
         "title": "Pozice překryvu",
-        "description": "Zobrazovat vizuální překryv během nahrávání a přepisu. Na Linuxu je doporučeno 'Žádné'.",
+        "description": "Zobrazí při diktování malý překryv, abyste viděli, že Handy Tool poslouchá a poté přepisuje, umístěný v dolní nebo horní části obrazovky. Výchozí: Dole. Zvolte Žádné pro jeho vypnutí, pokud zakrývá něco potřebného nebo vadí v aplikaci na celou obrazovku.",
         "options": {
           "none": "Žádné",
           "bottom": "Dole",
@@ -286,7 +473,7 @@
       },
       "pasteMethod": {
         "title": "Způsob vložení",
-        "description": "Vyberte, jak se text vkládá. Přímé: simuluje psaní přes systémový vstup. Žádné: přeskočí vložení a aktualizuje pouze historii/schránku.",
+        "description": "Vybere klávesu, kterou běžné diktování doručuje text do zaměřeného okna; Přímé napíše znaky místo vložení a Žádné nic neodešle. Výchozí: Schránka (Ctrl+V). Příklad: terminál nebo vzdálený prohlížeč, který Ctrl+V ignoruje, obvykle přijme Schránka (Shift+Insert), a Žádné spolu s Prací se schránkou nastavenou na Kopírovat do schránky ponechá text připravený k ručnímu vložení. Stisk a mluv toto nastavení ignoruje a používá Způsob vložení (PTT).",
         "options": {
           "clipboard": "Schránka ({{modifier}}+V)",
           "clipboardCtrlShiftV": "Schránka (Ctrl+Shift+V)",
@@ -299,14 +486,14 @@
       },
       "typingTool": {
         "title": "Nástroj pro psaní",
-        "description": "Vyberte, který linuxový nástroj pro psaní použít pro metodu přímého vložení. Auto automaticky zjistí a použije nejlepší dostupný nástroj pro váš systém.",
+        "description": "Vybere, který linuxový nástroj pro vkládání znaků obsluhuje způsob vložení Přímé. Výchozí: Auto (Doporučeno), který zjistí nejlepší nainstalovaný nástroj. Zobrazuje se jen v plánovaném linuxovém sestavení a na Windows se nikdy nezobrazí.",
         "options": {
           "auto": "Auto (Doporučeno)"
         }
       },
       "clipboardHandling": {
         "title": "Práce se schránkou",
-        "description": "'Neměnit schránku' zachová po přepisu aktuální obsah schránky. 'Kopírovat do schránky' ponechá po vložení výsledek přepisu ve schránce.",
+        "description": "Určuje, co zůstane ve schránce po běžném diktování: „Neměnit schránku“ do ní vloží přepis jen na dobu potřebnou k vložení a poté obnoví předchozí obsah, zatímco „Kopírovat do schránky“ přepis ve schránce úmyslně zachová. Výchozí: Neměnit schránku. Reálné omezení: obnoví se jen text, takže zkopírovaný obrázek nebo soubor se ztratí — a Zpoždění obnovení schránky nemá žádný účinek, pokud zde není zvoleno Neměnit schránku.",
         "options": {
           "dontModify": "Neměnit schránku",
           "copyToClipboard": "Kopírovat do schránky"
@@ -314,7 +501,7 @@
       },
       "autoSubmit": {
         "title": "Automatické odeslání",
-        "description": "Automaticky odešle vybranou kombinaci kláves po vložení textu. Cmd+Enter platí pro macOS, zatímco Windows/Linux používají Super+Enter.",
+        "description": "Přibližně 50 ms po každém běžném vložení odešle klávesu pro odeslání, takže se diktovaná zpráva do chatu odešle sama. Výchozí: Vypnuto. Aplikace se liší v tom, která klávesa odesílá — zkuste Ctrl+Enter, pokud samotný Enter jen vloží nový řádek; nemá účinek, je-li Způsob vložení nastaven na Žádné, a neřídí zkratku Přepsat a odeslat, která vždy používá svou vlastní Klávesu pro odeslání.",
         "options": {
           "off": "Vypnuto",
           "enter": "Enter",
@@ -325,12 +512,13 @@
       },
       "translateToEnglish": {
         "label": "Překládat do angličtiny",
-        "description": "Během přepisu automaticky překládat řeč z jiných jazyků do angličtiny.",
-        "descriptionUnsupported": "Překlad není podporován modelem {{model}}."
+        "description": "Požádá model o výstup v angličtině místo přepisu v jazyce, kterým jste mluvili. Výchozí: Vypnuto. Nastavení Jazyk ponechte na jazyku, kterým skutečně mluvíte — tento přepínač se zobrazí jen u modelů, které překlad podporují.",
+        "descriptionUnsupported": "Překlad není podporován modelem {{model}}.",
+        "unsupported": "Není k dispozici pro vybraný model přepisu."
       },
       "modelUnload": {
         "title": "Uvolnění modelu",
-        "description": "Automaticky uvolnit paměť GPU/CPU, když model nebyl použit po zadanou dobu",
+        "description": "Uvolní RAM nebo VRAM, kterou model přepisu zabírá, jakmile zůstane tak dlouho nevyužitý; další nahrávka pak zaplatí pár sekund navíc jeho opětovným načtením. Výchozí: Nikdy (ponechat načtený — nejrychlejší start), což je správná volba, pokud diktujete celý den. Vyberte časový limit, když diktujete v nárazech a chcete mezitím paměť zpět — samostatný dávkový engine Překladače se tím neřídí, ten uvolňuje Uvolnit dávkový model po.",
         "options": {
           "never": "Nikdy",
           "immediately": "Okamžitě",
@@ -339,16 +527,229 @@
           "min10": "Po 10 minutách",
           "min15": "Po 15 minutách",
           "hour1": "Po 1 hodině",
-          "sec5": "Po 5 sekundách (Debug)"
+          "sec5": "Po 5 sekundách (Debug)",
+          "custom": "Vlastní…"
+        },
+        "units": {
+          "s": "sekund",
+          "m": "minut",
+          "h": "hodin"
         }
       },
       "customWords": {
         "title": "Vlastní slova",
-        "description": "Přidejte slova, která jsou při přepisu často špatně rozpoznána nebo napsána. Systém automaticky opraví podobně znějící slova podle vašeho seznamu.",
+        "description": "Seznam jmen, produktů a odborných výrazů, které model opakovaně rozpozná špatně; po každém přepisu Handy najde podobně znějící slova a nahradí je vaším pravopisem. Výchozí: prázdné. Přidávejte celá slova, jak na ně narazíte, a pokud začne opravovat i to, co jste tak nemysleli, snižte Práh korekce slov na stránce Ladění.",
         "placeholder": "Přidat slovo",
         "add": "Přidat",
         "remove": "Odebrat {{word}}",
         "duplicate": "\"{{word}}\" již existuje"
+      },
+      "tokenCountProviders": {
+        "hint": "Poskytovatelé pro stránku Počet tokenů. Tip: model určuje jen tokenizér — vyberte nejmenší model z rodiny, na které vám záleží (např. qwen3:0.6b počítá stejně jako qwen3:8b, ale načte se za zlomek času). Počítací endpointy Anthropic a Gemini jsou zdarma; místní servery se dotazují jednotokenovou sondou.",
+        "enable": "Povolit tohoto poskytovatele",
+        "namePlaceholder": "Zobrazovaný název",
+        "baseUrl": "Základní URL",
+        "apiKey": "API klíč",
+        "apiKeyPlaceholder": "Volitelné pro místní servery",
+        "model": "Model",
+        "refreshModels": "Načíst seznam modelů z endpointu",
+        "modelsError": "Nepodařilo se načíst modely",
+        "kinds": {
+          "gemini": "Gemini",
+          "anthropic": "Anthropic",
+          "openai_local": "tiktoken (offline)",
+          "openai_compatible": "Kompatibilní s OpenAI"
+        }
+      },
+      "crashResilientRecording": {
+        "label": "Nahrávání odolné proti pádu",
+        "description": "Zatímco mluvíte, zapisuje řeč na disk do kompaktních souborů Opus místo držení celé nahrávky v paměti, takže pád, nucená aktualizace nebo vybitá baterie nahrávku nezničí — při dalším spuštění se opraví a doplní do Historie. Výchozí: Zapnuto. Vypnutím se nahrává nekomprimovaný zvuk, který zálohy Úplná data (s komprimovaným zvukem) záměrně vynechávají."
+      },
+      "openRecordingsFolder": {
+        "label": "Složka nahrávek",
+        "description": "Otevře složku s vašimi nahrávkami a se zvukem obnoveným po pádu (%APPDATA%\\pr.handy\\recordings). Automatické mazání nahrávek zde uklízí, ale sahá jen na soubory, které Handy vytvořilo samo — vaše vlastní poznámky nebo exporty v této složce se nikdy nepřejmenují ani nesmažou.",
+        "button": "Otevřít složku"
+      },
+      "appearance": {
+        "title": "Vzhled",
+        "description": "Nastaví barevný motiv pro všechna okna Handy Tool, včetně překryvu při nahrávání a plovoucího okna přepisu. Výchozí: Systém, který sleduje světlý/tmavý režim Windows i jeho pozdější změny; Světlý a Tmavý zafixují jednu paletu a další změny systému ignorují.",
+        "options": {
+          "system": "Systém",
+          "light": "Světlý",
+          "dark": "Tmavý"
+        }
+      },
+      "pasteMethodPtt": {
+        "title": "Způsob vložení (PTT)",
+        "description": "Stejná volba jako Způsob vložení, ale používaná jen zkratkou Stisk a mluv, takže se nahrávání podržením může doručovat jinak než vaše běžné diktování. Výchozí: Schránka (Ctrl+V). Změňte, když aplikace, do které mluvíte podržením, potřebuje jinou klávesu pro vložení než aplikace, do které diktujete celý den."
+      },
+      "clipboardRestoreDelay": {
+        "title": "Zpoždění obnovení schránky",
+        "description": "Dodatečné čekání před obnovením předchozího obsahu schránky po vložení, navíc k vestavěným 50 ms; nemá účinek, pokud není nastavení schránky této skupiny (zde Práce se schránkou, nebo Schránka u Přepsat a odeslat) na Neměnit schránku. Výchozí: Vypnuto (okamžitě). Zvyšte na přibližně 1 s, pokud relace Citrix nebo RDP vloží starý obsah schránky místo toho, co jste právě řekli — vzdálené relace čtou schránku až po doručení klávesy pro vložení.",
+        "options": {
+          "none": "Žádné (okamžitě)",
+          "ms250": "250 ms",
+          "ms500": "500 ms",
+          "ms1000": "1 sekunda",
+          "ms2500": "2,5 sekundy",
+          "ms5000": "5 sekund"
+        }
+      },
+      "transcriptionMode": {
+        "title": "Režim přepisu",
+        "description": "Živý zobrazuje text, jak vzniká, ještě během mluvení; Po nahrání nahrává tiše a přepisuje na pozadí. Výchozí: Po nahrání. V obou případech proběhne po zastavení jeden finální průchod celým zvukem, takže doručený text je vždy ten přesný a živý text je jen náhled — platí pouze pro Zkratku přepisu, modely API přepisu se vždy chovají jako Po nahrání.",
+        "options": {
+          "live": "Živý",
+          "postRecording": "Po nahrání"
+        }
+      },
+      "transcriptionModePtt": {
+        "title": "Režim přepisu (PTT)",
+        "description": "Stejná volba Živý / Po nahrání, ale platí jen pro zkratku Stisk a mluv. Výchozí: Živý — úmyslně opak Režimu přepisu, protože podržené nahrávky jsou krátké a náhled se objeví téměř okamžitě. Doručený text pochází vždy z finálního průchodu celou nahrávkou.",
+        "options": {
+          "live": "Živý",
+          "postRecording": "Po nahrání"
+        }
+      },
+      "gpuDevice": {
+        "title": "GPU zařízení",
+        "description": "Vybere, na kterém grafickém adaptéru přepisuje místní Whisper, nebo vynutí zpracování jen na CPU. Výchozí: Automaticky (výchozí); adaptér, který se nespustí, se sám vrátí na Automaticky místo přerušení přepisu. Změňte, chcete-li ponechat volnou vytíženou samostatnou kartu nebo obejít chybný ovladač — projeví se při dalším načtení modelu a zobrazuje se jen na Windows, je-li vybraný model Whisper.",
+        "options": {
+          "auto": "Automaticky (výchozí)",
+          "cpu": "Pouze CPU",
+          "device": "{{name}} (zařízení {{index}})",
+          "deviceWithVram": "{{name}} (zařízení {{index}}, {{vram}} GB)"
+        }
+      },
+      "apiTranscription": {
+        "title": "API přepis",
+        "cardTitle": "API přepis (kompatibilní s OpenAI)",
+        "url": {
+          "title": "API URL",
+          "description": "Základní URL serveru pro řeč kompatibilního s OpenAI, včetně předpony verze — Handy k ní připojí /audio/transcriptions, takže z http://127.0.0.1:8000/v1 vznikne http://127.0.0.1:8000/v1/audio/transcriptions. Výchozí: prázdné; vyplňte ji před volbou API přepis (kompatibilní s OpenAI) na stránce Modely, jinak nahrávka neuspěje. Tento engine při zastavení vždy odešle celou nahrávku jako jeden soubor WAV, takže na něj Režim přepisu nemá žádný vliv.",
+          "placeholder": "http://127.0.0.1:8000/v1"
+        },
+        "apiKey": {
+          "title": "API klíč",
+          "description": "Bearer klíč odesílaný s každým nahráním; u místního serveru, který jej nekontroluje, jej ponechte prázdný. Výchozí: prázdné. Ukládá se nešifrovaně v souboru nastavení a je součástí záloh.",
+          "placeholder": "sk-..."
+        },
+        "model": {
+          "title": "Model",
+          "description": "Id modelu, které váš endpoint očekává, odeslané v požadavku beze změny — whisper-1 pro OpenAI, nebo název, který svému modelu dal váš vlastní server. Výchozí: prázdné, což odešle prázdné pole model; vyplňte, pokud jej váš endpoint vyžaduje. Když je Jazyk na Auto, tento engine odesílá angličtinu, takže pro diktování v jiném jazyce Jazyk pevně nastavte.",
+          "placeholder": "whisper-1"
+        }
+      },
+      "tabs": {
+        "app": "Aplikace",
+        "output": "Výstup",
+        "transcription": "Přepis",
+        "typer": "Psaní",
+        "providers": "Poskytovatelé",
+        "mcp": "MCP a CLI",
+        "history": "Historie",
+        "postProcessing": "Následné zpracování"
+      },
+      "mcp": {
+        "loading": "Načítání…",
+        "description": "Spustí malý místní server, aby Claude (aplikace i Code) a příkaz handy mohly používat vlastní nástroje Handy: počítat tokeny, psát text do zaměřeného okna, číst Historii, spouštět testy modelů a upravovat poskytovatele. Výchozí: Vypnuto; zapnutím se server ihned spustí na 127.0.0.1 s Portem a Tokenem níže, a nikdy na síťovém rozhraní. Reálné omezení: token je uložen v souboru nastavení jako čistý text, takže jej může přečíst a aplikaci ovládat každý program běžící pod vaším účtem.",
+        "enable": "Povolit server MCP a CLI",
+        "running": "Běží",
+        "stopped": "Zastaveno",
+        "port": "Port",
+        "token": "Token",
+        "show": "Zobrazit",
+        "hide": "Skrýt",
+        "regenerate": "Vygenerovat nový",
+        "claudeApp": "Aplikace Claude (HTTP) — přidejte vlastní server MCP s touto URL:",
+        "authHeader": "…a tímto záhlavím Authorization:",
+        "claudeCodeStdio": "Claude Code (stdio):",
+        "claudeCodeHttp": "Claude Code (HTTP):",
+        "cliTitle": "Nástroj příkazové řádky",
+        "cliHint": "Zkopíruje spustitelný soubor Handy do vaší proměnné PATH jako handy, takže z libovolného terminálu můžete proti běžící aplikaci spustit handy model-test, handy token-count nebo handy mcp --stdio. Výchozí: nenainstalováno. Příkaz komunikuje se stejným místním serverem, takže funguje jen při zapnutém Povolit server MCP a CLI; v přenosném režimu není k dispozici.",
+        "installCli": "Instalovat CLI",
+        "reinstallCli": "Přeinstalovat CLI"
+      },
+      "costReport": {
+        "title": "Přehled nákladů na přepis",
+        "description": "Náklady (reálné USD z OpenRouter) a délka pro každou nahrávku, souhrnně po týdnech, měsících a letech. Stáhněte si celý přehled — každou nahrávku a souhrny — jako CSV.",
+        "download": "Stáhnout CSV",
+        "recalc": "Přepočítat délky",
+        "recordings": "Nahrávky",
+        "daily": "Posledních 7 dní",
+        "colTimestamp": "Čas",
+        "colDuration": "Délka (HH:MM:SS)",
+        "colCost": "Náklady (USD)",
+        "colPeriod": "Období",
+        "colCount": "Nahrávky",
+        "weekly": "Poslední 4 týdny",
+        "monthly": "Posledních 12 měsíců",
+        "yearly": "Podle roku",
+        "total": "Celkem (za celou dobu)",
+        "allTime": "Za celou dobu",
+        "weekOf": "Týden od {{date}}",
+        "totalLine": "{{count}} nahrávek · {{duration}} · {{cost}}",
+        "empty": "Zatím žádné nahrávky"
+      },
+      "llmProviders": {
+        "hint": "Jedna sada poskytovatelů — název, endpoint, klíč, model a cena za milion tokenů — sdílená mezi Počtem tokenů, Testováním modelů a Následným zpracováním. Každý slot má stálé id (#1, #2, …), na které se tyto obrazovky odkazují, takže změna zde se použije všude; zrušením zaškrtnutí „Povolit tohoto poskytovatele“ zmizí slot ze všech tří. Výchozí: tři místní sloty jsou zapnuté a každý cloudový slot je vypnutý, dokud do něj nevložíte klíč.",
+        "enable": "Povolit tohoto poskytovatele",
+        "namePlaceholder": "Název poskytovatele",
+        "baseUrl": "Základní URL",
+        "apiKey": "API klíč",
+        "apiKeyPlaceholder": "Vložte svůj API klíč",
+        "model": "Model",
+        "modelPlaceholder": "Id modelu",
+        "refreshModels": "Obnovit seznam modelů",
+        "modelsError": "Nepodařilo se",
+        "cost": "Cena / 1M",
+        "costInput": "vstup $",
+        "costOutput": "výstup $",
+        "costAuto": "Automaticky nahlašováno OpenRouter",
+        "concurrency": "Souběžnost",
+        "sequential": "Spouštět sekvenčně v rámci rodiny",
+        "family": "rodina",
+        "familyPlaceholder": "např. flm",
+        "kinds": {
+          "anthropic": "Anthropic",
+          "gemini": "Gemini",
+          "openai_local": "Místní (tiktoken)",
+          "openai_compatible": "Kompatibilní s OpenAI",
+          "openrouter": "OpenRouter",
+          "apple_intelligence": "Apple"
+        },
+        "persistPrice": "Zachovat",
+        "persistPriceHint": "Zachovat tuto cenu i při změně modelu (nedoplňovat automaticky z OpenRouter)"
+      },
+      "openRouterTranscription": {
+        "cardTitle": "OpenRouter přepis",
+        "url": {
+          "title": "API URL",
+          "description": "Kořenová adresa API OpenRouter, na kterou jdou požadavky pro řeč, včetně /api/v1. Výchozí: https://openrouter.ai/api/v1 — ponechte beze změny, pokud nejdete přes proxy. Handy neodešle nic, dokud je toto nebo API klíč prázdné.",
+          "placeholder": "https://openrouter.ai/api/v1"
+        },
+        "apiKey": {
+          "title": "API klíč",
+          "description": "Váš klíč OpenRouter (openrouter.ai/keys), používaný jen tímto enginem pro řeč — je nezávislý na jakékoli položce OpenRouter v Registrovaných poskytovatelích LLM. Výchozí: prázdné, a bez něj nahrávka neuspěje místo odeslání neautorizovaného požadavku. Diktování s tímto enginem odesílá váš zvuk na OpenRouter a stojí peníze za nahrávku; skutečná částka se zaznamenává do Historie a do Přehledu nákladů na přepis.",
+          "placeholder": "sk-or-..."
+        },
+        "model": {
+          "title": "Model přepisu",
+          "description": "Id modelu OpenRouter zadané ručně: pro trasu Přepis id ve stylu openai/whisper-large-v3, nebo pro trasu Chat model schopný zpracovat zvuk, například google/gemini-2.5-flash. Výchozí: prázdné, což použije openai/whisper-large-v3. Musí odpovídat nastavení Endpoint — nesoulad se obvykle projeví jako prázdný přepis, ne jako chyba.",
+          "placeholder": "openai/whisper-large-v3"
+        },
+        "route": {
+          "title": "Endpoint",
+          "description": "Vybere, na který endpoint OpenRouter zvuk odejde. Přepis (ve stylu Whisper) odešle na vyhrazený endpoint pro řeč; Model chatu (Gemini / GPT-4o-audio) vloží zvuk do chatové zprávy, což je jediný způsob, jak jej přijmou modely, které nejsou modely pro řeč. Výchozí: Přepis (ve stylu Whisper). Musí odpovídat nastavení Model přepisu, a Překládat do angličtiny se respektuje jen na trase Chat.",
+          "stt": "Přepis (ve stylu Whisper)",
+          "chat": "Model chatu (Gemini / GPT-4o-audio)"
+        },
+        "format": {
+          "title": "Formát zvuku",
+          "description": "Jak se zvuk zakóduje před odesláním: Opus je zhruba desetkrát menší než WAV, což se počítá na tetheringu nebo hotelovém připojení. Výchozí: Opus — menší (doporučeno). Platí jen tehdy, je-li Endpoint nastaven na Model chatu (Gemini / GPT-4o-audio); trasa Přepis (ve stylu Whisper) vždy odesílá WAV, protože modely ve stylu Whisper Opus odmítají.",
+          "opus": "Opus — menší (doporučeno)",
+          "wav": "WAV — nejvíce kompatibilní"
+        }
       }
     },
     "postProcessing": {
@@ -360,7 +761,8 @@
         "title": "API (kompatibilní s OpenAI)",
         "provider": {
           "title": "Poskytovatel",
-          "description": "Vyberte poskytovatele kompatibilního s OpenAI."
+          "description": "Vyberte poskytovatele kompatibilního s OpenAI.",
+          "placeholder": "Vyberte registrovaného poskytovatele"
         },
         "appleIntelligence": {
           "title": "Apple Intelligence",
@@ -387,7 +789,12 @@
           "placeholderWithOptions": "Vyhledejte nebo vyberte model",
           "placeholderNoOptions": "Zadejte název modelu",
           "refreshModels": "Obnovit modely"
-        }
+        },
+        "temperature": {
+          "title": "Teplota",
+          "description": "Nižší hodnota je determinističtější a přesnější (0 = nejvíce doslovné); vyšší je kreativnější."
+        },
+        "registryNote": "API klíč, model a základní URL poskytovatele se konfigurují v Pokročilé → Registrovaní poskytovatelé LLM."
       },
       "prompts": {
         "title": "Prompt",
@@ -409,6 +816,10 @@
         "cancel": "Zrušit",
         "selectToEdit": "Vyberte výše prompt, abyste zobrazili a upravili jeho podrobnosti.",
         "createFirst": "Klikněte nahoře na 'Vytvořit nový prompt' a vytvořte svůj první prompt pro následné zpracování."
+      },
+      "disableThinking": {
+        "label": "Zakázat přemýšlení",
+        "description": "Odešle modelu think: false. Zrychlí odpovědi, ale u modelů s přemýšlením (např. Qwen3) může zhoršit dodržování instrukcí."
       }
     },
     "history": {
@@ -420,34 +831,43 @@
       "save": "Uložit přepis",
       "unsave": "Odebrat z uložených",
       "delete": "Smazat záznam",
-      "deleteError": "Nepodařilo se smazat záznam. Zkuste to prosím znovu."
+      "deleteError": "Nepodařilo se smazat záznam. Zkuste to prosím znovu.",
+      "loadError": "Nepodařilo se načíst historii: {{error}}",
+      "search": {
+        "placeholder": "Hledat v historii (text nebo regulární výraz)...",
+        "clear": "Vymazat vyhledávání",
+        "matches": "{{matched}} z {{total}}",
+        "regexBadge": ".*",
+        "regexActive": "Dotaz je zpracován jako regulární výraz",
+        "noMatches": "Žádné záznamy neodpovídají vašemu vyhledávání."
+      }
     },
     "debug": {
       "title": "Ladění",
       "logDirectory": {
         "title": "Složka protokolů",
-        "description": "Umístění, kde jsou uloženy soubory protokolu"
+        "description": "Otevře složku se soubory protokolu — první místo, kam se podívat, když se něco nezdaří beze zprávy proč. Protokoly se otáčejí po 10 MB a starší soubory se zachovávají místo přepisování, takže důkaz přežije i restart, který obvykle problém následuje. Míru podrobnosti zde určuje Úroveň logování na stránce Ladění, která je ve výchozím stavu Debug a může obsahovat i úryvky přepisu."
       },
       "logLevel": {
         "title": "Úroveň logování",
-        "description": "Nastavte úroveň podrobnosti logování"
+        "description": "Určuje, kolik podrobností se zapisuje do souborů protokolu; výstup v konzoli tím není ovlivněn. Výchozí: Debug. Snižte na Info, pokud nechcete mít obsah diktování na disku — na úrovních Debug a Trace se v souborech otevíraných ze Složky protokolů na stránce O aplikaci mohou objevit úryvky přepisu i náhledy promptů."
       },
       "soundTheme": {
         "label": "Zvukový motiv",
-        "description": "Vyberte zvukový motiv pro odezvu při startu a ukončení nahrávání"
+        "description": "Vybere pár zvuků přehrávaných při zahájení a ukončení nahrávání. Výchozí: Marimba. Uslyšíte je jen při zapnuté Zvukové odezvě (stránka Obecné), a Vlastní se v seznamu objeví teprve poté, co v datové složce aplikace existují oba vlastní soubory WAV pro start i konec."
       },
       "wordCorrectionThreshold": {
         "title": "Práh korekce slov",
-        "description": "Citlivost pro opravy vlastních slov"
+        "description": "Jak ochotně se přepis přepíše, aby odpovídal položkám ve Vlastních slovech na stránce Obecné. Výchozí: 0,18. Zvyšte, pokud se jména a odborné termíny stále vracejí zkomolené; snižte, pokud Handy Tool začne nahrazovat slova, která jste skutečně řekli — s prázdnými Vlastními slovy tento posuvník nic nedělá."
       },
       "historyLimit": {
         "title": "Limit historie",
-        "description": "Maximální počet záznamů historie k uchování",
+        "description": "Kolik přepisů Historie ponechá, než se nejstarší odstraní společně se svým zvukem. Výchozí: 5 záznamů — úmyslně málo, zvyšte, pokud budete něco hledat i po několika dnech. Uplatní se jen tehdy, je-li Automatické mazání nahrávek nastaveno na Ponechat nejnovější, a záznamy označené jako Uložit přepis se zachovají bez ohledu na limit a do něj se nezapočítávají.",
         "entries": "záznamů"
       },
       "recordingRetention": {
         "title": "Automatické mazání nahrávek",
-        "description": "Automaticky mazat staré nahrávky pro úsporu místa",
+        "description": "Řídí automatické čištění Historie: když záznam zestárne, smaže se jeho řádek i zvukový soubor. Výchozí: Ponechat nejnovější, což ponechá jen nejnovější záznamy povolené Limitem historie (výchozí 5) — časové volby místo toho ponechají vše za poslední 3 dny, 2 týdny nebo 3 měsíce, a Nikdy nesmaže nic. Čištění probíhá po uložení každého nového přepisu a znovu při změně kteréhokoli z těchto dvou nastavení, vždy ušetří záznamy označené jako Uložit přepis a odstraní jen zvukové soubory, které Handy Tool vytvořilo samo.",
         "never": "Nikdy",
         "preserveLimit": "Ponechat posledních {{count}}",
         "days3": "Po 3 dnech",
@@ -457,27 +877,27 @@
       },
       "alwaysOnMicrophone": {
         "label": "Vždy zapnutý mikrofon",
-        "description": "Udržovat mikrofon aktivní pro rychlejší odezvu"
+        "description": "Udržuje zvukový vstup mikrofonu otevřený mezi nahráváními, místo jeho otevírání při každém stisku zkratky nahrávání. Výchozí: Vypnuto. Zapněte, pokud je první slabika nahrávky ustřižená — cenou je, že kontrolka mikrofonu ve Windows svítí po celou dobu běhu Handy Tool, ne jen během diktování."
       },
       "clamshellMicrophone": {
         "title": "Mikrofon při zavřeném víku",
-        "description": "Mikrofon, který se použije při zavřeném víku notebooku"
+        "description": "Vybere jiné vstupní zařízení pro chvíle, kdy je víko notebooku zavřené, pro doky, jejichž vestavěný mikrofon je tak nepoužitelný. Výchozí: žádné, takže se vždy použije Mikrofon ze stránky Obecné. Detekce zavřeného víka je jen pro macOS a sestavení pro macOS je stále plánované, takže na sestavení pro Windows nemá tento přepínač žádný účinek."
       },
       "postProcessingToggle": {
         "label": "Následné zpracování",
-        "description": "Povolit AI vylepšení textu po přepisu"
+        "description": "Zapne volitelný krok vylepšení textu pomocí AI a přidá do postranního panelu stránku Následné zpracování, kde vyberete poskytovatele a prompt. Výchozí: Vypnuto. Vaše běžná Zkratka přepisu se nezmění — vylepšení proběhne jen na samostatné Klávese pro následné zpracování, a Historie ponechá vedle sebe surový i zpracovaný přepis."
       },
       "muteWhileRecording": {
         "label": "Ztlumit při nahrávání",
-        "description": "Ztlumit systémový zvuk během nahrávání"
+        "description": "Ztlumí systémový zvuk po dobu každého nahrávání, aby hudba nebo video z reproduktorů nemohly proniknout do mikrofonu. Výchozí: Vypnuto. Zapněte, pokud diktujete přes reproduktory, ne přes náhlavní soupravu; zvuk se po skončení nahrávání sám obnoví."
       },
       "appendTrailingSpace": {
         "label": "Přidat koncovou mezeru",
-        "description": "Přidat mezeru po vloženém přepisu"
+        "description": "Přidá jednu mezeru na konec každého doručeného přepisu, aby dvě diktování za sebou nevytvořila „...jedna.Dvě“. Výchozí: Vypnuto. Zapněte, pokud diktujete v krátkých úsecích do stejného pole; ponechte vypnuté tam, kde vadí přebytečná mezera, například ve vyhledávacím poli nebo terminálovém příkazu."
       },
       "keyboardImplementation": {
         "title": "Keyboard Implementation",
-        "description": "Choose the keyboard shortcut backend.",
+        "description": "Vybere, který backend registruje globální zkratky Handy Tool v operačním systému. Výchozí: Tauri Global Shortcut. Přepněte na Handy Keys, když se nastavená zkratka nikdy nespustí, protože kombinaci už vlastní jiný program nebo ji Windows odmítnou zaregistrovat — po přepnutí se všechny zkratky znovu zaregistrují, a pokud se to nezdaří, změna se vrátí zpět.",
         "bindingsReset": "Keyboard shortcuts were incompatible and reset to defaults"
       },
       "paths": {
@@ -487,28 +907,23 @@
       },
       "pasteDelay": {
         "title": "Zpoždění vložení",
-        "description": "Zpoždění před odesláním klávesy pro vložení (v milisekundách). Zvyšte, pokud se vkládá špatný text."
+        "description": "Jak dlouho Handy Tool čeká po vložení přepisu do schránky, než odešle klávesu pro vložení. Výchozí: 60 ms. Zvyšte, pokud pomalá aplikace vloží místo nového textu ten předchozí ze schránky; jde o jiné čekání než „Paste delay after jump (Windows)“, které platí jen ve chvíli, kdy skokový slot právě aktivoval jiné okno."
       }
     },
     "about": {
       "title": "O aplikaci",
       "version": {
         "title": "Verze",
-        "description": "Aktuální verze Handy"
+        "description": "Sestavení Handy Tool, které používáte; uveďte jej při hlášení problému. Jediné vydávané sestavení je Windows x64 — macOS a Linux jsou plánované, a funkce Přechodů zůstanou jen pro Windows i potom. Nic zde samo o sobě nezjišťuje novější verzi; k tomu použijte Aktualizace."
       },
       "appDataDirectory": {
         "title": "Adresář dat aplikace",
-        "description": "Umístění, kde Handy ukládá data"
+        "description": "Otevře jedinou složku, kde Handy Tool uchovává všechno: nastavení (včetně API klíčů poskytovatelů a promptů) v souboru JSON, přepisy v databázi SQLite, nahrávky, stažené modely a rotované protokoly. Výchozí: %APPDATA%\\pr.handy na běžné instalaci Windows. Nic v ní Handy Tool nešifruje — jedinou ochranou jsou oprávnění souborového systému — takže je to i složka, kterou zkopírujete nebo vymažete, když počítač předáváte dál."
       },
       "sourceCode": {
         "title": "Zdrojový kód",
         "description": "Zobrazit zdrojový kód a přispět",
         "button": "Zobrazit na GitHubu"
-      },
-      "supportDevelopment": {
-        "title": "Podpořte vývoj",
-        "description": "Pomozte nám pokračovat ve vývoji Handy",
-        "button": "Přispět"
       },
       "acknowledgments": {
         "title": "Poděkování",
@@ -516,21 +931,180 @@
           "title": "Whisper.cpp",
           "description": "Vysoce výkonné inferenční zpracování modelu automatického rozpoznávání řeči Whisper od OpenAI",
           "details": "Handy používá Whisper.cpp pro rychlé lokální zpracování řeči na text. Díky skvělé práci Georgiho Gerganova a přispěvatelů."
+        },
+        "handy": {
+          "title": "Handy",
+          "description": "Původní open-source aplikace pro přepis řeči na text, na které tento projekt vznikl",
+          "details": "Handy Tool je fork projektu Handy, který vytvořil CJ Pais (github.com/cjpais/Handy, handy.computer). Projekt byl převzat ve verzi původního projektu v0.8.1 (březen 2026) a od té doby jej samostatně vyvíjí Patrick R. Velké poděkování CJ a přispěvatelům Handy za základ, na kterém tento projekt stojí."
         }
+      },
+      "updates": {
+        "title": "Aktualizace",
+        "description": "Zobrazit vydání otevře stránku vydání projektu na GitHubu v prohlížeči, abyste ji mohli porovnat s Verzí. Handy Tool nemá aktualizátor a na pozadí novou verzi nikdy nekontroluje — aktualizace je vždy vaše volba.",
+        "button": "Zobrazit vydání"
       }
     },
     "jumper": {
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "When a jump target's app, window class, or control class contains one of these (case-insensitive), it is treated as a remote desktop session and uses the longer 'Remote' jump delays (Advanced → Transcription). Add the identifiers your RDP/Citrix clients use — e.g. msrdc, mstsc, Citrix. An empty list treats every target as local.",
+        "description": "Cíl přechodu, jehož aplikace, třída okna nebo třída ovládacího prvku obsahuje jeden z těchto fragmentů (nerozlišuje velikost písmen), se považuje za vzdálenou plochu, takže se pro něj použije hodnota Vzdálená plocha z „Paste delay after jump (Windows)“ a „Submit delay after jump (Windows)“ na stránce Pokročilé → Přepis místo hodnoty Místní. Výchozí: msrdc, mstsc, Citrix. Přidejte název procesu vašeho klienta RDP nebo Citrix, pokud se doručení do něj stále ztrácí; prázdný seznam považuje každý cíl za místní.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
         "duplicate": "'{{value}}' is already in the list",
         "badge": "Remote ✓",
         "badgeTooltip": "This target matches a remote match string, so it uses the Remote jump delays."
+      },
+      "windowsOnly": "Přechody jsou dostupné pouze ve Windows.",
+      "hot": {
+        "title": "Aktivní slot (Kotva a doručení)",
+        "optionsMoved": {
+          "title": "Možnosti doručení",
+          "description": "Nejde o nastavení, jen o odkaz. Co přechod se slotem skutečně udělá, se nastavuje pro každý postup samostatně na stránce Pokročilé → Přepis: „Akce skokového slotu při zahájení“, „Akce skokového slotu při ukončení“, „Sledovat poslední místo výstupu“ a „Vrátit zaměření po doručení“ existují jednou pro Přepis a jednou pro Přepsat a odeslat.",
+          "hint": "Nastavuje se ve skupinách Přepis a Přepsat a odeslat na stránce Obecné."
+        }
+      },
+      "hot2": {
+        "title": "Druhý aktivní slot (Kotva a doručení)"
+      },
+      "slot": {
+        "title": "Statický slot {{index}}",
+        "status": "Cíl slotu {{index}}",
+        "description": "Zobrazuje, na co tento číslovaný slot ukazuje, s tlačítky Test (přejde tam bez doručení) a Vymazat. Výchozí: žádný cíl — zaměřte pole, ke kterému se opakovaně vracíte, stiskněte jeho zkratku Nastavit (ctrl+alt+shift+1 … 9) a kdykoli se do něj vraťte pomocí ctrl+alt+1 … 9. Slot si pamatuje okno a pole, ne kartu prohlížeče ani pozici textového kurzoru, a doručení přežije.",
+        "test": "Test",
+        "testFailed": "Přechod se nezdařil: {{reason}}",
+        "stale": "Uloženo: {{app}} ({{control}}) — okno ještě nebylo nalezeno"
+      },
+      "persist": {
+        "label": "Pamatovat sloty i po restartu",
+        "description": "Zapamatuje cíl každého slotu i po restartu aplikace. Výchozí: Vypnuto. Windows nedokážou zachovat identifikátor okna po restartu, takže Handy uloží identitu každého slotu (aplikace, okno a typ pole) a při spuštění — a znovu ve chvíli použití slotu — znovu vyhledá odpovídající okno; uložený slot, jehož aplikace neběží, se zobrazuje červeně, dokud se znovu neobjeví.",
+        "groupTitle": "Trvalost"
+      },
+      "slotNames": {
+        "hot": "Aktivní 1",
+        "hot2": "Aktivní 2",
+        "static": "Slot {{index}}"
+      },
+      "track": {
+        "label": "Sledovat poslední místo výstupu",
+        "description": "Pouze Windows. Poté, co tento postup doručí přepis, slot vybraný v „Uložit umístění do“ se přepíše polem, do kterého text skutečně dopadl, takže vás další přechod do tohoto slotu vrátí na místo posledního diktování. Výchozí: Vypnuto. Zapněte, když chcete, aby slot sledoval vás místo ručního nastavování — Přepis a Přepsat a odeslat sledují nezávisle, a zachycení proběhne dřív než jakékoli „Vrátit zaměření po doručení“.",
+        "slot": {
+          "title": "Uložit umístění do",
+          "description": "Do kterého skokového slotu „Sledovat poslední místo výstupu“ zapíše po každém doručení tímto postupem. Výchozí: Aktivní 1. Nasměrujte jej na statický slot (Slot 1 až Slot 9), pokud nechcete, aby automatické sledování stále přepisovalo aktivní kotvu nastavenou ručně zkratkou Nastavit kotvu."
+        }
+      },
+      "saveCursor": {
+        "label": "Obnovit pozici kurzoru myši",
+        "description": "Poté, co tento postup doručí přepis, zapamatuje si pozici kurzoru myši a při přechodu jej vrátí zpět na toto místo. Nezávislé na přepínači druhého postupu; režim pozice níže je společný pro oba postupy.",
+        "perSlot": "Uložit pozici myši",
+        "perSlotDescription": "Při nastavení nebo sledování tohoto slotu zapamatuje i pozici kurzoru myši a při přechodu na tento slot jej vrátí zpět — až po vložení, takže nemůže narušit doručení. Výchozí: Vypnuto. Zapněte pro slot na jiném monitoru, aby klávesnice a myš dorazily společně; zapíná také „Režim pozice kurzoru“ tohoto slotu níže, a každý slot má svůj vlastní pár přepínačů.",
+        "mode": {
+          "title": "Režim pozice kurzoru",
+          "description": "Určuje, jak se měří uložená pozice kurzoru tohoto slotu. Výchozí: Relativně k aplikaci (sleduje okno) — obnoví stejné místo v cílovém okně i po jeho přesunutí, změně velikosti nebo přetažení na monitor s jiným DPI. Zvolte Absolutně na obrazovce (přesné souřadnice) pro něco, co se nikdy nehýbe, například pevný dashboard; nabídka je neaktivní, dokud pro tento slot není zapnuté „Uložit pozici myši“.",
+          "appRelative": "Relativně k aplikaci (sleduje okno)",
+          "screenAbsolute": "Absolutně na obrazovce (přesné souřadnice)"
+        }
+      },
+      "returnFocus": {
+        "label": "Vrátit zaměření po doručení",
+        "description": "Po doručení, které vyžadovalo přechod, se zaměření vrátí do okna, ve kterém jste byli na začátku doručení — zachytí se automaticky, bez nutnosti nastavovat slot. Výchozí: Zapnuto. Je podmíněné: pokud jste během práce Handy Tool sami přepnuli okno, ponechá vás tam, kam jste se přesunuli, a každý postup se o tom rozhoduje samostatně (jen Windows)."
+      },
+      "requireSameFlow": {
+        "groupTitle": "Chování při ukončení",
+        "label": "Při ukončení přejít jen při stejné zkratce",
+        "description": "Když je zapnuto, „Akce skokového slotu při ukončení“ postupu proběhne jen tehdy, když byla nahrávka zahájena i ukončena stejnou zkratkou. Výchozí: Vypnuto. Příklad: zahájíte Přepisem a ukončíte Přepsat a odeslat a přechod se neuskuteční — vložení i odeslání proběhnou dál, jen přechod je podmíněný. Zapněte, pokud vás kombinování obou zkratek stále teleportuje někam, kam jste nechtěli."
       }
+    },
+    "translator": {
+      "title": "Překladač",
+      "enabled": {
+        "label": "Sledovat složky",
+        "description": "Zapnutím se každý nový soubor .wav, .ogg nebo .opus, který přibude do sledované složky, přepíše do souboru .txt vedle něj, s použitím vašeho aktuálního modelu, Jazyka a nastavení Překládat do angličtiny. Výchozí: vypnuto. Soubory, které ve složce už leží ve chvíli zapnutí sledování, se úmyslně nechávají bez povšimnutí, a samotné složky se vybírají v Přidat složku."
+      },
+      "priority": {
+        "title": "Priorita",
+        "description": "Rozhoduje, kdo dostane engine pro řeč, když si o něj ve stejný okamžik řekne soubor ze složky i vaše vlastní diktování. Výchozí: Nejdřív diktování — dávka se pozastaví na nejbližší hranici segmentu ve chvíli, kdy stisknete nahrávání, a poté pokračuje, takže se neztratí žádný postup. Nejdřív složky ponechá dávku běžet a váš živý text dorazí o něco později; V pořadí přijetí dokončí právě zpracovávaný soubor a teprve poté vaši nahrávku, než se spustí další soubor.",
+        "options": {
+          "live_first": "Nejdřív diktování",
+          "folder_first": "Nejdřív složky",
+          "fifo": "V pořadí přijetí"
+        }
+      },
+      "model": {
+        "title": "Dávkový model",
+        "description": "Který model přepisuje soubory ve vašich sledovaných složkách; modely označené glóbusem umí i překládat do angličtiny, což vyžaduje zapnuté Překládat do angličtiny. Výchozí: Stejný jako pro diktování (výchozí) — použije se model vybraný na stránce Modely. Zvolíte-li jiný místní model, načte se do vlastního slotu vedle modelu pro diktování — dávková práce na jednom enginu, diktování stále okamžité na druhém — za cenu paměti navíc, kterou lze vrátit pomocí Uvolnit dávkový model po.",
+        "sameAsDictation": "Stejný jako pro diktování (výchozí)",
+        "translates": "{{name}} — umí překládat do angličtiny"
+      },
+      "unload": {
+        "title": "Uvolnit dávkový model po",
+        "description": "Jak dlouho zůstane vlastní kopie dávkového modelu Překladače v paměti po utišení fronty; uvolnění vrátí RAM nebo VRAM, ponechání v paměti ušetří opětovné načítání při příchodu dalšího souboru. Výchozí: Nikdy (ponechat načtený — nejrychlejší start). Má vliv jen tehdy, když Dávkový model určuje jiný místní model než váš model pro diktování — jinak platí hlavní nastavení Uvolnění modelu."
+      },
+      "status": {
+        "title": "Stav",
+        "description": "Co Překladač právě dělá. Hotové přepisy se ukládají vedle zvukového souboru se stejným názvem a příponou .txt.",
+        "disabled": "Vypnuto",
+        "idle": "Sledování — nic k zpracování",
+        "queued": "Soubory ve frontě: {{count}}",
+        "working": "{{file}} — segment {{segment}}/{{total}}",
+        "workingIndeterminate": "{{file}}",
+        "paused": {
+          "live": "pozastaveno pro živé diktování",
+          "processing": "pozastaveno, dokud se nahrávka nedokončí"
+        },
+        "counters": "{{done}} hotovo, {{failed}} neúspěšných v této relaci"
+      },
+      "folders": {
+        "title": "Sledované složky",
+        "none": "Žádné složky",
+        "emptyTitle": "Žádné sledované složky",
+        "emptyDescription": "Přidejte složku a začněte sledovat nové nahrávky.",
+        "addTitle": "Přidat složku",
+        "addDescription": "Otevře výběr složky; od té chvíle se každý nový zvukový soubor, který se v ní objeví, zařadí do fronty a jeho přepis se uloží vedle něj jako .txt. Výchozí: vaše nahrávací složka Handy se při prvním spuštění Překladače přidá automaticky. Přidání složky nic neudělá, dokud není zapnuté Sledovat složky, a to, co už ve složce je, se ignoruje — přepisují se jen soubory, které přibudou později.",
+        "add": "Přidat složku",
+        "remove": "Přestat sledovat tuto složku",
+        "addFailed": "Složku se nepodařilo přidat: {{reason}}",
+        "operationFailed": "Složku se nepodařilo aktualizovat: {{reason}}",
+        "toggleAriaLabel": "Sledovat složku {{name}}",
+        "removeAriaLabel": "Přestat sledovat složku {{name}}"
+      }
+    },
+    "currentAudio": {
+      "streamingHint": "Text se během řeči zobrazuje postupně pouze tehdy, když je použitá zkratka — Přepis nebo Push-to-Talk — nastavena na Živě a používáte místní model.",
+      "finalHint": "V režimu Po nahrávání nebo při přepisu přes API či OpenRouter se celý přepis zobrazí najednou po skončení nahrávání; režim jednotlivých zkratek nastavíte v",
+      "advancedTranscription": "Pokročilé → Přepis",
+      "finalHintSuffix": ".",
+      "title": "Aktuální zvuk",
+      "idle": "Zahajte nahrávání pro zobrazení živého přepisu",
+      "recording": "Poslouchám...",
+      "openFloating": "Otevřít plovoucí okno",
+      "copy": "Kopírovat",
+      "copied": "Zkopírováno"
+    },
+    "backup": {
+      "description": "Exportuje data Handy Tool jako komprimovaný archiv. Stažené modely a velké nekomprimované zvukové soubory (WAV/FLAC) jsou vždy vyloučeny.",
+      "configTitle": "Konfigurace + historie",
+      "configHint": "Exportuje vaše nastavení plus databázi historie přepisů (časy, text, cena, délka) a žádný zvuk, takže soubor zůstává malý. Použijte před velkou změnou konfigurace, nebo k přenosu zkratek, poskytovatelů a promptů na jiný počítač. Archiv není šifrovaný a obsahuje vaše API klíče poskytovatelů a token serveru MCP v čistém textu — zacházejte s ním jako s tajemstvím.",
+      "exportConfig": "Exportovat konfiguraci + historii",
+      "fullTitle": "Úplná data (s komprimovaným zvukem)",
+      "fullHint": "Vše z exportu konfigurace plus vaše komprimované nahrávky (.opus/.ogg) — mnohem větší soubor, který stále obsahuje vaše API klíče v čistém textu. Stažené modely, nekomprimovaný zvuk WAV/FLAC a rozpracované dílčí soubory jsou vždy vyloučeny, takže nahrávky pořízené s vypnutým Nahráváním odolným proti pádu se v archivu objeví jako řádky historie bez zvuku.",
+      "exportFull": "Exportovat úplnou zálohu",
+      "saved": "Uloženo do {{path}}",
+      "restoreTitle": "Obnovit ze zálohy",
+      "restoreHint": "Vyberte archiv zálohy Handy Tool (.tar.gz) a zaškrtněte, co obnovit — Konfigurace a historie (nastavení, databáze historie) a Nahrávky (zvukové soubory) jsou na sobě nezávislé, takže lze obnovit jen jednu z nich, a obě jsou zpočátku zaškrtnuté. Extrahují se jen položky, které Handy Tool rozpozná, a obnovené nahradí to, co máte teď. Obnovení nastavení nebo historie vyžaduje restart: použijte tlačítko Restartovat Handy Tool nyní, které se zobrazí, jinak je běžící aplikace při dalším uložení přepíše.",
+      "restoreConfig": "Konfigurace a historie (nastavení, databáze historie)",
+      "restoreRecordings": "Nahrávky (zvukové soubory)",
+      "restoreButton": "Obnovit ze zálohy…",
+      "restoreDone": "Obnoveno — nastavení: {{settings}} · historie: {{history}} · nahrávky: {{recordings}}",
+      "restartHint": "Restartujte Handy Tool, aby se načetlo obnovené nastavení/historie (do té doby je běžící aplikace může přepsat).",
+      "restartNow": "Restartovat Handy Tool nyní"
+    },
+    "modelPicker": {
+      "refresh": "Načíst / obnovit seznam modelů",
+      "loading": "Načítání modelů…",
+      "error": "Nepodařilo se načíst modely",
+      "noMatches": "Žádné odpovídající modely — napište pro použití vlastního id"
     }
   },
   "common": {
@@ -553,7 +1127,13 @@
     "off": "Vypnuto",
     "yes": "Ano",
     "no": "Ne",
-    "noOptionsFound": "Nenalezeny žádné možnosti"
+    "noOptionsFound": "Nenalezeny žádné možnosti",
+    "delay": {
+      "off": "Vypnuto (okamžitě)",
+      "ms": "{{ms}} ms",
+      "seconds": "{{seconds}} s"
+    },
+    "selectOption": "Vyberte možnost…"
   },
   "accessibility": {
     "permissionsRequired": "Vyžadována oprávnění usnadnění přístupu",
@@ -566,10 +1146,175 @@
   },
   "appLanguage": {
     "title": "Jazyk aplikace",
-    "description": "Změňte jazyk rozhraní Handy"
+    "description": "Přepne celé rozhraní, včetně nabídky v systémové liště, na jeden ze 17 dostupných jazyků. Výchozí: jazyk zobrazení Windows, s návratem k angličtině, pokud daný jazyk není k dispozici. Jde jen o jazyk rozhraní — nemá nic společného s jazykem, kterým mluvíte, ten určuje Jazyk na stránce Obecné."
   },
   "overlay": {
     "transcribing": "Přepisuji...",
-    "processing": "Zpracovávám..."
+    "processing": "Zpracovávám...",
+    "openFloatingWindow": "Otevřít okno přepisu"
+  },
+  "brand": {
+    "name": "Handy",
+    "suffix": "TOOL"
+  },
+  "toasts": {
+    "pasteFailed": "Vložení přepisu se nezdařilo: {{reason}}. Text je uložen v historii.",
+    "pasteFailedParked": "Vložení přepisu se nezdařilo: {{reason}}. Text je ve schránce (a v historii) — vložte jej manuálně.",
+    "transcriptionFailed": "Přepis se nezdařil: {{reason}}. Zkontrolujte, že vybraný model funguje, a zkuste to znovu."
+  },
+  "flm": {
+    "notInstalled": "FLM není nainstalováno. Nainstalujte FastFlowLM pro použití modelů akcelerovaných přes NPU.",
+    "npuAccelerated": "Akcelerováno přes NPU"
+  },
+  "tokenCount": {
+    "configureProviders": "Nastavit poskytovatele",
+    "noProviders": "Nejsou nastaveni žádní poskytovatelé.",
+    "title": "Počet tokenů",
+    "placeholder": "Vložte sem text pro spočítání tokenů...",
+    "tokenizer": "Tokenizér",
+    "count": "Počítat",
+    "countAll": "Počítat se všemi",
+    "countAllTitle": "Počítat postupně se všemi povolenými poskytovateli — vhodné, když sloty sdílejí jednu místní službu, která musí načítat a uvolňovat jednotlivé modely",
+    "countAllParallel": "Počítat se všemi (paralelně)",
+    "countAllParallelTitle": "Dotázat všechny povolené poskytovatele současně — nejrychlejší, když jsou služby nezávislé",
+    "counting": "Počítání... {{done}}/{{total}}",
+    "cancelSweep": "Zrušit",
+    "openFile": "Otevřít soubor...",
+    "fileTooLarge": "Soubor je příliš velký (max. 10 MB).",
+    "loadedFile": "Načteno: {{name}}",
+    "providerOption": "{{name}} (poskytovatel)",
+    "chipDisabled": "Nenakonfigurováno — zapněte přepínačem „Povolit tohoto poskytovatele“ v Pokročilé → Poskytovatelé → Registrovaní poskytovatelé LLM.",
+    "chips": {
+      "cl100k_base": "cl100k (GPT-4)",
+      "o200k_base": "o200k (GPT-4o)",
+      "estimate": "Odhad"
+    },
+    "activeProvider": "Počítání s: {{name}} — {{model}} ({{url}})",
+    "activeLocal": "Místní počítání s: {{tokenizer}}",
+    "sweepSummary": "{{ok}} z {{total}} poskytovatelů odpovědělo",
+    "showFailed": "zobrazit {{count}} neúspěšných",
+    "hideFailed": "skrýt neúspěšné",
+    "table": {
+      "provider": "Poskytovatel",
+      "model": "Model",
+      "tokens": "Tokeny",
+      "delta": "Δ vs nejmenší",
+      "time": "Čas"
+    },
+    "tokens": "tokenů",
+    "characters": "znaků",
+    "words": "slov",
+    "options": {
+      "cl100k_base": "Počítá text v poli přesným tokenizérem GPT-4 a GPT-3.5 (cl100k_base), celé na tomto počítači — nic se nikam neodesílá a funguje i offline. Použijte pro modely OpenAI až po GPT-4; pro novější použijte o200k (GPT-4o).",
+      "o200k_base": "Počítá text v poli přesným tokenizérem GPT-4o a o1 (o200k_base), celé na tomto počítači — nic se nikam neodesílá a funguje i offline. Použijte pro aktuální modely OpenAI; starší modely GPT-4 a GPT-3.5 tokenizují pomocí cl100k (GPT-4).",
+      "estimate": "Hrubý místní odhad přibližně 1,3 tokenu na slovo, bez tokenizéru a bez síťového volání. Použijte, když pro váš model není k dispozici přesné počítání, a berte jej jen orientačně — je záměrně vynechán ze sloupce „Δ vs nejmenší“, aby hrubé číslo nezkreslilo porovnání přesných počítání."
+    }
+  },
+  "keyboardTyper": {
+    "title": "Psaní na klávesnici",
+    "description": "Odešle tento text do zaměřeného okna jako jednotlivé simulované stisky kláves, takže fungují i tam, kde je vkládání blokováno — vzdálené konzole, prohlížeče VM, přihlašovací okna. Stiskněte Spustit a dostanete odpočet Zpoždění spuštění (výchozí 10 s), abyste nejdřív klikli do cílového okna; stiskněte Zkratku pro psaní textu, pokud v cíli už jste, a psaní začne za přibližně sekundu. Text existuje jen v paměti — nikdy se nezapíše do nastavení, do Historie ani do protokolů.",
+    "placeholder": "Zadejte text k napsání...",
+    "go": "Spustit",
+    "cancel": "Zrušit",
+    "startDelay": {
+      "label": "Zpoždění spuštění",
+      "unit": "s",
+      "preset": "{{seconds}} s",
+      "presetTitle": "Začít psát za {{seconds}} sekund"
+    },
+    "keyDelay": {
+      "label": "Zpoždění mezi klávesami",
+      "unit": "ms"
+    },
+    "shortcut": {
+      "label": "Zkratka:",
+      "unset": "nenastaveno",
+      "hint": "(změňte v Pokročilém nastavení; opětovným stiskem zrušíte)"
+    },
+    "status": {
+      "idle": "Klikněte na Spustit a poté zaměřte cílové okno — nebo použijte zkratku přímo v cílové aplikaci.",
+      "countdown": "Psaní začne za {{seconds}} s... (Esc zruší)",
+      "typing": "Píšu... {{typed}}/{{total}} znaků (Esc zruší)",
+      "done": "Hotovo — napsáno {{total}} znaků.",
+      "cancelled": "Zrušeno.",
+      "error": "Chyba: {{message}}"
+    }
+  },
+  "modelTesting": {
+    "configureProviders": "Nastavit poskytovatele",
+    "description": "Odešle jeden prompt každému modelu zaškrtnutému pod Spustit a zobrazí odpovědi vedle sebe s počty tokenů, cenou a dobou odezvy; modely zaškrtnuté pod Porota poté ohodnotí všechny tyto odpovědi vaším promptem pro porotu. Výchozí: nic vybráno a oba prompty prázdné. Seznam pochází z Pokročilé → Registrovaní poskytovatelé LLM, takže běh používá vaše vlastní API klíče — váš prompt opustí tento počítač a u placených poskytovatelů stojí skutečné peníze.",
+    "providersLabel": "Modely",
+    "selectAll": "Vybrat vše ke spuštění",
+    "clear": "Vymazat",
+    "run": "Spustit",
+    "judge": "Porota",
+    "costPerM": "vstup ${{input}} · výstup ${{output}} /1M",
+    "noProviders": "Nejsou nakonfigurováni žádní poskytovatelé schopní chatu. Přidejte jednoho v Pokročilé → Registrovaní poskytovatelé LLM.",
+    "mainPromptLabel": "Prompt pro všechny modely",
+    "mainPromptPlaceholder": "Prompt odeslaný každému vybranému modelu…",
+    "judgePromptLabel": "Prompt pro porotu / rozhodčího (volitelné)",
+    "judgePromptPlaceholder": "Instrukce pro porotu. Obdrží původní vstup a odpovědi všech modelů (označené XML tagy).",
+    "temperatureLabel": "Teplota",
+    "modelParams": "Modely",
+    "judgeParams": "Porota",
+    "runButton": "Spustit test",
+    "cancelButton": "Zrušit",
+    "runningMain": "Dotazování modelů…",
+    "runningJudge": "Spouštění poroty…",
+    "summaryTitle": "Souhrn",
+    "judgePanelTitle": "Porota",
+    "answersTitle": "Odpovědi",
+    "colModel": "Model",
+    "colInput": "Vstup tok.",
+    "colOutput": "Výstup tok.",
+    "colCost": "Náklady",
+    "colTime": "Čas",
+    "roundTrip": "Doba odezvy (nejdelší)",
+    "totalCost": "Celkové náklady",
+    "errorPrefix": "Chyba",
+    "artifactLabel": "Výstup Markdown",
+    "copyMarkdown": "Kopírovat Markdown",
+    "copied": "Zkopírováno!",
+    "saveMarkdown": "Uložit…",
+    "status": {
+      "mainStart": "Dotazování modelů: {{count}}…",
+      "judgeStart": "Spouštění poroty — počet porotců: {{count}}…",
+      "done": "Hotovo.",
+      "cancelled": "Zrušeno.",
+      "activity": "Aktivita běhu"
+    },
+    "library": {
+      "preset": "Předvolba",
+      "presetPlaceholder": "Načíst předvolbu…",
+      "pick": "Uložené prompty…",
+      "save": "Uložit",
+      "delete": "Smazat vybrané",
+      "namePlaceholder": "Název…",
+      "confirm": "Uložit",
+      "cancel": "Zrušit",
+      "editCustom": "Upravit / vlastní"
+    },
+    "thinking": {
+      "label": "Přemýšlení",
+      "auto": "Automaticky",
+      "on": "Zapnuto",
+      "off": "Vypnuto"
+    },
+    "image": {
+      "label": "Obrázek (volitelné, pro vizuální modely)",
+      "drop": "Klikněte nebo přetáhněte sem obrázek pro přiložení",
+      "remove": "Odebrat",
+      "tooLarge": "Obrázek je příliš velký (max. {{mb}} MB)."
+    },
+    "save": "Uložit",
+    "saveAs": "Uložit jako…",
+    "saveTo": "Uložit do {{path}}",
+    "saveDisabled": "Nejprve použijte „Uložit jako…“ pro výběr umístění"
+  },
+  "floating": {
+    "waiting": "Čekání na přepis…",
+    "listening": "Poslouchám…",
+    "copy": "Kopírovat",
+    "copied": "Zkopírováno"
   }
 }

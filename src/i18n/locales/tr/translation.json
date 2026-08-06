@@ -13,7 +13,43 @@
     "postProcessing": "Son İşlem",
     "history": "Geçmiş",
     "debug": "Hata Ayıklama",
-    "about": "Hakkında"
+    "about": "Hakkında",
+    "backup": "Yedekleme",
+    "currentAudio": "Mevcut Ses",
+    "tokenCount": "Token Sayımı",
+    "keyboardTyper": "Klavye Yazıcısı",
+    "jumper": "Atlayıcı",
+    "translator": "Çevirmen",
+    "groups": {
+      "tools": "Araçlar",
+      "config": "Yapılandırma"
+    },
+    "modelTesting": "Model Testi",
+    "resize": "Boyutlandırmak için sürükleyin",
+    "update": {
+      "checking": "Güncellemeler denetleniyor…",
+      "available": "Handy Tool {{version}} kullanılabilir",
+      "silentOn": "Handy Tool kapanacak, güncellenecek ve yeniden açılacak.",
+      "silentOff": "Güncellemeleri zaman aralığında otomatik yüklemek için sessiz güncellemeleri açın.",
+      "enableSilent": "Sessiz güncellemeleri aç",
+      "updateRestart": "Güncelle ve yeniden başlat",
+      "later": "Daha sonra",
+      "updateNow": "Şimdi güncelle",
+      "downloading": "Handy Tool {{version}} indiriliyor…",
+      "percent": "%{{percent}}",
+      "ready": "{{version}} güncellemesi hazır",
+      "waitingForIdle": "Dikte işleminin bitmesi bekleniyor…",
+      "readyDetail": "Güncellemeyi tamamlamak için Handy Tool yeniden başlatılacak.",
+      "waiting": "Bekleniyor…",
+      "restartInstall": "Yeniden başlat ve yükle",
+      "installing": "Güncelleme yükleniyor…",
+      "installingDetail": "Handy Tool kapanıp yeniden açılacak.",
+      "failed": "Güncelleme başarısız",
+      "failedDetail": "Handy Tool değiştirilmedi. {{reason}}",
+      "unknownError": "Bilinmeyen hata",
+      "tryAgain": "Yeniden dene",
+      "downloadInstaller": "Yükleyiciyi indir"
+    }
   },
   "onboarding": {
     "subtitle": "Başlamak için bir transkripsiyon modeli seçin",
@@ -133,11 +169,15 @@
   "settings": {
     "modelSettings": {
       "title": "{{model}} Ayarları",
-      "noSettingsNeeded": "Bu model yapılandırma gerektirmeden otomatik olarak çalışır."
+      "noSettingsNeeded": "Bu model yapılandırma gerektirmeden otomatik olarak çalışır.",
+      "autoDetectLanguage": {
+        "description": "Bu model konuşulan dili otomatik olarak algılar ve belirli bir dile kilitlenemez. Bir dili zorlamak için Whisper, SenseVoice, FLM veya API modeline geçin.",
+        "value": "Otomatik algılandı"
+      }
     },
     "models": {
       "title": "Transkripsiyon Modelleri",
-      "description": "Bir transkripsiyon modeli seçin veya ek modeller indirin. Farklı modeller değişen doğruluk ve hız seviyeleri sunar.",
+      "description": "Diktenizi hangi konuşma modelinin transkribe edeceğini seçin — modeller doğruluk, hız ve yüklüyken tuttukları bellek miktarı açısından farklılık gösterir. Varsayılan: temiz bir kurulumda hiçbir şey seçili değildir; onboarding ilk modelinizi indirip seçer. Seçiminiz, Genel sayfasında Dil ve İngilizceye Çevir'in sunulup sunulmayacağını da belirler ve Çevirmen, Toplu iş modeli 'Dikte ile aynı (varsayılan)' olarak bırakıldığında bu aynı modeli kullanır.",
       "downloaded": "İndirildi",
       "available": "İndirilebilir",
       "deleteConfirm": "{{modelName}} modelini silmek istediğinizden emin misiniz? Kullanmak için tekrar indirmeniz gerekecek.",
@@ -165,26 +205,79 @@
         "bindings": {
           "transcribe": {
             "name": "Transkripsiyon Kısayolu",
-            "description": "Sesinizi kaydetmek ve metne dönüştürmek için klavye kısayolu."
+            "description": "Kaydı başlatmak için bir kez, sonlandırmak için tekrar basın; transkripsiyon odaktaki pencereye teslim edilir. Varsayılan: Ctrl+Space. Transkripsiyon Modu'nu ve Gelişmiş sayfasının Yapıştırma Yöntemi'ni izler — basılı tutarak kaydetmek için bunun yerine Bas Konuş Kısayolu'nu kullanın."
           },
           "cancel": {
             "name": "İptal Kısayolu",
-            "description": "Mevcut kaydı iptal etmek için klavye kısayolu."
+            "description": "Devam eden kaydı iptal eder. Varsayılan: escape. İptalin gerçekte ne yapacağına Genel sayfasındaki İptal davranışı karar verir — Bitir, sadece geçmişe kaydet metni yine transkribe edip saklar ama pencerenize hiçbir şey teslim etmez; Kaydı at ise sesi atar — ve tepsideki İptal öğesi de aynı ayarı izler."
           },
           "transcribe_with_post_process": {
             "name": "Son İşlem Kısayolu",
             "description": "İsteğe bağlı: Transkripsiyonunuza her zaman AI son işleme uygulayan özel bir kısayol tuşu."
+          },
+          "transcribe_ptt": {
+            "name": "Bas Konuş Kısayolu",
+            "description": "Kaydetmek için bu kısayolu basılı tutun, durdurmak için bırakın; bırakıldığında mikrofon soğur, bu nedenle sonrasında söylediğiniz hiçbir şey metne sızamaz. Varsayılan: Ctrl+Alt+Space. Kendi Transkripsiyon Modu (PTT) ve kendi Yapıştırma Yöntemi (PTT) ayarlarına sahiptir; bu nedenle bas-konuş, Transkripsiyon Kısayolu'ndan farklı davranabilir."
+          },
+          "type_text": {
+            "name": "Metin Yazma Kısayolu",
+            "description": "Klavye Yazıcısı kutusunda ne varsa şu anda odaklanılan pencereye yazar; iptal etmek için tekrar basın veya Escape'e basın. Varsayılan: ctrl+alt+t. Başlangıç gecikmesini beklemek yerine yaklaşık bir saniye sonra başlar, çünkü bir kısayola basmak zaten hedef pencerede olduğunuz anlamına gelir — tam geri saymayı kullanan Başlat düğmesidir."
+          },
+          "transcribe_and_submit": {
+            "name": "Transkribe Et ve Gönder Kısayolu",
+            "description": "Kaydı sonlandırır, transkripsiyonu yapıştırır ve ardından gönderme tuşuna basar. Kayıt başka bir kısayolla başlatılmış olsa da çalışır."
+          },
+          "anchor_set": {
+            "name": "Sabit Nokta Belirle",
+            "description": "Şu anda odaklanılan metin alanını Sıcak 1 hedefi olarak yakalar. Varsayılan: ctrl+alt+k. Kendi başına hiçbir şey teslim etmez — sonraki transkripsiyonunuzun oraya inmesi için 'Bitişte yuva eylemi'ni, yuva Sıcak 1'e ayarlanmış 'Yuvaya atla / teslim et' olarak ayarlayın (Gelişmiş → Transkripsiyon). Parola kutuları ve Handy'nin kendi pencereleri kabul edilmez."
+          },
+          "anchor_jump": {
+            "name": "Sabit Noktaya Atla",
+            "description": "Sıcak 1 penceresini ve alanını yeniden odağa getirir ve hiçbir şey yapıştırmaz — bir 'taslağıma geri dön' tuşu. Varsayılan: ctrl+alt+j. Bu yuva için 'Fare konumunu kaydet' açıksa imleç de geri taşınır; yuva boşsa veya penceresi kapanmışsa hiçbir şey olmaz."
+          },
+          "jump_set_slot_1": {
+            "name": "Atlama Yuvası 1'i Belirle",
+            "description": "Şu anda odaklanılan alanı, önceki içeriğinin üzerine yazarak statik yuva 1 olarak kaydeder. Varsayılan: ctrl+alt+shift+1. Bir şey onu kullanana kadar yuva sadece bir yer imidir — 'Yuva 1'e Atla' ile geri dönün veya bir akışın 'Bitişte yuva eylemi'ni (Gelişmiş → Transkripsiyon) Yuva 1'e ayarlayarak transkripsiyonların oraya teslim edilmesini sağlayın."
+          },
+          "jump_set_slot_2": {
+            "name": "Atlama Yuvası 2'yi Belirle",
+            "description": "Şu anda odaklanılan alanı, önceki içeriğinin üzerine yazarak statik yuva 2 olarak kaydeder. Varsayılan: ctrl+alt+shift+2. 'Yuva 2'ye Atla' ile geri dönün veya bir akışın 'Bitişte yuva eylemi'ni (Gelişmiş → Transkripsiyon) Yuva 2'ye ayarlayarak transkripsiyonların oraya teslim edilmesini sağlayın."
+          },
+          "jump_set_slot_3": {
+            "name": "Atlama Yuvası 3'ü Belirle",
+            "description": "Şu anda odaklanılan alanı, önceki içeriğinin üzerine yazarak statik yuva 3 olarak kaydeder. Varsayılan: ctrl+alt+shift+3. 'Yuva 3'e Atla' ile geri dönün veya bir akışın 'Bitişte yuva eylemi'ni (Gelişmiş → Transkripsiyon) Yuva 3'e ayarlayarak transkripsiyonların oraya teslim edilmesini sağlayın."
+          },
+          "jump_set_slot_4": {
+            "name": "Atlama Yuvası 4'ü Belirle",
+            "description": "Şu anda odaklanılan alanı, önceki içeriğinin üzerine yazarak statik yuva 4 olarak kaydeder. Varsayılan: ctrl+alt+shift+4. 'Yuva 4'e Atla' ile geri dönün veya bir akışın 'Bitişte yuva eylemi'ni (Gelişmiş → Transkripsiyon) Yuva 4'e ayarlayarak transkripsiyonların oraya teslim edilmesini sağlayın."
+          },
+          "jump_slot_1": {
+            "name": "Yuva 1'e Atla",
+            "description": "Statik yuva 1'in penceresini ve alanını odağa getirir, hiçbir şey teslim etmez — saf gezinme. Varsayılan: ctrl+alt+1. Bu yuva için 'Fare konumunu kaydet' açıksa imleç de geri yüklenir; yuva boşsa veya penceresi kapanmışsa hiçbir şey olmaz."
+          },
+          "jump_slot_2": {
+            "name": "Yuva 2'ye Atla",
+            "description": "Statik yuva 2'nin penceresini ve alanını odağa getirir, hiçbir şey teslim etmez — saf gezinme. Varsayılan: ctrl+alt+2. Bu yuva için 'Fare konumunu kaydet' açıksa imleç de geri yüklenir; yuva boşsa veya penceresi kapanmışsa hiçbir şey olmaz."
+          },
+          "jump_slot_3": {
+            "name": "Yuva 3'e Atla",
+            "description": "Statik yuva 3'ün penceresini ve alanını odağa getirir, hiçbir şey teslim etmez — saf gezinme. Varsayılan: ctrl+alt+3. Bu yuva için 'Fare konumunu kaydet' açıksa imleç de geri yüklenir; yuva boşsa veya penceresi kapanmışsa hiçbir şey olmaz."
+          },
+          "jump_slot_4": {
+            "name": "Yuva 4'e Atla",
+            "description": "Statik yuva 4'ün penceresini ve alanını odağa getirir, hiçbir şey teslim etmez — saf gezinme. Varsayılan: ctrl+alt+4. Bu yuva için 'Fare konumunu kaydet' açıksa imleç de geri yüklenir; yuva boşsa veya penceresi kapanmışsa hiçbir şey olmaz."
           }
         },
         "errors": {
           "restore": "Orijinal kısayol geri yüklenemedi",
           "set": "Kısayol ayarlanamadı: {{error}}",
-          "reset": "Kısayol orijinal değerine sıfırlanamadı"
+          "reset": "Kısayol orijinal değerine sıfırlanamadı",
+          "registrationFailed": "Bazı kısayollar kaydedilemedi ve devre dışı: {{bindings}}. Başka bir uygulama bunları zaten kullanıyor olabilir — Ayarlar'dan farklı bir kombinasyon seçin."
         }
       },
       "language": {
         "title": "Dil",
-        "description": "Konuşma tanıma dilini seçin. 'Otomatik' seçeneği dili kendisi belirler, ancak belirli bir dil seçmek o dildeki doğruluğu artırabilir.",
+        "description": "Motora hangi dili konuştuğunuzu bildirir; dili adlandırmak genellikle Otomatik'ten daha doğrudur ve kısa kayıtların yanlış dil olarak algılanmasını önler. Varsayılan: Otomatik. Bu kartın başlığında adı geçen modele uygulanır ve İngilizceye Çevir açıkken, geri alacağınız dili değil konuştuğunuz dili belirtir.",
         "descriptionUnsupported": "Parakeet modeli dili otomatik algılar. Manuel seçim gerekmez.",
         "searchPlaceholder": "Dil ara...",
         "noResults": "Dil bulunamadı",
@@ -202,52 +295,146 @@
         },
         "jumperPasteDelay": {
           "title": "Paste delay after jump (Windows)",
-          "description": "Extra wait after a jump activates the target window and before the paste keystroke fires. A freshly activated window — especially an RDP/Citrix session — may still be transitioning when Ctrl+V lands, so the paste is swallowed and nothing appears. Set a longer wait for Remote desktop targets (matched on the Jumper page) and a shorter one for Local apps. Shared by both Transcribe and Transcribe & Submit; only applies after a real jump — when you're already in the target, paste stays instant.",
+          "description": "Bir atlama hedef pencereyi öne getirdikten sonra ve yapıştırma tuş vuruşu ateşlenmeden önceki ek bekleme; çünkü az önce etkinleşen bir pencere tuş vuruşlarını hâlâ yutabilir. Varsayılanlar: Local apps için 250 ms, Remote desktop için 1 sn — hangi sütunun uygulanacağına Atlayıcı sayfasındaki Remote match strings karar verir. Yalnızca gerçek bir atlamada çalışır; zaten hedefteyseniz yapıştırma anında kalır ve her iki açılır menü de Transkribe Et ve Transkribe Et ve Gönder tarafından paylaşılır.",
           "options": {
             "none": "Off (instant)"
           }
         },
         "jumperSubmitDelay": {
           "title": "Submit delay after jump (Windows)",
-          "description": "Extra wait before pressing the submit key (Enter) after a jump. A freshly activated window — especially RDP/Citrix — may still be applying the pasted text when Enter fires, so the submit is missed. Set a longer wait for Remote desktop targets and a shorter one for Local apps. Only applies after a real jump; when you're already in the target, submit stays instant.",
+          "description": "Teslimat atlamak zorunda kaldığında, yapıştırma ile gönderme tuşu arasındaki ek bekleme; çünkü az önce etkinleşen pencere yapıştırılan metni hâlâ işliyor olabilir ve Enter'ı kaçırır. Varsayılanlar: Local apps için 250 ms, Remote desktop için 500 ms — hangisinin uygulanacağına Atlayıcı sayfasındaki Remote match strings karar verir. Yalnızca gerçek bir atlamadan sonra çalışır; zaten hedefteyseniz gönderme anında kalır.",
           "options": {
             "none": "Off (instant)"
           }
+        },
+        "title": "Transkribe Et ve Gönder",
+        "pasteMethod": {
+          "title": "Yapıştırma yöntemi",
+          "description": "Yalnızca Transkribe Et ve Gönder Kısayolu tarafından kullanılan yapıştırma tuş vuruşu; böylece dikte edip gönderdiğiniz o tek uygulama diğerlerinden farklı davranabilir. Varsayılan: Pano (Ctrl+V). Bu akış için Yapıştırma Yöntemi'ni geçersiz kılar — o uygulamanın mesaj kutusu Ctrl+V'yi yoksayıyorsa Pano (Shift+Insert) olarak ayarlayın."
+        },
+        "submitKey": {
+          "title": "Gönderme tuşu",
+          "description": "Bu akış yapıştırdıktan hemen sonra mesajı gerçekten göndermek veya komutu çalıştırmak için basılan tuş. Varsayılan: Enter. Bu akış her zaman gönderir — Otomatik Gönder ona uygulanmaz — bu yüzden düz Enter'ın yalnızca yeni satır eklediği uygulamalar için Ctrl+Enter veya Super+Enter'ı seçin."
+        },
+        "idleBehavior": {
+          "title": "Etkin bir kayıt yokken",
+          "description": "Hiçbir şey kaydedilmiyorken Transkribe Et ve Gönder Kısayolu'na bastığınızda ne olacağı. Varsayılan: Kayıt başlat; böylece bir basış başlatır, sonraki basış yapıştırır ve gönderir. Bu tuşu saf bir sonlandırıcı yapmak için Hiçbir şey yapma'yı seçin: kayıtları Transkripsiyon Kısayolu ile başlatır, sonucu yapıştırıp göndermek istediğinizde yalnızca bu tuşa basarsınız.",
+          "options": {
+            "startNormal": "Kayıt başlat",
+            "doNothing": "Hiçbir şey yapma"
+          }
+        },
+        "clipboard": {
+          "title": "Pano",
+          "description": "Pano Yönetimi'nden bağımsız olarak bu akışın kendi pano politikası: yapıştırdıktan sonra mevcut panonuzu geri yükler veya gönderilen transkripsiyonu kasıtlı olarak orada bırakır. Varsayılan: Panoyu Değiştirme. Normal diktenin panonuza dokunmaması ama gönderdiğiniz her şeyin bir kopyasını istemeniz durumunda — veya tam tersi durumda — kullanışlıdır."
         }
       },
       "pasteLast": {
         "title": "Paste last transcription",
         "pasteMethod": {
           "title": "Paste method",
-          "description": "How the last transcription is pasted into the focused window when you press the shortcut. Use Shift+Insert or another method if Ctrl+V doesn't work in the target app."
+          "description": "Son Transkripsiyonu Yapıştır kısayolunun metni odaklanılan pencereye nasıl koyacağı. Bu, Gelişmiş sayfasındaki Yapıştırma Yöntemi'nden ayrıdır; böylece onu tek bir zorlu hedef için ayarlayabilirsiniz. Varsayılan: Pano (Ctrl+V) — bir terminalde Pano (Shift+Insert)'i, karakterleri yapıştırmak yerine yazmak için Doğrudan'ı veya metni yalnızca panoya koyup elle yapıştırmak için Yok'u deneyin."
         },
         "clipboard": {
           "title": "Clipboard",
-          "description": "Keep your existing clipboard after pasting, or leave the transcription on the clipboard."
+          "description": "Yeniden yapıştırmanın ardından önceki panonuzu geri koyup koymayacağı veya transkripsiyonu kasıtlı olarak orada bırakıp bırakmayacağı. Varsayılan: metni kopyalayıp yapıştıran ve ardından eskisini geri yükleyen Panoyu Değiştirme. Yeniden yapıştırmadan sonra da kelimelerin elinizde kalması için Panoya Kopyala'yı seçin; her iki durumda da yalnızca pano metni kaydedilip geri yüklenir, bu nedenle bir görsel veya kopyalanmış dosya kaybolur."
         }
+      },
+      "anchor": {
+        "title": "Sabitleme ve Teslimat",
+        "deliveryFailed": "Sabit noktaya teslimat başarısız oldu: {{reason}}. Metniniz panoda ve sabit nokta korundu.",
+        "status": {
+          "title": "Geçerli sabit nokta",
+          "description": "Bu sıcak yuvanın şu anda neyi işaret ettiğini, Test (hiçbir şey teslim etmeden oraya atlar) ve Temizle ile birlikte gösterir; bir 'Remote ✓' rozeti, hedefin Remote match strings'inizle eşleştiği anlamına gelir. Varsayılan: Sabit nokta belirlenmedi — etkinleştirmek için bir metin alanına tıklayıp bu yuvanın Sabit Nokta Belirle kısayoluna basın. Bir sabit nokta bir teslimatla asla tükenmez: siz temizleyene veya penceresi kapanana kadar kalır.",
+          "active": "Sabitlendi: {{app}} ({{control}})",
+          "none": "Sabit nokta belirlenmedi",
+          "clear": "Temizle"
+        },
+        "keep": {
+          "label": "Teslimattan sonra sabit noktayı koru",
+          "description": "Aynı alana tekrar tekrar dikte etmek için, başarılı bir teslimattan sonra sabit noktayı temizlemek yerine etkin bırakır."
+        },
+        "returnFocus": {
+          "label": "Teslimattan sonra odağı geri döndür",
+          "description": "Metin teslim edildikten sonra daha önce kullandığınız pencereye geri döner."
+        },
+        "actions": {
+          "options": {
+            "none": "Hiçbir şey yapma",
+            "jump": "Yuvaya atla / teslim et",
+            "set": "Yuvayı geçerli odağa ayarla",
+            "clear": "Yuvayı temizle"
+          },
+          "idle": {
+            "title": "Başlangıçta yuva eylemi",
+            "description": "Bir kaydı başlatmak için bu kısayola bastığınız anda, solda açılır menüden seçilen yuvayla ek olarak ne yapılacağı. Varsayılan: Hiçbir şey yapma; bu nedenle yuva seçici başlangıçta gri (devre dışı) görünür. Yuvaya atla / teslim et, konuşmadan önce sizi o hatırlanan alana taşır; Yuvayı geçerli odağa ayarla, şu anda bulunduğunuz yeri kaydeder; ve Yuvayı temizle onu unutur (yalnızca Windows)."
+          },
+          "stop": {
+            "title": "Bitişte yuva eylemi",
+            "description": "Kayıt bittiğinde bu kısayolun solda seçilen yuvayla ne yapacağı. Varsayılan: Hiçbir şey yapma. Yuvaya atla / teslim et, transkripsiyonu sürüklendiğiniz herhangi bir yer yerine o hatırlanan alana gönderir; böylece dikte ederken başka bir şey okuyabilirsiniz. Yuvayı geçerli odağa ayarla ve Yuvayı temizle yalnızca metin teslim edildikten sonra çalışır, ve Atlayıcı sayfasındaki Yalnızca aynı şekilde başlatıldıysa bitişte atla, bir atlamaya ne zaman izin verileceğini daraltabilir (yalnızca Windows)."
+          }
+        }
+      },
+      "transcribeGroup": {
+        "title": "Transkribe Et"
+      },
+      "cancelBehavior": {
+        "title": "İptal davranışı",
+        "description": "İptalin devam eden kayda ne yapacağını belirler — bu, İptal Kısayolu'nu, tepsideki 'İptal' öğesini ve 'handy --cancel'ı kapsar. Varsayılan: kaydı durdurup her zamanki gibi transkribe eden, sesiyle birlikte Geçmiş'te tutan ve ardından hiçbir şey teslim etmeyen 'Bitir, sadece geçmişe kaydet': yapıştırma yok, pano değişikliği yok, gönderme tuşu yok, atlama yok. İptal edilen bir kaydın transkribe edilmeden veya saklanmadan atılmasını istiyorsanız 'Kaydı at'ı seçin.",
+        "options": {
+          "finishSilently": "Bitir, sadece geçmişe kaydet",
+          "discardRecording": "Kaydı at"
+        }
+      },
+      "updates": {
+        "title": "Güncellemeler",
+        "checks": {
+          "label": "Güncellemeleri otomatik denetle",
+          "description": "Herkese açık GitHub sürümlerini günde bir kez denetle."
+        },
+        "silent": {
+          "label": "Güncellemeleri sessizce yükle",
+          "description": "İzin verilen aralıkta kapat, güncelle ve yeniden aç. Varsayılan olarak kapalıdır."
+        },
+        "time": {
+          "label": "Sessiz güncelleme saati",
+          "description": "İzin verilen yerel saat aralığının merkezi.",
+          "window": "Yerel saatle {{start}}–{{end}}."
+        },
+        "jitter": {
+          "label": "Günlük rastgeleleştirme",
+          "description": "Her gün bu dakika aralığında farklı bir saat seç.",
+          "minutes": "dakika"
+        },
+        "checkNow": "Şimdi denetle",
+        "checking": "Denetleniyor…",
+        "upToDate": "Handy Tool güncel.",
+        "lastChecked": "Son denetim: {{value}}",
+        "never": "Hiçbir zaman",
+        "portableUnsupported": "Taşınabilir kopyalar yerinde güncellenemez. En yeni taşınabilir sürümü indirin."
       }
     },
     "sound": {
       "title": "Ses",
       "microphone": {
         "title": "Mikrofon",
-        "description": "Tercih ettiğiniz mikrofon cihazını seçin",
+        "description": "Handy'nin kayıt yaptığı giriş cihazı. Yeniden başlatma gerekmeden bir sonraki kaydınızda etkili olur. Varsayılan: sistem varsayılan cihazı — bir kulaklık ile dahili mikrofon dizisi arasında geçiş yaparken bunu açıkça ayarlayın ve sistem seçimine dönmek için sıfırlama düğmesini kullanın.",
         "placeholder": "Mikrofon seçin...",
         "loading": "Yükleniyor..."
       },
       "audioFeedback": {
         "label": "Sesli Geri Bildirim",
-        "description": "Kayıt başladığında ve bittiğinde ses çalar"
+        "description": "Kayıt başladığında kısa bir ses, durduğunda farklı bir ses çalar; böylece ekrana bakmadan mikrofonun açık olduğunu bilirsiniz. Varsayılan: Kapalı. Açmak, aşağıdaki Çıkış Cihazı ve Ses Seviyesi'ni etkinleştirir; iki uyarı sesi, Hata Ayıklama sayfasındaki Ses Teması aracılığıyla kendi dosyalarınızla değiştirilebilir."
       },
       "outputDevice": {
         "title": "Çıkış Cihazı",
-        "description": "Geri bildirim sesleri için ses çıkış cihazını seçin",
+        "description": "Başlangıç ve bitiş seslerinin çalacağı yer — hangi mikrofonun kayıt yaptığını veya diğer uygulamaların sesini nereye gönderdiğini etkilemez. Varsayılan: sistem varsayılan cihazı. Sesler hoparlörlerden çıkmasın diye kulaklığınıza yönlendirin; denetim, Sesli Geri Bildirim açılana kadar gri (devre dışı) kalır.",
         "placeholder": "Çıkış cihazı seçin...",
         "loading": "Yükleniyor..."
       },
       "volume": {
         "title": "Ses Seviyesi",
-        "description": "Sesli geri bildirimlerin ses seviyesini ayarlayın"
+        "description": "Başlangıç ve bitiş seslerinin %0 ile %100 arasında ne kadar yüksek olacağı. Varsayılan: %100. Kulaklıkta sesler ürkütücü geliyorsa azaltın; yalnızca Handy'nin kendi uyarı seslerini değiştirir ve Sesli Geri Bildirim açılana kadar gri (devre dışı) kalır."
       }
     },
     "advanced": {
@@ -257,27 +444,27 @@
         "output": "Çıktı",
         "transcription": "Transkripsiyon",
         "history": "Geçmiş",
-        "experimental": "Deneysel"
-      },
-      "experimentalToggle": {
-        "label": "Deneysel Özellikler",
-        "description": "Hala geliştirme aşamasında olan deneysel özellikleri etkinleştir."
+        "postProcessing": "Son İşlem",
+        "keyboardTyper": "Klavye Yazıcısı",
+        "tokenCountProviders": "Token Sayımı Sağlayıcıları",
+        "llmProviders": "Kayıtlı LLM Sağlayıcıları",
+        "mcp": "MCP ve CLI"
       },
       "startHidden": {
         "label": "Gizli Başlat",
-        "description": "Pencereyi açmadan sistem tepsisinde başlatır."
+        "description": "Handy Tool'u ekranda pencere olmadan başlatır — doğrudan sistem tepsisine gider ve dikte hemen çalışır. Varsayılan: Kapalı. Pencere görünmeden oturum açılışında uygulamanın hazır olması için Başlangıçta Çalıştır ile birleştirin ve Tepsi simgesini göster'i açık bırakın, çünkü o zaman pencereyi açmanın tek yolu tepsi olur."
       },
       "autostart": {
         "label": "Başlangıçta Çalıştır",
-        "description": "Bilgisayara giriş yaptığınızda Handy otomatik olarak başlatılır."
+        "description": "Windows'a oturum açtığınızda Handy Tool'un otomatik olarak başlatılmasını sağlar. Varsayılan: Kapalı. Penceresini açmak yerine sessizce tepside belirmesi için Gizli Başlat ile birleştirin."
       },
       "showTrayIcon": {
         "label": "Tepsi simgesini göster",
-        "description": "Handy simgesini sistem tepsisinde göster."
+        "description": "Handy Tool simgesini sistem tepsisinde gösterir; burada boşta, kayıt ve transkribe durumlarını da bildirir ve ayarlar, son transkript ile çıkış için bir menü sunar. Varsayılan: Açık. Dikkat: kapalıyken ana pencereyi kapatmak, onu gizlemek yerine uygulamadan çıkar — ve Gizli Başlat da açıksa ekranda tıklanacak hiçbir şey kalmaz."
       },
       "overlay": {
         "title": "Overlay Konumu",
-        "description": "Kayıt ve transkripsiyon sırasında görsel geri bildirim kaplamasını gösterir. Linux'ta 'Yok' önerilir.",
+        "description": "Handy Tool'un dinlediğini ve ardından transkribe ettiğini görebilmeniz için dikte ederken ekranın altında veya üstünde küçük bir overlay gösterir. Varsayılan: Alt. İhtiyacınız olan bir şeyi kapatıyorsa veya tam ekran bir uygulamanın önüne geçiyorsa kapatmak için Yok'u seçin.",
         "options": {
           "none": "Yok",
           "bottom": "Alt",
@@ -286,7 +473,7 @@
       },
       "pasteMethod": {
         "title": "Yapıştırma Yöntemi",
-        "description": "Metnin nasıl ekleneceğini seçin. Doğrudan: sistem girişiyle yazmayı simüle eder. Yok: yapıştırmayı atlar, sadece geçmişi/panoyu günceller.",
+        "description": "Olağan diktenin metni odaklanılan pencereye teslim etmek için kullandığı tuş vuruşunu seçer; Doğrudan karakterleri yapıştırmak yerine yazar, Yok ise hiçbir şey göndermez. Varsayılan: Pano (Ctrl+V). Örnek: Ctrl+V'yi yoksayan bir terminal veya uzak görüntüleyici genellikle Pano (Shift+Insert)'i kabul eder; Panoya Kopyala olarak ayarlı Pano Yönetimi ile birleşen Yok, metni elle yapıştırmanız için hazır bırakır. Bas-konuş bu ayarı yoksayar ve Yapıştırma Yöntemi (PTT)'yi kullanır.",
         "options": {
           "clipboard": "Pano ({{modifier}}+V)",
           "clipboardCtrlShiftV": "Pano (Ctrl+Shift+V)",
@@ -299,14 +486,14 @@
       },
       "typingTool": {
         "title": "Yazma Aracı",
-        "description": "Doğrudan yapıştırma yöntemi için hangi Linux yazma aracının kullanılacağını seçin. Auto, sisteminiz için mevcut en iyi aracı otomatik olarak algılar ve kullanır.",
+        "description": "Doğrudan yapıştırma yöntemini hangi Linux giriş enjeksiyon aracının destekleyeceğini seçer. Varsayılan: Auto (Önerilen); kurulu en iyi aracı otomatik olarak araştırır. Yalnızca planlanan Linux sürümünde görünür, Windows'ta hiç gösterilmez.",
         "options": {
           "auto": "Auto (Önerilen)"
         }
       },
       "clipboardHandling": {
         "title": "Pano Yönetimi",
-        "description": "Panoyu Değiştirme, transkripsiyon sonrası mevcut pano içeriğini korur. Panoya Kopyala ise yapıştırma işleminden sonra transkripsiyon sonucunu panoda bırakır.",
+        "description": "Olağan dikte yapıştırmalarından sonra panonuzda ne olacağını belirler: Panoyu Değiştirme, transkripti yalnızca yapıştırma süresi boyunca oraya koyup ardından önceki pano metninizi geri yükler; Panoya Kopyala ise transkripti kasıtlı olarak orada bırakır. Varsayılan: Panoyu Değiştirme. Dürüst sınır: yalnızca metin geri yüklenir, kopyalanmış bir görsel veya dosya kaybolur — ve bu Panoyu Değiştirme olarak ayarlanmadıkça Pano geri yükleme gecikmesi'nin hiçbir etkisi olmaz.",
         "options": {
           "dontModify": "Panoyu Değiştirme",
           "copyToClipboard": "Panoya Kopyala"
@@ -314,7 +501,7 @@
       },
       "autoSubmit": {
         "title": "Otomatik Gönder",
-        "description": "Metin eklendikten sonra seçilen tuş kombinasyonunu otomatik olarak gönderir. macOS'ta Cmd+Enter, Windows/Linux'ta Super+Enter geçerlidir.",
+        "description": "Her olağan yapıştırmadan yaklaşık 50 ms sonra bir gönderme tuşu gönderir; böylece dikte edilen bir sohbet mesajı kendiliğinden gönderilir. Varsayılan: Kapalı. Uygulamalar hangi tuşun gönderdiği konusunda farklılık gösterir; düz Enter yalnızca yeni satır ekliyorsa Ctrl+Enter'ı deneyin. Yapıştırma Yöntemi Yok olduğunda yoksayılır ve her zaman kendi Gönderme tuşu'nu gönderen Transkribe Et ve Gönder Kısayolu'nu yönetmez.",
         "options": {
           "off": "Kapalı",
           "enter": "Enter",
@@ -325,12 +512,13 @@
       },
       "translateToEnglish": {
         "label": "İngilizceye Çevir",
-        "description": "Transkripsiyon sırasında diğer dillerden İngilizceye otomatik olarak çevirir.",
-        "descriptionUnsupported": "Çeviri {{model}} modeli tarafından desteklenmiyor."
+        "description": "Söylediklerinizi kendi dilinde transkribe etmek yerine modelden İngilizce çıktı ister. Varsayılan: Kapalı. Dil'i gerçekte konuştuğunuz dile ayarlı bırakın — bu anahtar yalnızca çeviriyi destekleyen modellerde görünür.",
+        "descriptionUnsupported": "Çeviri {{model}} modeli tarafından desteklenmiyor.",
+        "unsupported": "Seçili transkripsiyon modeli için kullanılamaz."
       },
       "modelUnload": {
         "title": "Modeli Boşalt",
-        "description": "Belirtilen süre boyunca kullanılmadığında modelin GPU/CPU belleğini otomatik olarak serbest bırakır.",
+        "description": "Transkripsiyon modelinin bu kadar süre kullanılmadan durmasının ardından tuttuğu RAM veya VRAM'i serbest bırakır; sonraki kayıt bu durumda onu yeniden yüklemek için birkaç saniye harcar. Varsayılan: gün boyu dikte ediyorsanız doğru seçim olan Asla (yüklü tut — en hızlı başlangıç). Aralıklı dikte edip aradan belleği geri almak istiyorsanız bir süre seçin — Çevirmenin ayrı toplu iş motoru burada kapsanmaz, o Toplu iş modelini şu süre sonra boşalt ile serbest bırakılır.",
         "options": {
           "never": "Asla",
           "immediately": "Hemen",
@@ -339,16 +527,229 @@
           "min10": "10 dakika sonra",
           "min15": "15 dakika sonra",
           "hour1": "1 saat sonra",
-          "sec5": "5 saniye sonra (Debug)"
+          "sec5": "5 saniye sonra (Debug)",
+          "custom": "Özel…"
+        },
+        "units": {
+          "s": "saniye",
+          "m": "dakika",
+          "h": "saat"
         }
       },
       "customWords": {
         "title": "Özel Kelimeler",
-        "description": "Transkripsiyon sırasında sıkça yanlış duyulan veya yanlış yazılan kelimeleri ekleyin. Sistem, benzer sesli kelimeleri listenize göre otomatik olarak düzeltir.",
+        "description": "Motorun sürekli yanlış duyduğu isimler, ürünler ve jargonun listesi; her transkripsiyondan sonra Handy benzer sesli kelimeleri bulup onların yerine sizin yazımınızı kullanır. Varsayılan: boş. Karşılaştıkça tüm kelimeleri ekleyin ve kastetmediğiniz şeyleri düzeltmeye başlarsa Hata Ayıklama sayfasındaki Kelime Düzeltme Eşiği'ni azaltın.",
         "placeholder": "Kelime ekle",
         "add": "Ekle",
         "remove": "{{word}} Kaldır",
         "duplicate": "\"{{word}}\" zaten mevcut"
+      },
+      "tokenCountProviders": {
+        "hint": "Token Sayımı sayfası için sağlayıcılar. İpucu: model yalnızca tokenizer'ı belirler — önemsediğiniz ailenin en küçük modelini seçin (örn. qwen3:0.6b, qwen3:8b ile aynı sayımı verir ama çok daha kısa sürede yüklenir). Anthropic ve Gemini sayım uç noktaları ücretsizdir; yerel sunucular 1 tokenlik bir sorgu ile sorgulanır.",
+        "enable": "Bu sağlayıcıyı etkinleştir",
+        "namePlaceholder": "Görünen ad",
+        "baseUrl": "Temel URL",
+        "apiKey": "API anahtarı",
+        "apiKeyPlaceholder": "Yerel sunucular için isteğe bağlı",
+        "model": "Model",
+        "refreshModels": "Uç noktadan model listesini yükle",
+        "modelsError": "Modeller yüklenemedi",
+        "kinds": {
+          "gemini": "Gemini",
+          "anthropic": "Anthropic",
+          "openai_local": "tiktoken (çevrimdışı)",
+          "openai_compatible": "OpenAI uyumlu"
+        }
+      },
+      "crashResilientRecording": {
+        "label": "Çökmeye Dayanıklı Kayıt",
+        "description": "Konuşmanızı bellekte tutmak yerine konuşurken diske küçük Opus dosyaları olarak kodlar; böylece bir çökme, zorunlu güncelleme veya biten pil bile bir kayıt bırakır — bu kayıt bir sonraki açılışta onarılıp Geçmiş'e eklenir. Varsayılan: Açık. Kapatmak sıkıştırılmamış sesi kaydeder; bu da Tam veri (sıkıştırılmış sesle) yedeklerinin kasıtlı olarak dışarıda tuttuğu şeydir."
+      },
+      "openRecordingsFolder": {
+        "label": "Kayıtlar Klasörü",
+        "description": "Kayıtlarınızı ve bir çökmenin ardından kurtarılan sesleri tutan klasörü açar (%APPDATA%\\pr.handy\\recordings). Kayıtları Otomatik Sil burada temizlik yapar, ama yalnızca Handy'nin kendisinin oluşturduğu dosyalara dokunur — o klasördeki kendi notlarınız veya dışa aktarımlarınız asla yeniden adlandırılmaz veya silinmez.",
+        "button": "Klasörü Aç"
+      },
+      "appearance": {
+        "title": "Görünüm",
+        "description": "Kayıt overlay'i ve yüzen transkripsiyon penceresi dahil her Handy Tool penceresi için renk temasını ayarlar. Varsayılan: Windows açık/koyu ayarınızı takip edip izlemeye devam eden Sistem; Açık ve Koyu tek bir paleti sabitler ve sonraki işletim sistemi değişikliklerini yoksayar.",
+        "options": {
+          "system": "Sistem",
+          "light": "Açık",
+          "dark": "Koyu"
+        }
+      },
+      "pasteMethodPtt": {
+        "title": "Yapıştırma Yöntemi (PTT)",
+        "description": "Yapıştırma Yöntemi ile aynı seçim, ancak yalnızca Bas Konuş Kısayolu tarafından kullanılır; böylece basılı-konuş, olağan dikte tuşunuzdan farklı teslim edebilir. Varsayılan: Pano (Ctrl+V). Bas-konuşla girdiğiniz uygulama, gün boyu dikte ettiğiniz uygulamadan farklı bir yapıştırma tuş vuruşu gerektiriyorsa değiştirin."
+      },
+      "clipboardRestoreDelay": {
+        "title": "Pano geri yükleme gecikmesi",
+        "description": "Bir yapıştırmadan sonra önceki pano metninizin geri yüklenmesinden önceki, yerleşik 50 ms'ye eklenen ek bekleme; bu grubun pano ayarı (burada Pano Yönetimi, veya Transkribe Et ve Gönder altındaki Pano) Panoyu Değiştirme olmadıkça hiçbir şey yapmaz. Varsayılan: Kapalı (anında). Bir Citrix veya RDP oturumu, az önce söylediğiniz şey yerine eski panonuzu yapıştırıyorsa bunu yaklaşık 1 saniyeye çıkarın — uzak oturumlar panoyu yalnızca yapıştırma tuş vuruşu ulaştıktan sonra alır.",
+        "options": {
+          "none": "Yok (anında)",
+          "ms250": "250 ms",
+          "ms500": "500 ms",
+          "ms1000": "1 saniye",
+          "ms2500": "2,5 saniye",
+          "ms5000": "5 saniye"
+        }
+      },
+      "transcriptionMode": {
+        "title": "Transkripsiyon Modu",
+        "description": "Canlı, siz henüz konuşurken metnin oluşmasını gösterir; Kayıt Sonrası sessizce kaydeder ve arka planda transkribe eder. Varsayılan: Kayıt Sonrası. Her iki durumda da durduğunuzda sesin tamamı üzerinden son bir geçiş yapılır; bu nedenle teslim edilen metin her zaman doğru olandır ve canlı metin yalnızca bir önizlemedir — bu yalnızca Transkripsiyon Kısayolu'nu yönetir ve API transkripsiyon modelleri her zaman Kayıt Sonrası gibi davranır.",
+        "options": {
+          "live": "Canlı",
+          "postRecording": "Kayıt Sonrası"
+        }
+      },
+      "transcriptionModePtt": {
+        "title": "Transkripsiyon Modu (PTT)",
+        "description": "Yalnızca Bas Konuş Kısayolu'na uygulanan aynı Canlı veya Kayıt Sonrası seçimi. Varsayılan: Canlı — bilerek Transkripsiyon Modu'nun tersi, çünkü basılı tutulan kayıtlar kısadır ve önizleme neredeyse anında görünür. Teslim edilen metin yine de kaydın tamamı üzerindeki son geçişten gelir.",
+        "options": {
+          "live": "Canlı",
+          "postRecording": "Kayıt Sonrası"
+        }
+      },
+      "gpuDevice": {
+        "title": "GPU Cihazı",
+        "description": "Yerel Whisper'ın hangi grafik bağdaştırıcısında transkribe edeceğini seçer veya yalnızca CPU ile işlemeyi zorlar. Varsayılan: Otomatik (Varsayılan); başlatılamayan bir bağdaştırıcı, transkripsiyonu bozmak yerine Otomatik'e döner. Meşgul bir harici kartı boş tutmak veya kötü bir sürücüyü aşmak için değiştirin — model bir sonraki yüklenişinde etkili olur ve yalnızca bir Whisper modeli seçiliyken Windows'ta görünür.",
+        "options": {
+          "auto": "Otomatik (Varsayılan)",
+          "cpu": "Yalnızca CPU",
+          "device": "{{name}} (cihaz {{index}})",
+          "deviceWithVram": "{{name}} (cihaz {{index}}, {{vram}} GB)"
+        }
+      },
+      "apiTranscription": {
+        "title": "API Transkripsiyonu",
+        "cardTitle": "API Transkripsiyonu (OpenAI uyumlu)",
+        "url": {
+          "title": "API URL",
+          "description": "Sürüm önekini de içeren, OpenAI uyumlu bir konuşma sunucusunun temel URL'si — Handy buna /audio/transcriptions ekler, böylece http://127.0.0.1:8000/v1, http://127.0.0.1:8000/v1/audio/transcriptions olur. Varsayılan: boş; Modeller sayfasında API Transkripsiyonu (OpenAI uyumlu)'nu seçmeden önce doldurun, aksi halde kayıt başarısız olur. Bu motor durduğunuzda kaydın tamamını her zaman tek bir WAV dosyası olarak yükler, bu nedenle Transkripsiyon Modu'nun onun üzerinde hiçbir etkisi yoktur.",
+          "placeholder": "http://127.0.0.1:8000/v1"
+        },
+        "apiKey": {
+          "title": "API Anahtarı",
+          "description": "Her yüklemeyle gönderilen Bearer anahtarı; anahtar kontrolü yapmayan bir yerel sunucu için boş bırakın. Varsayılan: boş. Ayarlar dosyanızda şifrelenmeden saklanır ve yedeklere dahil edilir.",
+          "placeholder": "sk-..."
+        },
+        "model": {
+          "title": "Model",
+          "description": "Uç noktanızın beklediği ve yüklemeyle birlikte olduğu gibi gönderilen model kimliği — OpenAI için whisper-1, veya kendi sunucunuzun modeline verdiği ad. Varsayılan: boş model alanı gönderen boş; uç noktanız gerektiriyorsa ayarlayın. Dil Otomatik olduğunda bu motor İngilizce gönderir, bu nedenle başka bir dilde dikte ediyorsanız Dil'i sabitleyin.",
+          "placeholder": "whisper-1"
+        }
+      },
+      "tabs": {
+        "app": "Uygulama",
+        "output": "Çıktı",
+        "transcription": "Transkripsiyon",
+        "typer": "Yazıcı",
+        "providers": "Sağlayıcılar",
+        "mcp": "MCP ve CLI",
+        "history": "Geçmiş",
+        "postProcessing": "Son İşlem"
+      },
+      "mcp": {
+        "loading": "Yükleniyor…",
+        "description": "Claude (uygulama ve Code) ile handy komutunun Handy'nin kendi araçlarını kullanabilmesi için küçük bir yerel sunucu çalıştırır: token sayma, odaklanılan pencereye metin yazma, Geçmiş'i okuma, model testleri çalıştırma ve sağlayıcıları düzenleme. Varsayılan: Kapalı; açtığınızda sunucu aşağıdaki Port ve Token ile hemen 127.0.0.1 üzerinde başlar, bir ağ arayüzünde asla başlamaz. Dürüst uyarı: token, ayarlar dosyanızda düz metin olarak saklanır; bu nedenle sizin olarak çalışan herhangi bir program onu okuyup uygulamayı yönetebilir.",
+        "enable": "MCP ve CLI sunucusunu etkinleştir",
+        "running": "Çalışıyor",
+        "stopped": "Durduruldu",
+        "port": "Port",
+        "token": "Token",
+        "show": "Göster",
+        "hide": "Gizle",
+        "regenerate": "Yeniden Oluştur",
+        "claudeApp": "Claude uygulaması (HTTP) — bu URL ile özel bir MCP sunucusu ekleyin:",
+        "authHeader": "…ve şu Authorization başlığıyla:",
+        "claudeCodeStdio": "Claude Code (stdio):",
+        "claudeCodeHttp": "Claude Code (HTTP):",
+        "cliTitle": "Komut satırı eşlikçisi",
+        "cliHint": "Handy'nin kendi çalıştırılabilir dosyasını PATH'inize handy olarak kopyalar; böylece çalışan uygulamaya karşı herhangi bir terminalden handy model-test, handy token-count veya handy mcp --stdio çalıştırabilirsiniz. Varsayılan: kurulu değil. Komut, aynı yerel sunucu üzerinden uygulamayla konuşur; bu nedenle yalnızca MCP ve CLI sunucusunu etkinleştir açıkken çalışır ve taşınabilir modda kullanılamaz.",
+        "installCli": "CLI'yi Kur",
+        "reinstallCli": "CLI'yi Yeniden Kur"
+      },
+      "costReport": {
+        "title": "Transkripsiyon maliyet raporu",
+        "description": "Kayıt başına maliyet (OpenRouter'dan gerçek USD) ve süre, hafta, ay ve yıla göre özetlenir. Tam raporu — her kayıt ile özetleri — CSV olarak indirin.",
+        "download": "CSV İndir",
+        "recalc": "Süreleri Yeniden Hesapla",
+        "recordings": "Kayıtlar",
+        "daily": "Son 7 gün",
+        "colTimestamp": "Zaman Damgası",
+        "colDuration": "Süre (HH:MM:SS)",
+        "colCost": "Maliyet (USD)",
+        "colPeriod": "Dönem",
+        "colCount": "Kayıtlar",
+        "weekly": "Son 4 hafta",
+        "monthly": "Son 12 ay",
+        "yearly": "Yıla göre",
+        "total": "Toplam (tüm zamanlar)",
+        "allTime": "Tüm zamanlar",
+        "weekOf": "{{date}} haftası",
+        "totalLine": "{{count}} kayıt · {{duration}} · {{cost}}",
+        "empty": "Henüz kayıt yok"
+      },
+      "llmProviders": {
+        "hint": "Ad, uç nokta, anahtar, model ve milyon token başına maliyeti tutan tek bir sağlayıcı kaydı — Token Sayımı, Model Testi ve Son İşlem tarafından paylaşılır. Her yuva, bu ekranların referans aldığı sabit bir kimlik (#1, #2, …) taşır; bu nedenle buradaki bir değişiklik her yerde geçerli olur — 'Bu sağlayıcıyı etkinleştir' işaretini kaldırmak yuvayı üçünden de kaldırır. Varsayılan: üç yerel yuva açık, her bulut yuvası ise bir anahtar yapıştırana kadar kapalıdır.",
+        "enable": "Bu sağlayıcıyı etkinleştir",
+        "namePlaceholder": "Sağlayıcı adı",
+        "baseUrl": "Temel URL",
+        "apiKey": "API anahtarı",
+        "apiKeyPlaceholder": "API anahtarınızı yapıştırın",
+        "model": "Model",
+        "modelPlaceholder": "Model kimliği",
+        "refreshModels": "Model listesini yenile",
+        "modelsError": "Başarısız",
+        "cost": "Maliyet / 1M",
+        "costInput": "giriş $",
+        "costOutput": "çıkış $",
+        "costAuto": "OpenRouter tarafından otomatik olarak bildirilir",
+        "concurrency": "Eşzamanlılık",
+        "sequential": "Aile içinde sırayla çalıştır",
+        "family": "aile",
+        "familyPlaceholder": "örn. flm",
+        "kinds": {
+          "anthropic": "Anthropic",
+          "gemini": "Gemini",
+          "openai_local": "Yerel (tiktoken)",
+          "openai_compatible": "OpenAI uyumlu",
+          "openrouter": "OpenRouter",
+          "apple_intelligence": "Apple"
+        },
+        "persistPrice": "Kalıcı Tut",
+        "persistPriceHint": "Model değişse de bu fiyatı koru (OpenRouter'dan otomatik doldurmayı devre dışı bırak)"
+      },
+      "openRouterTranscription": {
+        "cardTitle": "OpenRouter Transkripsiyonu",
+        "url": {
+          "title": "API URL",
+          "description": "Konuşma isteklerinin gittiği, /api/v1 dahil OpenRouter API kök adresi. Varsayılan: https://openrouter.ai/api/v1 — bir proxy üzerinden gitmiyorsanız olduğu gibi bırakın. Bu veya API Anahtarı boşken Handy hiçbir şey göndermez.",
+          "placeholder": "https://openrouter.ai/api/v1"
+        },
+        "apiKey": {
+          "title": "API Anahtarı",
+          "description": "Yalnızca bu konuşma motoru tarafından kullanılan OpenRouter anahtarınız (openrouter.ai/keys) — Kayıtlı LLM Sağlayıcıları altındaki herhangi bir OpenRouter girdisinden ayrıdır. Varsayılan: boş; bu durumda kayıt, kimliksiz bir istek göndermek yerine başarısız olur. Bu motorla dikte etmek sesinizi OpenRouter'a yükler ve her kayıt için para maliyeti oluşturur; gerçek miktar Geçmiş'te ve Transkripsiyon maliyet raporu'nda kaydedilir.",
+          "placeholder": "sk-or-..."
+        },
+        "model": {
+          "title": "Transkripsiyon modeli",
+          "description": "Elle yazılan OpenRouter model kimliği: Transkripsiyon rotası için openai/whisper-large-v3 tarzı kimlikler, Sohbet rotası için google/gemini-2.5-flash gibi ses destekli bir sohbet modeli. Varsayılan: boş, bu durumda openai/whisper-large-v3'e döner. Uç Nokta ile eşleşmesi gerekir — uyumsuzluk genellikle hata yerine boş bir transkripsiyon olarak geri döner.",
+          "placeholder": "openai/whisper-large-v3"
+        },
+        "route": {
+          "title": "Uç Nokta",
+          "description": "Sesin hangi OpenRouter uç noktasına gideceğini seçer. Transkripsiyon (Whisper tarzı) özel konuşma uç noktasına gönderir; Sohbet modeli (Gemini / GPT-4o-audio) sesi bir sohbet mesajının içine koyar — konuşma modeli olmayan modellerin onu kabul etmesinin tek yolu budur. Varsayılan: Transkripsiyon (Whisper tarzı). Transkripsiyon modeli ile uyumlu olmalıdır ve İngilizceye Çevir yalnızca Sohbet rotasında dikkate alınır.",
+          "stt": "Transkripsiyon (Whisper tarzı)",
+          "chat": "Sohbet modeli (Gemini / GPT-4o-audio)"
+        },
+        "format": {
+          "title": "Ses formatı",
+          "description": "Ses, yüklemeden önce nasıl kodlanır: Opus, WAV'dan kabaca on kat daha küçüktür; bu bir tethering veya otel bağlantısında önemlidir. Varsayılan: Opus — daha küçük (önerilen). Bu yalnızca Uç Nokta, Sohbet modeli (Gemini / GPT-4o-audio) olduğunda geçerlidir; Transkripsiyon (Whisper tarzı) rotası her zaman WAV gönderir, çünkü Whisper tarzı modeller Opus'u kabul etmez.",
+          "opus": "Opus — daha küçük (önerilen)",
+          "wav": "WAV — en uyumlu"
+        }
       }
     },
     "postProcessing": {
@@ -360,7 +761,8 @@
         "title": "API (OpenAI Uyumlu)",
         "provider": {
           "title": "Sağlayıcı",
-          "description": "OpenAI uyumlu bir sağlayıcı seçin."
+          "description": "OpenAI uyumlu bir sağlayıcı seçin.",
+          "placeholder": "Kayıtlı bir sağlayıcı seçin"
         },
         "appleIntelligence": {
           "title": "Apple Intelligence",
@@ -387,7 +789,12 @@
           "placeholderWithOptions": "Model ara veya seç",
           "placeholderNoOptions": "Model adı yazın",
           "refreshModels": "Modelleri Yenile"
-        }
+        },
+        "temperature": {
+          "title": "Sıcaklık",
+          "description": "Daha düşük değer daha kararlı ve tutarlıdır (0 = en birebir); daha yüksek değer daha yaratıcıdır."
+        },
+        "registryNote": "Sağlayıcının API anahtarı, modeli ve temel URL'si Gelişmiş → Kayıtlı LLM Sağlayıcıları'nda yapılandırılır."
       },
       "prompts": {
         "title": "Prompt",
@@ -409,6 +816,10 @@
         "cancel": "İptal",
         "selectToEdit": "Ayrıntılarını görüntülemek ve düzenlemek için yukarıdan bir prompt seçin.",
         "createFirst": "İlk son işlem prompt'unuzu oluşturmak için yukarıdaki “Yeni Prompt Oluştur” seçeneğine tıklayın."
+      },
+      "disableThinking": {
+        "label": "Düşünmeyi Devre Dışı Bırak",
+        "description": "Modele think: false gönderir. Yanıtları hızlandırır ancak düşünen modellerde (örn. Qwen3) talimat takibini azaltabilir."
       }
     },
     "history": {
@@ -420,34 +831,43 @@
       "save": "Transkripsiyonu kaydet",
       "unsave": "Kaydedilenlerden kaldır",
       "delete": "Kaydı sil",
-      "deleteError": "Kayıt silinemedi. Lütfen tekrar deneyin."
+      "deleteError": "Kayıt silinemedi. Lütfen tekrar deneyin.",
+      "loadError": "Geçmiş yüklenemedi: {{error}}",
+      "search": {
+        "placeholder": "Geçmişte ara (metin veya regex)...",
+        "clear": "Aramayı temizle",
+        "matches": "{{total}} içinde {{matched}}",
+        "regexBadge": ".*",
+        "regexActive": "Sorgu düzenli ifade olarak değerlendiriliyor",
+        "noMatches": "Aramanızla eşleşen kayıt yok."
+      }
     },
     "debug": {
       "title": "Hata Ayıklama",
       "logDirectory": {
         "title": "Log Dizini",
-        "description": "Log dosyalarının saklandığı konum"
+        "description": "Dosya loglarını tutan klasörü açar — bir şey nedeni belirtilmeden başarısız olduğunda bakılacak ilk yer. Loglar 10 MB'de döner ve eski dosyalar üzerine yazılmak yerine saklanır; böylece kanıtlar bir sorunun ardından gelen yeniden başlatmadan sonra da kalır. Buraya ne kadar ayrıntı düşeceği, Hata Ayıklama sayfasındaki ve varsayılanı Debug olan Log Seviyesi tarafından belirlenir; bu seviyede transkript parçaları da yer alabilir."
       },
       "logLevel": {
         "title": "Log Seviyesi",
-        "description": "Loglamanın ayrıntı düzeyini ayarla"
+        "description": "Log dosyalarına ne kadar ayrıntı yazılacağını ayarlar; konsol çıkışını etkilemez. Varsayılan: Debug. Dikte içeriğinin diskte olmasını istemiyorsanız Info'ya düşürün — Debug ve Trace seviyelerinde, Hakkında sayfasındaki Log Dizini'nden açtığınız dosyalarda transkript parçaları ve prompt önizlemeleri görünebilir."
       },
       "soundTheme": {
         "label": "Ses Teması",
-        "description": "Kayıt başlangıç ve bitişi için sesli geri bildirim temasını seçin"
+        "description": "Bir kayıt başladığında ve durduğunda hangi ses çiftinin çalacağını seçer. Varsayılan: Marimba. Bir şey duymanız yalnızca (Genel sayfasında) Sesli Geri Bildirim açıkken mümkündür; ve Özel seçeneği bu listede yalnızca uygulama veri kaynakları klasöründe hem özel başlangıç hem de bitiş WAV dosyaları bulunduğunda görünür."
       },
       "wordCorrectionThreshold": {
         "title": "Kelime Düzeltme Eşiği",
-        "description": "Özel kelime düzeltmeleri için hassasiyet"
+        "description": "Bir transkripsiyonun, Genel sayfasındaki Özel Kelimeler girdileriyle eşleşecek şekilde ne kadar istekli yeniden yazılacağı. Varsayılan: 0,18. İsimler ve jargon hâlâ bozuk geliyorsa artırın; Handy Tool gerçekten söylediğiniz kelimeleri değiştirmeye başlarsa azaltın — Özel Kelimeler boşken bu kaydırıcı hiçbir şey yapmaz."
       },
       "historyLimit": {
         "title": "Geçmiş Limiti",
-        "description": "Saklanacak maksimum geçmiş kaydı sayısı",
+        "description": "Geçmiş'in, en eskileri sesleriyle birlikte kaldırmadan önce kaç transkripsiyon tutacağı. Varsayılan: kasıtlı olarak düşük tutulan 5 kayıt — günler sonra bir şeye bakmayı bekliyorsanız artırın. Yalnızca Kayıtları Otomatik Sil, Son kayıtları tut olarak ayarlıyken bir etkisi olur; Transkripsiyonu kaydet ile işaretlediğiniz kayıtlar bundan bağımsız olarak her zaman tutulur ve buna asla sayılmaz.",
         "entries": "kayıt"
       },
       "recordingRetention": {
         "title": "Kayıtları Otomatik Sil",
-        "description": "Alan tasarrufu için eski kayıtları otomatik olarak siler",
+        "description": "Geçmiş'in otomatik temizliğini denetler: bir kayıt süresi dolduğunda hem satırı hem de ses dosyası silinir. Varsayılan: yalnızca Geçmiş Limiti'nin (varsayılan 5) izin verdiği en yeni kayıtları tutan Son kayıtları tut — zaman seçenekleri bunun yerine son 3 gün, 2 hafta veya 3 aydaki her şeyi tutar, Asla ise hiçbir şeyi silmez. Temizlik, her yeni transkripsiyon kaydedildikten sonra ve bu ayarlardan biri değiştiğinde yeniden çalışır, Transkripsiyonu kaydet ile işaretlenen kayıtları her zaman esirger ve yalnızca Handy Tool'un kendisinin oluşturduğu ses dosyalarını kaldırır.",
         "never": "Asla",
         "preserveLimit": "Son {{count}} kaydı tut",
         "days3": "3 gün sonra",
@@ -457,27 +877,27 @@
       },
       "alwaysOnMicrophone": {
         "label": "Mikrofon Her Zaman Açık",
-        "description": "Daha hızlı yanıt için mikrofonu aktif tutar"
+        "description": "Bir kayıt kısayoluna her bastığınızda mikrofonu açmak yerine, kayıtlar arasında mikrofon akışını açık tutar. Varsayılan: Kapalı. Bir kaydın ilk hecesi kesiliyorsa açın — bunun bedeli, sistem mikrofon göstergenizin yalnızca dikte ederken değil, Handy Tool çalıştığı sürece yanık kalmasıdır."
       },
       "clamshellMicrophone": {
         "title": "Kapalı Kapak Mikrofonu",
-        "description": "Dizüstü bilgisayar kapağı kapalıyken kullanılacak mikrofon"
+        "description": "Dizüstü bilgisayar kapağı kapalıyken, dahili mikrofonu bu şekilde kullanılamaz hâle gelen dock'lı makineler için farklı bir giriş cihazı seçer. Varsayılan: yok, bu nedenle Genel sayfasındaki Mikrofon her zaman kullanılır. Kapak-kapalı algılaması yalnızca macOS'tadır ve macOS sürümleri henüz planlanma aşamasındadır; bu nedenle Windows sürümünde hiçbir etkisi yoktur."
       },
       "postProcessingToggle": {
         "label": "Son İşlem",
-        "description": "Transkripsiyon sonrası yapay zekâ destekli metin iyileştirmeyi etkinleştirir"
+        "description": "İsteğe bağlı yapay zekâ temizleme geçişini açar ve kenar çubuğuna, sağlayıcıyı ve promptu seçtiğiniz bir Son İşlem sayfası ekler. Varsayılan: Kapalı. Normal Transkripsiyon Kısayolunuz etkilenmez — temizleme yalnızca ayrı Son İşlem Kısayolu üzerinde çalışır ve Geçmiş, ham transkripsiyonu işlenmiş olanın yanında tutar."
       },
       "muteWhileRecording": {
         "label": "Kayıt Sırasında Sessize Al",
-        "description": "Kayıt sırasında sistem sesini kapatır"
+        "description": "Her kayıt boyunca sistem sesinizi susturur; böylece hoparlörlerinizdeki müzik veya video mikrofona sızamaz. Varsayılan: Kapalı. Kulaklık yerine hoparlörle dikte ediyorsanız açın; kayıt durduğunda ses kendiliğinden geri gelir."
       },
       "appendTrailingSpace": {
         "label": "Sonuna Boşluk Ekle",
-        "description": "Yapıştırılan transkripsiyondan sonra boşluk ekler"
+        "description": "Teslim edilen her transkripsiyonun sonuna bir boşluk ekler; böylece art arda iki dikte '...biri.İkisi' şeklinde birleşmez. Varsayılan: Kapalı. Aynı alana kısa kısa dikte ediyorsanız açın; bir arama kutusu veya terminal komutu gibi kaçak bir boşluğun önemli olduğu yerlerde kapalı bırakın."
       },
       "keyboardImplementation": {
         "title": "Keyboard Implementation",
-        "description": "Choose the keyboard shortcut backend.",
+        "description": "Handy Tool'un genel kısayollarını işletim sistemine hangi arka ucun kaydettiğini seçer. Varsayılan: Tauri Global Shortcut. Ayarladığınız bir kısayol, başka bir program kombinasyonu zaten sahiplendiği veya Windows kaydı reddettiği için hiç tetiklenmiyorsa Handy Keys'e geçin — geçiş yaptığınızda tüm kısayollar yeniden kaydedilir ve bu başarısız olursa değişiklik geri alınır.",
         "bindingsReset": "Keyboard shortcuts were incompatible and reset to defaults"
       },
       "paths": {
@@ -487,28 +907,23 @@
       },
       "pasteDelay": {
         "title": "Yapıştırma gecikmesi",
-        "description": "Yapıştırma tuşu göndermeden önce gecikme (milisaniye cinsinden). Yanlış metin yapıştırılıyorsa artırın."
+        "description": "Handy Tool'un transkripsiyonu panoya koyduktan sonra yapıştırma tuş vuruşunu göndermeden önce ne kadar bekleyeceği. Varsayılan: 60 ms. Yavaş bir uygulama yeni metin yerine önceki pano içeriğini yapıştırıyorsa bunu artırın; bu, bir Atlayıcı yuvası az önce başka bir pencereyi etkinleştirdiğinde geçerli olan 'Paste delay after jump (Windows)' beklemesinden farklıdır."
       }
     },
     "about": {
       "title": "Hakkında",
       "version": {
         "title": "Sürüm",
-        "description": "Handy'nin mevcut sürümü"
+        "description": "Çalıştırdığınız Handy Tool sürümü; bir sorun bildirdiğinizde bunu belirtin. Yayınlanan tek sürüm Windows x64'tür — macOS ve Linux planlanmaktadır ve Atlayıcı özellikleri o zaman bile yalnızca Windows'ta olacaktır. Burada kendiliğinden yeni bir sürüm denetlenmez; bakmak istediğinizde Güncellemeler'i kullanın."
       },
       "appDataDirectory": {
         "title": "Uygulama Veri Dizini",
-        "description": "Handy'nin verilerini sakladığı konum"
+        "description": "Handy Tool'un sakladığı her şeyi tutan tek klasörü açar: bir JSON dosyasında ayarlar (sağlayıcı API anahtarlarınız ve promptlarınız dahil), bir SQLite veritabanında transkriptler, kayıtlar, indirilen modeller ve döngülü loglar. Varsayılan: normal bir Windows kurulumunda %APPDATA%\\pr.handy. İçindeki hiçbir şey Handy Tool tarafından şifrelenmez — tek koruma dosya sistemi izinleridir — bu nedenle makineyi başkasına verirken kopyalanacak veya temizlenecek klasör de burasıdır."
       },
       "sourceCode": {
         "title": "Kaynak Kodu",
         "description": "Kaynak kodunu görüntüle ve katkıda bulun",
         "button": "GitHub'da Görüntüle"
-      },
-      "supportDevelopment": {
-        "title": "Geliştirmeyi Destekle",
-        "description": "Handy'yi geliştirmeye devam etmemize yardımcı olun",
-        "button": "Bağış Yap"
       },
       "acknowledgments": {
         "title": "Teşekkürler",
@@ -516,21 +931,180 @@
           "title": "Whisper.cpp",
           "description": "OpenAI'nin Whisper otomatik konuşma tanıma modelinin yüksek performanslı çıkarımı",
           "details": "Handy, hızlı ve yerel konuşmadan metne dönüştürme için Whisper.cpp kullanır. Georgi Gerganov ve katkıda bulunanların harika çalışmaları için teşekkür ederiz."
+        },
+        "handy": {
+          "title": "Handy",
+          "description": "Bu projenin üzerine inşa edildiği orijinal açık kaynaklı konuşmadan metne uygulaması",
+          "details": "Handy Tool, CJ Pais tarafından oluşturulan Handy'nin (github.com/cjpais/Handy, handy.computer) bir çatalıdır. Üst kaynak v0.8.1 sürümünde (Mart 2026) devralınmış ve Patrick R. tarafından bağımsız olarak geliştirilmeye devam edilmiştir. Bu projenin üzerine kurulduğu temel için CJ'ye ve Handy katkıda bulunanlarına çok teşekkürler."
         }
+      },
+      "updates": {
+        "title": "Güncellemeler",
+        "description": "Yayınları Kontrol Et, projenin GitHub yayınları sayfasını tarayıcınızda açar; böylece bunu Sürüm ile karşılaştırabilirsiniz. Handy Tool'un bir güncelleyicisi yoktur ve arka planda asla yeni bir yayın denetlemez — güncelleme her zaman sizin seçtiğiniz bir şeydir.",
+        "button": "Yayınları Kontrol Et"
       }
     },
     "jumper": {
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "When a jump target's app, window class, or control class contains one of these (case-insensitive), it is treated as a remote desktop session and uses the longer 'Remote' jump delays (Advanced → Transcription). Add the identifiers your RDP/Citrix clients use — e.g. msrdc, mstsc, Citrix. An empty list treats every target as local.",
+        "description": "Uygulaması, pencere sınıfı veya denetim sınıfı bu parçalardan birini içeren (büyük/küçük harf duyarsız) bir atlama hedefi, bir uzak masaüstü olarak kabul edilir; bu nedenle Gelişmiş → Transkripsiyon'daki 'Paste delay after jump (Windows)' ve 'Submit delay after jump (Windows)' için Local değeri yerine Remote değerini kullanır. Varsayılan: msrdc, mstsc, Citrix. RDP veya Citrix istemcinizin kullandığı süreç adını, ona yapılan teslimatlar sürekli yutuluyorsa ekleyin; boş bir liste her hedefi yerel olarak kabul eder.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
         "duplicate": "'{{value}}' is already in the list",
         "badge": "Remote ✓",
         "badgeTooltip": "This target matches a remote match string, so it uses the Remote jump delays."
+      },
+      "windowsOnly": "Atlayıcı yalnızca Windows'ta kullanılabilir.",
+      "hot": {
+        "title": "Sıcak yuva (Sabitleme ve Teslimat)",
+        "optionsMoved": {
+          "title": "Teslimat seçenekleri",
+          "description": "Bir ayar değil — bir yol işareti. Bir atlamanın bir yuvayla gerçekte ne yapacağı, Gelişmiş → Transkripsiyon'da akış başına yapılandırılır: 'Başlangıçta yuva eylemi', 'Bitişte yuva eylemi', 'Son çıktı konumunu izle' ve 'Teslimattan sonra odağı geri döndür' — her biri Transkribe Et için bir kez ve Transkribe Et ve Gönder için bir kez bulunur.",
+          "hint": "Genel sayfasındaki Transkribe Et ve Transkribe Et ve Gönder gruplarında yapılandırılır."
+        }
+      },
+      "hot2": {
+        "title": "İkinci sıcak yuva (Sabitleme ve Teslimat)"
+      },
+      "slot": {
+        "title": "Statik yuva {{index}}",
+        "status": "Yuva {{index}} hedefi",
+        "description": "Bu numaralı yuvanın neyi işaret ettiğini, Test (hiçbir şey teslim etmeden oraya atlar) ve Temizle ile birlikte gösterir. Varsayılan: hedef yok — sürekli geri döndüğünüz bir alana odaklanın, bu yuvanın Belirle kısayoluna (ctrl+alt+shift+1 … 9) basın ve istediğiniz zaman ctrl+alt+1 … 9 ile geri atlayın. Bir yuva bir tarayıcı sekmesini veya metin imleci konumunu değil, bir pencere ve bir alanı hatırlar ve teslimatlardan sonra da kalıcıdır.",
+        "test": "Test",
+        "testFailed": "Atlama başarısız oldu: {{reason}}",
+        "stale": "Kaydedildi: {{app}} ({{control}}) — pencere henüz bulunamadı"
+      },
+      "persist": {
+        "label": "Yuvaları yeniden başlatmalar arasında hatırla",
+        "description": "Her yuvanın hedefini uygulama yeniden başlatmaları arasında hatırlar. Varsayılan: Kapalı. Windows, yeniden başlatmalar arasında bir pencere tanıtıcısını koruyamaz; bu nedenle Handy her yuvanın kimliğini (uygulama ile pencere ve alan türü) kaydeder ve başlangıçta — ve yuvayı kullandığınız anda tekrar — eşleşen pencereyi yeniden bulur. Uygulaması çalışmayan kayıtlı bir yuva, yeniden görünene kadar kırmızı renkte gösterilir.",
+        "groupTitle": "Kalıcılık"
+      },
+      "slotNames": {
+        "hot": "Sıcak 1",
+        "hot2": "Sıcak 2",
+        "static": "Yuva {{index}}"
+      },
+      "track": {
+        "label": "Son çıktı konumunu izle",
+        "description": "Yalnızca Windows. Bu akış bir transkripsiyon yapıştırdıktan sonra, 'Konumu şuraya kaydet'te seçilen yuva metnin gerçekten indiği alanla üzerine yazılır; böylece o yuvaya sonraki atlamanız son dikte ettiğiniz yere döner. Varsayılan: Kapalı. Bir yuvanın elle ayarlamak yerine sizi takip etmesini istediğinizde açın — Transkribe Et ve Transkribe Et ve Gönder birbirinden bağımsız izler, ve yakalama her 'Teslimattan sonra odağı geri döndür'den önce gerçekleşir.",
+        "slot": {
+          "title": "Konumu şuraya kaydet",
+          "description": "Bu akışın her teslimatından sonra 'Son çıktı konumunu izle'nin üzerine yazacağı atlama yuvası. Varsayılan: Sıcak 1. Otomatik izlemenin, Sabit Nokta Belirle ile elle ayarladığınız sıcak sabit noktanın üzerine sürekli yazmasını istemiyorsanız statik bir yuvaya (Yuva 1'den Yuva 9'a) yönlendirin."
+        }
+      },
+      "saveCursor": {
+        "label": "Fare imleci konumunu geri yükle",
+        "description": "Bu akış bir transkripsiyon teslim ettikten sonra fare imleci konumunu hatırlar ve atladığınızda imleci oraya geri taşır. Diğer akışın anahtarından bağımsızdır; aşağıdaki konum modu her iki akış arasında paylaşılır.",
+        "perSlot": "Fare konumunu kaydet",
+        "perSlotDescription": "Bu yuva ayarlandığında veya izlendiğinde fare imleci konumunu da kaydeder ve bu yuvaya atladığınızda imleci — yapıştırmadan sonra, teslimatı bozmayacak şekilde — oraya geri taşır. Varsayılan: Kapalı. Klavye ve farenin birlikte gelmesi için başka bir monitördeki bir yuvada açın; bu, aşağıdaki yuvaya özel 'İmleç konumu modu'nu etkinleştirir ve her yuvanın kendi anahtar çifti vardır.",
+        "mode": {
+          "title": "İmleç konumu modu",
+          "description": "Bu yuvanın kaydedilen imleç konumunun nasıl ölçüleceğini seçer. Varsayılan: pencere taşınmış, yeniden boyutlandırılmış veya farklı bir DPI'a sahip bir monitöre sürüklenmiş olsa bile hedef pencere içindeki aynı noktayı geri yükleyen Uygulamaya göre (pencereyi takip eder). Sabit bir gösterge paneli gibi asla hareket etmeyen bir şey için Ekrana göre mutlak (tam koordinatlar)'ı seçin; açılır menü, bu yuva için 'Fare konumunu kaydet' açılana kadar gri (devre dışı) kalır.",
+          "appRelative": "Uygulamaya göre (pencereyi takip eder)",
+          "screenAbsolute": "Ekrana göre mutlak (tam koordinatlar)"
+        }
+      },
+      "returnFocus": {
+        "label": "Teslimattan sonra odağı geri döndür",
+        "description": "Bir atlama gerektiren teslimatın ardından, odak — kurulacak bir yuva olmadan otomatik olarak yakalanan — teslimatın başladığı anda bulunduğunuz pencereye geri döner. Varsayılan: Açık. Koşullu çalışır: Handy Tool işini yaparken siz kendiniz pencere değiştirdiyseniz sizi seçtiğiniz yerde bırakır, ve her akış bunu ayrı ayrı belirler (yalnızca Windows)."
+      },
+      "requireSameFlow": {
+        "groupTitle": "Bitişte davranış",
+        "label": "Yalnızca aynı şekilde başlatıldıysa bitişte atla",
+        "description": "Açıkken, bir akışın 'Bitişte yuva eylemi' yalnızca kayıt aynı kısayolla başlatılıp bitirildiyse tetiklenir. Varsayılan: Kapalı. Örnek: Transkribe Et ile başlayıp Transkribe Et ve Gönder ile bitirirseniz hiçbir atlama olmaz — yapıştırma ve gönderme yine gerçekleşir, yalnızca atlama koşula bağlanır. İki kısayolu karıştırmak sizi sürekli beklenmedik bir yere taşıyorsa açın."
       }
+    },
+    "translator": {
+      "title": "Çevirmen",
+      "enabled": {
+        "label": "Klasörleri izle",
+        "description": "İzlenen bir klasöre gelen her yeni .wav, .ogg veya .opus dosyasını, geçerli model, Dil ve İngilizceye Çevir ayarlarınızı kullanarak yanına bir .txt dosyası olarak transkribe etmek için açın. Varsayılan: kapalı. İzleme başladığında klasörde zaten bulunan dosyalara kasıtlı olarak dokunulmaz ve klasörlerin kendisi Klasör ekle altında seçilir."
+      },
+      "priority": {
+        "title": "Öncelik",
+        "description": "Bir klasör dosyası ile kendi dikteniz konuşma motorunu aynı anda istediğinde kimin öncelikli olacağına karar verir. Varsayılan: Önce canlı dikte — kayda bastığınız anda toplu iş bir sonraki segment sınırında duraklar ve sonrasında devam eder, hiçbir toplu iş ilerlemesi kaybolmaz. Önce klasör toplu işi, toplu işi çalışır durumda tutar ve canlı metniniz biraz daha gecikir; İlk gelen önce işlenir, işlemdeki dosyanın bitmesine izin verir, ardından bir sonraki dosya başlamadan önce kaydınızı çalıştırır.",
+        "options": {
+          "live_first": "Önce canlı dikte",
+          "folder_first": "Önce klasör toplu işi",
+          "fifo": "İlk gelen önce işlenir"
+        }
+      },
+      "model": {
+        "title": "Toplu iş modeli",
+        "description": "İzlenen klasörlerinizdeki dosyaları hangi konuşma modelinin transkribe edeceği; küre işaretli modeller İngilizceye de çevirebilir, bunun için İngilizceye Çevir'in açık olması gerekir. Varsayılan: Modeller sayfasında seçili olanı yeniden kullanan Dikte ile aynı (varsayılan). Farklı bir yerel model seçtiğinizde, dikte modelinin yanında kendine ait bir yuvaya yüklenir — biri toplu işi yürütürken diğeri dikte için hâlâ anındadır — bunun bedeli, Toplu iş modelini şu süre sonra boşalt'ın geri verebileceği ek bellektir.",
+        "sameAsDictation": "Dikte ile aynı (varsayılan)",
+        "translates": "{{name}} — İngilizceye çevirebilir"
+      },
+      "unload": {
+        "title": "Toplu iş modelini şu süre sonra boşalt",
+        "description": "Kuyruk sessizleştikten sonra Çevirmenin kendi toplu iş modeli kopyasının bellekte ne kadar süre kalacağı; boşaltmak RAM veya VRAM'i geri verir, yüklü tutmak ise bir sonraki dosya geldiğinde yeniden yükleme maliyetinden kaçınır. Varsayılan: Asla (yüklü tut — en hızlı başlangıç). Yalnızca Toplu iş modeli, dikte modelinizden farklı bir yerel model belirtiyorsa etkilidir — aksi halde ana Modeli Boşalt ayarı geçerlidir."
+      },
+      "status": {
+        "title": "Durum",
+        "description": "Çevirmenin şu anda ne yaptığı. Tamamlanan transkriptler, ses dosyasının yanına aynı adla ve .txt uzantısıyla yazılır.",
+        "disabled": "Kapalı",
+        "idle": "İzleniyor — yapacak bir şey yok",
+        "queued": "{{count}} dosya kuyrukta",
+        "working": "{{file}} — segment {{segment}}/{{total}}",
+        "workingIndeterminate": "{{file}}",
+        "paused": {
+          "live": "canlı dikte için duraklatıldı",
+          "processing": "bir kayıt tamamlanırken duraklatıldı"
+        },
+        "counters": "bu oturumda {{done}} tamamlandı, {{failed}} başarısız oldu"
+      },
+      "folders": {
+        "title": "İzlenen klasörler",
+        "none": "Klasör yok",
+        "emptyTitle": "İzlenen klasör yok",
+        "emptyDescription": "Yeni kayıtlar için izlemeye başlamak üzere bir klasör ekleyin.",
+        "addTitle": "Klasör ekle",
+        "addDescription": "Bir klasör seçici açar; bundan sonra o klasörde görünen her yeni ses dosyası kuyruğa alınır ve transkripti yanına bir .txt olarak yazılır. Varsayılan: Çevirmen ilk başladığında Handy kayıtlar klasörünüz sizin için eklenir. Klasör eklemek, Klasörleri izle açılana kadar hiçbir şey yapmaz ve klasörde zaten bulunanlar yoksayılır — yalnızca sonradan gelen dosyalar transkribe edilir.",
+        "add": "Klasör ekle",
+        "remove": "Bu klasörü izlemeyi durdur",
+        "addFailed": "Klasör eklenemedi: {{reason}}",
+        "operationFailed": "Klasör güncellenemedi: {{reason}}",
+        "toggleAriaLabel": "{{name}} klasörünü izle",
+        "removeAriaLabel": "{{name}} klasörünü izlemeyi durdur"
+      }
+    },
+    "currentAudio": {
+      "streamingHint": "Metin, siz konuşurken yalnızca bastığınız kısayol — Transkripsiyon veya Bas-Konuş — Canlı olarak ayarlanmışsa ve yerel bir model kullanıyorsanız aşamalı olarak görünür.",
+      "finalHint": "Kayıt Sonrası modunda veya API Transkripsiyonu ya da OpenRouter Transkripsiyonu kullanılırken tam transkript kayıt bittiğinde tek seferde görünür; her kısayolun modunu şurada ayarlayın:",
+      "advancedTranscription": "Gelişmiş → Transkripsiyon",
+      "finalHintSuffix": ".",
+      "title": "Mevcut Ses",
+      "idle": "Canlı transkripsiyonu görmek için kayda başlayın",
+      "recording": "Dinleniyor...",
+      "openFloating": "Yüzen pencereyi aç",
+      "copy": "Kopyala",
+      "copied": "Kopyalandı"
+    },
+    "backup": {
+      "description": "Handy Tool verilerinizi sıkıştırılmış bir arşiv olarak dışa aktarın. İndirilen modeller ve büyük sıkıştırılmamış sesler (WAV/FLAC) her zaman hariç tutulur.",
+      "configTitle": "Yapılandırma + geçmiş",
+      "configHint": "Ayarlarınızı ve transkripsiyon geçmişi veritabanını (zaman damgaları, metin, maliyet, süre) dışa aktarır, ses içermez; bu nedenle dosya küçük kalır. Büyük bir yapılandırma değişikliğinden önce veya kısayollarınızı, sağlayıcılarınızı ve promptlarınızı başka bir makineye taşımak için kullanın. Arşiv şifrelenmemiştir ve sağlayıcı API anahtarlarınızı ile MCP sunucu token'ınızı düz metin olarak içerir — dosyayı bir sır gibi ele alın.",
+      "exportConfig": "Yapılandırma + geçmişi dışa aktar",
+      "fullTitle": "Tam veri (sıkıştırılmış sesle)",
+      "fullHint": "Yapılandırma dışa aktarımındaki her şey, ayrıca sıkıştırılmış kayıtlarınız (.opus/.ogg) — çok daha büyük bir dosya, ve hâlâ API anahtarlarınızı düz metin olarak içerir. İndirilen modeller, sıkıştırılmamış WAV/FLAC sesler ve işlemdeki parça dosyaları her zaman hariç tutulur; bu nedenle Çökmeye Dayanıklı Kayıt kapalıyken kaydedilen kayıtlar, arşivde sessiz geçmiş satırları olarak görünür.",
+      "exportFull": "Tam yedeği dışa aktar",
+      "saved": "{{path}} konumuna kaydedildi",
+      "restoreTitle": "Yedekten geri yükle",
+      "restoreHint": "Bir Handy Tool yedek arşivi (.tar.gz) seçin ve nelerin geri getirileceğini işaretleyin — Yapılandırma ve geçmiş (ayarlar, geçmiş veritabanı) ile Kayıtlar (ses dosyaları) birbirinden bağımsızdır; bu nedenle birini diğeri olmadan alabilirsiniz ve ikisi de başlangıçta işaretlidir. Yalnızca Handy Tool'un tanıdığı girdiler çıkarılır ve geri yüklenen şey şu anda elinizde olanın yerini alır. Ayarları veya geçmişi geri yüklemek yeniden başlatma gerektirir: görünen Handy Tool'u şimdi yeniden başlat düğmesini kullanın, yoksa çalışan uygulama bir sonraki kaydında bunların üzerine yazar.",
+      "restoreConfig": "Yapılandırma ve geçmiş (ayarlar, geçmiş veritabanı)",
+      "restoreRecordings": "Kayıtlar (ses dosyaları)",
+      "restoreButton": "Yedekten geri yükle…",
+      "restoreDone": "Geri yüklendi — ayarlar: {{settings}} · geçmiş: {{history}} · kayıtlar: {{recordings}}",
+      "restartHint": "Geri yüklenen ayarları/geçmişi yüklemek için Handy Tool'u yeniden başlatın (bu olana kadar çalışan uygulama bunların üzerine yazabilir).",
+      "restartNow": "Handy Tool'u şimdi yeniden başlat"
+    },
+    "modelPicker": {
+      "refresh": "Model listesini getir / yenile",
+      "loading": "Modeller yükleniyor…",
+      "error": "Modeller yüklenemedi",
+      "noMatches": "Eşleşen model yok — özel bir kimlik kullanmak için yazın"
     }
   },
   "common": {
@@ -553,7 +1127,13 @@
     "off": "Kapalı",
     "yes": "Evet",
     "no": "Hayır",
-    "noOptionsFound": "Seçenek bulunamadı"
+    "noOptionsFound": "Seçenek bulunamadı",
+    "delay": {
+      "off": "Kapalı (anında)",
+      "ms": "{{ms}} ms",
+      "seconds": "{{seconds}} sn"
+    },
+    "selectOption": "Bir seçenek seçin…"
   },
   "accessibility": {
     "permissionsRequired": "Erişilebilirlik İzinleri Gerekli",
@@ -566,10 +1146,175 @@
   },
   "appLanguage": {
     "title": "Uygulama Dili",
-    "description": "Handy arayüzünün dilini değiştirin"
+    "description": "Tepsi menüsü dahil tüm arayüzü, birlikte gelen 17 dilden birine değiştirir. Varsayılan: Windows görüntüleme dilinizdir; bu dil mevcut değilse İngilizceye döner. Bu yalnızca arayüz dilidir — konuştuğunuz dille hiçbir ilgisi yoktur, o Genel sayfasındaki Dil ile ayarlanır."
   },
   "overlay": {
     "transcribing": "Transkribe ediliyor...",
-    "processing": "İşleniyor..."
+    "processing": "İşleniyor...",
+    "openFloatingWindow": "Transkripsiyon penceresini aç"
+  },
+  "brand": {
+    "name": "Handy",
+    "suffix": "TOOL"
+  },
+  "toasts": {
+    "pasteFailed": "Transkripsiyon yapıştırılamadı: {{reason}}. Metin Geçmiş'te kaydedildi.",
+    "pasteFailedParked": "Transkripsiyon yapıştırılamadı: {{reason}}. Metin panonuzda (ve Geçmiş'te) — elle yapıştırın.",
+    "transcriptionFailed": "Transkripsiyon başarısız oldu: {{reason}}. Seçili modelinizin çalıştığından emin olun ve tekrar deneyin."
+  },
+  "flm": {
+    "notInstalled": "FLM kurulu değil. NPU hızlandırmalı modelleri kullanmak için FastFlowLM'i kurun.",
+    "npuAccelerated": "NPU Hızlandırmalı"
+  },
+  "tokenCount": {
+    "configureProviders": "Sağlayıcıları yapılandır",
+    "noProviders": "Yapılandırılmış sağlayıcı yok.",
+    "title": "Token Sayımı",
+    "placeholder": "Token saymak için metni buraya yapıştırın...",
+    "tokenizer": "Tokenizer",
+    "count": "Say",
+    "countAll": "Tümüyle say",
+    "countAllTitle": "Etkin her sağlayıcıyla teker teker say — yuvaların, her modeli yükleyip boşaltması gereken tek bir yerel servisi paylaştığı durumlar için doğru",
+    "countAllParallel": "Tümüyle say (paralel)",
+    "countAllParallelTitle": "Etkin her sağlayıcıyı aynı anda sorgula — servisler birbirinden bağımsızken en hızlısıdır",
+    "counting": "Sayılıyor... {{done}}/{{total}}",
+    "cancelSweep": "İptal",
+    "openFile": "Dosya aç...",
+    "fileTooLarge": "Dosya çok büyük (maks. 10 MB).",
+    "loadedFile": "Yüklendi: {{name}}",
+    "providerOption": "{{name}} (sağlayıcı)",
+    "chipDisabled": "Yapılandırılmadı — Gelişmiş > Sağlayıcılar > Kayıtlı LLM Sağlayıcıları altında 'Bu sağlayıcıyı etkinleştir' ile açın.",
+    "chips": {
+      "cl100k_base": "cl100k (GPT-4)",
+      "o200k_base": "o200k (GPT-4o)",
+      "estimate": "Tahmin"
+    },
+    "activeProvider": "Şununla sayılıyor: {{name}} — {{model}} ({{url}})",
+    "activeLocal": "Yerel olarak şununla sayılıyor: {{tokenizer}}",
+    "sweepSummary": "{{total}} sağlayıcıdan {{ok}} yanıt verdi",
+    "showFailed": "{{count}} başarısızı göster",
+    "hideFailed": "başarısızları gizle",
+    "table": {
+      "provider": "Sağlayıcı",
+      "model": "Model",
+      "tokens": "Token",
+      "delta": "Δ en küçüğe göre",
+      "time": "Süre"
+    },
+    "tokens": "token",
+    "characters": "karakter",
+    "words": "kelime",
+    "options": {
+      "cl100k_base": "Kutudaki metni, tam GPT-4 ve GPT-3.5 tokenizer'ıyla (cl100k_base) bu makinede sayar — hiçbir şey yüklenmez, çevrimdışı çalışır. GPT-4'e kadar olan OpenAI modelleri için bunu kullanın; daha yenileri için o200k (GPT-4o) kullanın.",
+      "o200k_base": "Kutudaki metni, tam GPT-4o ve o1 tokenizer'ıyla (o200k_base) bu makinede sayar — hiçbir şey yüklenmez, çevrimdışı çalışır. Güncel OpenAI modelleri için bunu kullanın; daha eski GPT-4 ve GPT-3.5 modelleri cl100k (GPT-4) ile tokenize edilir.",
+      "estimate": "Tokenizer veya ağ çağrısı olmadan, kelime başına kabaca 1,3 token varsayan kaba bir yerel tahmin. Önemsediğiniz modelin burada tam bir sayacı yoksa kullanın ve yalnızca yaklaşık bir değer olarak değerlendirin — kaba bir sayının tam sayaçlar arasındaki karşılaştırmayı bozmaması için kasıtlı olarak 'Δ en küçüğe göre' sütununun dışında tutulur."
+    }
+  },
+  "keyboardTyper": {
+    "title": "Klavye Yazıcısı",
+    "description": "Bu metni, yapıştırmanın engellendiği yerlerde de çalışacak şekilde — uzak konsollar, VM görüntüleyicileri, parola istemleri — tek tek simüle edilmiş tuş vuruşları olarak odaklanılan pencereye gönderir. Başlat'a basarsanız önce hedef pencereye tıklamanız için Başlangıç gecikmesi geri sayımını (varsayılan 10 sn) alırsınız; zaten hedefteyken Metin Yazma Kısayolu'na basarsanız yazma yaklaşık bir saniye sonra başlar. Metin yalnızca bellekte tutulur — ayarlarınıza, Geçmiş'e veya loglara asla yazılmaz.",
+    "placeholder": "Yazılacak metni girin...",
+    "go": "Başlat",
+    "cancel": "İptal",
+    "startDelay": {
+      "label": "Başlangıç gecikmesi",
+      "unit": "sn",
+      "preset": "{{seconds}} sn",
+      "presetTitle": "{{seconds}} saniye içinde yazmaya başla"
+    },
+    "keyDelay": {
+      "label": "Tuş gecikmesi",
+      "unit": "ms"
+    },
+    "shortcut": {
+      "label": "Kısayol:",
+      "unset": "ayarlanmadı",
+      "hint": "(Gelişmiş ayarlardan değiştirin; iptal etmek için tekrar basın)"
+    },
+    "status": {
+      "idle": "Başlat'a tıklayın, ardından hedef pencereyi odaklayın — veya kısayolu doğrudan hedef uygulamada kullanın.",
+      "countdown": "Yazma {{seconds}} sn içinde başlıyor... (Esc iptal eder)",
+      "typing": "Yazılıyor... {{typed}}/{{total}} karakter (Esc iptal eder)",
+      "done": "Tamamlandı — {{total}} karakter yazıldı.",
+      "cancelled": "İptal edildi.",
+      "error": "Hata: {{message}}"
+    }
+  },
+  "modelTesting": {
+    "configureProviders": "Sağlayıcıları yapılandır",
+    "description": "Çalıştır altında işaretlediğiniz her modele bir prompt gönderir ve yanıtları token sayıları, maliyet ve gidiş-dönüş süresiyle yan yana dizer; Jüri altında işaretlenen modeller ardından tüm bu yanıtları jüri promptunuzu kullanarak puanlar. Varsayılan: hiçbir şey seçilmemiş ve her iki prompt da boş. Liste Gelişmiş > Kayıtlı LLM Sağlayıcıları'ndan gelir; bu nedenle bir çalıştırma kendi API anahtarlarınızı kullanır — promptunuz bu makineden çıkar ve ücretli sağlayıcılar için gerçek para maliyeti oluşturur.",
+    "providersLabel": "Modeller",
+    "selectAll": "Çalıştırmak için tümünü seç",
+    "clear": "Temizle",
+    "run": "Çalıştır",
+    "judge": "Jüri",
+    "costPerM": "giriş ${{input}} · çıkış ${{output}} /1M",
+    "noProviders": "Chat destekli hiçbir sağlayıcı yapılandırılmadı. Gelişmiş → Kayıtlı LLM Sağlayıcıları'ndan bir tane ekleyin.",
+    "mainPromptLabel": "Tüm modeller için prompt",
+    "mainPromptPlaceholder": "Seçili her modele gönderilen prompt…",
+    "judgePromptLabel": "Jüri / hakem promptu (isteğe bağlı)",
+    "judgePromptPlaceholder": "Jüri paneli için talimatlar. Orijinal girdiyi ve her modelin yanıtını (XML etiketli) alır.",
+    "temperatureLabel": "Sıcaklık",
+    "modelParams": "Modeller",
+    "judgeParams": "Jüri",
+    "runButton": "Testi Çalıştır",
+    "cancelButton": "İptal",
+    "runningMain": "Modeller sorgulanıyor…",
+    "runningJudge": "Jüri paneli çalıştırılıyor…",
+    "summaryTitle": "Özet",
+    "judgePanelTitle": "Jüri Paneli",
+    "answersTitle": "Yanıtlar",
+    "colModel": "Model",
+    "colInput": "Girdi tok",
+    "colOutput": "Çıktı tok",
+    "colCost": "Maliyet",
+    "colTime": "Süre",
+    "roundTrip": "Gidiş-dönüş (en uzun)",
+    "totalCost": "Toplam maliyet",
+    "errorPrefix": "Hata",
+    "artifactLabel": "Markdown çıktısı",
+    "copyMarkdown": "Markdown'ı Kopyala",
+    "copied": "Kopyalandı!",
+    "saveMarkdown": "Kaydet…",
+    "status": {
+      "mainStart": "{{count}} model sorgulanıyor…",
+      "judgeStart": "Jüri paneli çalıştırılıyor ({{count}} jüri)…",
+      "done": "Tamamlandı.",
+      "cancelled": "İptal edildi.",
+      "activity": "Çalıştırma etkinliği"
+    },
+    "library": {
+      "preset": "Hazır Ayar",
+      "presetPlaceholder": "Bir hazır ayar yükle…",
+      "pick": "Kayıtlı promptlar…",
+      "save": "Kaydet",
+      "delete": "Seçileni sil",
+      "namePlaceholder": "Ad…",
+      "confirm": "Kaydet",
+      "cancel": "İptal",
+      "editCustom": "Düzenle / özel"
+    },
+    "thinking": {
+      "label": "Düşünme",
+      "auto": "Otomatik",
+      "on": "Açık",
+      "off": "Kapalı"
+    },
+    "image": {
+      "label": "Görsel (isteğe bağlı, görme modelleri için)",
+      "drop": "Eklemek için tıklayın veya bir görseli buraya sürükleyin",
+      "remove": "Kaldır",
+      "tooLarge": "Görsel çok büyük (maks. {{mb}} MB)."
+    },
+    "save": "Kaydet",
+    "saveAs": "Farklı kaydet…",
+    "saveTo": "{{path}} konumuna kaydet",
+    "saveDisabled": "Bir konum seçmek için önce “Farklı Kaydet…”i kullanın"
+  },
+  "floating": {
+    "waiting": "Transkripsiyon bekleniyor…",
+    "listening": "Dinleniyor…",
+    "copy": "Kopyala",
+    "copied": "Kopyalandı"
   }
 }

@@ -16,6 +16,7 @@ import { CustomWords } from "../CustomWords";
 import { AppendTrailingSpace } from "../AppendTrailingSpace";
 import { PasteLastSettings } from "../PasteLastSettings";
 import { CancelBehaviorSetting } from "../CancelBehaviorSetting";
+import { UpdateSettings } from "./UpdateSettings";
 
 export const GeneralSettings: React.FC = () => {
   const { t } = useTranslation();
@@ -46,6 +47,9 @@ export const GeneralSettings: React.FC = () => {
           disabled={!audioFeedbackEnabled}
         />
         <VolumeSlider disabled={!audioFeedbackEnabled} />
+      </SettingsGroup>
+      <SettingsGroup title={t("settings.general.updates.title")}>
+        <UpdateSettings />
       </SettingsGroup>
     </div>
   );

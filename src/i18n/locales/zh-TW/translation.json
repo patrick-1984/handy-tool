@@ -13,7 +13,43 @@
     "postProcessing": "後處理",
     "history": "歷史紀錄",
     "debug": "偵錯",
-    "about": "關於"
+    "about": "關於",
+    "backup": "備份",
+    "currentAudio": "目前音訊",
+    "tokenCount": "token 計數",
+    "keyboardTyper": "鍵盤輸入工具",
+    "jumper": "跳轉器",
+    "translator": "翻譯器",
+    "groups": {
+      "tools": "工具",
+      "config": "設定"
+    },
+    "modelTesting": "模型測試",
+    "resize": "拖曳以調整大小",
+    "update": {
+      "checking": "正在檢查更新…",
+      "available": "Handy Tool {{version}} 可用",
+      "silentOn": "Handy Tool 將關閉、更新並重新開啟。",
+      "silentOff": "啟用靜默更新可在更新時間範圍內自動安裝。",
+      "enableSilent": "啟用靜默更新",
+      "updateRestart": "更新並重新啟動",
+      "later": "稍後",
+      "updateNow": "立即更新",
+      "downloading": "正在下載 Handy Tool {{version}}…",
+      "percent": "{{percent}}%",
+      "ready": "更新 {{version}} 已準備完成",
+      "waitingForIdle": "正在等待聽寫結束…",
+      "readyDetail": "Handy Tool 將重新啟動以完成更新。",
+      "waiting": "等待中…",
+      "restartInstall": "重新啟動並安裝",
+      "installing": "正在安裝更新…",
+      "installingDetail": "Handy Tool 將關閉並重新開啟。",
+      "failed": "更新失敗",
+      "failedDetail": "Handy Tool 未被變更。{{reason}}",
+      "unknownError": "未知錯誤",
+      "tryAgain": "再試一次",
+      "downloadInstaller": "下載安裝程式"
+    }
   },
   "onboarding": {
     "subtitle": "首先，請選擇一種模型",
@@ -133,7 +169,11 @@
   "settings": {
     "modelSettings": {
       "title": "{{model}} 設定",
-      "noSettingsNeeded": "此模型自動運行，無需設定"
+      "noSettingsNeeded": "此模型自動運行，無需設定",
+      "autoDetectLanguage": {
+        "description": "此模型會自動偵測所說的語言,無法鎖定為特定語言。若要強制指定語言,請切換至 Whisper、SenseVoice、FLM 或 API 模型",
+        "value": "自動偵測"
+      }
     },
     "general": {
       "title": "一般",
@@ -147,26 +187,79 @@
         "bindings": {
           "transcribe": {
             "name": "轉錄快捷鍵",
-            "description": "用於錄製和轉錄語音的鍵盤快捷鍵"
+            "description": "按一次開始錄音，再按一次結束；轉錄結果會傳遞到當時聚焦的視窗。預設：Ctrl+Space。此快速鍵依循「轉錄模式」與進階頁面的「貼上方式」——若要改用按住式錄音,請使用推鍵通話快速鍵。"
           },
           "cancel": {
             "name": "取消快捷鍵",
-            "description": "用於取消目前錄製的鍵盤快捷鍵"
+            "description": "取消進行中的錄音。預設：escape。取消實際會做什麼由一般頁面的「取消行為」決定——「完成，僅存入歷程記錄」仍會轉錄並儲存文字,但不會傳遞到你的視窗；「捨棄錄音」則會直接丟棄音訊——系統匣的「取消」項目遵循相同設定。"
           },
           "transcribe_with_post_process": {
             "name": "後處理快捷鍵",
             "description": "可選：專用快捷鍵，使用時一律對轉錄結果套用 AI 後處理"
+          },
+          "transcribe_ptt": {
+            "name": "按住說話快捷鍵",
+            "description": "按住此快速鍵開始錄音，放開即停止；放開時麥克風會立即關閉，因此之後說的任何內容都不會混入文字。預設：Ctrl+Alt+Space。此快速鍵有自己的「轉錄模式（PTT）」與「貼上方式（PTT）」，因此推鍵通話可與轉錄快速鍵表現不同。"
+          },
+          "type_text": {
+            "name": "輸入文字快捷鍵",
+            "description": "將鍵盤輸入工具方框中的內容輸入到目前聚焦的視窗；再按一次或按 Escape 可取消。預設：ctrl+alt+t。由於按下快速鍵表示你已經在目標視窗中，此動作約一秒後即開始，而不會等待完整的「開始延遲」——「開始」按鈕才會使用完整倒數。"
+          },
+          "transcribe_and_submit": {
+            "name": "轉錄並送出快捷鍵",
+            "description": "結束錄製、貼上轉錄結果,然後按下送出鍵。即使錄製是以其他快捷鍵啟動的也適用"
+          },
+          "anchor_set": {
+            "name": "設定錨點",
+            "description": "將目前聚焦的文字欄位擷取為 Hot 1 目的地。預設：ctrl+alt+k。此動作本身不會傳遞任何內容——請將「完成後跳轉插槽動作」（進階 → 轉錄）設為「跳轉／傳遞至插槽」並指向 Hot 1，讓你下一次轉錄送達此處。密碼欄位與 Handy 自身的視窗會被拒絕。"
+          },
+          "anchor_jump": {
+            "name": "跳轉至錨點",
+            "description": "將 Hot 1 視窗與欄位重新帶回焦點,且不貼上任何內容——是一個「回到我的草稿」快速鍵。預設：ctrl+alt+j。若此插槽已開啟「儲存滑鼠位置」，指標也會一併移回；若插槽為空或其視窗已關閉,則不會有任何動作。"
+          },
+          "jump_set_slot_1": {
+            "name": "設定跳轉槽 1",
+            "description": "將目前聚焦的欄位記錄為靜態插槽 1，取代原有內容。預設：ctrl+alt+shift+1。此插槽在被使用前只是個書籤——按「跳轉到插槽 1」跳回，或在某個流程的「完成後跳轉插槽動作」（進階 → 轉錄）指向插槽 1，即可讓轉錄結果送達此處。"
+          },
+          "jump_set_slot_2": {
+            "name": "設定跳轉槽 2",
+            "description": "將目前聚焦的欄位記錄為靜態插槽 2，取代原有內容。預設：ctrl+alt+shift+2。按「跳轉到插槽 2」跳回，或在某個流程的「完成後跳轉插槽動作」（進階 → 轉錄）指向插槽 2，即可讓轉錄結果送達此處。"
+          },
+          "jump_set_slot_3": {
+            "name": "設定跳轉槽 3",
+            "description": "將目前聚焦的欄位記錄為靜態插槽 3，取代原有內容。預設：ctrl+alt+shift+3。按「跳轉到插槽 3」跳回，或在某個流程的「完成後跳轉插槽動作」（進階 → 轉錄）指向插槽 3，即可讓轉錄結果送達此處。"
+          },
+          "jump_set_slot_4": {
+            "name": "設定跳轉槽 4",
+            "description": "將目前聚焦的欄位記錄為靜態插槽 4，取代原有內容。預設：ctrl+alt+shift+4。按「跳轉到插槽 4」跳回，或在某個流程的「完成後跳轉插槽動作」（進階 → 轉錄）指向插槽 4，即可讓轉錄結果送達此處。"
+          },
+          "jump_slot_1": {
+            "name": "跳轉至槽位 1",
+            "description": "將靜態插槽 1 的視窗與欄位重新帶回焦點,且不傳遞任何內容——純粹只是導覽。預設：ctrl+alt+1。若此插槽已開啟「儲存滑鼠位置」，指標也會一併還原；若插槽為空或其視窗已關閉,則不會有任何動作。"
+          },
+          "jump_slot_2": {
+            "name": "跳轉至槽位 2",
+            "description": "將靜態插槽 2 的視窗與欄位重新帶回焦點,且不傳遞任何內容——純粹只是導覽。預設：ctrl+alt+2。若此插槽已開啟「儲存滑鼠位置」，指標也會一併還原；若插槽為空或其視窗已關閉,則不會有任何動作。"
+          },
+          "jump_slot_3": {
+            "name": "跳轉至槽位 3",
+            "description": "將靜態插槽 3 的視窗與欄位重新帶回焦點,且不傳遞任何內容——純粹只是導覽。預設：ctrl+alt+3。若此插槽已開啟「儲存滑鼠位置」，指標也會一併還原；若插槽為空或其視窗已關閉,則不會有任何動作。"
+          },
+          "jump_slot_4": {
+            "name": "跳轉至槽位 4",
+            "description": "將靜態插槽 4 的視窗與欄位重新帶回焦點,且不傳遞任何內容——純粹只是導覽。預設：ctrl+alt+4。若此插槽已開啟「儲存滑鼠位置」，指標也會一併還原；若插槽為空或其視窗已關閉,則不會有任何動作。"
           }
         },
         "errors": {
           "restore": "無法還原原始快捷鍵",
           "set": "無法設定快捷鍵: {{error}}",
-          "reset": "無法將快捷鍵重設為原始值"
+          "reset": "無法將快捷鍵重設為原始值",
+          "registrationFailed": "部分快捷鍵無法註冊,目前處於停用狀態:{{bindings}}。可能已被其他應用程式使用——請在設定中選擇不同的組合"
         }
       },
       "language": {
         "title": "語言",
-        "description": "選擇語音識別的語言。選擇自動將自動判定語言，選擇特定語言可以提高該語言的準確度",
+        "description": "告知引擎你所說的語言；明確指定通常比「自動」更準確,並可避免短句被判定為錯誤語言。預設：自動。此設定套用於此卡片標題所指的模型，若同時開啟「翻譯成英文」，則指的是你說話的語言,而非取得的結果語言。",
         "descriptionUnsupported": "Parakeet 模型會自動偵測語言，無需手動選擇",
         "searchPlaceholder": "搜尋語言...",
         "noResults": "未找到語言",
@@ -184,34 +277,128 @@
         },
         "jumperPasteDelay": {
           "title": "Paste delay after jump (Windows)",
-          "description": "Extra wait after a jump activates the target window and before the paste keystroke fires. A freshly activated window — especially an RDP/Citrix session — may still be transitioning when Ctrl+V lands, so the paste is swallowed and nothing appears. Set a longer wait for Remote desktop targets (matched on the Jumper page) and a shorter one for Local apps. Shared by both Transcribe and Transcribe & Submit; only applies after a real jump — when you're already in the target, paste stays instant.",
+          "description": "跳轉將目標視窗帶到前景後，貼上按鍵送出前額外等待的時間，因為剛啟用的視窗仍可能吞掉按鍵輸入。預設：本機應用程式 250 毫秒，遠端桌面 1 秒——由跳轉頁面的「遠端比對字串」決定套用哪一項。此延遲僅在真正發生跳轉時才會執行；若你已在目標視窗中,貼上會維持即時，且這兩個下拉選單由轉錄與轉錄並提交共用。",
           "options": {
             "none": "Off (instant)"
           }
         },
         "jumperSubmitDelay": {
           "title": "Submit delay after jump (Windows)",
-          "description": "Extra wait before pressing the submit key (Enter) after a jump. A freshly activated window — especially RDP/Citrix — may still be applying the pasted text when Enter fires, so the submit is missed. Set a longer wait for Remote desktop targets and a shorter one for Local apps. Only applies after a real jump; when you're already in the target, submit stays instant.",
+          "description": "當傳遞需要跳轉時，貼上與提交鍵之間額外等待的時間，因為剛啟用的視窗可能仍在確認貼上的文字，導致 Enter 遺失。預設：本機應用程式 250 毫秒，遠端桌面 500 毫秒——由跳轉頁面的「遠端比對字串」決定套用哪一個。此延遲僅在真正發生跳轉時才會執行；若你已在目標視窗中，提交會維持即時。",
           "options": {
             "none": "Off (instant)"
           }
+        },
+        "title": "轉錄並送出",
+        "pasteMethod": {
+          "title": "貼上方式",
+          "description": "僅供「轉錄並提交快速鍵」使用的貼上按鍵，讓你語音輸入並送出的那個應用程式可與其他情況表現不同。預設：剪貼簿（Ctrl+V）。此設定會覆寫此流程的「貼上方式」——若該應用程式的訊息框不接受 Ctrl+V,請改選剪貼簿（Shift+Insert）。"
+        },
+        "submitKey": {
+          "title": "送出鍵",
+          "description": "此流程貼上後立即送出以真正發送訊息或執行指令的按鍵。預設：Enter。此流程一律會提交——「自動提交」對其不適用——若某些應用程式的一般 Enter 只會換行,請改選 Ctrl+Enter 或 Super+Enter。"
+        },
+        "idleBehavior": {
+          "title": "沒有進行中的錄製時",
+          "description": "在未進行任何錄音時按下「轉錄並提交快速鍵」會發生的動作。預設：開始錄音，因此按一次開始錄音,再按一次即貼上並提交。選擇「不執行任何動作」可讓此鍵僅作結束用——用轉錄快速鍵開始錄音，只在想要貼上並送出結果時才按此鍵。",
+          "options": {
+            "startNormal": "開始錄製",
+            "doNothing": "不執行任何操作"
+          }
+        },
+        "clipboard": {
+          "title": "剪貼簿",
+          "description": "此流程獨立的剪貼簿政策，與「剪貼簿處理」分開設定：貼上後還原你原有的剪貼簿內容，或刻意保留已送出的轉錄文字。預設：不修改剪貼簿。適合在你希望一般語音輸入不動剪貼簿,但想保留一份你所送出內容的副本時使用——反之亦可。"
         }
       },
       "pasteLast": {
         "title": "Paste last transcription",
         "pasteMethod": {
           "title": "Paste method",
-          "description": "How the last transcription is pasted into the focused window when you press the shortcut. Use Shift+Insert or another method if Ctrl+V doesn't work in the target app."
+          "description": "「重新貼上最新轉錄」快速鍵將文字放入聚焦視窗的方式。此設定與進階頁面的「貼上方式」分開，可針對難處理的目標單獨調整。預設：剪貼簿（Ctrl+V）——在終端機可改試剪貼簿（Shift+Insert），選擇「直接」以逐字輸入而非貼上，或選擇「無」僅將文字放上剪貼簿以便手動貼上。"
         },
         "clipboard": {
           "title": "Clipboard",
-          "description": "Keep your existing clipboard after pasting, or leave the transcription on the clipboard."
+          "description": "重新貼上後是否將你先前的剪貼簿內容還原，或刻意保留轉錄文字於剪貼簿。預設：不修改剪貼簿，會複製文字、貼上，然後還原原有內容。選擇「複製到剪貼簿」以在重新貼上後仍保留該文字；不論哪種方式，僅會儲存與還原剪貼簿中的文字，圖片或複製的檔案都會遺失。"
         }
+      },
+      "anchor": {
+        "title": "錨點與傳送",
+        "deliveryFailed": "錨點傳送失敗:{{reason}}。文字已在剪貼簿中,錨點已保留",
+        "status": {
+          "title": "目前錨點",
+          "description": "顯示此熱插槽目前指向的目標，附有「測試」（跳轉過去但不傳遞任何內容）與「清除」；「遠端 ✓」標記表示目標符合你的遠端比對字串。預設：尚未設定錯點——點選一個文字欄位並按此插槽的「設定錯點」快速鍵即可啟用。任何一次傳遞都不會用掉此錯點：它會持續存在，直到你清除或其視窗關閉。",
+          "active": "已錨定:{{app}} ({{control}})",
+          "none": "尚未設定錨點",
+          "clear": "清除"
+        },
+        "keep": {
+          "label": "傳送後保留錨點",
+          "description": "傳送成功後保持錨點啟用而非清除,方便重複口述至同一欄位"
+        },
+        "returnFocus": {
+          "label": "傳送後返回焦點",
+          "description": "文字傳送完成後切換回您原本使用的視窗"
+        },
+        "actions": {
+          "options": {
+            "none": "不執行任何操作",
+            "jump": "跳轉／傳送至槽位",
+            "set": "將槽位設為目前焦點",
+            "clear": "清除槽位"
+          },
+          "idle": {
+            "title": "開始時的跳轉槽動作",
+            "description": "此快速鍵在你按下以開始錄音的那一刻，額外對左側下拉選單所選插槽執行的動作。預設：不執行任何動作，這也是插槽選擇器一開始呈灰色的原因。「跳轉／傳遞至插槽」會在你開口前先移動到該記憶欄位，「將插槽設為目前焦點」會記錄你目前所在位置，「清除插槽」則會將其遺忘（僅限 Windows）。"
+          },
+          "stop": {
+            "title": "完成時的跳轉槽動作",
+            "description": "此快速鍵在錄音結束時，會對左側所選插槽執行的動作。預設：不執行任何動作。「跳轉／傳遞至插槽」會將轉錄結果送到該記憶欄位,而非你目前所在的位置,讓你可以在語音輸入時閱讀其他內容；「將插槽設為目前焦點」與「清除插槽」僅在文字傳遞完成後才執行，而「僅在以相同方式開始時才於完成後跳轉」（跳轉頁面）可進一步限制何時允許跳轉（僅限 Windows）。"
+          }
+        }
+      },
+      "transcribeGroup": {
+        "title": "轉錄"
+      },
+      "cancelBehavior": {
+        "title": "取消行為",
+        "description": "決定取消時對進行中的錄音會如何處理——涵蓋取消快速鍵、系統匣的「取消」項目與 `handy --cancel`。預設：「完成，僅存入歷程記錄」，會停止並轉錄該次錄音，連同音訊存入歷程記錄，但完全不傳遞：不貼上、不變更剪貼簿、不送出提交鍵、不跳轉。若你希望取消的錄音直接捨棄、不進行轉錄或儲存，請選擇「捨棄錄音」。",
+        "options": {
+          "finishSilently": "結束,僅儲存至歷史紀錄",
+          "discardRecording": "捨棄錄製"
+        }
+      },
+      "updates": {
+        "title": "更新",
+        "checks": {
+          "label": "自動檢查更新",
+          "description": "每天檢查一次公開的 GitHub 版本。"
+        },
+        "silent": {
+          "label": "靜默安裝更新",
+          "description": "在允許時間內關閉、更新並重新開啟。預設關閉。"
+        },
+        "time": {
+          "label": "靜默更新時間",
+          "description": "本地允許時間範圍的中心。",
+          "window": "本地時間 {{start}}–{{end}}。"
+        },
+        "jitter": {
+          "label": "每日隨機時間",
+          "description": "每天在此分鐘範圍內選擇不同時間。",
+          "minutes": "分鐘"
+        },
+        "checkNow": "立即檢查",
+        "checking": "正在檢查…",
+        "upToDate": "Handy Tool 已是最新版本。",
+        "lastChecked": "上次檢查：{{value}}",
+        "never": "從未",
+        "portableUnsupported": "可攜版無法原地更新。請下載最新可攜版。"
       }
     },
     "models": {
       "title": "轉錄模型",
-      "description": "選擇轉錄模型或下載其他模型。不同模型提供不同的準確度和速度",
+      "description": "選擇轉錄你語音輸入所使用的語音模型——不同模型在準確度、速度及載入時佔用的記憶體上各有差異。預設：全新安裝時未選取任何模型；初次設定流程會下載並選擇你的第一個模型。你的選擇也會決定一般頁面是否提供「語言」與「翻譯成英文」選項，且當翻譯器的「批次模型」保持「與語音輸入相同（預設）」時，翻譯器會沿用同一個模型。",
       "yourModels": "已下載的模型",
       "availableModels": "可供下載",
       "downloaded": "已下載",
@@ -231,23 +418,23 @@
       "title": "聲音",
       "microphone": {
         "title": "麥克風",
-        "description": "選擇您偏好的麥克風裝置",
+        "description": "Handy 錄音所使用的輸入裝置，於下次錄音時生效，無需重新啟動。預設：系統預設裝置——在耳機與內建麥克風陣列間切換時可明確指定，並可用重設按鈕還原為系統選擇。",
         "placeholder": "選擇麥克風...",
         "loading": "載入中..."
       },
       "audioFeedback": {
         "label": "聲音回饋",
-        "description": "錄製開始和停止時播放聲音"
+        "description": "錄音開始時播放一段簡短提示音，停止時播放另一段，讓你不必看畫面就知道麥克風已啟用。預設：關閉。開啟後會啟用下方的「輸出裝置」與「音量」；這兩段提示音可透過偵錯頁面的「音效主題」替換為你自己的檔案。"
       },
       "outputDevice": {
         "title": "輸出裝置",
-        "description": "選擇用於聲音回饋的音訊輸出裝置",
+        "description": "開始與停止提示音播放的裝置——不影響錄音所用的麥克風,也不影響其他應用程式的音訊輸出。預設：系統預設裝置。可指定為耳機,讓提示音不會從喇叭發出；此控制項在「音效回饋」開啟前呈灰色停用。",
         "placeholder": "選擇輸出裝置...",
         "loading": "載入中..."
       },
       "volume": {
         "title": "音量",
-        "description": "調整聲音回饋的音量"
+        "description": "開始與停止提示音的音量，範圍 0 到 100%。預設：100%。若戴耳機時提示音太突兀可調低；此設定僅影響 Handy 自身的提示音，且在「音效回饋」開啟前會呈灰色停用。"
       }
     },
     "advanced": {
@@ -257,27 +444,27 @@
         "output": "輸出",
         "transcription": "轉錄",
         "history": "歷史",
-        "experimental": "實驗性"
-      },
-      "experimentalToggle": {
-        "label": "實驗性功能",
-        "description": "啟用仍在開發中的實驗性功能"
+        "postProcessing": "後處理",
+        "keyboardTyper": "鍵盤輸入工具",
+        "tokenCountProviders": "token 計數供應商",
+        "llmProviders": "已註冊的 LLM 供應商",
+        "mcp": "MCP 與 CLI"
       },
       "startHidden": {
         "label": "隱藏啟動",
-        "description": "啟動至系統匣而不開啟視窗"
+        "description": "啟動 Handy Tool 時不顯示任何視窗——直接進入系統匣，語音輸入功能立即可用。預設：關閉。可搭配「開機時啟動」，讓應用程式在登入時即已就緒但不出現視窗；請保持「顯示系統匣圖示」開啟，因為此時系統匣是你開啟視窗的唯一方式。"
       },
       "autostart": {
         "label": "開機啟動",
-        "description": "登入電腦時自動啟動 Handy"
+        "description": "註冊 Handy Tool 在你登入 Windows 時自動啟動。預設：關閉。可搭配「啟動時隱藏」，讓應用程式安靜地出現在系統匣而不開啟視窗。"
       },
       "showTrayIcon": {
         "label": "顯示系統匣圖示",
-        "description": "在系統匣中顯示 Handy 圖示"
+        "description": "在系統匣顯示 Handy Tool 圖示，同時以圖示表示閒置、錄音與轉錄中狀態,並提供設定、最新轉錄與結束應用程式的選單。預設：開啟。注意：關閉後，關閉主視窗會直接結束應用程式而非隱藏——若同時開啟「啟動時隱藏」,將沒有任何畫面可供點按。"
       },
       "overlay": {
         "title": "懸浮窗位置",
-        "description": "在錄製和轉錄期間顯示視覺回饋懸浮窗。在 Linux 上建議選擇「無」",
+        "description": "語音輸入時顯示一個小型浮層，讓你確認 Handy Tool 正在聆聽及轉錄，可置於畫面底部或頂部。預設：底部。若浮層遮住你需要的內容或干擾全螢幕應用程式,選擇「無」以將其關閉。",
         "options": {
           "none": "無",
           "bottom": "底部",
@@ -286,7 +473,7 @@
       },
       "pasteMethod": {
         "title": "貼上方式",
-        "description": "選擇文字插入方式。直接：透過系統輸入模擬打字。無：跳過貼上，僅更新歷史紀錄/剪貼簿",
+        "description": "選擇一般語音輸入將文字傳遞至聚焦視窗所使用的按鍵；「直接」會逐字輸入而非貼上，「無」則完全不送出任何內容。預設：剪貼簿（Ctrl+V）。例如：若終端機或遠端連線工具不接受 Ctrl+V，通常可改用剪貼簿（Shift+Insert）；「無」搭配「剪貼簿處理」設為「複製到剪貼簿」，可讓文字準備好供你手動貼上。推鍵通話會忽略此設定,改用「貼上方式（PTT）」。",
         "options": {
           "clipboard": "剪貼簿 ({{modifier}}+V)",
           "clipboardCtrlShiftV": "剪貼簿 (Ctrl+Shift+V)",
@@ -299,14 +486,14 @@
       },
       "typingTool": {
         "title": "輸入工具",
-        "description": "選擇在直接貼上方式下使用的 Linux 輸入工具。選擇自動會自動偵測並使用系統中可用的最佳工具",
+        "description": "選擇支援「直接」貼上方式所使用的 Linux 輸入注入工具。預設：自動（建議），會自動偵測已安裝的最佳工具。此設定僅會出現在規劃中的 Linux 版本，Windows 上不會顯示。",
         "options": {
           "auto": "自動（推薦）"
         }
       },
       "clipboardHandling": {
         "title": "剪貼簿處理",
-        "description": "不修改剪貼簿將在轉錄後保留目前剪貼簿內容。複製到剪貼簿會在貼上後將轉錄結果留在剪貼簿中",
+        "description": "決定一般語音輸入貼上後剪貼簿會保留什麼：「不修改剪貼簿」會將轉錄文字暫留於剪貼簿僅供貼上，隨後還原你先前的剪貼簿內容；「複製到剪貼簿」則刻意保留轉錄文字。預設：不修改剪貼簿。誠實提醒：只會還原文字，複製的圖片或檔案會遺失——而且「剪貼簿還原延遲」唯有在此設為「不修改剪貼簿」時才有效。",
         "options": {
           "dontModify": "不修改剪貼簿",
           "copyToClipboard": "複製到剪貼簿"
@@ -314,7 +501,7 @@
       },
       "autoSubmit": {
         "title": "自動送出",
-        "description": "插入文字後自動發送指定的按鍵組合。macOS 為 Cmd+Enter，Windows/Linux 為 Super+Enter",
+        "description": "在每次一般貼上後約 50 毫秒送出提交鍵，讓語音輸入的聊天訊息自動送出。預設：關閉。不同應用程式對送出鍵的判定不同，若一般 Enter 只會換行,可嘗試 Ctrl+Enter；當「貼上方式」設為「無」時此設定會被忽略，且不影響「轉錄並提交快速鍵」，該快速鍵一律使用自己的提交鍵。",
         "options": {
           "off": "關閉",
           "enter": "Enter",
@@ -325,12 +512,13 @@
       },
       "translateToEnglish": {
         "label": "翻譯為英語",
-        "description": "在轉錄過程中自動將其他語言的語音翻譯為英語",
-        "descriptionUnsupported": "{{model}} 模型不支援翻譯功能"
+        "description": "要求模型輸出英文，而非以原語言轉錄你所說的內容。預設：關閉。請保持「語言」設定為你實際說的語言——此開關僅出現在支援翻譯的模型上。",
+        "descriptionUnsupported": "{{model}} 模型不支援翻譯功能",
+        "unsupported": "所選轉錄模型不支援此功能"
       },
       "modelUnload": {
         "title": "卸載模型",
-        "description": "當模型在指定時間內未使用時自動釋放 GPU/CPU 記憶體",
+        "description": "在轉錄模型閒置這麼久後釋放其佔用的 RAM 或 VRAM；下次錄音則需花數秒重新載入。預設：永不（保持載入——啟動最快），若你整天持續語音輸入，這是正確選擇。若你以間歇方式語音輸入並想在期間釋放記憶體，可設定逾時——翻譯器獨立的批次引擎不受此設定影響，那由「批次模型卸載時間」釋放。",
         "options": {
           "never": "從不",
           "immediately": "立即",
@@ -339,16 +527,229 @@
           "min10": "10 分鐘後",
           "min15": "15 分鐘後",
           "hour1": "1 小時後",
-          "sec5": "5 秒後（偵錯）"
+          "sec5": "5 秒後（偵錯）",
+          "custom": "自訂…"
+        },
+        "units": {
+          "s": "秒",
+          "m": "分鐘",
+          "h": "小時"
         }
       },
       "customWords": {
         "title": "自訂詞彙",
-        "description": "新增經常被誤聽或拼寫錯誤的詞彙。系統會自動將發音相似的詞彙修正為您列表中的詞彙",
+        "description": "一份引擎持續轉錄錯誤的人名、產品與專有名詞清單；每次轉錄後，Handy 會找出發音相近的詞並代換成你指定的拼法。預設：空白。遇到問題就加入完整詞條；若開始修正你並未說錯的詞,請調低偵錯頁面的「詞彙修正門檻」。",
         "placeholder": "新增詞彙",
         "add": "新增",
         "remove": "刪除 {{word}}",
         "duplicate": "「{{word}}」已存在"
+      },
+      "tokenCountProviders": {
+        "hint": "「token 計數」頁面所使用的供應商。提示:模型只用來選擇分詞器——請選擇您關心系列中最小的模型即可(例如 qwen3:0.6b 的計數結果與 qwen3:8b 相同,但載入時間短得多)。Anthropic 與 Gemini 的計數端點是免費的;本機伺服器則以 1 個 token 的探測請求查詢",
+        "enable": "啟用此供應商",
+        "namePlaceholder": "顯示名稱",
+        "baseUrl": "基礎網址",
+        "apiKey": "API 金鑰",
+        "apiKeyPlaceholder": "本機伺服器可留空",
+        "model": "模型",
+        "refreshModels": "從端點載入模型列表",
+        "modelsError": "無法載入模型",
+        "kinds": {
+          "gemini": "Gemini",
+          "anthropic": "Anthropic",
+          "openai_local": "tiktoken(離線)",
+          "openai_compatible": "相容 OpenAI"
+        }
+      },
+      "crashResilientRecording": {
+        "label": "當機復原錄製",
+        "description": "在你說話時將語音即時編碼為緊湊的 Opus 檔案存於磁碟,而非全部保留在記憶體中，因此當機、被強制更新或電池耗盡時仍會留下錄音——下次啟動時會自動修復並加入歷程記錄。預設：開啟。關閉後會錄製未壓縮音訊，而「完整資料（含壓縮音訊）」備份會刻意排除此類檔案。"
+      },
+      "openRecordingsFolder": {
+        "label": "錄音資料夾",
+        "description": "開啟存放你的錄音以及當機後救回的任何音訊的資料夾（%APPDATA%\\pr.handy\\recordings）。「自動刪除錄音」會在此清理,但只會處理 Handy 自行建立的檔案——你自己在此資料夾中的筆記或匯出檔案絕不會被重新命名或刪除。",
+        "button": "開啟資料夾"
+      },
+      "appearance": {
+        "title": "外觀",
+        "description": "設定 Handy Tool 所有視窗的色彩主題，包含錄音浮層與浮動轉錄視窗。預設：系統，會跟隨你 Windows 的淺色／深色設定並持續追蹤；「淺色」與「深色」則固定一種配色，不再隨後續系統變更調整。",
+        "options": {
+          "system": "系統",
+          "light": "亮色",
+          "dark": "暗色"
+        }
+      },
+      "pasteMethodPtt": {
+        "title": "貼上方式(按住說話)",
+        "description": "與「貼上方式」相同的選項，但僅供推鍵通話快速鍵使用，讓按住式語音輸入的傳遞方式可與一般語音輸入不同。預設：剪貼簿（Ctrl+V）。當推鍵通話所輸入的應用程式需要與你日常語音輸入的應用程式不同的貼上按鍵時,可加以變更。"
+      },
+      "clipboardRestoreDelay": {
+        "title": "剪貼簿還原延遲",
+        "description": "貼上後還原你先前剪貼簿內容前的額外等待時間，會加在內建的 50 毫秒之上；此設定僅在此群組的剪貼簿設定（此處的「剪貼簿處理」，或「轉錄並提交」下的「剪貼簿」）為「不修改剪貼簿」時才有效果。預設：關閉（立即）。若 Citrix 或 RDP 連線貼上的是你舊的剪貼簿內容而非剛才所說的內容,可調高至約 1 秒——遠端連線僅會在貼上按鍵送出後才擷取剪貼簿內容。",
+        "options": {
+          "none": "無(立即)",
+          "ms250": "250 毫秒",
+          "ms500": "500 毫秒",
+          "ms1000": "1 秒",
+          "ms2500": "2.5 秒",
+          "ms5000": "5 秒"
+        }
+      },
+      "transcriptionMode": {
+        "title": "轉錄模式",
+        "description": "「即時」會在你說話時同步顯示逐漸成形的文字；「錄音後」則安靜錄音，並在背景進行轉錄。預設：錄音後。無論哪種模式，停止時都會對整段音訊進行一次最終轉錄，因此傳遞的文字始終是準確版本，即時文字僅供預覽——此設定僅套用於轉錄快速鍵，API 轉錄模型一律以「錄音後」方式運作。",
+        "options": {
+          "live": "即時",
+          "postRecording": "錄製後"
+        }
+      },
+      "transcriptionModePtt": {
+        "title": "轉錄模式(按住說話)",
+        "description": "與一般「即時／錄音後」相同的選擇，但僅套用於推鍵通話快速鍵。預設：即時——刻意與「轉錄模式」相反，因為按住式錄音通常較短，預覽幾乎立即顯示。傳遞的文字仍來自對整段錄音的最終轉錄。",
+        "options": {
+          "live": "即時",
+          "postRecording": "錄製後"
+        }
+      },
+      "gpuDevice": {
+        "title": "GPU 裝置",
+        "description": "選擇本機 Whisper 轉錄所使用的顯示卡,或強制僅使用 CPU 處理。預設：自動（預設）；若某顯示卡無法啟動,會自動回退至「自動」而不中斷轉錄。可在需要保留繁忙的獨立顯示卡或迴避有問題的驅動程式時變更——此設定於模型下次載入時生效，且僅在 Windows 上選取 Whisper 模型時顯示。",
+        "options": {
+          "auto": "自動(預設)",
+          "cpu": "僅 CPU",
+          "device": "{{name}} (裝置 {{index}})",
+          "deviceWithVram": "{{name}} (裝置 {{index}},{{vram}} GB)"
+        }
+      },
+      "apiTranscription": {
+        "title": "API 轉錄",
+        "cardTitle": "API 轉錄(相容 OpenAI)",
+        "url": {
+          "title": "API 網址",
+          "description": "相容 OpenAI 的語音伺服器基礎 URL，須包含版本前綴——Handy 會在其後附加 /audio/transcriptions，因此 http://127.0.0.1:8000/v1 會變成 http://127.0.0.1:8000/v1/audio/transcriptions。預設：空白；請先填入此欄位,再於模型頁面選擇「API 轉錄（相容 OpenAI）」，否則該次錄音會失敗。此引擎在你停止錄音時,一律會將整段錄音以單一 WAV 檔上傳，因此「轉錄模式」對其無效。",
+          "placeholder": "http://127.0.0.1:8000/v1"
+        },
+        "apiKey": {
+          "title": "API 金鑰",
+          "description": "隨每次上傳一併傳送的 Bearer 金鑰；若本機伺服器不檢查金鑰,可留空。預設：空白。此金鑰以未加密方式存於你的設定檔中，並會包含在備份裡。",
+          "placeholder": "sk-..."
+        },
+        "model": {
+          "title": "模型",
+          "description": "你的端點所需的模型 id，會原封不動隨上傳送出——OpenAI 用 whisper-1，或你自己伺服器所命名的模型名稱。預設：空白，會送出空白的 model 欄位；若你的端點需要此欄位,請自行設定。當「語言」為「自動」時,此引擎會送出英文,因此若你以其他語言語音輸入,請固定「語言」設定。",
+          "placeholder": "whisper-1"
+        }
+      },
+      "tabs": {
+        "app": "應用程式",
+        "output": "輸出",
+        "transcription": "轉錄",
+        "typer": "輸入工具",
+        "providers": "供應商",
+        "mcp": "MCP 與 CLI",
+        "history": "歷史",
+        "postProcessing": "後處理"
+      },
+      "mcp": {
+        "loading": "載入中…",
+        "description": "執行一個小型本機伺服器，讓 Claude（應用程式與 Code）及 handy 指令能使用 Handy 自身的工具：計算 token 數、將文字輸入聚焦視窗、讀取歷程記錄、執行模型測試與編輯供應商。預設：關閉；開啟後會立即以下方的連接埠與權杖在 127.0.0.1 上啟動伺服器，絕不會對外部網路介面開放。誠實提醒：權杖以純文字存於你的設定檔中，任何以你身分執行的程式都能讀取並操控此應用程式。",
+        "enable": "啟用 MCP 與 CLI 伺服器",
+        "running": "執行中",
+        "stopped": "已停止",
+        "port": "連接埠",
+        "token": "權杖",
+        "show": "顯示",
+        "hide": "隱藏",
+        "regenerate": "重新產生",
+        "claudeApp": "Claude 應用程式(HTTP)——使用以下網址新增自訂 MCP 伺服器:",
+        "authHeader": "……以及以下 Authorization 標頭:",
+        "claudeCodeStdio": "Claude Code(stdio):",
+        "claudeCodeHttp": "Claude Code(HTTP):",
+        "cliTitle": "命令列輔助工具",
+        "cliHint": "將 Handy 自身的執行檔複製到你的 PATH 中並命名為 handy，讓你可在任意終端機以 handy model-test、handy token-count 或 handy mcp --stdio 與執行中的應用程式互動。預設：未安裝。此指令透過與應用程式相同的本機伺服器通訊,因此僅在「啟用 MCP 與 CLI 伺服器」開啟時可用；在可攜模式下無法使用。",
+        "installCli": "安裝 CLI",
+        "reinstallCli": "重新安裝 CLI"
+      },
+      "costReport": {
+        "title": "轉錄成本報告",
+        "description": "每筆錄音的成本(來自 OpenRouter 的實際美元金額)與長度,依週、月、年彙總。可下載完整報告(含所有錄音與彙總資料)為 CSV 檔案",
+        "download": "下載 CSV",
+        "recalc": "重新計算時長",
+        "recordings": "錄音",
+        "daily": "過去 7 天",
+        "colTimestamp": "時間戳記",
+        "colDuration": "時長 (HH:MM:SS)",
+        "colCost": "成本 (USD)",
+        "colPeriod": "期間",
+        "colCount": "錄音",
+        "weekly": "過去 4 週",
+        "monthly": "過去 12 個月",
+        "yearly": "依年度",
+        "total": "總計(所有時間)",
+        "allTime": "所有時間",
+        "weekOf": "{{date}} 當週",
+        "totalLine": "{{count}} 筆錄音 · {{duration}} · {{cost}}",
+        "empty": "尚無錄音"
+      },
+      "llmProviders": {
+        "hint": "一份供應商登錄清單——名稱、端點、金鑰、模型與每百萬 token 成本——由計算 Token 數、模型測試與後處理共用。每個插槽保有固定的 id（#1、#2……）供這些畫面參照，因此在此處的變更會套用到所有地方；取消勾選「啟用此供應商」會將該插槽從三處一併移除。預設：三個本機插槽為啟用狀態，其餘雲端插槽在貼上金鑰前皆為停用。",
+        "enable": "啟用此供應商",
+        "namePlaceholder": "供應商名稱",
+        "baseUrl": "基礎網址",
+        "apiKey": "API 金鑰",
+        "apiKeyPlaceholder": "貼上您的 API 金鑰",
+        "model": "模型",
+        "modelPlaceholder": "模型 ID",
+        "refreshModels": "重新整理模型列表",
+        "modelsError": "失敗",
+        "cost": "成本／1M",
+        "costInput": "輸入 $",
+        "costOutput": "輸出 $",
+        "costAuto": "由 OpenRouter 自動回報",
+        "concurrency": "並行數",
+        "sequential": "同系列內依序執行",
+        "family": "系列",
+        "familyPlaceholder": "例如 flm",
+        "kinds": {
+          "anthropic": "Anthropic",
+          "gemini": "Gemini",
+          "openai_local": "本機(tiktoken)",
+          "openai_compatible": "相容 OpenAI",
+          "openrouter": "OpenRouter",
+          "apple_intelligence": "Apple"
+        },
+        "persistPrice": "保留",
+        "persistPriceHint": "即使模型變更也保留此價格(不從 OpenRouter 自動填入)"
+      },
+      "openRouterTranscription": {
+        "cardTitle": "OpenRouter 轉錄",
+        "url": {
+          "title": "API 網址",
+          "description": "語音請求送往的 OpenRouter API 根位址，包含 /api/v1。預設：https://openrouter.ai/api/v1——除非透過代理伺服器，否則請保持不變。此欄位或 API 金鑰為空時,Handy 完全不會送出任何請求。",
+          "placeholder": "https://openrouter.ai/api/v1"
+        },
+        "apiKey": {
+          "title": "API 金鑰",
+          "description": "你的 OpenRouter 金鑰（openrouter.ai/keys），僅供此語音引擎使用——與「已註冊的 LLM 供應商」中任何 OpenRouter 項目分開。預設：空白，未填入時該次錄音會直接失敗，而非送出未驗證的請求。使用此引擎語音輸入會將你的音訊上傳至 OpenRouter 並依錄音計費，實際金額會記錄於歷程記錄與轉錄成本報告中。",
+          "placeholder": "sk-or-..."
+        },
+        "model": {
+          "title": "轉錄模型",
+          "description": "手動輸入的 OpenRouter 模型 id：轉錄路由使用如 openai/whisper-large-v3 的格式，聊天路由則使用支援音訊的聊天模型，例如 google/gemini-2.5-flash。預設：空白，會回退為 openai/whisper-large-v3。此設定須與「端點」相符——不一致時通常會得到空白轉錄結果，而不是錯誤訊息。",
+          "placeholder": "openai/whisper-large-v3"
+        },
+        "route": {
+          "title": "端點",
+          "description": "選擇音訊送往的 OpenRouter 端點。「轉錄（Whisper 風格）」會傳送至專用語音端點；「聊天模型（Gemini／GPT-4o-audio）」會將音訊放入聊天訊息中，這是非語音模型接受音訊的唯一方式。預設：轉錄（Whisper 風格）。此設定須與「轉錄模型」一致，而「翻譯成英文」僅在聊天路由中有效。",
+          "stt": "轉錄(Whisper 風格)",
+          "chat": "聊天模型(Gemini／GPT-4o-audio)"
+        },
+        "format": {
+          "title": "音訊格式",
+          "description": "上傳前音訊的編碼方式：Opus 比 WAV 小約十倍，在網路吃緊或飯店連線時尤其重要。預設：Opus——較小（建議）。此設定僅在「端點」為「聊天模型（Gemini／GPT-4o-audio）」時適用；「轉錄（Whisper 風格）」路由一律傳送 WAV，因為 Whisper 風格模型不接受 Opus。",
+          "opus": "Opus——體積較小(建議)",
+          "wav": "WAV——相容性最佳"
+        }
       }
     },
     "postProcessing": {
@@ -360,7 +761,8 @@
         "title": "API（相容 OpenAI）",
         "provider": {
           "title": "供應商",
-          "description": "選擇一個相容 OpenAI 的供應商"
+          "description": "選擇一個相容 OpenAI 的供應商",
+          "placeholder": "選擇已註冊的供應商"
         },
         "appleIntelligence": {
           "title": "Apple Intelligence",
@@ -387,7 +789,12 @@
           "placeholderWithOptions": "搜尋或選擇模型",
           "placeholderNoOptions": "輸入模型名稱",
           "refreshModels": "重新整理模型"
-        }
+        },
+        "temperature": {
+          "title": "溫度",
+          "description": "數值越低結果越確定、越嚴謹(0 為最直譯);數值越高越有創意"
+        },
+        "registryNote": "供應商的 API 金鑰、模型及基礎網址皆於「進階 → 已註冊的 LLM 供應商」中設定"
       },
       "prompts": {
         "title": "提示詞",
@@ -409,6 +816,10 @@
         "cancel": "取消",
         "selectToEdit": "選擇上方的提示詞以檢視和編輯其詳細資訊",
         "createFirst": "點選上方的「建立新提示詞」來建立您的第一個後處理提示詞"
+      },
+      "disableThinking": {
+        "label": "停用思考",
+        "description": "向模型傳送 think: false。可加快回應速度,但可能降低具思考功能模型(例如 Qwen3)的指令遵循能力"
       }
     },
     "history": {
@@ -420,34 +831,43 @@
       "save": "儲存轉錄",
       "unsave": "從已儲存中移除",
       "delete": "刪除條目",
-      "deleteError": "刪除條目失敗，請重試"
+      "deleteError": "刪除條目失敗，請重試",
+      "loadError": "載入歷史紀錄失敗:{{error}}",
+      "search": {
+        "placeholder": "搜尋歷史紀錄(文字或正規表達式)...",
+        "clear": "清除搜尋",
+        "matches": "{{matched}} / {{total}}",
+        "regexBadge": ".*",
+        "regexActive": "查詢字串將視為正規表達式處理",
+        "noMatches": "沒有符合搜尋條件的項目"
+      }
     },
     "debug": {
       "title": "偵錯",
       "logDirectory": {
         "title": "日誌目錄",
-        "description": "日誌檔案的儲存位置"
+        "description": "開啟存放檔案記錄的資料夾——出問題卻沒有說明原因時，第一個該查看的地方。記錄檔會在達到 10 MB 時輪替,舊檔會保留而非被覆寫，因此問題發生後常見的重新啟動不會抹去證據。這裡記錄的詳細程度由偵錯頁面的「記錄層級」控制，預設為 Debug，可能包含轉錄片段。"
       },
       "logLevel": {
         "title": "日誌等級",
-        "description": "設定日誌的詳細程度"
+        "description": "設定記錄檔寫入的詳細程度；不影響主控台輸出。預設：Debug。若不想讓語音輸入內容留存於磁碟,可調低為 Info——在 Debug 與 Trace 層級下，你從「關於」頁面「記錄資料夾」開啟的檔案中可能出現轉錄片段與提示詞預覽。"
       },
       "soundTheme": {
         "label": "聲音主題",
-        "description": "選擇錄製開始和停止回饋的聲音主題"
+        "description": "選擇錄音開始與停止時播放的提示音組合。預設：Marimba。僅在「音效回饋」（一般頁面）開啟時才會聽到聲音；當自訂的開始與停止 WAV 檔皆已存在於應用程式資料資源資料夾中時,「自訂」才會出現在此清單中。"
       },
       "wordCorrectionThreshold": {
         "title": "詞彙修正閾值",
-        "description": "自訂詞彙修正的靈敏度"
+        "description": "轉錄結果被改寫以符合一般頁面「自訂詞彙」中詞條的積極程度。預設：0.18。若人名與專有名詞仍常被誤植,可調高；若 Handy Tool 開始替換你實際說出的詞,可調低——「自訂詞彙」為空時,此滑桿完全不起作用。"
       },
       "historyLimit": {
         "title": "歷史紀錄上限",
-        "description": "歷史紀錄的最大保留筆數",
+        "description": "歷程記錄在最舊條目連同音訊一併移除前,最多保留多少筆轉錄。預設：5 筆——刻意設得很低,若你預期數天後才要查閱,可調高。此設定僅在「自動刪除錄音」設為「保留最新」時才有效果；你以「儲存轉錄」標記的條目一律保留，且不計入此上限。",
         "entries": "筆"
       },
       "recordingRetention": {
         "title": "自動刪除錄音",
-        "description": "自動刪除舊錄音以節省空間",
+        "description": "控制歷程記錄的自動清理：條目過期時,其資料列與音訊檔會一併刪除。預設：保留最新，僅保留「歷程記錄上限」（預設 5）允許的最新條目——時間選項則改為保留最近 3 天、2 週或 3 個月內的所有內容，「永不」則不刪除任何內容。清理會在每次新轉錄儲存後及每次變更這兩項設定時執行,一律保留標記「儲存轉錄」的條目，且僅會移除 Handy Tool 自行建立的音訊檔。",
         "never": "從不",
         "preserveLimit": "保留最新 {{count}} 筆",
         "days3": "3 天後",
@@ -457,27 +877,27 @@
       },
       "alwaysOnMicrophone": {
         "label": "麥克風常開",
-        "description": "保持麥克風啟用以獲得更快的回應"
+        "description": "在各次錄音之間持續保持麥克風串流開啟，而非每次按下錄音快速鍵時才開啟。預設：關閉。若錄音開頭的第一個音節經常被截斷,可開啟此設定——代價是只要 Handy Tool 在執行,你系統的麥克風指示燈就會持續亮著,而不僅在語音輸入時才亮。"
       },
       "clamshellMicrophone": {
         "title": "闔蓋麥克風",
-        "description": "筆記型電腦闔蓋時使用的麥克風"
+        "description": "在筆電上蓋闔上時改用不同的輸入裝置，適用於內建麥克風在此狀態下無法使用的擴充座機型。預設：無，此時一律使用一般頁面的「麥克風」。闔蓋偵測僅支援 macOS，且 macOS 版本仍在規劃中，因此此設定在 Windows 版本上沒有作用。"
       },
       "postProcessingToggle": {
         "label": "後處理",
-        "description": "啟用轉錄後的 AI 文字最佳化"
+        "description": "開啟可選的 AI 潤飾流程，並在側邊欄新增「後處理」頁面，供你選擇供應商與提示詞。預設：關閉。你的一般轉錄快速鍵不受影響——潤飾僅在獨立的「後處理快速鍵」上執行，且歷程記錄會同時保留原始與經處理的轉錄結果。"
       },
       "muteWhileRecording": {
         "label": "錄製時靜音",
-        "description": "錄製期間靜音系統音訊"
+        "description": "在每次錄音期間將系統音訊靜音，避免喇叭播放的音樂或影片聲音混入麥克風。預設：關閉。若你透過喇叭而非耳機語音輸入,建議開啟；錄音結束後聲音會自動恢復。"
       },
       "appendTrailingSpace": {
         "label": "附加尾部空格",
-        "description": "在貼上的轉錄後新增空格"
+        "description": "在每次傳遞的轉錄結果結尾加上一個空格，避免連續兩次語音輸入變成「……一。二」。預設：關閉。若你經常以短句連續語音輸入至同一欄位,建議開啟；若多餘空格會造成問題（例如搜尋框或終端機指令），請保持關閉。"
       },
       "keyboardImplementation": {
         "title": "鍵盤實作",
-        "description": "選擇鍵盤快捷鍵的後端",
+        "description": "選擇向作業系統註冊 Handy Tool 全域快速鍵所使用的後端。預設：Tauri Global Shortcut。若你設定的某個快速鍵因已被其他程式占用或 Windows 拒絕註冊而始終無法觸發,可切換為 Handy Keys——切換時所有快速鍵都會重新註冊，若失敗則會自動還原變更。",
         "bindingsReset": "鍵盤快捷鍵不相容，已重設為預設值"
       },
       "paths": {
@@ -487,28 +907,23 @@
       },
       "pasteDelay": {
         "title": "貼上延遲",
-        "description": "發送貼上按鍵前的延遲（毫秒）。如果貼上了錯誤的文字，請增加此值"
+        "description": "Handy Tool 將轉錄結果放上剪貼簿後,等待多久才送出貼上按鍵。預設：60 毫秒。若某個較慢的應用程式貼上的是你先前的剪貼簿內容而非新文字，請調高此值；此等待與「跳轉後的貼上延遲（僅限 Windows）」不同,後者僅在跳轉插槽剛啟用另一個視窗時才適用。"
       }
     },
     "about": {
       "title": "關於",
       "version": {
         "title": "版本",
-        "description": "Handy 的目前版本"
+        "description": "你目前執行的 Handy Tool 版本；回報問題時請一併提供。目前僅發行 Windows x64 版本——macOS 與 Linux 仍在規劃中，即使日後推出，跳轉插槽功能仍僅限 Windows。此處不會自動檢查新版本；請使用「更新」進行查詢。"
       },
       "appDataDirectory": {
         "title": "應用程式資料目錄",
-        "description": "Handy 儲存資料的位置"
+        "description": "開啟存放 Handy Tool 所有資料的單一資料夾：設定（包含你的供應商 API 金鑰與提示詞，為 JSON 檔）、SQLite 資料庫中的轉錄文字、錄音、已下載的模型與輪替的記錄檔。預設：一般 Windows 安裝下為 %APPDATA%\\pr.handy。Handy Tool 不會加密其中任何內容——檔案系統權限是唯一的保護——因此這也是你轉交機器時應複製或清除的資料夾。"
       },
       "sourceCode": {
         "title": "原始碼",
         "description": "檢視原始碼並參與貢獻",
         "button": "在 GitHub 上檢視"
-      },
-      "supportDevelopment": {
-        "title": "支持開發",
-        "description": "幫助我們繼續開發 Handy",
-        "button": "捐贈"
       },
       "acknowledgments": {
         "title": "致謝",
@@ -516,21 +931,180 @@
           "title": "Whisper.cpp",
           "description": "針對 OpenAI Whisper 自動語音識別模型的高效能推理引擎",
           "details": "Handy 使用 Whisper.cpp 進行快速的本機語音轉文字處理。感謝 Georgi Gerganov 和貢獻者們的傑出工作"
+        },
+        "handy": {
+          "title": "Handy",
+          "description": "本專案所基於的原始開源語音轉文字應用程式",
+          "details": "Handy Tool 是 Handy 的分支專案,由 CJ Pais 建立(github.com/cjpais/Handy、handy.computer)。此專案於上游 v0.8.1(2026 年 3 月)後接手,並由 Patrick R. 獨立持續開發。非常感謝 CJ 與 Handy 貢獻者們為本專案打下的基礎"
         }
+      },
+      "updates": {
+        "title": "更新",
+        "description": "「查看發行版本」會在瀏覽器中開啟專案的 GitHub 發行頁面,供你與「版本」比對。Handy Tool 沒有內建更新程式,也不會在背景檢查新版本——更新永遠由你自行決定進行。",
+        "button": "查看發行版本"
       }
     },
     "jumper": {
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "When a jump target's app, window class, or control class contains one of these (case-insensitive), it is treated as a remote desktop session and uses the longer 'Remote' jump delays (Advanced → Transcription). Add the identifiers your RDP/Citrix clients use — e.g. msrdc, mstsc, Citrix. An empty list treats every target as local.",
+        "description": "若跳轉目標的應用程式、視窗類別或控制項類別包含以下任一字串片段（不區分大小寫），會被視為遠端桌面，並改用「進階 → 轉錄」中「跳轉後的貼上延遲（僅限 Windows）」與「跳轉後的提交延遲（僅限 Windows）」的「遠端」數值，而非「本機」數值。預設：msrdc、mstsc、Citrix。若傳遞到你的 RDP 或 Citrix 客戶端時持續遺失,可加入該用戶端的程序名稱；清單為空時,所有目標都視為本機。",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
         "duplicate": "'{{value}}' is already in the list",
         "badge": "Remote ✓",
         "badgeTooltip": "This target matches a remote match string, so it uses the Remote jump delays."
+      },
+      "windowsOnly": "跳轉器僅適用於 Windows",
+      "hot": {
+        "title": "快捷槽位(錨點與傳送)",
+        "optionsMoved": {
+          "title": "傳送選項",
+          "description": "這不是一項設定，而是一個指引。跳轉實際會對插槽做什麼，由「進階 → 轉錄」中依流程各自設定：「開始時跳轉插槽動作」、「完成後跳轉插槽動作」、「追蹤最後輸出位置」與「傳遞後歸還焦點」——轉錄與轉錄並提交各有一組。",
+          "hint": "可在「一般」頁面的「轉錄」與「轉錄並送出」群組中設定"
+        }
+      },
+      "hot2": {
+        "title": "第二快捷槽位(錨點與傳送)"
+      },
+      "slot": {
+        "title": "固定槽位 {{index}}",
+        "status": "槽位 {{index}} 目標",
+        "description": "顯示此編號插槽目前指向的目標，附有「測試」（跳轉過去但不傳遞任何內容）與「清除」。預設：無目標——聚焦你經常回訪的欄位，按下此插槽的「設定」快速鍵（ctrl+alt+shift+1……9），之後隨時可用 ctrl+alt+1……9 跳回。插槽記住的是視窗與欄位，而非瀏覽器分頁或文字游標位置，且傳遞後仍會保留。",
+        "test": "測試",
+        "testFailed": "跳轉失敗:{{reason}}",
+        "stale": "已儲存:{{app}} ({{control}})——尚未找到視窗"
+      },
+      "persist": {
+        "label": "重新啟動後記住槽位",
+        "description": "在應用程式重新啟動後仍記住每個插槽的目標。預設：關閉。由於 Windows 無法在重新啟動後保留視窗代碼，Handy 會儲存每個插槽的識別資訊（應用程式、視窗與欄位類型），並在啟動時及每次使用該插槽時重新尋找相符的視窗——若已儲存插槽的應用程式未在執行,該插槽會顯示紅色，直到再次出現。",
+        "groupTitle": "持久化"
+      },
+      "slotNames": {
+        "hot": "快捷 1",
+        "hot2": "快捷 2",
+        "static": "槽位 {{index}}"
+      },
+      "track": {
+        "label": "追蹤最後輸出位置",
+        "description": "僅限 Windows。此流程貼上轉錄結果後，「儲存位置到」所選的插槽會被覆寫為文字實際送達的欄位，讓你下次跳轉到該插槽時回到上次語音輸入的地方。預設：關閉。適合讓插槽自動跟隨你，而非手動設定——「轉錄」與「轉錄並提交」各自獨立追蹤，且擷取動作發生在任何「傳遞後歸還焦點」之前。",
+        "slot": {
+          "title": "儲存位置至",
+          "description": "「追蹤最後輸出位置」在此流程每次傳遞後會覆寫的跳轉插槽。預設：Hot 1。若你不想讓自動追蹤持續覆寫手動以「設定錯點」建立的熱插槽,可改指向靜態插槽（插槽 1 至插槽 9）。"
+        }
+      },
+      "saveCursor": {
+        "label": "還原滑鼠游標位置",
+        "description": "此流程傳送轉錄結果後,會記住滑鼠游標位置,並在您跳轉時將指標移回該處。此設定獨立於另一個流程的開關;下方的位置模式為兩個流程共用",
+        "perSlot": "儲存滑鼠位置",
+        "perSlotDescription": "在設定或追蹤此插槽時同時記錄滑鼠指標位置，跳轉到此插槽時會將指標移回原處——且在貼上之後才移動，因此不會干擾傳遞。預設：關閉。適合為位於另一個螢幕的插槽開啟，讓鍵盤與滑鼠同時到位；開啟後會啟用下方此插槽專屬的「游標位置模式」，且每個插槽各有一組獨立開關。",
+        "mode": {
+          "title": "游標位置模式",
+          "description": "選擇此插槽儲存的指標位置如何計算。預設：應用程式相對（跟隨視窗）——即使目標視窗被移動、調整大小或拖到不同 DPI 的螢幕，仍會還原到視窗內相同的位置。針對永遠不會移動的目標（例如固定的儀表板），可選擇「螢幕絕對座標（精確座標）」；此下拉選單在此插槽的「儲存滑鼠位置」開啟前為灰色停用。",
+          "appRelative": "相對於應用程式(跟隨視窗)",
+          "screenAbsolute": "螢幕絕對座標(精確座標)"
+        }
+      },
+      "returnFocus": {
+        "label": "傳送後返回焦點",
+        "description": "需要跳轉的傳遞完成後，焦點會自動回到傳遞開始時你所在的視窗——自動擷取，無需設定插槽。預設：開啟。此行為是條件式的：若你在 Handy Tool 處理期間自行切換了視窗，會讓你留在自己選擇的位置；每個流程分別決定此行為（僅限 Windows）。"
+      },
+      "requireSameFlow": {
+        "groupTitle": "完成時行為",
+        "label": "僅在以相同方式啟動時才於完成時跳轉",
+        "description": "開啟後，某個流程的「完成後跳轉插槽動作」僅在開始與結束時使用同一個快速鍵時才會觸發。預設：關閉。例如：以「轉錄」開始、以「轉錄並提交」結束時不會跳轉——貼上與提交仍會發生，僅跳轉被攔截。若混用這兩個快速鍵導致你被意外傳送到別處，可開啟此設定。"
       }
+    },
+    "translator": {
+      "title": "翻譯器",
+      "enabled": {
+        "label": "監看資料夾",
+        "description": "開啟後會使用你目前的模型、語言與「翻譯成英文」設定，將監看資料夾中出現的每個新 .wav、.ogg 或 .opus 檔轉錄為旁邊的 .txt 檔。預設：關閉。監看開始時資料夾中已存在的檔案會被刻意忽略，資料夾本身則於「新增資料夾」中選擇。"
+      },
+      "priority": {
+        "title": "優先順序",
+        "description": "決定資料夾中的檔案與你自己的語音輸入同時需要語音引擎時的優先順序。預設：即時語音輸入優先——批次處理會在你按下錄音的瞬間於下一個分段邊界暫停,之後再繼續,不會遺失批次進度。「資料夾批次優先」會讓批次持續執行,你的即時文字稍晚才會出現；「先到先服務」則會讓進行中的檔案先完成,再處理你的錄音,然後才輪到下一個檔案。",
+        "options": {
+          "live_first": "優先即時口述",
+          "folder_first": "優先資料夾批次",
+          "fifo": "先到先處理"
+        }
+      },
+      "model": {
+        "title": "批次模型",
+        "description": "轉錄你所監看資料夾中檔案所使用的語音模型；標有地球圖示的模型也可翻譯成英文，需開啟「翻譯成英文」。預設：與語音輸入相同（預設），沿用模型頁面上目前所選的模型。選擇另一個本機模型，它會載入獨立的插槽並與語音輸入模型並存——批次工作用一個引擎、語音輸入依然即時使用另一個——代價是額外的記憶體用量，可透過「批次模型卸載時間」歸還。",
+        "sameAsDictation": "與口述相同(預設)",
+        "translates": "{{name}}——可翻譯為英語"
+      },
+      "unload": {
+        "title": "批次模型卸載時間",
+        "description": "批次模型佇列閒置後，翻譯器自身持有的批次模型副本會在記憶體中保留多久；卸載可釋放 RAM 或 VRAM，保持載入則可避免下一個檔案抵達時重新載入。預設：永不（保持載入——啟動最快）。僅當「批次模型」指定了與你的語音輸入模型不同的本機模型時才有效——否則由主要的「卸載模型」設定決定。"
+      },
+      "status": {
+        "title": "狀態",
+        "description": "翻譯器目前的運作狀態。完成的轉錄文字會以相同檔名及 .txt 副檔名寫入音訊檔案旁",
+        "disabled": "關閉",
+        "idle": "監看中——目前無事可做",
+        "queued": "已排入 {{count}} 個檔案",
+        "working": "{{file}}——段落 {{segment}}/{{total}}",
+        "workingIndeterminate": "{{file}}",
+        "paused": {
+          "live": "因即時口述而暫停",
+          "processing": "因錄製正在結束而暫停"
+        },
+        "counters": "本次工作階段完成 {{done}} 個,失敗 {{failed}} 個"
+      },
+      "folders": {
+        "title": "監看的資料夾",
+        "none": "沒有資料夾",
+        "emptyTitle": "尚無監看的資料夾",
+        "emptyDescription": "新增資料夾即可開始監看新錄音",
+        "addTitle": "新增資料夾",
+        "addDescription": "開啟資料夾選取視窗；此後該資料夾中出現的任何新音訊檔都會排入佇列，並在旁邊寫出對應的 .txt 轉錄檔。預設：翻譯器首次啟動時會自動加入你的 Handy 錄音資料夾。加入資料夾在「監看資料夾」開啟前不會有任何作用，且資料夾中已存在的檔案會被忽略——僅轉錄之後新加入的檔案。",
+        "add": "新增資料夾",
+        "remove": "停止監看此資料夾",
+        "addFailed": "無法新增資料夾:{{reason}}",
+        "operationFailed": "無法更新資料夾:{{reason}}",
+        "toggleAriaLabel": "監看資料夾 {{name}}",
+        "removeAriaLabel": "停止監看資料夾 {{name}}"
+      }
+    },
+    "currentAudio": {
+      "streamingHint": "只有當您按下的快捷鍵（轉錄或按住說話）設為「即時」且使用本機模型時，文字才會隨著說話逐步顯示。",
+      "finalHint": "在錄製後模式下，或使用 API 轉錄或 OpenRouter 轉錄時，完整轉錄會在錄音結束時一次顯示；請在以下位置設定各快捷鍵的模式：",
+      "advancedTranscription": "進階 → 轉錄",
+      "finalHintSuffix": "。",
+      "title": "目前音訊",
+      "idle": "開始錄製以檢視即時轉錄",
+      "recording": "聆聽中...",
+      "openFloating": "開啟懸浮視窗",
+      "copy": "複製",
+      "copied": "已複製"
+    },
+    "backup": {
+      "description": "將您的 Handy Tool 資料匯出為壓縮封存檔。已下載的模型及未壓縮的大型音訊檔(WAV/FLAC)一律會被排除",
+      "configTitle": "設定＋歷史紀錄",
+      "configHint": "匯出你的設定以及轉錄歷程資料庫（時間戳記、文字、成本、時長），不含音訊，因此檔案較小。適合在重大設定變更前使用，或將你的快速鍵、供應商與提示詞帶到另一台機器。此檔案未加密，且以純文字形式包含你的供應商 API 金鑰與 MCP 伺服器權杖——請將此檔案視為機密。",
+      "exportConfig": "匯出設定＋歷史紀錄",
+      "fullTitle": "完整資料(含壓縮音訊)",
+      "fullHint": "包含設定匯出的所有內容,再加上你的壓縮錄音（.opus/.ogg）——檔案大許多,且仍以純文字包含你的 API 金鑰。已下載的模型、未壓縮的 WAV/FLAC 音訊及進行中的分段檔一律排除，因此在關閉「防當機安全錄音」時所錄製的內容,在封存檔中會顯示為沒有音訊的歷程記錄列。",
+      "exportFull": "匯出完整備份",
+      "saved": "已儲存至 {{path}}",
+      "restoreTitle": "從備份還原",
+      "restoreHint": "選擇一個 Handy Tool 備份檔（.tar.gz）並勾選要還原的項目——「設定與歷程記錄」（設定、歷程資料庫）與「錄音」（音訊檔案）彼此獨立，因此可只還原其中一項，兩者預設皆為勾選。僅會擷取 Handy Tool 能辨識的項目，且還原的內容會取代目前的資料。還原設定或歷程記錄需要重新啟動：使用出現的「立即重新啟動 Handy Tool」按鈕，否則執行中的應用程式會在下次儲存時覆寫還原的內容。",
+      "restoreConfig": "設定與歷史紀錄(設定、歷史紀錄資料庫)",
+      "restoreRecordings": "錄音(音訊檔案)",
+      "restoreButton": "從備份還原…",
+      "restoreDone": "已還原——設定:{{settings}} · 歷史紀錄:{{history}} · 錄音:{{recordings}}",
+      "restartHint": "請重新啟動 Handy Tool 以載入已還原的設定／歷史紀錄(否則執行中的應用程式可能會覆寫它們)",
+      "restartNow": "立即重新啟動 Handy Tool"
+    },
+    "modelPicker": {
+      "refresh": "取得／重新整理模型列表",
+      "loading": "載入模型中…",
+      "error": "載入模型失敗",
+      "noMatches": "沒有符合的模型——輸入以使用自訂 ID"
     }
   },
   "common": {
@@ -553,7 +1127,13 @@
     "off": "關",
     "yes": "是",
     "no": "否",
-    "noOptionsFound": "未找到選項"
+    "noOptionsFound": "未找到選項",
+    "delay": {
+      "off": "關閉（立即）",
+      "ms": "{{ms}} 毫秒",
+      "seconds": "{{seconds}} 秒"
+    },
+    "selectOption": "選擇一個選項…"
   },
   "accessibility": {
     "permissionsRequired": "需要輔助使用權限",
@@ -566,10 +1146,175 @@
   },
   "appLanguage": {
     "title": "應用程式語言",
-    "description": "變更 Handy 介面的語言"
+    "description": "切換整個介面（包含系統匣選單）為 17 種內建語言之一。預設：你的 Windows 顯示語言，若未內建則改用英文。此設定僅影響介面語言——與你說話的語言無關，那由一般頁面的「語言」設定決定。"
   },
   "overlay": {
     "transcribing": "正在轉錄...",
-    "processing": "處理中..."
+    "processing": "處理中...",
+    "openFloatingWindow": "開啟轉錄視窗"
+  },
+  "brand": {
+    "name": "Handy",
+    "suffix": "TOOL"
+  },
+  "toasts": {
+    "pasteFailed": "貼上轉錄失敗:{{reason}}。文字已儲存於歷史紀錄中",
+    "pasteFailedParked": "貼上轉錄失敗:{{reason}}。文字已在您的剪貼簿中(並儲存於歷史紀錄)——請手動貼上",
+    "transcriptionFailed": "轉錄失敗:{{reason}}。請確認所選模型正常運作,然後再試一次"
+  },
+  "flm": {
+    "notInstalled": "尚未安裝 FLM。請安裝 FastFlowLM 以使用 NPU 加速模型",
+    "npuAccelerated": "NPU 加速"
+  },
+  "tokenCount": {
+    "configureProviders": "設定供應商",
+    "noProviders": "尚未設定供應商。",
+    "title": "token 計數",
+    "placeholder": "在此貼上文字以計算 token 數量...",
+    "tokenizer": "分詞器",
+    "count": "計數",
+    "countAll": "全部計數",
+    "countAllTitle": "依序使用每個已啟用的供應商計數——適用於多個槽位共用同一個需逐一載入／卸載模型的本機服務時",
+    "countAllParallel": "全部計數(並行)",
+    "countAllParallelTitle": "同時查詢每個已啟用的供應商——服務彼此獨立時速度最快",
+    "counting": "計數中... {{done}}/{{total}}",
+    "cancelSweep": "取消",
+    "openFile": "開啟檔案...",
+    "fileTooLarge": "檔案過大(上限 10 MB)",
+    "loadedFile": "已載入:{{name}}",
+    "providerOption": "{{name}}(供應商)",
+    "chipDisabled": "尚未設定——請於進階 > 供應商 > 已註冊的 LLM 供應商中開啟「啟用此供應商」。",
+    "chips": {
+      "cl100k_base": "cl100k (GPT-4)",
+      "o200k_base": "o200k (GPT-4o)",
+      "estimate": "估算"
+    },
+    "activeProvider": "計數使用:{{name}}——{{model}}({{url}})",
+    "activeLocal": "本機計數使用:{{tokenizer}}",
+    "sweepSummary": "{{ok}} / {{total}} 個供應商已回應",
+    "showFailed": "顯示 {{count}} 個失敗",
+    "hideFailed": "隱藏失敗項目",
+    "table": {
+      "provider": "供應商",
+      "model": "模型",
+      "tokens": "token 數",
+      "delta": "Δ 與最小值相比",
+      "time": "時間"
+    },
+    "tokens": "token",
+    "characters": "字元",
+    "words": "字",
+    "options": {
+      "cl100k_base": "使用與 GPT-4 及 GPT-3.5 完全相同的分詞器（cl100k_base）在本機計算方框中文字的 token 數——不會上傳任何內容，離線也能使用。適用於 GPT-4 及更早的 OpenAI 模型；較新的模型請用 o200k（GPT-4o）。",
+      "o200k_base": "使用與 GPT-4o 及 o1 完全相同的分詞器（o200k_base）在本機計算方框中文字的 token 數——不會上傳任何內容，離線也能使用。適用於目前的 OpenAI 模型；較舊的 GPT-4 與 GPT-3.5 模型請用 cl100k（GPT-4）分詞。",
+      "estimate": "以每字約 1.3 個 token 的粗略本機估算，不使用分詞器也不連網。適用於此處沒有精確計數器的模型，僅供大致參考——因此故意排除在「與最小值的差值」欄之外，避免粗估數字扭曲精確計數器之間的比較。"
+    }
+  },
+  "keyboardTyper": {
+    "title": "鍵盤輸入工具",
+    "description": "以逐個模擬按鍵的方式將此文字送入聚焦視窗，因此在無法貼上的場合（遠端主控台、虛擬機檢視器、密碼欄位）也能使用。按下「開始」後會有一段開始延遲倒數（預設 10 秒）供你先點入目標視窗；若在已於目標視窗中時按下「輸入文字快速鍵」，則約一秒後即開始輸入。此文字僅存於記憶體中——絕不會寫入你的設定、歷程記錄或記錄檔。",
+    "placeholder": "輸入要鍵入的文字...",
+    "go": "開始",
+    "cancel": "取消",
+    "startDelay": {
+      "label": "開始延遲",
+      "unit": "秒",
+      "preset": "{{seconds}} 秒",
+      "presetTitle": "{{seconds}} 秒後開始輸入"
+    },
+    "keyDelay": {
+      "label": "按鍵延遲",
+      "unit": "毫秒"
+    },
+    "shortcut": {
+      "label": "快捷鍵:",
+      "unset": "未設定",
+      "hint": "(可在進階設定中變更;再按一次可取消)"
+    },
+    "status": {
+      "idle": "點選「開始」,然後切換至目標視窗——或直接在目標應用程式中使用快捷鍵",
+      "countdown": "{{seconds}} 秒後開始輸入...(按 Esc 取消)",
+      "typing": "輸入中... {{typed}}/{{total}} 個字元(按 Esc 取消)",
+      "done": "完成——已輸入 {{total}} 個字元",
+      "cancelled": "已取消",
+      "error": "錯誤:{{message}}"
+    }
+  },
+  "modelTesting": {
+    "configureProviders": "設定供應商",
+    "description": "將同一則提示送給你在「執行」下勾選的每個模型,並將回覆並列顯示,附上 token 數、成本與往返時間；勾選於「評審」下的模型接著會依你的評審提示詞為所有回覆評分。預設：未選取任何項目，兩個提示詞皆為空白。清單來自進階 > 已註冊的 LLM 供應商，因此執行時會使用你自己的 API 金鑰——你的提示詞會離開此機器，付費供應商亦會產生實際費用。",
+    "providersLabel": "模型",
+    "selectAll": "全選以執行",
+    "clear": "清除",
+    "run": "執行",
+    "judge": "評審",
+    "costPerM": "輸入 ${{input}} · 輸出 ${{output}} /1M",
+    "noProviders": "尚未設定支援聊天功能的供應商。請在「進階 → 已註冊的 LLM 供應商」中新增",
+    "mainPromptLabel": "所有模型的提示詞",
+    "mainPromptPlaceholder": "傳送給每個所選模型的提示詞…",
+    "judgePromptLabel": "評審／仲裁提示詞(選填)",
+    "judgePromptPlaceholder": "評審面板的指令。評審會收到原始輸入與每個模型的回答(以 XML 標籤標示)",
+    "temperatureLabel": "溫度",
+    "modelParams": "模型",
+    "judgeParams": "評審",
+    "runButton": "執行測試",
+    "cancelButton": "取消",
+    "runningMain": "查詢模型中…",
+    "runningJudge": "執行評審面板中…",
+    "summaryTitle": "摘要",
+    "judgePanelTitle": "評審面板",
+    "answersTitle": "回答",
+    "colModel": "模型",
+    "colInput": "輸入 token",
+    "colOutput": "輸出 token",
+    "colCost": "成本",
+    "colTime": "時間",
+    "roundTrip": "來回時間(最長)",
+    "totalCost": "總成本",
+    "errorPrefix": "錯誤",
+    "artifactLabel": "Markdown 產物",
+    "copyMarkdown": "複製 Markdown",
+    "copied": "已複製!",
+    "saveMarkdown": "儲存…",
+    "status": {
+      "mainStart": "查詢 {{count}} 個模型中…",
+      "judgeStart": "執行評審面板中({{count}} 位評審)…",
+      "done": "完成",
+      "cancelled": "已取消",
+      "activity": "執行活動"
+    },
+    "library": {
+      "preset": "預設集",
+      "presetPlaceholder": "載入預設集…",
+      "pick": "已儲存的提示詞…",
+      "save": "儲存",
+      "delete": "刪除所選",
+      "namePlaceholder": "名稱…",
+      "confirm": "儲存",
+      "cancel": "取消",
+      "editCustom": "編輯／自訂"
+    },
+    "thinking": {
+      "label": "思考",
+      "auto": "自動",
+      "on": "開啟",
+      "off": "關閉"
+    },
+    "image": {
+      "label": "圖片(選填,用於視覺模型)",
+      "drop": "點選或拖曳圖片至此以附加",
+      "remove": "移除",
+      "tooLarge": "圖片過大(上限 {{mb}} MB)"
+    },
+    "save": "儲存",
+    "saveAs": "另存為…",
+    "saveTo": "儲存至 {{path}}",
+    "saveDisabled": "請先使用「另存為…」選擇位置"
+  },
+  "floating": {
+    "waiting": "等待轉錄中…",
+    "listening": "聆聽中…",
+    "copy": "複製",
+    "copied": "已複製"
   }
 }

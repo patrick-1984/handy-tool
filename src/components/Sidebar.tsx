@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import HandyTextLogo from "./icons/HandyTextLogo";
 import HandyHand from "./icons/HandyHand";
+import { UpdateBanner } from "./UpdateBanner";
 import { useSettings } from "../hooks/useSettings";
 import {
   GeneralSettings,
@@ -244,8 +245,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 const isActive = activeSection === section.id;
 
                 return (
+                  <React.Fragment key={section.id}>
                   <div
-                    key={section.id}
                     className={`flex gap-2 items-center p-2 w-full rounded-lg cursor-pointer transition-colors ${
                       isActive
                         ? "bg-logo-primary/80"
@@ -261,6 +262,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       {t(section.labelKey)}
                     </p>
                   </div>
+                  {section.id === "about" && <UpdateBanner />}
+                  </React.Fragment>
                 );
               })}
             </div>

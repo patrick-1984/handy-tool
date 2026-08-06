@@ -254,14 +254,36 @@ pub enum AutoSubmitKey {
 /// Extra wait before the original clipboard is restored after a paste.
 /// Remote sessions (Citrix/RDP) fetch clipboard data on demand AFTER the paste
 /// keystroke arrives; restoring too early hands them the pre-recording content.
+///
+/// The picker offers the shared delay scale (off, 100 ms steps to 1 s, then
+/// 1.5 s / 2 s). `Ms2500` and `Ms5000` are LEGACY: they predate that scale and
+/// are no longer offered as new choices, but they are retained **permanently**
+/// and must never be deleted. An unknown enum string aborts the whole
+/// `AppSettings` deserialization, and both load paths react to that by
+/// overwriting `settings_store.json` with defaults — wiping bindings, LLM
+/// provider API keys, the MCP token and the Jumper slots. A migration cannot
+/// rescue a removal either: `ensure_*` runs *after* the parse that already
+/// failed, and `backup.rs` can restore a pre-migration store at any later date.
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type)]
 #[serde(rename_all = "snake_case")]
 pub enum ClipboardRestoreDelay {
     None,
+    Ms100,
+    Ms200,
     Ms250,
+    Ms300,
+    Ms400,
     Ms500,
+    Ms600,
+    Ms700,
+    Ms800,
+    Ms900,
     Ms1000,
+    Ms1500,
+    Ms2000,
+    /// Legacy (pre-scale), retained for backward compatibility. See above.
     Ms2500,
+    /// Legacy (pre-scale), retained for backward compatibility. See above.
     Ms5000,
 }
 
@@ -276,9 +298,19 @@ impl ClipboardRestoreDelay {
     pub fn to_ms(self) -> u64 {
         match self {
             ClipboardRestoreDelay::None => 0,
+            ClipboardRestoreDelay::Ms100 => 100,
+            ClipboardRestoreDelay::Ms200 => 200,
             ClipboardRestoreDelay::Ms250 => 250,
+            ClipboardRestoreDelay::Ms300 => 300,
+            ClipboardRestoreDelay::Ms400 => 400,
             ClipboardRestoreDelay::Ms500 => 500,
+            ClipboardRestoreDelay::Ms600 => 600,
+            ClipboardRestoreDelay::Ms700 => 700,
+            ClipboardRestoreDelay::Ms800 => 800,
+            ClipboardRestoreDelay::Ms900 => 900,
             ClipboardRestoreDelay::Ms1000 => 1000,
+            ClipboardRestoreDelay::Ms1500 => 1500,
+            ClipboardRestoreDelay::Ms2000 => 2000,
             ClipboardRestoreDelay::Ms2500 => 2500,
             ClipboardRestoreDelay::Ms5000 => 5000,
         }
@@ -298,15 +330,24 @@ impl ClipboardRestoreDelay {
 pub enum JumperSubmitDelay {
     None,
     Ms100,
+    Ms200,
+    /// Off the 100 ms scale but kept: it is the shipped default.
     Ms250,
+    Ms300,
+    Ms400,
     Ms500,
+    Ms600,
+    Ms700,
+    Ms800,
+    Ms900,
     Ms1000,
+    Ms1500,
     Ms2000,
 }
 
 impl Default for JumperSubmitDelay {
     fn default() -> Self {
-        JumperSubmitDelay::Ms250
+        JumperSubmitDelay::Ms300
     }
 }
 
@@ -316,9 +357,17 @@ impl JumperSubmitDelay {
         match self {
             JumperSubmitDelay::None => 0,
             JumperSubmitDelay::Ms100 => 100,
+            JumperSubmitDelay::Ms200 => 200,
             JumperSubmitDelay::Ms250 => 250,
+            JumperSubmitDelay::Ms300 => 300,
+            JumperSubmitDelay::Ms400 => 400,
             JumperSubmitDelay::Ms500 => 500,
+            JumperSubmitDelay::Ms600 => 600,
+            JumperSubmitDelay::Ms700 => 700,
+            JumperSubmitDelay::Ms800 => 800,
+            JumperSubmitDelay::Ms900 => 900,
             JumperSubmitDelay::Ms1000 => 1000,
+            JumperSubmitDelay::Ms1500 => 1500,
             JumperSubmitDelay::Ms2000 => 2000,
         }
     }
@@ -338,15 +387,24 @@ impl JumperSubmitDelay {
 pub enum JumperPasteDelay {
     None,
     Ms100,
+    Ms200,
+    /// Off the 100 ms scale but kept: it is the shipped default.
     Ms250,
+    Ms300,
+    Ms400,
     Ms500,
+    Ms600,
+    Ms700,
+    Ms800,
+    Ms900,
     Ms1000,
+    Ms1500,
     Ms2000,
 }
 
 impl Default for JumperPasteDelay {
     fn default() -> Self {
-        JumperPasteDelay::Ms250
+        JumperPasteDelay::Ms300
     }
 }
 
@@ -357,9 +415,17 @@ impl JumperPasteDelay {
         match self {
             JumperPasteDelay::None => 0,
             JumperPasteDelay::Ms100 => 100,
+            JumperPasteDelay::Ms200 => 200,
             JumperPasteDelay::Ms250 => 250,
+            JumperPasteDelay::Ms300 => 300,
+            JumperPasteDelay::Ms400 => 400,
             JumperPasteDelay::Ms500 => 500,
+            JumperPasteDelay::Ms600 => 600,
+            JumperPasteDelay::Ms700 => 700,
+            JumperPasteDelay::Ms800 => 800,
+            JumperPasteDelay::Ms900 => 900,
             JumperPasteDelay::Ms1000 => 1000,
+            JumperPasteDelay::Ms1500 => 1500,
             JumperPasteDelay::Ms2000 => 2000,
         }
     }
@@ -368,10 +434,10 @@ impl JumperPasteDelay {
 /// Remote desktop sessions settle much slower than local windows, so the
 /// remote-target delays default higher than the local ones.
 fn default_jumper_submit_delay_remote() -> JumperSubmitDelay {
-    JumperSubmitDelay::Ms500
+    JumperSubmitDelay::Ms600
 }
 fn default_jumper_paste_delay_remote() -> JumperPasteDelay {
-    JumperPasteDelay::Ms1000
+    JumperPasteDelay::Ms600
 }
 
 /// Default classifier substrings for remote-desktop jump targets. Chosen from
@@ -794,6 +860,14 @@ pub struct AppSettings {
     pub start_hidden: bool,
     #[serde(default = "default_autostart_enabled")]
     pub autostart_enabled: bool,
+    #[serde(default = "default_automatic_update_checks")]
+    pub automatic_update_checks: bool,
+    #[serde(default = "default_automatic_silent_updates")]
+    pub automatic_silent_updates: bool,
+    #[serde(default = "default_silent_update_time_local")]
+    pub silent_update_time_local: String,
+    #[serde(default = "default_silent_update_jitter_minutes")]
+    pub silent_update_jitter_minutes: u16,
     #[serde(default = "default_typing_start_delay_secs")]
     pub typing_start_delay_secs: u32,
     #[serde(default = "default_typing_key_delay_ms")]
@@ -893,8 +967,6 @@ pub struct AppSettings {
     pub crash_resilient_recording: bool,
     #[serde(default = "default_app_language")]
     pub app_language: String,
-    #[serde(default)]
-    pub experimental_enabled: bool,
     #[serde(default)]
     pub keyboard_implementation: KeyboardImplementation,
     #[serde(default = "default_show_tray_icon")]
@@ -996,12 +1068,12 @@ pub struct AppSettings {
     #[serde(default)]
     pub submit_clipboard_restore_delay: ClipboardRestoreDelay,
     /// Extra pre-submit delay when an anchored auto-submit delivery jumped the
-    /// foreground (Windows Jumper). See [`JumperSubmitDelay`]. Default `Ms250`.
+    /// foreground (Windows Jumper). See [`JumperSubmitDelay`]. Default `Ms300`.
     #[serde(default)]
     pub jumper_submit_delay: JumperSubmitDelay,
     /// Extra post-jump, pre-PASTE settle when an anchored delivery jumped the
     /// foreground (Windows Jumper) to a NON-remote (local) target. See
-    /// [`JumperPasteDelay`]. Default `Ms250`.
+    /// [`JumperPasteDelay`]. Default `Ms300`.
     #[serde(default)]
     pub jumper_paste_delay: JumperPasteDelay,
     /// Same as [`jumper_submit_delay`], but used when the jump target is
@@ -1234,6 +1306,22 @@ fn default_autostart_enabled() -> bool {
     false
 }
 
+fn default_automatic_update_checks() -> bool {
+    true
+}
+
+fn default_automatic_silent_updates() -> bool {
+    false
+}
+
+fn default_silent_update_time_local() -> String {
+    "04:00".to_string()
+}
+
+fn default_silent_update_jitter_minutes() -> u16 {
+    30
+}
+
 fn default_typing_start_delay_secs() -> u32 {
     10
 }
@@ -1268,8 +1356,17 @@ fn default_debug_mode() -> bool {
     false
 }
 
+/// Default file-log level. Release builds use `Info` because a dictation app
+/// must not write the user's speech to disk at its default logging level.
 fn default_log_level() -> LogLevel {
-    LogLevel::Debug
+    #[cfg(debug_assertions)]
+    {
+        LogLevel::Debug
+    }
+    #[cfg(not(debug_assertions))]
+    {
+        LogLevel::Info
+    }
 }
 
 fn default_word_correction_threshold() -> f64 {
@@ -2003,6 +2100,10 @@ pub fn get_default_settings() -> AppSettings {
         sound_theme: default_sound_theme(),
         start_hidden: default_start_hidden(),
         autostart_enabled: default_autostart_enabled(),
+        automatic_update_checks: default_automatic_update_checks(),
+        automatic_silent_updates: default_automatic_silent_updates(),
+        silent_update_time_local: default_silent_update_time_local(),
+        silent_update_jitter_minutes: default_silent_update_jitter_minutes(),
         typing_start_delay_secs: default_typing_start_delay_secs(),
         typing_key_delay_ms: default_typing_key_delay_ms(),
         selected_model: "".to_string(),
@@ -2040,7 +2141,6 @@ pub fn get_default_settings() -> AppSettings {
         append_trailing_space: false,
         crash_resilient_recording: default_crash_resilient_recording(),
         app_language: default_app_language(),
-        experimental_enabled: false,
         keyboard_implementation: KeyboardImplementation::default(),
         show_tray_icon: default_show_tray_icon(),
         paste_delay_ms: default_paste_delay_ms(),
@@ -2496,49 +2596,184 @@ mod tests {
         assert_eq!(get_default_settings().model_unload_custom_seconds, 300);
     }
 
+    /// Asserts a delay variant's `to_ms()` AND its serde wire name in one shot.
+    /// The wire name is what the frontend dropdown emits and what the
+    /// `parse_*_delay` arms in `shortcut/mod.rs` match on, so pinning it here
+    /// catches a rename that would otherwise silently downgrade a user's pick
+    /// to the fallback default (those parsers warn and continue, they never
+    /// error). `expect_ms == 0` is the "off" variant and serializes to "none".
+    fn assert_delay<T: Serialize + std::fmt::Debug>(
+        variant: T,
+        wire: &str,
+        expect_ms: u64,
+        ms: u64,
+    ) {
+        assert_eq!(
+            serde_json::to_string(&variant).unwrap(),
+            format!("\"{}\"", wire),
+            "wire name for {:?}",
+            variant
+        );
+        assert_eq!(ms, expect_ms, "to_ms() for {:?}", variant);
+    }
+
     #[test]
     fn clipboard_restore_delay_maps_to_ms() {
-        assert_eq!(ClipboardRestoreDelay::None.to_ms(), 0);
-        assert_eq!(ClipboardRestoreDelay::Ms250.to_ms(), 250);
-        assert_eq!(ClipboardRestoreDelay::Ms500.to_ms(), 500);
-        assert_eq!(ClipboardRestoreDelay::Ms1000.to_ms(), 1000);
-        assert_eq!(ClipboardRestoreDelay::Ms2500.to_ms(), 2500);
-        assert_eq!(ClipboardRestoreDelay::Ms5000.to_ms(), 5000);
+        use ClipboardRestoreDelay as D;
+        // The shared delay scale: off, 100 ms steps to 1 s, then 1.5 s / 2 s.
+        // 250 is off-scale but retained (it was selectable before the scale).
+        assert_delay(D::None, "none", 0, D::None.to_ms());
+        assert_delay(D::Ms100, "ms100", 100, D::Ms100.to_ms());
+        assert_delay(D::Ms200, "ms200", 200, D::Ms200.to_ms());
+        assert_delay(D::Ms250, "ms250", 250, D::Ms250.to_ms());
+        assert_delay(D::Ms300, "ms300", 300, D::Ms300.to_ms());
+        assert_delay(D::Ms400, "ms400", 400, D::Ms400.to_ms());
+        assert_delay(D::Ms500, "ms500", 500, D::Ms500.to_ms());
+        assert_delay(D::Ms600, "ms600", 600, D::Ms600.to_ms());
+        assert_delay(D::Ms700, "ms700", 700, D::Ms700.to_ms());
+        assert_delay(D::Ms800, "ms800", 800, D::Ms800.to_ms());
+        assert_delay(D::Ms900, "ms900", 900, D::Ms900.to_ms());
+        assert_delay(D::Ms1000, "ms1000", 1000, D::Ms1000.to_ms());
+        assert_delay(D::Ms1500, "ms1500", 1500, D::Ms1500.to_ms());
+        assert_delay(D::Ms2000, "ms2000", 2000, D::Ms2000.to_ms());
+        // Legacy, above the 2 s ceiling: no longer offered, still honored.
+        assert_delay(D::Ms2500, "ms2500", 2500, D::Ms2500.to_ms());
+        assert_delay(D::Ms5000, "ms5000", 5000, D::Ms5000.to_ms());
+        assert_eq!(get_default_settings().clipboard_restore_delay, D::None);
+    }
+
+    /// REGRESSION GUARD — do not delete `ClipboardRestoreDelay::{Ms2500,Ms5000}`.
+    ///
+    /// A store written before the 2 s ceiling can hold `"ms2500"` / `"ms5000"`.
+    /// Serde struct deserialization is all-or-nothing, and `#[serde(default)]`
+    /// only covers a *missing* key, never a *malformed* one — so one unknown
+    /// enum string aborts the entire `AppSettings` parse. Both load paths
+    /// (`load_or_create_app_settings`, `get_settings`) react to that Err by
+    /// writing `get_default_settings()` back to `settings_store.json`, wiping
+    /// bindings, LLM provider API keys, the MCP token and the Jumper slots.
+    /// An `ensure_*` migration cannot rescue a removal either: those run AFTER
+    /// the parse that already failed, and `backup.rs` restores an old
+    /// `settings_store.json` verbatim, so a pre-migration store can reappear
+    /// at any later date. Retention must be permanent.
+    #[test]
+    fn legacy_clipboard_restore_delays_still_deserialize() {
+        let mut store = serde_json::to_value(get_default_settings()).unwrap();
+        store["clipboard_restore_delay"] = serde_json::json!("ms5000");
+        store["submit_clipboard_restore_delay"] = serde_json::json!("ms2500");
+
+        let parsed: AppSettings = serde_json::from_value(store)
+            .expect("a store holding legacy delay values must still load");
         assert_eq!(
-            get_default_settings().clipboard_restore_delay,
-            ClipboardRestoreDelay::None
+            parsed.clipboard_restore_delay,
+            ClipboardRestoreDelay::Ms5000
         );
+        assert_eq!(
+            parsed.submit_clipboard_restore_delay,
+            ClipboardRestoreDelay::Ms2500
+        );
+        // The value is preserved, not clamped: a Citrix user who needed 5 s
+        // keeps 5 s.
+        assert_eq!(parsed.clipboard_restore_delay.to_ms(), 5000);
+        assert_eq!(parsed.submit_clipboard_restore_delay.to_ms(), 2500);
+    }
+
+    /// Every value the delay pickers can emit must survive a real round trip
+    /// through the whole `AppSettings` struct, for all six delay settings.
+    #[test]
+    fn every_delay_scale_value_round_trips_through_app_settings() {
+        const SCALE: [&str; 14] = [
+            "none", "ms100", "ms200", "ms250", "ms300", "ms400", "ms500", "ms600", "ms700",
+            "ms800", "ms900", "ms1000", "ms1500", "ms2000",
+        ];
+        for wire in SCALE {
+            let mut store = serde_json::to_value(get_default_settings()).unwrap();
+            for key in [
+                "clipboard_restore_delay",
+                "submit_clipboard_restore_delay",
+                "jumper_submit_delay",
+                "jumper_paste_delay",
+                "jumper_submit_delay_remote",
+                "jumper_paste_delay_remote",
+            ] {
+                store[key] = serde_json::json!(wire);
+            }
+
+            let parsed: AppSettings =
+                serde_json::from_value(store).unwrap_or_else(|e| panic!("{} failed: {}", wire, e));
+
+            let expect: u64 = if wire == "none" {
+                0
+            } else {
+                wire.trim_start_matches("ms").parse().unwrap()
+            };
+            assert_eq!(parsed.clipboard_restore_delay.to_ms(), expect, "{}", wire);
+            assert_eq!(
+                parsed.submit_clipboard_restore_delay.to_ms(),
+                expect,
+                "{}",
+                wire
+            );
+            assert_eq!(parsed.jumper_submit_delay.to_ms(), expect, "{}", wire);
+            assert_eq!(parsed.jumper_paste_delay.to_ms(), expect, "{}", wire);
+            assert_eq!(
+                parsed.jumper_submit_delay_remote.to_ms(),
+                expect,
+                "{}",
+                wire
+            );
+            assert_eq!(parsed.jumper_paste_delay_remote.to_ms(), expect, "{}", wire);
+        }
     }
 
     #[test]
-    fn jumper_submit_delay_maps_to_ms_and_defaults_to_250() {
-        assert_eq!(JumperSubmitDelay::None.to_ms(), 0);
-        assert_eq!(JumperSubmitDelay::Ms100.to_ms(), 100);
-        assert_eq!(JumperSubmitDelay::Ms250.to_ms(), 250);
-        assert_eq!(JumperSubmitDelay::Ms500.to_ms(), 500);
-        assert_eq!(JumperSubmitDelay::Ms1000.to_ms(), 1000);
-        assert_eq!(JumperSubmitDelay::Ms2000.to_ms(), 2000);
-        // Ships enabled: a real jump-settle by default, not None.
-        assert_eq!(JumperSubmitDelay::default(), JumperSubmitDelay::Ms250);
+    fn jumper_submit_delay_maps_to_ms_and_defaults_to_300() {
+        use JumperSubmitDelay as D;
+        assert_delay(D::None, "none", 0, D::None.to_ms());
+        assert_delay(D::Ms100, "ms100", 100, D::Ms100.to_ms());
+        assert_delay(D::Ms200, "ms200", 200, D::Ms200.to_ms());
+        assert_delay(D::Ms250, "ms250", 250, D::Ms250.to_ms());
+        assert_delay(D::Ms300, "ms300", 300, D::Ms300.to_ms());
+        assert_delay(D::Ms400, "ms400", 400, D::Ms400.to_ms());
+        assert_delay(D::Ms500, "ms500", 500, D::Ms500.to_ms());
+        assert_delay(D::Ms600, "ms600", 600, D::Ms600.to_ms());
+        assert_delay(D::Ms700, "ms700", 700, D::Ms700.to_ms());
+        assert_delay(D::Ms800, "ms800", 800, D::Ms800.to_ms());
+        assert_delay(D::Ms900, "ms900", 900, D::Ms900.to_ms());
+        assert_delay(D::Ms1000, "ms1000", 1000, D::Ms1000.to_ms());
+        assert_delay(D::Ms1500, "ms1500", 1500, D::Ms1500.to_ms());
+        assert_delay(D::Ms2000, "ms2000", 2000, D::Ms2000.to_ms());
+
+        // uniform 100 ms grid; Ms250 remains a valid variant only so that a
+        // settings store written before the change still deserializes.
+        assert_eq!(JumperSubmitDelay::default(), JumperSubmitDelay::Ms300);
         assert_eq!(
             get_default_settings().jumper_submit_delay,
-            JumperSubmitDelay::Ms250
+            JumperSubmitDelay::Ms300
         );
     }
 
     #[test]
-    fn jumper_paste_delay_maps_to_ms_and_defaults_to_250() {
-        assert_eq!(JumperPasteDelay::None.to_ms(), 0);
-        assert_eq!(JumperPasteDelay::Ms100.to_ms(), 100);
-        assert_eq!(JumperPasteDelay::Ms250.to_ms(), 250);
-        assert_eq!(JumperPasteDelay::Ms500.to_ms(), 500);
-        assert_eq!(JumperPasteDelay::Ms1000.to_ms(), 1000);
-        assert_eq!(JumperPasteDelay::Ms2000.to_ms(), 2000);
+    fn jumper_paste_delay_maps_to_ms_and_defaults_to_300() {
+        use JumperPasteDelay as D;
+        assert_delay(D::None, "none", 0, D::None.to_ms());
+        assert_delay(D::Ms100, "ms100", 100, D::Ms100.to_ms());
+        assert_delay(D::Ms200, "ms200", 200, D::Ms200.to_ms());
+        assert_delay(D::Ms250, "ms250", 250, D::Ms250.to_ms());
+        assert_delay(D::Ms300, "ms300", 300, D::Ms300.to_ms());
+        assert_delay(D::Ms400, "ms400", 400, D::Ms400.to_ms());
+        assert_delay(D::Ms500, "ms500", 500, D::Ms500.to_ms());
+        assert_delay(D::Ms600, "ms600", 600, D::Ms600.to_ms());
+        assert_delay(D::Ms700, "ms700", 700, D::Ms700.to_ms());
+        assert_delay(D::Ms800, "ms800", 800, D::Ms800.to_ms());
+        assert_delay(D::Ms900, "ms900", 900, D::Ms900.to_ms());
+        assert_delay(D::Ms1000, "ms1000", 1000, D::Ms1000.to_ms());
+        assert_delay(D::Ms1500, "ms1500", 1500, D::Ms1500.to_ms());
+        assert_delay(D::Ms2000, "ms2000", 2000, D::Ms2000.to_ms());
         // Ships enabled: a real post-jump paste settle by default, not None.
-        assert_eq!(JumperPasteDelay::default(), JumperPasteDelay::Ms250);
+        assert_eq!(JumperPasteDelay::default(), JumperPasteDelay::Ms300);
         assert_eq!(
             get_default_settings().jumper_paste_delay,
-            JumperPasteDelay::Ms250
+            JumperPasteDelay::Ms300
         );
     }
 
@@ -2643,8 +2878,8 @@ mod tests {
     #[test]
     fn default_remote_delays_are_longer_than_local() {
         let d = get_default_settings();
-        assert_eq!(d.jumper_paste_delay_remote, JumperPasteDelay::Ms1000);
-        assert_eq!(d.jumper_submit_delay_remote, JumperSubmitDelay::Ms500);
+        assert_eq!(d.jumper_paste_delay_remote, JumperPasteDelay::Ms600);
+        assert_eq!(d.jumper_submit_delay_remote, JumperSubmitDelay::Ms600);
         assert!(d.jumper_paste_delay_remote.to_ms() > d.jumper_paste_delay.to_ms());
         assert!(d.jumper_submit_delay_remote.to_ms() > d.jumper_submit_delay.to_ms());
         assert_eq!(

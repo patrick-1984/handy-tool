@@ -25,6 +25,7 @@ mod transcription_coordinator;
 mod tray;
 mod tray_i18n;
 mod typing;
+mod updater;
 mod utils;
 
 pub use cli::CliArgs;
@@ -378,6 +379,10 @@ pub fn run(cli_args: CliArgs) {
         shortcut::change_sound_theme_setting,
         shortcut::change_start_hidden_setting,
         shortcut::change_autostart_setting,
+        shortcut::change_automatic_update_checks_setting,
+        shortcut::change_automatic_silent_updates_setting,
+        shortcut::change_silent_update_time_local_setting,
+        shortcut::change_silent_update_jitter_minutes_setting,
         shortcut::change_translate_to_english_setting,
         shortcut::change_selected_language_setting,
         shortcut::change_overlay_position_setting,
@@ -430,7 +435,6 @@ pub fn run(cli_args: CliArgs) {
         commands::translator::translator_set_folder_enabled,
         commands::translator::translator_remove_folder,
         shortcut::change_post_process_enabled_setting,
-        shortcut::change_experimental_enabled_setting,
         shortcut::change_transcription_mode_setting,
         shortcut::change_transcription_mode_ptt_setting,
         shortcut::change_cancel_behavior_setting,
@@ -540,6 +544,9 @@ pub fn run(cli_args: CliArgs) {
         backup::restore_backup,
         backup::restart_app,
         helpers::clamshell::is_laptop,
+        updater::get_updater_status,
+        updater::check_for_updates,
+        updater::install_available_update,
     ]);
 
     #[cfg(debug_assertions)] // <- Only export on non-release builds
@@ -579,13 +586,10 @@ pub fn run(cli_args: CliArgs) {
         .plugin(
             LogBuilder::new()
                 .level(log::LevelFilter::Trace) // Set to most verbose level globally
-                // Persist logs across restarts: rotate by SIZE only (10 MB) and
-                // KEEP rotated files (KeepAll) instead of discarding all but one.
-                // The old 500 KB + KeepOne meant a normal session filled the file
-                // and the next launch rotated it away — so the log looked wiped
-                // on every restart. It still truncates by size, never on restart.
+                // Keep at most three 10 MB files: enough recent context for
+                // diagnostics while bounding retained dictation metadata to ~30 MB.
                 .max_file_size(10_000_000)
-                .rotation_strategy(RotationStrategy::KeepAll)
+                .rotation_strategy(RotationStrategy::KeepSome(3))
                 .clear_targets()
                 .targets([
                     // Console output respects RUST_LOG environment variable
@@ -623,6 +627,7 @@ pub fn run(cli_args: CliArgs) {
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_macos_permissions::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_autostart::init(
@@ -659,6 +664,8 @@ pub fn run(cli_args: CliArgs) {
 
             let app_handle = app.handle().clone();
             app.manage(TranscriptionCoordinator::new(app_handle.clone()));
+            app.manage(updater::UpdateManager::new(app_handle.clone()));
+            app.state::<updater::UpdateManager>().start();
 
             // Create the main window ourselves (T-114 gap #1: WebView2
             // storage isolation). tauri.conf.json declares "main" with

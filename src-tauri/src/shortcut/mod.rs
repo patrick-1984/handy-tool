@@ -798,6 +798,111 @@ pub fn change_autostart_setting(app: AppHandle, enabled: bool) -> Result<(), Str
     Ok(())
 }
 
+fn notify_update_scheduler(app: &AppHandle) {
+    if let Some(manager) = app.try_state::<crate::updater::UpdateManager>() {
+        manager.notify_schedule_changed();
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn change_automatic_update_checks_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
+    let updated = settings::update_settings(&app, |settings| {
+        settings.automatic_update_checks = enabled;
+        if !enabled {
+            settings.automatic_silent_updates = false;
+        }
+    });
+    let _ = app.emit(
+        "settings-changed",
+        serde_json::json!({ "setting": "automatic_update_checks", "value": enabled }),
+    );
+    if !enabled {
+        let _ = app.emit(
+            "settings-changed",
+            serde_json::json!({ "setting": "automatic_silent_updates", "value": false }),
+        );
+    }
+    debug_assert!(!updated.automatic_silent_updates || updated.automatic_update_checks);
+    notify_update_scheduler(&app);
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn change_automatic_silent_updates_setting(
+    app: AppHandle,
+    enabled: bool,
+) -> Result<(), String> {
+    let updated = settings::update_settings(&app, |settings| {
+        settings.automatic_silent_updates = enabled && settings.automatic_update_checks;
+    });
+    let effective = updated.automatic_silent_updates;
+    let _ = app.emit(
+        "settings-changed",
+        serde_json::json!({ "setting": "automatic_silent_updates", "value": effective }),
+    );
+    notify_update_scheduler(&app);
+    if enabled && !effective {
+        return Err("Automatic update checks must be enabled first".to_string());
+    }
+    Ok(())
+}
+
+fn normalize_update_time(value: &str) -> Result<String, String> {
+    if value.len() != 5 || value.as_bytes().get(2) != Some(&b':') {
+        return Err("Update time must use HH:mm (for example 04:00)".to_string());
+    }
+    let hour = value[0..2]
+        .parse::<u8>()
+        .map_err(|_| "Update hour must be between 00 and 23".to_string())?;
+    let minute = value[3..5]
+        .parse::<u8>()
+        .map_err(|_| "Update minute must be between 00 and 59".to_string())?;
+    if hour > 23 || minute > 59 {
+        return Err("Update time must be a valid local time".to_string());
+    }
+    Ok(format!("{hour:02}:{minute:02}"))
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn change_silent_update_time_local_setting(
+    app: AppHandle,
+    value: String,
+) -> Result<(), String> {
+    let normalized = normalize_update_time(&value)?;
+    settings::update_settings(&app, |settings| {
+        settings.silent_update_time_local = normalized.clone();
+    });
+    let _ = app.emit(
+        "settings-changed",
+        serde_json::json!({ "setting": "silent_update_time_local", "value": normalized }),
+    );
+    notify_update_scheduler(&app);
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn change_silent_update_jitter_minutes_setting(
+    app: AppHandle,
+    minutes: u16,
+) -> Result<(), String> {
+    if minutes > 180 {
+        return Err("Update-window jitter must be between 0 and 180 minutes".to_string());
+    }
+    settings::update_settings(&app, |settings| {
+        settings.silent_update_jitter_minutes = minutes;
+    });
+    let _ = app.emit(
+        "settings-changed",
+        serde_json::json!({ "setting": "silent_update_jitter_minutes", "value": minutes }),
+    );
+    notify_update_scheduler(&app);
+    Ok(())
+}
+
 #[tauri::command]
 #[specta::specta]
 pub fn update_llm_providers(
@@ -1088,9 +1193,21 @@ pub fn change_paste_last_clipboard_handling_setting(
 fn parse_clipboard_restore_delay(value: &str) -> ClipboardRestoreDelay {
     match value {
         "none" => ClipboardRestoreDelay::None,
+        "ms100" => ClipboardRestoreDelay::Ms100,
+        "ms200" => ClipboardRestoreDelay::Ms200,
         "ms250" => ClipboardRestoreDelay::Ms250,
+        "ms300" => ClipboardRestoreDelay::Ms300,
+        "ms400" => ClipboardRestoreDelay::Ms400,
         "ms500" => ClipboardRestoreDelay::Ms500,
+        "ms600" => ClipboardRestoreDelay::Ms600,
+        "ms700" => ClipboardRestoreDelay::Ms700,
+        "ms800" => ClipboardRestoreDelay::Ms800,
+        "ms900" => ClipboardRestoreDelay::Ms900,
         "ms1000" => ClipboardRestoreDelay::Ms1000,
+        "ms1500" => ClipboardRestoreDelay::Ms1500,
+        "ms2000" => ClipboardRestoreDelay::Ms2000,
+        // Legacy values, no longer offered as new choices but still accepted
+        // so an existing store round-trips unchanged.
         "ms2500" => ClipboardRestoreDelay::Ms2500,
         "ms5000" => ClipboardRestoreDelay::Ms5000,
         other => {
@@ -1128,9 +1245,17 @@ fn parse_jumper_submit_delay(value: &str) -> JumperSubmitDelay {
     match value {
         "none" => JumperSubmitDelay::None,
         "ms100" => JumperSubmitDelay::Ms100,
+        "ms200" => JumperSubmitDelay::Ms200,
         "ms250" => JumperSubmitDelay::Ms250,
+        "ms300" => JumperSubmitDelay::Ms300,
+        "ms400" => JumperSubmitDelay::Ms400,
         "ms500" => JumperSubmitDelay::Ms500,
+        "ms600" => JumperSubmitDelay::Ms600,
+        "ms700" => JumperSubmitDelay::Ms700,
+        "ms800" => JumperSubmitDelay::Ms800,
+        "ms900" => JumperSubmitDelay::Ms900,
         "ms1000" => JumperSubmitDelay::Ms1000,
+        "ms1500" => JumperSubmitDelay::Ms1500,
         "ms2000" => JumperSubmitDelay::Ms2000,
         other => {
             warn!(
@@ -1155,9 +1280,17 @@ fn parse_jumper_paste_delay(value: &str) -> JumperPasteDelay {
     match value {
         "none" => JumperPasteDelay::None,
         "ms100" => JumperPasteDelay::Ms100,
+        "ms200" => JumperPasteDelay::Ms200,
         "ms250" => JumperPasteDelay::Ms250,
+        "ms300" => JumperPasteDelay::Ms300,
+        "ms400" => JumperPasteDelay::Ms400,
         "ms500" => JumperPasteDelay::Ms500,
+        "ms600" => JumperPasteDelay::Ms600,
+        "ms700" => JumperPasteDelay::Ms700,
+        "ms800" => JumperPasteDelay::Ms800,
+        "ms900" => JumperPasteDelay::Ms900,
         "ms1000" => JumperPasteDelay::Ms1000,
+        "ms1500" => JumperPasteDelay::Ms1500,
         "ms2000" => JumperPasteDelay::Ms2000,
         other => {
             warn!(
@@ -1581,15 +1714,6 @@ pub fn change_post_process_enabled_setting(app: AppHandle, enabled: bool) -> Res
         }
     }
 
-    Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
-pub fn change_experimental_enabled_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
-    let mut settings = settings::get_settings(&app);
-    settings.experimental_enabled = enabled;
-    settings::write_settings(&app, settings);
     Ok(())
 }
 

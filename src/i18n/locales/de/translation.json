@@ -13,7 +13,43 @@
     "postProcessing": "Nachbearbeitung",
     "history": "Verlauf",
     "debug": "Debug",
-    "about": "Info"
+    "about": "Info",
+    "backup": "Backup",
+    "currentAudio": "Aktuelles Audio",
+    "tokenCount": "Token-Anzahl",
+    "keyboardTyper": "Tastatur-Eingabe",
+    "jumper": "Jumper",
+    "translator": "Übersetzer",
+    "groups": {
+      "tools": "Werkzeuge",
+      "config": "Konfiguration"
+    },
+    "modelTesting": "Modelltests",
+    "resize": "Zum Ändern der Größe ziehen",
+    "update": {
+      "checking": "Suche nach Aktualisierungen…",
+      "available": "Handy Tool {{version}} ist verfügbar",
+      "silentOn": "Handy Tool wird geschlossen, aktualisiert und neu geöffnet.",
+      "silentOff": "Aktivieren Sie stille Aktualisierungen für die automatische Installation im Zeitfenster.",
+      "enableSilent": "Stille Aktualisierungen aktivieren",
+      "updateRestart": "Aktualisieren und neu starten",
+      "later": "Später",
+      "updateNow": "Jetzt aktualisieren",
+      "downloading": "Handy Tool {{version}} wird heruntergeladen…",
+      "percent": "{{percent}} %",
+      "ready": "Aktualisierung {{version}} ist bereit",
+      "waitingForIdle": "Warte auf das Ende des Diktats…",
+      "readyDetail": "Handy Tool wird neu gestartet, um die Aktualisierung abzuschließen.",
+      "waiting": "Warten…",
+      "restartInstall": "Neu starten und installieren",
+      "installing": "Aktualisierung wird installiert…",
+      "installingDetail": "Handy Tool wird geschlossen und neu geöffnet.",
+      "failed": "Aktualisierung fehlgeschlagen",
+      "failedDetail": "Handy Tool wurde nicht geändert. {{reason}}",
+      "unknownError": "Unbekannter Fehler",
+      "tryAgain": "Erneut versuchen",
+      "downloadInstaller": "Installationsprogramm herunterladen"
+    }
   },
   "onboarding": {
     "subtitle": "Wähle ein Transkriptionsmodell, um loszulegen",
@@ -133,11 +169,15 @@
   "settings": {
     "modelSettings": {
       "title": "{{model}}-Einstellungen",
-      "noSettingsNeeded": "Dieses Modell funktioniert automatisch ohne Konfiguration."
+      "noSettingsNeeded": "Dieses Modell funktioniert automatisch ohne Konfiguration.",
+      "autoDetectLanguage": {
+        "description": "Dieses Modell erkennt die gesprochene Sprache automatisch und kann nicht auf eine bestimmte Sprache festgelegt werden. Um eine Sprache zu erzwingen, wechsle zu einem Whisper-, SenseVoice-, FLM- oder API-Modell.",
+        "value": "Automatisch erkannt"
+      }
     },
     "models": {
       "title": "Transkriptionsmodelle",
-      "description": "Wähle ein Transkriptionsmodell aus oder lade zusätzliche Modelle herunter. Verschiedene Modelle bieten unterschiedliche Genauigkeits- und Geschwindigkeitsstufen.",
+      "description": "Wähle, welches Sprachmodell dein Diktat transkribiert — Modelle unterscheiden sich in Genauigkeit, Geschwindigkeit und dem Speicher, den sie im geladenen Zustand belegen. Standard: bei einer frischen Installation nichts ausgewählt; das Onboarding lädt dein erstes Modell herunter und wählt es aus. Deine Wahl entscheidet auch, ob Sprache und Ins Englische übersetzen auf der Seite Allgemein angeboten werden, und der Übersetzer nutzt dasselbe Modell, solange sein Stapel-Modell auf „Wie beim Diktat (Standard)“ steht.",
       "downloaded": "Heruntergeladen",
       "available": "Zum Download verfügbar",
       "deleteConfirm": "Bist du sicher, dass du {{modelName}} löschen möchtest? Du musst es erneut herunterladen, um es zu verwenden.",
@@ -165,26 +205,79 @@
         "bindings": {
           "transcribe": {
             "name": "Transkriptions-Tastenkürzel",
-            "description": "Das Tastenkürzel zum Aufnehmen und Transkribieren Ihrer Stimme."
+            "description": "Einmal drücken, um die Aufnahme zu starten, erneut drücken, um sie zu beenden; die Transkription wird in das zuvor fokussierte Fenster zugestellt. Standard: Strg+Leertaste. Es folgt Transkriptionsmodus und der Einfügemethode auf der Seite Erweitert — für Aufnahme durch Halten nutze stattdessen das Push-to-Talk-Tastenkürzel."
           },
           "cancel": {
             "name": "Abbrechen-Tastenkürzel",
-            "description": "Das Tastenkürzel zum Abbrechen der aktuellen Aufnahme."
+            "description": "Bricht die laufende Aufnahme ab. Standard: escape. Was das Abbrechen tatsächlich bewirkt, entscheidet Abbruchverhalten auf der Seite Allgemein — Beenden, nur im Verlauf speichern transkribiert und speichert den Text weiterhin, stellt ihn aber nicht in dein Fenster zu, während Aufnahme verwerfen das Audio wegwirft — und der Taskleisten-Eintrag Abbrechen folgt derselben Einstellung."
           },
           "transcribe_with_post_process": {
             "name": "Nachbearbeitungs-Tastenkürzel",
             "description": "Optional: Ein dediziertes Tastenkürzel, das immer die KI-Nachbearbeitung auf Ihre Transkription anwendet."
+          },
+          "transcribe_ptt": {
+            "name": "Push-to-Talk-Tastenkürzel",
+            "description": "Halte dieses Tastenkürzel zum Aufnehmen und lasse es zum Stoppen los; das Mikrofon wird beim Loslassen sofort taub, sodass danach Gesagtes nicht in den Text durchsickern kann. Standard: Strg+Alt+Leertaste. Es hat seinen eigenen Transkriptionsmodus (PTT) und seine eigene Einfügemethode (PTT), sodass sich Push-to-Talk anders verhalten kann als das Transkriptions-Tastenkürzel."
+          },
+          "type_text": {
+            "name": "Text-Eingabe-Tastenkürzel",
+            "description": "Tippt den Inhalt des Tastatur-Eingabe-Feldes in das aktuell fokussierte Fenster; drücke es erneut oder Escape, um abzubrechen. Standard: ctrl+alt+t. Es beginnt nach etwa einer Sekunde, statt die Startverzögerung abzuwarten, weil das Drücken eines Tastenkürzels bedeutet, dass du schon im Zielfenster bist — die Los-Schaltfläche ist diejenige, die den vollen Countdown nutzt."
+          },
+          "transcribe_and_submit": {
+            "name": "Transkribieren & Absenden-Tastenkürzel",
+            "description": "Beendet die Aufnahme, fügt die Transkription ein und drückt dann die Absende-Taste. Funktioniert auch, wenn die Aufnahme mit einem anderen Tastenkürzel gestartet wurde."
+          },
+          "anchor_set": {
+            "name": "Anker setzen",
+            "description": "Erfasst das aktuell fokussierte Textfeld als Hot-1-Ziel. Standard: ctrl+alt+k. Für sich allein stellt es nichts zu — stelle die „Slot-Aktion beim Beenden“ auf „Springen / an Slot zustellen“ mit dem Slot Hot 1 (Erweitert → Transkription), damit deine nächste Transkription dort landet. Passwortfelder und Handys eigene Fenster werden abgelehnt."
+          },
+          "anchor_jump": {
+            "name": "Zu Anker springen",
+            "description": "Bringt Fenster und Feld von Hot 1 zurück in den Fokus und fügt nichts ein — eine „zurück zu meinem Entwurf“-Taste. Standard: ctrl+alt+j. Ist „Mausposition speichern“ für diesen Slot aktiv, bewegt sich der Zeiger ebenfalls zurück; ist der Slot leer oder sein Fenster geschlossen, passiert nichts."
+          },
+          "jump_set_slot_1": {
+            "name": "Slot 1 setzen",
+            "description": "Merkt sich das aktuell fokussierte Feld als statischen Slot 1 und ersetzt dabei, was dort vorher gespeichert war. Standard: ctrl+alt+shift+1. Der Slot ist nur ein Lesezeichen, bis ihn etwas nutzt — springe mit „Zu Slot 1 springen“ dorthin, oder stelle die „Slot-Aktion beim Beenden“ eines Ablaufs (Erweitert → Transkription) auf Slot 1, damit Transkriptionen dort zugestellt werden."
+          },
+          "jump_set_slot_2": {
+            "name": "Slot 2 setzen",
+            "description": "Merkt sich das aktuell fokussierte Feld als statischen Slot 2 und ersetzt dabei, was dort vorher gespeichert war. Standard: ctrl+alt+shift+2. Springe mit „Zu Slot 2 springen“ zurück, oder stelle die „Slot-Aktion beim Beenden“ eines Ablaufs (Erweitert → Transkription) auf Slot 2, damit Transkriptionen dort zugestellt werden."
+          },
+          "jump_set_slot_3": {
+            "name": "Slot 3 setzen",
+            "description": "Merkt sich das aktuell fokussierte Feld als statischen Slot 3 und ersetzt dabei, was dort vorher gespeichert war. Standard: ctrl+alt+shift+3. Springe mit „Zu Slot 3 springen“ zurück, oder stelle die „Slot-Aktion beim Beenden“ eines Ablaufs (Erweitert → Transkription) auf Slot 3, damit Transkriptionen dort zugestellt werden."
+          },
+          "jump_set_slot_4": {
+            "name": "Slot 4 setzen",
+            "description": "Merkt sich das aktuell fokussierte Feld als statischen Slot 4 und ersetzt dabei, was dort vorher gespeichert war. Standard: ctrl+alt+shift+4. Springe mit „Zu Slot 4 springen“ zurück, oder stelle die „Slot-Aktion beim Beenden“ eines Ablaufs (Erweitert → Transkription) auf Slot 4, damit Transkriptionen dort zugestellt werden."
+          },
+          "jump_slot_1": {
+            "name": "Zu Slot 1 springen",
+            "description": "Bringt Fenster und Feld von Slot 1 in den Fokus und stellt nichts zu — reine Navigation. Standard: ctrl+alt+1. Ist „Mausposition speichern“ für diesen Slot aktiv, wird der Zeiger ebenfalls wiederhergestellt; ist der Slot leer oder sein Fenster geschlossen, passiert nichts."
+          },
+          "jump_slot_2": {
+            "name": "Zu Slot 2 springen",
+            "description": "Bringt Fenster und Feld von Slot 2 in den Fokus und stellt nichts zu — reine Navigation. Standard: ctrl+alt+2. Ist „Mausposition speichern“ für diesen Slot aktiv, wird der Zeiger ebenfalls wiederhergestellt; ist der Slot leer oder sein Fenster geschlossen, passiert nichts."
+          },
+          "jump_slot_3": {
+            "name": "Zu Slot 3 springen",
+            "description": "Bringt Fenster und Feld von Slot 3 in den Fokus und stellt nichts zu — reine Navigation. Standard: ctrl+alt+3. Ist „Mausposition speichern“ für diesen Slot aktiv, wird der Zeiger ebenfalls wiederhergestellt; ist der Slot leer oder sein Fenster geschlossen, passiert nichts."
+          },
+          "jump_slot_4": {
+            "name": "Zu Slot 4 springen",
+            "description": "Bringt Fenster und Feld von Slot 4 in den Fokus und stellt nichts zu — reine Navigation. Standard: ctrl+alt+4. Ist „Mausposition speichern“ für diesen Slot aktiv, wird der Zeiger ebenfalls wiederhergestellt; ist der Slot leer oder sein Fenster geschlossen, passiert nichts."
           }
         },
         "errors": {
           "restore": "Ursprüngliches Tastenkürzel konnte nicht wiederhergestellt werden",
           "set": "Tastenkürzel konnte nicht gesetzt werden: {{error}}",
-          "reset": "Tastenkürzel konnte nicht auf Originalwert zurückgesetzt werden"
+          "reset": "Tastenkürzel konnte nicht auf Originalwert zurückgesetzt werden",
+          "registrationFailed": "Einige Tastenkürzel konnten nicht registriert werden und sind inaktiv: {{bindings}}. Eine andere App verwendet sie möglicherweise bereits — wähle eine andere Kombination in den Einstellungen."
         }
       },
       "language": {
         "title": "Sprache",
-        "description": "Wähle die Sprache für die Spracherkennung. Auto erkennt die Sprache automatisch, die Auswahl einer bestimmten Sprache kann die Genauigkeit verbessern.",
+        "description": "Teilt der Engine mit, in welcher Sprache du sprichst; eine feste Auswahl ist meist genauer als Auto und verhindert, dass kurze Aufnahmen als falsche Sprache erkannt werden. Standard: Auto. Sie gilt für das im Titel dieser Karte genannte Modell, und bei aktiviertem Ins Englische übersetzen bezeichnet sie die gesprochene Sprache, nicht die Sprache der Ausgabe.",
         "descriptionUnsupported": "Das Parakeet-Modell erkennt die Sprache automatisch. Keine manuelle Auswahl erforderlich.",
         "searchPlaceholder": "Sprachen suchen...",
         "noResults": "Keine Sprachen gefunden",
@@ -202,52 +295,146 @@
         },
         "jumperPasteDelay": {
           "title": "Paste delay after jump (Windows)",
-          "description": "Extra wait after a jump activates the target window and before the paste keystroke fires. A freshly activated window — especially an RDP/Citrix session — may still be transitioning when Ctrl+V lands, so the paste is swallowed and nothing appears. Set a longer wait for Remote desktop targets (matched on the Jumper page) and a shorter one for Local apps. Shared by both Transcribe and Transcribe & Submit; only applies after a real jump — when you're already in the target, paste stays instant.",
+          "description": "Zusätzliche Wartezeit, nachdem ein Sprung das Zielfenster nach vorne gebracht hat und bevor der Einfüge-Tastendruck ausgelöst wird, weil ein gerade eben aktiviertes Fenster Tastendrücke noch verschluckt. Standardwerte: Lokale Apps 250 ms, Remote-Desktop 1 s — welche Spalte gilt, entscheidet Remote match strings auf der Jumper-Seite. Sie greift nur bei einem echten Sprung; bist du bereits im Ziel, bleibt das Einfügen sofort, und beide Dropdowns werden von Transkribieren und Transkribieren & Absenden gemeinsam genutzt.",
           "options": {
             "none": "Off (instant)"
           }
         },
         "jumperSubmitDelay": {
           "title": "Submit delay after jump (Windows)",
-          "description": "Extra wait before pressing the submit key (Enter) after a jump. A freshly activated window — especially RDP/Citrix — may still be applying the pasted text when Enter fires, so the submit is missed. Set a longer wait for Remote desktop targets and a shorter one for Local apps. Only applies after a real jump; when you're already in the target, submit stays instant.",
+          "description": "Zusätzliche Wartezeit zwischen dem Einfügen und der Absende-Taste, wenn die Zustellung springen musste, weil das frisch aktivierte Fenster den eingefügten Text noch übernimmt und das Enter verschluckt. Standardwerte: Lokale Apps 250 ms, Remote-Desktop 500 ms — Remote match strings auf der Jumper-Seite entscheidet, welcher Wert gilt. Sie greift nur nach einem echten Sprung; warst du bereits im Ziel, bleibt das Absenden sofort.",
           "options": {
             "none": "Off (instant)"
           }
+        },
+        "title": "Transkribieren & Absenden",
+        "pasteMethod": {
+          "title": "Einfügemethode",
+          "description": "Der Einfüge-Tastendruck, der nur vom Transkribieren & Absenden-Tastenkürzel verwendet wird, sodass sich genau die App, in die du diktierst und sendest, anders verhalten kann als alle anderen. Standard: Zwischenablage (Strg+V). Er überschreibt die Einfügemethode für diesen Ablauf — stelle ihn auf Zwischenablage (Umschalt+Einfg), wenn das Nachrichtenfeld dieser App Strg+V ignoriert."
+        },
+        "submitKey": {
+          "title": "Absende-Taste",
+          "description": "Die Taste, die unmittelbar nach dem Einfügen durch diesen Ablauf gedrückt wird, um die Nachricht tatsächlich zu senden oder den Befehl auszuführen. Standard: Enter. Dieser Ablauf sendet immer ab — Automatisch absenden gilt hier nicht — wähle also Strg+Enter oder Super+Enter für Apps, in denen ein einfaches Enter nur einen Zeilenumbruch einfügt."
+        },
+        "idleBehavior": {
+          "title": "Wenn keine Aufnahme aktiv ist",
+          "description": "Was passiert, wenn du das Transkribieren & Absenden-Tastenkürzel drückst, während gerade nichts aufgenommen wird. Standard: Eine Aufnahme starten — ein Druck startet, der nächste fügt ein und sendet ab. Wähle Nichts tun, um diese Taste zu einem reinen Abschluss zu machen: Du startest Aufnahmen mit dem Transkriptions-Tastenkürzel und drückst diese Taste nur, wenn das Ergebnis eingefügt und gesendet werden soll.",
+          "options": {
+            "startNormal": "Eine Aufnahme starten",
+            "doNothing": "Nichts tun"
+          }
+        },
+        "clipboard": {
+          "title": "Zwischenablage",
+          "description": "Die eigene Zwischenablage-Regel dieses Ablaufs, unabhängig von Zwischenablage-Verhalten: deine bestehende Zwischenablage nach dem Einfügen wiederherstellen, oder die gesendete Transkription bewusst dort belassen. Standard: Zwischenablage nicht ändern. Nützlich, wenn normales Diktat deine Zwischenablage unberührt lassen soll, du aber eine Kopie von allem willst, was du gesendet hast — oder umgekehrt."
         }
       },
       "pasteLast": {
         "title": "Paste last transcription",
         "pasteMethod": {
           "title": "Paste method",
-          "description": "How the last transcription is pasted into the focused window when you press the shortcut. Use Shift+Insert or another method if Ctrl+V doesn't work in the target app."
+          "description": "Wie das Tastenkürzel zum erneuten Einfügen der letzten Transkription den Text in das fokussierte Fenster bringt. Das ist unabhängig von der Einfügemethode auf der Seite Erweitert, sodass du es gezielt für das eine störrische Ziel anpassen kannst. Standard: Zwischenablage (Strg+V) — probiere Zwischenablage (Umschalt+Einfg) in einem Terminal, Direkt, um die Zeichen zu tippen statt einzufügen, oder Keine, um den Text nur in der Zwischenablage abzulegen und ihn selbst einzufügen."
         },
         "clipboard": {
           "title": "Clipboard",
-          "description": "Keep your existing clipboard after pasting, or leave the transcription on the clipboard."
+          "description": "Ob das erneute Einfügen danach deine vorherige Zwischenablage wiederherstellt oder die Transkription bewusst dort belässt. Standard: Zwischenablage nicht ändern, das den Text kopiert, einfügt und danach wiederherstellt, was zuvor dort war. Wähle In Zwischenablage kopieren, um den Text nach dem erneuten Einfügen verfügbar zu halten; in beiden Fällen wird nur Text gesichert und wiederhergestellt, ein Bild oder eine kopierte Datei geht also verloren."
         }
+      },
+      "anchor": {
+        "title": "Anker & Zustellung",
+        "deliveryFailed": "Verankerte Zustellung fehlgeschlagen: {{reason}}. Dein Text befindet sich in der Zwischenablage, und der Anker wurde beibehalten.",
+        "status": {
+          "title": "Aktueller Anker",
+          "description": "Zeigt, worauf dieser Hot-Slot aktuell zeigt, mit Testen (dorthin springen, ohne etwas zuzustellen) und Löschen; das Abzeichen „Remote ✓“ bedeutet, dass das Ziel zu deinen Remote match strings passt. Standard: Kein Anker gesetzt — klicke in ein Textfeld und drücke das Tastenkürzel Anker setzen dieses Slots, um ihn zu aktivieren. Ein Anker wird durch eine Zustellung nie verbraucht: Er bleibt bestehen, bis du ihn löschst oder sein Fenster schließt.",
+          "active": "Verankert: {{app}} ({{control}})",
+          "none": "Kein Anker gesetzt",
+          "clear": "Löschen"
+        },
+        "keep": {
+          "label": "Anker nach Zustellung beibehalten",
+          "description": "Lässt den Anker nach einer erfolgreichen Zustellung aktiv, statt ihn zu löschen — für wiederholtes Diktieren in dasselbe Feld."
+        },
+        "returnFocus": {
+          "label": "Fokus nach Zustellung zurückgeben",
+          "description": "Wechselt zurück zu dem Fenster, in dem du zuvor warst, sobald der Text zugestellt wurde."
+        },
+        "actions": {
+          "options": {
+            "none": "Nichts tun",
+            "jump": "Springen / an Slot zustellen",
+            "set": "Slot auf aktuellen Fokus setzen",
+            "clear": "Slot löschen"
+          },
+          "idle": {
+            "title": "Slot-Aktion beim Start",
+            "description": "Was dieses Tastenkürzel zusätzlich mit dem im Dropdown links gewählten Slot macht, sobald du es drückst, um eine Aufnahme zu starten. Standard: Nichts tun, deshalb ist die Slot-Auswahl anfangs ausgegraut. Springen / an Slot zustellen bringt dich in das gemerkte Feld, bevor du sprichst, Slot auf aktuellen Fokus setzen merkt sich, wo du gerade bist, und Slot löschen vergisst ihn (nur Windows)."
+          },
+          "stop": {
+            "title": "Slot-Aktion beim Beenden",
+            "description": "Was dieses Tastenkürzel mit dem links gewählten Slot macht, wenn die Aufnahme beendet wird. Standard: Nichts tun. Springen / an Slot zustellen liefert die Transkription in das gemerkte Feld statt an den Ort, zu dem du inzwischen gewandert bist, sodass du beim Diktieren woanders weiterlesen kannst; Slot auf aktuellen Fokus setzen und Slot löschen laufen erst, nachdem der Text zugestellt wurde, und Nur beim Beenden springen, wenn auf dieselbe Weise gestartet auf der Jumper-Seite kann einschränken, wann ein Sprung erlaubt ist (nur Windows)."
+          }
+        }
+      },
+      "transcribeGroup": {
+        "title": "Transkribieren"
+      },
+      "cancelBehavior": {
+        "title": "Abbruchverhalten",
+        "description": "Legt fest, was das Abbrechen mit der laufenden Aufnahme macht — das betrifft das Abbrechen-Tastenkürzel, den Taskleisten-Eintrag „Abbrechen“ und 'handy --cancel'. Standard: „Beenden, nur im Verlauf speichern“ — die Aufnahme wird gestoppt und transkribiert, bleibt mit ihrem Audio im Verlauf, wird aber überhaupt nicht zugestellt: kein Einfügen, keine Änderung der Zwischenablage, keine Absende-Taste, kein Sprung. Wähle „Aufnahme verwerfen“, wenn eine abgebrochene Aufnahme stattdessen verworfen werden soll, ohne transkribiert oder gespeichert zu werden.",
+        "options": {
+          "finishSilently": "Beenden, nur im Verlauf speichern",
+          "discardRecording": "Aufnahme verwerfen"
+        }
+      },
+      "updates": {
+        "title": "Aktualisierungen",
+        "checks": {
+          "label": "Automatisch nach Aktualisierungen suchen",
+          "description": "Einmal täglich die öffentlichen GitHub-Releases prüfen."
+        },
+        "silent": {
+          "label": "Aktualisierungen im Hintergrund installieren",
+          "description": "Im Zeitfenster schließen, aktualisieren und neu öffnen. Standardmäßig aus."
+        },
+        "time": {
+          "label": "Zeit für stille Aktualisierung",
+          "description": "Mitte des erlaubten lokalen Zeitfensters.",
+          "window": "{{start}}–{{end}} Ortszeit."
+        },
+        "jitter": {
+          "label": "Tägliche Zufallszeit",
+          "description": "Täglich eine andere Zeit innerhalb dieser Minutenzahl wählen.",
+          "minutes": "Minuten"
+        },
+        "checkNow": "Jetzt prüfen",
+        "checking": "Prüfung läuft…",
+        "upToDate": "Handy Tool ist aktuell.",
+        "lastChecked": "Zuletzt geprüft: {{value}}",
+        "never": "Nie",
+        "portableUnsupported": "Portable Versionen können nicht direkt aktualisiert werden. Laden Sie die neueste portable Version herunter."
       }
     },
     "sound": {
       "title": "Ton",
       "microphone": {
         "title": "Mikrofon",
-        "description": "Bevorzugtes Mikrofon auswählen",
+        "description": "Das Eingabegerät, von dem Handy aufnimmt. Wirkt ab der nächsten Aufnahme, ohne Neustart. Standard: das System-Standardgerät — lege es explizit fest, wenn du zwischen Headset und eingebautem Mikrofon-Array wechselst, und nutze die Zurücksetzen-Schaltfläche, um zur Systemwahl zurückzukehren.",
         "placeholder": "Mikrofon auswählen...",
         "loading": "Wird geladen..."
       },
       "audioFeedback": {
         "label": "Audio-Feedback",
-        "description": "Ton bei Start und Ende der Aufnahme abspielen"
+        "description": "Spielt beim Start der Aufnahme einen kurzen Ton und beim Stoppen einen anderen, damit du auch ohne Blick auf den Bildschirm weißt, dass das Mikrofon aktiv ist. Standard: Aus. Das Aktivieren schaltet Ausgabegerät und Lautstärke unten frei; die beiden Signaltöne lassen sich über Sound-Thema auf der Debug-Seite durch eigene Dateien ersetzen."
       },
       "outputDevice": {
         "title": "Ausgabegerät",
-        "description": "Bevorzugtes Audioausgabegerät für Feedback-Töne auswählen",
+        "description": "Wohin die Start- und Stopp-Töne ausgegeben werden — es hat keinen Einfluss darauf, welches Mikrofon aufnimmt oder wohin andere Apps ihr Audio senden. Standard: das System-Standardgerät. Stelle es auf dein Headset, damit die Töne nicht aus den Lautsprechern kommen; das Feld bleibt ausgegraut, bis Audio-Feedback aktiv ist.",
         "placeholder": "Ausgabegerät auswählen...",
         "loading": "Wird geladen..."
       },
       "volume": {
         "title": "Lautstärke",
-        "description": "Lautstärke der Audio-Feedback-Töne anpassen"
+        "description": "Wie laut die Start- und Stopp-Töne sind, von 0 bis 100 Prozent. Standard: 100 %. Verringere den Wert, wenn die Töne im Kopfhörer erschrecken; er ändert nur Handys eigene Signaltöne und bleibt ausgegraut, bis Audio-Feedback aktiv ist."
       }
     },
     "advanced": {
@@ -257,27 +444,27 @@
         "output": "Ausgabe",
         "transcription": "Transkription",
         "history": "Verlauf",
-        "experimental": "Experimentell"
-      },
-      "experimentalToggle": {
-        "label": "Experimentelle Funktionen",
-        "description": "Experimentelle Funktionen aktivieren, die sich noch in Entwicklung befinden."
+        "postProcessing": "Nachbearbeitung",
+        "keyboardTyper": "Tastatur-Eingabe",
+        "tokenCountProviders": "Token-Anzahl-Anbieter",
+        "llmProviders": "Registrierte LLM-Anbieter",
+        "mcp": "MCP & CLI"
       },
       "startHidden": {
         "label": "Versteckt starten",
-        "description": "In den Systembereich starten, ohne das Fenster zu öffnen."
+        "description": "Startet Handy Tool ohne sichtbares Fenster — es geht direkt in den Systembereich, und Diktat funktioniert sofort. Standard: Aus. Kombiniere es mit Beim Start ausführen, damit die App beim Anmelden bereit ist, ohne dass ein Fenster erscheint, und lass Taskleistensymbol anzeigen aktiviert, denn der Systembereich ist dann dein einziger Weg, das Fenster zu öffnen."
       },
       "autostart": {
         "label": "Beim Start ausführen",
-        "description": "Handy automatisch beim Anmelden starten."
+        "description": "Registriert Handy Tool, damit es automatisch beim Windows-Anmelden startet. Standard: Aus. Kombiniere es mit Versteckt starten, damit es leise im Systembereich erscheint, statt das Fenster zu öffnen."
       },
       "showTrayIcon": {
         "label": "Taskleistensymbol anzeigen",
-        "description": "Das Handy-Symbol in der Taskleiste anzeigen."
+        "description": "Zeigt das Handy-Tool-Symbol im Systembereich, wo es auch Leerlauf, Aufnahme und Transkription anzeigt und ein Menü für Einstellungen, die letzte Transkription und Beenden bietet. Standard: An. Achtung: Ist es aus, beendet das Schließen des Hauptfensters die App, statt sie nur zu verbergen — und ist zusätzlich Versteckt starten aktiv, gibt es nichts mehr auf dem Bildschirm zum Anklicken."
       },
       "overlay": {
         "title": "Overlay-Position",
-        "description": "Visuelles Feedback-Overlay während Aufnahme und Transkription anzeigen. Unter Linux wird 'Keine' empfohlen.",
+        "description": "Zeigt während des Diktierens ein kleines Overlay unten oder oben am Bildschirm, damit du siehst, dass Handy Tool zuhört und danach transkribiert. Standard: Unten. Wähle Keine, um es auszuschalten, wenn es etwas Wichtiges verdeckt oder einer Vollbild-App im Weg ist.",
         "options": {
           "none": "Keine",
           "bottom": "Unten",
@@ -286,7 +473,7 @@
       },
       "pasteMethod": {
         "title": "Einfügemethode",
-        "description": "Wähle, wie Text eingefügt wird. Direkt: simuliert Tippen über Systemeingabe. Keine: überspringt Einfügen, aktualisiert nur Verlauf/Zwischenablage.",
+        "description": "Wählt den Tastendruck, mit dem normales Diktat den Text in das fokussierte Fenster zustellt; Direkt tippt die Zeichen statt sie einzufügen, und Keine sendet überhaupt nichts. Standard: Zwischenablage (Strg+V). Beispiel: Ein Terminal oder Remote-Viewer, der Strg+V ignoriert, akzeptiert meist Zwischenablage (Umschalt+Einfg); Keine in Kombination mit Zwischenablage-Verhalten auf In Zwischenablage kopieren lässt den Text bereit zum manuellen Einfügen. Push-to-Talk ignoriert diese Einstellung und nutzt Einfügemethode (PTT).",
         "options": {
           "clipboard": "Zwischenablage ({{modifier}}+V)",
           "clipboardCtrlShiftV": "Zwischenablage (Strg+Umschalt+V)",
@@ -299,14 +486,14 @@
       },
       "typingTool": {
         "title": "Eingabetool",
-        "description": "Wählen Sie, welches Linux-Eingabetool für die Direkt-Einfügen-Methode verwendet werden soll. Auto erkennt und verwendet automatisch das beste verfügbare Tool für Ihr System.",
+        "description": "Wählt, welches Linux-Eingabetool die Einfügemethode Direkt umsetzt. Standard: Auto (Empfohlen), das automatisch das beste installierte Tool ermittelt. Erscheint nur im geplanten Linux-Build und wird unter Windows nie angezeigt.",
         "options": {
           "auto": "Auto (Empfohlen)"
         }
       },
       "clipboardHandling": {
         "title": "Zwischenablage-Verhalten",
-        "description": "Zwischenablage nicht ändern bewahrt den aktuellen Inhalt nach der Transkription. In Zwischenablage kopieren hinterlässt das Transkriptionsergebnis in der Zwischenablage.",
+        "description": "Legt fest, was nach dem normalen Diktat-Einfügen in deiner Zwischenablage steht: Zwischenablage nicht ändern legt die Transkription nur kurz zum Einfügen dort ab und stellt danach deinen vorherigen Zwischenablage-Inhalt wieder her, während In Zwischenablage kopieren die Transkription bewusst dort belässt. Standard: Zwischenablage nicht ändern. Ehrliche Einschränkung: Nur Text wird wiederhergestellt, ein kopiertes Bild oder eine Datei geht also verloren — und Verzögerung der Zwischenablage-Wiederherstellung wirkt nur, wenn hier Zwischenablage nicht ändern eingestellt ist.",
         "options": {
           "dontModify": "Zwischenablage nicht ändern",
           "copyToClipboard": "In Zwischenablage kopieren"
@@ -314,7 +501,7 @@
       },
       "autoSubmit": {
         "title": "Automatisch absenden",
-        "description": "Sendet nach dem Einfügen von Text automatisch die ausgewählte Tastenkombination. Cmd+Enter gilt für macOS, während Windows/Linux Super+Enter verwenden.",
+        "description": "Sendet etwa 50 ms nach jedem normalen Einfügen eine Absende-Taste, damit eine diktierte Chat-Nachricht sich selbst abschickt. Standard: Aus. Apps sind sich uneinig, welche Taste absendet — probiere Strg+Enter, wenn ein einfaches Enter nur einen Zeilenumbruch einfügt; es wird ignoriert, wenn die Einfügemethode Keine ist, und es gilt nicht für das Transkribieren & Absenden-Tastenkürzel, das immer seine eigene Absende-Taste sendet.",
         "options": {
           "off": "Aus",
           "enter": "Enter",
@@ -325,12 +512,13 @@
       },
       "translateToEnglish": {
         "label": "Ins Englische übersetzen",
-        "description": "Sprache aus anderen Sprachen automatisch während der Transkription ins Englische übersetzen.",
-        "descriptionUnsupported": "Übersetzung wird vom {{model}}-Modell nicht unterstützt."
+        "description": "Lässt das Modell auf Englisch ausgeben, statt das Gesagte in seiner eigenen Sprache zu transkribieren. Standard: Aus. Lass Sprache auf die Sprache eingestellt, in der du tatsächlich sprichst — dieser Schalter erscheint nur bei Modellen, die Übersetzung unterstützen.",
+        "descriptionUnsupported": "Übersetzung wird vom {{model}}-Modell nicht unterstützt.",
+        "unsupported": "Für das ausgewählte Transkriptionsmodell nicht verfügbar."
       },
       "modelUnload": {
         "title": "Modell entladen",
-        "description": "GPU/CPU-Speicher automatisch freigeben, wenn das Modell für die angegebene Zeit nicht verwendet wurde",
+        "description": "Gibt den RAM oder VRAM des Transkriptionsmodells frei, sobald es diese Zeit lang unbenutzt war; die nächste Aufnahme zahlt dann ein paar Sekunden für das erneute Laden. Standard: Nie (geladen lassen — schnellster Start), die richtige Wahl, wenn du über den ganzen Tag diktierst. Wähle eine Zeitspanne, wenn du in Schüben diktierst und den Speicher dazwischen zurückwillst — die separate Stapel-Engine des Übersetzers ist hier nicht enthalten, sie wird über Stapel-Modell entladen nach freigegeben.",
         "options": {
           "never": "Nie",
           "immediately": "Sofort",
@@ -339,16 +527,229 @@
           "min10": "Nach 10 Minuten",
           "min15": "Nach 15 Minuten",
           "hour1": "Nach 1 Stunde",
-          "sec5": "Nach 5 Sekunden (Debug)"
+          "sec5": "Nach 5 Sekunden (Debug)",
+          "custom": "Benutzerdefiniert…"
+        },
+        "units": {
+          "s": "Sekunden",
+          "m": "Minuten",
+          "h": "Stunden"
         }
       },
       "customWords": {
         "title": "Benutzerdefinierte Wörter",
-        "description": "Wörter hinzufügen, die oft falsch gehört oder geschrieben werden. Das System korrigiert automatisch ähnlich klingende Wörter entsprechend deiner Liste.",
+        "description": "Eine Liste von Namen, Produkten und Fachbegriffen, die die Engine immer wieder falsch versteht; nach jeder Transkription sucht Handy ähnlich klingende Wörter und ersetzt sie durch deine Schreibweise. Standard: leer. Füge ganze Wörter hinzu, sobald sie dir auffallen, und senke Wortkorrektur-Schwelle auf der Debug-Seite, wenn Dinge korrigiert werden, die du nicht gemeint hast.",
         "placeholder": "Wort hinzufügen",
         "add": "Hinzufügen",
         "remove": "{{word}} entfernen",
         "duplicate": "\"{{word}}\" existiert bereits"
+      },
+      "tokenCountProviders": {
+        "hint": "Anbieter für die Seite Token-Anzahl. Tipp: Das Modell bestimmt nur den Tokenizer — wähle das kleinste Modell der Familie, die dich interessiert (z. B. zählt qwen3:0.6b genauso wie qwen3:8b, lädt aber in einem Bruchteil der Zeit). Die Zähl-Endpunkte von Anthropic und Gemini sind kostenlos; lokale Server werden mit einer 1-Token-Anfrage abgefragt.",
+        "enable": "Diesen Anbieter aktivieren",
+        "namePlaceholder": "Anzeigename",
+        "baseUrl": "Basis-URL",
+        "apiKey": "API-Schlüssel",
+        "apiKeyPlaceholder": "Optional für lokale Server",
+        "model": "Modell",
+        "refreshModels": "Modellliste vom Endpunkt laden",
+        "modelsError": "Modelle konnten nicht geladen werden",
+        "kinds": {
+          "gemini": "Gemini",
+          "anthropic": "Anthropic",
+          "openai_local": "tiktoken (offline)",
+          "openai_compatible": "OpenAI-kompatibel"
+        }
+      },
+      "crashResilientRecording": {
+        "label": "Absturzsichere Aufnahme",
+        "description": "Kodiert deine Sprache während des Sprechens in kompakte Opus-Dateien auf der Festplatte, statt alles im Speicher zu halten, sodass ein Absturz, ein erzwungenes Update oder ein leerer Akku trotzdem eine Aufnahme hinterlässt — sie wird beim nächsten Start repariert und dem Verlauf hinzugefügt. Standard: An. Schaltest du es aus, wird unkomprimiertes Audio aufgenommen, das Backups vom Typ Vollständige Daten (mit komprimiertem Audio) bewusst auslassen."
+      },
+      "openRecordingsFolder": {
+        "label": "Aufnahmeordner",
+        "description": "Öffnet den Ordner mit deinen Aufnahmen und jedem nach einem Absturz wiederhergestellten Audio (%APPDATA%\\pr.handy\\recordings). Aufnahmen automatisch löschen räumt hier auf, rührt aber ausschließlich Dateien an, die Handy selbst erstellt hat — deine eigenen Notizen oder Exporte in diesem Ordner werden nie umbenannt oder gelöscht.",
+        "button": "Ordner öffnen"
+      },
+      "appearance": {
+        "title": "Erscheinungsbild",
+        "description": "Legt das Farbthema für alle Handy-Tool-Fenster fest, einschließlich des Aufnahme-Overlays und des schwebenden Transkriptionsfensters. Standard: System, das deiner Windows-Hell/Dunkel-Einstellung folgt und Änderungen weiterhin übernimmt; Hell und Dunkel legen eine feste Palette fest und ignorieren spätere Änderungen des Betriebssystems.",
+        "options": {
+          "system": "System",
+          "light": "Hell",
+          "dark": "Dunkel"
+        }
+      },
+      "pasteMethodPtt": {
+        "title": "Einfügemethode (PTT)",
+        "description": "Dieselbe Auswahl wie Einfügemethode, aber nur für das Push-to-Talk-Tastenkürzel, sodass Halten-zum-Sprechen anders zustellen kann als deine normale Diktier-Taste. Standard: Zwischenablage (Strg+V). Ändere es, wenn die App, in die du per Push-to-Talk sprichst, einen anderen Einfüge-Tastendruck braucht als die App, in die du den ganzen Tag diktierst."
+      },
+      "clipboardRestoreDelay": {
+        "title": "Verzögerung der Zwischenablage-Wiederherstellung",
+        "description": "Zusätzliche Wartezeit, bevor dein vorheriger Zwischenablage-Text nach dem Einfügen wiederhergestellt wird, addiert zu den fest eingebauten 50 ms; sie wirkt nur, wenn die Zwischenablage-Einstellung dieser Gruppe (hier Zwischenablage-Verhalten, oder Zwischenablage unter Transkribieren & Absenden) auf Zwischenablage nicht ändern steht. Standard: Aus (sofort). Erhöhe sie auf etwa 1 s, wenn eine Citrix- oder RDP-Sitzung deine alte Zwischenablage statt des gerade Gesagten einfügt — Remote-Sitzungen rufen die Zwischenablage erst ab, nachdem der Einfüge-Tastendruck angekommen ist.",
+        "options": {
+          "none": "Keine (sofort)",
+          "ms250": "250 ms",
+          "ms500": "500 ms",
+          "ms1000": "1 Sekunde",
+          "ms2500": "2,5 Sekunden",
+          "ms5000": "5 Sekunden"
+        }
+      },
+      "transcriptionMode": {
+        "title": "Transkriptionsmodus",
+        "description": "Live zeigt den Text schon während du sprichst; Nach der Aufnahme zeichnet leise auf und transkribiert im Hintergrund. Standard: Nach der Aufnahme. In beiden Fällen erhält das vollständige Audio beim Stoppen einen abschließenden Durchgang, der zugestellte Text ist also immer der genaue und der Live-Text nur eine Vorschau — das gilt nur für das Transkriptions-Tastenkürzel, API-Transkriptionsmodelle verhalten sich immer wie Nach der Aufnahme.",
+        "options": {
+          "live": "Live",
+          "postRecording": "Nach der Aufnahme"
+        }
+      },
+      "transcriptionModePtt": {
+        "title": "Transkriptionsmodus (PTT)",
+        "description": "Dieselbe Wahl zwischen Live und Nach der Aufnahme, aber nur für das Push-to-Talk-Tastenkürzel. Standard: Live — bewusst das Gegenteil von Transkriptionsmodus, weil gehaltene Aufnahmen kurz sind und die Vorschau fast augenblicklich erscheint. Der zugestellte Text stammt trotzdem aus einem abschließenden Durchgang über die gesamte Aufnahme.",
+        "options": {
+          "live": "Live",
+          "postRecording": "Nach der Aufnahme"
+        }
+      },
+      "gpuDevice": {
+        "title": "GPU-Gerät",
+        "description": "Wählt, auf welchem Grafikadapter lokales Whisper transkribiert, oder erzwingt reine CPU-Verarbeitung. Standard: Auto (Standard); ein Adapter, der nicht startet, fällt auf Auto zurück, statt die Transkription zu blockieren. Ändere es, um eine ausgelastete dedizierte Karte frei zu halten oder einen fehlerhaften Treiber zu umgehen — es wirkt ab dem nächsten Laden des Modells und erscheint nur unter Windows, während ein Whisper-Modell ausgewählt ist.",
+        "options": {
+          "auto": "Auto (Standard)",
+          "cpu": "Nur CPU",
+          "device": "{{name}} (Gerät {{index}})",
+          "deviceWithVram": "{{name}} (Gerät {{index}}, {{vram}} GB)"
+        }
+      },
+      "apiTranscription": {
+        "title": "API-Transkription",
+        "cardTitle": "API-Transkription (OpenAI-kompatibel)",
+        "url": {
+          "title": "API-URL",
+          "description": "Basis-URL eines OpenAI-kompatiblen Sprachservers, einschließlich Versionspräfix — Handy hängt /audio/transcriptions an, sodass http://127.0.0.1:8000/v1 zu http://127.0.0.1:8000/v1/audio/transcriptions wird. Standard: leer; trage sie ein, bevor du API-Transkription (OpenAI-kompatibel) auf der Seite Modelle wählst, sonst schlägt die Aufnahme fehl. Diese Engine lädt beim Stoppen immer die gesamte Aufnahme als eine WAV-Datei hoch, Transkriptionsmodus hat also keine Wirkung auf sie.",
+          "placeholder": "http://127.0.0.1:8000/v1"
+        },
+        "apiKey": {
+          "title": "API-Schlüssel",
+          "description": "Bearer-Schlüssel, der mit jedem Upload gesendet wird; bei einem lokalen Server, der keinen prüft, leer lassen. Standard: leer. Er wird unverschlüsselt in deiner Einstellungsdatei gespeichert und ist in Backups enthalten.",
+          "placeholder": "sk-..."
+        },
+        "model": {
+          "title": "Modell",
+          "description": "Die Modell-ID, die dein Endpunkt erwartet, wird unverändert mit dem Upload gesendet — whisper-1 für OpenAI oder der Name, den dein eigener Server seinem Modell gibt. Standard: leer, wodurch ein leeres Modellfeld gesendet wird; setze es, wenn dein Endpunkt eines verlangt. Steht Sprache auf Auto, sendet diese Engine Englisch — lege Sprache also fest, wenn du in einer anderen Sprache diktierst.",
+          "placeholder": "whisper-1"
+        }
+      },
+      "tabs": {
+        "app": "App",
+        "output": "Ausgabe",
+        "transcription": "Transkription",
+        "typer": "Tastatureingabe",
+        "providers": "Anbieter",
+        "mcp": "MCP & CLI",
+        "history": "Verlauf",
+        "postProcessing": "Nachbearbeitung"
+      },
+      "mcp": {
+        "loading": "Wird geladen…",
+        "description": "Startet einen kleinen lokalen Server, damit Claude (App und Code) sowie der handy-Befehl Handys eigene Werkzeuge nutzen können: Token zählen, Text in das fokussierte Fenster eingeben, Verlauf lesen, Modelltests ausführen und Anbieter bearbeiten. Standard: Aus; beim Einschalten startet der Server sofort auf 127.0.0.1 mit Port und Token unten und niemals auf einer Netzwerkschnittstelle. Ehrlicher Hinweis: Das Token wird im Klartext in deiner Einstellungsdatei gespeichert, jedes als du selbst laufende Programm kann es also lesen und die App steuern.",
+        "enable": "MCP- & CLI-Server aktivieren",
+        "running": "Läuft",
+        "stopped": "Gestoppt",
+        "port": "Port",
+        "token": "Token",
+        "show": "Anzeigen",
+        "hide": "Verbergen",
+        "regenerate": "Neu erzeugen",
+        "claudeApp": "Claude-App (HTTP) — füge einen benutzerdefinierten MCP-Server mit dieser URL hinzu:",
+        "authHeader": "…und diesem Authorization-Header:",
+        "claudeCodeStdio": "Claude Code (stdio):",
+        "claudeCodeHttp": "Claude Code (HTTP):",
+        "cliTitle": "Kommandozeilen-Begleiter",
+        "cliHint": "Kopiert Handys eigene ausführbare Datei als handy in deinen PATH, sodass du handy model-test, handy token-count oder handy mcp --stdio aus jedem Terminal gegen die laufende App ausführen kannst. Standard: nicht installiert. Der Befehl spricht über denselben lokalen Server mit der App, funktioniert also nur, während MCP- & CLI-Server aktivieren an ist; im Portable-Modus ist er nicht verfügbar.",
+        "installCli": "CLI installieren",
+        "reinstallCli": "CLI neu installieren"
+      },
+      "costReport": {
+        "title": "Transkriptionskosten-Bericht",
+        "description": "Kosten pro Aufnahme (echte USD von OpenRouter) und Länge, zusammengefasst nach Woche, Monat und Jahr. Lade den vollständigen Bericht — jede Aufnahme plus die Zusammenfassungen — als CSV herunter.",
+        "download": "CSV herunterladen",
+        "recalc": "Dauern neu berechnen",
+        "recordings": "Aufnahmen",
+        "daily": "Letzte 7 Tage",
+        "colTimestamp": "Zeitstempel",
+        "colDuration": "Dauer (HH:MM:SS)",
+        "colCost": "Kosten (USD)",
+        "colPeriod": "Zeitraum",
+        "colCount": "Aufnahmen",
+        "weekly": "Letzte 4 Wochen",
+        "monthly": "Letzte 12 Monate",
+        "yearly": "Nach Jahr",
+        "total": "Gesamt (gesamte Zeit)",
+        "allTime": "Gesamte Zeit",
+        "weekOf": "Woche vom {{date}}",
+        "totalLine": "{{count}} Aufnahmen · {{duration}} · {{cost}}",
+        "empty": "Noch keine Aufnahmen"
+      },
+      "llmProviders": {
+        "hint": "Eine gemeinsame Anbieterliste — Name, Endpunkt, Schlüssel, Modell und Kosten pro Million Token — die von Token-Anzahl, Modelltests und Nachbearbeitung gemeinsam genutzt wird. Jeder Slot hat eine feste ID (#1, #2, …), auf die diese Seiten verweisen, sodass eine Änderung hier überall wirkt; das Deaktivieren von „Diesen Anbieter aktivieren“ entfernt den Slot aus allen drei. Standard: Die drei lokalen Slots sind aktiv, jeder Cloud-Slot ist aus, bis du einen Schlüssel einfügst.",
+        "enable": "Diesen Anbieter aktivieren",
+        "namePlaceholder": "Anbietername",
+        "baseUrl": "Basis-URL",
+        "apiKey": "API-Schlüssel",
+        "apiKeyPlaceholder": "API-Schlüssel einfügen",
+        "model": "Modell",
+        "modelPlaceholder": "Modell-ID",
+        "refreshModels": "Modellliste aktualisieren",
+        "modelsError": "Fehlgeschlagen",
+        "cost": "Kosten / 1M",
+        "costInput": "Eingabe $",
+        "costOutput": "Ausgabe $",
+        "costAuto": "Automatisch von OpenRouter gemeldet",
+        "concurrency": "Parallelität",
+        "sequential": "Innerhalb der Familie sequenziell ausführen",
+        "family": "Familie",
+        "familyPlaceholder": "z. B. flm",
+        "kinds": {
+          "anthropic": "Anthropic",
+          "gemini": "Gemini",
+          "openai_local": "Lokal (tiktoken)",
+          "openai_compatible": "OpenAI-kompatibel",
+          "openrouter": "OpenRouter",
+          "apple_intelligence": "Apple"
+        },
+        "persistPrice": "Beibehalten",
+        "persistPriceHint": "Diesen Preis auch bei Modelländerung beibehalten (nicht automatisch von OpenRouter befüllen)"
+      },
+      "openRouterTranscription": {
+        "cardTitle": "OpenRouter-Transkription",
+        "url": {
+          "title": "API-URL",
+          "description": "OpenRouter-API-Basis, an die Sprachanfragen gehen, einschließlich /api/v1. Standard: https://openrouter.ai/api/v1 — lass es unverändert, außer du gehst über einen Proxy. Handy sendet überhaupt nichts, solange dies oder API-Schlüssel leer ist.",
+          "placeholder": "https://openrouter.ai/api/v1"
+        },
+        "apiKey": {
+          "title": "API-Schlüssel",
+          "description": "Dein OpenRouter-Schlüssel (openrouter.ai/keys), der nur von dieser Sprach-Engine genutzt wird — unabhängig von einem etwaigen OpenRouter-Eintrag unter Registrierte LLM-Anbieter. Standard: leer, und ohne ihn schlägt die Aufnahme fehl, statt eine unauthentifizierte Anfrage zu senden. Diktieren mit dieser Engine lädt dein Audio zu OpenRouter hoch und kostet pro Aufnahme Geld; der tatsächliche Betrag wird im Verlauf und im Transkriptionskosten-Bericht erfasst.",
+          "placeholder": "sk-or-..."
+        },
+        "model": {
+          "title": "Transkriptionsmodell",
+          "description": "Die von Hand eingegebene OpenRouter-Modell-ID: IDs im Stil openai/whisper-large-v3 für den Endpunkt Transkription (Whisper-artig), oder ein audiofähiges Chat-Modell wie google/gemini-2.5-flash für Chat-Modell (Gemini / GPT-4o-audio). Standard: leer, dann greift openai/whisper-large-v3. Sie muss zum gewählten Endpunkt passen — eine falsche Kombination liefert meist eine leere Transkription statt eines Fehlers.",
+          "placeholder": "openai/whisper-large-v3"
+        },
+        "route": {
+          "title": "Endpunkt",
+          "description": "Legt fest, an welchen OpenRouter-Endpunkt das Audio geht. Transkription (Whisper-artig) sendet an den dedizierten Sprach-Endpunkt; Chat-Modell (Gemini / GPT-4o-audio) legt das Audio in eine Chat-Nachricht — die einzige Möglichkeit, dass Modelle, die keine Sprachmodelle sind, es akzeptieren. Standard: Transkription (Whisper-artig). Sie muss zu Transkriptionsmodell passen, und Ins Englische übersetzen wird nur bei der Chat-Route berücksichtigt.",
+          "stt": "Transkription (Whisper-artig)",
+          "chat": "Chat-Modell (Gemini / GPT-4o-audio)"
+        },
+        "format": {
+          "title": "Audioformat",
+          "description": "Wie das Audio vor dem Upload kodiert wird: Opus ist etwa zehnmal kleiner als WAV, was bei einer Hotspot- oder Hotel-Verbindung zählt. Standard: Opus — kleiner (empfohlen). Das gilt nur, wenn Endpunkt auf Chat-Modell (Gemini / GPT-4o-audio) steht; die Route Transkription (Whisper-artig) sendet immer WAV, da Whisper-artige Modelle Opus ablehnen.",
+          "opus": "Opus — kleiner (empfohlen)",
+          "wav": "WAV — am kompatibelsten"
+        }
       }
     },
     "postProcessing": {
@@ -360,7 +761,8 @@
         "title": "API (OpenAI-kompatibel)",
         "provider": {
           "title": "Anbieter",
-          "description": "Wähle einen OpenAI-kompatiblen Anbieter."
+          "description": "Wähle einen OpenAI-kompatiblen Anbieter.",
+          "placeholder": "Registrierten Anbieter auswählen"
         },
         "appleIntelligence": {
           "title": "Apple Intelligence",
@@ -387,7 +789,12 @@
           "placeholderWithOptions": "Modell suchen oder auswählen",
           "placeholderNoOptions": "Modellnamen eingeben",
           "refreshModels": "Modelle aktualisieren"
-        }
+        },
+        "temperature": {
+          "title": "Temperatur",
+          "description": "Niedriger ist deterministischer und strenger (0 = am wörtlichsten); höher ist kreativer."
+        },
+        "registryNote": "API-Schlüssel, Modell und Basis-URL des Anbieters werden unter Erweitert → Registrierte LLM-Anbieter konfiguriert."
       },
       "prompts": {
         "title": "Prompt",
@@ -409,6 +816,10 @@
         "cancel": "Abbrechen",
         "selectToEdit": "Wähle oben einen Prompt aus, um dessen Details anzuzeigen und zu bearbeiten.",
         "createFirst": "Klicke oben auf 'Neuen Prompt erstellen', um deinen ersten Nachbearbeitungs-Prompt zu erstellen."
+      },
+      "disableThinking": {
+        "label": "Denken deaktivieren",
+        "description": "Sendet think: false an das Modell. Beschleunigt Antworten, kann aber bei Denkmodellen (z. B. Qwen3) die Befolgung von Anweisungen verschlechtern."
       }
     },
     "history": {
@@ -420,34 +831,43 @@
       "save": "Transkription speichern",
       "unsave": "Aus Gespeicherten entfernen",
       "delete": "Eintrag löschen",
-      "deleteError": "Eintrag konnte nicht gelöscht werden. Bitte versuche es erneut."
+      "deleteError": "Eintrag konnte nicht gelöscht werden. Bitte versuche es erneut.",
+      "loadError": "Verlauf konnte nicht geladen werden: {{error}}",
+      "search": {
+        "placeholder": "Verlauf durchsuchen (Text oder Regex)...",
+        "clear": "Suche löschen",
+        "matches": "{{matched}} von {{total}}",
+        "regexBadge": ".*",
+        "regexActive": "Die Anfrage wird als regulärer Ausdruck interpretiert",
+        "noMatches": "Keine Einträge entsprechen deiner Suche."
+      }
     },
     "debug": {
       "title": "Debug",
       "logDirectory": {
         "title": "Log-Verzeichnis",
-        "description": "Speicherort der Log-Dateien"
+        "description": "Öffnet den Ordner mit den Datei-Logs — der erste Ort, an dem du nachsiehst, wenn etwas ohne Fehlermeldung schiefgelaufen ist. Logs rotieren bei 10 MB, ältere Dateien werden aufbewahrt statt überschrieben, sodass die Spur einen Neustart nach einem Problem überlebt. Wie viel Detail hier landet, bestimmt Log-Level auf der Debug-Seite (Standard: Debug) — bei Debug und Trace können auch Transkript-Fragmente auftauchen."
       },
       "logLevel": {
         "title": "Log-Level",
-        "description": "Ausführlichkeit der Protokollierung festlegen"
+        "description": "Legt fest, wie viel Detail in die Log-Dateien geschrieben wird; die Konsolenausgabe ist davon nicht betroffen. Standard: Debug. Senke es auf Info, wenn du keine Diktatinhalte auf der Festplatte willst — bei Debug und Trace können Transkript-Fragmente und Prompt-Vorschauen in den Dateien auftauchen, die du über Log-Verzeichnis auf der Seite Info öffnest."
       },
       "soundTheme": {
         "label": "Sound-Thema",
-        "description": "Sound-Thema für Aufnahme-Start und -Stop-Feedback auswählen"
+        "description": "Wählt, welches Tonpaar bei Start und Ende einer Aufnahme abgespielt wird. Standard: Marimba. Du hörst nur etwas, während Audio-Feedback (Seite Allgemein) aktiv ist, und Benutzerdefiniert erscheint in dieser Liste erst, wenn sowohl eine eigene Start- als auch Stopp-WAV-Datei im App-Daten-Ressourcenordner vorhanden sind."
       },
       "wordCorrectionThreshold": {
         "title": "Wortkorrektur-Schwelle",
-        "description": "Empfindlichkeit für benutzerdefinierte Wortkorrekturen"
+        "description": "Wie eifrig eine Transkription an die Einträge in Benutzerdefinierte Wörter auf der Seite Allgemein angepasst wird. Standard: 0,18. Erhöhe den Wert, wenn Namen und Fachbegriffe weiterhin verstümmelt zurückkommen; senke ihn, wenn Handy Tool anfängt, Wörter zu ersetzen, die du tatsächlich gesagt hast — bei leeren Benutzerdefinierten Wörtern bewirkt dieser Regler gar nichts."
       },
       "historyLimit": {
         "title": "Verlaufslimit",
-        "description": "Maximale Anzahl der Verlaufseinträge",
+        "description": "Wie viele Transkriptionen der Verlauf behält, bevor die ältesten samt ihrem Audio entfernt werden. Standard: 5 Einträge — bewusst niedrig, erhöhe den Wert, wenn du Dinge erst Tage später nachschlagen willst. Er wirkt nur, während Aufnahmen automatisch löschen auf Neueste behalten steht, und mit Transkription speichern markierte Einträge bleiben unabhängig davon erhalten und werden nie mitgezählt.",
         "entries": "Einträge"
       },
       "recordingRetention": {
         "title": "Aufnahmen automatisch löschen",
-        "description": "Alte Aufnahmen automatisch löschen, um Speicherplatz zu sparen",
+        "description": "Steuert die automatische Bereinigung des Verlaufs: Läuft ein Eintrag ab, werden sowohl seine Zeile als auch seine Audiodatei gelöscht. Standard: Neueste behalten, das nur die neuesten Einträge bis zum Verlaufslimit (standardmäßig 5) behält — die Zeit-Optionen behalten stattdessen alles der letzten 3 Tage, 2 Wochen oder 3 Monate, und Nie löscht überhaupt nichts. Die Bereinigung läuft nach jeder neu gespeicherten Transkription und erneut, wenn du eine der beiden Einstellungen änderst, verschont dabei immer mit Transkription speichern markierte Einträge und entfernt ausschließlich Audiodateien, die Handy Tool selbst erstellt hat.",
         "never": "Nie",
         "preserveLimit": "Neueste {{count}} behalten",
         "days3": "Nach 3 Tagen",
@@ -457,27 +877,27 @@
       },
       "alwaysOnMicrophone": {
         "label": "Mikrofon immer aktiv",
-        "description": "Mikrofon für schnellere Reaktion aktiv halten"
+        "description": "Hält den Mikrofon-Stream zwischen Aufnahmen offen, statt ihn bei jedem Drücken eines Aufnahme-Tastenkürzels neu zu öffnen. Standard: Aus. Aktiviere es, wenn die erste Silbe einer Aufnahme abgeschnitten wird — der Preis dafür ist, dass die Mikrofonanzeige deines Systems die ganze Zeit leuchtet, in der Handy Tool läuft, nicht nur während du diktierst."
       },
       "clamshellMicrophone": {
         "title": "Clamshell-Mikrofon",
-        "description": "Mikrofon bei geschlossenem Laptop-Deckel"
+        "description": "Wählt ein anderes Eingabegerät für den Fall, dass der Laptop-Deckel geschlossen ist — für angedockte Geräte, deren eingebautes Mikrofon dann unbrauchbar ist. Standard: keines, sodass immer Mikrofon auf der Seite Allgemein verwendet wird. Die Erkennung des geschlossenen Deckels funktioniert nur unter macOS, und macOS-Builds sind noch geplant — daher hat dies im Windows-Build keine Wirkung."
       },
       "postProcessingToggle": {
         "label": "Nachbearbeitung",
-        "description": "KI-gestützte Textverfeinerung nach der Transkription aktivieren"
+        "description": "Aktiviert den optionalen KI-Nachbearbeitungsschritt und fügt der Seitenleiste die Seite Nachbearbeitung hinzu, auf der du Anbieter und Prompt wählst. Standard: Aus. Dein normales Transkriptions-Tastenkürzel bleibt unberührt — die Nachbearbeitung läuft nur über das separate Nachbearbeitungs-Tastenkürzel, und der Verlauf bewahrt die Rohtranskription neben der bearbeiteten Version."
       },
       "muteWhileRecording": {
         "label": "Während Aufnahme stummschalten",
-        "description": "Systemaudio während der Aufnahme stummschalten"
+        "description": "Schaltet dein Systemaudio für die Dauer jeder Aufnahme stumm, damit Musik oder ein Video über die Lautsprecher nicht ins Mikrofon durchsickert. Standard: Aus. Aktiviere es, wenn du über Lautsprecher statt Headset diktierst; der Ton kehrt von selbst zurück, wenn die Aufnahme endet."
       },
       "appendTrailingSpace": {
         "label": "Leerzeichen anhängen",
-        "description": "Leerzeichen nach eingefügter Transkription hinzufügen"
+        "description": "Fügt jeder zugestellten Transkription ein Leerzeichen am Ende hinzu, damit zwei Diktate in Folge nicht als „...eins.Zwei“ erscheinen. Standard: Aus. Aktiviere es, wenn du in kurzen Schüben in dasselbe Feld diktierst; lass es aus, wo ein überflüssiges Leerzeichen stört, etwa in einem Suchfeld oder einem Terminal-Befehl."
       },
       "keyboardImplementation": {
         "title": "Keyboard Implementation",
-        "description": "Choose the keyboard shortcut backend.",
+        "description": "Wählt, welches Backend Handy Tools globale Tastenkürzel beim Betriebssystem registriert. Standard: Tauri Global Shortcut. Wechsle zu Handy Keys, wenn ein gesetztes Tastenkürzel nie auslöst, weil ein anderes Programm die Kombination bereits belegt oder Windows die Registrierung verweigert — beim Wechsel werden alle Tastenkürzel neu registriert, und die Änderung wird bei einem Fehlschlag zurückgenommen.",
         "bindingsReset": "Keyboard shortcuts were incompatible and reset to defaults"
       },
       "paths": {
@@ -487,28 +907,23 @@
       },
       "pasteDelay": {
         "title": "Einfügeverzögerung",
-        "description": "Verzögerung vor dem Senden des Einfüge-Tastendrucks (in Millisekunden). Erhöhen Sie den Wert, wenn falscher Text eingefügt wird."
+        "description": "Wie lange Handy Tool nach dem Ablegen der Transkription in der Zwischenablage wartet, bevor der Einfüge-Tastendruck gesendet wird. Standard: 60 ms. Erhöhe den Wert, wenn eine langsame App noch deinen vorherigen Zwischenablage-Inhalt statt des neuen Textes einfügt; das ist eine andere Wartezeit als Paste delay after jump (Windows), die nur greift, wenn ein Jumper-Slot gerade ein anderes Fenster aktiviert hat."
       }
     },
     "about": {
       "title": "Info",
       "version": {
         "title": "Version",
-        "description": "Aktuelle Version von Handy"
+        "description": "Der Build von Handy Tool, den du gerade ausführst; gib ihn an, wenn du ein Problem meldest. Windows x64 ist der einzige veröffentlichte Build — macOS und Linux sind geplant, und die Jumper-Funktionen bleiben auch dann Windows-exklusiv. Hier wird nicht automatisch nach einer neueren Version gesucht; nutze Updates, wenn du nachsehen möchtest."
       },
       "appDataDirectory": {
         "title": "App-Datenverzeichnis",
-        "description": "Speicherort der Handy-Daten"
+        "description": "Öffnet den einen Ordner, in dem Handy Tool alles ablegt: Einstellungen (einschließlich deiner Anbieter-API-Schlüssel und Prompts) in einer JSON-Datei, Transkriptionen in einer SQLite-Datenbank, Aufnahmen, heruntergeladene Modelle und rotierte Logs. Standard: %APPDATA%\\pr.handy bei einer normalen Windows-Installation. Nichts davon wird von Handy Tool verschlüsselt — Dateisystemrechte sind der einzige Schutz —, daher ist das auch der Ordner, den du kopierst oder leerst, wenn du den Rechner weitergibst."
       },
       "sourceCode": {
         "title": "Quellcode",
         "description": "Quellcode ansehen und beitragen",
         "button": "Auf GitHub ansehen"
-      },
-      "supportDevelopment": {
-        "title": "Entwicklung unterstützen",
-        "description": "Hilf uns, Handy weiterzuentwickeln",
-        "button": "Spenden"
       },
       "acknowledgments": {
         "title": "Danksagungen",
@@ -516,21 +931,180 @@
           "title": "Whisper.cpp",
           "description": "Hochleistungs-Inferenz des Whisper-Spracherkennungsmodells von OpenAI",
           "details": "Handy verwendet Whisper.cpp für schnelle, lokale Sprach-zu-Text-Verarbeitung. Dank an Georgi Gerganov und die Mitwirkenden für ihre großartige Arbeit."
+        },
+        "handy": {
+          "title": "Handy",
+          "description": "Die ursprüngliche Open-Source-Sprach-zu-Text-App, auf der dieses Projekt aufbaut",
+          "details": "Handy Tool ist ein Fork von Handy, erstellt von CJ Pais (github.com/cjpais/Handy, handy.computer). Es wurde bei Upstream-Version v0.8.1 (März 2026) übernommen und wird seitdem eigenständig von Patrick R. weiterentwickelt. Vielen Dank an CJ und die Handy-Mitwirkenden für die Grundlage, auf der dieses Projekt aufbaut."
         }
+      },
+      "updates": {
+        "title": "Updates",
+        "description": "Releases prüfen öffnet die GitHub-Releases-Seite des Projekts in deinem Browser, damit du sie mit Version vergleichen kannst. Handy Tool hat keinen Updater und sucht nie im Hintergrund nach einer neuen Version — Aktualisieren ist immer eine bewusste Entscheidung.",
+        "button": "Releases prüfen"
       }
     },
     "jumper": {
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "When a jump target's app, window class, or control class contains one of these (case-insensitive), it is treated as a remote desktop session and uses the longer 'Remote' jump delays (Advanced → Transcription). Add the identifiers your RDP/Citrix clients use — e.g. msrdc, mstsc, Citrix. An empty list treats every target as local.",
+        "description": "Ein Sprungziel, dessen App, Fensterklasse oder Steuerelementklasse eines dieser Fragmente enthält (ohne Berücksichtigung der Groß-/Kleinschreibung), wird als Remote-Desktop behandelt und nutzt dann den Remote-Wert von „Paste delay after jump (Windows)“ und „Submit delay after jump (Windows)“ unter Erweitert → Transkription statt des lokalen Werts. Standard: msrdc, mstsc, Citrix. Füge den Prozessnamen deines RDP- oder Citrix-Clients hinzu, wenn Zustellungen dorthin weiterhin verschluckt werden; eine leere Liste behandelt jedes Ziel als lokal.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
         "duplicate": "'{{value}}' is already in the list",
         "badge": "Remote ✓",
         "badgeTooltip": "This target matches a remote match string, so it uses the Remote jump delays."
+      },
+      "windowsOnly": "Der Jumper ist nur unter Windows verfügbar.",
+      "hot": {
+        "title": "Hot-Slot (Anker & Zustellung)",
+        "optionsMoved": {
+          "title": "Zustelloptionen",
+          "description": "Keine Einstellung — nur ein Hinweis. Was ein Sprung mit einem Slot tatsächlich macht, wird pro Ablauf unter Erweitert → Transkription konfiguriert: „Slot-Aktion beim Start“, „Slot-Aktion beim Beenden“, „Letzten Ausgabeort verfolgen“ und „Fokus nach Zustellung zurückgeben“ existieren jeweils einmal für Transkribieren und einmal für Transkribieren & Absenden.",
+          "hint": "Konfiguriert in den Gruppen Transkribieren und Transkribieren & Absenden auf der Seite Allgemein."
+        }
+      },
+      "hot2": {
+        "title": "Zweiter Hot-Slot (Anker & Zustellung)"
+      },
+      "slot": {
+        "title": "Statischer Slot {{index}}",
+        "status": "Ziel von Slot {{index}}",
+        "description": "Zeigt, worauf dieser nummerierte Slot zeigt, mit Testen (dorthin springen, ohne etwas zuzustellen) und Löschen. Standard: kein Ziel — fokussiere ein Feld, zu dem du immer wieder zurückkehrst, drücke das Setzen-Tastenkürzel dieses Slots (ctrl+alt+shift+1 … 9) und springe jederzeit mit ctrl+alt+1 … 9 zurück. Ein Slot merkt sich ein Fenster und ein Feld, nicht einen Browser-Tab oder eine Cursorposition, und bleibt nach Zustellungen bestehen.",
+        "test": "Testen",
+        "testFailed": "Sprung fehlgeschlagen: {{reason}}",
+        "stale": "Gespeichert: {{app}} ({{control}}) — Fenster noch nicht gefunden"
+      },
+      "persist": {
+        "label": "Slots über Neustarts hinweg merken",
+        "description": "Merkt sich das Ziel jedes Slots über App-Neustarts hinweg. Standard: Aus. Windows kann kein Fenster-Handle über einen Neustart hinweg behalten, daher speichert Handy die Identität jedes Slots (App sowie Fenster- und Feldtyp) und findet das passende Fenster beim Start erneut — und noch einmal in dem Moment, in dem du den Slot verwendest. Ein gespeicherter Slot, dessen App nicht läuft, wird rot angezeigt, bis sie wieder erscheint.",
+        "groupTitle": "Persistenz"
+      },
+      "slotNames": {
+        "hot": "Hot 1",
+        "hot2": "Hot 2",
+        "static": "Slot {{index}}"
+      },
+      "track": {
+        "label": "Letzten Ausgabeort verfolgen",
+        "description": "Nur Windows. Nachdem dieser Ablauf eine Transkription eingefügt hat, wird der unter „Ort speichern in“ gewählte Slot mit dem Feld überschrieben, in dem der Text tatsächlich gelandet ist, sodass dein nächster Sprung zu diesem Slot dich zur letzten Diktierstelle zurückbringt. Standard: Aus. Aktiviere es, wenn ein Slot dir folgen soll, statt ihn von Hand zu setzen — Transkribieren und Transkribieren & Absenden verfolgen unabhängig voneinander, und die Erfassung erfolgt vor einem eventuellen „Fokus nach Zustellung zurückgeben“.",
+        "slot": {
+          "title": "Ort speichern in",
+          "description": "Welchen Slot „Letzten Ausgabeort verfolgen“ nach jeder Zustellung durch diesen Ablauf überschreibt. Standard: Hot 1. Stelle ihn auf einen statischen Slot (Slot 1 bis Slot 9), wenn die automatische Verfolgung nicht ständig den Hot-Anker überschreiben soll, den du von Hand mit Anker setzen gesetzt hast."
+        }
+      },
+      "saveCursor": {
+        "label": "Mausposition wiederherstellen",
+        "description": "Nachdem dieser Ablauf eine Transkription zugestellt hat, wird die Mauszeigerposition gemerkt und der Zeiger dorthin zurückbewegt, wenn du springst. Unabhängig vom Schalter des anderen Ablaufs; der Positionsmodus unten wird von beiden Abläufen gemeinsam genutzt.",
+        "perSlot": "Mausposition speichern",
+        "perSlotDescription": "Merkt sich zusätzlich die Mauszeigerposition, wenn dieser Slot gesetzt oder verfolgt wird, und bewegt den Zeiger beim Sprung zu diesem Slot dorthin zurück — nach dem Einfügen, sodass die Zustellung nicht gestört wird. Standard: Aus. Aktiviere es für einen Slot auf einem anderen Monitor, damit Tastatur und Maus gemeinsam ankommen; es schaltet den „Cursor-Positionsmodus“ dieses Slots unten frei, und jeder Slot hat sein eigenes Schalterpaar.",
+        "mode": {
+          "title": "Cursor-Positionsmodus",
+          "description": "Legt fest, wie die gespeicherte Zeigerposition dieses Slots gemessen wird. Standard: App-relativ (folgt dem Fenster) — stellt dieselbe Stelle im Zielfenster wieder her, auch nachdem das Fenster verschoben, in der Größe geändert oder auf einen Monitor mit anderer DPI gezogen wurde. Wähle Bildschirm-absolut (exakte Koordinaten) für etwas, das sich nie bewegt, etwa ein festes Dashboard; das Dropdown ist ausgegraut, bis „Mausposition speichern“ für diesen Slot aktiv ist.",
+          "appRelative": "App-relativ (folgt dem Fenster)",
+          "screenAbsolute": "Bildschirm-absolut (exakte Koordinaten)"
+        }
+      },
+      "returnFocus": {
+        "label": "Fokus nach Zustellung zurückgeben",
+        "description": "Nach einer Zustellung, die springen musste, kehrt der Fokus zu dem Fenster zurück, in dem du warst, als die Zustellung begann — automatisch erfasst, ohne dass du einen Slot einrichten musst. Standard: An. Es ist bedingt: Hast du selbst das Fenster gewechselt, während Handy Tool gearbeitet hat, lässt es dich dort, wo du hin wolltest, und jeder Ablauf entscheidet das separat (nur Windows)."
+      },
+      "requireSameFlow": {
+        "groupTitle": "Verhalten beim Beenden",
+        "label": "Nur beim Beenden springen, wenn auf dieselbe Weise gestartet",
+        "description": "Ist dies aktiviert, löst die „Slot-Aktion beim Beenden“ eines Ablaufs nur aus, wenn die Aufnahme mit demselben Tastenkürzel gestartet und beendet wurde. Standard: Aus. Beispiel: Startest du mit Transkribieren und beendest mit Transkribieren & Absenden, springt nichts — Einfügen und Absenden laufen trotzdem, nur der Sprung wird blockiert. Aktiviere es, wenn das Mischen der beiden Tastenkürzel dich immer wieder an eine unerwartete Stelle teleportiert."
       }
+    },
+    "translator": {
+      "title": "Übersetzer",
+      "enabled": {
+        "label": "Ordner überwachen",
+        "description": "Aktivieren, um jede neue .wav-, .ogg- oder .opus-Datei, die in einem überwachten Ordner erscheint, mit deinem aktuellen Modell sowie den Einstellungen Sprache und Ins Englische übersetzen in eine .txt-Datei daneben zu transkribieren. Standard: aus. Dateien, die beim Start der Überwachung schon im Ordner liegen, werden bewusst nicht angerührt; die Ordner selbst wählst du unter Ordner hinzufügen."
+      },
+      "priority": {
+        "title": "Priorität",
+        "description": "Entscheidet, wer die Sprach-Engine bekommt, wenn eine Ordnerdatei und dein eigenes Diktat sie im selben Moment brauchen. Standard: Live-Diktat zuerst — die Stapelverarbeitung pausiert an der nächsten Segmentgrenze, sobald du die Aufnahme startest, und setzt danach fort, sodass kein Stapel-Fortschritt verloren geht. Ordner-Stapel zuerst lässt die Stapelverarbeitung weiterlaufen, dein Live-Text kommt etwas später; Wer zuerst kommt lässt die laufende Datei fertig werden und führt dann deine Aufnahme aus, bevor die nächste Datei startet.",
+        "options": {
+          "live_first": "Live-Diktat zuerst",
+          "folder_first": "Ordner-Stapel zuerst",
+          "fifo": "Wer zuerst kommt"
+        }
+      },
+      "model": {
+        "title": "Stapel-Modell",
+        "description": "Welches Sprachmodell die Dateien in deinen überwachten Ordnern transkribiert; mit einem Globus markierte Modelle können zusätzlich ins Englische übersetzen, wofür Ins Englische übersetzen aktiviert sein muss. Standard: Wie beim Diktat (Standard), also das, was auf der Seite Modelle ausgewählt ist. Wählst du ein anderes lokales Modell, lädt es in einen eigenen Slot neben dem Diktat-Modell — Stapelverarbeitung läuft auf einer Engine, Diktat bleibt auf der anderen weiterhin sofort verfügbar — auf Kosten zusätzlichen Speichers, den Stapel-Modell entladen nach wieder freigeben kann.",
+        "sameAsDictation": "Wie beim Diktat (Standard)",
+        "translates": "{{name}} — kann ins Englische übersetzen"
+      },
+      "unload": {
+        "title": "Stapel-Modell entladen nach",
+        "description": "Wie lange die eigene Kopie des Stapel-Modells im Speicher bleibt, nachdem die Warteschlange leer ist; Entladen gibt RAM oder VRAM frei, geladen zu lassen vermeidet ein erneutes Laden, wenn die nächste Datei eintrifft. Standard: Nie (geladen lassen — schnellster Start). Wirkt nur, wenn Stapel-Modell ein lokales Modell nennt, das sich von deinem Diktat-Modell unterscheidet — sonst gilt die Haupteinstellung Modell entladen."
+      },
+      "status": {
+        "title": "Status",
+        "description": "Was der Übersetzer gerade tut. Fertige Transkripte werden neben der Audiodatei mit demselben Namen und der Endung .txt gespeichert.",
+        "disabled": "Aus",
+        "idle": "Überwacht — nichts zu tun",
+        "queued": "{{count}} Datei(en) in der Warteschlange",
+        "working": "{{file}} — Segment {{segment}}/{{total}}",
+        "workingIndeterminate": "{{file}}",
+        "paused": {
+          "live": "pausiert für Live-Diktat",
+          "processing": "pausiert, während eine Aufnahme abgeschlossen wird"
+        },
+        "counters": "{{done}} erledigt, {{failed}} fehlgeschlagen in dieser Sitzung"
+      },
+      "folders": {
+        "title": "Überwachte Ordner",
+        "none": "Keine Ordner",
+        "emptyTitle": "Keine überwachten Ordner",
+        "emptyDescription": "Füge einen Ordner hinzu, um ihn auf neue Aufnahmen zu überwachen.",
+        "addTitle": "Ordner hinzufügen",
+        "addDescription": "Öffnet eine Ordnerauswahl; danach wird jede neue Audiodatei, die in diesem Ordner erscheint, in die Warteschlange eingereiht und ihr Transkript daneben als .txt geschrieben. Standard: Dein Handy-Aufnahmeordner wird beim ersten Start des Übersetzers automatisch hinzugefügt. Das Hinzufügen eines Ordners bewirkt nichts, bis Ordner überwachen aktiv ist, und alles, was bereits im Ordner liegt, wird ignoriert — nur später eintreffende Dateien werden transkribiert.",
+        "add": "Ordner hinzufügen",
+        "remove": "Diesen Ordner nicht mehr überwachen",
+        "addFailed": "Ordner konnte nicht hinzugefügt werden: {{reason}}",
+        "operationFailed": "Ordner konnte nicht aktualisiert werden: {{reason}}",
+        "toggleAriaLabel": "Ordner {{name}} überwachen",
+        "removeAriaLabel": "Überwachung von Ordner {{name}} beenden"
+      }
+    },
+    "currentAudio": {
+      "streamingHint": "Text wird während des Sprechens nur dann fortlaufend angezeigt, wenn das verwendete Tastenkürzel — Transkribieren oder Push-to-Talk — auf Live eingestellt ist und du ein lokales Modell verwendest.",
+      "finalHint": "Im Modus Nach der Aufnahme oder bei API- bzw. OpenRouter-Transkription wird das vollständige Transkript nach Aufnahmeende auf einmal angezeigt; den Modus jedes Tastenkürzels legst du fest unter",
+      "advancedTranscription": "Erweitert → Transkription",
+      "finalHintSuffix": ".",
+      "title": "Aktuelles Audio",
+      "idle": "Starte eine Aufnahme, um die Live-Transkription zu sehen",
+      "recording": "Höre zu...",
+      "openFloating": "Schwebendes Fenster öffnen",
+      "copy": "Kopieren",
+      "copied": "Kopiert"
+    },
+    "backup": {
+      "description": "Exportiere deine Handy-Tool-Daten als komprimiertes Archiv. Heruntergeladene Modelle und große unkomprimierte Audiodateien (WAV/FLAC) werden immer ausgeschlossen.",
+      "configTitle": "Konfiguration + Verlauf",
+      "configHint": "Exportiert deine Einstellungen plus die Transkriptionsverlauf-Datenbank (Zeitstempel, Text, Kosten, Dauer) und kein Audio, sodass die Datei klein bleibt. Nutze es vor einer größeren Konfigurationsänderung oder um Tastenkürzel, Anbieter und Prompts auf einen anderen Rechner zu übertragen. Das Archiv ist nicht verschlüsselt und enthält deine Anbieter-API-Schlüssel und dein MCP-Server-Token im Klartext — behandle die Datei als Geheimnis.",
+      "exportConfig": "Konfiguration + Verlauf exportieren",
+      "fullTitle": "Vollständige Daten (mit komprimiertem Audio)",
+      "fullHint": "Alles aus dem Konfigurationsexport plus deine komprimierten Aufnahmen (.opus/.ogg) — eine deutlich größere Datei, die weiterhin deine API-Schlüssel im Klartext enthält. Heruntergeladene Modelle, unkomprimiertes WAV/FLAC-Audio und noch laufende Chunk-Dateien werden immer ausgeschlossen; Aufnahmen mit ausgeschalteter Absturzsicherer Aufnahme erscheinen daher im Archiv als Verlaufszeilen ohne Audio.",
+      "exportFull": "Vollständiges Backup exportieren",
+      "saved": "Gespeichert unter {{path}}",
+      "restoreTitle": "Aus Backup wiederherstellen",
+      "restoreHint": "Wähle ein Handy-Tool-Backup-Archiv (.tar.gz) und hake an, was zurückgeholt werden soll — Konfiguration & Verlauf (Einstellungen, Verlaufsdatenbank) und Aufnahmen (Audiodateien) sind unabhängig, du kannst also nur eines davon wiederherstellen; beide sind standardmäßig angehakt. Es werden nur Einträge extrahiert, die Handy Tool erkennt, und das Wiederhergestellte ersetzt das, was du jetzt hast. Das Wiederherstellen von Einstellungen oder Verlauf erfordert einen Neustart: nutze die dann erscheinende Schaltfläche Handy Tool jetzt neu starten, sonst überschreibt die laufende App sie beim nächsten Speichern.",
+      "restoreConfig": "Konfiguration & Verlauf (Einstellungen, Verlaufsdatenbank)",
+      "restoreRecordings": "Aufnahmen (Audiodateien)",
+      "restoreButton": "Aus Backup wiederherstellen…",
+      "restoreDone": "Wiederhergestellt — Einstellungen: {{settings}} · Verlauf: {{history}} · Aufnahmen: {{recordings}}",
+      "restartHint": "Starte Handy Tool neu, um die wiederhergestellten Einstellungen/den Verlauf zu laden (bis dahin kann die laufende App sie überschreiben).",
+      "restartNow": "Handy Tool jetzt neu starten"
+    },
+    "modelPicker": {
+      "refresh": "Modellliste abrufen / aktualisieren",
+      "loading": "Modelle werden geladen…",
+      "error": "Modelle konnten nicht geladen werden",
+      "noMatches": "Keine passenden Modelle — tippe, um eine benutzerdefinierte ID zu verwenden"
     }
   },
   "common": {
@@ -553,7 +1127,13 @@
     "off": "Aus",
     "yes": "Ja",
     "no": "Nein",
-    "noOptionsFound": "Keine Optionen gefunden"
+    "noOptionsFound": "Keine Optionen gefunden",
+    "delay": {
+      "off": "Aus (sofort)",
+      "ms": "{{ms}} ms",
+      "seconds": "{{seconds}} s"
+    },
+    "selectOption": "Option auswählen…"
   },
   "accessibility": {
     "permissionsRequired": "Bedienungshilfen-Berechtigungen erforderlich",
@@ -566,10 +1146,175 @@
   },
   "appLanguage": {
     "title": "Anwendungssprache",
-    "description": "Sprache der Handy-Oberfläche ändern"
+    "description": "Stellt die gesamte Oberfläche, einschließlich des Taskleistenmenüs, auf eine der 17 mitgelieferten Sprachen um. Standard: deine Windows-Anzeigesprache, mit Rückfall auf Englisch, wenn diese Sprache nicht mitgeliefert wird. Das betrifft nur die Oberflächensprache — mit der Sprache, in der du sprichst, hat es nichts zu tun; die legst du unter Sprache auf der Seite Allgemein fest."
   },
   "overlay": {
     "transcribing": "Transkribiere...",
-    "processing": "Verarbeite..."
+    "processing": "Verarbeite...",
+    "openFloatingWindow": "Transkriptionsfenster öffnen"
+  },
+  "brand": {
+    "name": "Handy",
+    "suffix": "TOOL"
+  },
+  "toasts": {
+    "pasteFailed": "Einfügen der Transkription fehlgeschlagen: {{reason}}. Der Text wurde im Verlauf gespeichert.",
+    "pasteFailedParked": "Einfügen der Transkription fehlgeschlagen: {{reason}}. Der Text befindet sich in deiner Zwischenablage (und im Verlauf) — füge ihn manuell ein.",
+    "transcriptionFailed": "Transkription fehlgeschlagen: {{reason}}. Prüfe, ob dein ausgewähltes Modell funktioniert, und versuche es erneut."
+  },
+  "flm": {
+    "notInstalled": "FLM ist nicht installiert. Installiere FastFlowLM, um NPU-beschleunigte Modelle zu verwenden.",
+    "npuAccelerated": "NPU-beschleunigt"
+  },
+  "tokenCount": {
+    "configureProviders": "Anbieter konfigurieren",
+    "noProviders": "Keine Anbieter konfiguriert.",
+    "title": "Token-Anzahl",
+    "placeholder": "Text hier einfügen, um Token zu zählen...",
+    "tokenizer": "Tokenizer",
+    "count": "Zählen",
+    "countAll": "Mit allen zählen",
+    "countAllTitle": "Jeden aktivierten Anbieter nacheinander abfragen — sinnvoll, wenn Slots einen lokalen Dienst teilen, der jedes Modell laden/entladen muss",
+    "countAllParallel": "Mit allen zählen (parallel)",
+    "countAllParallelTitle": "Alle aktivierten Anbieter gleichzeitig abfragen — am schnellsten, wenn die Dienste unabhängig sind",
+    "counting": "Zählen... {{done}}/{{total}}",
+    "cancelSweep": "Abbrechen",
+    "openFile": "Datei öffnen...",
+    "fileTooLarge": "Datei ist zu groß (max. 10 MB).",
+    "loadedFile": "Geladen: {{name}}",
+    "providerOption": "{{name}} (Anbieter)",
+    "chipDisabled": "Nicht konfiguriert — aktiviere es mit Diesen Anbieter aktivieren unter Erweitert > Anbieter > Registrierte LLM-Anbieter.",
+    "chips": {
+      "cl100k_base": "cl100k (GPT-4)",
+      "o200k_base": "o200k (GPT-4o)",
+      "estimate": "Schätzung"
+    },
+    "activeProvider": "Zählen mit: {{name}} — {{model}} ({{url}})",
+    "activeLocal": "Zählen lokal mit: {{tokenizer}}",
+    "sweepSummary": "{{ok}} von {{total}} Anbietern haben geantwortet",
+    "showFailed": "{{count}} fehlgeschlagene anzeigen",
+    "hideFailed": "Fehlgeschlagene verbergen",
+    "table": {
+      "provider": "Anbieter",
+      "model": "Modell",
+      "tokens": "Token",
+      "delta": "Δ zum kleinsten",
+      "time": "Zeit"
+    },
+    "tokens": "Token",
+    "characters": "Zeichen",
+    "words": "Wörter",
+    "options": {
+      "cl100k_base": "Zählt den Text im Feld mit dem exakten GPT-4- und GPT-3.5-Tokenizer (cl100k_base) — vollständig auf diesem Rechner, ohne Upload und offline nutzbar. Verwende ihn für OpenAI-Modelle bis GPT-4; für neuere nutze o200k (GPT-4o).",
+      "o200k_base": "Zählt den Text im Feld mit dem exakten GPT-4o- und o1-Tokenizer (o200k_base) — vollständig auf diesem Rechner, ohne Upload und offline nutzbar. Verwende ihn für aktuelle OpenAI-Modelle; ältere GPT-4- und GPT-3.5-Modelle tokenisieren mit cl100k (GPT-4).",
+      "estimate": "Eine grobe lokale Schätzung von etwa 1,3 Token pro Wort, ohne Tokenizer und ohne Netzwerkzugriff. Nutze sie, wenn für das gewünschte Modell hier kein exakter Zähler existiert, und verstehe sie nur als Anhaltswert — sie wird bewusst aus der Spalte „Δ zum kleinsten“ ausgeschlossen, damit eine grobe Zahl den Vergleich der exakten Zähler nicht verzerrt."
+    }
+  },
+  "keyboardTyper": {
+    "title": "Tastatur-Eingabe",
+    "description": "Sendet diesen Text als einzelne simulierte Tastendrücke an das fokussierte Fenster, sodass es dort funktioniert, wo Einfügen blockiert ist — Remote-Konsolen, VM-Viewer, Passwortabfragen. Drücke Los, um den Countdown der Startverzögerung (Standard 10 s) zu erhalten und zuerst ins Zielfenster zu klicken; drückst du stattdessen das Text-Eingabe-Tastenkürzel, während du bereits im Ziel bist, beginnt die Eingabe nach etwa einer Sekunde. Der Text lebt nur im Speicher — er wird nie in deine Einstellungen, den Verlauf oder die Logs geschrieben.",
+    "placeholder": "Gib den einzugebenden Text ein...",
+    "go": "Los",
+    "cancel": "Abbrechen",
+    "startDelay": {
+      "label": "Startverzögerung",
+      "unit": "s",
+      "preset": "{{seconds}}s",
+      "presetTitle": "Beginnt die Eingabe in {{seconds}} Sekunden"
+    },
+    "keyDelay": {
+      "label": "Tastenverzögerung",
+      "unit": "ms"
+    },
+    "shortcut": {
+      "label": "Tastenkürzel:",
+      "unset": "nicht festgelegt",
+      "hint": "(in den erweiterten Einstellungen ändern; erneut drücken, um abzubrechen)"
+    },
+    "status": {
+      "idle": "Klicke auf Los und fokussiere dann das Zielfenster — oder verwende das Tastenkürzel direkt in der Ziel-App.",
+      "countdown": "Eingabe beginnt in {{seconds}}s... (Esc bricht ab)",
+      "typing": "Eingabe... {{typed}}/{{total}} Zeichen (Esc bricht ab)",
+      "done": "Fertig — {{total}} Zeichen eingegeben.",
+      "cancelled": "Abgebrochen.",
+      "error": "Fehler: {{message}}"
+    }
+  },
+  "modelTesting": {
+    "configureProviders": "Anbieter konfigurieren",
+    "description": "Sendet einen Prompt an jedes unter Ausführen angehakte Modell und stellt die Antworten mit Token-Anzahl, Kosten und Umlaufzeit nebeneinander dar; unter Jury angehakte Modelle bewerten anschließend alle diese Antworten mit deinem Jury-Prompt. Standard: nichts ausgewählt, beide Prompts leer. Die Liste stammt aus Erweitert > Registrierte LLM-Anbieter, ein Durchlauf nutzt also deine eigenen API-Schlüssel — dein Prompt verlässt diesen Rechner und kostet bei kostenpflichtigen Anbietern echtes Geld.",
+    "providersLabel": "Modelle",
+    "selectAll": "Alle zur Ausführung auswählen",
+    "clear": "Leeren",
+    "run": "Ausführen",
+    "judge": "Jury",
+    "costPerM": "Eingabe ${{input}} · Ausgabe ${{output}} /1M",
+    "noProviders": "Keine chatfähigen Anbieter konfiguriert. Füge einen unter Erweitert → Registrierte LLM-Anbieter hinzu.",
+    "mainPromptLabel": "Prompt für alle Modelle",
+    "mainPromptPlaceholder": "Der Prompt, der an jedes ausgewählte Modell gesendet wird…",
+    "judgePromptLabel": "Jury-/Schiedsrichter-Prompt (optional)",
+    "judgePromptPlaceholder": "Anweisungen für das Jury-Panel. Es erhält die ursprüngliche Eingabe sowie die Antwort jedes Modells (XML-getaggt).",
+    "temperatureLabel": "Temperatur",
+    "modelParams": "Modelle",
+    "judgeParams": "Jury",
+    "runButton": "Test ausführen",
+    "cancelButton": "Abbrechen",
+    "runningMain": "Modelle werden abgefragt…",
+    "runningJudge": "Jury-Panel wird ausgeführt…",
+    "summaryTitle": "Zusammenfassung",
+    "judgePanelTitle": "Jury-Panel",
+    "answersTitle": "Antworten",
+    "colModel": "Modell",
+    "colInput": "Eingabe-Tok",
+    "colOutput": "Ausgabe-Tok",
+    "colCost": "Kosten",
+    "colTime": "Zeit",
+    "roundTrip": "Umlaufzeit (längste)",
+    "totalCost": "Gesamtkosten",
+    "errorPrefix": "Fehler",
+    "artifactLabel": "Markdown-Artefakt",
+    "copyMarkdown": "Markdown kopieren",
+    "copied": "Kopiert!",
+    "saveMarkdown": "Speichern…",
+    "status": {
+      "mainStart": "Frage {{count}} Modell(e) ab…",
+      "judgeStart": "Jury-Panel wird ausgeführt ({{count}} Juror(en))…",
+      "done": "Fertig.",
+      "cancelled": "Abgebrochen.",
+      "activity": "Ausführungsaktivität"
+    },
+    "library": {
+      "preset": "Vorlage",
+      "presetPlaceholder": "Eine Vorlage laden…",
+      "pick": "Gespeicherte Prompts…",
+      "save": "Speichern",
+      "delete": "Auswahl löschen",
+      "namePlaceholder": "Name…",
+      "confirm": "Speichern",
+      "cancel": "Abbrechen",
+      "editCustom": "Bearbeiten / benutzerdefiniert"
+    },
+    "thinking": {
+      "label": "Denken",
+      "auto": "Auto",
+      "on": "An",
+      "off": "Aus"
+    },
+    "image": {
+      "label": "Bild (optional, für Vision-Modelle)",
+      "drop": "Klicken oder ein Bild hierher ziehen, um es anzuhängen",
+      "remove": "Entfernen",
+      "tooLarge": "Bild ist zu groß (max. {{mb}} MB)."
+    },
+    "save": "Speichern",
+    "saveAs": "Speichern als…",
+    "saveTo": "In {{path}} speichern",
+    "saveDisabled": "Verwende zuerst „Speichern als…“, um einen Ort auszuwählen"
+  },
+  "floating": {
+    "waiting": "Warte auf Transkription…",
+    "listening": "Höre zu…",
+    "copy": "Kopieren",
+    "copied": "Kopiert"
   }
 }

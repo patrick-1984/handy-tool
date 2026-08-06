@@ -48,7 +48,7 @@ echo Using LIBCLANG_PATH=!LIBCLANG_PATH!
 :: Use Ninja generator to avoid VS version detection issues with cmake crate
 set CMAKE_GENERATOR=Ninja
 
-:: T-210: pin a portable CPU baseline for the distributable binary. Without
+:: Pin a portable CPU baseline for the distributable binary. Without
 :: this, ggml defaults GGML_NATIVE=ON and bakes THIS machine's CPU features
 :: (via MSVC FindSIMD host detection) into the static whisper.cpp lib, which
 :: can illegal-instruction-crash on older supported CPUs before Vulkan

@@ -1,22 +1,169 @@
 # Changelog
 
+
+## [1.0.0] - 2026-08-06
+
+**First public release.** The version number marks the point where this stops being one
+person's private tool and becomes something other people install — it is not a rewrite.
+Everything below this entry is the same product: sixty releases of dictation, delivery and
+recovery work, nearly all of it written because something broke in real use. This release
+adds the pieces a stranger needs that an owner never did — updates, a full set of
+languages, and documentation — and removes the things that only made sense to the person
+who wrote them.
+
+**Only Windows x64 ships.** macOS and Linux builds are planned, not released. The whole
+Jumper family (anchors, jump slots, cursor save/restore, remote-desktop delays) is
+Windows-only by design, and the settings that control it are hidden on other platforms.
+
+**What you get before you configure anything** — the shipped Windows defaults, as cause and
+effect:
+
+- **Ctrl+Space** starts recording; **Ctrl+Space** again stops it. The audio is transcribed
+  after you stop (Post-Recording), then pasted into whatever window you were in with
+  **Ctrl+V**. Your clipboard is put back the way it was afterwards.
+- **Ctrl+Alt+Space** is push-to-talk: hold, speak, release. It runs in **Live** mode, so
+  with a local model the text builds up as you speak.
+- **Ctrl+Alt+S** is **Transcribe & Submit**: the same paste, then **Enter**. Plain
+  Transcribe never presses Enter — that is the entire difference between the two keys.
+- **Escape** while recording finishes the take, saves the text to **History**, and delivers
+  nothing — no paste, no clipboard write, no Enter, no jump.
+- **Ctrl+Alt+P** re-pastes the last transcription. It is the recovery key for a paste that
+  did not land in the target app.
+- Transcription runs **on your machine**. LLM post-processing is **off**. There is no
+  telemetry, no analytics and no crash reporting; the only request Handy Tool makes on its
+  own is the daily update check described below, and you can switch that off.
+- **History** keeps the 5 most recent transcriptions with their audio and deletes the rest.
+  Recordings live in `{app_data}\recordings\`.
+
+Everything above is a setting. Ctrl+V and Shift+Insert both mean "paste", but many
+terminals and remote-desktop clients accept only one of them — which is exactly why the
+paste method is a dropdown. See `docs/start/` for the guided route and
+`docs/reference/settings/` for the screen-by-screen index.
+
+### Added
+
+- **Handy Tool can update itself.** Until now every fix in this changelog reached you only
+  if you noticed a new release and re-ran the installer. The app now checks the public
+  GitHub releases page for a newer version — one static file fetch per day, not an API
+  poll — and can install it for you. The defaults, spelled out:
+  - **Checking is on**, **silent installing is off.** By default you get a banner and
+    decide; nothing is downloaded and installed behind your back.
+  - Turning silent updates on installs inside a **nightly window, 04:00 local time ±30
+    minutes** (03:30–04:30 by default; both the time and the jitter are configurable). The
+    exact minute is rolled once per day and remembered, so restarting the app does not
+    re-roll it and a laptop that wakes at 09:00 is not updated at 09:00.
+  - **It never updates while you are dictating.** The updater asks the recording
+    coordinator for an idle reservation and waits; a take in progress always finishes. If
+    the window closes while it is still waiting, the install is deferred to the next night
+    rather than forced.
+  - If the app was closed through the whole window, it performs one catch-up **check** at
+    the next start when no check has succeeded in 24 hours — but it will not silently
+    install outside the window.
+  - A **manual "Update now"** ignores the schedule and the silent-update setting. It does
+    not ignore the recording guard or the signature check.
+  - **Portable installs are check-only.** Running the NSIS installer against a
+    `portable.marker` copy would create a *second*, installed copy rather than replace the
+    portable one, so in-place updating is refused there and you are pointed at the download.
+- **An update banner below About** in the sidebar, showing exactly one state at a time:
+  checking, available, downloading with progress, ready to restart, waiting for dictation
+  to finish, or failed with the real error and a link to download the installer by hand.
+  General → Updates has the toggles, the window, and a **Check now** button with the time of
+  the last successful check.
+- **A "Configure providers" link on Model Testing and Token Count.** Both tools are useless
+  until at least one LLM provider has a key, and both used to leave you to find
+  Advanced → Providers yourself.
+- **Current Audio now explains itself.** The panel says when text appears progressively
+  (the shortcut you pressed is set to Live *and* you are on a local model) and when the
+  whole transcript arrives at once (Post-Recording, API Transcription, OpenRouter
+  Transcription) — instead of looking broken while it waits.
+- **A written documentation set** in `docs/`: a numbered install-to-working-setup path, a
+  page per tool, a 166-entry feature catalog named after the problems it solves, a
+  screen-by-screen settings reference, an audited privacy page, troubleshooting, and CLI,
+  shortcut and glossary references.
+- **The documentation is machine-checked against the app.** The docs contain no
+  screenshots on purpose — the app changes too fast for images to stay honest — so
+  navigation is written as text breadcrumbs like
+  `General -> "Transcribe & Submit" -> "Paste method"`. Every quoted label is verified
+  against the app's English strings by `scripts/check-docs-breadcrumbs.mjs`; renaming a
+  setting now fails the check and names the file and line, instead of quietly leaving the
+  docs pointing at a control that no longer exists.
+
+### Changed
+
+- **Every delay you can pick now has usable steps: Off, then 100 ms increments up to 1 s,
+  then 1.5 s and 2 s.** The old scales jumped 250 → 500 → 1000 ms, so tuning a paste into a
+  slow Citrix session meant doubling the wait when 100 ms more would have done. This covers
+  the post-jump paste delay, the submit delay (both in their Local and Remote variants) and
+  the clipboard-restore delays. Defaults are unchanged: paste delay 250 ms local / 1000 ms
+  remote, submit delay 250 ms local / 500 ms remote, clipboard restore Off. 250 ms stays on
+  the list because it is the shipped default. **Longer legacy clipboard-restore values (2.5 s
+  and 5 s) keep working** if you already had one selected — they load and behave exactly as
+  before, they are simply no longer offered to new users.
+- **All 16 non-English languages are complete.** Arabic, Czech, German, Spanish, French,
+  Italian, Japanese, Korean, Polish, Portuguese, Russian, Turkish, Ukrainian, Vietnamese,
+  Simplified and Traditional Chinese went from heavily partial — where a translated app
+  fell back to English mid-screen — to roughly 7,500 translated strings each, including the
+  tray menu, the recording overlay and the floating window. A terminology pass followed, so
+  the same concept uses the same word on every screen in every language rather than three
+  synonyms picked one string at a time. English remains the source of truth and a checker
+  fails the build on any missing or extra key.
+- **Windows updates are delivered through the NSIS per-user installer** (installed to
+  `%LOCALAPPDATA%\Handy Tool`, run quietly, no UAC prompt): the app closes, the installer
+  replaces the files, and the app reopens. Honest limits: **1.0.0 itself must be installed
+  by hand** — 0.63.0 and earlier have no updater and cannot bootstrap into one, so automatic
+  updating only starts working from this release forward. If you installed from the MSI,
+  install the NSIS package once to join the update channel; your settings, models and
+  history are in `%APPDATA%\pr.handy\` and are not touched by either installer.
+- **Advanced → Experimental is now Advanced → Post-processing**, and the Keyboard
+  implementation control moved to the **App** tab where the rest of the input plumbing
+  lives.
+
+### Fixed
+
+- **A switch that did nothing has been removed.** The "Experimental Features" toggle on
+  Advanced had not been wired to any behaviour for several releases: turning it on changed
+  nothing, which is worse than not offering it. It is gone, and the tab that held it now
+  contains the post-processing settings.
+
+### Security
+
+- **Release builds no longer write your dictated words to a log file at the default
+  logging level.** File logging defaulted to Debug even in release builds, and Debug records
+  can include transcript fragments, complete API transcription results and LLM prompt
+  previews — so a dictation app was quietly keeping a plain-text copy of your speech on disk
+  for anyone with access to the machine. Release builds now default to **Info**, which does
+  not log transcript content. Debug logging is still available when you are diagnosing
+  something (Debug page → log level), and it still writes what it always did — that is now a
+  choice you make, not the default.
+- **Log files no longer accumulate forever.** Rotation kept *every* rotated 10 MB file, with
+  nothing cleaning them up — history retention does not touch logs — so the oldest dictation
+  metadata on the machine could outlive the recordings it described. At most three files are
+  now retained (~30 MB), which is enough recent context to diagnose a failure and a bounded
+  amount of history to leave lying around.
+- **Updates are cryptographically signed and verified before anything runs.** The download
+  is checked against the release signing key embedded in the app; a corrupt, truncated or
+  unsigned artifact fails loudly and the installer is never launched, so a failed or tampered
+  update leaves your installation untouched. Signature failures surface as a visible error
+  with the manual-download fallback, never as "no update available". This is minisign
+  verification of the update payload — it is not Authenticode, so a manually downloaded
+  installer can still show a SmartScreen "unknown publisher" warning.
 ## [0.63.0] - 2026-08-01
 
 ### Added
 
 - **"Cancel behavior" setting (General) — and cancelling now keeps your words by default.** Previously, cancelling always threw the recording away. There is now a choice, and the new default is **"Finish, save to history only"**: the recording stops and is transcribed exactly as if you had pressed Transcribe, the result is saved to **History** — and nothing is delivered. No pasting, no clipboard change, no submit/Enter key, no Jumper jump or slot action. It's the "I don't want this typed into whatever is in front of me, but don't throw away what I said" button. The old behavior is still one dropdown away as **"Discard recording"**.
 
-  The setting governs **every** way you cancel — the Escape shortcut, the tray **Cancel** item, the in-app cancel command and `handy --cancel` — so cancelling means the same thing however you trigger it. Cancelling *after* the recording has stopped (while it's still transcribing) now also just suppresses the delivery instead of tearing the pipeline down.
+  The setting governs **every** way you cancel — the Escape shortcut, the tray **Cancel** item, the in-app cancel command and `handy --cancel` — so cancelling means the same thing however you trigger it. Cancelling _after_ the recording has stopped (while it's still transcribing) now also just suppresses the delivery instead of tearing the pipeline down.
 
-  Scope of the "delivers nothing" guarantee: it is absolute for the whole time a recording is running — which is the entire window in which the Escape shortcut is even active, so pressing Escape always gets you the new behavior. The tray item and `handy --cancel` can also be used later, while a take is still transcribing, and those are suppressed too. What a cancel can *not* do is unwind a delivery that has already started: once the paste is under way (including while it is sitting in a configured Jumper paste/submit delay, which can be up to two seconds), the clipboard write and submit key may still land. That behavior is unchanged from previous versions and is not specific to this setting.
+  Scope of the "delivers nothing" guarantee: it is absolute for the whole time a recording is running — which is the entire window in which the Escape shortcut is even active, so pressing Escape always gets you the new behavior. The tray item and `handy --cancel` can also be used later, while a take is still transcribing, and those are suppressed too. What a cancel can _not_ do is unwind a delivery that has already started: once the paste is under way (including while it is sitting in a configured Jumper paste/submit delay, which can be up to two seconds), the clipboard write and submit key may still land. That behavior is unchanged from previous versions and is not specific to this setting.
 
 ### Changed
 
-- **Cancelling no longer discards your recording unless you ask it to.** This changes on upgrade, not just on fresh installs. Because a cancelled take is now *kept*, please note:
-  - The transcript **and its audio recording** are written to History (`{app_data}/recordings/`) and are subject to your recording-retention setting; compressed `.opus` recordings are also included in full backups. A mis-spoken or sensitive take is no longer thrown away — **delete the History entry** to remove both the text and the audio, or switch the setting to "Discard recording". (As before, a take that is both very short *and* empty is dropped without a row.)
+- **Cancelling no longer discards your recording unless you ask it to.** This changes on upgrade, not just on fresh installs. Because a cancelled take is now _kept_, please note:
+  - The transcript **and its audio recording** are written to History (`{app_data}/recordings/`) and are subject to your recording-retention setting; compressed `.opus` recordings are also included in full backups. A mis-spoken or sensitive take is no longer thrown away — **delete the History entry** to remove both the text and the audio, or switch the setting to "Discard recording". (As before, a take that is both very short _and_ empty is dropped without a row.)
   - If your transcription engine is a **remote API** (API Transcription / OpenRouter), a cancelled take is still uploaded to that endpoint — cancelling no longer prevents the upload.
   - If the take was started with the **post-processing** shortcut, LLM post-processing still runs on it, so it still costs that provider's tokens.
-  - The **"Paste last transcription"** shortcut is deliberately *not* updated by a silent finish, so it keeps re-pasting your last real delivery. (After an app restart it falls back to reading History, where a silently-finished take can surface — as can the tray's "Copy last transcript".)
+  - The **"Paste last transcription"** shortcut is deliberately _not_ updated by a silent finish, so it keeps re-pasting your last real delivery. (After an app restart it falls back to reading History, where a silently-finished take can surface — as can the tray's "Copy last transcript".)
   - One deliberate exception: if the app's internal transcription coordinator is not reachable (it has crashed), cancelling falls back to the old discard behavior rather than risk leaving the microphone running with nothing able to stop it.
 
 ### Fixed
@@ -27,13 +174,13 @@
 
 ### Changed
 
-- **The Jumper "jump slot" picker is now always visible.** On the "Jump slot action on start / on finish" rows (both the Transcribe and the Transcribe & Submit groups), the dropdown that selects *which* slot to jump to / deliver into used to be hidden until you first changed the action away from "Do nothing" — so it looked like there was no way to choose the slot. It's now always shown, just greyed out until you pick an action, matching how the per-slot cursor-mode dropdown already behaves.
+- **The Jumper "jump slot" picker is now always visible.** On the "Jump slot action on start / on finish" rows (both the Transcribe and the Transcribe & Submit groups), the dropdown that selects _which_ slot to jump to / deliver into used to be hidden until you first changed the action away from "Do nothing" — so it looked like there was no way to choose the slot. It's now always shown, just greyed out until you pick an action, matching how the per-slot cursor-mode dropdown already behaves.
 
 ## [0.61.0] - 2026-07-30
 
 ### Fixed
 
-- **You can now anchor and jump to the new Microsoft Teams message field** (and other WebView2/Electron-hosted fields). Setting an anchor on Teams and jumping to it always failed with *"target field was replaced by another"* while other apps worked. New Teams hosts its editable field in a separate WebView2 process (`msedgewebview2.exe`), and Handy's safety re-check required the focused field to live in the *same process* as the top-level window — so it wrongly rejected the cross-process field every time. Handy now records the field's **own** process at anchor time and checks against that, so a legitimately out-of-process input is accepted while a handle genuinely recycled into a *different* process is still rejected (all the other identity checks — window process/thread, class match, foreground — are unchanged).
+- **You can now anchor and jump to the new Microsoft Teams message field** (and other WebView2/Electron-hosted fields). Setting an anchor on Teams and jumping to it always failed with _"target field was replaced by another"_ while other apps worked. New Teams hosts its editable field in a separate WebView2 process (`msedgewebview2.exe`), and Handy's safety re-check required the focused field to live in the _same process_ as the top-level window — so it wrongly rejected the cross-process field every time. Handy now records the field's **own** process at anchor time and checks against that, so a legitimately out-of-process input is accepted while a handle genuinely recycled into a _different_ process is still rejected (all the other identity checks — window process/thread, class match, foreground — are unchanged).
 
 ### Security
 
@@ -43,13 +190,13 @@
 
 ### Fixed
 
-- **A recording can now be finished from either mode, both directions.** Previously a take started with **Transcribe & Submit** couldn't be stopped by pressing **Transcribe** (the press was ignored with a "busy" beep) — only the reverse worked. The Transcribe toggle now finishes a recording started by *any* binding (mirroring what Transcribe & Submit already did), finishing it as a plain output paste (no submit key). It stops the recording's actual owner so the recorder can't be left running, and honors the "only jump on finish if started the same way" setting symmetrically.
+- **A recording can now be finished from either mode, both directions.** Previously a take started with **Transcribe & Submit** couldn't be stopped by pressing **Transcribe** (the press was ignored with a "busy" beep) — only the reverse worked. The Transcribe toggle now finishes a recording started by _any_ binding (mirroring what Transcribe & Submit already did), finishing it as a plain output paste (no submit key). It stops the recording's actual owner so the recorder can't be left running, and honors the "only jump on finish if started the same way" setting symmetrically.
 
 ## [0.59.0] - 2026-07-24
 
 ### Changed
 
-- **"Paste last transcription" is now near-instant.** 0.58.0 fixed it by pasting on key-press and then *waiting* for you to release the trigger modifiers — which added up to ~1 s of lag when the key (or a macro key) was held. It now pastes the instant you **release** the shortcut: the trigger key is already up (so it can't leak repeated characters into the target) and any still-held modifier — including right Alt/AltGr — is cleared first, so the injected chord stays clean but fires immediately. (Content was never the bottleneck — it's read from the in-memory last-transcript buffer, SQLite only as a post-restart fallback, never the clipboard.)
+- **"Paste last transcription" is now near-instant.** 0.58.0 fixed it by pasting on key-press and then _waiting_ for you to release the trigger modifiers — which added up to ~1 s of lag when the key (or a macro key) was held. It now pastes the instant you **release** the shortcut: the trigger key is already up (so it can't leak repeated characters into the target) and any still-held modifier — including right Alt/AltGr — is cleared first, so the injected chord stays clean but fires immediately. (Content was never the bottleneck — it's read from the in-memory last-transcript buffer, SQLite only as a post-restart fallback, never the clipboard.)
 
 ## [0.58.0] - 2026-07-23
 
@@ -77,7 +224,7 @@
 
 ### Added
 
-- **"Paste delay after jump" (Windows).** A new setting in **General → Transcribe & Submit** that inserts an extra wait *after* a Transcribe & Submit (or any anchored delivery) jumps the foreground to an anchored target and *before* the paste keystroke. A freshly-activated window — especially RDP/Citrix — can still be transitioning (completing activation, moving focus) when Ctrl+V fires, so the paste is swallowed and nothing appears. This is separate from the existing "Submit delay after jump" (which waits before the Enter key). Options: Off / 100 / 250 / 500 / 1000 / 2000 ms, default **250 ms**; only applies on a real jump — when you're already in the target, paste stays instant.
+- **"Paste delay after jump" (Windows).** A new setting in **General → Transcribe & Submit** that inserts an extra wait _after_ a Transcribe & Submit (or any anchored delivery) jumps the foreground to an anchored target and _before_ the paste keystroke. A freshly-activated window — especially RDP/Citrix — can still be transitioning (completing activation, moving focus) when Ctrl+V fires, so the paste is swallowed and nothing appears. This is separate from the existing "Submit delay after jump" (which waits before the Enter key). Options: Off / 100 / 250 / 500 / 1000 / 2000 ms, default **250 ms**; only applies on a real jump — when you're already in the target, paste stays instant.
 
 ## [0.54.0] - 2026-07-21
 
@@ -258,7 +405,7 @@
 
 ### Added
 
-- **Full BMAD architecture + UX audit shipped in-repo.** Architecture spine + verification report (`_bmad-output/planning-artifacts/architecture/architecture-handy-2026-07-05/`) and a UI/UX audit with a Windows-first redesign spec, DESIGN.md/EXPERIENCE.md (`_bmad-output/planning-artifacts/ux-designs/ux-handy-2026-07-05/`).
+- **Full architecture + UX audit.** An architecture spine with a verification report, plus a UI/UX audit carrying a Windows-first redesign spec. (Planning artifacts are kept outside the published repository.)
 
 ### Changed (UI wave 1 — Windows-first polish)
 
