@@ -16,7 +16,7 @@ Note from current author:
   - PTT mode - so you see as you speak - you translation - sometimes it's a life saver (sometimes only for me) :D
   - and JUMPER - this is a BIG one - it made config section to say at least ... bit complex. Hey but I'm an engineer (you too?) . Jumper is your TOOL to jump between windows (absolute or relative position to app / screen) , get back where you were .... man sooo many combinations. If you are on 2+ screens rig - this is your buddy :D One comment though - you DO need separate - left sided functions keyboard. I have REDRAGON K585 (should I say dinosaur ...?) but it hardcode wire keyboard mappings in flash on it - so I can live with its sooo lame programming UI
 - yeah , there is backup, and fuckton of tweaks that makes it possible to work with RDP, Citrix, also most very flexible paste / jump / anchor system . Should also mention transcribe and submit mode. If you vibe code a lot - you are going to love it.
-- and of course some stats for nerds like me + changes/fixes to UI + resilience to recordings + space saving + more tweaks I remember - study features list - U R going to love it (if you are nerd like me) otherwise stick to defaults :D
+- and of course some stats for nerds like me + changes/fixes to UI + resilience to recordings + space saving + MCP/AI + more tweaks I remember - study features list - U R going to love it (if you are nerd like me) otherwise stick to defaults :D
 - would forgot - it will also work on lame-ass rigs if you travel etc. - just plug openrouter etc. and you good
 
 ## At a glance
