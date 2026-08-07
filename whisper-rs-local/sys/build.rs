@@ -337,6 +337,43 @@ fn main() {
     // "perhaps an -L flag is missing" message.
     #[cfg(not(feature = "intel-sycl"))]
     {
+        let mut required_static_libraries = vec!["whisper", "ggml", "ggml-base", "ggml-cpu"];
+        #[cfg(feature = "vulkan")]
+        required_static_libraries.push("ggml-vulkan");
+        #[cfg(feature = "hipblas")]
+        required_static_libraries.push("ggml-hip");
+        #[cfg(feature = "metal")]
+        required_static_libraries.push("ggml-metal");
+        #[cfg(feature = "cuda")]
+        required_static_libraries.push("ggml-cuda");
+        #[cfg(feature = "openblas")]
+        required_static_libraries.push("ggml-blas");
+
+        // With CMake 4.1+ (CMP0194 NEW), ggml's nested `project(... ASM)` may
+        // select a GNU assembler found earlier on PATH even though C and C++
+        // use MSVC. CMake then gives every static library in that directory an
+        // `.a` suffix, while Visual Studio still creates normal COFF archives
+        // with Lib.exe. rustc's MSVC linker lookup does not consider the
+        // unprefixed `name.a` for `static=name`, so provide an
+        // extension-normalized copy. Keep the original for CMake's generated
+        // package metadata.
+        if target.contains("msvc") {
+            for name in &required_static_libraries {
+                let msvc_archive = installed_lib_dir.join(format!("{}.lib", name));
+                let alternate_archive = installed_lib_dir.join(format!("{}.a", name));
+                if alternate_archive.is_file() {
+                    std::fs::copy(&alternate_archive, &msvc_archive).unwrap_or_else(|error| {
+                        panic!(
+                            "failed to normalize MSVC static library {} to {}: {}",
+                            alternate_archive.display(),
+                            msvc_archive.display(),
+                            error
+                        )
+                    });
+                }
+            }
+        }
+
         let static_library_name = |name: &str| {
             if target.contains("msvc") {
                 format!("{}.lib", name)
@@ -344,7 +381,7 @@ fn main() {
                 format!("lib{}.a", name)
             }
         };
-        let missing: Vec<_> = ["whisper", "ggml", "ggml-base", "ggml-cpu"]
+        let missing: Vec<_> = required_static_libraries
             .iter()
             .map(|name| static_library_name(name))
             .filter(|name| !installed_lib_dir.join(name).is_file())

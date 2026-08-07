@@ -1,6 +1,15 @@
 cmake_minimum_required(VERSION 3.14...4.1) # for add_link_options and implicit target directories.
 project("ggml" C CXX ASM)
 
+# CMake can discover a GNU assembler/compiler driver on PATH after selecting
+# MSVC for C/C++. The ASM platform module then changes the directory-wide
+# static archive suffix to `.a`, even though MSVC's `lib.exe` creates the
+# archives. Rust's MSVC target resolves `name.lib` (or `libname.a`), not the
+# resulting unprefixed `name.a`, so restore the native MSVC suffix explicitly.
+if (MSVC)
+    set(CMAKE_STATIC_LIBRARY_SUFFIX ".lib")
+endif()
+
 ### GGML Version
 set(GGML_VERSION_MAJOR 0)
 set(GGML_VERSION_MINOR 9)
