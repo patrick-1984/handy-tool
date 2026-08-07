@@ -1,0 +1,192 @@
+name: "macOS DMG Build"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - build/v1.0.4-validation
+
+# This build only checks out source and uploads workflow artifacts. It does not
+# create a tag, draft a release, or publish assets to an existing release.
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-dmg-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-macos:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.platform }}
+    timeout-minutes: 120
+    env:
+      # Override the Windows host's short-path Cargo setting. Without this,
+      # `C:/tmp/hb` is interpreted as a relative Unix path on macOS.
+      CARGO_TARGET_DIR: ${{ github.workspace }}/src-tauri/target
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Native Intel runner. `macos-latest` is ARM64, so do not use it for
+          # the x86_64 build.
+          - name: Intel x86_64 DMG
+            platform: macos-15-intel
+            runner-arch: x86_64
+            target: x86_64-apple-darwin
+            binary-arch: x86_64
+            require-foundation-models: false
+
+          # macOS 26 provides FoundationModels.framework, which lets build.rs
+          # compile the real Apple Intelligence bridge for Apple Silicon.
+          - name: Apple Silicon arm64 DMG
+            platform: macos-26
+            runner-arch: arm64
+            target: aarch64-apple-darwin
+            binary-arch: arm64
+            require-foundation-models: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify native runner and SDK
+        shell: bash
+        env:
+          EXPECTED_RUNNER_ARCH: ${{ matrix.runner-arch }}
+          REQUIRE_FOUNDATION_MODELS: ${{ matrix.require-foundation-models }}
+        run: |
+          set -euo pipefail
+
+          actual_arch="$(uname -m)"
+          if [[ "$actual_arch" != "$EXPECTED_RUNNER_ARCH" ]]; then
+            echo "Expected native runner architecture '$EXPECTED_RUNNER_ARCH', got '$actual_arch'." >&2
+            exit 1
+          fi
+
+          sdk_path="$(xcrun --sdk macosx --show-sdk-path)"
+          echo "Using macOS SDK at $sdk_path"
+          if [[ "$REQUIRE_FOUNDATION_MODELS" == "true" ]] &&
+            [[ ! -d "$sdk_path/System/Library/Frameworks/FoundationModels.framework" ]]; then
+            echo "The selected SDK does not contain FoundationModels.framework." >&2
+            exit 1
+          fi
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: "./src-tauri -> target"
+          key: ${{ matrix.platform }}-${{ matrix.target }}-macos-dmg
+
+      - name: Install frontend dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build ad-hoc signed DMG
+        shell: bash
+        env:
+          # Tauri documents '-' as the ad-hoc identity. Set it explicitly here
+          # because an empty APPLE_SIGNING_IDENTITY overrides tauri.conf.json.
+          APPLE_SIGNING_IDENTITY: "-"
+          CMAKE_POLICY_VERSION_MINIMUM: "3.5"
+          GGML_NATIVE: "OFF"
+        run: >-
+          bun run tauri build
+          --target ${{ matrix.target }}
+          --bundles dmg
+          --config src-tauri/tauri.macos-ci.conf.json
+          --ci
+
+      - name: Verify DMG, executable, and signature
+        shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+          EXPECTED_BINARY_ARCH: ${{ matrix.binary-arch }}
+          REQUIRE_FOUNDATION_MODELS: ${{ matrix.require-foundation-models }}
+        run: |
+          set -euo pipefail
+
+          bundle_dir="src-tauri/target/$TARGET/release/bundle"
+          dmg_dir="$bundle_dir/dmg"
+          dmg_count="$(find "$dmg_dir" -maxdepth 1 -type f -name '*.dmg' | wc -l | tr -d ' ')"
+          if [[ "$dmg_count" != "1" ]]; then
+            echo "Expected exactly one DMG in $dmg_dir, found $dmg_count." >&2
+            find "$bundle_dir" -maxdepth 3 -type f -print >&2 || true
+            exit 1
+          fi
+          dmg_path="$(find "$dmg_dir" -maxdepth 1 -type f -name '*.dmg' -print -quit)"
+
+          unexpected_updater="$(find "$bundle_dir" -type f \( -name '*.sig' -o -name '*.tar.gz' \) -print -quit)"
+          if [[ -n "$unexpected_updater" ]]; then
+            echo "Unexpected updater artifact: $unexpected_updater" >&2
+            exit 1
+          fi
+
+          mount_dir="$RUNNER_TEMP/handy-$TARGET-dmg"
+          mkdir -p "$mount_dir"
+          cleanup() {
+            hdiutil detach "$mount_dir" -force >/dev/null 2>&1 || true
+            rmdir "$mount_dir" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+          hdiutil attach "$dmg_path" -nobrowse -readonly -mountpoint "$mount_dir" >/dev/null
+
+          app_count="$(find "$mount_dir" -maxdepth 2 -type d -name '*.app' | wc -l | tr -d ' ')"
+          if [[ "$app_count" != "1" ]]; then
+            echo "Expected exactly one app bundle in the DMG, found $app_count." >&2
+            exit 1
+          fi
+          app_path="$(find "$mount_dir" -maxdepth 2 -type d -name '*.app' -print -quit)"
+          binary_path="$app_path/Contents/MacOS/handy"
+          if [[ ! -x "$binary_path" ]]; then
+            echo "Expected executable not found: $binary_path" >&2
+            exit 1
+          fi
+
+          binary_archs="$(lipo -archs "$binary_path")"
+          if [[ "$binary_archs" != "$EXPECTED_BINARY_ARCH" ]]; then
+            echo "Expected '$EXPECTED_BINARY_ARCH' executable, got '$binary_archs'." >&2
+            exit 1
+          fi
+
+          codesign --verify --deep --strict --verbose=2 "$app_path"
+          signature_info="$(codesign -dv --verbose=4 "$app_path" 2>&1)"
+          if ! grep -q '^Signature=adhoc$' <<<"$signature_info"; then
+            echo "The app bundle is not ad-hoc signed." >&2
+            echo "$signature_info" >&2
+            exit 1
+          fi
+
+          if [[ "$REQUIRE_FOUNDATION_MODELS" == "true" ]] &&
+            ! otool -l "$binary_path" | awk '
+              /cmd LC_LOAD_WEAK_DYLIB/ { in_weak_load = 1; next }
+              /^Load command / { in_weak_load = 0 }
+              in_weak_load && /FoundationModels\.framework/ { found = 1 }
+              END { exit(found ? 0 : 1) }
+            '; then
+            echo "The ARM64 executable does not weak-link FoundationModels.framework." >&2
+            exit 1
+          fi
+
+          hdiutil detach "$mount_dir" >/dev/null
+          trap - EXIT
+          rmdir "$mount_dir"
+
+          output_dir="artifacts/$TARGET"
+          mkdir -p "$output_dir"
+          cp "$dmg_path" "$output_dir/"
+
+      - name: Upload verified DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: handy-macos-${{ matrix.target }}
+          path: artifacts/${{ matrix.target }}/*.dmg
+          if-no-files-found: error
+          retention-days: 30

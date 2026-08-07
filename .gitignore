@@ -46,3 +46,5 @@ blob-report/
 \n# internal docs authoring workspace
 .docs-work/
 
+# Generated from the licensed Visual Studio VC\Redist tree before Windows bundling
+src-tauri/vc-runtime-staging/

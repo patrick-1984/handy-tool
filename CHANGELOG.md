@@ -1,6 +1,23 @@
 # Changelog
 
 
+## [1.0.4] - 2026-08-07
+
+### Added
+
+- **Native macOS disk images for both CPU families.** The build pipeline now
+  produces and verifies separate Intel (`x86_64`) and Apple Silicon (`arm64`)
+  DMGs on native GitHub-hosted Macs. These builds are ad-hoc signed, not
+  notarized; use right-click **Open** on first launch.
+
+### Fixed
+
+- **The Windows installer now starts on a clean machine.** Microsoft-signed,
+  architecture-matched Visual C++ runtime DLLs are deployed app-locally beside
+  `handy.exe`. This preserves the current-user/no-admin install while fixing the
+  `MSVCP140.dll was not found` loader failure reproduced by WinGet Sandbox.
+
+
 
 ## [1.0.3] - 2026-08-07
 
