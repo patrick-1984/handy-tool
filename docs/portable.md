@@ -46,10 +46,11 @@ place there either.
 ## First-run model downloads
 
 Only the small voice-activity-detection model (`resources/models/silero_vad_v4.onnx`) ships
-inside the package. The speech-to-text model you choose on the `Models` page — Whisper,
-Parakeet, Moonshine, SenseVoice — downloads from `https://blob.handy.computer/` the first time
-you select it. That needs an internet connection once; afterwards the model is cached in
-`data\models\` and dictation works offline.
+inside the package. Handy-managed speech-to-text models — Whisper, Parakeet, Moonshine and
+SenseVoice — download from `https://blob.handy.computer/` the first time you select one on the
+`Models` page. That needs an internet connection once; afterwards the model is cached in
+`data\models\` and dictation works offline. For the external FastFlowLM (FLM) NPU engine, see
+[Transcribe without tying up the CPU or GPU](features.md#use-the-npu-in-your-laptop).
 
 ## Building the package
 

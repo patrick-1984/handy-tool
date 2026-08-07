@@ -228,7 +228,7 @@
           },
           "type_text": {
             "name": "Text-Eingabe-Tastenkürzel",
-            "description": "Tippt den Inhalt des Tastatur-Eingabe-Feldes in das aktuell fokussierte Fenster; drücke es erneut oder Escape, um abzubrechen. Standard: ctrl+alt+t. Es beginnt nach etwa einer Sekunde, statt die Startverzögerung abzuwarten, weil das Drücken eines Tastenkürzels bedeutet, dass du schon im Zielfenster bist — die Los-Schaltfläche ist diejenige, die den vollen Countdown nutzt."
+            "description": "Tippt den Inhalt des Tastatur-Eingabe-Feldes in das aktuell fokussierte Fenster; drücke es erneut oder Escape, um abzubrechen. Standard: ctrl+shift+F11. Es beginnt nach etwa einer Sekunde, statt die Startverzögerung abzuwarten, weil das Drücken eines Tastenkürzels bedeutet, dass du schon im Zielfenster bist — die Los-Schaltfläche ist diejenige, die den vollen Countdown nutzt."
           },
           "transcribe_and_submit": {
             "name": "Transkribieren & Absenden-Tastenkürzel",
@@ -236,11 +236,11 @@
           },
           "anchor_set": {
             "name": "Anker setzen",
-            "description": "Erfasst das aktuell fokussierte Textfeld als Hot-1-Ziel. Standard: ctrl+alt+k. Für sich allein stellt es nichts zu — stelle die „Slot-Aktion beim Beenden“ auf „Springen / an Slot zustellen“ mit dem Slot Hot 1 (Erweitert → Transkription), damit deine nächste Transkription dort landet. Passwortfelder und Handys eigene Fenster werden abgelehnt."
+            "description": "Erfasst das aktuell fokussierte Textfeld als Hot-1-Ziel. Standard: ctrl+shift+F1. Für sich allein stellt es nichts zu — stelle die „Slot-Aktion beim Beenden“ auf „Springen / an Slot zustellen“ mit dem Slot Hot 1 (Erweitert → Transkription), damit deine nächste Transkription dort landet. Passwortfelder und Handys eigene Fenster werden abgelehnt."
           },
           "anchor_jump": {
             "name": "Zu Anker springen",
-            "description": "Bringt Fenster und Feld von Hot 1 zurück in den Fokus und fügt nichts ein — eine „zurück zu meinem Entwurf“-Taste. Standard: ctrl+alt+j. Ist „Mausposition speichern“ für diesen Slot aktiv, bewegt sich der Zeiger ebenfalls zurück; ist der Slot leer oder sein Fenster geschlossen, passiert nichts."
+            "description": "Bringt Fenster und Feld von Hot 1 zurück in den Fokus und fügt nichts ein — eine „zurück zu meinem Entwurf“-Taste. Standard: ctrl+shift+F2. Ist „Mausposition speichern“ für diesen Slot aktiv, bewegt sich der Zeiger ebenfalls zurück; ist der Slot leer oder sein Fenster geschlossen, passiert nichts."
           },
           "jump_set_slot_1": {
             "name": "Slot 1 setzen",
@@ -274,6 +274,13 @@
             "name": "Zu Slot 4 springen",
             "description": "Bringt Fenster und Feld von Slot 4 in den Fokus und stellt nichts zu — reine Navigation. Standard: ctrl+alt+4. Ist „Mausposition speichern“ für diesen Slot aktiv, wird der Zeiger ebenfalls wiederhergestellt; ist der Slot leer oder sein Fenster geschlossen, passiert nichts."
           }
+        },
+        "failurePanel": {
+          "title": "Nicht registrierte Tastenkürzel",
+          "description": "Diese Tastenkürzel sind inaktiv. Ändere die Kombination oder versuche es nach Behebung des Konflikts erneut.",
+          "retry": "Erneut versuchen",
+          "retrying": "Erneuter Versuch…",
+          "retryError": "Die Tastenkürzel konnten nicht erneut registriert werden."
         },
         "errors": {
           "restore": "Ursprüngliches Tastenkürzel konnte nicht wiederhergestellt werden",
@@ -397,7 +404,8 @@
         "title": "Aktualisierungen",
         "checks": {
           "label": "Automatisch nach Aktualisierungen suchen",
-          "description": "Einmal täglich die öffentlichen GitHub-Releases prüfen."
+          "description": "Einmal täglich die öffentlichen GitHub-Releases prüfen.",
+          "privacy": "Die Update-Prüfung sendet nichts über dich—es gibt weder Telemetrie noch Analysen oder ein Konto—und liest nur eine öffentliche Datei aus den GitHub-Releases des Projekts."
         },
         "silent": {
           "label": "Aktualisierungen im Hintergrund installieren",
@@ -1180,6 +1188,7 @@
     "transcriptionFailed": "Transkription fehlgeschlagen: {{reason}}. Prüfe, ob dein ausgewähltes Modell funktioniert, und versuche es erneut."
   },
   "flm": {
+    "windowsApplicationControlBlocked": "Die Windows-Anwendungssteuerung hat flm.exe blockiert, weil die Datei nicht signiert ist. Die NPU-Engine ist nicht verfügbar. Wähle ein anderes Transkriptionsmodell.",
     "notInstalled": "FLM ist nicht installiert. Installiere FastFlowLM, um NPU-beschleunigte Modelle zu verwenden.",
     "npuAccelerated": "NPU-beschleunigt"
   },

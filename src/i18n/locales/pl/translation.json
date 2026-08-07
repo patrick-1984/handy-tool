@@ -224,11 +224,11 @@
           },
           "type_text": {
             "name": "Skrót pisania tekstu",
-            "description": "Wpisuje zawartość pola Pisania klawiaturą do okna, które aktualnie ma fokus; naciśnij ponownie albo Escape, aby anulować. Domyślnie: ctrl+alt+t. Zaczyna po około sekundzie, a nie po pełnym Opóźnieniu startu, ponieważ naciśnięcie skrótu oznacza, że już jesteś w oknie docelowym — pełne odliczanie stosuje tylko przycisk Start."
+            "description": "Wpisuje zawartość pola Pisania klawiaturą do okna, które aktualnie ma fokus; naciśnij ponownie albo Escape, aby anulować. Domyślnie: ctrl+shift+F11. Zaczyna po około sekundzie, a nie po pełnym Opóźnieniu startu, ponieważ naciśnięcie skrótu oznacza, że już jesteś w oknie docelowym — pełne odliczanie stosuje tylko przycisk Start."
           },
           "transcribe_ptt": {
             "name": "Skrót Push-to-Talk",
-            "description": "Przytrzymaj ten skrót, aby nagrywać, i zwolnij, aby zatrzymać; mikrofon wyłącza się w chwili zwolnienia, więc nic powiedziane później nie może przeciekać do tekstu. Domyślnie: Ctrl+Alt+Space. Ma własny Tryb transkrypcji (PTT) i własną Metodę wklejania (PTT), dzięki czemu push-to-talk może zachowywać się inaczej niż Skrót transkrypcji."
+            "description": "Przytrzymaj ten skrót, aby nagrywać, i zwolnij, aby zatrzymać; mikrofon wyłącza się w chwili zwolnienia, więc nic powiedziane później nie może przeciekać do tekstu. Domyślnie: Ctrl+Shift+Space. Ma własny Tryb transkrypcji (PTT) i własną Metodę wklejania (PTT), dzięki czemu push-to-talk może zachowywać się inaczej niż Skrót transkrypcji."
           },
           "transcribe_and_submit": {
             "name": "Skrót Transkrybuj i wyślij",
@@ -236,11 +236,11 @@
           },
           "anchor_set": {
             "name": "Ustaw kotwicę",
-            "description": "Przechwytuje aktualnie aktywne pole tekstowe jako cel slotu Hot 1. Domyślnie: ctrl+alt+k. Samo w sobie nic nie dostarcza — ustaw „Akcja slotu skoku po zakończeniu” na „Przejdź / dostarcz do slotu” ze slotem Hot 1 (Zaawansowane → Transkrypcja), aby kolejna transkrypcja tam trafiła. Pola hasła i okna samego Handy są odrzucane."
+            "description": "Przechwytuje aktualnie aktywne pole tekstowe jako cel slotu Hot 1. Domyślnie: ctrl+shift+F1. Samo w sobie nic nie dostarcza — ustaw „Akcja slotu skoku po zakończeniu” na „Przejdź / dostarcz do slotu” ze slotem Hot 1 (Zaawansowane → Transkrypcja), aby kolejna transkrypcja tam trafiła. Pola hasła i okna samego Handy są odrzucane."
           },
           "anchor_jump": {
             "name": "Przejdź do kotwicy",
-            "description": "Przywraca fokus na okno i pole slotu Hot 1, nie wklejając nic — klawisz typu „wróć do mojego szkicu”. Domyślnie: ctrl+alt+j. Jeśli dla tego slotu włączono „Zapisz pozycję myszy”, wskaźnik również wraca; jeśli slot jest pusty albo jego okno zostało zamknięte, nic się nie dzieje."
+            "description": "Przywraca fokus na okno i pole slotu Hot 1, nie wklejając nic — klawisz typu „wróć do mojego szkicu”. Domyślnie: ctrl+shift+F2. Jeśli dla tego slotu włączono „Zapisz pozycję myszy”, wskaźnik również wraca; jeśli slot jest pusty albo jego okno zostało zamknięte, nic się nie dzieje."
           },
           "jump_set_slot_1": {
             "name": "Ustaw slot skoku 1",
@@ -274,6 +274,13 @@
             "name": "Przejdź do slotu 4",
             "description": "Przywraca fokus na okno i pole slotu statycznego 4, nie dostarczając niczego — czysta nawigacja. Domyślnie: ctrl+alt+4. Jeśli dla tego slotu włączono „Zapisz pozycję myszy”, wskaźnik również jest przywracany; jeśli slot jest pusty albo jego okno zostało zamknięte, nic się nie dzieje."
           }
+        },
+        "failurePanel": {
+          "title": "Niezarejestrowane skróty",
+          "description": "Te skróty są nieaktywne. Zmień kombinację lub spróbuj ponownie po rozwiązaniu konfliktu.",
+          "retry": "Spróbuj ponownie",
+          "retrying": "Ponawianie…",
+          "retryError": "Nie udało się ponownie zarejestrować skrótów."
         },
         "errors": {
           "restore": "Nie udało się przywrócić oryginalnego skrótu",
@@ -397,7 +404,8 @@
         "title": "Aktualizacje",
         "checks": {
           "label": "Automatycznie sprawdzaj aktualizacje",
-          "description": "Raz dziennie sprawdzaj publiczne wydania w GitHub."
+          "description": "Raz dziennie sprawdzaj publiczne wydania w GitHub.",
+          "privacy": "Sprawdzanie aktualizacji nie wysyła żadnych informacji o Tobie—nie ma telemetrii, analityki ani konta—i odczytuje tylko jeden publiczny plik z wydań projektu w GitHub."
         },
         "silent": {
           "label": "Instaluj aktualizacje po cichu",
@@ -1254,6 +1262,7 @@
     "transcriptionFailed": "Transkrypcja nie powiodła się: {{reason}}. Sprawdź, czy wybrany model działa poprawnie, i spróbuj ponownie."
   },
   "flm": {
+    "windowsApplicationControlBlocked": "Funkcja Kontrola aplikacji systemu Windows zablokowała plik flm.exe, ponieważ nie jest podpisany. Silnik NPU jest niedostępny. Wybierz inny model transkrypcji.",
     "notInstalled": "FLM nie jest zainstalowany. Zainstaluj FastFlowLM, aby korzystać z modeli akcelerowanych NPU.",
     "npuAccelerated": "Akcelerowane NPU"
   },

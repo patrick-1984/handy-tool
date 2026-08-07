@@ -2,6 +2,49 @@
 
 
 
+## [1.0.2] - 2026-08-07
+
+### Fixed
+
+- **Windows blocking FLM no longer looks like a working engine.** FastFlowLM ships an
+  unsigned `flm.exe`, and enforced Smart App Control refuses to let Handy start it. Handy
+  logged the refusal and then carried on as though the engine were available, so takes
+  failed later for no visible reason. The block is now recognised for what it is
+  (OS error 4551), reported plainly, and remembered, so a blocked FLM stops presenting
+  itself as a usable engine. Handy cannot make a blocked binary run — but it can stop
+  pretending it did.
+- **Shortcuts that fail to register can now be reviewed.** The warning appeared as a
+  notification and vanished before it could be read, leaving no way to find out which
+  binding had failed or why. The failures now persist on the General page until resolved.
+
+### Changed
+
+- **New default shortcuts: `Ctrl+Space` to transcribe, `Ctrl+Alt+Space` to transcribe and
+  submit.** The previous letter-based defaults collided with AltGr on European layouts,
+  where AltGr+letter types an accented character. Existing bindings are untouched — only a
+  missing binding is filled in, so nothing you have set will be rewritten.
+- **The update check no longer generates a UUID.** Picking the daily check time needs a
+  random minute, and it used a random identifier as the source. Nothing was ever
+  transmitted, but an ID generator sitting in update code reads like tracking to anyone
+  auditing the source. It now derives that minute from clock noise instead.
+
+### Documentation
+
+- **FLM is documented as the AMD Ryzen AI NPU path.** It was previously undocumented, so
+  owners of AMD Ryzen AI machines had no way to discover that transcription can run on the
+  NPU and leave the CPU and GPU to the work you are actually doing. Includes how Handy
+  finds an FLM you installed yourself, and a troubleshooting entry for the Smart App
+  Control block that states plainly what it is not: **not an antivirus detection, and an
+  antivirus exclusion will not fix it**, because Smart App Control is a separate mechanism
+  with no exclusion list.
+- **Update checks state what they send.** The About page and its tooltip now say that
+  checking sends nothing about you — no telemetry, analytics, or account — and reads one
+  public file from the project's GitHub releases.
+- **Corrected the logging section of the privacy page.** It still claimed release builds
+  log at Debug; that changed in 1.0.0. It now also records the case that actually catches
+  people: a profile created by 0.63.0 or earlier has the old level saved, and a saved value
+  wins over the new default, so upgrading does not lower it for you.
+
 ## [1.0.1] - 2026-08-07
 
 ### Added

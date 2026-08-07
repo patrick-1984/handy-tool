@@ -20,7 +20,7 @@ After you explicitly download and select a local model:
 
 A fresh installation has no selected model and cannot transcribe. Choosing a model makes an explicit HTTPS download request. It reveals ordinary IP/TLS/HTTP metadata and the chosen download to `blob.handy.computer`, but contains no microphone audio or transcript.
 
-No telemetry client, analytics client, crash-report uploader, or automatic update checker exists in the audited app. About-page links open GitHub or its releases page only when you choose them.
+Handy has no telemetry, analytics, crash reporting, account, or identifier. Update checks make one plain HTTPS GET for the static public `latest.json` file on the project's GitHub releases. The request sends no information about the user, machine, configuration, or usage. GitHub serves that request like any other download and therefore receives ordinary web-request metadata such as the IP address. Downloading an available update fetches the release asset from the same public GitHub release. The updater's locally generated random value only chooses the nightly timing offset; it is never transmitted and is not an identifier.
 
 ## What can leave the machine
 
@@ -39,7 +39,7 @@ Nothing below happens during normal dictation with a downloaded local model. Eac
 
 Provider base URLs are editable and not restricted to HTTPS. A remote `http://` URL sends content and credentials without transport encryption.
 
-The optional FLM Whisper engine starts a separate process and sends WAV audio to it over `127.0.0.1:52625`. FLM can download a multi-gigabyte model on first use. Handy’s source does not establish that executable’s download host, telemetry, or storage behavior, so local-only claims do not extend to FLM.
+The optional FLM Whisper engine starts a separate third-party process and sends WAV audio only to it over `127.0.0.1:52625`. Handy sends no FLM transcription audio off the machine, and it does not bundle, install, or download FLM. See [Transcribe without tying up the CPU or GPU](features.md#use-the-npu-in-your-laptop).
 
 Dedicated per-engine API/OpenRouter language fields exist but are unused by the current request path. Requests read the global selected language and translate-to-English values. This is current 1.0.0 behavior.
 
@@ -62,7 +62,11 @@ Long takes split around ten minutes. After a clean finish, non-temporary chunks 
 
 ## Logs can contain your text
 
-File logging defaults to **Debug**, including release builds after settings load. Current Debug paths can record transcript fragments, complete API-transcription responses, complete final transcriptions in some flows, and LLM prompt/transcript previews. Older statements that normal release logging keeps dictation out of logs are not true for the current default.
+Release builds default to **Info**, which does not record transcript content. This changed in 1.0.0; before that, release builds logged at Debug.
+
+**An upgraded install may still be logging at Debug.** The new default only applies when no level has been saved, and a profile created by 0.63.0 or earlier has `log_level` written into its settings from back when Debug was the default. A saved value always wins, so upgrading does not lower the level for you — check it once if your profile predates 1.0.0.
+
+At Debug, logs can record transcript fragments, complete API-transcription responses, complete final transcriptions in some flows, and LLM prompt/transcript previews.
 
 Use `About › Log Directory` to inspect files. Press `ctrl+shift+d` to reveal the page, then change `Debug › Log Level` *{requires: Debug mode}*. Lowering the level reduces future detail but does not erase existing logs.
 

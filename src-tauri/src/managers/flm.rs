@@ -31,6 +31,15 @@ const HEALTH_POLL_INTERVAL: Duration = Duration::from_millis(500);
 /// a broken FLM must not stall every take with a fresh multi-minute wait.
 const FAILURE_COOLDOWN: Duration = Duration::from_secs(60);
 
+/// Stable error code sent to the frontend when Windows Application Control
+/// refuses to start an unsigned FLM executable (Win32 error 4551).
+pub const WINDOWS_APPLICATION_CONTROL_BLOCKED: &str =
+    "flm_windows_application_control_blocked";
+
+#[cfg(windows)]
+static WINDOWS_APPLICATION_CONTROL_BLOCKED_STATE: std::sync::atomic::AtomicBool =
+    std::sync::atomic::AtomicBool::new(false);
+
 /// The HTTP server answers `/v1/models` within tens of ms, but the ASR
 /// sub-model loads a second or two LATER and can fail NPU context creation
 /// (e.g. "Failed to create context virtual (0xc01e0009)") — leaving the server
@@ -174,13 +183,17 @@ pub struct FlmManager {
 }
 
 impl FlmManager {
-    /// Detect whether `flm` is available on PATH or in common install locations.
-    /// Cached after the first call: this spawns `flm --version`, and it used to
-    /// run on every model-list rebuild — on Windows that flashed a console window
-    /// periodically. Detection is stable within a session, so we memoize it.
+    /// Detect whether `flm` is present on PATH or in common install locations.
+    /// Discovery deliberately never executes FLM: application-control policy is
+    /// enforced when the real server process is launched, not while rebuilding
+    /// the model list. The discovered path is cached for the process lifetime.
     #[cfg(not(target_os = "macos"))]
     pub fn detect_flm() -> Option<PathBuf> {
         use std::sync::OnceLock;
+        #[cfg(windows)]
+        if WINDOWS_APPLICATION_CONTROL_BLOCKED_STATE.load(std::sync::atomic::Ordering::Relaxed) {
+            return None;
+        }
         static CACHE: OnceLock<Option<PathBuf>> = OnceLock::new();
         CACHE.get_or_init(Self::detect_flm_uncached).clone()
     }
@@ -189,23 +202,11 @@ impl FlmManager {
     fn detect_flm_uncached() -> Option<PathBuf> {
         info!("Detecting FLM installation...");
 
-        // Check PATH first (no console flash on Windows via no_window()).
-        match no_window(Command::new("flm").arg("--version")).output() {
-            Ok(output) if output.status.success() => {
-                let version = String::from_utf8_lossy(&output.stdout);
-                info!("FLM found on PATH (version: {})", version.trim());
-                return Some(PathBuf::from("flm"));
-            }
-            Ok(output) => {
-                info!(
-                    "FLM found on PATH but --version failed with status: {}",
-                    output.status
-                );
-            }
-            Err(e) => {
-                info!("FLM not found on PATH: {}", e);
-            }
+        if let Some(path) = Self::find_flm_on_path() {
+            info!("FLM found on PATH at: {}", path.display());
+            return Some(path);
         }
+        info!("FLM not found on PATH");
 
         // Check common Windows install locations
         #[cfg(target_os = "windows")]
@@ -219,7 +220,7 @@ impl FlmManager {
             ];
             for candidate in candidates.into_iter().flatten() {
                 info!("Checking FLM candidate: {}", candidate.display());
-                if candidate.exists() {
+                if candidate.is_file() {
                     info!("FLM found at: {}", candidate.display());
                     return Some(candidate);
                 }
@@ -236,7 +237,7 @@ impl FlmManager {
             ];
             for candidate in candidates.into_iter().flatten() {
                 info!("Checking FLM candidate: {}", candidate.display());
-                if candidate.exists() {
+                if candidate.is_file() {
                     info!("FLM found at: {}", candidate.display());
                     return Some(candidate);
                 }
@@ -245,6 +246,19 @@ impl FlmManager {
 
         warn!("FLM not found in any known location");
         None
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    fn find_flm_on_path() -> Option<PathBuf> {
+        let path = std::env::var_os("PATH")?;
+        std::env::split_paths(&path).find_map(|directory| {
+            #[cfg(windows)]
+            let candidates = [directory.join("flm.exe"), directory.join("flm")];
+            #[cfg(not(windows))]
+            let candidates = [directory.join("flm")];
+
+            candidates.into_iter().find(|candidate| candidate.is_file())
+        })
     }
 
     #[cfg(target_os = "macos")]
@@ -390,6 +404,11 @@ impl FlmManager {
 
     /// Start `flm serve` with the given model name and wait until the health endpoint responds.
     pub fn start_serve(model_name: &str) -> Result<Self> {
+        #[cfg(windows)]
+        if WINDOWS_APPLICATION_CONTROL_BLOCKED_STATE.load(std::sync::atomic::Ordering::Relaxed) {
+            anyhow::bail!(WINDOWS_APPLICATION_CONTROL_BLOCKED);
+        }
+
         if Self::recently_failed() {
             anyhow::bail!(
                 "FLM failed to start less than a minute ago; not retrying yet \
@@ -431,6 +450,17 @@ impl FlmManager {
         no_window(&mut command);
         let mut child = command.spawn().map_err(|e| {
             LAST_START_FAILURE_MS.store(now_ms(), std::sync::atomic::Ordering::Relaxed);
+            #[cfg(windows)]
+            if e.raw_os_error() == Some(4551) {
+                WINDOWS_APPLICATION_CONTROL_BLOCKED_STATE
+                    .store(true, std::sync::atomic::Ordering::Relaxed);
+                error!(
+                    "Windows Application Control blocked FLM at '{}': {}",
+                    flm_path.display(),
+                    e
+                );
+                return anyhow::anyhow!(WINDOWS_APPLICATION_CONTROL_BLOCKED);
+            }
             // error! so an FLM start failure is ALWAYS in the file log (release
             // = INFO), not only surfaced as the red in-app toast.
             error!("FLM failed to spawn: {}", e);

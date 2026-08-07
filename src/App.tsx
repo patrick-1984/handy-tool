@@ -21,6 +21,7 @@ import { useNavStore } from "./stores/navStore";
 import { useSettingsStore } from "./stores/settingsStore";
 import { commands } from "@/bindings";
 import { getLanguageDirection, initializeRTL } from "@/lib/utils/rtl";
+import { isFlmBlockedByWindowsApplicationControl } from "@/lib/flm";
 
 type OnboardingStep = "accessibility" | "model" | "done";
 
@@ -116,9 +117,12 @@ function App() {
     // failed to load) — otherwise the recording is saved textless and reads as
     // "recording works but produces nothing".
     const unlistenTranscribe = listen<string>("transcription-failed", (e) =>
-      toast.error(t("toasts.transcriptionFailed", { reason: e.payload }), {
-        duration: 8000,
-      }),
+      toast.error(
+        isFlmBlockedByWindowsApplicationControl(e.payload)
+          ? t("flm.windowsApplicationControlBlocked")
+          : t("toasts.transcriptionFailed", { reason: e.payload }),
+        { duration: 10000 },
+      ),
     );
     return () => {
       unlisten.then((f) => f());

@@ -90,7 +90,7 @@ export const UpdateSettings: React.FC = () => {
         }}
         isUpdating={isUpdating("automatic_update_checks")}
         label={t("settings.general.updates.checks.label")}
-        description={t("settings.general.updates.checks.description")}
+        description={`${t("settings.general.updates.checks.description")} ${t("settings.general.updates.checks.privacy")}`}
         grouped
       />
       <ToggleSwitch
@@ -101,11 +101,11 @@ export const UpdateSettings: React.FC = () => {
         disabled={!checks || portable || status === null}
         isUpdating={isUpdating("automatic_silent_updates")}
         label={t("settings.general.updates.silent.label")}
-        description={t(
+        description={`${t(
           portable
             ? "settings.general.updates.silent.portableDescription"
             : "settings.general.updates.silent.description",
-        )}
+        )} ${t("settings.general.updates.checks.privacy")}`}
         grouped
       />
       <SettingContainer

@@ -224,11 +224,11 @@
           },
           "transcribe_ptt": {
             "name": "Phím tắt nhấn để nói",
-            "description": "Giữ phím tắt này để ghi âm và thả ra để dừng; micro tắt ngay khi thả, nên bất cứ gì bạn nói sau đó không thể lẫn vào văn bản. Mặc định: Ctrl+Alt+Space. Nó có Transcription Mode (PTT) và Paste Method (PTT) riêng, nên push-to-talk có thể hoạt động khác với Transcribe Shortcut."
+            "description": "Giữ phím tắt này để ghi âm và thả ra để dừng; micro tắt ngay khi thả, nên bất cứ gì bạn nói sau đó không thể lẫn vào văn bản. Mặc định: Ctrl+Shift+Space. Nó có Transcription Mode (PTT) và Paste Method (PTT) riêng, nên push-to-talk có thể hoạt động khác với Transcribe Shortcut."
           },
           "type_text": {
             "name": "Phím tắt gõ văn bản",
-            "description": "Gõ nội dung trong ô Keyboard Typer vào cửa sổ đang focus; nhấn lại, hoặc Escape, để hủy. Mặc định: ctrl+alt+t. Bắt đầu sau khoảng một giây thay vì chờ hết Start delay, vì nhấn một phím tắt nghĩa là bạn đã ở trong cửa sổ mục tiêu — nút Go là nút dùng đếm ngược đầy đủ."
+            "description": "Gõ nội dung trong ô Keyboard Typer vào cửa sổ đang focus; nhấn lại, hoặc Escape, để hủy. Mặc định: ctrl+shift+F11. Bắt đầu sau khoảng một giây thay vì chờ hết Start delay, vì nhấn một phím tắt nghĩa là bạn đã ở trong cửa sổ mục tiêu — nút Go là nút dùng đếm ngược đầy đủ."
           },
           "transcribe_and_submit": {
             "name": "Phím tắt Phiên âm & Gửi",
@@ -236,11 +236,11 @@
           },
           "anchor_set": {
             "name": "Đặt điểm neo",
-            "description": "Ghi nhận ô nhập văn bản bạn đang chọn làm đích Hot 1. Mặc định: ctrl+alt+k. Tự nó không gửi gì cả — đặt 'Jump slot action on finish' thành 'Jump / deliver to slot' với ô nhảy là Hot 1 (Advanced → Transcription) để bản phiên âm tiếp theo của bạn được gửi đến đó. Hộp mật khẩu và các cửa sổ riêng của Handy bị từ chối."
+            "description": "Ghi nhận ô nhập văn bản bạn đang chọn làm đích Hot 1. Mặc định: ctrl+shift+F1. Tự nó không gửi gì cả — đặt 'Jump slot action on finish' thành 'Jump / deliver to slot' với ô nhảy là Hot 1 (Advanced → Transcription) để bản phiên âm tiếp theo của bạn được gửi đến đó. Hộp mật khẩu và các cửa sổ riêng của Handy bị từ chối."
           },
           "anchor_jump": {
             "name": "Nhảy đến điểm neo",
-            "description": "Đưa cửa sổ và ô nhập của Hot 1 về focus và không dán gì cả — một phím 'về lại bản nháp của tôi'. Mặc định: ctrl+alt+j. Nếu 'Save mouse position' được bật cho ô này, con trỏ chuột cũng được đưa về; không có gì xảy ra nếu ô nhảy trống hoặc cửa sổ của nó đã đóng."
+            "description": "Đưa cửa sổ và ô nhập của Hot 1 về focus và không dán gì cả — một phím 'về lại bản nháp của tôi'. Mặc định: ctrl+shift+F2. Nếu 'Save mouse position' được bật cho ô này, con trỏ chuột cũng được đưa về; không có gì xảy ra nếu ô nhảy trống hoặc cửa sổ của nó đã đóng."
           },
           "jump_set_slot_1": {
             "name": "Đặt ô nhảy 1",
@@ -274,6 +274,13 @@
             "name": "Nhảy đến ô 4",
             "description": "Đưa cửa sổ và ô nhập của ô nhảy tĩnh số 4 về focus và không gửi gì — chỉ điều hướng thuần túy. Mặc định: ctrl+alt+4. Nếu 'Save mouse position' được bật cho ô này, con trỏ chuột cũng được khôi phục; không có gì xảy ra nếu ô nhảy trống hoặc cửa sổ của nó đã đóng."
           }
+        },
+        "failurePanel": {
+          "title": "Phím tắt chưa được đăng ký",
+          "description": "Các phím tắt này đang không hoạt động. Hãy đổi tổ hợp phím hoặc thử lại sau khi giải quyết xung đột.",
+          "retry": "Thử lại",
+          "retrying": "Đang thử lại…",
+          "retryError": "Không thể đăng ký lại các phím tắt."
         },
         "errors": {
           "restore": "Không thể khôi phục phím tắt gốc",
@@ -397,7 +404,8 @@
         "title": "Bản cập nhật",
         "checks": {
           "label": "Tự động kiểm tra bản cập nhật",
-          "description": "Kiểm tra bản phát hành công khai trên GitHub mỗi ngày một lần."
+          "description": "Kiểm tra bản phát hành công khai trên GitHub mỗi ngày một lần.",
+          "privacy": "Việc kiểm tra bản cập nhật không gửi bất kỳ thông tin nào về bạn—không có phép đo từ xa, phân tích hay tài khoản—và chỉ đọc một tệp công khai từ các bản phát hành của dự án trên GitHub."
         },
         "silent": {
           "label": "Cài đặt cập nhật âm thầm",
@@ -1186,6 +1194,7 @@
     "transcriptionFailed": "Phiên âm không thành công: {{reason}}. Hãy kiểm tra xem mô hình đã chọn có hoạt động không, rồi thử lại."
   },
   "flm": {
+    "windowsApplicationControlBlocked": "Kiểm soát ứng dụng Windows đã chặn flm.exe vì tệp này chưa được ký. Công cụ NPU không khả dụng. Hãy chọn một mô hình phiên âm khác.",
     "notInstalled": "FLM chưa được cài đặt. Hãy cài FastFlowLM để dùng các mô hình gia tốc NPU.",
     "npuAccelerated": "Gia tốc NPU"
   },

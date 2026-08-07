@@ -211,7 +211,7 @@
           },
           "transcribe_ptt": {
             "name": "Push-to-Talk Shortcut",
-            "description": "Hold this shortcut to record and release to stop; the microphone goes cold on release, so anything you say afterwards cannot leak into the text. Default: Ctrl+Alt+Space. It has its own Transcription Mode (PTT) and its own Paste Method (PTT), so push-to-talk can behave differently from Transcribe Shortcut."
+            "description": "Hold this shortcut to record and release to stop; the microphone goes cold on release, so anything you say afterwards cannot leak into the text. Default: Ctrl+Shift+Space. It has its own Transcription Mode (PTT) and its own Paste Method (PTT), so push-to-talk can behave differently from Transcribe Shortcut."
           },
           "transcribe_with_post_process": {
             "name": "Post-Processing Hotkey",
@@ -219,7 +219,7 @@
           },
           "type_text": {
             "name": "Type Text Shortcut",
-            "description": "Types whatever is in the Keyboard Typer box into the window that currently has focus; press it again, or Escape, to cancel. Default: ctrl+alt+t. It starts after about a second rather than waiting out Start delay, because pressing a shortcut means you are already in the target window — the Go button is the one that uses the full countdown."
+            "description": "Types whatever is in the Keyboard Typer box into the window that currently has focus; press it again, or Escape, to cancel. Default: ctrl+shift+F11. It starts after about a second rather than waiting out Start delay, because pressing a shortcut means you are already in the target window — the Go button is the one that uses the full countdown."
           },
           "transcribe_and_submit": {
             "name": "Transcribe & Submit Shortcut",
@@ -227,11 +227,11 @@
           },
           "anchor_set": {
             "name": "Set Anchor",
-            "description": "Captures the text field you currently have focused as the Hot 1 destination. Default: ctrl+alt+k. On its own it delivers nothing — set 'Jump slot action on finish' to 'Jump / deliver to slot' with the slot set to Hot 1 (Advanced → Transcription) to make your next transcription land there. Password boxes and Handy's own windows are refused."
+            "description": "Captures the text field you currently have focused as the Hot 1 destination. Default: ctrl+shift+F1. On its own it delivers nothing — set 'Jump slot action on finish' to 'Jump / deliver to slot' with the slot set to Hot 1 (Advanced → Transcription) to make your next transcription land there. Password boxes and Handy's own windows are refused."
           },
           "anchor_jump": {
             "name": "Jump to Anchor",
-            "description": "Brings the Hot 1 window and field back into focus and pastes nothing — a 'back to my draft' key. Default: ctrl+alt+j. If 'Save mouse position' is on for this slot the pointer moves back too; nothing happens if the slot is empty or its window has closed."
+            "description": "Brings the Hot 1 window and field back into focus and pastes nothing — a 'back to my draft' key. Default: ctrl+shift+F2. If 'Save mouse position' is on for this slot the pointer moves back too; nothing happens if the slot is empty or its window has closed."
           },
           "jump_set_slot_1": {
             "name": "Set Jump Slot 1",
@@ -265,6 +265,13 @@
             "name": "Jump to Slot 4",
             "description": "Brings static slot 4's window and field into focus and delivers nothing — pure navigation. Default: ctrl+alt+4. If 'Save mouse position' is on for this slot the pointer is restored too; nothing happens if the slot is empty or its window has closed."
           }
+        },
+        "failurePanel": {
+          "title": "Shortcuts not registered",
+          "description": "These shortcuts are inactive. Change a chord or retry after resolving the conflict.",
+          "retry": "Retry",
+          "retrying": "Retrying…",
+          "retryError": "Could not retry shortcut registration."
         },
         "errors": {
           "restore": "Failed to restore original shortcut",
@@ -388,7 +395,8 @@
         "title": "Updates",
         "checks": {
           "label": "Check for updates automatically",
-          "description": "Check public GitHub releases once a day."
+          "description": "Check public GitHub releases once a day.",
+          "privacy": "Checking for updates sends nothing about you—there is no telemetry, analytics, or account—and only reads one public file from the project's GitHub releases."
         },
         "silent": {
           "label": "Install updates silently",
@@ -1180,6 +1188,7 @@
     "openFloatingWindow": "Open transcription window"
   },
   "flm": {
+    "windowsApplicationControlBlocked": "Windows Application Control blocked flm.exe because it is not signed. The NPU engine is unavailable. Choose a different transcription model.",
     "notInstalled": "FLM is not installed. Install FastFlowLM to use NPU-accelerated models.",
     "npuAccelerated": "NPU Accelerated"
   },

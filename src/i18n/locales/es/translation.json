@@ -228,7 +228,7 @@
           },
           "type_text": {
             "name": "Atajo de Escribir Texto",
-            "description": "Escribe lo que haya en el cuadro de Escritura de Teclado en la ventana que tiene el enfoque ahora mismo; presiónalo de nuevo, o Escape, para cancelar. Predeterminado: ctrl+alt+t. Empieza cerca de un segundo después en vez de esperar el Retraso de inicio completo, porque presionar un atajo significa que ya estás en la ventana de destino; el botón Iniciar es el que usa la cuenta atrás completa."
+            "description": "Escribe lo que haya en el cuadro de Escritura de Teclado en la ventana que tiene el enfoque ahora mismo; presiónalo de nuevo, o Escape, para cancelar. Predeterminado: ctrl+shift+F11. Empieza cerca de un segundo después en vez de esperar el Retraso de inicio completo, porque presionar un atajo significa que ya estás en la ventana de destino; el botón Iniciar es el que usa la cuenta atrás completa."
           },
           "transcribe_and_submit": {
             "name": "Atajo de Transcribir y Enviar",
@@ -236,11 +236,11 @@
           },
           "anchor_set": {
             "name": "Fijar Ancla",
-            "description": "Captura el campo de texto que tienes enfocado ahora mismo como el destino Rápida 1. Predeterminado: ctrl+alt+k. Por sí solo no entrega nada: pon 'Acción de ranura al finalizar' en 'Saltar / entregar a la ranura' con la ranura fijada en Rápida 1 (Avanzado → Transcripción) para que tu próxima transcripción llegue allí. Los cuadros de contraseña y las propias ventanas de Handy se rechazan."
+            "description": "Captura el campo de texto que tienes enfocado ahora mismo como el destino Rápida 1. Predeterminado: ctrl+shift+F1. Por sí solo no entrega nada: pon 'Acción de ranura al finalizar' en 'Saltar / entregar a la ranura' con la ranura fijada en Rápida 1 (Avanzado → Transcripción) para que tu próxima transcripción llegue allí. Los cuadros de contraseña y las propias ventanas de Handy se rechazan."
           },
           "anchor_jump": {
             "name": "Saltar al Ancla",
-            "description": "Trae de vuelta al primer plano la ventana y el campo de Rápida 1 y no pega nada: una tecla de 'volver a mi borrador'. Predeterminado: ctrl+alt+j. Si 'Guardar posición del mouse' está activado para esta ranura, el puntero también vuelve; no ocurre nada si la ranura está vacía o su ventana se cerró."
+            "description": "Trae de vuelta al primer plano la ventana y el campo de Rápida 1 y no pega nada: una tecla de 'volver a mi borrador'. Predeterminado: ctrl+shift+F2. Si 'Guardar posición del mouse' está activado para esta ranura, el puntero también vuelve; no ocurre nada si la ranura está vacía o su ventana se cerró."
           },
           "jump_set_slot_1": {
             "name": "Fijar Ranura 1",
@@ -274,6 +274,13 @@
             "name": "Saltar a la Ranura 4",
             "description": "Trae al primer plano la ventana y el campo de la ranura estática 4 y no entrega nada: navegación pura. Predeterminado: ctrl+alt+4. Si 'Guardar posición del mouse' está activado para esta ranura, el puntero también se restaura; no ocurre nada si la ranura está vacía o su ventana se cerró."
           }
+        },
+        "failurePanel": {
+          "title": "Atajos no registrados",
+          "description": "Estos atajos están inactivos. Cambia la combinación o vuelve a intentarlo después de resolver el conflicto.",
+          "retry": "Reintentar",
+          "retrying": "Reintentando…",
+          "retryError": "No se pudo volver a registrar los atajos."
         },
         "errors": {
           "restore": "Error al restaurar el atajo original",
@@ -397,7 +404,8 @@
         "title": "Actualizaciones",
         "checks": {
           "label": "Buscar actualizaciones automáticamente",
-          "description": "Comprobar una vez al día las versiones públicas de GitHub."
+          "description": "Comprobar una vez al día las versiones públicas de GitHub.",
+          "privacy": "La búsqueda de actualizaciones no envía nada sobre ti—no hay telemetría, analíticas ni cuenta—y solo lee un archivo público de las versiones del proyecto en GitHub."
         },
         "silent": {
           "label": "Instalar actualizaciones silenciosamente",
@@ -1186,6 +1194,7 @@
     "transcriptionFailed": "La transcripción falló: {{reason}}. Comprueba que el modelo seleccionado funcione y vuelve a intentarlo."
   },
   "flm": {
+    "windowsApplicationControlBlocked": "El Control de aplicaciones de Windows bloqueó flm.exe porque no está firmado. El motor NPU no está disponible. Elige otro modelo de transcripción.",
     "notInstalled": "FLM no está instalado. Instala FastFlowLM para usar modelos acelerados por NPU.",
     "npuAccelerated": "Acelerado por NPU"
   },

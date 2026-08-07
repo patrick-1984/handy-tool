@@ -17,6 +17,7 @@ import { AppendTrailingSpace } from "../AppendTrailingSpace";
 import { PasteLastSettings } from "../PasteLastSettings";
 import { CancelBehaviorSetting } from "../CancelBehaviorSetting";
 import { UpdateSettings } from "./UpdateSettings";
+import { ShortcutRegistrationFailures } from "../ShortcutRegistrationFailures";
 
 export const GeneralSettings: React.FC = () => {
   const { t } = useTranslation();
@@ -28,6 +29,7 @@ export const GeneralSettings: React.FC = () => {
         <ShortcutInput shortcutId="transcribe_ptt" grouped={true} />
         <CancelBehaviorSetting descriptionMode="tooltip" grouped={true} />
       </SettingsGroup>
+      <ShortcutRegistrationFailures />
       <ModelSettingsCard />
       <SettingsGroup title={t("settings.advanced.groups.transcription")}>
         <TranscriptionModeSetting descriptionMode="tooltip" grouped={true} />

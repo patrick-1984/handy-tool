@@ -414,6 +414,7 @@ pub fn run(cli_args: CliArgs) {
         shortcut::change_jumper_paste_delay_remote_setting,
         shortcut::set_jumper_remote_match_strings,
         shortcut::get_shortcut_registration_failures,
+        shortcut::retry_shortcut_registrations,
         shortcut::change_jumper_persist_setting,
         shortcut::change_anchor_action_setting,
         shortcut::change_anchor_action_slot_setting,

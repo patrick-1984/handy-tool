@@ -206,11 +206,11 @@
           },
           "transcribe_ptt": {
             "name": "Atalho de Pressionar para Falar",
-            "description": "Mantenha este atalho pressionado para gravar e solte para parar; o microfone desliga ao soltar, então qualquer coisa que você diga depois não pode vazar para o texto. Padrão: Ctrl+Alt+Space. Tem seu próprio Modo de Transcrição (PTT) e seu próprio Método de Colar (PTT), então pressionar-para-falar pode se comportar diferente do Atalho de Transcrição."
+            "description": "Mantenha este atalho pressionado para gravar e solte para parar; o microfone desliga ao soltar, então qualquer coisa que você diga depois não pode vazar para o texto. Padrão: Ctrl+Shift+Space. Tem seu próprio Modo de Transcrição (PTT) e seu próprio Método de Colar (PTT), então pressionar-para-falar pode se comportar diferente do Atalho de Transcrição."
           },
           "type_text": {
             "name": "Atalho de Digitar Texto",
-            "description": "Digita o que estiver na caixa do Digitador de Teclado na janela que estiver em foco; pressione novamente, ou Escape, para cancelar. Padrão: ctrl+alt+t. Começa depois de cerca de um segundo, em vez de esperar o Atraso inicial, porque pressionar um atalho significa que você já está na janela de destino — o botão Ir é o que usa a contagem regressiva completa."
+            "description": "Digita o que estiver na caixa do Digitador de Teclado na janela que estiver em foco; pressione novamente, ou Escape, para cancelar. Padrão: ctrl+shift+F11. Começa depois de cerca de um segundo, em vez de esperar o Atraso inicial, porque pressionar um atalho significa que você já está na janela de destino — o botão Ir é o que usa a contagem regressiva completa."
           },
           "transcribe_and_submit": {
             "name": "Atalho de Transcrever e Enviar",
@@ -218,11 +218,11 @@
           },
           "anchor_set": {
             "name": "Definir Âncora",
-            "description": "Captura o campo de texto atualmente em foco como o destino Ativo 1. Padrão: ctrl+alt+k. Por si só não entrega nada — defina 'Ação do slot de salto ao finalizar' como 'Saltar / entregar no slot' com o slot definido para Ativo 1 (Avançado → Transcrição) para fazer sua próxima transcrição chegar lá. Caixas de senha e as próprias janelas do Handy Tool são recusadas."
+            "description": "Captura o campo de texto atualmente em foco como o destino Ativo 1. Padrão: ctrl+shift+F1. Por si só não entrega nada — defina 'Ação do slot de salto ao finalizar' como 'Saltar / entregar no slot' com o slot definido para Ativo 1 (Avançado → Transcrição) para fazer sua próxima transcrição chegar lá. Caixas de senha e as próprias janelas do Handy Tool são recusadas."
           },
           "anchor_jump": {
             "name": "Saltar para a Âncora",
-            "description": "Traz de volta ao foco a janela e o campo do Ativo 1 e não cola nada — uma tecla de 'voltar ao meu rascunho'. Padrão: ctrl+alt+j. Se 'Salvar posição do mouse' estiver ativado para este slot, o ponteiro também volta; nada acontece se o slot estiver vazio ou sua janela tiver sido fechada."
+            "description": "Traz de volta ao foco a janela e o campo do Ativo 1 e não cola nada — uma tecla de 'voltar ao meu rascunho'. Padrão: ctrl+shift+F2. Se 'Salvar posição do mouse' estiver ativado para este slot, o ponteiro também volta; nada acontece se o slot estiver vazio ou sua janela tiver sido fechada."
           },
           "jump_set_slot_1": {
             "name": "Definir Slot de Salto 1",
@@ -256,6 +256,13 @@
             "name": "Saltar para o Slot 4",
             "description": "Traz para o foco a janela e o campo do slot estático 4 e não entrega nada — navegação pura. Padrão: ctrl+alt+4. Se 'Salvar posição do mouse' estiver ativado para este slot, o ponteiro também é restaurado; nada acontece se o slot estiver vazio ou sua janela tiver sido fechada."
           }
+        },
+        "failurePanel": {
+          "title": "Atalhos não registrados",
+          "description": "Estes atalhos estão inativos. Altere a combinação ou tente novamente após resolver o conflito.",
+          "retry": "Tentar novamente",
+          "retrying": "Tentando novamente…",
+          "retryError": "Não foi possível registrar os atalhos novamente."
         },
         "errors": {
           "restore": "Falha ao restaurar atalho original",
@@ -379,7 +386,8 @@
         "title": "Atualizações",
         "checks": {
           "label": "Procurar atualizações automaticamente",
-          "description": "Verificar uma vez por dia as versões públicas no GitHub."
+          "description": "Verificar uma vez por dia as versões públicas no GitHub.",
+          "privacy": "A verificação de atualizações não envia nada sobre si—não há telemetria, análises nem conta—e apenas lê um ficheiro público das versões do projeto no GitHub."
         },
         "silent": {
           "label": "Instalar atualizações silenciosamente",
@@ -1180,6 +1188,7 @@
     "transcriptionFailed": "Falha na transcrição: {{reason}}. Verifique se o modelo selecionado está funcionando e tente novamente."
   },
   "flm": {
+    "windowsApplicationControlBlocked": "O Controle de Aplicativos do Windows bloqueou o flm.exe porque ele não está assinado. O mecanismo NPU não está disponível. Escolha outro modelo de transcrição.",
     "notInstalled": "O FLM não está instalado. Instale o FastFlowLM para usar modelos acelerados por NPU.",
     "npuAccelerated": "Acelerado por NPU"
   },

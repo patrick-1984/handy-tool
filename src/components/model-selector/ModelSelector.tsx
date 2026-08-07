@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { listen } from "@tauri-apps/api/event";
 import { commands } from "@/bindings";
 import { getTranslatedModelName } from "../../lib/utils/modelTranslation";
+import { isFlmBlockedByWindowsApplicationControl } from "../../lib/flm";
 import { useModelStore } from "../../stores/modelStore";
 import ModelStatusButton from "./ModelStatusButton";
 import ModelDropdown from "./ModelDropdown";
@@ -129,7 +130,11 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ onError }) => {
             break;
           case "loading_failed":
             setModelStatus("error");
-            setModelError(error || "Failed to load model");
+            setModelError(
+              isFlmBlockedByWindowsApplicationControl(error)
+                ? t("flm.windowsApplicationControlBlocked")
+                : error || t("modelSelector.modelError"),
+            );
             setPending(null);
             break;
           case "unloaded":
@@ -202,7 +207,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ onError }) => {
       modelStateUnlisten.then((fn) => fn());
       downloadCompleteUnlisten.then((fn) => fn());
     };
-  }, [selectModel]);
+  }, [selectModel, t]);
 
   const handleModelSelect = async (modelId: string) => {
     setPending(modelId);

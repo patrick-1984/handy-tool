@@ -786,6 +786,11 @@ impl ModelManager {
     pub fn get_available_models(&self) -> Vec<ModelInfo> {
         let models = self.available_models.lock().unwrap();
         let mut result: Vec<ModelInfo> = models.values().cloned().collect();
+        #[cfg(not(target_os = "macos"))]
+        result.retain(|model| {
+            model.id != "flm-whisper-v3-turbo"
+                || crate::managers::flm::FlmManager::detect_flm().is_some()
+        });
         // Inject the configured URL into the API Whisper model description
         let settings = crate::settings::get_settings(&self.app_handle);
         for model in &mut result {
@@ -804,6 +809,12 @@ impl ModelManager {
     }
 
     pub fn get_model_info(&self, model_id: &str) -> Option<ModelInfo> {
+        #[cfg(not(target_os = "macos"))]
+        if model_id == "flm-whisper-v3-turbo"
+            && crate::managers::flm::FlmManager::detect_flm().is_none()
+        {
+            return None;
+        }
         let models = self.available_models.lock().unwrap();
         let mut info = models.get(model_id).cloned();
         if model_id == "api-whisper" {

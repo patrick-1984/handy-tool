@@ -99,6 +99,10 @@ export const AboutUpdateCheck: React.FC<AboutUpdateCheckProps> = ({
         </Button>
       </div>
 
+      <p className="text-xs text-mid-gray">
+        {t("settings.general.updates.checks.privacy")}
+      </p>
+
       {showResult && manualError && (
         <div className="space-y-2 text-sm" role="status">
           <p>
