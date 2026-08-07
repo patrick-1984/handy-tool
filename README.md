@@ -47,6 +47,14 @@ Download **`Handy.Tool_<version>_x64-setup.exe`** from the [latest release](http
 
 > **Windows will warn you.** The installer is not yet signed with a code-signing certificate, so SmartScreen or Smart App Control will say the publisher is unknown — and on some machines Smart App Control blocks it outright. Choose **More info → Run anyway**. If Smart App Control refuses entirely, use the **portable** ZIP instead; it needs no installer. Signing is on the roadmap and will remove this.
 
+### macOS (Intel, experimental)
+
+Download **`Handy-Tool-<version>-macos-x86_64.zip`** from the [latest release](https://github.com/patrick-1984/handy-tool/releases/latest), unzip it, and move `Handy Tool.app` to your Applications folder.
+
+**Right-click the app and choose Open** the first time. The build is not notarized, so macOS calls it an unidentified developer — and double-clicking alone will not offer you a way past that dialog, while right-click → Open will.
+
+This build is new and lightly tested; see [Platform status](#platform-status) before relying on it. Intel only for now.
+
 Then, whichever route you took: complete the first-run onboarding, grant microphone access, and choose a transcription model. A fresh install has no model — the download starts only once you pick one, and models range from a few hundred megabytes to several gigabytes.
 
 ## At a glance
@@ -72,11 +80,20 @@ Moving between large screens and apps buried under other windows costs time. Whi
 
 ## Platform status
 
-| Platform    | Status                                             |
-| ----------- | -------------------------------------------------------- |
-| Windows x64 | Built, tested, and released                              |
-| macOS       | Planned — in the queue; no build is produced or released |
-| Linux       | Planned — in the queue; no build is produced or released |
+| Platform     | Status                                                                          |
+| ------------ | ------------------------------------------------------------------------------- |
+| Windows x64  | Built, tested, and released                                                     |
+| macOS Intel  | **Experimental.** Built and released, but not yet used in anger. Not notarized. |
+| macOS Apple Silicon | Planned — no build is produced, because none can be verified yet         |
+| Linux        | Planned — in the queue; no build is produced or released                        |
+
+The macOS build compiles, bundles, passes signature verification, and the binary runs.
+What has *not* happened is somebody granting it Microphone and Accessibility permission
+and dictating a sentence — those permissions can only be granted through GUI dialogs, so
+they cannot be exercised by an automated build. Treat it as a first cut, not a finished
+port. The Apple Silicon gap is deliberate: builds are produced on an Intel Mac, which
+cannot run an ARM binary to check it, and shipping something unverifiable is worse than
+shipping nothing.
 
 The Jumper family is Windows-only by construction. For the complete boundary, see [What runs today, and what is planned](docs/features.md#what-runs-today-and-what-is-planned).
 

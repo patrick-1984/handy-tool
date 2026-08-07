@@ -1,6 +1,6 @@
 [package]
 name = "handy"
-version = "1.0.2"
+version = "1.0.3"
 description = "Handy"
 authors = ["pr"]
 edition = "2024"
@@ -107,7 +107,7 @@ windows = { version = "0.61.3", features = [
   # Win32_Security (even though we pass None for the attributes).
   "Win32_System_JobObjects",
   "Win32_Security",
-  # T-105: UI Automation IsPassword query (anchor.rs) — CoInitializeEx/
+  # T-105: UI Automation IsPassword query (anchor.rs) â€” CoInitializeEx/
   # CoCreateInstance/CoUninitialize and the IUIAutomation* COM interfaces.
   "Win32_System_Com",
   "Win32_UI_Accessibility",
@@ -127,7 +127,7 @@ tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2.
 gtk-layer-shell = { version = "0.8", features = ["v0_6"] }
 gtk = "0.18"
 
-# NOTE: upstream's cjpais/tauri "handy-2.9.1" runtime patches were dropped —
+# NOTE: upstream's cjpais/tauri "handy-2.9.1" runtime patches were dropped â€”
 # the lockfile had them as [[patch.unused]] (crates.io tauri 2.10 resolves).
 [patch.crates-io]
 whisper-rs = { path = "../whisper-rs-local" }
