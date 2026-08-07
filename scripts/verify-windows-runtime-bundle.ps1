@@ -132,6 +132,13 @@ try {
     }
 
     $appRoot = $applicationExecutables[0].Directory.FullName
+    $applicationMachine = Get-PeMachine -Path $applicationExecutables[0].FullName
+    if ($applicationMachine -ne $expectedMachine) {
+        throw ("Wrong-architecture application executable '{0}': expected {1} (0x{2:X4}), found 0x{3:X4}." -f `
+            $ApplicationExecutable, $expectedMachineName, $expectedMachine, $applicationMachine)
+    }
+    $applicationHash = (Get-FileHash -LiteralPath $applicationExecutables[0].FullName -Algorithm SHA256).Hash
+
     $verifiedRuntimeFiles = @()
     foreach ($fileAudit in $auditFiles) {
         $payloadPath = Join-Path $appRoot $fileAudit.Name
@@ -202,6 +209,8 @@ try {
         InstallerSha256 = (Get-FileHash -LiteralPath $InstallerPath -Algorithm SHA256).Hash
         TargetArchitecture = $Architecture
         ApplicationPathInPayload = $relativeApplicationPath
+        ApplicationSha256 = $applicationHash
+        ApplicationPeMachine = ("0x{0:X4}" -f $applicationMachine)
         ResourceFilesVerified = $sourceResources.Count
         RequiredFiles = $requiredRuntimeFiles
         RuntimeFiles = $verifiedRuntimeFiles

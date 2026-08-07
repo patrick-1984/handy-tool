@@ -306,6 +306,7 @@ jobs:
           args: ${{ inputs.build-args }}
 
       - name: Verify app-local VC++ runtime in Windows installer
+        id: verify-windows-installer
         if: contains(inputs.platform, 'windows')
         shell: pwsh
         run: |
@@ -331,6 +332,14 @@ jobs:
           ./scripts/verify-windows-runtime-bundle.ps1 `
             -InstallerPath $installers[0].FullName `
             -Architecture $architecture
+
+          $verificationPath = "$($installers[0].FullName).runtime-verification.json"
+          if (-not (Test-Path -LiteralPath $verificationPath -PathType Leaf)) {
+            throw "Runtime verification sidecar was not created: $verificationPath"
+          }
+
+          "installer=$($installers[0].FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "verification=$verificationPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       - name: Upload artifacts (macOS)
         if: inputs.upload-artifacts && contains(inputs.platform, 'macos')
@@ -415,10 +424,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.asset-prefix }}-${{ inputs.target }}
-          # Default Windows builds place bundles under release/, but cross-compiles (ARM64) nest under target/<triple>/release.
           path: |
-            ${{ env.CARGO_TARGET_DIR }}/${{ inputs.target != '' && inputs.target != 'x86_64-pc-windows-msvc' && format('{0}/{1}', inputs.target, steps.build-profile.outputs.profile) || steps.build-profile.outputs.profile }}/bundle/msi/*.msi
-            ${{ env.CARGO_TARGET_DIR }}/${{ inputs.target != '' && inputs.target != 'x86_64-pc-windows-msvc' && format('{0}/{1}', inputs.target, steps.build-profile.outputs.profile) || steps.build-profile.outputs.profile }}/bundle/nsis/*.exe
-            ${{ env.CARGO_TARGET_DIR }}/${{ inputs.target != '' && inputs.target != 'x86_64-pc-windows-msvc' && format('{0}/{1}', inputs.target, steps.build-profile.outputs.profile) || steps.build-profile.outputs.profile }}/bundle/nsis/*.runtime-verification.json
+            ${{ steps.verify-windows-installer.outputs.installer }}
+            ${{ steps.verify-windows-installer.outputs.verification }}
           if-no-files-found: error
           retention-days: 30
