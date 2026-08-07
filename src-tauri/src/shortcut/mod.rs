@@ -757,28 +757,23 @@ pub fn change_start_hidden_setting(app: AppHandle, enabled: bool) -> Result<(), 
 #[tauri::command]
 #[specta::specta]
 pub fn change_autostart_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
-    // Portable mode never registers/unregisters the autostart Run-key entry
-    // (T-114 gap #3, mirrors the startup-time skip in
-    // `lib.rs::initialize_core_logic`) — it's machine/user-profile state
-    // that would outlive the portable folder, and could stomp an installed
-    // copy's autostart entry sharing the same Run key. Reject up front
-    // rather than silently no-op, so the settings UI can surface why the
-    // toggle had no effect.
-    if crate::portable::portable_data_dir().is_some() {
+    let current = settings::get_settings(&app);
+    if crate::portable::portable_marker_present()
+        && current.portable_autostart_consent != settings::PortableAutostartConsent::Granted
+    {
         warn!(
-            "Portable mode: ignoring change_autostart_setting({enabled}) — autostart is disabled in portable mode"
+            "Portable mode: skipping autostart registration (the Run-key entry, if any, is left untouched)"
         );
         return Err(
-            "Autostart is disabled in portable mode (it would register a machine-wide Run key entry outside this folder)"
+            "Portable autostart requires explicit consent before changing the Windows startup entry"
                 .to_string(),
         );
     }
 
-    let mut settings = settings::get_settings(&app);
-    settings.autostart_enabled = enabled;
-    settings::write_settings(&app, settings);
+    settings::update_settings(&app, |settings| {
+        settings.autostart_enabled = enabled;
+    });
 
-    // Apply the autostart setting immediately
     let autostart_manager = app.autolaunch();
     if enabled {
         let _ = autostart_manager.enable();
@@ -786,7 +781,6 @@ pub fn change_autostart_setting(app: AppHandle, enabled: bool) -> Result<(), Str
         let _ = autostart_manager.disable();
     }
 
-    // Notify frontend
     let _ = app.emit(
         "settings-changed",
         serde_json::json!({
@@ -794,7 +788,25 @@ pub fn change_autostart_setting(app: AppHandle, enabled: bool) -> Result<(), Str
             "value": enabled
         }),
     );
+    Ok(())
+}
 
+#[tauri::command]
+#[specta::specta]
+pub fn change_portable_autostart_consent_setting(
+    app: AppHandle,
+    consent: settings::PortableAutostartConsent,
+) -> Result<(), String> {
+    settings::update_settings(&app, |settings| {
+        settings.portable_autostart_consent = consent;
+    });
+    let _ = app.emit(
+        "settings-changed",
+        serde_json::json!({
+            "setting": "portable_autostart_consent",
+            "value": consent
+        }),
+    );
     Ok(())
 }
 
@@ -834,6 +846,9 @@ pub fn change_automatic_silent_updates_setting(
     app: AppHandle,
     enabled: bool,
 ) -> Result<(), String> {
+    if enabled && crate::portable::portable_marker_present() {
+        return Err("Automatic installation is unavailable in portable mode".to_string());
+    }
     let updated = settings::update_settings(&app, |settings| {
         settings.automatic_silent_updates = enabled && settings.automatic_update_checks;
     });

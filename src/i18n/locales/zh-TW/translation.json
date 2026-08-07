@@ -48,7 +48,14 @@
       "failedDetail": "Handy Tool 未被變更。{{reason}}",
       "unknownError": "未知錯誤",
       "tryAgain": "再試一次",
-      "downloadInstaller": "下載安裝程式"
+      "downloadInstaller": "下載安裝程式",
+      "portableReplaceFolder": "可攜版透過替換資料夾來更新。",
+      "downloadPortableZip": "下載可攜版 ZIP",
+      "remindLater": "稍後提醒我",
+      "pipelineBusy": "正在錄音或轉錄。Handy Tool 閒置後即可安裝更新。",
+      "installWhenIdle": "閒置時安裝",
+      "installRestartNow": "立即安裝並重新啟動",
+      "enableAutomatic": "開啟自動更新"
     }
   },
   "onboarding": {
@@ -376,7 +383,8 @@
         },
         "silent": {
           "label": "靜默安裝更新",
-          "description": "在允許時間內關閉、更新並重新開啟。預設關閉。"
+          "description": "在允許時間內關閉、更新並重新開啟。預設關閉。",
+          "portableDescription": "可攜模式下無法使用。請替換可攜版資料夾來更新；Handy Tool 絕不會在此執行 NSIS 安裝程式。"
         },
         "time": {
           "label": "靜默更新時間",
@@ -456,7 +464,10 @@
       },
       "autostart": {
         "label": "開機啟動",
-        "description": "註冊 Handy Tool 在你登入 Windows 時自動啟動。預設：關閉。可搭配「啟動時隱藏」，讓應用程式安靜地出現在系統匣而不開啟視窗。"
+        "description": "註冊 Handy Tool 在你登入 Windows 時自動啟動。預設：關閉。可搭配「啟動時隱藏」，讓應用程式安靜地出現在系統匣而不開啟視窗。",
+        "portableDescription": "此可攜版可在其資料夾外建立 Windows 啟動項目。預設：關閉。",
+        "portableConsentTitle": "啟用可攜版自動啟動？",
+        "portableConsentMessage": "可攜版自動啟動會寫入一個全系統 Windows 啟動項目。它不屬於可攜資料夾，並指向此資料夾。如果移動或重新命名資料夾，或拔除磁碟機，Windows 會嘗試啟動一個不存在的應用程式。如果此電腦也正常安裝了 Handy Tool，此操作會取代該安裝版的啟動項目。這是可攜版留下的唯一內容；關閉自動啟動會再次移除它。\n\n啟用自動啟動？"
       },
       "showTrayIcon": {
         "label": "顯示系統匣圖示",
@@ -940,8 +951,14 @@
       },
       "updates": {
         "title": "更新",
-        "description": "「查看發行版本」會在瀏覽器中開啟專案的 GitHub 發行頁面,供你與「版本」比對。Handy Tool 沒有內建更新程式,也不會在背景檢查新版本——更新永遠由你自行決定進行。",
-        "button": "查看發行版本"
+        "description": "在應用程式內檢查新版本，或直接在瀏覽器中開啟發行頁面。",
+        "button": "查看發行版本",
+        "checkWeb": "在網頁上檢查",
+        "checkApp": "檢查更新",
+        "checkFailed": "無法檢查更新：{{reason}}。",
+        "useWebHint": "如果應用程式內檢查遭封鎖，請使用「在網頁上檢查」。",
+        "latestVersion": "您使用的是最新版本（{{version}}）。",
+        "availableVersion": "版本 {{version}} 已推出。"
       }
     },
     "jumper": {

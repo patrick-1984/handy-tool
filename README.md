@@ -1,6 +1,6 @@
 # Handy Tool
 
-Handy Tool 1.0.0 is a local-first dictation tool for Windows: press a key, speak, and the words land in the field you were working in, in the form that field expects.
+Handy Tool is a local-first dictation tool for Windows: press a key, speak, and the words land in the field you were working in, in the form that field expects.
 
 It exists because of an escalation. “I type too slowly. My brain is faster than my hands.” You start dictating, and then the promotion arrives: “Wait — I can run more than one session.” Soon it is, “Actually, five sessions and two remote hosts.” Then the cost catches up with the throughput: “…and now I’m losing it.” The terminal you need is buried, your left hand keeps traveling to Enter, one thought lands in the wrong session, and a stray key threatens a long take. Handy Tool is the set of pieces that keeps that escalation from collapsing: capture the thought, preserve it, and deliver it to the work that needs it.
 
@@ -19,6 +19,34 @@ Note from current author:
 - and of course some stats for nerds like me + changes/fixes to UI + resilience to recordings + space saving + MCP/AI + more tweaks I remember - study features list - U R going to love it (if you are nerd like me) otherwise stick to defaults :D
 - would forgot - it will also work on lame-ass rigs if you travel etc. - just plug openrouter etc. and you good
 
+## Install
+
+Windows x64. Three ways in — pick one.
+
+### winget
+
+```powershell
+winget install patrick-1984.HandyTool
+```
+
+The least friction: winget fetches and runs the installer for you, and updates arrive with `winget upgrade`.
+
+### Portable (no installer, nothing left behind)
+
+Download **`Handy-Tool-<version>-portable.zip`** from the [latest release](https://github.com/patrick-1984/handy-tool/releases/latest), extract it anywhere — a USB stick, a network share, a folder on a locked-down work PC — and run `handy.exe`.
+
+Everything it creates (settings, history, models, recordings, logs) stays in the `data\` folder beside the exe. Delete the folder and no trace remains. Two deliberate differences from an installed copy: **autostart is off** and only turns on if you explicitly consent, because a Windows startup entry is machine-wide state that would outlive the folder; and **it never installs updates over itself** — it tells you a new version exists and points you at the new ZIP.
+
+Portable is also the way to try a new version without disturbing an install you rely on.
+
+### Installer
+
+Download **`Handy.Tool_<version>_x64-setup.exe`** from the [latest release](https://github.com/patrick-1984/handy-tool/releases/latest) and run it. It installs per-user, so no administrator rights are needed, and it can update itself in place from then on.
+
+> **Windows will warn you.** The installer is not yet signed with a code-signing certificate, so SmartScreen or Smart App Control will say the publisher is unknown — and on some machines Smart App Control blocks it outright. Choose **More info → Run anyway**. If Smart App Control refuses entirely, use the **portable** ZIP instead; it needs no installer. Signing is on the roadmap and will remove this.
+
+Then, whichever route you took: complete the first-run onboarding, grant microphone access, and choose a transcription model. A fresh install has no model — the download starts only once you pick one, and models range from a few hundred megabytes to several gigabytes.
+
 ## At a glance
 
 - [Press one key, speak, and the text appears where you were typing](docs/features.md#press-one-key-and-speak)
@@ -36,22 +64,13 @@ Note from current author:
 
 Moving between large screens and apps buried under other windows costs time. While your right hand stays on the mouse, your left hand travels to Enter, you look down, and the flow breaks again when you come back for another chord. Put one key per intent on a small programmable pad under your resting left hand: speak, submit, cancel, recover, or jump without hunting across the keyboard. “It’s almost a meme at this point — the dedicated Claude keyboard. Joke and not a joke.” The serious point is that fixed keys turn repeated multi-key sequences into movements you can make without looking. For simple tasks, plain keyboard shortcuts are completely fine. [Build the deck when the ordinary shortcuts start getting in your way](docs/start/08-the-deck.md).
 
-## Install
-
-Handy Tool 1.0.0 is the first public release. It is distributed as a Windows x64 NSIS installer.
-
-1. Download the Windows x64 `.exe` from the [latest release](https://github.com/patrick-1984/handy-tool/releases/latest).
-2. Run the installer. It is currently unsigned, so Windows SmartScreen may show a warning. If you downloaded it from the repository above, select **More info**, verify the file you chose, then select **Run anyway**.
-3. Complete the first-run onboarding and grant microphone access.
-4. Choose and download a transcription model. A fresh installation has no model selected, and the download starts only after you choose one. Model downloads range from hundreds of megabytes to multiple gigabytes.
-
 ## Defaults at a glance
 
 [Defaults — what you get out of the box](docs/features.md#defaults) is the single day-one reference for the shipped shortcuts, clipboard handling, paste and submit keys, delivery delays, Escape behavior, recording retention, local storage, and network behavior. Read it before your first take if you want every keypress to be predictable.
 
 ## Platform status
 
-| Platform    | 1.0.0 status                                             |
+| Platform    | Status                                             |
 | ----------- | -------------------------------------------------------- |
 | Windows x64 | Built, tested, and released                              |
 | macOS       | Planned — in the queue; no build is produced or released |

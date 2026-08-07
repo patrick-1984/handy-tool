@@ -22,6 +22,8 @@ A 6-, 9-, or 12-key pad is enough. Prefer firmware-backed remapping such as QMK/
 
 If the pad can emit F13–F24, you can bind those keys directly in Handy and avoid multi-modifier chords. If it cannot, program it to emit the existing shortcuts. Keep the normal keyboard bindings available as your fallback on another machine.
 
+Weigh the *storage* of the mapping more heavily than the quality of the configuration app. Handy's own author runs a Redragon K585 — his description of its configuration software is "sooo lame" — and keeps it anyway, because that pad writes the key mappings into flash on the device. Program it once and the layout belongs to the keyboard: it survives reboots, it needs no background process, and it follows the hardware to another machine. A pad with a beautiful configurator that depends on a vendor service running is the worse buy, because the day that service does not start is the day your muscle memory types nothing.
+
 ## Six keys: the starter
 
 The bottom row is home.

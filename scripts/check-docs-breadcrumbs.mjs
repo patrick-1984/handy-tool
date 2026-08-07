@@ -10,8 +10,8 @@
  *     `General -> "Transcribe & Submit" -> "Paste method" = "Ctrl+V"`
  *
  * A breadcrumb is only better than a screenshot if it is MACHINE-CHECKED. This script
- * is that check: every quoted leaf label in the docs must be a real user-visible
- * English string produced by src/i18n/locales/en/translation.json. When a release
+ * is that check: every segment in a canonical inline-code breadcrumb must be a
+ * real user-visible English string from translation.json or nav-map.json. When a release
  * renames a setting, this fails and names the file, the line, and the likely new label.
  *
  * No dependencies. Runs on Bun or Node >= 18:
@@ -349,6 +349,7 @@ function loadNavMap(file) {
   }
 }
 loadNavMap(NAV_MAP_FILE);
+const KNOWN_LABEL_COUNT = new Set([...LABELS, ...NAV_LABELS, ...RESERVED_LABELS]).size;
 
 /* ------------------------------------------------------------------ *
  * 4. String similarity (built-in, no dependencies)
@@ -430,6 +431,21 @@ function suggest(label, scopeHints = [], limit = 3, parentControl = null) {
     else if (cand.includes(target) || target.includes(cand)) score = Math.max(score, 0.8);
     if (scoped.has(p.value)) score = Math.min(1, score + 0.08);
     if (score > 0) scored.push({ value: p.value, key: p.key, score, scoped: scoped.has(p.value) });
+  }
+  for (const value of NAV_LABELS) {
+    if (LABELS.has(value)) continue;
+    const cand = normalize(value);
+    if (!cand || value.length > 80) continue;
+    let score = Math.max(ratio(target, cand), tokenOverlap(target, cand) * 0.95);
+    if (cand === target) score = 1;
+    else if (cand.includes(target) || target.includes(cand)) score = Math.max(score, 0.8);
+    if (scoped.has(value)) score = Math.min(1, score + 0.08);
+    if (score > 0) scored.push({
+      value,
+      key: KEY_OF.get(value) || null,
+      score,
+      scoped: scoped.has(value),
+    });
   }
 
   scored.sort((a, b) => b.score - a.score || a.value.length - b.value.length);
@@ -652,7 +668,7 @@ if (!existsSync(DOCS_DIR)) {
 
 const files = walkMarkdown(DOCS_DIR).sort();
 
-const problems = [];   // unresolved quoted labels  -> FAIL
+const problems = [];   // unresolved canonical labels -> FAIL
 const advisories = []; // unquoted segments, unknown -> advisory (FAIL only with --strict)
 const stats = {
   files: files.length,
@@ -771,7 +787,7 @@ if (opts.json) {
     ok: problems.length === 0 && (!opts.strict || advisories.length === 0),
     stats,
     truthSource: displayPath(I18N_FILE),
-    labelCount: LABELS.size,
+    labelCount: KNOWN_LABEL_COUNT,
     navMap: { loaded: navMap.loaded, entries: navMap.entries.length, stale: navMap.stale },
     problems, advisories,
   }, null, 2));
@@ -802,7 +818,7 @@ if (opts.json) {
   }
 } else if (!opts.quiet) {
   if (problems.length) {
-    console.log(`${C.red}${C.bold}UNRESOLVED UI LABELS${C.off} ${C.dim}(quoted breadcrumb leaves with no match in ${displayPath(I18N_FILE)})${C.off}\n`);
+    console.log(`${C.red}${C.bold}UNRESOLVED UI LABELS${C.off} ${C.dim}(breadcrumb segments absent from the UI label truth sources)${C.off}\n`);
     for (const p of problems) {
       console.log(`  ${C.bold}${p.file}:${p.line}:${p.column}${C.off}  ${C.red}"${p.label}"${C.off} ${C.dim}(${p.role})${C.off}`);
       console.log(`    ${C.dim}in: ${p.breadcrumb}${C.off}`);
@@ -841,10 +857,10 @@ if (!opts.json) {
       : `${C.green}PASS${C.off}`;
   console.log(
     `${verdict}  ${stats.files} file(s), ${stats.breadcrumbs} breadcrumb(s), ` +
-    `${stats.checked} quoted label(s) checked, ${stats.ok} resolved, ` +
+    `${stats.checked} label(s) checked, ${stats.ok} resolved, ` +
     `${problems.length} unresolved, ${advisories.length} advisory, ` +
     `${stats.skipped} opted out${stats.filesSkipped ? `, ${stats.filesSkipped} file(s) skipped` : ""}.  ` +
-    `${C.dim}${LABELS.size} known labels; ${navNote}${C.off}`
+    `${C.dim}${KNOWN_LABEL_COUNT} known labels; ${navNote}${C.off}`
   );
 }
 

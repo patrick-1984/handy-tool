@@ -1,6 +1,19 @@
 # Changelog
 
 
+
+## [1.0.1] - 2026-08-07
+
+### Added
+
+- **A portable build.** Download the ZIP, extract it anywhere — a USB stick, a network share, a work PC that will not let you run installers — and run `handy.exe`. Everything it creates (settings, history, models, recordings, logs) lives in the `data\` folder beside the executable, so deleting the folder removes every trace. It is also the way to try a new version without disturbing an install you depend on, and the way in if Smart App Control refuses to run the installer.
+- **Install with winget:** `winget install patrick-1984.HandyTool`.
+- **Two update buttons on the About page.** **Check on the web** opens the releases page in your browser — the escape hatch when an in-app check is blocked by a proxy or simply fails. **Check for updates** runs the check immediately and tells you what it found, then asks what you want to do: install and restart, remind you later, or turn on automatic updates. It will not start an install while a recording or transcription is running, and it says so rather than failing quietly.
+- **Portable copies can now enable autostart, but only if you say so.** Turning it on asks first, and explains what it is about to do: a Windows startup entry is machine-wide state that is not part of the portable folder, it will point at that exact folder, and it replaces the startup entry of any normally installed copy. Decline and nothing is written, as before.
+
+### Fixed
+
+- **A portable copy will no longer install a second, normal copy of itself.** The updater would have downloaded the Windows installer and run it, quietly creating an ordinary installation in `%LOCALAPPDATA%` with registry entries and leaving the portable folder stale. Portable builds now check for updates and point you at the new ZIP instead, and the nightly silent-update schedule can never fire an installer there. No portable build was ever published before this release, so no one could have hit it — it is closed before the first portable ZIP exists.
 ## [1.0.0] - 2026-08-06
 
 **First public release.** The version number marks the point where this stops being one

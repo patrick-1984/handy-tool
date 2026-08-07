@@ -69,6 +69,14 @@ async changeAutostartSetting(enabled: boolean) : Promise<Result<null, string>> {
     else return { status: "error", error: e  as any };
 }
 },
+async changePortableAutostartConsentSetting(consent: PortableAutostartConsent) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_portable_autostart_consent_setting", { consent }) };
+} catch (e: unknown) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: String(e) };
+}
+},
 async changeAutomaticUpdateChecksSetting(enabled: boolean) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("change_automatic_update_checks_setting", { enabled }) };
@@ -810,6 +818,9 @@ async getDefaultSettings() : Promise<Result<AppSettings, string>> {
     else return { status: "error", error: e  as any };
 }
 },
+async isPortableMode() : Promise<boolean> {
+    return await TAURI_INVOKE("is_portable_mode");
+},
 async getLogDirPath() : Promise<Result<string, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("get_log_dir_path") };
@@ -1425,7 +1436,7 @@ async isLaptop() : Promise<Result<boolean, string>> {
 
 /** user-defined types **/
 
-export type AppSettings = { bindings: Partial<{ [key in string]: ShortcutBinding }>; push_to_talk: boolean; audio_feedback: boolean; audio_feedback_volume?: number; sound_theme?: SoundTheme; start_hidden?: boolean; autostart_enabled?: boolean; automatic_update_checks?: boolean; automatic_silent_updates?: boolean; silent_update_time_local?: string; silent_update_jitter_minutes?: number; typing_start_delay_secs?: number; typing_key_delay_ms?: number; selected_model?: string;
+export type AppSettings = { bindings: Partial<{ [key in string]: ShortcutBinding }>; push_to_talk: boolean; audio_feedback: boolean; audio_feedback_volume?: number; sound_theme?: SoundTheme; start_hidden?: boolean; autostart_enabled?: boolean; portable_autostart_consent?: PortableAutostartConsent; automatic_update_checks?: boolean; automatic_silent_updates?: boolean; silent_update_time_local?: string; silent_update_jitter_minutes?: number; typing_start_delay_secs?: number; typing_key_delay_ms?: number; selected_model?: string;
 /**
  * Vulkan GPU device selection for local Whisper transcription (T-212).
  * Sentinel-encoded rather than a parallel accelerator enum: `-1`
@@ -1507,7 +1518,9 @@ export type AnchorAction = "none" | "jump" | "set" | "clear"
 export type TranslatorPriority = "live_first" | "folder_first" | "fifo"
 export type TranslatorFolder = { path: string; enabled: boolean }
 export type TranslatorStatus = { enabled: boolean; queue: string[]; queue_len: number; current_file: string | null; current_segment: number; current_total_segments: number; paused_reason: string | null; done_count: number; failed_count: number }
-export type UpdaterStatus = { state: string; version: string | null; notes: string | null; downloaded_bytes: number | null; total_bytes: number | null; progress_percent: number | null; waiting_for_idle: boolean; error_code: string | null; error_detail: string | null; last_checked_at: string | null; releases_url: string }
+export type PortableAutostartConsent = "never_asked" | "granted" | "declined"
+
+export type UpdaterStatus = { state: string; version: string | null; notes: string | null; downloaded_bytes: number | null; total_bytes: number | null; progress_percent: number | null; waiting_for_idle: boolean; portable: boolean; error_code: string | null; error_detail: string | null; last_checked_at: string | null; releases_url: string }
 export type BindingResponse = { success: boolean; binding: ShortcutBinding | null; error: string | null }
 /**
  * One provider's result for a single prompt.

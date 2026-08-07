@@ -12,6 +12,15 @@ pub const APPLE_INTELLIGENCE_PROVIDER_ID: &str = "apple_intelligence";
 #[allow(dead_code)]
 pub const APPLE_INTELLIGENCE_DEFAULT_MODEL_ID: &str = "Apple Intelligence";
 
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum PortableAutostartConsent {
+    #[default]
+    NeverAsked,
+    Granted,
+    Declined,
+}
+
 #[derive(Serialize, Debug, Clone, Copy, PartialEq, Eq, Type)]
 #[serde(rename_all = "lowercase")]
 pub enum LogLevel {
@@ -860,6 +869,8 @@ pub struct AppSettings {
     pub start_hidden: bool,
     #[serde(default = "default_autostart_enabled")]
     pub autostart_enabled: bool,
+    #[serde(default)]
+    pub portable_autostart_consent: PortableAutostartConsent,
     #[serde(default = "default_automatic_update_checks")]
     pub automatic_update_checks: bool,
     #[serde(default = "default_automatic_silent_updates")]
@@ -2101,6 +2112,7 @@ pub fn get_default_settings() -> AppSettings {
         start_hidden: default_start_hidden(),
         autostart_enabled: default_autostart_enabled(),
         automatic_update_checks: default_automatic_update_checks(),
+        portable_autostart_consent: PortableAutostartConsent::default(),
         automatic_silent_updates: default_automatic_silent_updates(),
         silent_update_time_local: default_silent_update_time_local(),
         silent_update_jitter_minutes: default_silent_update_jitter_minutes(),

@@ -48,7 +48,14 @@
       "failedDetail": "Handy Tool 未被更改。{{reason}}",
       "unknownError": "未知错误",
       "tryAgain": "重试",
-      "downloadInstaller": "下载安装程序"
+      "downloadInstaller": "下载安装程序",
+      "portableReplaceFolder": "便携版通过替换文件夹进行更新。",
+      "downloadPortableZip": "下载便携版 ZIP",
+      "remindLater": "稍后提醒我",
+      "pipelineBusy": "正在录音或转写。Handy Tool 空闲后即可安装更新。",
+      "installWhenIdle": "空闲时安装",
+      "installRestartNow": "立即安装并重启",
+      "enableAutomatic": "开启自动更新"
     }
   },
   "onboarding": {
@@ -394,7 +401,8 @@
         },
         "silent": {
           "label": "静默安装更新",
-          "description": "在允许时间内关闭、更新并重新打开。默认关闭。"
+          "description": "在允许时间内关闭、更新并重新打开。默认关闭。",
+          "portableDescription": "便携模式下不可用。请替换便携版文件夹来更新；Handy Tool 绝不会在此运行 NSIS 安装程序。"
         },
         "time": {
           "label": "静默更新时间",
@@ -456,7 +464,10 @@
       },
       "autostart": {
         "label": "开机启动",
-        "description": "将 Handy Tool 注册为随 Windows 登录自动启动。默认：关闭。可与“启动时隐藏”搭配使用，让它悄悄进入托盘而不弹出窗口。"
+        "description": "将 Handy Tool 注册为随 Windows 登录自动启动。默认：关闭。可与“启动时隐藏”搭配使用，让它悄悄进入托盘而不弹出窗口。",
+        "portableDescription": "此便携版可在其文件夹外创建 Windows 启动项。默认：关闭。",
+        "portableConsentTitle": "启用便携版自动启动？",
+        "portableConsentMessage": "便携版自动启动会写入一个全系统 Windows 启动项。它不属于便携文件夹，并指向此文件夹。如果移动文件夹、重命名文件夹或拔下驱动器，Windows 将尝试启动一个不存在的应用。如果此电脑上还正常安装了 Handy Tool，此操作会替换该安装版的启动项。这是便携版留下的唯一内容；关闭自动启动会再次移除它。\n\n启用自动启动？"
       },
       "showTrayIcon": {
         "label": "显示托盘图标",
@@ -940,8 +951,14 @@
       },
       "updates": {
         "title": "更新",
-        "description": "“检查发行版本”会在浏览器中打开项目的 GitHub 发行页面，方便你与“版本”进行比对。Handy Tool 没有自动更新程序，也从不在后台检查新版本——更新始终需要你自行操作。",
-        "button": "查看发布"
+        "description": "在应用内检查新版本，或直接在浏览器中打开发布页面。",
+        "button": "查看发布",
+        "checkWeb": "在网页上检查",
+        "checkApp": "检查更新",
+        "checkFailed": "无法检查更新：{{reason}}。",
+        "useWebHint": "如果应用内检查受阻，请使用“在网页上检查”。",
+        "latestVersion": "你使用的是最新版本（{{version}}）。",
+        "availableVersion": "版本 {{version}} 已发布。"
       }
     },
     "jumper": {

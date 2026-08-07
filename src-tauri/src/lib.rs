@@ -337,7 +337,9 @@ fn initialize_core_logic(app_handle: &AppHandle) {
     // entry the very first time a portable copy runs on the same machine.
     let settings = settings::get_settings(&app_handle);
 
-    if portable::portable_data_dir().is_some() {
+    if portable::portable_marker_present()
+        && settings.portable_autostart_consent != settings::PortableAutostartConsent::Granted
+    {
         log::info!(
             "Portable mode: skipping autostart registration (the Run-key entry, if any, is left untouched)"
         );
@@ -379,6 +381,7 @@ pub fn run(cli_args: CliArgs) {
         shortcut::change_sound_theme_setting,
         shortcut::change_start_hidden_setting,
         shortcut::change_autostart_setting,
+        shortcut::change_portable_autostart_consent_setting,
         shortcut::change_automatic_update_checks_setting,
         shortcut::change_automatic_silent_updates_setting,
         shortcut::change_silent_update_time_local_setting,
@@ -473,6 +476,7 @@ pub fn run(cli_args: CliArgs) {
         commands::get_app_dir_path,
         commands::get_app_settings,
         commands::get_default_settings,
+        commands::is_portable_mode,
         commands::get_log_dir_path,
         commands::set_log_level,
         commands::open_recordings_folder,

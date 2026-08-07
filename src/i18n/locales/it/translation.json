@@ -48,7 +48,14 @@
       "failedDetail": "Handy Tool non è stato modificato. {{reason}}",
       "unknownError": "Errore sconosciuto",
       "tryAgain": "Riprova",
-      "downloadInstaller": "Scarica programma di installazione"
+      "downloadInstaller": "Scarica programma di installazione",
+      "portableReplaceFolder": "Le copie portatili si aggiornano sostituendo la cartella.",
+      "downloadPortableZip": "Scarica lo ZIP portatile",
+      "remindLater": "Ricordamelo più tardi",
+      "pipelineBusy": "È in corso una registrazione o trascrizione. L'aggiornamento potrà essere installato quando Handy Tool sarà inattivo.",
+      "installWhenIdle": "Installa quando inattivo",
+      "installRestartNow": "Installa e riavvia ora",
+      "enableAutomatic": "Attiva gli aggiornamenti automatici"
     }
   },
   "onboarding": {
@@ -394,7 +401,8 @@
         },
         "silent": {
           "label": "Installa gli aggiornamenti in modo silenzioso",
-          "description": "Chiude, aggiorna e riapre nella finestra consentita. Disattivato per impostazione predefinita."
+          "description": "Chiude, aggiorna e riapre nella finestra consentita. Disattivato per impostazione predefinita.",
+          "portableDescription": "Non disponibile in modalità portatile. Sostituisci la cartella portatile per aggiornare; Handy Tool non eseguirà mai qui il programma di installazione NSIS."
         },
         "time": {
           "label": "Ora dell’aggiornamento silenzioso",
@@ -456,7 +464,10 @@
       },
       "autostart": {
         "label": "Avvia all'Accensione",
-        "description": "Registra Handy Tool per l'avvio automatico quando accedi a Windows. Predefinito: Disattivato. Combinalo con Avvia in Background così parte silenziosamente nella barra di sistema invece di aprire la sua finestra."
+        "description": "Registra Handy Tool per l'avvio automatico quando accedi a Windows. Predefinito: Disattivato. Combinalo con Avvia in Background così parte silenziosamente nella barra di sistema invece di aprire la sua finestra.",
+        "portableDescription": "Questa copia portatile può creare una voce di avvio di Windows fuori dalla sua cartella. Predefinito: disattivato.",
+        "portableConsentTitle": "Attivare l'avvio automatico portatile?",
+        "portableConsentMessage": "L'avvio automatico portatile scrive una voce di avvio di Windows valida per l'intero computer. Non fa parte della cartella portatile e punta a questa cartella. Se la sposti, la rinomini o scolleghi l'unità, Windows proverà ad avviare un'applicazione che non si trova più lì. Se Handy Tool è installato normalmente anche su questo PC, questa voce sostituisce quella della copia installata. È l'unica cosa che una copia portatile lascia nel sistema; disattivando l'avvio automatico viene rimossa.\n\nAttivare l'avvio automatico?"
       },
       "showTrayIcon": {
         "label": "Mostra icona nella barra di sistema",
@@ -940,8 +951,14 @@
       },
       "updates": {
         "title": "Aggiornamenti",
-        "description": "Controlla le release apre la pagina delle release GitHub del progetto nel tuo browser così puoi confrontarla con Versione. Handy Tool non ha un aggiornatore e non controlla mai automaticamente una nuova release in background — aggiornare è sempre una scelta che fai tu.",
-        "button": "Controlla le release"
+        "description": "Cerca una versione più recente nell'app oppure apri direttamente la pagina delle versioni nel browser.",
+        "button": "Controlla le release",
+        "checkWeb": "Controlla sul Web",
+        "checkApp": "Controlla aggiornamenti",
+        "checkFailed": "Impossibile controllare gli aggiornamenti: {{reason}}.",
+        "useWebHint": "Usa «Controlla sul Web» se il controllo nell'app è bloccato.",
+        "latestVersion": "Stai usando la versione più recente ({{version}}).",
+        "availableVersion": "È disponibile la versione {{version}}."
       }
     },
     "jumper": {

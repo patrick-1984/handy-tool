@@ -65,8 +65,16 @@ const settingUpdaters: {
     commands.changeAudioFeedbackVolumeSetting(value as number),
   sound_theme: (value) => commands.changeSoundThemeSetting(value as string),
   start_hidden: (value) => commands.changeStartHiddenSetting(value as boolean),
-  autostart_enabled: (value) =>
-    commands.changeAutostartSetting(value as boolean),
+  autostart_enabled: async (value) => {
+    const result = await commands.changeAutostartSetting(value as boolean);
+    if (result.status === "error") throw new Error(result.error);
+  },
+  portable_autostart_consent: async (value) => {
+    const result = await commands.changePortableAutostartConsentSetting(
+      value as "never_asked" | "granted" | "declined",
+    );
+    if (result.status === "error") throw new Error(result.error);
+  },
   automatic_update_checks: async (value) => {
     const result = await commands.changeAutomaticUpdateChecksSetting(
       value as boolean,

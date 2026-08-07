@@ -48,7 +48,14 @@
       "failedDetail": "O Handy Tool não foi alterado. {{reason}}",
       "unknownError": "Erro desconhecido",
       "tryAgain": "Tentar novamente",
-      "downloadInstaller": "Baixar instalador"
+      "downloadInstaller": "Baixar instalador",
+      "portableReplaceFolder": "As cópias portáteis são atualizadas substituindo a pasta.",
+      "downloadPortableZip": "Baixar o ZIP portátil",
+      "remindLater": "Lembrar mais tarde",
+      "pipelineBusy": "Há uma gravação ou transcrição em andamento. A atualização poderá ser instalada quando o Handy Tool estiver ocioso.",
+      "installWhenIdle": "Instalar quando estiver ocioso",
+      "installRestartNow": "Instalar e reiniciar agora",
+      "enableAutomatic": "Ativar atualizações automáticas"
     }
   },
   "onboarding": {
@@ -376,7 +383,8 @@
         },
         "silent": {
           "label": "Instalar atualizações silenciosamente",
-          "description": "Fechar, atualizar e abrir novamente na janela permitida. Desativado por padrão."
+          "description": "Fechar, atualizar e abrir novamente na janela permitida. Desativado por padrão.",
+          "portableDescription": "Indisponível no modo portátil. Substitua a pasta portátil para atualizar; o Handy Tool nunca executará o instalador NSIS aqui."
         },
         "time": {
           "label": "Hora da atualização silenciosa",
@@ -456,7 +464,10 @@
       },
       "autostart": {
         "label": "Iniciar na Inicialização",
-        "description": "Registra o Handy Tool para iniciar automaticamente quando você entra no Windows. Padrão: Desligado. Combine com Iniciar Oculto para que ele apareça discretamente na bandeja em vez de abrir sua janela."
+        "description": "Registra o Handy Tool para iniciar automaticamente quando você entra no Windows. Padrão: Desligado. Combine com Iniciar Oculto para que ele apareça discretamente na bandeja em vez de abrir sua janela.",
+        "portableDescription": "Esta cópia portátil pode criar uma entrada de inicialização do Windows fora da pasta. Padrão: desativado.",
+        "portableConsentTitle": "Ativar inicialização automática portátil?",
+        "portableConsentMessage": "A inicialização automática portátil grava uma entrada de inicialização do Windows para todo o computador. Ela não faz parte da pasta portátil e aponta para esta pasta. Se você mover, renomear ou desconectar a unidade, o Windows tentará iniciar um aplicativo que não está lá. Se o Handy Tool também estiver instalado normalmente neste PC, isso substituirá a entrada de inicialização dessa cópia. É a única coisa que uma cópia portátil deixa para trás; desativar a inicialização automática remove a entrada novamente.\n\nAtivar a inicialização automática?"
       },
       "showTrayIcon": {
         "label": "Mostrar ícone na bandeja",
@@ -940,8 +951,14 @@
       },
       "updates": {
         "title": "Atualizações",
-        "description": "Ver releases abre a página de releases do projeto no GitHub, no seu navegador, para você comparar com Versão. O Handy Tool não tem atualizador e nunca verifica por um novo lançamento em segundo plano — atualizar é sempre algo que você escolhe fazer.",
-        "button": "Ver releases"
+        "description": "Procure uma versão mais recente no aplicativo ou abra a página de versões diretamente no navegador.",
+        "button": "Ver releases",
+        "checkWeb": "Verificar na Web",
+        "checkApp": "Verificar atualizações",
+        "checkFailed": "Não foi possível verificar atualizações: {{reason}}.",
+        "useWebHint": "Use «Verificar na Web» se a verificação no aplicativo estiver bloqueada.",
+        "latestVersion": "Você está na versão mais recente ({{version}}).",
+        "availableVersion": "A versão {{version}} está disponível."
       }
     },
     "jumper": {
