@@ -2,6 +2,29 @@
 
 
 
+## [1.0.3] - 2026-08-07
+
+### Added
+
+- **A macOS build exists for the first time.** Intel (x86_64) only, and it should be
+  treated as experimental: it compiles, bundles, passes signature verification, and the
+  binary runs — but it has not been used in anger. Nobody has yet granted it Microphone
+  and Accessibility permission and dictated a sentence with it. If you try it, expect
+  rough edges and please report them.
+
+  Two limits worth stating plainly. It is **not notarized**, so macOS will call it an
+  unidentified developer — right-click the app and choose **Open** to get past that;
+  double-clicking alone will not offer the option. And there is **no Apple Silicon
+  build**: the machine that produces these is an Intel Mac, and it cannot run an ARM
+  binary to check one, so shipping an unverifiable ARM build would be worse than
+  shipping none.
+
+### Fixed
+
+- **The macOS deployment target was impossible.** The bundle declared support for macOS
+  10.13, but the vendored whisper.cpp uses `std::filesystem`, which Apple marks
+  unavailable before 10.15. No macOS build could ever have succeeded. Now 10.15.
+
 ## [1.0.2] - 2026-08-07
 
 ### Fixed

@@ -2,9 +2,10 @@
 
 This guide covers how to set up the development environment and build Handy Tool from source.
 
-**Only the Windows x64 build is produced, tested and released.** The macOS and Linux sections
-below cover source targets that are planned and not shipped. Building on them is unsupported and
-unverified: no macOS or Linux build has been produced, and no download exists for either.
+**Windows x64 is the production target** — built, tested and released. **macOS on Intel is
+built and released but experimental**: it compiles and runs, but has not been exercised as a
+daily driver. **Linux and Apple Silicon are planned**; no build is produced or downloadable
+for either.
 
 ## Prerequisites
 
@@ -22,13 +23,27 @@ unverified: no macOS or Linux build has been produced, and no download exists fo
 - Visual Studio 2019/2022 with C++ development tools
 - Or Visual Studio Build Tools 2019/2022
 
-#### macOS (planned — no build is produced or released)
+#### macOS (Intel — built and released, experimental)
 
-The macOS target has never been built or run. Treat the following as a starting point, not a
-supported path.
+Verified on macOS 14 with an Intel Mac. Requires **macOS 10.15 or newer**: the vendored
+whisper.cpp uses `std::filesystem`, which Apple marks unavailable before 10.15.
 
-- Xcode Command Line Tools
-- Install with: `xcode-select --install`
+- Xcode Command Line Tools — `xcode-select --install`
+- CMake
+- Full Xcode is **not** required. Metal is enabled via `GGML_METAL_EMBED_LIBRARY`, which
+  embeds the shader source and compiles it at runtime, so the Metal compiler that ships
+  only inside Xcode.app is never invoked at build time.
+
+Two things that will otherwise cost you an afternoon:
+
+- **libopus.** `audiopus_sys` vendors libopus as a bare git checkout with no `configure`,
+  so it falls back to `autogen.sh` and fails on a missing `autoreconf`. Rather than
+  installing autotools, build a static libopus from an official *release* tarball (those
+  ship a pre-generated `configure`) and point the crate at it with `LIBOPUS_LIB_DIR` and
+  `LIBOPUS_STATIC=1`.
+- **Bundle target.** `tauri.conf.json` pins `bundle.targets` to `nsis` for Windows. Pass
+  `--bundles app` on macOS. The DMG bundler drives Finder through AppleScript and cannot
+  run without a GUI session, so it fails over SSH *after* producing a perfectly good `.app`.
 
 #### Linux (planned — no build is produced or released)
 
