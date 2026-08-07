@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - build/v1.0.4-validation
+      - build/v1.0.4-windows-retry
 
 # This build uploads a workflow artifact only. It does not create a tag,
 # GitHub Release, or updater manifest.

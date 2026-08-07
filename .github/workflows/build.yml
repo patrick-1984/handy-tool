@@ -47,9 +47,10 @@ on:
 jobs:
   build:
     env:
-      # Override the Windows-only absolute target-dir in src-tauri/.cargo/config.toml
-      # so every hosted runner writes bundles where the workflow verifies/uploads them.
-      CARGO_TARGET_DIR: ${{ github.workspace }}/src-tauri/target
+      # Keep Windows builds on a short absolute path. whisper.cpp's Vulkan shader
+      # generator otherwise exceeds legacy MSBuild path limits on hosted runners.
+      # Unix runners still need to override the Windows-only path in .cargo/config.toml.
+      CARGO_TARGET_DIR: ${{ contains(inputs.platform, 'windows') && 'C:/hb' || format('{0}/src-tauri/target', github.workspace) }}
     permissions:
       contents: write
     runs-on: ${{ inputs.platform }}
@@ -311,10 +312,11 @@ jobs:
           $target = "${{ inputs.target }}"
           $architecture = if ($target -like "aarch64-*") { "aarch64" } else { "x86_64" }
           $profile = "${{ steps.build-profile.outputs.profile }}"
+          $targetRoot = $env:CARGO_TARGET_DIR
           $bundleRoot = if ($target -and $target -ne "x86_64-pc-windows-msvc") {
-            Join-Path "src-tauri/target" (Join-Path $target "$profile/bundle/nsis")
+            Join-Path $targetRoot (Join-Path $target "$profile/bundle/nsis")
           } else {
-            Join-Path "src-tauri/target" "$profile/bundle/nsis"
+            Join-Path $targetRoot "$profile/bundle/nsis"
           }
 
           $version = "${{ steps.get-version.outputs.version }}"
@@ -336,8 +338,8 @@ jobs:
         with:
           name: ${{ inputs.asset-prefix }}-${{ inputs.target }}
           path: |
-            src-tauri/target/${{ inputs.target }}/${{ steps.build-profile.outputs.profile }}/bundle/dmg/*.dmg
-            src-tauri/target/${{ inputs.target }}/${{ steps.build-profile.outputs.profile }}/bundle/macos/*.app
+            ${{ env.CARGO_TARGET_DIR }}/${{ inputs.target }}/${{ steps.build-profile.outputs.profile }}/bundle/dmg/*.dmg
+            ${{ env.CARGO_TARGET_DIR }}/${{ inputs.target }}/${{ steps.build-profile.outputs.profile }}/bundle/macos/*.app
           retention-days: 30
 
       - name: Install FUSE for AppImage processing
@@ -350,7 +352,7 @@ jobs:
         if: contains(inputs.platform, 'ubuntu')
         run: |
           # Find the AppImage file
-          APPIMAGE_PATH=$(find src-tauri/target/${{ steps.build-profile.outputs.profile }}/bundle/appimage -name "*.AppImage" | head -1)
+          APPIMAGE_PATH=$(find "$CARGO_TARGET_DIR/${{ steps.build-profile.outputs.profile }}/bundle/appimage" -name "*.AppImage" | head -1)
 
           if [ -n "$APPIMAGE_PATH" ]; then
             echo "Processing AppImage: $APPIMAGE_PATH"
@@ -403,9 +405,9 @@ jobs:
         with:
           name: ${{ inputs.asset-prefix }}-${{ inputs.platform }}-${{ inputs.target }}
           path: |
-            src-tauri/target/${{ steps.build-profile.outputs.profile }}/bundle/deb/*.deb
-            src-tauri/target/${{ steps.build-profile.outputs.profile }}/bundle/appimage/*.AppImage
-            src-tauri/target/${{ steps.build-profile.outputs.profile }}/bundle/rpm/*.rpm
+            ${{ env.CARGO_TARGET_DIR }}/${{ steps.build-profile.outputs.profile }}/bundle/deb/*.deb
+            ${{ env.CARGO_TARGET_DIR }}/${{ steps.build-profile.outputs.profile }}/bundle/appimage/*.AppImage
+            ${{ env.CARGO_TARGET_DIR }}/${{ steps.build-profile.outputs.profile }}/bundle/rpm/*.rpm
           retention-days: 30
 
       - name: Upload artifacts (Windows)
@@ -415,8 +417,8 @@ jobs:
           name: ${{ inputs.asset-prefix }}-${{ inputs.target }}
           # Default Windows builds place bundles under release/, but cross-compiles (ARM64) nest under target/<triple>/release.
           path: |
-            src-tauri/target/${{ inputs.target != '' && inputs.target != 'x86_64-pc-windows-msvc' && format('{0}/{1}', inputs.target, steps.build-profile.outputs.profile) || steps.build-profile.outputs.profile }}/bundle/msi/*.msi
-            src-tauri/target/${{ inputs.target != '' && inputs.target != 'x86_64-pc-windows-msvc' && format('{0}/{1}', inputs.target, steps.build-profile.outputs.profile) || steps.build-profile.outputs.profile }}/bundle/nsis/*.exe
-            src-tauri/target/${{ inputs.target != '' && inputs.target != 'x86_64-pc-windows-msvc' && format('{0}/{1}', inputs.target, steps.build-profile.outputs.profile) || steps.build-profile.outputs.profile }}/bundle/nsis/*.runtime-verification.json
+            ${{ env.CARGO_TARGET_DIR }}/${{ inputs.target != '' && inputs.target != 'x86_64-pc-windows-msvc' && format('{0}/{1}', inputs.target, steps.build-profile.outputs.profile) || steps.build-profile.outputs.profile }}/bundle/msi/*.msi
+            ${{ env.CARGO_TARGET_DIR }}/${{ inputs.target != '' && inputs.target != 'x86_64-pc-windows-msvc' && format('{0}/{1}', inputs.target, steps.build-profile.outputs.profile) || steps.build-profile.outputs.profile }}/bundle/nsis/*.exe
+            ${{ env.CARGO_TARGET_DIR }}/${{ inputs.target != '' && inputs.target != 'x86_64-pc-windows-msvc' && format('{0}/{1}', inputs.target, steps.build-profile.outputs.profile) || steps.build-profile.outputs.profile }}/bundle/nsis/*.runtime-verification.json
           if-no-files-found: error
           retention-days: 30
