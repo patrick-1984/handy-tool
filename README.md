@@ -23,13 +23,15 @@ Note from current author:
 
 Windows x64. Three ways in — pick one.
 
-### winget
+### winget — *pending review*
 
 ```powershell
 winget install patrick-1984.HandyTool
 ```
 
-The least friction: winget fetches and runs the installer for you, and updates arrive with `winget upgrade`.
+Once this works it is the least friction: winget fetches and runs the installer for you, and later versions arrive with `winget upgrade`.
+
+**Not live yet.** The package is [submitted to the winget community repository](https://github.com/microsoft/winget-pkgs/pull/413622) and waiting on Microsoft's review. Until that pull request is merged the command above will report that no package was found — use the portable ZIP or the installer below.
 
 ### Portable (no installer, nothing left behind)
 
