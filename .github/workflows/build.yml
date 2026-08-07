@@ -46,6 +46,10 @@ on:
 
 jobs:
   build:
+    env:
+      # Override the Windows-only absolute target-dir in src-tauri/.cargo/config.toml
+      # so every hosted runner writes bundles where the workflow verifies/uploads them.
+      CARGO_TARGET_DIR: ${{ github.workspace }}/src-tauri/target
     permissions:
       contents: write
     runs-on: ${{ inputs.platform }}
@@ -300,6 +304,32 @@ jobs:
           assetNamePattern: ${{ steps.patch-release-name.outputs.platform }}
           args: ${{ inputs.build-args }}
 
+      - name: Verify app-local VC++ runtime in Windows installer
+        if: contains(inputs.platform, 'windows')
+        shell: pwsh
+        run: |
+          $target = "${{ inputs.target }}"
+          $architecture = if ($target -like "aarch64-*") { "aarch64" } else { "x86_64" }
+          $profile = "${{ steps.build-profile.outputs.profile }}"
+          $bundleRoot = if ($target -and $target -ne "x86_64-pc-windows-msvc") {
+            Join-Path "src-tauri/target" (Join-Path $target "$profile/bundle/nsis")
+          } else {
+            Join-Path "src-tauri/target" "$profile/bundle/nsis"
+          }
+
+          $version = "${{ steps.get-version.outputs.version }}"
+          $installers = @(
+            Get-ChildItem -LiteralPath $bundleRoot -File -Filter "*.exe" |
+              Where-Object { $_.Name.Contains("_${version}_") }
+          )
+          if ($installers.Count -ne 1) {
+            throw "Expected exactly one NSIS installer for version '$version' under '$bundleRoot', found $($installers.Count)."
+          }
+
+          ./scripts/verify-windows-runtime-bundle.ps1 `
+            -InstallerPath $installers[0].FullName `
+            -Architecture $architecture
+
       - name: Upload artifacts (macOS)
         if: inputs.upload-artifacts && contains(inputs.platform, 'macos')
         uses: actions/upload-artifact@v4
@@ -387,4 +417,6 @@ jobs:
           path: |
             src-tauri/target/${{ inputs.target != '' && inputs.target != 'x86_64-pc-windows-msvc' && format('{0}/{1}', inputs.target, steps.build-profile.outputs.profile) || steps.build-profile.outputs.profile }}/bundle/msi/*.msi
             src-tauri/target/${{ inputs.target != '' && inputs.target != 'x86_64-pc-windows-msvc' && format('{0}/{1}', inputs.target, steps.build-profile.outputs.profile) || steps.build-profile.outputs.profile }}/bundle/nsis/*.exe
+            src-tauri/target/${{ inputs.target != '' && inputs.target != 'x86_64-pc-windows-msvc' && format('{0}/{1}', inputs.target, steps.build-profile.outputs.profile) || steps.build-profile.outputs.profile }}/bundle/nsis/*.runtime-verification.json
+          if-no-files-found: error
           retention-days: 30
