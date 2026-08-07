@@ -24,6 +24,7 @@ export const UpdateSettings: React.FC = () => {
   const [time, setTime] = useState(storedTime);
   const [jitterInput, setJitterInput] = useState(String(jitter));
   const [status, setStatus] = useState<UpdaterStatus | null>(null);
+  const portable = status?.portable ?? false;
 
   useEffect(() => setTime(storedTime), [storedTime]);
   useEffect(() => setJitterInput(String(jitter)), [jitter]);
@@ -97,10 +98,14 @@ export const UpdateSettings: React.FC = () => {
         onChange={(enabled) =>
           void updateSetting("automatic_silent_updates", enabled)
         }
-        disabled={!checks}
+        disabled={!checks || portable || status === null}
         isUpdating={isUpdating("automatic_silent_updates")}
         label={t("settings.general.updates.silent.label")}
-        description={t("settings.general.updates.silent.description")}
+        description={t(
+          portable
+            ? "settings.general.updates.silent.portableDescription"
+            : "settings.general.updates.silent.description",
+        )}
         grouped
       />
       <SettingContainer
@@ -108,12 +113,12 @@ export const UpdateSettings: React.FC = () => {
         description={`${t("settings.general.updates.time.description")} ${windowText}`}
         descriptionMode="inline"
         grouped
-        disabled={!checks || !silent}
+        disabled={!checks || !silent || portable}
       >
         <input
           type="time"
           value={time}
-          disabled={!checks || !silent}
+          disabled={!checks || !silent || portable}
           onChange={(event) => setTime(event.target.value)}
           onBlur={commitTime}
           className="rounded-md border border-mid-gray/30 bg-background-ui px-2 py-1 text-sm disabled:opacity-50"
@@ -124,7 +129,7 @@ export const UpdateSettings: React.FC = () => {
         description={t("settings.general.updates.jitter.description")}
         descriptionMode="inline"
         grouped
-        disabled={!checks || !silent}
+        disabled={!checks || !silent || portable}
       >
         <div className="flex items-center gap-2">
           <input
@@ -132,7 +137,7 @@ export const UpdateSettings: React.FC = () => {
             min={0}
             max={180}
             value={jitterInput}
-            disabled={!checks || !silent}
+            disabled={!checks || !silent || portable}
             onChange={(event) => setJitterInput(event.target.value)}
             onBlur={commitJitter}
             className="w-20 rounded-md border border-mid-gray/30 bg-background-ui px-2 py-1 text-sm disabled:opacity-50"

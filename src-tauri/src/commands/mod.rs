@@ -39,6 +39,12 @@ pub fn get_default_settings() -> Result<AppSettings, String> {
 
 #[tauri::command]
 #[specta::specta]
+pub fn is_portable_mode() -> bool {
+    crate::portable::portable_marker_present()
+}
+
+#[tauri::command]
+#[specta::specta]
 pub fn get_log_dir_path(app: AppHandle) -> Result<String, String> {
     // Portable-aware (T-114 gap #2): report wherever the log plugin is
     // actually writing — the portable `data\logs` folder when portable mode

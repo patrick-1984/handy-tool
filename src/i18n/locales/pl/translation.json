@@ -48,7 +48,14 @@
       "failedDetail": "Handy Tool nie został zmieniony. {{reason}}",
       "unknownError": "Nieznany błąd",
       "tryAgain": "Spróbuj ponownie",
-      "downloadInstaller": "Pobierz instalator"
+      "downloadInstaller": "Pobierz instalator",
+      "portableReplaceFolder": "Wersję przenośną aktualizuje się przez zastąpienie jej folderu.",
+      "downloadPortableZip": "Pobierz przenośny plik ZIP",
+      "remindLater": "Przypomnij później",
+      "pipelineBusy": "Trwa nagrywanie lub transkrypcja. Aktualizację można zainstalować, gdy Handy Tool będzie bezczynny.",
+      "installWhenIdle": "Zainstaluj po zakończeniu",
+      "installRestartNow": "Zainstaluj i uruchom ponownie",
+      "enableAutomatic": "Włącz automatyczne aktualizacje"
     }
   },
   "onboarding": {
@@ -394,7 +401,8 @@
         },
         "silent": {
           "label": "Instaluj aktualizacje po cichu",
-          "description": "W dozwolonym oknie zamknij, zaktualizuj i uruchom ponownie. Domyślnie wyłączone."
+          "description": "W dozwolonym oknie zamknij, zaktualizuj i uruchom ponownie. Domyślnie wyłączone.",
+          "portableDescription": "Niedostępne w trybie przenośnym. Aby zaktualizować, zastąp folder wersji przenośnej; Handy Tool nigdy nie uruchomi tu instalatora NSIS."
         },
         "time": {
           "label": "Czas cichej aktualizacji",
@@ -456,7 +464,10 @@
       },
       "autostart": {
         "label": "Uruchamiaj przy starcie",
-        "description": "Rejestruje Handy Tool do automatycznego uruchamiania po zalogowaniu do Windows. Domyślnie: Wyłączone. Połącz z Uruchom ukryty, aby aplikacja pojawiała się bezgłośnie w zasobniku, bez otwierania okna."
+        "description": "Rejestruje Handy Tool do automatycznego uruchamiania po zalogowaniu do Windows. Domyślnie: Wyłączone. Połącz z Uruchom ukryty, aby aplikacja pojawiała się bezgłośnie w zasobniku, bez otwierania okna.",
+        "portableDescription": "Ta wersja przenośna może utworzyć wpis startowy Windows poza swoim folderem. Domyślnie: wyłączone.",
+        "portableConsentTitle": "Włączyć autostart wersji przenośnej?",
+        "portableConsentMessage": "Autostart wersji przenośnej zapisuje ogólnosystemowy wpis uruchamiania systemu Windows. Nie jest on częścią folderu przenośnego i wskazuje na ten folder. Jeśli przeniesiesz folder, zmienisz jego nazwę lub odłączysz nośnik, Windows spróbuje uruchomić aplikację, której tam nie ma. Jeśli na tym komputerze jest też zwykła instalacja Handy Tool, jej wpis uruchamiania zostanie zastąpiony. To jedyna rzecz pozostawiana przez wersję przenośną; wyłączenie autostartu usuwa ten wpis.\n\nWłączyć autostart?"
       },
       "showTrayIcon": {
         "label": "Pokaż ikonę w zasobniku",
@@ -940,8 +951,14 @@
       },
       "updates": {
         "title": "Aktualizacje",
-        "description": "Sprawdź wydania otwiera w przeglądarce stronę wydań projektu na GitHub, dzięki czemu można ją porównać z Wersją. Handy Tool nie ma mechanizmu aktualizacji i nigdy nie sprawdza nowych wydań w tle — aktualizacja jest zawsze świadomą decyzją.",
-        "button": "Sprawdź wydania"
+        "description": "Sprawdź nowszą wersję w aplikacji albo otwórz stronę wydań bezpośrednio w przeglądarce.",
+        "button": "Sprawdź wydania",
+        "checkWeb": "Sprawdź w sieci",
+        "checkApp": "Sprawdź aktualizacje",
+        "checkFailed": "Nie udało się sprawdzić aktualizacji: {{reason}}.",
+        "useWebHint": "Użyj „Sprawdź w sieci”, jeśli sprawdzanie w aplikacji jest blokowane.",
+        "latestVersion": "Masz najnowszą wersję ({{version}}).",
+        "availableVersion": "Dostępna jest wersja {{version}}."
       }
     },
     "jumper": {

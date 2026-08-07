@@ -48,7 +48,14 @@
       "failedDetail": "Handy Tool değiştirilmedi. {{reason}}",
       "unknownError": "Bilinmeyen hata",
       "tryAgain": "Yeniden dene",
-      "downloadInstaller": "Yükleyiciyi indir"
+      "downloadInstaller": "Yükleyiciyi indir",
+      "portableReplaceFolder": "Taşınabilir kopyalar klasör değiştirilerek güncellenir.",
+      "downloadPortableZip": "Taşınabilir ZIP'i indir",
+      "remindLater": "Daha sonra hatırlat",
+      "pipelineBusy": "Kayıt veya yazıya dökme işlemi sürüyor. Güncelleme Handy Tool boştayken kurulabilir.",
+      "installWhenIdle": "Boştayken kur",
+      "installRestartNow": "Şimdi kur ve yeniden başlat",
+      "enableAutomatic": "Otomatik güncellemeleri aç"
     }
   },
   "onboarding": {
@@ -394,7 +401,8 @@
         },
         "silent": {
           "label": "Güncellemeleri sessizce yükle",
-          "description": "İzin verilen aralıkta kapat, güncelle ve yeniden aç. Varsayılan olarak kapalıdır."
+          "description": "İzin verilen aralıkta kapat, güncelle ve yeniden aç. Varsayılan olarak kapalıdır.",
+          "portableDescription": "Taşınabilir modda kullanılamaz. Güncellemek için taşınabilir klasörü değiştirin; Handy Tool burada NSIS yükleyicisini asla çalıştırmaz."
         },
         "time": {
           "label": "Sessiz güncelleme saati",
@@ -456,7 +464,10 @@
       },
       "autostart": {
         "label": "Başlangıçta Çalıştır",
-        "description": "Windows'a oturum açtığınızda Handy Tool'un otomatik olarak başlatılmasını sağlar. Varsayılan: Kapalı. Penceresini açmak yerine sessizce tepside belirmesi için Gizli Başlat ile birleştirin."
+        "description": "Windows'a oturum açtığınızda Handy Tool'un otomatik olarak başlatılmasını sağlar. Varsayılan: Kapalı. Penceresini açmak yerine sessizce tepside belirmesi için Gizli Başlat ile birleştirin.",
+        "portableDescription": "Bu taşınabilir kopya, klasörünün dışında bir Windows başlangıç girdisi oluşturabilir. Varsayılan: Kapalı.",
+        "portableConsentTitle": "Taşınabilir otomatik başlatma açılsın mı?",
+        "portableConsentMessage": "Taşınabilir otomatik başlatma, makine genelinde bir Windows başlangıç girdisi yazar. Bu girdi taşınabilir klasörün parçası değildir ve bu klasörü gösterir. Klasörü taşır, yeniden adlandırır veya sürücüyü çıkarırsanız Windows orada olmayan bir uygulamayı başlatmaya çalışır. Bu bilgisayarda Handy Tool normal olarak da kuruluysa, bu işlem o kopyanın başlangıç girdisini değiştirir. Taşınabilir kopyanın geride bıraktığı tek şey budur; otomatik başlatmayı kapatmak girdiyi yeniden kaldırır.\n\nOtomatik başlatma açılsın mı?"
       },
       "showTrayIcon": {
         "label": "Tepsi simgesini göster",
@@ -940,8 +951,14 @@
       },
       "updates": {
         "title": "Güncellemeler",
-        "description": "Yayınları Kontrol Et, projenin GitHub yayınları sayfasını tarayıcınızda açar; böylece bunu Sürüm ile karşılaştırabilirsiniz. Handy Tool'un bir güncelleyicisi yoktur ve arka planda asla yeni bir yayın denetlemez — güncelleme her zaman sizin seçtiğiniz bir şeydir.",
-        "button": "Yayınları Kontrol Et"
+        "description": "Uygulamada daha yeni bir sürüm arayın veya sürümler sayfasını doğrudan tarayıcıda açın.",
+        "button": "Yayınları Kontrol Et",
+        "checkWeb": "Web'de kontrol et",
+        "checkApp": "Güncellemeleri denetle",
+        "checkFailed": "Güncellemeler denetlenemedi: {{reason}}.",
+        "useWebHint": "Uygulama içi denetim engellenirse “Web'de kontrol et” düğmesini kullanın.",
+        "latestVersion": "En son sürümü kullanıyorsunuz ({{version}}).",
+        "availableVersion": "{{version}} sürümü mevcut."
       }
     },
     "jumper": {

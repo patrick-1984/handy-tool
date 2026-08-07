@@ -48,7 +48,14 @@
       "failedDetail": "Handy Tool nebyl změněn. {{reason}}",
       "unknownError": "Neznámá chyba",
       "tryAgain": "Zkusit znovu",
-      "downloadInstaller": "Stáhnout instalátor"
+      "downloadInstaller": "Stáhnout instalátor",
+      "portableReplaceFolder": "Přenosná verze se aktualizuje nahrazením složky.",
+      "downloadPortableZip": "Stáhnout přenosný ZIP",
+      "remindLater": "Připomenout později",
+      "pipelineBusy": "Probíhá nahrávání nebo přepis. Aktualizaci lze nainstalovat, až bude Handy Tool nečinný.",
+      "installWhenIdle": "Nainstalovat při nečinnosti",
+      "installRestartNow": "Nainstalovat a restartovat",
+      "enableAutomatic": "Zapnout automatické aktualizace"
     }
   },
   "onboarding": {
@@ -394,7 +401,8 @@
         },
         "silent": {
           "label": "Instalovat aktualizace tiše",
-          "description": "V povoleném okně aplikaci zavřít, aktualizovat a znovu otevřít. Výchozí stav je vypnuto."
+          "description": "V povoleném okně aplikaci zavřít, aktualizovat a znovu otevřít. Výchozí stav je vypnuto.",
+          "portableDescription": "V přenosném režimu není k dispozici. Aktualizaci proveďte nahrazením přenosné složky; Handy Tool zde nikdy nespustí instalátor NSIS."
         },
         "time": {
           "label": "Čas tiché aktualizace",
@@ -456,7 +464,10 @@
       },
       "autostart": {
         "label": "Spouštět při startu",
-        "description": "Zaregistruje Handy Tool ke spuštění automaticky po přihlášení do Windows. Výchozí: Vypnuto. Zkombinujte se Spouštět skrytě, aby se aplikace tiše objevila v systémové liště místo otevření okna."
+        "description": "Zaregistruje Handy Tool ke spuštění automaticky po přihlášení do Windows. Výchozí: Vypnuto. Zkombinujte se Spouštět skrytě, aby se aplikace tiše objevila v systémové liště místo otevření okna.",
+        "portableDescription": "Tato přenosná kopie může vytvořit položku po spuštění Windows mimo svou složku. Výchozí: vypnuto.",
+        "portableConsentTitle": "Zapnout automatické spouštění přenosné verze?",
+        "portableConsentMessage": "Automatické spouštění přenosné verze zapíše celosystémovou položku po spuštění Windows. Není součástí přenosné složky a odkazuje na tuto složku. Pokud ji přesunete, přejmenujete nebo odpojíte disk, Windows se pokusí spustit aplikaci, která tam není. Pokud je na tomto počítači Handy Tool také běžně nainstalován, tato položka nahradí položku nainstalované kopie. Je to jediná věc, kterou přenosná kopie zanechá; vypnutím automatického spouštění se znovu odstraní.\n\nZapnout automatické spouštění?"
       },
       "showTrayIcon": {
         "label": "Zobrazit ikonu v systémové liště",
@@ -940,8 +951,14 @@
       },
       "updates": {
         "title": "Aktualizace",
-        "description": "Zobrazit vydání otevře stránku vydání projektu na GitHubu v prohlížeči, abyste ji mohli porovnat s Verzí. Handy Tool nemá aktualizátor a na pozadí novou verzi nikdy nekontroluje — aktualizace je vždy vaše volba.",
-        "button": "Zobrazit vydání"
+        "description": "Vyhledejte novější verzi v aplikaci nebo otevřete stránku vydání přímo v prohlížeči.",
+        "button": "Zobrazit vydání",
+        "checkWeb": "Zkontrolovat na webu",
+        "checkApp": "Zkontrolovat aktualizace",
+        "checkFailed": "Aktualizace se nepodařilo zkontrolovat: {{reason}}.",
+        "useWebHint": "Pokud je kontrola v aplikaci blokována, použijte „Zkontrolovat na webu“.",
+        "latestVersion": "Používáte nejnovější verzi ({{version}}).",
+        "availableVersion": "Je dostupná verze {{version}}."
       }
     },
     "jumper": {

@@ -57,7 +57,14 @@
       "failedDetail": "Handy Tool was not changed. {{reason}}",
       "unknownError": "Unknown error",
       "tryAgain": "Try again",
-      "downloadInstaller": "Download installer"
+      "downloadInstaller": "Download installer",
+      "portableReplaceFolder": "Portable copies are updated by replacing the folder.",
+      "downloadPortableZip": "Download the portable ZIP",
+      "remindLater": "Remind me later",
+      "pipelineBusy": "A recording or transcription is in progress. The update can install when Handy Tool is idle.",
+      "installWhenIdle": "Install when idle",
+      "installRestartNow": "Install and restart now",
+      "enableAutomatic": "Turn on automatic updates"
     }
   },
   "onboarding": {
@@ -385,7 +392,8 @@
         },
         "silent": {
           "label": "Install updates silently",
-          "description": "Close, update, and reopen during the allowed window. Off by default."
+          "description": "Close, update, and reopen during the allowed window. Off by default.",
+          "portableDescription": "Unavailable in portable mode. Replace the portable folder to update it; Handy Tool will never run the NSIS installer here."
         },
         "time": {
           "label": "Silent update time",
@@ -626,7 +634,10 @@
       },
       "autostart": {
         "label": "Launch on Startup",
-        "description": "Registers Handy Tool to launch automatically when you sign in to Windows. Default: Off. Combine it with Start Hidden so it comes up quietly in the tray instead of opening its window."
+        "description": "Registers Handy Tool to launch automatically when you sign in to Windows. Default: Off. Combine it with Start Hidden so it comes up quietly in the tray instead of opening its window.",
+        "portableDescription": "This portable copy can create a Windows startup entry outside its folder. Default: Off.",
+        "portableConsentTitle": "Enable portable autostart?",
+        "portableConsentMessage": "Portable autostart writes a machine-wide Windows startup entry. It is not part of the portable folder and points to this folder. If you move, rename, or unplug it, Windows will try to start an application that is not there. If Handy Tool is also installed normally on this PC, this replaces that copy's startup entry. This is the one thing a portable copy leaves behind; turning autostart off removes it again.\n\nEnable autostart?"
       },
       "showTrayIcon": {
         "label": "Show Tray Icon",
@@ -1092,8 +1103,14 @@
       },
       "updates": {
         "title": "Updates",
-        "description": "Check releases opens the project's GitHub releases page in your browser so you can compare it against Version. Handy Tool has no updater and never checks for a new release in the background — updating is always something you choose to do.",
-        "button": "Check releases"
+        "description": "Check for a newer version in the app, or open the release page directly in your browser.",
+        "button": "Check releases",
+        "checkWeb": "Check on the web",
+        "checkApp": "Check for updates",
+        "checkFailed": "Couldn't check for updates: {{reason}}.",
+        "useWebHint": "Use Check on the web if the in-app check is blocked.",
+        "latestVersion": "You're on the latest version ({{version}}).",
+        "availableVersion": "Version {{version}} is available."
       },
       "acknowledgments": {
         "title": "Acknowledgments",

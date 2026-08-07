@@ -48,7 +48,14 @@
       "failedDetail": "Handy Tool は変更されていません。{{reason}}",
       "unknownError": "不明なエラー",
       "tryAgain": "再試行",
-      "downloadInstaller": "インストーラーをダウンロード"
+      "downloadInstaller": "インストーラーをダウンロード",
+      "portableReplaceFolder": "ポータブル版はフォルダーを置き換えて更新します。",
+      "downloadPortableZip": "ポータブル ZIP をダウンロード",
+      "remindLater": "後で通知",
+      "pipelineBusy": "録音または文字起こし中です。Handy Tool が待機状態になったら更新できます。",
+      "installWhenIdle": "待機状態でインストール",
+      "installRestartNow": "今すぐインストールして再起動",
+      "enableAutomatic": "自動更新を有効にする"
     }
   },
   "onboarding": {
@@ -394,7 +401,8 @@
         },
         "silent": {
           "label": "サイレントアップデートをインストール",
-          "description": "許可時間内に終了、更新、再起動します。初期設定では無効です。"
+          "description": "許可時間内に終了、更新、再起動します。初期設定では無効です。",
+          "portableDescription": "ポータブルモードでは利用できません。更新するにはポータブルフォルダーを置き換えてください。ここで Handy Tool が NSIS インストーラーを実行することはありません。"
         },
         "time": {
           "label": "サイレント更新時刻",
@@ -456,7 +464,10 @@
       },
       "autostart": {
         "label": "起動時に実行",
-        "description": "Windows にサインインしたときに Handy Tool を自動的に起動するよう登録します。デフォルト: オフ。「非表示で起動」と組み合わせると、ウィンドウを開かずにトレイに静かに立ち上がります。"
+        "description": "Windows にサインインしたときに Handy Tool を自動的に起動するよう登録します。デフォルト: オフ。「非表示で起動」と組み合わせると、ウィンドウを開かずにトレイに静かに立ち上がります。",
+        "portableDescription": "このポータブル版は、フォルダー外に Windows のスタートアップ項目を作成できます。既定値：オフ。",
+        "portableConsentTitle": "ポータブル版の自動起動を有効にしますか？",
+        "portableConsentMessage": "ポータブル版の自動起動は、コンピューター全体に適用される Windows のスタートアップ項目を書き込みます。この項目はポータブルフォルダーの一部ではなく、このフォルダーを参照します。移動、名前変更、またはドライブの取り外しを行うと、Windows は存在しないアプリを起動しようとします。この PC に Handy Tool の通常版もインストールされている場合、その版のスタートアップ項目は置き換えられます。これはポータブル版が残す唯一の項目です。自動起動をオフにすると削除されます。\n\n自動起動を有効にしますか？"
       },
       "showTrayIcon": {
         "label": "トレイアイコンを表示",
@@ -940,8 +951,14 @@
       },
       "updates": {
         "title": "更新",
-        "description": "「リリースを確認」はブラウザでプロジェクトの GitHub リリースページを開き、Version と比較できます。Handy Tool にはアップデーターがなく、バックグラウンドで新しいリリースを確認することはありません — 更新は常に自分で選ぶものです。",
-        "button": "リリースを確認"
+        "description": "アプリ内で新しいバージョンを確認するか、ブラウザーでリリースページを直接開きます。",
+        "button": "リリースを確認",
+        "checkWeb": "Web で確認",
+        "checkApp": "更新を確認",
+        "checkFailed": "更新を確認できませんでした：{{reason}}。",
+        "useWebHint": "アプリ内の確認がブロックされる場合は「Web で確認」を使用してください。",
+        "latestVersion": "最新バージョン（{{version}}）です。",
+        "availableVersion": "バージョン {{version}} を利用できます。"
       }
     },
     "jumper": {

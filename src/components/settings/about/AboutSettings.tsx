@@ -8,6 +8,7 @@ import { Button } from "../../ui/Button";
 import { AppDataDirectory } from "../AppDataDirectory";
 import { AppLanguageSelector } from "../AppLanguageSelector";
 import { LogDirectory } from "../debug";
+import { AboutUpdateCheck } from "./AboutUpdateCheck";
 
 export const AboutSettings: React.FC = () => {
   const { t } = useTranslation();
@@ -60,16 +61,9 @@ export const AboutSettings: React.FC = () => {
           title={t("settings.about.updates.title")}
           description={t("settings.about.updates.description")}
           grouped={true}
+          layout="stacked"
         >
-          <Button
-            variant="secondary"
-            size="md"
-            onClick={() =>
-              openUrl("https://github.com/patrick-1984/handy-tool/releases")
-            }
-          >
-            {t("settings.about.updates.button")}
-          </Button>
+          <AboutUpdateCheck currentVersion={version} />
         </SettingContainer>
 
         <AppDataDirectory descriptionMode="tooltip" grouped={true} />

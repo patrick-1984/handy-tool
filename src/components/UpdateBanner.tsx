@@ -20,6 +20,9 @@ export const UpdateBanner: React.FC = () => {
     });
     const unlisten = listen<UpdaterStatus>("updater-status", (event) => {
       setStatus(event.payload);
+      if (event.payload.state === "checking") {
+        setDismissedVersion(null);
+      }
     });
     return () => {
       disposed = true;
@@ -38,6 +41,15 @@ export const UpdateBanner: React.FC = () => {
   const retry = (): void => {
     void commands.checkForUpdates();
   };
+  const enableAutomatic = async (): Promise<void> => {
+    if (!(getSetting("automatic_update_checks") ?? true)) {
+      await updateSetting("automatic_update_checks", true);
+    }
+    await updateSetting("automatic_silent_updates", true);
+  };
+  const dismiss = (): void => {
+    setDismissedVersion(status.version);
+  };
 
   let title = t("sidebar.update.checking");
   let detail = "";
@@ -46,43 +58,56 @@ export const UpdateBanner: React.FC = () => {
 
   if (status.state === "available") {
     title = t("sidebar.update.available", { version: status.version });
-    detail = silent
-      ? t("sidebar.update.silentOn")
-      : t("sidebar.update.silentOff");
-    primary = silent ? (
-      <button type="button" onClick={install} className="font-semibold underline">
-        {t("sidebar.update.updateRestart")}
-      </button>
-    ) : (
-      <button
-        type="button"
-        onClick={() => {
-          const enable = async (): Promise<void> => {
-            if (!(getSetting("automatic_update_checks") ?? true)) {
-              await updateSetting("automatic_update_checks", true);
-            }
-            await updateSetting("automatic_silent_updates", true);
-          };
-          void enable();
-        }}
-        className="font-semibold underline"
-      >
-        {t("sidebar.update.enableSilent")}
-      </button>
-    );
-    secondary = silent ? (
-      <button
-        type="button"
-        onClick={() => setDismissedVersion(status.version)}
-        className="underline"
-      >
-        {t("sidebar.update.later")}
-      </button>
-    ) : (
-      <button type="button" onClick={install} className="underline">
-        {t("sidebar.update.updateNow")}
-      </button>
-    );
+    if (status.portable) {
+      detail = t("sidebar.update.portableReplaceFolder");
+      primary = (
+        <button
+          type="button"
+          onClick={() => void openUrl(status.releases_url)}
+          className="font-semibold underline"
+        >
+          {t("sidebar.update.downloadPortableZip")}
+        </button>
+      );
+      secondary = (
+        <button type="button" onClick={dismiss} className="underline">
+          {t("sidebar.update.remindLater")}
+        </button>
+      );
+    } else {
+      detail = status.waiting_for_idle
+        ? t("sidebar.update.pipelineBusy")
+        : silent
+          ? t("sidebar.update.silentOn")
+          : t("sidebar.update.silentOff");
+      primary = (
+        <button
+          type="button"
+          onClick={install}
+          className="font-semibold underline"
+        >
+          {status.waiting_for_idle
+            ? t("sidebar.update.installWhenIdle")
+            : t("sidebar.update.installRestartNow")}
+        </button>
+      );
+      secondary = (
+        <>
+          <button type="button" onClick={dismiss} className="underline">
+            {t("sidebar.update.remindLater")}
+          </button>
+          {!silent && (
+            <button
+              type="button"
+              onClick={() => void enableAutomatic()}
+              className="underline"
+            >
+              {t("sidebar.update.enableAutomatic")}
+            </button>
+          )}
+        </>
+      );
+    }
   } else if (status.state === "downloading") {
     title = t("sidebar.update.downloading", { version: status.version });
     detail = t("sidebar.update.percent", {
@@ -124,7 +149,11 @@ export const UpdateBanner: React.FC = () => {
         onClick={() => void openUrl(status.releases_url)}
         className="underline"
       >
-        {t("sidebar.update.downloadInstaller")}
+        {t(
+          status.portable
+            ? "sidebar.update.downloadPortableZip"
+            : "sidebar.update.downloadInstaller",
+        )}
       </button>
     );
   }

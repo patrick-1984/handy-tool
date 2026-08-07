@@ -13,7 +13,7 @@ use tokio::sync::{Mutex as AsyncMutex, Notify};
 const CHECK_TIMEOUT: Duration = Duration::from_secs(30);
 const DOWNLOAD_TIMEOUT: Duration = Duration::from_secs(15 * 60);
 const SCHEDULER_POLL: Duration = Duration::from_secs(60);
-const RELEASES_URL: &str = "https://github.com/patrick-1984/handy-tool/releases";
+const RELEASES_URL: &str = "https://github.com/patrick-1984/handy-tool/releases/latest";
 
 #[derive(Debug, Clone, Serialize, Type)]
 pub struct UpdaterStatus {
@@ -24,6 +24,7 @@ pub struct UpdaterStatus {
     pub total_bytes: Option<u64>,
     pub progress_percent: Option<u8>,
     pub waiting_for_idle: bool,
+    pub portable: bool,
     pub error_code: Option<String>,
     pub error_detail: Option<String>,
     pub last_checked_at: Option<String>,
@@ -40,6 +41,7 @@ impl UpdaterStatus {
             total_bytes: None,
             progress_percent: None,
             waiting_for_idle: false,
+            portable: crate::portable::portable_marker_present(),
             error_code: None,
             error_detail: None,
             last_checked_at: None,
@@ -120,11 +122,17 @@ impl UpdateManager {
     }
 
     fn status(&self) -> UpdaterStatus {
-        self.inner
+        let mut status = self
+            .inner
             .status
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner())
-            .clone()
+            .clone();
+        if status.state == "available" {
+            status.waiting_for_idle = crate::transcription_coordinator::pipeline_stage()
+                != crate::transcription_coordinator::STAGE_IDLE;
+        }
+        status
     }
 
     fn publish(&self, status: UpdaterStatus) {
@@ -220,6 +228,8 @@ impl UpdateManager {
                 status.version = Some(version);
                 status.notes = notes;
                 status.last_checked_at = Some(now);
+                status.waiting_for_idle = crate::transcription_coordinator::pipeline_stage()
+                    != crate::transcription_coordinator::STAGE_IDLE;
                 self.publish(status);
 
                 if automatic && install_in_window.is_some() {
@@ -463,7 +473,8 @@ impl UpdateManager {
                 // A manual check earlier today satisfies the network check,
                 // but a discovered update must still be applied in its
                 // allowed silent window.
-                if settings.automatic_silent_updates
+                if !crate::portable::portable_marker_present()
+                    && settings.automatic_silent_updates
                     && in_place_updates_supported()
                     && self.inner.prepared.lock().await.is_some()
                 {
@@ -475,7 +486,8 @@ impl UpdateManager {
                 return;
             }
             self.mark_scheduled_attempt(&date_key);
-            let install_window = (settings.automatic_silent_updates
+            let install_window = (!crate::portable::portable_marker_present()
+                && settings.automatic_silent_updates
                 && in_place_updates_supported())
             .then_some(window_end);
             let _ = self.check(true, install_window).await;

@@ -48,7 +48,14 @@
       "failedDetail": "Handy Tool n’a pas été modifié. {{reason}}",
       "unknownError": "Erreur inconnue",
       "tryAgain": "Réessayer",
-      "downloadInstaller": "Télécharger l’installateur"
+      "downloadInstaller": "Télécharger l’installateur",
+      "portableReplaceFolder": "Les versions portables se mettent à jour en remplaçant le dossier.",
+      "downloadPortableZip": "Télécharger le ZIP portable",
+      "remindLater": "Me le rappeler plus tard",
+      "pipelineBusy": "Un enregistrement ou une transcription est en cours. La mise à jour pourra s'installer quand Handy Tool sera inactif.",
+      "installWhenIdle": "Installer dès que possible",
+      "installRestartNow": "Installer et redémarrer maintenant",
+      "enableAutomatic": "Activer les mises à jour automatiques"
     }
   },
   "onboarding": {
@@ -394,7 +401,8 @@
         },
         "silent": {
           "label": "Installer silencieusement les mises à jour",
-          "description": "Fermer, mettre à jour et rouvrir pendant la plage autorisée. Désactivé par défaut."
+          "description": "Fermer, mettre à jour et rouvrir pendant la plage autorisée. Désactivé par défaut.",
+          "portableDescription": "Indisponible en mode portable. Remplacez le dossier portable pour le mettre à jour ; Handy Tool n'y exécutera jamais l'installateur NSIS."
         },
         "time": {
           "label": "Heure de mise à jour silencieuse",
@@ -456,7 +464,10 @@
       },
       "autostart": {
         "label": "Lancer au démarrage",
-        "description": "Enregistre Handy Tool pour qu'il se lance automatiquement quand vous vous connectez à Windows. Désactivé par défaut. Combinez-le avec Démarrer masqué pour qu'il apparaisse discrètement dans la barre système au lieu d'ouvrir sa fenêtre."
+        "description": "Enregistre Handy Tool pour qu'il se lance automatiquement quand vous vous connectez à Windows. Désactivé par défaut. Combinez-le avec Démarrer masqué pour qu'il apparaisse discrètement dans la barre système au lieu d'ouvrir sa fenêtre.",
+        "portableDescription": "Cette version portable peut créer une entrée de démarrage Windows hors de son dossier. Par défaut : désactivé.",
+        "portableConsentTitle": "Activer le démarrage automatique portable ?",
+        "portableConsentMessage": "Le démarrage automatique portable écrit une entrée de démarrage Windows à l'échelle de la machine. Elle ne fait pas partie du dossier portable et pointe vers ce dossier. Si vous le déplacez, le renommez ou débranchez le support, Windows tentera de lancer une application qui n'est plus là. Si Handy Tool est aussi installé normalement sur ce PC, cette entrée remplace celle de l'installation. C'est la seule chose qu'une version portable laisse derrière elle ; désactiver le démarrage automatique la supprime.\n\nActiver le démarrage automatique ?"
       },
       "showTrayIcon": {
         "label": "Afficher l'icône de la barre",
@@ -940,8 +951,14 @@
       },
       "updates": {
         "title": "Mises à jour",
-        "description": "Voir les versions ouvre la page des versions GitHub du projet dans votre navigateur, pour la comparer à Version. Handy Tool n'a pas de système de mise à jour et ne vérifie jamais de nouvelle version en arrière-plan — la mise à jour est toujours une démarche volontaire.",
-        "button": "Voir les versions"
+        "description": "Recherchez une version plus récente dans l'application ou ouvrez directement la page des versions dans le navigateur.",
+        "button": "Voir les versions",
+        "checkWeb": "Vérifier sur le Web",
+        "checkApp": "Rechercher des mises à jour",
+        "checkFailed": "Impossible de rechercher des mises à jour : {{reason}}.",
+        "useWebHint": "Utilisez « Vérifier sur le Web » si la vérification intégrée est bloquée.",
+        "latestVersion": "Vous utilisez la dernière version ({{version}}).",
+        "availableVersion": "La version {{version}} est disponible."
       }
     },
     "jumper": {

@@ -48,7 +48,14 @@
       "failedDetail": "Handy Tool wurde nicht geändert. {{reason}}",
       "unknownError": "Unbekannter Fehler",
       "tryAgain": "Erneut versuchen",
-      "downloadInstaller": "Installationsprogramm herunterladen"
+      "downloadInstaller": "Installationsprogramm herunterladen",
+      "portableReplaceFolder": "Portable Versionen werden durch Ersetzen des Ordners aktualisiert.",
+      "downloadPortableZip": "Portables ZIP herunterladen",
+      "remindLater": "Später erinnern",
+      "pipelineBusy": "Eine Aufnahme oder Transkription läuft. Das Update kann installiert werden, sobald Handy Tool inaktiv ist.",
+      "installWhenIdle": "Bei Inaktivität installieren",
+      "installRestartNow": "Jetzt installieren und neu starten",
+      "enableAutomatic": "Automatische Updates einschalten"
     }
   },
   "onboarding": {
@@ -394,7 +401,8 @@
         },
         "silent": {
           "label": "Aktualisierungen im Hintergrund installieren",
-          "description": "Im Zeitfenster schließen, aktualisieren und neu öffnen. Standardmäßig aus."
+          "description": "Im Zeitfenster schließen, aktualisieren und neu öffnen. Standardmäßig aus.",
+          "portableDescription": "Im portablen Modus nicht verfügbar. Ersetzen Sie zum Aktualisieren den portablen Ordner; Handy Tool führt hier niemals das NSIS-Installationsprogramm aus."
         },
         "time": {
           "label": "Zeit für stille Aktualisierung",
@@ -456,7 +464,10 @@
       },
       "autostart": {
         "label": "Beim Start ausführen",
-        "description": "Registriert Handy Tool, damit es automatisch beim Windows-Anmelden startet. Standard: Aus. Kombiniere es mit Versteckt starten, damit es leise im Systembereich erscheint, statt das Fenster zu öffnen."
+        "description": "Registriert Handy Tool, damit es automatisch beim Windows-Anmelden startet. Standard: Aus. Kombiniere es mit Versteckt starten, damit es leise im Systembereich erscheint, statt das Fenster zu öffnen.",
+        "portableDescription": "Diese portable Version kann außerhalb ihres Ordners einen Windows-Autostarteintrag erstellen. Standard: Aus.",
+        "portableConsentTitle": "Portablen Autostart aktivieren?",
+        "portableConsentMessage": "Der portable Autostart schreibt einen systemweiten Windows-Autostarteintrag. Er gehört nicht zum portablen Ordner und verweist auf diesen Ordner. Wenn Sie ihn verschieben, umbenennen oder das Laufwerk trennen, versucht Windows, eine nicht vorhandene Anwendung zu starten. Wenn Handy Tool auf diesem PC auch normal installiert ist, ersetzt dies den Autostarteintrag dieser Installation. Dies ist das Einzige, was eine portable Version hinterlässt; durch erneutes Ausschalten des Autostarts wird der Eintrag entfernt.\n\nAutostart aktivieren?"
       },
       "showTrayIcon": {
         "label": "Taskleistensymbol anzeigen",
@@ -940,8 +951,14 @@
       },
       "updates": {
         "title": "Updates",
-        "description": "Releases prüfen öffnet die GitHub-Releases-Seite des Projekts in deinem Browser, damit du sie mit Version vergleichen kannst. Handy Tool hat keinen Updater und sucht nie im Hintergrund nach einer neuen Version — Aktualisieren ist immer eine bewusste Entscheidung.",
-        "button": "Releases prüfen"
+        "description": "Suchen Sie in der App nach einer neueren Version oder öffnen Sie die Release-Seite direkt im Browser.",
+        "button": "Releases prüfen",
+        "checkWeb": "Im Web prüfen",
+        "checkApp": "Nach Updates suchen",
+        "checkFailed": "Updates konnten nicht geprüft werden: {{reason}}.",
+        "useWebHint": "Verwenden Sie „Im Web prüfen“, falls die Prüfung in der App blockiert wird.",
+        "latestVersion": "Sie verwenden die neueste Version ({{version}}).",
+        "availableVersion": "Version {{version}} ist verfügbar."
       }
     },
     "jumper": {

@@ -48,7 +48,14 @@
       "failedDetail": "Handy Tool không bị thay đổi. {{reason}}",
       "unknownError": "Lỗi không xác định",
       "tryAgain": "Thử lại",
-      "downloadInstaller": "Tải bộ cài"
+      "downloadInstaller": "Tải bộ cài",
+      "portableReplaceFolder": "Bản di động được cập nhật bằng cách thay thế thư mục.",
+      "downloadPortableZip": "Tải ZIP di động",
+      "remindLater": "Nhắc tôi sau",
+      "pipelineBusy": "Đang ghi âm hoặc phiên âm. Có thể cài bản cập nhật khi Handy Tool rảnh.",
+      "installWhenIdle": "Cài khi rảnh",
+      "installRestartNow": "Cài và khởi động lại ngay",
+      "enableAutomatic": "Bật cập nhật tự động"
     }
   },
   "onboarding": {
@@ -394,7 +401,8 @@
         },
         "silent": {
           "label": "Cài đặt cập nhật âm thầm",
-          "description": "Đóng, cập nhật rồi mở lại trong khung giờ cho phép. Mặc định tắt."
+          "description": "Đóng, cập nhật rồi mở lại trong khung giờ cho phép. Mặc định tắt.",
+          "portableDescription": "Không khả dụng ở chế độ di động. Hãy thay thế thư mục di động để cập nhật; Handy Tool sẽ không bao giờ chạy trình cài đặt NSIS ở đây."
         },
         "time": {
           "label": "Giờ cập nhật âm thầm",
@@ -456,7 +464,10 @@
       },
       "autostart": {
         "label": "Khởi động cùng hệ thống",
-        "description": "Đăng ký Handy Tool tự khởi động khi bạn đăng nhập Windows. Mặc định: Tắt. Kết hợp với Start Hidden để nó xuất hiện lặng lẽ trên tray thay vì mở cửa sổ."
+        "description": "Đăng ký Handy Tool tự khởi động khi bạn đăng nhập Windows. Mặc định: Tắt. Kết hợp với Start Hidden để nó xuất hiện lặng lẽ trên tray thay vì mở cửa sổ.",
+        "portableDescription": "Bản di động này có thể tạo mục khởi động Windows bên ngoài thư mục của nó. Mặc định: Tắt.",
+        "portableConsentTitle": "Bật tự khởi động cho bản di động?",
+        "portableConsentMessage": "Tự khởi động cho bản di động sẽ ghi một mục khởi động Windows trên toàn máy. Mục này không thuộc thư mục di động và trỏ tới thư mục này. Nếu bạn di chuyển, đổi tên hoặc rút ổ đĩa, Windows sẽ cố chạy một ứng dụng không còn ở đó. Nếu Handy Tool cũng được cài đặt thông thường trên PC này, mục khởi động của bản đó sẽ bị thay thế. Đây là thứ duy nhất bản di động để lại; tắt tự khởi động sẽ xóa mục này.\n\nBật tự khởi động?"
       },
       "showTrayIcon": {
         "label": "Hiển thị biểu tượng khay",
@@ -940,8 +951,14 @@
       },
       "updates": {
         "title": "Cập nhật",
-        "description": "Check releases mở trang phát hành GitHub của dự án trong trình duyệt để bạn so sánh với Version. Handy Tool không có bộ cập nhật và không bao giờ tự kiểm tra bản phát hành mới ở nền — cập nhật luôn là điều bạn tự chọn thực hiện.",
-        "button": "Kiểm tra bản phát hành"
+        "description": "Kiểm tra phiên bản mới hơn trong ứng dụng hoặc mở thẳng trang phát hành trong trình duyệt.",
+        "button": "Kiểm tra bản phát hành",
+        "checkWeb": "Kiểm tra trên web",
+        "checkApp": "Kiểm tra cập nhật",
+        "checkFailed": "Không thể kiểm tra cập nhật: {{reason}}.",
+        "useWebHint": "Dùng “Kiểm tra trên web” nếu kiểm tra trong ứng dụng bị chặn.",
+        "latestVersion": "Bạn đang dùng phiên bản mới nhất ({{version}}).",
+        "availableVersion": "Đã có phiên bản {{version}}."
       }
     },
     "jumper": {
