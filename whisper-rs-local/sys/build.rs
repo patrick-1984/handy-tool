@@ -318,6 +318,50 @@ fn main() {
 
     let destination = config.build();
 
+    // `cmake::Config::build()` returns the CMake install prefix. The static
+    // archives are installed under its `lib` child, not in the prefix itself.
+    // Always add that stable install location explicitly: recursively scanning
+    // the generator-specific build tree is only a fallback and is not reliable
+    // across MSVC generators/configurations (for example, Ninja vs Visual
+    // Studio can put the archives in different intermediate directories).
+    let installed_lib_dir = destination.join("lib");
+    if !installed_lib_dir.is_dir() {
+        panic!(
+            "CMake did not create the expected installed library directory: {}",
+            installed_lib_dir.display()
+        );
+    }
+
+    // Surface a CMake install regression here, with the actual directory in
+    // the diagnostic, instead of letting rustc fail later with the ambiguous
+    // "perhaps an -L flag is missing" message.
+    #[cfg(not(feature = "intel-sycl"))]
+    {
+        let static_library_name = |name: &str| {
+            if target.contains("msvc") {
+                format!("{}.lib", name)
+            } else {
+                format!("lib{}.a", name)
+            }
+        };
+        let missing: Vec<_> = ["whisper", "ggml", "ggml-base", "ggml-cpu"]
+            .iter()
+            .map(|name| static_library_name(name))
+            .filter(|name| !installed_lib_dir.join(name).is_file())
+            .collect();
+        if !missing.is_empty() {
+            panic!(
+                "CMake did not install required static libraries in {}: {}",
+                installed_lib_dir.display(),
+                missing.join(", ")
+            );
+        }
+    }
+    println!(
+        "cargo:rustc-link-search=native={}",
+        installed_lib_dir.display()
+    );
+
     add_link_search_path(&out.join("build")).unwrap();
 
     println!("cargo:rustc-link-search=native={}", destination.display());
