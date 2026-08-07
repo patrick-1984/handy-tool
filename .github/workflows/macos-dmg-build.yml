@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - build/v1.0.4-macos-retry
+      - build/v1.0.4-macos-retry-2
 
 # This build only checks out source and uploads workflow artifacts. It does not
 # create a tag, draft a release, or publish assets to an existing release.

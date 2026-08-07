@@ -202,8 +202,11 @@ fn build_apple_intelligence_bridge() {
         panic!("swiftc failed to compile {source_file}");
     }
 
-    let status = Command::new("libtool")
+    // Resolve Apple's libtool through the selected Xcode toolchain. Homebrew's
+    // GNU libtool can be first on PATH and does not support Apple's `-static`.
+    let status = Command::new("xcrun")
         .args([
+            "libtool",
             "-static",
             "-o",
             static_lib_path
