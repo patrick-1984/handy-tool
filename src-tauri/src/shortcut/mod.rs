@@ -84,7 +84,7 @@ pub fn register_shortcut(app: &AppHandle, binding: ShortcutBinding) -> Result<()
         KeyboardImplementation::Tauri => tauri_impl::register_shortcut(app, binding),
         KeyboardImplementation::HandyKeys => handy_keys::register_shortcut(app, binding),
     };
-    record_registration_result(&id, &current, &result);
+    record_registration_result(app, &id, &current, &result);
     result
 }
 
@@ -103,16 +103,24 @@ static REGISTRATION_FAILURES: once_cell::sync::Lazy<std::sync::Mutex<Vec<Registr
 
 /// Record the outcome of a registration attempt: a failure is remembered (and
 /// shown by the frontend); a later success for the same binding clears it.
-pub(crate) fn record_registration_result(id: &str, binding: &str, result: &Result<(), String>) {
+pub(crate) fn record_registration_result(
+    app: &AppHandle,
+    id: &str,
+    binding: &str,
+    result: &Result<(), String>,
+) {
     if let Ok(mut failures) = REGISTRATION_FAILURES.lock() {
-        failures.retain(|f| f.id != id);
-        if let Err(e) = result {
+        failures.retain(|failure| failure.id != id);
+        if let Err(error) = result {
             failures.push(RegistrationFailure {
                 id: id.to_string(),
                 binding: binding.to_string(),
-                error: e.clone(),
+                error: error.clone(),
             });
         }
+        let snapshot = failures.clone();
+        drop(failures);
+        let _ = app.emit("shortcut-registration-failures-changed", snapshot);
     }
 }
 
@@ -124,6 +132,30 @@ pub fn get_shortcut_registration_failures() -> Vec<RegistrationFailure> {
         .lock()
         .map(|f| f.clone())
         .unwrap_or_default()
+}
+
+/// Retry only the shortcuts that are currently inactive, leaving successful
+/// registrations untouched.
+#[tauri::command]
+#[specta::specta]
+pub fn retry_shortcut_registrations(app: AppHandle) -> Vec<RegistrationFailure> {
+    let failed_ids: Vec<String> = get_shortcut_registration_failures()
+        .into_iter()
+        .map(|failure| failure.id)
+        .collect();
+    let bindings = settings::get_bindings(&app);
+
+    for id in failed_ids {
+        let Some(binding) = bindings.get(&id).cloned() else {
+            continue;
+        };
+        let _ = unregister_shortcut(&app, binding.clone());
+        if let Err(error) = register_shortcut(&app, binding) {
+            warn!("Retry failed for shortcut '{}': {}", id, error);
+        }
+    }
+
+    get_shortcut_registration_failures()
 }
 
 /// Jumper bindings (hot anchor + static slots) are Windows-only — they must
@@ -552,7 +584,7 @@ fn register_all_shortcuts_for_implementation(
             KeyboardImplementation::Tauri => tauri_impl::register_shortcut(app, binding),
             KeyboardImplementation::HandyKeys => handy_keys::register_shortcut(app, binding),
         };
-        record_registration_result(id, &current, &result);
+        record_registration_result(app, id, &current, &result);
 
         if let Err(e) = result {
             error!(

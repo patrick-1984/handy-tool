@@ -16,6 +16,7 @@ Use ordinary transcription when you want the words in the field under your curso
 - [A thirty-minute dictation is already transcribed when you stop](../features.md#a-thirty-minute-dictation-is-already-transcribed-when-you-stop)
 - [Speak any language, get English](../features.md#speak-any-language-get-english)
 - [Every engine keeps your last word](../features.md#every-engine-keeps-your-last-word)
+- [Transcribe without tying up the CPU or GPU](../features.md#use-the-npu-in-your-laptop)
 - [Ctrl+V doesn't work in that app](../features.md#ctrl-v-doesnt-work-in-that-app)
 - [Dictation doesn't steal your clipboard](../features.md#dictation-doesnt-steal-your-clipboard)
 - [Names and jargon stop coming back mangled](../features.md#names-and-jargon-stop-coming-back-mangled)
@@ -32,6 +33,7 @@ Use ordinary transcription when you want the words in the field under your curso
 - [Escape stops the delivery, not your words](../features.md#escape-stops-the-delivery-not-your-words)
 - [A key pressed too early tells you, instead of eating the words](../features.md#a-key-pressed-too-early-tells-you)
 - [A take that produced no text says so](../features.md#a-take-that-produced-no-text-says-so)
+- [Windows blocked FLM — know which choices are real](../features.md#windows-blocked-flm-know-which-choices-are-real)
 - [The paste didn't land — get the words back without re-dictating](../features.md#the-paste-didnt-land-get-the-words-back)
 
 ## Set it up

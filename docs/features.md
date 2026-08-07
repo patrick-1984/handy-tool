@@ -75,6 +75,7 @@ somebody real work. If you have lived through one of these, start here.
 - [Stop the recording with whichever key is under your finger](#stop-the-recording-with-whichever-key-is-under-your-finger) — you had to remember which key you started with
 - [The re-paste happens the moment you let go](#the-re-paste-happens-the-moment-you-let-go) — a held macro key used to cost a second
 - [Orphaned NPU servers can't block your next take](#orphaned-npu-servers-cant-block-your-next-take) — "failed to start" after a crash, forever
+- [Windows blocked FLM — know which choices are real](#windows-blocked-flm-know-which-choices-are-real) — "can't verify", "unknown publisher", "blocked", or error 4551
 - [A take that produced no text says so](#a-take-that-produced-no-text-says-so) — the worst failure is the silent one
 - [Cancel a stuck download and it stops now](#cancel-a-stuck-download-and-it-stops-now) — the UI said canceled, the machine disagreed
 - [Token counts you can trust from a local server](#token-counts-you-can-trust-from-a-local-server) — one word reported as 20 tokens
@@ -1309,10 +1310,10 @@ neither should not all run the same model.
 **What Handy does.** Whisper (small through large-v3) runs locally on the GPU and is the best
 all-rounder. Parakeet runs on CPU only at roughly five times realtime with automatic language
 detection. Moonshine is small and fast for short clips, with a streaming variant. SenseVoice
-covers a wide multilingual range. FLM runs on NPU silicon. Two remote engines cover anything
-hosted. Each model card states its size and what it is good at, and models are labeled by where
-they run.
-**Where.** `Models › Available to Download`.
+covers a wide multilingual range. FastFlowLM (FLM) runs Whisper on the NPU. API Transcription
+and OpenRouter are the two remote engines. Each model card states its size and what it is good
+at, and models are labeled by where they run.
+**Where.** `Models › Downloaded Models` and `Models › Available to Download`.
 **Since.** 0.1.6; the current registry grew through 0.36.0.
 
 ### Every engine keeps your last word
@@ -1351,16 +1352,46 @@ model load.
 **Where.** `General › Transcription › GPU Device = CPU Only` *{Windows only}*.
 **Since.** 0.42.0.
 
-### Use the NPU in your laptop
+### Transcribe without tying up the CPU or GPU
 
 <a id="use-the-npu-in-your-laptop"></a>
-**The situation.** Your machine has an AI accelerator sitting idle while transcription competes
-with your build for the CPU and GPU.
-**What Handy does.** With FLM installed, an NPU-accelerated Whisper model appears as an ordinary
-model choice and runs dictation on the accelerator, leaving CPU and GPU free. Handy manages the
-local server process itself.
-**Where.** `Models › Available to Download`.
+**The situation.** A recent AMD Ryzen AI processor has an NPU — a low-power neural processing
+unit — while compiling or rendering already needs the CPU and GPU.
+**What Handy does.** FastFlowLM (FLM) can run Handy's Whisper transcription on that NPU, leaving
+the CPU and GPU free for the work already using them. FLM is a separate, third-party program:
+you install it yourself, and Handy does not bundle, install or download it. Handy auto-detects
+`flm` on `PATH`, then `%LOCALAPPDATA%\flm\flm.exe`, `~/.flm/flm.exe`, and
+`C:\Program Files\flm\flm.exe`, in that order; there is no path setting. Once detected, its
+`whisper-v3:turbo` model appears with the other model choices. Handy starts FLM on
+`127.0.0.1`, so transcription audio stays on the machine. If the language is `auto`, this
+engine uses English. The engine path exists in the Windows and Linux code, but Handy releases
+only Windows x64 today; Linux remains planned and in the queue.
+**Where.** No path control — install FLM in one of the auto-detected locations, then open
+`Models › Downloaded Models` and select **FLM Whisper V3 Turbo (NPU)**.
 **Since.** 0.8.2.
+<!-- prov: FLM documentation audit | src: src-tauri/src/managers/flm.rs; src-tauri/src/managers/model.rs; src-tauri/src/managers/transcription.rs; src/components/settings/models/ModelsSettings.tsx -->
+
+### Windows blocked FLM — know which choices are real
+
+<a id="windows-blocked-flm-know-which-choices-are-real"></a>
+**The situation.** Windows says it "can't verify" `flm.exe`, calls it an "unknown publisher",
+says it was "blocked", or Handy reports OS error 4551. The Code Integrity log may record event
+3077 or 3033 and say that `flm.exe` did not meet the signing requirements.
+**What Handy does.** FastFlowLM currently ships an unsigned `flm.exe`, and enforced Windows
+Smart App Control can refuse to let Handy start it. This is **not an antivirus detection**:
+Microsoft Defender antivirus reports zero threat detections, and adding an antivirus exclusion
+does nothing. Smart App Control is a separate mechanism with no exclusion list, so one program
+cannot be allowed through it.
+
+The low-cost choice is to use any other Handy transcription engine; FLM is an optional
+accelerator, not a requirement. You can also wait for FastFlowLM to publish a signed binary,
+which is outside Handy's control. The remaining choice is to turn Smart App Control off, but
+that is one-way: it cannot be switched back on without resetting or reinstalling Windows. Weigh
+that cost before changing it. Smart App Control blocks unsigned binaries generally, so an
+enforced machine may reject other unsigned developer tools too.
+**Where.** `Windows Security › App & browser control › Smart App Control settings` *{Windows only}*. <!-- drift-ok -->
+**Since.** 1.0.0.
+<!-- prov: verified 2026-08-07 | src: src-tauri/src/managers/flm.rs; src/lib/flm.ts; src/App.tsx; src/components/model-selector/ModelSelector.tsx; src/i18n/locales/en/translation.json | claim: safety -->
 
 ### Orphaned NPU servers can't block your next take
 
@@ -1391,11 +1422,13 @@ holding it — and tells you to close that and reselect the model. Driver advice
 <a id="the-npu-engine-starts-in-the-mode-flm-requires"></a>
 **The situation.** You update FLM and the engine stops working with "unsupported model family".
 **What Handy does.** Recent FLM versions refuse a speech model as a positional argument and have
-dropped their health endpoint, so Handy starts the server in standalone speech mode and polls
-the model list for readiness instead. A failed start sets a short cooldown so a broken
-installation cannot keep blocking your takes.
+dropped their health endpoint, so Handy starts
+`flm serve --port 52625 --host 127.0.0.1 --asr 1` and polls `GET /v1/models` for readiness.
+Transcription uses `POST /v1/audio/transcriptions` with model `whisper-v3:turbo`. A failed start
+sets a 60-second cooldown so a broken installation cannot keep blocking your takes.
 **Where.** No control — this is always active.
 **Since.** 0.38.0.
+<!-- prov: D-169 | src: src-tauri/src/managers/flm.rs; src-tauri/src/managers/transcription.rs -->
 
 ### Cancel a stuck download and it stops now
 

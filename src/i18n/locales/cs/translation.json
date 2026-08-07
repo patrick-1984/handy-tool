@@ -224,11 +224,11 @@
           },
           "transcribe_ptt": {
             "name": "Zkratka Stisk a mluv",
-            "description": "Podržte tuto zkratku pro nahrávání a uvolněte pro zastavení; mikrofon při uvolnění okamžitě ztichne, takže vše řečené poté nemůže uniknout do textu. Výchozí: Ctrl+Alt+Space. Má vlastní Režim přepisu (PTT) a vlastní Způsob vložení (PTT), takže se stisk a mluv může chovat jinak než Zkratka přepisu."
+            "description": "Podržte tuto zkratku pro nahrávání a uvolněte pro zastavení; mikrofon při uvolnění okamžitě ztichne, takže vše řečené poté nemůže uniknout do textu. Výchozí: Ctrl+Shift+Space. Má vlastní Režim přepisu (PTT) a vlastní Způsob vložení (PTT), takže se stisk a mluv může chovat jinak než Zkratka přepisu."
           },
           "type_text": {
             "name": "Zkratka pro psaní textu",
-            "description": "Napíše, co je v poli Psaní na klávesnici, do okna, které má právě zaměření; stiskněte znovu, nebo Escape, pro zrušení. Výchozí: ctrl+alt+t. Začne přibližně za sekundu místo čekání na celé Zpoždění spuštění, protože stisk zkratky znamená, že už jste v cílovém okně — plný odpočet používá jen tlačítko Spustit."
+            "description": "Napíše, co je v poli Psaní na klávesnici, do okna, které má právě zaměření; stiskněte znovu, nebo Escape, pro zrušení. Výchozí: ctrl+shift+F11. Začne přibližně za sekundu místo čekání na celé Zpoždění spuštění, protože stisk zkratky znamená, že už jste v cílovém okně — plný odpočet používá jen tlačítko Spustit."
           },
           "transcribe_and_submit": {
             "name": "Zkratka Přepsat a odeslat",
@@ -236,11 +236,11 @@
           },
           "anchor_set": {
             "name": "Nastavit kotvu",
-            "description": "Zachytí aktuálně zaměřené textové pole jako cíl Aktivní 1. Výchozí: ctrl+alt+k. Samo o sobě nic nedoručí — nastavte „Akci skokového slotu při ukončení“ na „Přejít / doručit do slotu“ se slotem Aktivní 1 (Pokročilé → Přepis), aby do něj váš další přepis dorazil. Přihlašovací pole a vlastní okna Handy jsou odmítnuta."
+            "description": "Zachytí aktuálně zaměřené textové pole jako cíl Aktivní 1. Výchozí: ctrl+shift+F1. Samo o sobě nic nedoručí — nastavte „Akci skokového slotu při ukončení“ na „Přejít / doručit do slotu“ se slotem Aktivní 1 (Pokročilé → Přepis), aby do něj váš další přepis dorazil. Přihlašovací pole a vlastní okna Handy jsou odmítnuta."
           },
           "anchor_jump": {
             "name": "Přejít na kotvu",
-            "description": "Vrátí zaměření zpět na okno a pole Aktivní 1 a nic nevloží — klávesa „zpět k rozepsanému textu“. Výchozí: ctrl+alt+j. Pokud je pro tento slot zapnuto „Uložit pozici myši“, vrátí se i kurzor; nic se nestane, pokud je slot prázdný nebo jeho okno bylo zavřeno."
+            "description": "Vrátí zaměření zpět na okno a pole Aktivní 1 a nic nevloží — klávesa „zpět k rozepsanému textu“. Výchozí: ctrl+shift+F2. Pokud je pro tento slot zapnuto „Uložit pozici myši“, vrátí se i kurzor; nic se nestane, pokud je slot prázdný nebo jeho okno bylo zavřeno."
           },
           "jump_set_slot_1": {
             "name": "Nastavit skokový slot 1",
@@ -274,6 +274,13 @@
             "name": "Přejít do slotu 4",
             "description": "Zaměří okno a pole statického slotu 4 a nic nevloží — čistá navigace. Výchozí: ctrl+alt+4. Pokud je pro tento slot zapnuto „Uložit pozici myši“, obnoví se i kurzor; nic se nestane, pokud je slot prázdný nebo jeho okno bylo zavřeno."
           }
+        },
+        "failurePanel": {
+          "title": "Nezaregistrované klávesové zkratky",
+          "description": "Tyto zkratky nejsou aktivní. Změňte kombinaci nebo po vyřešení konfliktu zkuste registraci znovu.",
+          "retry": "Zkusit znovu",
+          "retrying": "Opakuji pokus…",
+          "retryError": "Registraci zkratek se nepodařilo zopakovat."
         },
         "errors": {
           "restore": "Nepodařilo se obnovit původní zkratku",
@@ -397,7 +404,8 @@
         "title": "Aktualizace",
         "checks": {
           "label": "Automaticky kontrolovat aktualizace",
-          "description": "Jednou denně zkontrolovat veřejná vydání na GitHubu."
+          "description": "Jednou denně zkontrolovat veřejná vydání na GitHubu.",
+          "privacy": "Kontrola aktualizací neodesílá nic o vás—není zde telemetrie, analytika ani účet—a pouze čte jeden veřejný soubor z vydání projektu na GitHubu."
         },
         "silent": {
           "label": "Instalovat aktualizace tiše",
@@ -1180,6 +1188,7 @@
     "transcriptionFailed": "Přepis se nezdařil: {{reason}}. Zkontrolujte, že vybraný model funguje, a zkuste to znovu."
   },
   "flm": {
+    "windowsApplicationControlBlocked": "Řízení aplikací ve Windows zablokovalo flm.exe, protože není podepsaný. Modul NPU není dostupný. Zvolte jiný model přepisu.",
     "notInstalled": "FLM není nainstalováno. Nainstalujte FastFlowLM pro použití modelů akcelerovaných přes NPU.",
     "npuAccelerated": "Akcelerováno přes NPU"
   },

@@ -281,7 +281,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ inputs.sign-binaries && secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD || '' }}
           WHISPER_NO_AVX: ${{ contains(inputs.platform, 'ubuntu') && !contains(inputs.platform, 'arm') && 'ON' || '' }}
           WHISPER_NO_AVX2: ${{ contains(inputs.platform, 'ubuntu') && !contains(inputs.platform, 'arm') && 'ON' || '' }}
-          # T-210: portable CPU baseline for every distributable build this
+          # Portable CPU baseline for every distributable build this
           # reusable job produces (Windows/macOS/Linux, all targets, debug or
           # release). Unconditional and applied to every platform: an
           # un-pinned build inherits ggml's GGML_NATIVE=ON default and bakes

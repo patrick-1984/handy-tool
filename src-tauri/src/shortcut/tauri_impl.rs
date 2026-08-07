@@ -37,7 +37,7 @@ pub fn init_shortcuts(app: &AppHandle) {
 
         let current = binding.current_binding.clone();
         let result = register_shortcut(app, binding);
-        super::record_registration_result(&id, &current, &result);
+        super::record_registration_result(app, &id, &current, &result);
         if let Err(e) = result {
             error!("Failed to register shortcut {} during init: {}", id, e);
         }

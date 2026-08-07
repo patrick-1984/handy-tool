@@ -210,8 +210,9 @@ pub async fn is_model_loading(
 /// External engines (`EngineType::is_external()`) are a DIFFERENT story: the
 /// registry always sets `is_downloaded: true` for API/OpenRouter (they have
 /// no on-disk artifact — see the doc comment on `EngineType::is_external`),
-/// and FLM's entry is only inserted into the registry when `detect_flm()`
-/// already succeeded at startup. So `is_downloaded` alone can't distinguish
+/// and FLM's entry is inserted when its executable path is present. The model
+/// manager filters that entry after Windows Application Control marks it blocked.
+/// So is_downloaded alone cannot distinguish
 /// "the user configured this" from "this engine merely exists" — that's
 /// exactly the T-106 bug (a fresh install with an unconfigured API/OpenRouter
 /// entry skipped onboarding into a broken state). Require each external
@@ -223,8 +224,8 @@ pub async fn is_model_loading(
 ///   registered `llm_providers` entry with a non-empty API key (the
 ///   transcription model itself may be left unset — the engine falls back to
 ///   `openai/whisper-large-v3`, see CLAUDE.md).
-/// - `FlmWhisper`: presence in the registry already means `detect_flm()`
-///   succeeded, so `is_downloaded` (always true for this entry) is accurate.
+/// - FlmWhisper: model-manager queries filter out a policy-blocked FLM before
+///   this helper sees it; is_downloaded is true for the remaining entry.
 fn is_model_usable(model: &ModelInfo, settings: &AppSettings) -> bool {
     match model.engine_type {
         EngineType::ApiWhisper => !settings.api_transcription_url.trim().is_empty(),
@@ -364,8 +365,8 @@ mod tests {
 
     #[test]
     fn flm_engine_trusts_registry_is_downloaded() {
-        // FLM's entry is only ever inserted into the registry when
-        // `detect_flm()` already succeeded, so `is_downloaded` is authoritative.
+        // Model-manager queries filter a known policy-blocked FLM entry before
+        // usability checks; the remaining registry entry is authoritative.
         #[cfg(not(target_os = "macos"))]
         {
             let settings = get_default_settings();

@@ -514,8 +514,19 @@ impl UpdateManager {
             .unwrap_or_else(|poisoned| poisoned.into_inner());
         if state.schedule_date.as_deref() != Some(date) || state.schedule_signature != signature {
             let span = (jitter as i32 * 2 + 1).max(1) as u32;
-            let bytes = uuid::Uuid::new_v4().into_bytes();
-            let sample = u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]);
+            // Spread today's scheduled check somewhere inside the jitter window.
+            //
+            // Deliberately derived from clock noise rather than from any
+            // identifier generator. This number never leaves the machine — it
+            // only picks a minute — but a generated ID sitting in the update
+            // code reads like tracking to anyone auditing how this app talks to
+            // the network, and that suspicion costs more than the convenience
+            // is worth. Sub-second clock noise spreads the schedule just as
+            // well and cannot be mistaken for something that identifies a user.
+            let sample = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|elapsed| elapsed.subsec_nanos())
+                .unwrap_or(0);
             state.scheduled_offset_minutes = (sample % span) as i16 - jitter;
             state.schedule_date = Some(date.to_string());
             state.schedule_signature = signature.to_string();

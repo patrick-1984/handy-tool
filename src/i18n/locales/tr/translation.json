@@ -224,11 +224,11 @@
           },
           "transcribe_ptt": {
             "name": "Bas Konuş Kısayolu",
-            "description": "Kaydetmek için bu kısayolu basılı tutun, durdurmak için bırakın; bırakıldığında mikrofon soğur, bu nedenle sonrasında söylediğiniz hiçbir şey metne sızamaz. Varsayılan: Ctrl+Alt+Space. Kendi Transkripsiyon Modu (PTT) ve kendi Yapıştırma Yöntemi (PTT) ayarlarına sahiptir; bu nedenle bas-konuş, Transkripsiyon Kısayolu'ndan farklı davranabilir."
+            "description": "Kaydetmek için bu kısayolu basılı tutun, durdurmak için bırakın; bırakıldığında mikrofon soğur, bu nedenle sonrasında söylediğiniz hiçbir şey metne sızamaz. Varsayılan: Ctrl+Shift+Space. Kendi Transkripsiyon Modu (PTT) ve kendi Yapıştırma Yöntemi (PTT) ayarlarına sahiptir; bu nedenle bas-konuş, Transkripsiyon Kısayolu'ndan farklı davranabilir."
           },
           "type_text": {
             "name": "Metin Yazma Kısayolu",
-            "description": "Klavye Yazıcısı kutusunda ne varsa şu anda odaklanılan pencereye yazar; iptal etmek için tekrar basın veya Escape'e basın. Varsayılan: ctrl+alt+t. Başlangıç gecikmesini beklemek yerine yaklaşık bir saniye sonra başlar, çünkü bir kısayola basmak zaten hedef pencerede olduğunuz anlamına gelir — tam geri saymayı kullanan Başlat düğmesidir."
+            "description": "Klavye Yazıcısı kutusunda ne varsa şu anda odaklanılan pencereye yazar; iptal etmek için tekrar basın veya Escape'e basın. Varsayılan: ctrl+shift+F11. Başlangıç gecikmesini beklemek yerine yaklaşık bir saniye sonra başlar, çünkü bir kısayola basmak zaten hedef pencerede olduğunuz anlamına gelir — tam geri saymayı kullanan Başlat düğmesidir."
           },
           "transcribe_and_submit": {
             "name": "Transkribe Et ve Gönder Kısayolu",
@@ -236,11 +236,11 @@
           },
           "anchor_set": {
             "name": "Sabit Nokta Belirle",
-            "description": "Şu anda odaklanılan metin alanını Sıcak 1 hedefi olarak yakalar. Varsayılan: ctrl+alt+k. Kendi başına hiçbir şey teslim etmez — sonraki transkripsiyonunuzun oraya inmesi için 'Bitişte yuva eylemi'ni, yuva Sıcak 1'e ayarlanmış 'Yuvaya atla / teslim et' olarak ayarlayın (Gelişmiş → Transkripsiyon). Parola kutuları ve Handy'nin kendi pencereleri kabul edilmez."
+            "description": "Şu anda odaklanılan metin alanını Sıcak 1 hedefi olarak yakalar. Varsayılan: ctrl+shift+F1. Kendi başına hiçbir şey teslim etmez — sonraki transkripsiyonunuzun oraya inmesi için 'Bitişte yuva eylemi'ni, yuva Sıcak 1'e ayarlanmış 'Yuvaya atla / teslim et' olarak ayarlayın (Gelişmiş → Transkripsiyon). Parola kutuları ve Handy'nin kendi pencereleri kabul edilmez."
           },
           "anchor_jump": {
             "name": "Sabit Noktaya Atla",
-            "description": "Sıcak 1 penceresini ve alanını yeniden odağa getirir ve hiçbir şey yapıştırmaz — bir 'taslağıma geri dön' tuşu. Varsayılan: ctrl+alt+j. Bu yuva için 'Fare konumunu kaydet' açıksa imleç de geri taşınır; yuva boşsa veya penceresi kapanmışsa hiçbir şey olmaz."
+            "description": "Sıcak 1 penceresini ve alanını yeniden odağa getirir ve hiçbir şey yapıştırmaz — bir 'taslağıma geri dön' tuşu. Varsayılan: ctrl+shift+F2. Bu yuva için 'Fare konumunu kaydet' açıksa imleç de geri taşınır; yuva boşsa veya penceresi kapanmışsa hiçbir şey olmaz."
           },
           "jump_set_slot_1": {
             "name": "Atlama Yuvası 1'i Belirle",
@@ -274,6 +274,13 @@
             "name": "Yuva 4'e Atla",
             "description": "Statik yuva 4'ün penceresini ve alanını odağa getirir, hiçbir şey teslim etmez — saf gezinme. Varsayılan: ctrl+alt+4. Bu yuva için 'Fare konumunu kaydet' açıksa imleç de geri yüklenir; yuva boşsa veya penceresi kapanmışsa hiçbir şey olmaz."
           }
+        },
+        "failurePanel": {
+          "title": "Kaydedilemeyen kısayollar",
+          "description": "Bu kısayollar etkin değil. Tuş birleşimini değiştirin veya çakışmayı giderdikten sonra yeniden deneyin.",
+          "retry": "Yeniden dene",
+          "retrying": "Yeniden deneniyor…",
+          "retryError": "Kısayollar yeniden kaydedilemedi."
         },
         "errors": {
           "restore": "Orijinal kısayol geri yüklenemedi",
@@ -397,7 +404,8 @@
         "title": "Güncellemeler",
         "checks": {
           "label": "Güncellemeleri otomatik denetle",
-          "description": "Herkese açık GitHub sürümlerini günde bir kez denetle."
+          "description": "Herkese açık GitHub sürümlerini günde bir kez denetle.",
+          "privacy": "Güncelleme denetimi sizinle ilgili hiçbir şey göndermez—telemetri, analiz veya hesap yoktur—ve yalnızca projenin GitHub sürümlerindeki tek bir herkese açık dosyayı okur."
         },
         "silent": {
           "label": "Güncellemeleri sessizce yükle",
@@ -1180,6 +1188,7 @@
     "transcriptionFailed": "Transkripsiyon başarısız oldu: {{reason}}. Seçili modelinizin çalıştığından emin olun ve tekrar deneyin."
   },
   "flm": {
+    "windowsApplicationControlBlocked": "Windows Uygulama Denetimi, imzalı olmadığı için flm.exe dosyasını engelledi. NPU altyapısı kullanılamıyor. Farklı bir transkripsiyon modeli seçin.",
     "notInstalled": "FLM kurulu değil. NPU hızlandırmalı modelleri kullanmak için FastFlowLM'i kurun.",
     "npuAccelerated": "NPU Hızlandırmalı"
   },

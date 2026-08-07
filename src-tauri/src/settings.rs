@@ -1905,14 +1905,11 @@ pub fn normalize_language_for_engine(selected_language: &str) -> Option<String> 
 pub const SETTINGS_STORE_PATH: &str = "settings_store.json";
 
 pub fn get_default_settings() -> AppSettings {
-    #[cfg(target_os = "windows")]
+    // Never default to Alt/Option+letter: AltGr is reported as Ctrl+Alt on
+    // Windows and those chords type accented characters on many European
+    // layouts. Keep defaults on Space, function keys, digits, or Ctrl+Shift
+    // chords so changing keyboard layouts cannot turn dictation into text input.
     let default_shortcut = "ctrl+space";
-    #[cfg(target_os = "macos")]
-    let default_shortcut = "option+space";
-    #[cfg(target_os = "linux")]
-    let default_shortcut = "ctrl+space";
-    #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
-    let default_shortcut = "alt+space";
 
     let mut bindings = HashMap::new();
     bindings.insert(
@@ -1925,17 +1922,7 @@ pub fn get_default_settings() -> AppSettings {
             current_binding: default_shortcut.to_string(),
         },
     );
-    #[cfg(target_os = "windows")]
-    let default_ptt_shortcut = "ctrl+alt+space";
-    // NOT "option+alt+space": option IS alt on macOS, so that chord collapses to
-    // "option+space" — identical to the transcribe default — and one of the two
-    // bindings would nondeterministically fail to register every launch.
-    #[cfg(target_os = "macos")]
-    let default_ptt_shortcut = "ctrl+option+space";
-    #[cfg(target_os = "linux")]
-    let default_ptt_shortcut = "ctrl+alt+space";
-    #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
-    let default_ptt_shortcut = "alt+ctrl+space";
+    let default_ptt_shortcut = "ctrl+shift+space";
 
     bindings.insert(
         "transcribe_ptt".to_string(),
@@ -1948,14 +1935,7 @@ pub fn get_default_settings() -> AppSettings {
         },
     );
 
-    #[cfg(target_os = "windows")]
-    let default_post_process_shortcut = "ctrl+shift+space";
-    #[cfg(target_os = "macos")]
-    let default_post_process_shortcut = "option+shift+space";
-    #[cfg(target_os = "linux")]
-    let default_post_process_shortcut = "ctrl+shift+space";
-    #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
-    let default_post_process_shortcut = "alt+shift+space";
+    let default_post_process_shortcut = "ctrl+shift+f12";
 
     bindings.insert(
         "transcribe_with_post_process".to_string(),
@@ -1979,10 +1959,7 @@ pub fn get_default_settings() -> AppSettings {
         },
     );
 
-    #[cfg(target_os = "macos")]
-    let default_type_text_shortcut = "cmd+option+t";
-    #[cfg(not(target_os = "macos"))]
-    let default_type_text_shortcut = "ctrl+alt+t";
+    let default_type_text_shortcut = "ctrl+shift+f11";
 
     bindings.insert(
         "type_text".to_string(),
@@ -1995,22 +1972,19 @@ pub fn get_default_settings() -> AppSettings {
         },
     );
 
-    #[cfg(target_os = "macos")]
-    let default_submit_shortcut = "cmd+option+s";
-    #[cfg(not(target_os = "macos"))]
-    let default_submit_shortcut = "ctrl+alt+s";
+    let default_submit_shortcut = "ctrl+alt+space";
 
     // Anchor & Deliver (Windows-only feature; bindings are skipped at
-    // registration time on other platforms). k/j are AltGr-safe on European
-    // layouts (unlike 'a': AltGr+A types 'ą' on Polish).
+    // registration time on other platforms). Function-key defaults are
+    // keyboard-layout independent.
     bindings.insert(
         "anchor_set".to_string(),
         ShortcutBinding {
             id: "anchor_set".to_string(),
             name: "Set Anchor".to_string(),
             description: "Anchors the focused text field as the delivery target.".to_string(),
-            default_binding: "ctrl+alt+k".to_string(),
-            current_binding: "ctrl+alt+k".to_string(),
+            default_binding: "ctrl+shift+f1".to_string(),
+            current_binding: "ctrl+shift+f1".to_string(),
         },
     );
     bindings.insert(
@@ -2019,11 +1993,11 @@ pub fn get_default_settings() -> AppSettings {
             id: "anchor_jump".to_string(),
             name: "Jump to Anchor".to_string(),
             description: "Brings the anchored window and field into focus.".to_string(),
-            default_binding: "ctrl+alt+j".to_string(),
-            current_binding: "ctrl+alt+j".to_string(),
+            default_binding: "ctrl+shift+f2".to_string(),
+            current_binding: "ctrl+shift+f2".to_string(),
         },
     );
-    // Second hot anchor (Hot 2, T-303). h/g are AltGr-safe on European layouts.
+    // Second hot anchor (Hot 2, T-303), also using layout-safe function keys.
     bindings.insert(
         "anchor_set_2".to_string(),
         ShortcutBinding {
@@ -2031,8 +2005,8 @@ pub fn get_default_settings() -> AppSettings {
             name: "Set Anchor 2".to_string(),
             description: "Anchors the focused text field as the second delivery target."
                 .to_string(),
-            default_binding: "ctrl+alt+h".to_string(),
-            current_binding: "ctrl+alt+h".to_string(),
+            default_binding: "ctrl+shift+f3".to_string(),
+            current_binding: "ctrl+shift+f3".to_string(),
         },
     );
     bindings.insert(
@@ -2041,8 +2015,8 @@ pub fn get_default_settings() -> AppSettings {
             id: "anchor_jump_2".to_string(),
             name: "Jump to Anchor 2".to_string(),
             description: "Brings the second anchored window and field into focus.".to_string(),
-            default_binding: "ctrl+alt+g".to_string(),
-            current_binding: "ctrl+alt+g".to_string(),
+            default_binding: "ctrl+shift+f4".to_string(),
+            current_binding: "ctrl+shift+f4".to_string(),
         },
     );
 
@@ -2098,8 +2072,8 @@ pub fn get_default_settings() -> AppSettings {
             description:
                 "Paste the most recent transcription from history into the focused window."
                     .to_string(),
-            default_binding: "ctrl+alt+p".to_string(),
-            current_binding: "ctrl+alt+p".to_string(),
+            default_binding: "ctrl+shift+f10".to_string(),
+            current_binding: "ctrl+shift+f10".to_string(),
         },
     );
 
@@ -2276,9 +2250,9 @@ impl AppSettings {
     }
 }
 
-/// Insert any default bindings missing from saved settings (bindings added
-/// in newer app versions, e.g. `type_text`), and migrate known-broken stored
-/// defaults. Returns true if something changed and should be persisted.
+/// Insert only default bindings that are missing from saved settings (bindings
+/// added in newer app versions, such as type_text). Existing stored bindings are
+/// never rewritten when application defaults change.
 fn ensure_default_bindings(settings: &mut AppSettings) -> bool {
     let mut updated = false;
     for (key, value) in get_default_settings().bindings {
@@ -2286,24 +2260,6 @@ fn ensure_default_bindings(settings: &mut AppSettings) -> bool {
             debug!("Adding missing binding: {}", key);
             settings.bindings.insert(key, value);
             updated = true;
-        }
-    }
-    // One-time fixup: the old macOS PTT default "option+alt+space" parses
-    // identically to the transcribe default "option+space" (option == alt on
-    // macOS), so the two bindings collided and one silently failed to register
-    // each launch. Replace it with the current per-platform default wherever it
-    // is still stored. Custom user bindings are never touched.
-    const COLLIDING_PTT: &str = "option+alt+space";
-    if let Some(b) = settings.bindings.get_mut("transcribe_ptt") {
-        if b.current_binding == COLLIDING_PTT || b.default_binding == COLLIDING_PTT {
-            if let Some(fresh) = get_default_settings().bindings.get("transcribe_ptt") {
-                if b.current_binding == COLLIDING_PTT {
-                    b.current_binding = fresh.default_binding.clone();
-                }
-                b.default_binding = fresh.default_binding.clone();
-                debug!("Migrated colliding PTT binding to '{}'", b.default_binding);
-                updated = true;
-            }
         }
     }
     updated
@@ -2508,31 +2464,25 @@ mod tests {
     use super::*;
 
     #[test]
-    fn migrates_colliding_macos_ptt_default() {
-        // A stored colliding chord is replaced with the fresh per-platform default.
+    fn ensure_default_bindings_only_backfills_missing_bindings() {
         let mut settings = get_default_settings();
-        {
-            let b = settings.bindings.get_mut("transcribe_ptt").unwrap();
-            b.current_binding = "option+alt+space".to_string();
-            b.default_binding = "option+alt+space".to_string();
-        }
-        assert!(ensure_default_bindings(&mut settings));
-        let b = &settings.bindings["transcribe_ptt"];
-        assert_ne!(b.current_binding, "option+alt+space");
-        assert_eq!(b.current_binding, b.default_binding);
-
-        // A custom user binding is never touched.
-        let mut custom = get_default_settings();
-        custom
+        let old_submit = settings
             .bindings
-            .get_mut("transcribe_ptt")
-            .unwrap()
-            .current_binding = "ctrl+alt+p".to_string();
-        ensure_default_bindings(&mut custom);
+            .get_mut("transcribe_and_submit")
+            .unwrap();
+        old_submit.current_binding = "ctrl+alt+s".to_string();
+        old_submit.default_binding = "ctrl+alt+s".to_string();
+        settings.bindings.remove("paste_last");
+
+        assert!(ensure_default_bindings(&mut settings));
+        let preserved = &settings.bindings["transcribe_and_submit"];
+        assert_eq!(preserved.current_binding, "ctrl+alt+s");
+        assert_eq!(preserved.default_binding, "ctrl+alt+s");
         assert_eq!(
-            custom.bindings["transcribe_ptt"].current_binding,
-            "ctrl+alt+p"
+            settings.bindings["paste_last"].current_binding,
+            get_default_settings().bindings["paste_last"].current_binding
         );
+        assert!(!ensure_default_bindings(&mut settings));
     }
 
     #[test]

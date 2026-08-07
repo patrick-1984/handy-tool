@@ -224,11 +224,11 @@
           },
           "transcribe_ptt": {
             "name": "Scorciatoia Premi per Parlare",
-            "description": "Tieni premuta questa scorciatoia per registrare e rilasciala per interrompere; il microfono si spegne al rilascio, così nulla di quello che dici dopo può finire nel testo. Predefinito: Ctrl+Alt+Space. Ha una propria Modalità di Trascrizione (PTT) e un proprio Metodo di Incolla (PTT), così il premi per parlare può comportarsi diversamente dalla Scorciatoia Trascrizione."
+            "description": "Tieni premuta questa scorciatoia per registrare e rilasciala per interrompere; il microfono si spegne al rilascio, così nulla di quello che dici dopo può finire nel testo. Predefinito: Ctrl+Shift+Space. Ha una propria Modalità di Trascrizione (PTT) e un proprio Metodo di Incolla (PTT), così il premi per parlare può comportarsi diversamente dalla Scorciatoia Trascrizione."
           },
           "type_text": {
             "name": "Scorciatoia Digita Testo",
-            "description": "Digita quanto contenuto nel campo del Digitatore da Tastiera nella finestra attualmente in focus; premi di nuovo, o Escape, per annullare. Predefinito: ctrl+alt+t. Parte dopo circa un secondo invece di aspettare il Ritardo di avvio, perché premere una scorciatoia significa che sei già nella finestra di destinazione — il pulsante Vai è quello che usa il conto alla rovescia completo."
+            "description": "Digita quanto contenuto nel campo del Digitatore da Tastiera nella finestra attualmente in focus; premi di nuovo, o Escape, per annullare. Predefinito: ctrl+shift+F11. Parte dopo circa un secondo invece di aspettare il Ritardo di avvio, perché premere una scorciatoia significa che sei già nella finestra di destinazione — il pulsante Vai è quello che usa il conto alla rovescia completo."
           },
           "transcribe_and_submit": {
             "name": "Scorciatoia Trascrivi e Invia",
@@ -236,11 +236,11 @@
           },
           "anchor_set": {
             "name": "Imposta Ancora",
-            "description": "Cattura il campo di testo attualmente in focus come destinazione Rapido 1. Predefinito: ctrl+alt+k. Da solo non consegna nulla — imposta 'Azione slot di salto al termine' su 'Salta / consegna allo slot' con lo slot impostato su Rapido 1 (Avanzate → Trascrizione) per far arrivare lì la tua prossima trascrizione. Le caselle password e le finestre di Handy stesso vengono rifiutate."
+            "description": "Cattura il campo di testo attualmente in focus come destinazione Rapido 1. Predefinito: ctrl+shift+F1. Da solo non consegna nulla — imposta 'Azione slot di salto al termine' su 'Salta / consegna allo slot' con lo slot impostato su Rapido 1 (Avanzate → Trascrizione) per far arrivare lì la tua prossima trascrizione. Le caselle password e le finestre di Handy stesso vengono rifiutate."
           },
           "anchor_jump": {
             "name": "Vai all'Ancora",
-            "description": "Riporta in primo piano la finestra e il campo di Rapido 1 senza incollare nulla — un tasto 'torna alla mia bozza'. Predefinito: ctrl+alt+j. Se 'Salva la posizione del mouse' è attivo per questo slot, anche il puntatore viene riportato lì; non succede nulla se lo slot è vuoto o la sua finestra è stata chiusa."
+            "description": "Riporta in primo piano la finestra e il campo di Rapido 1 senza incollare nulla — un tasto 'torna alla mia bozza'. Predefinito: ctrl+shift+F2. Se 'Salva la posizione del mouse' è attivo per questo slot, anche il puntatore viene riportato lì; non succede nulla se lo slot è vuoto o la sua finestra è stata chiusa."
           },
           "jump_set_slot_1": {
             "name": "Imposta Slot di Salto 1",
@@ -274,6 +274,13 @@
             "name": "Salta allo Slot 4",
             "description": "Riporta in primo piano la finestra e il campo dello slot statico 4 e non consegna nulla — pura navigazione. Predefinito: ctrl+alt+4. Se 'Salva la posizione del mouse' è attivo per questo slot, anche il puntatore viene ripristinato; non succede nulla se lo slot è vuoto o la sua finestra è stata chiusa."
           }
+        },
+        "failurePanel": {
+          "title": "Scorciatoie non registrate",
+          "description": "Queste scorciatoie non sono attive. Cambia la combinazione o riprova dopo aver risolto il conflitto.",
+          "retry": "Riprova",
+          "retrying": "Nuovo tentativo…",
+          "retryError": "Impossibile registrare nuovamente le scorciatoie."
         },
         "errors": {
           "restore": "Errore nel ripristino della scorciatoia originale",
@@ -397,7 +404,8 @@
         "title": "Aggiornamenti",
         "checks": {
           "label": "Controlla automaticamente gli aggiornamenti",
-          "description": "Controlla una volta al giorno le release pubbliche su GitHub."
+          "description": "Controlla una volta al giorno le release pubbliche su GitHub.",
+          "privacy": "Il controllo degli aggiornamenti non invia nulla su di te—non ci sono telemetria, analisi o account—e legge solo un file pubblico dalle release del progetto su GitHub."
         },
         "silent": {
           "label": "Installa gli aggiornamenti in modo silenzioso",
@@ -1180,6 +1188,7 @@
     "transcriptionFailed": "Trascrizione non riuscita: {{reason}}. Verifica che il modello selezionato funzioni correttamente, poi riprova."
   },
   "flm": {
+    "windowsApplicationControlBlocked": "Controllo app di Windows ha bloccato flm.exe perché non è firmato. Il motore NPU non è disponibile. Scegli un altro modello di trascrizione.",
     "notInstalled": "FLM non è installato. Installa FastFlowLM per usare i modelli accelerati da NPU.",
     "npuAccelerated": "Accelerato da NPU"
   },

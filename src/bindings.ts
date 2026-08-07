@@ -323,6 +323,9 @@ async setJumperRemoteMatchStrings(strings: string[]) : Promise<Result<null, stri
 async getShortcutRegistrationFailures() : Promise<RegistrationFailure[]> {
     return await TAURI_INVOKE("get_shortcut_registration_failures");
 },
+async retryShortcutRegistrations() : Promise<RegistrationFailure[]> {
+    return await TAURI_INVOKE("retry_shortcut_registrations");
+},
 async changeReturnFocusSetting(flow: string, enabled: boolean) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("change_return_focus_setting", { flow, enabled }) };

@@ -228,7 +228,7 @@
           },
           "type_text": {
             "name": "Raccourci de frappe de texte",
-            "description": "Tape le contenu de la zone Frappe clavier dans la fenêtre qui a actuellement le focus ; appuyez à nouveau, ou sur Échap, pour annuler. Par défaut : ctrl+alt+t. Démarre après environ une seconde plutôt que d'attendre tout le Délai de démarrage, car appuyer sur un raccourci signifie que vous êtes déjà dans la fenêtre cible — c'est le bouton Lancer qui utilise le compte à rebours complet."
+            "description": "Tape le contenu de la zone Frappe clavier dans la fenêtre qui a actuellement le focus ; appuyez à nouveau, ou sur Échap, pour annuler. Par défaut : ctrl+shift+F11. Démarre après environ une seconde plutôt que d'attendre tout le Délai de démarrage, car appuyer sur un raccourci signifie que vous êtes déjà dans la fenêtre cible — c'est le bouton Lancer qui utilise le compte à rebours complet."
           },
           "transcribe_and_submit": {
             "name": "Raccourci Transcrire et envoyer",
@@ -236,11 +236,11 @@
           },
           "anchor_set": {
             "name": "Définir l'ancre",
-            "description": "Capture le champ de texte actuellement actif comme destination Rapide 1. Par défaut : ctrl+alt+k. Seul, il ne livre rien — réglez « Action sur l'emplacement à la fin » sur « Sauter / livrer vers l'emplacement » avec l'emplacement réglé sur Rapide 1 (Avancé → Transcription) pour que votre prochaine transcription y arrive. Les champs de mot de passe et les propres fenêtres de Handy sont refusés."
+            "description": "Capture le champ de texte actuellement actif comme destination Rapide 1. Par défaut : ctrl+shift+F1. Seul, il ne livre rien — réglez « Action sur l'emplacement à la fin » sur « Sauter / livrer vers l'emplacement » avec l'emplacement réglé sur Rapide 1 (Avancé → Transcription) pour que votre prochaine transcription y arrive. Les champs de mot de passe et les propres fenêtres de Handy sont refusés."
           },
           "anchor_jump": {
             "name": "Aller à l'ancre",
-            "description": "Ramène au premier plan la fenêtre et le champ de Rapide 1 et ne colle rien — une touche « retour à mon brouillon ». Par défaut : ctrl+alt+j. Si « Enregistrer la position de la souris » est activé pour cet emplacement, le pointeur revient aussi ; rien ne se passe si l'emplacement est vide ou si sa fenêtre a été fermée."
+            "description": "Ramène au premier plan la fenêtre et le champ de Rapide 1 et ne colle rien — une touche « retour à mon brouillon ». Par défaut : ctrl+shift+F2. Si « Enregistrer la position de la souris » est activé pour cet emplacement, le pointeur revient aussi ; rien ne se passe si l'emplacement est vide ou si sa fenêtre a été fermée."
           },
           "jump_set_slot_1": {
             "name": "Définir l'emplacement de saut 1",
@@ -274,6 +274,13 @@
             "name": "Aller à l'emplacement 4",
             "description": "Ramène au premier plan la fenêtre et le champ de l'emplacement fixe 4 et ne livre rien — pure navigation. Par défaut : ctrl+alt+4. Si « Enregistrer la position de la souris » est activé pour cet emplacement, le pointeur est aussi restauré ; rien ne se passe si l'emplacement est vide ou si sa fenêtre a été fermée."
           }
+        },
+        "failurePanel": {
+          "title": "Raccourcis non enregistrés",
+          "description": "Ces raccourcis sont inactifs. Modifiez la combinaison ou réessayez après avoir résolu le conflit.",
+          "retry": "Réessayer",
+          "retrying": "Nouvelle tentative…",
+          "retryError": "Impossible de réenregistrer les raccourcis."
         },
         "errors": {
           "restore": "Échec de la restauration du raccourci original",
@@ -397,7 +404,8 @@
         "title": "Mises à jour",
         "checks": {
           "label": "Rechercher automatiquement les mises à jour",
-          "description": "Vérifier une fois par jour les versions publiques sur GitHub."
+          "description": "Vérifier une fois par jour les versions publiques sur GitHub.",
+          "privacy": "La recherche de mises à jour n'envoie aucune information sur vous—il n'y a ni télémétrie, ni analyse, ni compte—et ne lit qu'un fichier public des versions du projet sur GitHub."
         },
         "silent": {
           "label": "Installer silencieusement les mises à jour",
@@ -1186,6 +1194,7 @@
     "transcriptionFailed": "La transcription a échoué : {{reason}}. Vérifiez que le modèle sélectionné fonctionne, puis réessayez."
   },
   "flm": {
+    "windowsApplicationControlBlocked": "Le contrôle des applications Windows a bloqué flm.exe car il n'est pas signé. Le moteur NPU est indisponible. Choisissez un autre modèle de transcription.",
     "notInstalled": "FLM n'est pas installé. Installez FastFlowLM pour utiliser des modèles accélérés par NPU.",
     "npuAccelerated": "Accéléré par NPU"
   },

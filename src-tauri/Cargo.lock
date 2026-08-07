@@ -2537,7 +2537,7 @@ dependencies = [
 
 [[package]]
 name = "handy"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "anyhow",
  "audiopus",
