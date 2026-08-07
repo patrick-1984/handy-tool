@@ -97,20 +97,24 @@ bun tauri dev
 
 Release builds create signed Tauri updater artifacts. The private key lives outside
 version control at `.keys/handy-updater.key`; the path is gitignored, and the key was
-generated without a passphrase. Before running the local production build, supply it
-through the `TAURI_SIGNING_PRIVATE_KEY` environment variable. Never print or echo the
-private key, copy it into a source file, or commit it:
+generated with a passphrase stored separately in `.keys/handy-updater.password`.
+Before running the local production build, supply both through the Tauri signing
+environment variables. Never print or echo either secret, copy them into a source
+file, or commit them:
 
 ```powershell
 $env:TAURI_SIGNING_PRIVATE_KEY = Get-Content -Raw .keys/handy-updater.key
-bun run tauri build
-Remove-Item Env:TAURI_SIGNING_PRIVATE_KEY
+$env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = (Get-Content -Raw .keys/handy-updater.password).TrimEnd()
+try {
+  bun run tauri build
+} finally {
+  Remove-Item Env:TAURI_SIGNING_PRIVATE_KEY, Env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD
+}
 ```
 
-The updater key has no passphrase, so `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` is
-not required. Its matching public key is already embedded in
-`src-tauri/tauri.conf.json`. Back up `.keys/handy-updater.key` securely: if it is
-lost, existing installations can never accept another signed update.
+Its matching public key is already embedded in `src-tauri/tauri.conf.json`. Back
+up both secret files securely: if the private key or its passphrase is lost,
+existing installations can never accept another signed update.
 
 Windows produces an NSIS installer only. The MSI target was dropped because the
 updater installs NSIS packages silently in place. The Windows updater channel
@@ -130,6 +134,24 @@ copies them to `src-tauri/target/release-artifacts/` using the stable
 three files to the matching `v<version>` GitHub release before publishing it.
 Use `--installer <path>` if more than one NSIS installer is present and
 `--notes "..."` to set release notes.
+
+To release an installer that has already passed an exact-binary validation, sign
+that same file without rebuilding it. The standalone signer writes only the
+detached `.sig`, so the installer's bytes and SHA-256 remain unchanged:
+
+```powershell
+$env:TAURI_PRIVATE_KEY_PASSWORD = (Get-Content -Raw .keys/handy-updater.password).TrimEnd()
+try {
+  bun tauri signer sign --private-key-path .keys/handy-updater.key <validated-installer.exe>
+  bun run generate:updater-manifest -- --installer <validated-installer.exe>
+} finally {
+  Remove-Item Env:TAURI_PRIVATE_KEY_PASSWORD
+}
+```
+
+This updater signature is separate from Windows Authenticode signing. If
+Authenticode is added later, sign the executable first, then create the updater
+signature from those final bytes and repeat the exact-binary installer test.
 
 ## Portable package (Windows)
 
