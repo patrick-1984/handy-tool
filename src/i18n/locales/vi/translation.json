@@ -387,7 +387,8 @@
             "title": "Hành động ô nhảy khi kết thúc",
             "description": "Điều phím tắt này làm với ô nhảy được chọn bên trái khi bản ghi kết thúc. Mặc định: Do nothing. Jump / deliver to slot gửi bản phiên âm vào ô nhập đã ghi nhớ đó thay vì nơi bạn đang ở, để bạn có thể đọc thứ khác trong lúc đọc chính tả; Set slot to current focus và Clear slot chỉ chạy sau khi văn bản đã được gửi, và Only jump on finish if started the same way ở trang Jumper có thể thu hẹp khi nào được phép nhảy (chỉ Windows)."
           }
-        }
+        },
+        "deliveryFailedHistoryOnly": "Gửi theo điểm neo không thành công: {{reason}}. Clipboard không bị thay đổi và điểm neo vẫn được giữ — văn bản nằm trong Lịch sử. {{recovery}}"
       },
       "transcribeGroup": {
         "title": "Phiên âm"
@@ -1191,7 +1192,10 @@
   "toasts": {
     "pasteFailed": "Dán bản phiên âm không thành công: {{reason}}. Văn bản đã được lưu trong Lịch sử.",
     "pasteFailedParked": "Dán bản phiên âm không thành công: {{reason}}. Văn bản đang ở trên clipboard (và trong Lịch sử) — hãy dán thủ công.",
-    "transcriptionFailed": "Phiên âm không thành công: {{reason}}. Hãy kiểm tra xem mô hình đã chọn có hoạt động không, rồi thử lại."
+    "transcriptionFailed": "Phiên âm không thành công: {{reason}}. Hãy kiểm tra xem mô hình đã chọn có hoạt động không, rồi thử lại.",
+    "pasteFailedHistoryOnly": "Dán bản phiên âm không thành công: {{reason}}. Clipboard không bị thay đổi — văn bản đã được lưu trong Lịch sử. {{recovery}}",
+    "recoverWithPasteLast": "Nhấn {{shortcut}} để dán.",
+    "recoverFromHistory": "Mở Cài đặt › Lịch sử để sao chép."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Kiểm soát ứng dụng Windows đã chặn flm.exe vì tệp này chưa được ký. Công cụ NPU không khả dụng. Hãy chọn một mô hình phiên âm khác.",

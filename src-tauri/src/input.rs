@@ -280,13 +280,71 @@ pub fn send_paste_shift_insert(enigo: &mut Enigo) -> Result<(), String> {
     Ok(())
 }
 
-/// Pastes text directly using the enigo text method.
-/// This tries to use system input methods if possible, otherwise simulates keystrokes one by one.
-#[cfg(target_os = "linux")]
+/// Type text directly as simulated keystrokes — the ONLY delivery path that
+/// never reads or writes the clipboard.
+///
+/// Ordinary text is sent in BATCHED runs via `enigo.text()`, which on Windows
+/// compiles to a single `SendInput` carrying the whole run (and uses
+/// `KEYEVENTF_UNICODE`, so the active keyboard layout is bypassed entirely —
+/// accented characters on European layouts are unaffected). This is not the
+/// character-by-character loop in `typing.rs`, which is deliberately slow for
+/// password prompts.
+///
+/// Line breaks and tabs must NOT be handed to `enigo.text()`: it queues a
+/// Return/Tab click AND then also emits the raw `\n`/`\t`, which double-breaks
+/// multi-line transcripts. They are sent as explicit key clicks instead, and a
+/// `\r` is dropped because the following `\n` already covers the break (the
+/// same rule `typing.rs` applies).
 pub fn paste_text_direct(enigo: &mut Enigo, text: &str) -> Result<(), String> {
-    enigo
-        .text(text)
-        .map_err(|e| format!("Failed to send text directly: {}", e))?;
+    let mut run = String::new();
 
-    Ok(())
+    // Flush the accumulated ordinary-text run as ONE batched injection.
+    fn flush(enigo: &mut Enigo, run: &mut String) -> Result<(), String> {
+        if run.is_empty() {
+            return Ok(());
+        }
+        let result = enigo
+            .text(run)
+            .map_err(|e| format!("Failed to send text directly: {}", e));
+        run.clear();
+        result
+    }
+
+    // Peekable so a lone CR can be told apart from a CRLF pair. Dropping every
+    // '\r' unconditionally silently swallowed classic-Mac / stray-CR line
+    // breaks, turning two lines into one.
+    let mut chars = text.chars().peekable();
+    while let Some(ch) = chars.next() {
+        match ch {
+            // CRLF: consume the '\n' here so the pair yields exactly one break.
+            // A LONE '\r' is a real line break and must still produce one.
+            '\r' => {
+                if chars.peek() == Some(&'\n') {
+                    chars.next();
+                }
+                flush(enigo, &mut run)?;
+                enigo
+                    .key(Key::Return, enigo::Direction::Click)
+                    .map_err(|e| format!("Failed to send Return: {}", e))?;
+            }
+            // enigo returns Err on a NUL; it cannot be typed. Drop it rather
+            // than failing the whole delivery.
+            '\0' => {}
+            '\n' => {
+                flush(enigo, &mut run)?;
+                enigo
+                    .key(Key::Return, enigo::Direction::Click)
+                    .map_err(|e| format!("Failed to send Return: {}", e))?;
+            }
+            '\t' => {
+                flush(enigo, &mut run)?;
+                enigo
+                    .key(Key::Tab, enigo::Direction::Click)
+                    .map_err(|e| format!("Failed to send Tab: {}", e))?;
+            }
+            _ => run.push(ch),
+        }
+    }
+
+    flush(enigo, &mut run)
 }

@@ -387,7 +387,8 @@
             "title": "Akce skokového slotu při ukončení",
             "description": "Co tato zkratka udělá se slotem vybraným vlevo, když se nahrávka ukončí. Výchozí: Nedělat nic. „Přejít / doručit do slotu“ odešle přepis do zapamatovaného pole místo tam, kam jste mezitím odešli, takže můžete při diktování číst něco jiného; „Nastavit slot na aktuální zaměření“ a „Vymazat slot“ proběhnou až po doručení textu, a „Při ukončení přejít jen při stejné zkratce“ na stránce Přechody může omezit, kdy je přechod povolen (jen Windows)."
           }
-        }
+        },
+        "deliveryFailedHistoryOnly": "Doručení do kotvy se nezdařilo: {{reason}}. Schránka zůstala beze změny a kotva byla zachována — text je v historii. {{recovery}}"
       },
       "transcribeGroup": {
         "title": "Přepis"
@@ -1185,7 +1186,10 @@
   "toasts": {
     "pasteFailed": "Vložení přepisu se nezdařilo: {{reason}}. Text je uložen v historii.",
     "pasteFailedParked": "Vložení přepisu se nezdařilo: {{reason}}. Text je ve schránce (a v historii) — vložte jej manuálně.",
-    "transcriptionFailed": "Přepis se nezdařil: {{reason}}. Zkontrolujte, že vybraný model funguje, a zkuste to znovu."
+    "transcriptionFailed": "Přepis se nezdařil: {{reason}}. Zkontrolujte, že vybraný model funguje, a zkuste to znovu.",
+    "pasteFailedHistoryOnly": "Vložení přepisu se nezdařilo: {{reason}}. Schránka zůstala beze změny — text je uložen v historii. {{recovery}}",
+    "recoverWithPasteLast": "Stisknutím {{shortcut}} jej vložíte.",
+    "recoverFromHistory": "Otevřete Nastavení › Historie a zkopírujte jej."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Řízení aplikací ve Windows zablokovalo flm.exe, protože není podepsaný. Modul NPU není dostupný. Zvolte jiný model přepisu.",

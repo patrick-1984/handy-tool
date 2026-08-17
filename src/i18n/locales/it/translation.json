@@ -387,7 +387,8 @@
             "title": "Azione slot di salto al termine",
             "description": "Cosa fa questa scorciatoia con lo slot scelto a sinistra quando la registrazione termina. Predefinito: Non fare nulla. Salta / consegna allo slot invia la trascrizione in quel campo memorizzato invece che dove sei finito nel frattempo, così puoi leggere altro mentre detti; Imposta lo slot sul focus attuale e Rimuovi slot vengono eseguiti solo dopo che il testo è stato consegnato, e 'Salta al termine solo se avviato nello stesso modo' nella pagina Jumper può limitare quando un salto è permesso (solo Windows)."
           }
-        }
+        },
+        "deliveryFailedHistoryOnly": "Consegna ancorata non riuscita: {{reason}}. Gli appunti non sono stati modificati e l'ancora è stata mantenuta — il testo è nella Cronologia. {{recovery}}"
       },
       "transcribeGroup": {
         "title": "Trascrivi"
@@ -1185,7 +1186,10 @@
   "toasts": {
     "pasteFailed": "Impossibile incollare la trascrizione: {{reason}}. Il testo è stato salvato nella Cronologia.",
     "pasteFailedParked": "Impossibile incollare la trascrizione: {{reason}}. Il testo si trova negli appunti (e nella Cronologia) — incollalo manualmente.",
-    "transcriptionFailed": "Trascrizione non riuscita: {{reason}}. Verifica che il modello selezionato funzioni correttamente, poi riprova."
+    "transcriptionFailed": "Trascrizione non riuscita: {{reason}}. Verifica che il modello selezionato funzioni correttamente, poi riprova.",
+    "pasteFailedHistoryOnly": "Impossibile incollare la trascrizione: {{reason}}. Gli appunti non sono stati modificati — il testo è stato salvato nella Cronologia. {{recovery}}",
+    "recoverWithPasteLast": "Premi {{shortcut}} per incollarlo.",
+    "recoverFromHistory": "Apri Impostazioni › Cronologia per copiarlo."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Controllo app di Windows ha bloccato flm.exe perché non è firmato. Il motore NPU non è disponibile. Scegli un altro modello di trascrizione.",

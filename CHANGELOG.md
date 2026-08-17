@@ -1,6 +1,79 @@
 # Changelog
 
 
+## [1.1.0] - 2026-08-17
+
+### Fixed
+
+- **"Don't Modify Clipboard" now actually leaves your clipboard alone.** If you had this set — it
+  is the default — old transcriptions could still end up on your clipboard and stay there,
+  displacing what you had copied. Several separate faults combined to cause it, and all of them
+  are fixed:
+
+  - **Handy could hand you back one of its own transcripts as if it were your clipboard.** When a
+    transcript was already sitting on the clipboard, the next dictation captured *that* as "your
+    previous clipboard" and faithfully restored it afterwards — so one leak became permanent, and
+    every later dictation re-restored the same old text. Handy now recognises its own writing and
+    restores what was really yours.
+
+  - **A failed delivery wrote your clipboard anyway.** When an anchored jump or a paste could not
+    be verified, the transcript was parked on the clipboard to avoid losing it — ignoring your
+    setting entirely. It no longer does. The take is not lost: it is saved to History *before*
+    delivery is attempted, and the failure message now tells you to press your Paste Last
+    Transcription shortcut, naming the actual key you have bound to it.
+
+  - **The restore could silently never happen.** If the paste keystroke failed, or focus moved
+    mid-paste, the transcript was left on the clipboard with no restore ever scheduled. The
+    restore is now armed the moment the clipboard is written, whatever happens next.
+
+  - **Restoring could overwrite something you had just copied.** Handy now checks it still owns
+    the clipboard before putting the old content back, so anything you copy while a dictation is
+    landing is left alone.
+
+  - **Restore failures were invisible.** A failed restore is the one case that leaves your
+    transcript on the clipboard, and it was discarded without a word — which is why this was so
+    hard to pin down. It is now retried, and then logged as a warning saying how many characters
+    may still be there.
+
+- **A copied image or file is no longer replaced by an empty clipboard.** Only text can be
+  restored, so an image was previously overwritten with an empty string. Handy now clears the
+  clipboard instead of leaving a blank entry where your image used to be, and says so in the log.
+
+- **Your transcript is saved to History before delivery is attempted, not alongside it.** The
+  save was started and then immediately left to finish on its own while the paste went ahead. That
+  was fine when a failure parked the text on your clipboard, but it is not fine now that a failure
+  deliberately leaves the clipboard alone — so the row is written first, and the recovery route is
+  real rather than merely likely.
+
+- **A recovery that could go stale.** The in-memory "last transcription" buffer behind the Paste
+  Last shortcut was skipped rather than recovered if its lock had been poisoned by an unrelated
+  crash, which would have left the shortcut re-pasting an *older* take. It now recovers.
+
+- **Multi-line dictation with unusual line endings.** A lone carriage return was dropped entirely
+  when typing, silently joining two lines into one.
+
+- **Typed delivery now re-checks the target window first.** `Direct` verifies the anchored target
+  still has focus before the first keystroke, matching what the paste path has always done.
+
+### Changed
+
+- **`Direct` paste method now really types the characters on Windows and macOS.** It always said
+  it did. In fact it quietly fell back to a clipboard Ctrl+V paste, so anyone who chose it to keep
+  dictation off the clipboard was getting exactly what they were trying to avoid. It is now the
+  one delivery method that never reads or writes the clipboard.
+
+  It is still not the default, on purpose: typed characters can set off autocomplete, bracket
+  auto-closing and IME behaviour that a paste does not, they arrive as many undo steps rather than
+  one, and they can drop characters in RDP/Citrix sessions and VM consoles. Choose it when keeping
+  the clipboard clean matters more than those trade-offs.
+
+### Known limits
+
+- A clipboard-based paste method has to put the transcript on the real system clipboard for a
+  moment in order to paste it. "Don't Modify Clipboard" governs what is there **afterwards**, not
+  whether it was ever there. A clipboard manager, Windows Clipboard History, or remote-desktop
+  clipboard redirection can still capture it during that window. Only `Direct` avoids it entirely.
+
 ## [1.0.4] - 2026-08-07
 
 ### Added

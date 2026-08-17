@@ -89,29 +89,50 @@ function App() {
     return () => media.removeEventListener("change", applyResolvedTheme);
   }, [settings?.app_theme]);
 
-  // Anchored-delivery failures park the text on the clipboard — the toast must
-  // fire no matter which settings page is open, so the listener lives here.
+  // A failed delivery never loses the take: it is written to History BEFORE
+  // delivery is attempted, and re-pastable with the Paste Last shortcut. What
+  // the toast must say depends on whether the text was parked on the clipboard
+  // or deliberately withheld (because the user chose "Don't Modify Clipboard"),
+  // so the backend reports which happened. When the recovery shortcut is
+  // actually bound we name it; when it is not, we point at History instead of
+  // printing a key the user does not have.
+  const pasteLastKey = settings?.bindings?.paste_last?.current_binding?.trim();
   useEffect(() => {
-    const unlisten = listen<string>("anchor-delivery-failed", (e) =>
-      toast.error(
-        t("settings.general.anchor.deliveryFailed", { reason: e.payload }),
-        { duration: 8000 },
-      ),
-    );
-    // Ordinary paste failures likewise: the text is parked on the clipboard
-    // (and always in History) — say so instead of failing silently.
-    const unlistenPaste = listen<{ error: string; parked: boolean }>(
-      "paste-failed",
+    const recoveryHint = (): string =>
+      pasteLastKey
+        ? t("toasts.recoverWithPasteLast", { shortcut: pasteLastKey })
+        : t("toasts.recoverFromHistory");
+
+    const unlisten = listen<{ reason: string; clipboard: string }>(
+      "anchor-delivery-failed",
       (e) =>
         toast.error(
-          t(
-            e.payload.parked
-              ? "toasts.pasteFailedParked"
-              : "toasts.pasteFailed",
-            { reason: e.payload.error },
-          ),
+          e.payload.clipboard === "parked"
+            ? t("settings.general.anchor.deliveryFailed", {
+                reason: e.payload.reason,
+              })
+            : t("settings.general.anchor.deliveryFailedHistoryOnly", {
+                reason: e.payload.reason,
+                recovery: recoveryHint(),
+              }),
           { duration: 8000 },
         ),
+    );
+    // Ordinary paste failures likewise.
+    const unlistenPaste = listen<{
+      error: string;
+      parked: boolean;
+      clipboard?: string;
+    }>("paste-failed", (e) =>
+      toast.error(
+        e.payload.parked
+          ? t("toasts.pasteFailedParked", { reason: e.payload.error })
+          : t("toasts.pasteFailedHistoryOnly", {
+              reason: e.payload.error,
+              recovery: recoveryHint(),
+            }),
+        { duration: 8000 },
+      ),
     );
     // An engine error that leaves the take with no text (e.g. FLM's ASR model
     // failed to load) — otherwise the recording is saved textless and reads as
@@ -129,7 +150,7 @@ function App() {
       unlistenPaste.then((f) => f());
       unlistenTranscribe.then((f) => f());
     };
-  }, [t]);
+  }, [t, pasteLastKey]);
 
   // Initialize Enigo, shortcuts, and refresh audio devices when main app loads
   useEffect(() => {

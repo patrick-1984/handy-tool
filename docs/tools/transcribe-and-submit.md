@@ -27,7 +27,7 @@ Reserve this flow for fields where a submit key has a predictable meaning. Keep 
 
 - [Pressing it when nothing is recording](../features.md#pressing-it-when-nothing-is-recording)
 - [The paste didn't land — get the words back without re-dictating](../features.md#the-paste-didnt-land-get-the-words-back)
-- [When delivery can't be verified, the text is parked, not lost](../features.md#when-delivery-cant-be-verified-the-text-is-parked)
+- [When delivery can't be verified, the text is still recoverable](../features.md#when-delivery-cant-be-verified-the-text-is-parked)
 
 ## Set it up
 

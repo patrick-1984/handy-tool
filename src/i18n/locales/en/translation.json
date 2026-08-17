@@ -13,7 +13,10 @@
   "toasts": {
     "pasteFailed": "Pasting the transcription failed: {{reason}}. The text is saved in History.",
     "pasteFailedParked": "Pasting the transcription failed: {{reason}}. The text is on your clipboard (and in History) — paste it manually.",
-    "transcriptionFailed": "Transcription failed: {{reason}}. Check that your selected model is working, then try again."
+    "transcriptionFailed": "Transcription failed: {{reason}}. Check that your selected model is working, then try again.",
+    "pasteFailedHistoryOnly": "Pasting the transcription failed: {{reason}}. Your clipboard was left untouched — the text is saved in History. {{recovery}}",
+    "recoverWithPasteLast": "Press {{shortcut}} to paste it.",
+    "recoverFromHistory": "Open Settings › History to copy it."
   },
   "sidebar": {
     "general": "General",
@@ -313,7 +316,8 @@
             "title": "Jump slot action on finish",
             "description": "What this shortcut does with the slot chosen on the left when the take finishes. Default: Do nothing. Jump / deliver to slot sends the transcription into that remembered field instead of wherever you have drifted to, so you can read something else while dictating; Set slot to current focus and Clear slot run only after the text has been delivered, and Only jump on finish if started the same way on the Jumper page can narrow when a jump is allowed (Windows only)."
           }
-        }
+        },
+        "deliveryFailedHistoryOnly": "Anchored delivery failed: {{reason}}. Your clipboard was left untouched and the anchor was kept — the text is in History. {{recovery}}"
       },
       "transcribeGroup": {
         "title": "Transcribe"

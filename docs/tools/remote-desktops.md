@@ -25,7 +25,7 @@ Tune remote delivery only after the same flow works in a local application. Your
 
 ## When it goes wrong
 
-- [When delivery can't be verified, the text is parked, not lost](../features.md#when-delivery-cant-be-verified-the-text-is-parked)
+- [When delivery can't be verified, the text is still recoverable](../features.md#when-delivery-cant-be-verified-the-text-is-parked)
 - [The app stays responsive during a two-second remote delivery](../features.md#the-app-stays-responsive-during-a-two-second-remote-delivery)
 - [The paste didn't land — get the words back without re-dictating](../features.md#the-paste-didnt-land-get-the-words-back)
 

@@ -159,3 +159,53 @@ signature from those final bytes and repeat the exact-binary installer test.
 release build. It packages the existing binary and resources; it does not build
 the application. For what the package contains, see
 [docs/portable.md](docs/portable.md).
+
+## Windows: "can't find crate" during a build (Smart App Control)
+
+On a Windows machine with **Smart App Control** enforced, a build can fail with a
+cascade of errors that look like a broken dependency tree but are not:
+
+```
+error[E0463]: can't find crate for `thiserror`
+error: cannot find attribute `error` in this scope     (x174)
+error[E0463]: can't find crate for `schemars`
+error: could not compile `tauri-utils` (lib)
+```
+
+**Cause.** Rust procedural macros compile to DLLs that `rustc` loads *while
+building* — `thiserror_impl.dll`, `schemars_derive.dll`, `proc_macro_hack.dll`
+and friends, in `<target>/release/deps/`. They are freshly compiled and
+unsigned, so Smart App Control refuses to load them. `rustc` cannot distinguish
+"blocked by the OS" from "not there" and reports the crate as missing.
+
+**Confirm it** before changing anything — the block is recorded in the Windows
+event log, not in the build output:
+
+```powershell
+Get-WinEvent -LogName 'Microsoft-Windows-CodeIntegrity/Operational' -MaxEvents 200 |
+  Where-Object { $_.Id -in 3077,3033 } |
+  ForEach-Object { if ($_.Message -match 'attempted to load ([^\s]+)') { $matches[1] } } |
+  Group-Object | Sort-Object Count -Descending
+```
+
+Windows Defender's antivirus is **not** involved and records no detection, so
+`Get-MpThreatDetection` looks clean and an antivirus exclusion changes nothing.
+Smart App Control is a separate mechanism with no exclusion list.
+
+**Do NOT run `cargo clean`.** It is the natural reflex and it makes the problem
+worse: it discards proc-macro DLLs that Smart App Control has already accepted,
+forcing them to be rebuilt with new hashes that are evaluated as unknown all
+over again.
+
+**What actually works.** The blocking is reputation-based and transient — retry
+the build. It typically clears within a few attempts with nothing changed. Keep
+the target directory intact between attempts so already-accepted DLLs are
+reused.
+
+`proc-macro-hack` deserves a note because its filename alarms people:
+`proc_macro_hack-<hash>.dll` is the deprecated-but-published
+[`proc-macro-hack`](https://crates.io/crates/proc-macro-hack) crate, reached via
+`phf 0.10` → `cssparser` → `kuchikiki` → `tauri-utils` → `tauri`. It is a
+compile-time plugin, it is not a Handy dependency, and being a proc-macro it is
+never linked into the shipped binary. Confirm with:
+`cargo tree -i proc-macro-hack`.

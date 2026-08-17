@@ -369,7 +369,8 @@
             "title": "Ação do slot de salto ao finalizar",
             "description": "O que este atalho faz com o slot escolhido à esquerda quando a gravação termina. Padrão: Não fazer nada. Saltar / entregar no slot envia a transcrição para aquele campo memorizado, em vez de onde você tenha se distraído, para que você possa ler outra coisa enquanto dita; Definir slot para o foco atual e Limpar slot só são executados depois que o texto tiver sido entregue, e Só saltar ao finalizar se iniciado da mesma forma, na página Saltos, pode restringir quando um salto é permitido (somente Windows)."
           }
-        }
+        },
+        "deliveryFailedHistoryOnly": "Falha na entrega ancorada: {{reason}}. Sua área de transferência não foi alterada e a âncora foi mantida — o texto está no Histórico. {{recovery}}"
       },
       "transcribeGroup": {
         "title": "Transcrever"
@@ -1185,7 +1186,10 @@
   "toasts": {
     "pasteFailed": "Falha ao colar a transcrição: {{reason}}. O texto foi salvo no Histórico.",
     "pasteFailedParked": "Falha ao colar a transcrição: {{reason}}. O texto está na área de transferência (e no Histórico) — cole-o manualmente.",
-    "transcriptionFailed": "Falha na transcrição: {{reason}}. Verifique se o modelo selecionado está funcionando e tente novamente."
+    "transcriptionFailed": "Falha na transcrição: {{reason}}. Verifique se o modelo selecionado está funcionando e tente novamente.",
+    "pasteFailedHistoryOnly": "Falha ao colar a transcrição: {{reason}}. Sua área de transferência não foi alterada — o texto foi salvo no Histórico. {{recovery}}",
+    "recoverWithPasteLast": "Pressione {{shortcut}} para colá-lo.",
+    "recoverFromHistory": "Abra Configurações › Histórico para copiá-lo."
   },
   "flm": {
     "windowsApplicationControlBlocked": "O Controle de Aplicativos do Windows bloqueou o flm.exe porque ele não está assinado. O mecanismo NPU não está disponível. Escolha outro modelo de transcrição.",

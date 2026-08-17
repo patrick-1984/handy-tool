@@ -387,7 +387,8 @@
             "title": "Acción de ranura al finalizar",
             "description": "Qué hace este atajo con la ranura elegida a la izquierda cuando termina la toma. Predeterminado: No hacer nada. Saltar / entregar a la ranura envía la transcripción a ese campo recordado en vez de a donde hayas derivado, así puedes leer otra cosa mientras dictas; Fijar la ranura al enfoque actual y Borrar ranura se ejecutan solo después de que el texto se entregó, y 'Saltar al finalizar solo si se inició de la misma forma' en la página Jumper puede acotar cuándo se permite un salto (solo Windows)."
           }
-        }
+        },
+        "deliveryFailedHistoryOnly": "Falló la entrega anclada: {{reason}}. Tu portapapeles no se modificó y el ancla se mantuvo — el texto está en el Historial. {{recovery}}"
       },
       "transcribeGroup": {
         "title": "Transcribir"
@@ -1191,7 +1192,10 @@
   "toasts": {
     "pasteFailed": "No se pudo pegar la transcripción: {{reason}}. El texto se guardó en el Historial.",
     "pasteFailedParked": "No se pudo pegar la transcripción: {{reason}}. El texto está en tu portapapeles (y en el Historial); pégalo manualmente.",
-    "transcriptionFailed": "La transcripción falló: {{reason}}. Comprueba que el modelo seleccionado funcione y vuelve a intentarlo."
+    "transcriptionFailed": "La transcripción falló: {{reason}}. Comprueba que el modelo seleccionado funcione y vuelve a intentarlo.",
+    "pasteFailedHistoryOnly": "No se pudo pegar la transcripción: {{reason}}. Tu portapapeles no se modificó — el texto se guardó en el Historial. {{recovery}}",
+    "recoverWithPasteLast": "Pulsa {{shortcut}} para pegarlo.",
+    "recoverFromHistory": "Abre Configuración › Historial para copiarlo."
   },
   "flm": {
     "windowsApplicationControlBlocked": "El Control de aplicaciones de Windows bloqueó flm.exe porque no está firmado. El motor NPU no está disponible. Elige otro modelo de transcripción.",

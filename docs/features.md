@@ -112,11 +112,15 @@ page is hidden until you switch it on, so that key does nothing on a fresh insta
 #### What happens to your clipboard
 
 The default is `Advanced › Transcription › Transcribe › Clipboard Handling = Don't Modify Clipboard`,
-which does not mean the clipboard is untouched — it means it is **put back**. Handy copies the
-transcript to the clipboard, sends the paste keystroke, then restores your previous clipboard
-text about 50 ms later. Two honest limits: only **text** is saved and restored, so an image or a
-copied file on the clipboard is lost; and during those few milliseconds the transcript is
-readable by anything watching the clipboard, including Windows clipboard history.
+which does not mean the clipboard is untouched — it means Handy tries to **put the real previous
+text back**. Clipboard-based delivery places the transcript on the system clipboard for roughly
+100–300 ms, sends the paste keystroke, and restores only while Handy still owns the clipboard.
+It recognizes its own prior transcript instead of treating that as the original, leaves anything
+you copy during the delay alone, and retries a failed restore before warning in the log. Only
+**text** is preserved, and clipboard history, managers, and remote-session redirection can still
+capture the transcript while it is there. A failed delivery under this default leaves the
+clipboard untouched; the take is already in History and the failure toast points to re-paste or
+copy recovery.
 
 Choose `Copy to Clipboard` instead and Handy skips the restore entirely, leaving the
 transcription on the clipboard on purpose.
@@ -128,8 +132,11 @@ interchangeable.** Console windows, terminal emulators, some Java applications a
 remote-desktop clients accept only one of them — a classic Windows console treats Ctrl+V as an
 ordinary control character and ignores it, while Shift+Insert works. That is the whole reason
 the paste method is a setting, and why each flow gets its own: your terminal shortcut can use
-`Clipboard (Shift+Insert)` while everything else stays on Ctrl+V. `Direct` skips the clipboard
-and types the characters; `None` puts the text on the clipboard and sends nothing.
+`Clipboard (Shift+Insert)` while everything else stays on Ctrl+V. `Direct` is the only delivery
+path that never reads or writes the clipboard: it sends batched simulated keystrokes instead.
+It is not the default or a general upgrade — typed characters can trigger autocomplete,
+bracket auto-closing, or IME behavior, produce many undo steps, and drop in RDP, Citrix, or VM
+consoles. `None` puts the text on the clipboard and sends nothing.
 
 #### Is a submit key sent?
 
@@ -390,28 +397,36 @@ transcription, so consecutive takes and anything you type afterwards stay separa
 **The situation.** The text is transcribed, the clipboard is correct, and the target window
 ignores the paste — because a console, a Java client or a remote viewer only accepts a different
 paste keystroke.
-**What Handy does.** The paste keystroke is a setting, and each flow has its own: ordinary
+**What Handy does.** The delivery method is a setting, and each flow has its own: ordinary
 dictation, push-to-talk, Transcribe & Submit and the manual re-paste can each use a different
-one. `Direct` bypasses the clipboard and types the characters instead; `None` puts the text on
-the clipboard and sends nothing at all, which is the right answer for apps where you want to
-paste by hand.
+one. `Direct` is the only path that never reads or writes the clipboard; it types with batched
+simulated keystrokes. That can trigger autocomplete, bracket auto-closing and IME behavior,
+creates many undo steps instead of one, and can drop characters in RDP, Citrix and VM consoles,
+so it is not the default or a general upgrade. `None` puts the text on the clipboard and sends
+nothing at all, which is the right answer for apps where you want to paste by hand.
 **Where.** `Advanced › Transcription › Transcribe › Paste Method = Clipboard (Shift+Insert)`
-and `Advanced › Transcription › Transcribe › Paste Method (PTT)`.
-**Since.** Present since the fork's early releases.
+and `Advanced › Transcription › Transcribe › Paste Method (PTT)` _{Windows only}_.
+**Since.** Present since the fork's early releases; genuine Direct keystroke delivery since
+1.0.5.
 
 ### Dictation doesn't steal your clipboard
 
 <a id="dictation-doesnt-steal-your-clipboard"></a>
 **The situation.** You had something you needed on the clipboard, dictated one sentence, and now
 it is gone.
-**What Handy does.** With the default clipboard handling, the transcript is placed on the
-clipboard only long enough to paste, then your previous clipboard **text** is restored on a
-background thread — guarded so a slow restore can never overwrite a newer take. Choose
-`Copy to Clipboard` and it deliberately stays. The honest limits: only text is preserved, not
-images or files; and if a delivery fails, Handy parks the transcript on the clipboard on
-purpose rather than lose it.
+**What Handy does.** With the default clipboard handling, a clipboard-based method puts the
+transcript on the real clipboard only long enough to paste, then restores the previous clipboard
+**text**. Handy recognizes its own transcripts and restores the real original instead of making
+an older take permanent. Before restoring, it checks that it still owns the clipboard, so
+something you copy during the delay is left alone; failures are retried, then logged at warn
+level. Choose `Copy to Clipboard` and the transcript deliberately stays. If delivery fails
+under `Don't Modify Clipboard`, Handy withholds the clipboard write: the take is already in
+History and can be recovered with Paste Last Transcription. Only `Direct` avoids the clipboard
+entirely; clipboard-based methods expose the transcript to watchers for roughly 100–300 ms, and
+only text — not images or files — can be preserved.
 **Where.** `Advanced › Transcription › Transcribe › Clipboard Handling = Don't Modify Clipboard`.
-**Since.** Present since the fork's early releases; the delayed restore since 0.29.0.
+**Since.** Present since the fork's early releases; the delayed restore since 0.29.0; ownership
+checks, restore retries and history-only failure recovery since 1.0.5.
 
 ### Send it without reaching for Enter
 
@@ -432,16 +447,17 @@ shortcut, which always submits.
 valuable in it. Then a delivery misfired — wrong window, target not ready, paste swallowed — and
 the text is not on your clipboard either, because you asked for that. Under any other tool those
 words are gone.
-**What Handy does.** Keeps the most recent transcription in memory (and in History) regardless,
-and gives it its own shortcut that pastes it into whatever has focus now. It has its own paste
-method and its own clipboard policy, so you can tune it for the one stubborn target. It never
-submits and never jumps, and it never reads the clipboard — after a restart it falls back to
-History. This is why
+**What Handy does.** Saves every take to History before delivery, keeps the most recent
+transcription in memory, and gives it its own shortcut that delivers it into whatever has focus
+now. It has its own paste method and clipboard policy, so you can tune it for the one stubborn
+target. It never submits or jumps; after a restart it falls back to History. When delivery fails
+under `Don't Modify Clipboard`, the toast names the bound Paste Last Transcription shortcut, or
+points to the History page when none is bound. This is why
 [Dictation doesn't steal your clipboard](#dictation-doesnt-steal-your-clipboard) is safe to
 switch on.
 **Where.** `General › Paste last transcription › Paste Last Transcription` — `ctrl+alt+p` by
 default; `General › Paste last transcription › Paste method`.
-**Since.** 0.57.0.
+**Since.** 0.57.0; pre-delivery History storage and shortcut-aware failure recovery since 1.0.5.
 
 ### Your re-paste key fires while you are still holding it
 
@@ -469,16 +485,18 @@ fires when it lets go. A tap is instant.
 **Where.** No control — this is always active.
 **Since.** 0.59.0.
 
-### When delivery can't be verified, the text is parked, not lost
+### When delivery can't be verified, the text is still recoverable
 
 <a id="when-delivery-cant-be-verified-the-text-is-parked"></a>
 **The situation.** The paste fails — the target rejected it, the window moved, focus went
 somewhere unexpected — and you would like to know rather than discover it three sentences later.
-**What Handy does.** A failed or unverifiable delivery raises a toast and parks the transcript
-on the clipboard so you can place it yourself, instead of firing keystrokes into a surprise
-window. The parked write deliberately supersedes any pending clipboard restore.
+**What Handy does.** A failed or unverifiable delivery raises a toast instead of firing
+keystrokes into a surprise window. Every take is already in History. Under `Don't Modify
+Clipboard`, the clipboard stays untouched and the toast names the bound Paste Last
+Transcription shortcut, or points to the History page; under `Copy to Clipboard`, the
+transcript can remain on the clipboard for manual placement.
 **Where.** No control — this is always active.
-**Since.** 0.38.0.
+**Since.** 0.38.0; clipboard-policy-aware recovery since 1.0.5.
 
 ### Watch the words arrive in a window you can park anywhere
 
@@ -657,10 +675,11 @@ into focus and delivers nothing. A "back to my draft" key.
 condition away from putting your words somewhere terrible.
 **What Handy does.** Each recording's delivery target is captured per take and re-verified
 immediately before **every** keystroke: the window really is in the foreground, the expected
-control really has focus, the identity still matches. If any of that fails it aborts and parks
-the text on the clipboard rather than typing. It fails closed, every time.
+control really has focus, the identity still matches. If any of that fails it aborts rather than
+typing. The take remains in History; the clipboard is used for recovery only when its clipboard
+policy permits it. It fails closed, every time.
 **Where.** No control — this is always active.
-**Since.** 0.41.0.
+**Since.** 0.41.0; clipboard-policy-aware recovery since 1.0.5.
 
 ### A recycled window handle can't hijack your anchor
 
@@ -853,13 +872,14 @@ ten minutes ago, not what you had said.
 **What Handy does.** Remote sessions fetch clipboard data on demand *after* the paste keystroke
 arrives, over a separate and slower virtual channel — so restoring your previous clipboard 50 ms
 after pasting hands the remote application the pre-recording content, a race Citrix lost
-reliably. The restore now runs on a background thread after 50 ms plus your configured delay,
-guarded by a counter so a pending restore can never clobber a newer paste, and is skipped
-entirely when you have asked Handy to keep the transcription on the clipboard.
+reliably. The restore now runs on a background thread after 50 ms plus your configured delay.
+It is skipped when you ask Handy to keep the transcription, and an ownership check leaves a
+newer take or anything you copy during the delay alone. Restore failures are retried, then
+written to the log at warn level.
 **Where.** `Advanced › Transcription › Transcribe › Clipboard restore delay = 1 s`, with a
 separate value at
 `Advanced › Transcription › Transcribe & Submit › Clipboard restore delay`.
-**Since.** 0.29.0.
+**Since.** 0.29.0; clipboard ownership checks and restore retries since 1.0.5.
 
 ### The paste is swallowed right after a jump
 
@@ -2171,13 +2191,17 @@ level rather than existing only as a toast you already dismissed.
 **The situation.** You want the real worst case, not the reassuring version.
 **What Handy does.** Handy saves and restores clipboard **text** only, so an image, a copied file
 or rich formatting on the clipboard is lost when a paste restores an empty or plain-text value.
-During the paste the transcript is readable by anything that watches the clipboard, including
-Windows clipboard history and remote-session clipboard redirection. If the app is killed between
-the paste and the restore, the transcript stays on the clipboard. And a deliberate park after a
-failed delivery overwrites the previous clipboard on purpose, because losing your words is judged
-worse.
+During a clipboard-based paste the transcript is globally readable for roughly 100–300 ms by
+anything that watches the clipboard, including Windows clipboard history and remote-session
+clipboard redirection. `Don't Modify Clipboard` controls the final state, not that exposure;
+only `Direct` avoids the clipboard entirely. If the app is killed between the paste and restore,
+the transcript stays there. Handy leaves a newer user copy alone, retries failed restores, and
+then warns in the log. A failed delivery writes the transcript only when its clipboard policy
+permits it; otherwise the clipboard stays untouched and History plus Paste Last Transcription
+provide recovery.
 **Where.** `Advanced › Transcription › Transcribe › Clipboard Handling`.
-**Since.** Documented behavior of the current release.
+**Since.** Documented behavior of the current release; ownership checks, restore retries and
+history-only failure recovery since 1.0.5.
 
 ### The tray tells you what it is doing
 

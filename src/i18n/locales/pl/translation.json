@@ -387,7 +387,8 @@
             "title": "Akcja slotu skoku po zakończeniu",
             "description": "Co ten skrót robi z wybranym po lewej slotem, gdy nagranie się zakończy. Domyślnie: Nic nie robić. Przejdź / dostarcz do slotu wysyła transkrypcję do zapamiętanego pola, niezależnie od tego, gdzie w międzyczasie się przeniosłeś, dzięki czemu możesz czytać coś innego podczas dyktowania; Ustaw slot na aktualny fokus i Wyczyść slot są wykonywane tylko po dostarczeniu tekstu, a „Skacz po zakończeniu tylko przy tym samym skrócie” na stronie Skoki może zawężać, kiedy skok jest dozwolony (tylko Windows)."
           }
-        }
+        },
+        "deliveryFailedHistoryOnly": "Dostarczenie do kotwicy nie powiodło się: {{reason}}. Schowek pozostał bez zmian, a kotwica została zachowana — tekst jest w Historii. {{recovery}}"
       },
       "transcribeGroup": {
         "title": "Transkrybuj"
@@ -1259,7 +1260,10 @@
   "toasts": {
     "pasteFailed": "Wklejanie transkrypcji nie powiodło się: {{reason}}. Tekst został zapisany w Historii.",
     "pasteFailedParked": "Wklejanie transkrypcji nie powiodło się: {{reason}}. Tekst znajduje się w schowku (i w Historii) — wklej go ręcznie.",
-    "transcriptionFailed": "Transkrypcja nie powiodła się: {{reason}}. Sprawdź, czy wybrany model działa poprawnie, i spróbuj ponownie."
+    "transcriptionFailed": "Transkrypcja nie powiodła się: {{reason}}. Sprawdź, czy wybrany model działa poprawnie, i spróbuj ponownie.",
+    "pasteFailedHistoryOnly": "Wklejanie transkrypcji nie powiodło się: {{reason}}. Schowek pozostał bez zmian — tekst został zapisany w Historii. {{recovery}}",
+    "recoverWithPasteLast": "Naciśnij {{shortcut}}, aby go wkleić.",
+    "recoverFromHistory": "Otwórz Ustawienia › Historia, aby go skopiować."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Funkcja Kontrola aplikacji systemu Windows zablokowała plik flm.exe, ponieważ nie jest podpisany. Silnik NPU jest niedostępny. Wybierz inny model transkrypcji.",

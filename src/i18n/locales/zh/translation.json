@@ -387,7 +387,8 @@
             "title": "结束时的跳转槽操作",
             "description": "该快捷键在录音结束时，会对左侧选定的槽位执行什么操作。默认：不执行任何操作。“跳转/投递到槽位”会将转录内容发送到那个记住的字段，而不是你可能已经转移到的地方，方便你在语音输入时阅读其他内容；“将槽位设为当前焦点”和“清除槽位”只会在文本投递之后执行；若以相同方式在 Jumper 页面开启，则“仅在结束时跳转”可以限制何时允许跳转（仅限 Windows）。"
           }
-        }
+        },
+        "deliveryFailedHistoryOnly": "锚定投递失败：{{reason}}。剪贴板未作更改，锚点已保留 — 文本在历史记录中。{{recovery}}"
       },
       "transcribeGroup": {
         "title": "转录"
@@ -1185,7 +1186,10 @@
   "toasts": {
     "pasteFailed": "粘贴转录失败：{{reason}}。文本已保存到历史记录中。",
     "pasteFailedParked": "粘贴转录失败：{{reason}}。文本已保存在剪贴板中（同时保存在历史记录中）——请手动粘贴。",
-    "transcriptionFailed": "转录失败：{{reason}}。请检查所选模型是否正常工作，然后重试。"
+    "transcriptionFailed": "转录失败：{{reason}}。请检查所选模型是否正常工作，然后重试。",
+    "pasteFailedHistoryOnly": "粘贴转录失败：{{reason}}。剪贴板未作更改 — 文本已保存到历史记录中。{{recovery}}",
+    "recoverWithPasteLast": "按 {{shortcut}} 粘贴。",
+    "recoverFromHistory": "打开设置 › 历史记录以复制文本。"
   },
   "flm": {
     "windowsApplicationControlBlocked": "Windows 应用控制已阻止 flm.exe，因为它没有数字签名。NPU 引擎不可用。请选择其他转录模型。",

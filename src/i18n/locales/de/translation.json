@@ -387,7 +387,8 @@
             "title": "Slot-Aktion beim Beenden",
             "description": "Was dieses Tastenkürzel mit dem links gewählten Slot macht, wenn die Aufnahme beendet wird. Standard: Nichts tun. Springen / an Slot zustellen liefert die Transkription in das gemerkte Feld statt an den Ort, zu dem du inzwischen gewandert bist, sodass du beim Diktieren woanders weiterlesen kannst; Slot auf aktuellen Fokus setzen und Slot löschen laufen erst, nachdem der Text zugestellt wurde, und Nur beim Beenden springen, wenn auf dieselbe Weise gestartet auf der Jumper-Seite kann einschränken, wann ein Sprung erlaubt ist (nur Windows)."
           }
-        }
+        },
+        "deliveryFailedHistoryOnly": "Verankerte Zustellung fehlgeschlagen: {{reason}}. Deine Zwischenablage blieb unverändert und der Anker wurde beibehalten — der Text ist im Verlauf. {{recovery}}"
       },
       "transcribeGroup": {
         "title": "Transkribieren"
@@ -1185,7 +1186,10 @@
   "toasts": {
     "pasteFailed": "Einfügen der Transkription fehlgeschlagen: {{reason}}. Der Text wurde im Verlauf gespeichert.",
     "pasteFailedParked": "Einfügen der Transkription fehlgeschlagen: {{reason}}. Der Text befindet sich in deiner Zwischenablage (und im Verlauf) — füge ihn manuell ein.",
-    "transcriptionFailed": "Transkription fehlgeschlagen: {{reason}}. Prüfe, ob dein ausgewähltes Modell funktioniert, und versuche es erneut."
+    "transcriptionFailed": "Transkription fehlgeschlagen: {{reason}}. Prüfe, ob dein ausgewähltes Modell funktioniert, und versuche es erneut.",
+    "pasteFailedHistoryOnly": "Einfügen der Transkription fehlgeschlagen: {{reason}}. Deine Zwischenablage blieb unverändert — der Text wurde im Verlauf gespeichert. {{recovery}}",
+    "recoverWithPasteLast": "Drücke {{shortcut}}, um ihn einzufügen.",
+    "recoverFromHistory": "Öffne Einstellungen › Verlauf, um ihn zu kopieren."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Die Windows-Anwendungssteuerung hat flm.exe blockiert, weil die Datei nicht signiert ist. Die NPU-Engine ist nicht verfügbar. Wähle ein anderes Transkriptionsmodell.",
