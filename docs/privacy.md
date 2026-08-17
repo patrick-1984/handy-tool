@@ -105,23 +105,26 @@ MCP/CLI `keyboard_type` uses ordinary clipboard paste delivery. It is separate f
 
 ## Clipboard behaviour
 
-The Windows default is Ctrl+V with restoration of the previous clipboard text. “Do not modify” does not mean the transcript never enters the clipboard.
+The Windows default is Ctrl+V with restoration of the previous clipboard text. “Do not modify” controls the final state; it does not mean the transcript never enters the clipboard.
 
 A default paste:
 
-1. reads current clipboard text; failure becomes an empty string;
+1. reads current clipboard text; if it recognizes one of Handy's own transcripts, it keeps the real original instead, while a failed read becomes an empty string;
 2. writes the transcript as text;
 3. waits 60 ms;
 4. sends Ctrl+V;
-5. waits another 50 ms in the background, then restores captured text if no newer Handy clipboard write superseded it.
+5. waits another 50 ms in the background, then restores captured text only if Handy still owns the clipboard; something you copy during the delay is left alone, and a failed restore is retried before a warn-level log entry.
 
-Copy-to-clipboard mode skips restoration. The limits are material:
+That puts the transcript on the real system clipboard for roughly 100–300 ms, depending on the restore delay. Clipboard history/sync, managers, RDP/Citrix clipboard redirection, and any other watcher can still capture it in that window. Copy-to-clipboard mode skips restoration.
+
+`Direct` is the only delivery path that never reads or writes the clipboard. It uses batched simulated keystrokes and is not the default or a general upgrade: typing can trigger autocomplete, bracket auto-closing and IME behavior, creates many undo steps instead of one, and can drop characters in RDP/Citrix sessions and VM consoles.
+
+The limits are material:
 
 - Only text is preserved. Images, file lists, HTML, rich formatting, and other formats are not restored. A non-text clipboard or failed read can become an empty string.
-- During delivery, the transcript is globally readable to Windows clipboard history/sync, managers, remote-desktop redirection, and other apps.
-- A crash, forced exit, or restore failure can leave the transcript on the clipboard.
-- A newer Handy paste or park suppresses an older pending restore; the older clipboard is intentionally not restored.
-- Failed normal or anchored delivery parks the transcript on the clipboard. That overwrites the old clipboard and cancels an older restore.
+- A crash, forced exit, or restore failure after retries can leave the transcript on the clipboard.
+- A newer Handy paste or a user copy suppresses an older pending restore; Handy leaves the newer clipboard content alone.
+- A failed normal or anchored delivery under `Don't Modify Clipboard` does not park the transcript. The take was saved to History before delivery, and the failure toast names the bound Paste Last Transcription shortcut when available or points to the History page. A clipboard-modifying policy can still leave the transcript available for manual recovery.
 - RDP/Citrix can fetch data after the paste keystroke. Restoring too early can make the target receive old clipboard text. If it was a secret, it can land in the wrong remote field.
 
 With sensitive clipboard data, worst cases are loss of the old clipboard, capture of the transcript, or—especially over a slow remote session—delivery of the old secret instead. See [The honest limits of clipboard safety](features.md#the-honest-limits-of-clipboard-safety).
@@ -145,7 +148,5 @@ See [It refuses to dictate into a password box](features.md#it-refuses-to-dictat
 
 ## Practical boundary
 
-Local-model dictation avoids an app-level network request, but still writes sensitive local data and briefly uses the system clipboard for normal delivery. Remote engines, post-processing, provider-backed tools, MCP clients, Windows, and destination apps widen that boundary. Choose them as carefully as you would choose where to upload the original audio or text.
-
-
+Local-model dictation avoids an app-level network request, but still writes sensitive local data. Clipboard-based normal delivery briefly uses the system clipboard; `Direct` does not. Remote engines, post-processing, provider-backed tools, MCP clients, Windows, and destination apps widen that boundary. Choose them as carefully as you would choose where to upload the original audio or text.
 

@@ -274,17 +274,26 @@ static LAST_TRANSCRIPTION: Lazy<Mutex<Option<String>>> = Lazy::new(|| Mutex::new
 /// paste is dispatched, so it is always set by the time a manual re-paste could
 /// run).
 pub(crate) fn set_last_transcription(text: &str) {
-    if let Ok(mut guard) = LAST_TRANSCRIPTION.lock() {
-        *guard = Some(text.to_string());
-    }
+    // Recover a poisoned mutex rather than silently skipping the assignment.
+    // This buffer IS the recovery path when a delivery fails and the clipboard
+    // is deliberately left untouched — quietly failing to record the current
+    // take would leave Paste Last re-pasting a STALE one, which is worse than
+    // losing this one.
+    let mut guard = LAST_TRANSCRIPTION
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    *guard = Some(text.to_string());
 }
 
 /// The last delivered transcript this session, if any.
 pub(crate) fn last_transcription() -> Option<String> {
+    // Recover a poisoned mutex (see `set_last_transcription`): `.ok()` turned a
+    // poisoned lock into "no recent transcript", silently disabling the very
+    // recovery the user is reaching for.
     LAST_TRANSCRIPTION
         .lock()
-        .ok()
-        .and_then(|g| g.clone())
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+        .clone()
         .filter(|t| !t.trim().is_empty())
 }
 
@@ -387,14 +396,27 @@ mod silent_take_tests {
 /// clipboard (best effort) and tell the user via a global toast. The text is
 /// also in History, but the toast is what stops the "where did my words go"
 /// confusion in the moment.
-fn report_paste_failure(app: &AppHandle, text: &str, err: &str) {
+fn report_paste_failure(
+    app: &AppHandle,
+    text: &str,
+    err: &str,
+    handling: crate::settings::ClipboardHandling,
+) {
     error!("Failed to paste transcription: {}", err);
-    // park_text bumps the paste generation first — a pending delayed
-    // clipboard-restore must never overwrite the parked transcription.
-    let parked = crate::clipboard::park_text(app, text);
+    // Honour the user's clipboard choice. Under CopyToClipboard this parks the
+    // text (bumping the paste generation first, so a pending delayed restore
+    // can never overwrite it). Under DontModify it withholds the write — the
+    // take is still recoverable from History and via Paste Last, and the
+    // payload tells the frontend which happened.
+    let outcome = crate::clipboard::park_for_rescue(app, text, handling);
     let _ = app.emit(
         "paste-failed",
-        serde_json::json!({ "error": err, "parked": parked }),
+        serde_json::json!({
+            "error": err,
+            // Back-compat: existing listeners keyed on the boolean keep working.
+            "parked": outcome == crate::clipboard::RescueOutcome::Parked,
+            "clipboard": outcome.as_str(),
+        }),
     );
 }
 
@@ -435,7 +457,16 @@ fn deliver_core(
             // History either way, and the user asked for it not to be
             // delivered.
             if take_generation_current(take_gen) {
-                report_paste_failure(ah, &park_text, &e);
+                // Resolve the SAME effective handling the paste itself used, so
+                // the rescue can never leak under DontModify or withhold under
+                // CopyToClipboard. `deliver_core` is always a flow paste, so
+                // there is no manual (Paste Last) override in play here.
+                let handling = crate::clipboard::effective_clipboard_handling(
+                    submit_override,
+                    None,
+                    crate::settings::get_settings(ah).clipboard_handling,
+                );
+                report_paste_failure(ah, &park_text, &e, handling);
             } else {
                 debug!("Paste failed after the take was cancelled — not parking the text: {e}");
             }
@@ -534,10 +565,16 @@ fn dispatch_delivery(
             // For a silent finish that is the difference between "no clipboard
             // engagement at all" and quietly overwriting the user's clipboard.
             if deliver {
+                let handling = crate::clipboard::effective_clipboard_handling(
+                    submit_override,
+                    None,
+                    crate::settings::get_settings(&ah_fb).clipboard_handling,
+                );
                 report_paste_failure(
                     &ah_fb,
                     &park,
                     &format!("main-thread dispatch failed: {e:?}"),
+                    handling,
                 );
             }
             utils::hide_recording_overlay(&ah_fb);
@@ -1675,21 +1712,27 @@ impl ShortcutAction for TranscribeAction {
                             ts
                         );
                     }
-                    tauri::async_runtime::spawn(async move {
-                        save_history(
-                            &hm_clone,
-                            opus_ok,
-                            ts,
-                            Vec::new(),
-                            history_text,
-                            pp,
-                            prompt,
-                            cost,
-                            duration,
-                            model,
-                        )
-                        .await;
-                    });
+                    // AWAITED, not spawned. History is the recovery path when a
+                    // delivery fails and the user's clipboard setting says not
+                    // to park the text there — so it must be durable BEFORE
+                    // delivery is attempted, not merely scheduled. Spawning left
+                    // a window where a failed delivery withheld the clipboard
+                    // write while the row had not landed yet. The cost is a
+                    // single SQLite insert on a path that already sleeps far
+                    // longer than that before the paste keystroke.
+                    save_history(
+                        &hm_clone,
+                        opus_ok,
+                        ts,
+                        Vec::new(),
+                        history_text,
+                        pp,
+                        prompt,
+                        cost,
+                        duration,
+                        model,
+                    )
+                    .await;
                 } else {
                     debug!("Chunked recording too short and empty — skipping history save");
                     // Without a history row, the crash-recovery scan would
@@ -1924,21 +1967,23 @@ impl ShortcutAction for TranscribeAction {
                                 crate::managers::openrouter_transcription::take_session_cost();
                             let duration = Some(samples_to_seconds(samples_clone.len()));
                             let model = model_label(&ah);
-                            tauri::async_runtime::spawn(async move {
-                                save_history(
-                                    &hm_clone,
-                                    crash_safe,
-                                    ts,
-                                    samples_clone,
-                                    transcription_for_history,
-                                    post_processed_text,
-                                    post_process_prompt,
-                                    cost,
-                                    duration,
-                                    model,
-                                )
-                                .await;
-                            });
+                            // AWAITED, not spawned — see the chunked path above.
+                            // History is the recovery route when a delivery
+                            // fails and the clipboard must not be touched, so
+                            // the row must exist before delivery is attempted.
+                            save_history(
+                                &hm_clone,
+                                crash_safe,
+                                ts,
+                                samples_clone,
+                                transcription_for_history,
+                                post_processed_text,
+                                post_process_prompt,
+                                cost,
+                                duration,
+                                model,
+                            )
+                            .await;
 
                             // Paste the final text (either processed or original).
                             // Off the event loop on Windows (long remote jump

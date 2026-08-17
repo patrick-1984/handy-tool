@@ -387,7 +387,8 @@
             "title": "Action sur l'emplacement à la fin",
             "description": "Ce que fait ce raccourci avec l'emplacement choisi à gauche quand la prise se termine. Par défaut : Ne rien faire. Sauter / livrer vers l'emplacement envoie la transcription dans ce champ mémorisé plutôt que là où vous avez dérivé, pour que vous puissiez lire autre chose en dictant ; Définir l'emplacement sur le focus actuel et Effacer l'emplacement ne s'exécutent qu'après le collage du texte. « Sauter à la fin uniquement si démarré de la même façon » sur la page Jumper peut restreindre les cas où un saut est autorisé (Windows uniquement)."
           }
-        }
+        },
+        "deliveryFailedHistoryOnly": "La livraison ancrée a échoué : {{reason}}. Votre presse-papiers n'a pas été modifié et l'ancre a été conservée — le texte est dans l'historique. {{recovery}}"
       },
       "transcribeGroup": {
         "title": "Transcrire"
@@ -1191,7 +1192,10 @@
   "toasts": {
     "pasteFailed": "Le collage de la transcription a échoué : {{reason}}. Le texte est enregistré dans l'historique.",
     "pasteFailedParked": "Le collage de la transcription a échoué : {{reason}}. Le texte est dans votre presse-papiers (et dans l'historique) — collez-le manuellement.",
-    "transcriptionFailed": "La transcription a échoué : {{reason}}. Vérifiez que le modèle sélectionné fonctionne, puis réessayez."
+    "transcriptionFailed": "La transcription a échoué : {{reason}}. Vérifiez que le modèle sélectionné fonctionne, puis réessayez.",
+    "pasteFailedHistoryOnly": "Le collage de la transcription a échoué : {{reason}}. Votre presse-papiers n'a pas été modifié — le texte est enregistré dans l'historique. {{recovery}}",
+    "recoverWithPasteLast": "Appuyez sur {{shortcut}} pour le coller.",
+    "recoverFromHistory": "Ouvrez Paramètres › Historique pour le copier."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Le contrôle des applications Windows a bloqué flm.exe car il n'est pas signé. Le moteur NPU est indisponible. Choisissez un autre modèle de transcription.",

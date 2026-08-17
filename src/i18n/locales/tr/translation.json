@@ -387,7 +387,8 @@
             "title": "Bitişte yuva eylemi",
             "description": "Kayıt bittiğinde bu kısayolun solda seçilen yuvayla ne yapacağı. Varsayılan: Hiçbir şey yapma. Yuvaya atla / teslim et, transkripsiyonu sürüklendiğiniz herhangi bir yer yerine o hatırlanan alana gönderir; böylece dikte ederken başka bir şey okuyabilirsiniz. Yuvayı geçerli odağa ayarla ve Yuvayı temizle yalnızca metin teslim edildikten sonra çalışır, ve Atlayıcı sayfasındaki Yalnızca aynı şekilde başlatıldıysa bitişte atla, bir atlamaya ne zaman izin verileceğini daraltabilir (yalnızca Windows)."
           }
-        }
+        },
+        "deliveryFailedHistoryOnly": "Sabit noktaya teslimat başarısız oldu: {{reason}}. Panonuz değiştirilmedi ve sabit nokta korundu — metin Geçmiş'te. {{recovery}}"
       },
       "transcribeGroup": {
         "title": "Transkribe Et"
@@ -1185,7 +1186,10 @@
   "toasts": {
     "pasteFailed": "Transkripsiyon yapıştırılamadı: {{reason}}. Metin Geçmiş'te kaydedildi.",
     "pasteFailedParked": "Transkripsiyon yapıştırılamadı: {{reason}}. Metin panonuzda (ve Geçmiş'te) — elle yapıştırın.",
-    "transcriptionFailed": "Transkripsiyon başarısız oldu: {{reason}}. Seçili modelinizin çalıştığından emin olun ve tekrar deneyin."
+    "transcriptionFailed": "Transkripsiyon başarısız oldu: {{reason}}. Seçili modelinizin çalıştığından emin olun ve tekrar deneyin.",
+    "pasteFailedHistoryOnly": "Transkripsiyon yapıştırılamadı: {{reason}}. Panonuz değiştirilmedi — metin Geçmiş'te kaydedildi. {{recovery}}",
+    "recoverWithPasteLast": "Yapıştırmak için {{shortcut}} tuşuna basın.",
+    "recoverFromHistory": "Kopyalamak için Ayarlar › Geçmiş'i açın."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Windows Uygulama Denetimi, imzalı olmadığı için flm.exe dosyasını engelledi. NPU altyapısı kullanılamıyor. Farklı bir transkripsiyon modeli seçin.",

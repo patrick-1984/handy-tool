@@ -96,7 +96,7 @@ Catalog: [The next dictation doesn't run into the last one](../../features.md#th
 
 `General › Paste last transcription › Paste Last Transcription`
 
-Sets the recovery shortcut that re-pastes the most recent transcription. It uses the two controls below and never submits. **Default:** `ctrl+alt+p`.
+Sets the recovery shortcut that re-pastes the most recent in-memory transcription, or falls back to History after restart. A delivery-failure toast names this shortcut when it is bound. It uses the two controls below and never submits. **Default:** `ctrl+alt+p`.
 
 Catalog: [The paste didn't land — get the words back without re-dictating](../../features.md#the-paste-didnt-land-get-the-words-back).
 

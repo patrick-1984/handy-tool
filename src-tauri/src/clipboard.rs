@@ -48,6 +48,36 @@ pub struct SubmitOverride {
 /// clipboard restore only fires if no newer paste has superseded it.
 static RESTORE_GEN: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
+/// What the clipboard held immediately BEFORE Handy's most recent transient
+/// (`DontModify`) write, together with the generation of that write and the
+/// exact text we put there.
+///
+/// This lives inside `CLIPBOARD_WRITE_LOCK`'s payload rather than in a static
+/// of its own precisely so it is unreachable outside the critical section that
+/// already owns every clipboard write + generation bump: no second lock, no
+/// lock-ordering rule to get wrong, and no way to observe a
+/// (generation, original) pair that do not belong together.
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct PendingRestore {
+    generation: u64,
+    /// Exactly what we wrote — used to prove the clipboard is still OURS
+    /// before restoring, and to recognise our own text on a later capture.
+    written: String,
+    original: ClipboardSnapshot,
+}
+
+/// What we captured of the pre-paste clipboard, and therefore what "restore"
+/// means. `read_text()` is text-ONLY: an image or a file list reads as `Err`,
+/// and the old `unwrap_or_default()` turned that into `""`, so the later
+/// restore wrote an empty string over it. Modelling it explicitly lets the
+/// restore CLEAR instead of leaving a phantom empty-text item, and lets us warn
+/// that this paste is not losslessly reversible.
+#[derive(Clone, Debug, PartialEq, Eq)]
+enum ClipboardSnapshot {
+    Text(String),
+    NonText,
+}
+
 /// Serializes every clipboard WRITE with the generation bump that guards it
 /// (T-103, finding 3). Without this, the delayed restore thread could read
 /// `RESTORE_GEN`, find it still matches its own generation, and then — in the
@@ -56,7 +86,12 @@ static RESTORE_GEN: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64:
 /// its write, so the restore's write (now stale) lands last and clobbers the
 /// just-parked text. Held ONLY around the bump+write pair itself — never
 /// across the paste keystroke, any sleep, or other blocking work.
-static CLIPBOARD_WRITE_LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
+///
+/// INVARIANT: every site that bumps `RESTORE_GEN` must, in the SAME critical
+/// section, set this payload to `Some(..)` (a transient write we will undo) or
+/// `None` (a permanent write — a park, or `CopyToClipboard`). A stale entry
+/// left behind a bump is exactly the restore-chain poisoning bug.
+static CLIPBOARD_WRITE_LOCK: Lazy<Mutex<Option<PendingRestore>>> = Lazy::new(|| Mutex::new(None));
 
 static SUBMIT_OVERRIDE: Lazy<Mutex<Option<SubmitOverride>>> = Lazy::new(|| Mutex::new(None));
 
@@ -94,11 +129,171 @@ pub fn set_submit_override(over: SubmitOverride) {
 /// between the bump and the write and overwrite what was just parked. Returns
 /// whether the write stuck.
 pub fn park_text(app: &AppHandle, text: &str) -> bool {
-    let _write_lock = CLIPBOARD_WRITE_LOCK
+    let mut pending = CLIPBOARD_WRITE_LOCK
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
-    RESTORE_GEN.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-    app.clipboard().write_text(text).is_ok()
+    // Write FIRST, commit SECOND. Bumping before the write meant a park that
+    // FAILED (clipboard contention) still superseded an older transient
+    // transcript's pending restore — so that restore saw itself as stale and
+    // exited, stranding ITS transcript on the clipboard forever for a write
+    // that never happened.
+    let ok = app.clipboard().write_text(text).is_ok();
+    if ok {
+        // A park is a PERMANENT write: there is nothing left to restore, and
+        // the pending entry must be dropped so a later capture cannot inherit
+        // it. Only true once the write actually landed.
+        RESTORE_GEN.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        *pending = None;
+    }
+    ok
+}
+
+/// Whether a fail-closed rescue may leave the transcript on the clipboard.
+///
+/// The rescue itself is NOT optional — losing a take is strictly worse than
+/// the leak — but the clipboard is not the only place the take survives:
+/// `save_history` runs BEFORE delivery is dispatched, and
+/// `actions::set_last_transcription` is called synchronously before the paste,
+/// so "Paste Last Transcription" can always re-deliver it. Under `DontModify`
+/// the user has explicitly said their clipboard is not ours to keep, so the
+/// rescue withholds the write and the toast points at History + Paste Last.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum ParkDecision {
+    Park,
+    Withhold,
+}
+
+pub(crate) fn park_decision(handling: ClipboardHandling) -> ParkDecision {
+    match handling {
+        ClipboardHandling::CopyToClipboard => ParkDecision::Park,
+        ClipboardHandling::DontModify => ParkDecision::Withhold,
+    }
+}
+
+/// Wire value for the failure toasts — what actually happened to the clipboard.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum RescueOutcome {
+    Parked,
+    Withheld,
+    ParkFailed,
+}
+
+impl RescueOutcome {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::Parked => "parked",
+            Self::Withheld => "withheld",
+            Self::ParkFailed => "failed",
+        }
+    }
+}
+
+/// Fail-closed rescue for a delivery that could not be verified.
+///
+/// * `CopyToClipboard` → Park: bump+write under `CLIPBOARD_WRITE_LOCK`.
+/// * `DontModify` → Withhold: touch NOTHING. Critically this means NOT bumping
+///   `RESTORE_GEN`, so the restore armed by the paste that just failed still
+///   fires and takes OUR transcript back off the clipboard. Withholding is an
+///   ACTIVE instruction, not a no-op — it is only correct because
+///   `paste_via_clipboard` now arms that restore unconditionally on write
+///   success. On a path that never reached a clipboard write (a
+///   `begin_delivery` failure) this is simply a no-op.
+///
+/// The take survives either way; the caller MUST surface the returned outcome
+/// so the user is told where it went.
+pub(crate) fn park_for_rescue(
+    app: &AppHandle,
+    text: &str,
+    handling: ClipboardHandling,
+) -> RescueOutcome {
+    match park_decision(handling) {
+        ParkDecision::Withhold => {
+            log::info!(
+                "Rescue: withholding clipboard park of {} chars — clipboard handling is \
+                 DontModify; the take is in History and re-pastable with Paste Last",
+                text.len()
+            );
+            RescueOutcome::Withheld
+        }
+        ParkDecision::Park => {
+            if park_text(app, text) {
+                log::info!("Rescue: parked {} chars on the clipboard", text.len());
+                RescueOutcome::Parked
+            } else {
+                log::warn!(
+                    "Rescue: could not park {} chars on the clipboard",
+                    text.len()
+                );
+                RescueOutcome::ParkFailed
+            }
+        }
+    }
+}
+
+/// Single source of truth for a paste's effective clipboard handling: submit
+/// override, then manual (Paste Last) override, then the global setting.
+/// Extracted so `actions::report_paste_failure` resolves the SAME value the
+/// paste itself used — a rescue that disagreed would leak under `DontModify`
+/// or withhold under `CopyToClipboard`.
+pub(crate) fn effective_clipboard_handling(
+    submit_override: Option<SubmitOverride>,
+    manual_override: Option<ClipboardHandling>,
+    global: ClipboardHandling,
+) -> ClipboardHandling {
+    submit_override
+        .and_then(|o| o.clipboard)
+        .or(manual_override)
+        .unwrap_or(global)
+}
+
+/// Decide what this paste must treat as "the user's clipboard".
+///
+/// The bug: paste #1 writes T1 and arms a restore; paste #2 starts inside that
+/// window, reads the clipboard, gets T1, and later faithfully "restores" T1 —
+/// making a PAST transcript the permanent clipboard content and destroying the
+/// user's real data. Inherit paste #1's captured original instead, but ONLY
+/// when custody is provable two ways:
+///   * `pending.generation == current_generation` — nothing (park, paste,
+///     CopyToClipboard) has superseded that write, AND
+///   * the live read is byte-identical to `pending.written` — the user has not
+///     copied something new since. A real user copy must always win; it is the
+///     most recent thing they intended to have.
+///
+/// Returns the snapshot to use and whether it was inherited (for logging).
+fn resolve_capture(
+    pending: Option<&PendingRestore>,
+    current_generation: u64,
+    live: ClipboardSnapshot,
+) -> (ClipboardSnapshot, bool) {
+    match pending {
+        Some(p)
+            if p.generation == current_generation
+                && live == ClipboardSnapshot::Text(p.written.clone()) =>
+        {
+            (p.original.clone(), true)
+        }
+        _ => (live, false),
+    }
+}
+
+/// Whether the clipboard still holds exactly what we wrote, i.e. Handy still
+/// owns it. `RESTORE_GEN` only detects Handy-originated writes; if the USER
+/// copied something during the restore delay, restoring would silently clobber
+/// the thing they just copied. Checked immediately before the restore write.
+fn clipboard_still_ours(live: &ClipboardSnapshot, written: &str) -> bool {
+    matches!(live, ClipboardSnapshot::Text(t) if t == written)
+}
+
+/// Backoff for a contended restore. `None` = give up and warn. Windows
+/// clipboard contention (RDP/Citrix redirection, clipboard managers) is a real
+/// field condition, and a single failed attempt would mean a permanent leak.
+/// Pure so the retry budget is unit-testable without sleeping.
+fn restore_retry_delay_ms(attempt: u32) -> Option<u64> {
+    match attempt {
+        0 => Some(60),
+        1 => Some(150),
+        _ => None,
+    }
 }
 
 /// Pure decision helper for the restore-vs-park/paste race (T-103, finding
@@ -128,6 +323,168 @@ mod restore_race_tests {
         // same lock as the write (rather than before it) is what lets the
         // restore see this fresh value and skip.
         assert!(!should_restore(1, 2));
+    }
+
+    fn pending(generation: u64) -> PendingRestore {
+        PendingRestore {
+            generation,
+            written: "TRANSCRIPT 1".to_string(),
+            original: ClipboardSnapshot::Text("user data".to_string()),
+        }
+    }
+
+    #[test]
+    fn capture_inherits_the_original_instead_of_our_own_transcript() {
+        // The restore-chain poisoning bug: paste #2 starts while paste #1's
+        // transcript is still on the clipboard. Without this, paste #2 would
+        // snapshot TRANSCRIPT 1 as "the user's clipboard" and faithfully
+        // restore it forever, destroying the real content.
+        let p = pending(7);
+        let (snapshot, inherited) = resolve_capture(
+            Some(&p),
+            7,
+            ClipboardSnapshot::Text("TRANSCRIPT 1".to_string()),
+        );
+        assert_eq!(snapshot, ClipboardSnapshot::Text("user data".to_string()));
+        assert!(inherited);
+    }
+
+    #[test]
+    fn capture_does_not_inherit_when_the_user_copied_something_new() {
+        // A genuine user copy must always win — it is the most recent thing
+        // they intended to have on the clipboard.
+        let p = pending(7);
+        let (snapshot, inherited) = resolve_capture(
+            Some(&p),
+            7,
+            ClipboardSnapshot::Text("fresh user copy".to_string()),
+        );
+        assert_eq!(
+            snapshot,
+            ClipboardSnapshot::Text("fresh user copy".to_string())
+        );
+        assert!(!inherited);
+    }
+
+    #[test]
+    fn capture_does_not_inherit_across_a_superseding_write() {
+        // A park or a newer paste bumped the generation: that entry no longer
+        // describes the clipboard, so it must not be trusted.
+        let p = pending(7);
+        let (_, inherited) = resolve_capture(
+            Some(&p),
+            9,
+            ClipboardSnapshot::Text("TRANSCRIPT 1".to_string()),
+        );
+        assert!(!inherited);
+    }
+
+    #[test]
+    fn capture_with_no_pending_entry_uses_the_live_clipboard() {
+        let (snapshot, inherited) =
+            resolve_capture(None, 3, ClipboardSnapshot::Text("user data".to_string()));
+        assert_eq!(snapshot, ClipboardSnapshot::Text("user data".to_string()));
+        assert!(!inherited);
+    }
+
+    #[test]
+    fn restore_is_skipped_when_the_user_changed_the_clipboard() {
+        // RESTORE_GEN only sees Handy's own writes. If the USER copied during
+        // the restore delay, restoring would clobber what they just copied.
+        assert!(clipboard_still_ours(
+            &ClipboardSnapshot::Text("ours".to_string()),
+            "ours"
+        ));
+        assert!(!clipboard_still_ours(
+            &ClipboardSnapshot::Text("user copied this".to_string()),
+            "ours"
+        ));
+        assert!(!clipboard_still_ours(&ClipboardSnapshot::NonText, "ours"));
+    }
+
+    #[test]
+    fn park_failure_must_not_supersede_an_older_pending_restore() {
+        // Regression guard for the ordering in `park_text`: the generation is
+        // bumped ONLY when the write lands. A park that failed used to bump
+        // anyway, so an older transient transcript's restore saw itself as
+        // superseded and exited, stranding that transcript forever.
+        // gen unchanged after a failed park => the older restore still matches.
+        assert!(should_restore(5, 5));
+        // and a SUCCESSFUL later write does supersede it.
+        assert!(!should_restore(5, 6));
+    }
+
+    #[test]
+    fn restore_retry_budget_is_bounded() {
+        assert_eq!(restore_retry_delay_ms(0), Some(60));
+        assert_eq!(restore_retry_delay_ms(1), Some(150));
+        assert_eq!(restore_retry_delay_ms(2), None);
+    }
+
+    #[test]
+    fn dont_modify_withholds_the_rescue_park() {
+        // The reported bug: a failed delivery parked the transcript on the
+        // clipboard even though the user had asked us not to touch it.
+        assert_eq!(
+            park_decision(ClipboardHandling::DontModify),
+            ParkDecision::Withhold
+        );
+        assert_eq!(
+            park_decision(ClipboardHandling::CopyToClipboard),
+            ParkDecision::Park
+        );
+    }
+
+    #[test]
+    fn rescue_outcome_wire_values_match_the_frontend_contract() {
+        // src/App.tsx branches on these exact strings.
+        assert_eq!(RescueOutcome::Parked.as_str(), "parked");
+        assert_eq!(RescueOutcome::Withheld.as_str(), "withheld");
+        assert_eq!(RescueOutcome::ParkFailed.as_str(), "failed");
+    }
+
+    #[test]
+    fn effective_clipboard_handling_precedence() {
+        let global = ClipboardHandling::DontModify;
+        let submit_with = |c: Option<ClipboardHandling>| SubmitOverride {
+            submit: None,
+            clipboard: c,
+            restore_extra_ms: 0,
+        };
+
+        // Submit override wins over everything.
+        assert_eq!(
+            effective_clipboard_handling(
+                Some(submit_with(Some(ClipboardHandling::CopyToClipboard))),
+                Some(ClipboardHandling::DontModify),
+                global
+            ),
+            ClipboardHandling::CopyToClipboard
+        );
+        // A submit override carrying no clipboard choice falls through.
+        assert_eq!(
+            effective_clipboard_handling(
+                Some(submit_with(None)),
+                Some(ClipboardHandling::CopyToClipboard),
+                global
+            ),
+            ClipboardHandling::CopyToClipboard
+        );
+        // No overrides → the global setting.
+        assert_eq!(
+            effective_clipboard_handling(None, None, global),
+            ClipboardHandling::DontModify
+        );
+    }
+
+    #[test]
+    fn non_text_clipboard_is_distinguished_from_empty_text() {
+        // An image/file clipboard must be CLEARED, not overwritten with "",
+        // which would leave a phantom empty item where the image used to be.
+        assert_ne!(
+            ClipboardSnapshot::NonText,
+            ClipboardSnapshot::Text(String::new())
+        );
     }
 }
 
@@ -179,21 +536,43 @@ fn paste_via_clipboard(
     remote_retry: bool,
 ) -> Result<(), String> {
     let clipboard = app_handle.clipboard();
-    let clipboard_content = clipboard.read_text().unwrap_or_default();
 
-    // Supersede any pending delayed restore from a previous paste, and place
-    // OUR text on the clipboard, atomically w.r.t. the restore thread below
-    // (T-103, finding 3): the restore thread re-checks the generation INSIDE
-    // the SAME `CLIPBOARD_WRITE_LOCK` right before its own write, so it can
-    // never land between our bump and our write and clobber this paste's text.
-    let generation = {
-        let _write_lock = CLIPBOARD_WRITE_LOCK
+    // Capture + write + bump, all inside the ONE lock that owns clipboard
+    // writes (T-103, finding 3). The capture MUST be in here too: read outside
+    // the lock and this paste can snapshot a transcript another paste is about
+    // to supersede, which is the restore-chain poisoning bug.
+    let armed: Option<PendingRestore> = {
+        let mut pending = CLIPBOARD_WRITE_LOCK
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
-        let generation = RESTORE_GEN.fetch_add(1, std::sync::atomic::Ordering::SeqCst) + 1;
 
-        // Write text to clipboard first
-        // On Wayland, prefer wl-copy for better compatibility (especially with umlauts)
+        let live = match clipboard.read_text() {
+            Ok(t) => ClipboardSnapshot::Text(t),
+            Err(e) => {
+                log::debug!("Clipboard held no readable text ({e}) — capturing as non-text");
+                ClipboardSnapshot::NonText
+            }
+        };
+        let current_gen = RESTORE_GEN.load(std::sync::atomic::Ordering::SeqCst);
+        let (original, inherited) = resolve_capture(pending.as_ref(), current_gen, live);
+        if inherited {
+            log::warn!(
+                "Clipboard capture inherited pending restore (gen {current_gen}) — a previous \
+                 paste's transcript was still on the clipboard when this paste started; \
+                 restoring the ORIGINAL content instead of that transcript"
+            );
+        }
+        if original == ClipboardSnapshot::NonText && restore_after_ms.is_some() {
+            log::warn!(
+                "Clipboard held non-text content (image/file) — it cannot be restored and will \
+                 be CLEARED after this paste"
+            );
+        }
+
+        // Write FIRST, bump SECOND. If the write fails nothing is bumped and
+        // nothing is registered, so an older pending restore stays valid and
+        // still fires — bumping first would strand it and leave ITS transcript
+        // on the clipboard forever.
         #[cfg(target_os = "linux")]
         let write_result = if is_wayland() && is_wl_copy_available() {
             info!("Using wl-copy for clipboard write on Wayland");
@@ -210,72 +589,219 @@ fn paste_via_clipboard(
             .map_err(|e| format!("Failed to write to clipboard: {}", e));
 
         write_result?;
-        generation
+
+        let generation = RESTORE_GEN.fetch_add(1, std::sync::atomic::Ordering::SeqCst) + 1;
+        // INVARIANT (see CLIPBOARD_WRITE_LOCK): `Some` for a transient write we
+        // will undo; `None` when `restore_after_ms` is `None`, i.e. the
+        // CopyToClipboard case where this write is deliberately permanent.
+        let entry = restore_after_ms.map(|_| PendingRestore {
+            generation,
+            written: text.to_string(),
+            original,
+        });
+        *pending = entry.clone();
+        entry
     };
 
-    std::thread::sleep(Duration::from_millis(paste_delay_ms));
+    // SINGLE EXIT so the arming below runs on EVERY path once the write
+    // succeeded. Four early returns used to sit between the write and the
+    // arming — the anchor re-check, the Linux native combo `?`, the enigo `?`s
+    // and the `_ =>` arm — and each one left the transcript on the clipboard
+    // with NO restore ever scheduled. Same idiom as the `delivered` block in
+    // `paste_inner`, and for the same reason: an epilogue that must always run.
+    let keystroke: Result<(), String> = (|| {
+        std::thread::sleep(Duration::from_millis(paste_delay_ms));
 
-    // T-103 (finding 1): re-verify the anchor immediately before the
-    // synthesized keystroke below — a focus change since `begin_delivery`'s
-    // own check (or since the last re-check) must abort rather than paste
-    // blind. No-op (`anchor_guard` is `None`) for every non-anchored paste.
-    // T-309: on a remote-desktop jump this tolerates the target still settling
-    // its inner focus (bounded retry) instead of parking immediately.
-    if let Some(guard) = anchor_guard {
-        if !crate::anchor::await_guard_ready(guard, remote_retry) {
-            return Err(ANCHOR_FOCUS_LOST.to_string());
+        // T-103 (finding 1): re-verify the anchor immediately before the
+        // synthesized keystroke — a focus change since `begin_delivery`'s own
+        // check (or since the last re-check) must abort rather than paste
+        // blind. No-op (`anchor_guard` is `None`) for every non-anchored paste.
+        // T-309: on a remote-desktop jump this tolerates the target still
+        // settling its inner focus (bounded retry) instead of parking at once.
+        if let Some(guard) = anchor_guard {
+            if !crate::anchor::await_guard_ready(guard, remote_retry) {
+                return Err(ANCHOR_FOCUS_LOST.to_string());
+            }
         }
+
+        // Send paste key combo
+        #[cfg(target_os = "linux")]
+        let key_combo_sent = try_send_key_combo_linux(paste_method)?;
+
+        #[cfg(not(target_os = "linux"))]
+        let key_combo_sent = false;
+
+        // Fall back to enigo if no native tool handled it
+        if !key_combo_sent {
+            match paste_method {
+                PasteMethod::CtrlV => input::send_paste_ctrl_v(enigo)?,
+                PasteMethod::CtrlShiftV => input::send_paste_ctrl_shift_v(enigo)?,
+                PasteMethod::ShiftInsert => input::send_paste_shift_insert(enigo)?,
+                _ => return Err("Invalid paste method for clipboard paste".into()),
+            }
+        }
+        Ok(())
+    })();
+
+    // Arm AFTER the keystroke phase, successful or not. The ordering guarantee
+    // is UNCHANGED: the delay clock still starts once the keystroke has been
+    // attempted, never before it. A later `park_*` can still suppress this by
+    // bumping `RESTORE_GEN`; that discipline is untouched.
+    if let (Some(entry), Some(delay_ms)) = (armed, restore_after_ms) {
+        arm_delayed_restore(app_handle.clone(), entry, delay_ms);
     }
 
-    // Send paste key combo
+    keystroke
+}
+
+/// Put a captured snapshot back on the clipboard. Text is written back; a
+/// non-text original (image/file) cannot be reconstructed — our own write
+/// already destroyed it — so the clipboard is CLEARED rather than left holding
+/// a phantom empty-text item where the user's image used to be.
+fn write_snapshot(app: &AppHandle, original: &ClipboardSnapshot) -> Result<(), String> {
     #[cfg(target_os = "linux")]
-    let key_combo_sent = try_send_key_combo_linux(paste_method)?;
+    if is_wayland() && is_wl_copy_available() {
+        return match original {
+            ClipboardSnapshot::Text(t) => write_clipboard_via_wl_copy(t),
+            ClipboardSnapshot::NonText => clear_clipboard_via_wl_copy(),
+        };
+    }
 
-    #[cfg(not(target_os = "linux"))]
-    let key_combo_sent = false;
+    match original {
+        ClipboardSnapshot::Text(t) => app.clipboard().write_text(t).map_err(|e| format!("{e}")),
+        ClipboardSnapshot::NonText => app.clipboard().clear().map_err(|e| format!("{e}")),
+    }
+}
 
-    // Fall back to enigo if no native tool handled it
-    if !key_combo_sent {
-        match paste_method {
-            PasteMethod::CtrlV => input::send_paste_ctrl_v(enigo)?,
-            PasteMethod::CtrlShiftV => input::send_paste_ctrl_shift_v(enigo)?,
-            PasteMethod::ShiftInsert => input::send_paste_shift_insert(enigo)?,
-            _ => return Err("Invalid paste method for clipboard paste".into()),
+/// Restore the pre-paste clipboard after a delay, off the calling thread.
+///
+/// Remote sessions (Citrix/RDP) fetch clipboard data on demand AFTER the paste
+/// keystroke lands in the remote app; restoring too early hands them the old
+/// content. The generation is re-checked INSIDE the SAME `CLIPBOARD_WRITE_LOCK`
+/// as the write itself (T-103, finding 3) — a check-then-write without the lock
+/// left a gap where a park/paste could bump the generation and write AFTER the
+/// check but BEFORE the write, so the stale restore would land last.
+fn arm_delayed_restore(app: AppHandle, entry: PendingRestore, delay_ms: u64) {
+    log::debug!(
+        "Clipboard restore armed: gen {}, delay {} ms, wrote {} chars, original = {}",
+        entry.generation,
+        delay_ms,
+        entry.written.len(),
+        match &entry.original {
+            ClipboardSnapshot::Text(t) => format!("{} chars", t.len()),
+            ClipboardSnapshot::NonText => "non-text (will clear)".to_string(),
+        },
+    );
+    std::thread::spawn(move || {
+        std::thread::sleep(Duration::from_millis(delay_ms));
+
+        let mut attempt: u32 = 0;
+        loop {
+            // Three distinct outcomes, modelled explicitly so a transient
+            // failure can never be mistaken for "stop trying":
+            //   None            -> stop for good (superseded, or the user owns it)
+            //   Some(Ok(()))    -> restored
+            //   Some(Err(msg))  -> transient, feed the retry budget
+            let outcome: Option<Result<(), String>> = {
+                let mut pending = CLIPBOARD_WRITE_LOCK
+                    .lock()
+                    .unwrap_or_else(|poisoned| poisoned.into_inner());
+
+                if !should_restore(
+                    entry.generation,
+                    RESTORE_GEN.load(std::sync::atomic::Ordering::SeqCst),
+                ) {
+                    log::debug!(
+                        "Clipboard restore gen {} superseded — skipping (a later paste or park \
+                         owns the clipboard)",
+                        entry.generation
+                    );
+                    None
+                } else {
+                    // Ownership: `RESTORE_GEN` only sees Handy's own writes. If
+                    // the USER copied something during the delay, restoring
+                    // would silently clobber what they just copied.
+                    //
+                    // A read ERROR is NOT the same as "someone else owns it":
+                    // the clipboard is merely unreadable right now (contention
+                    // is the norm on Windows with RDP/Citrix redirection).
+                    // Treating that as lost ownership abandoned the restore for
+                    // good and left our transcript exposed — so it feeds the
+                    // retry instead.
+                    match app.clipboard().read_text() {
+                        Err(e) => Some(Err(format!("clipboard unreadable: {e}"))),
+                        Ok(live_text) => {
+                            if !clipboard_still_ours(
+                                &ClipboardSnapshot::Text(live_text),
+                                &entry.written,
+                            ) {
+                                log::debug!(
+                                    "Clipboard changed externally since gen {} — leaving the \
+                                     user's content alone instead of restoring",
+                                    entry.generation
+                                );
+                                // Someone else owns it: our entry no longer
+                                // describes the clipboard, so drop it.
+                                if pending.as_ref().map(|p| p.generation) == Some(entry.generation)
+                                {
+                                    *pending = None;
+                                }
+                                None
+                            } else {
+                                // `pending` is deliberately NOT cleared before
+                                // the write succeeds. Clearing it up front meant
+                                // a failed attempt dropped the provenance a
+                                // concurrent capture needs to avoid inheriting
+                                // our own transcript — recreating the very
+                                // restore-chain poisoning this change exists to
+                                // fix.
+                                let res = write_snapshot(&app, &entry.original);
+                                if res.is_ok()
+                                    && pending.as_ref().map(|p| p.generation)
+                                        == Some(entry.generation)
+                                {
+                                    *pending = None;
+                                }
+                                Some(res)
+                            }
+                        }
+                    }
+                }
+            };
+
+            let outcome = match outcome {
+                None => return,
+                Some(r) => r,
+            };
+
+            match outcome {
+                Ok(()) => {
+                    log::debug!("Clipboard restored (gen {})", entry.generation);
+                    return;
+                }
+                Err(e) => match restore_retry_delay_ms(attempt) {
+                    Some(backoff) => {
+                        log::debug!(
+                            "Clipboard restore attempt {} failed ({e}) — retrying in {} ms",
+                            attempt + 1,
+                            backoff
+                        );
+                        attempt += 1;
+                        std::thread::sleep(Duration::from_millis(backoff));
+                    }
+                    None => {
+                        log::warn!(
+                            "Clipboard restore FAILED (gen {}): {e} — {} chars of transcript may \
+                             REMAIN on the clipboard",
+                            entry.generation,
+                            entry.written.len()
+                        );
+                        return;
+                    }
+                },
+            }
         }
-    }
-
-    // Restore the original clipboard content after a delay, off this thread.
-    // Remote sessions (Citrix/RDP) fetch clipboard data on demand AFTER the
-    // paste keystroke lands in the remote app; restoring too early hands them
-    // the old content. The generation is re-checked INSIDE the SAME
-    // `CLIPBOARD_WRITE_LOCK` as the write itself (T-103, finding 3) — a
-    // check-then-write without the lock left a gap where a park/paste could
-    // bump the generation and write AFTER this check but BEFORE this write,
-    // so this (now-stale) restore would land last and clobber it.
-    if let Some(delay_ms) = restore_after_ms {
-        let app = app_handle.clone();
-        std::thread::spawn(move || {
-            std::thread::sleep(Duration::from_millis(delay_ms));
-            let _write_lock = CLIPBOARD_WRITE_LOCK
-                .lock()
-                .unwrap_or_else(|poisoned| poisoned.into_inner());
-            if !should_restore(
-                generation,
-                RESTORE_GEN.load(std::sync::atomic::Ordering::SeqCst),
-            ) {
-                return;
-            }
-            // On Wayland, prefer wl-copy for better compatibility
-            #[cfg(target_os = "linux")]
-            if is_wayland() && is_wl_copy_available() {
-                let _ = write_clipboard_via_wl_copy(&clipboard_content);
-                return;
-            }
-            let _ = app.clipboard().write_text(&clipboard_content);
-        });
-    }
-
-    Ok(())
+    });
 }
 
 /// Attempts to send a key combination using Linux-native tools.
@@ -601,6 +1127,26 @@ fn write_clipboard_via_wl_copy(text: &str) -> Result<(), String> {
     Ok(())
 }
 
+/// Clear the clipboard via wl-copy. Used when the pre-paste clipboard held
+/// non-text content that cannot be restored, so we remove our transcript
+/// rather than leave it there.
+#[cfg(target_os = "linux")]
+fn clear_clipboard_via_wl_copy() -> Result<(), String> {
+    use std::process::Stdio;
+    let status = Command::new("wl-copy")
+        .arg("--clear")
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status()
+        .map_err(|e| format!("Failed to execute wl-copy --clear: {}", e))?;
+
+    if !status.success() {
+        return Err("wl-copy --clear failed".into());
+    }
+
+    Ok(())
+}
+
 /// Send a key combination (e.g., Ctrl+V) via wtype on Wayland.
 #[cfg(target_os = "linux")]
 fn send_key_combo_via_wtype(paste_method: &PasteMethod) -> Result<(), String> {
@@ -880,10 +1426,11 @@ fn paste_inner(
     // construction, so this is a no-op there today.
     let submit_override = if flow_paste { submit_override } else { None };
     let forced_submit = submit_override.and_then(|o| o.submit);
-    let clipboard_handling = submit_override
-        .and_then(|o| o.clipboard)
-        .or(manual_override.map(|(_, c)| c))
-        .unwrap_or(settings.clipboard_handling);
+    let clipboard_handling = effective_clipboard_handling(
+        submit_override,
+        manual_override.map(|(_, c)| c),
+        settings.clipboard_handling,
+    );
     let paste_method = match forced_submit {
         Some((method, _)) => method,
         None => match manual_override {
@@ -947,32 +1494,25 @@ fn paste_inner(
         .lock()
         .map_err(|e| format!("Failed to lock Enigo: {}", e))?;
 
-    // Park `text` on the clipboard as the anchored-delivery fail-closed path:
-    // supersede any pending delayed restore first (so it can't overwrite the
-    // parked text), write, and emit `anchor-delivery-failed`. Shared by a
-    // verification failure at `begin_delivery` and the T-103 TOCTOU re-check
-    // right before the keystroke — both must behave identically.
+    // Fail-closed path for an anchored delivery that could not be verified.
+    // Shared by a verification failure at `begin_delivery` and the T-103 TOCTOU
+    // re-check right before the keystroke — both must behave identically.
+    //
+    // Under `CopyToClipboard` this parks the text (bump-and-write under
+    // CLIPBOARD_WRITE_LOCK, superseding any pending restore). Under
+    // `DontModify` it deliberately WITHHOLDS the write and does not bump, so
+    // the restore armed by `paste_via_clipboard` still fires and takes our
+    // transcript back off the clipboard. The take is not lost either way: it is
+    // in History (written before delivery) and re-pastable with Paste Last, and
+    // the emitted payload tells the frontend which happened so the toast can
+    // name the right recovery.
     #[cfg(windows)]
     let park_anchor_failure = |reason: String| {
-        // Bump-and-write under CLIPBOARD_WRITE_LOCK (T-103, finding 3): the
-        // SAME serialization `park_text`/`paste_via_clipboard`'s restore use,
-        // so a delayed restore can never land between this bump and this
-        // write and clobber the parked text.
-        let reason = {
-            let _write_lock = CLIPBOARD_WRITE_LOCK
-                .lock()
-                .unwrap_or_else(|poisoned| poisoned.into_inner());
-            RESTORE_GEN.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-            match app_handle.clipboard().write_text(&text) {
-                Ok(()) => reason,
-                Err(e) => {
-                    // Don't claim the text is on the clipboard when it isn't.
-                    log::warn!("Could not park transcription on clipboard: {}", e);
-                    format!("{reason}; clipboard also unavailable ({e})")
-                }
-            }
-        };
-        let _ = app_handle.emit("anchor-delivery-failed", reason);
+        let outcome = park_for_rescue(&app_handle, &text, clipboard_handling);
+        let _ = app_handle.emit(
+            "anchor-delivery-failed",
+            serde_json::json!({ "reason": reason, "clipboard": outcome.as_str() }),
+        );
     };
 
     // Anchored delivery: activate + focus the captured target BEFORE any
@@ -1153,24 +1693,40 @@ fn paste_inner(
                 info!("PasteMethod::None selected - skipping paste action");
             }
             PasteMethod::Direct => {
-                // On Linux, try native direct typing tools first (wtype, dotool, etc.)
+                // Direct is the ONLY delivery path that never touches the
+                // clipboard — that is the whole reason to pick it, and the UI
+                // says so. It used to fall back to a Ctrl+V clipboard paste on
+                // Windows/macOS "to avoid character-by-character flicker",
+                // which silently broke that promise: anyone choosing Direct for
+                // privacy got a clipboard paste. `input::paste_text_direct`
+                // batches ordinary text into whole-run injections (one
+                // `SendInput` per run on Windows), so there is no per-character
+                // flicker to avoid.
+                //
+                // On Linux, native typing tools (wtype, dotool, …) are tried
+                // first and fall back to the same enigo path.
+                // T-103 (finding 1) parity: the clipboard path re-verifies the
+                // anchor immediately before its keystroke. Routing Direct away
+                // from `paste_via_clipboard` removed that check, so an anchored
+                // Direct delivery could type blind into whatever had stolen
+                // focus. Re-check here before the first keystroke.
+                //
+                // Residual, documented: Direct emits several batched runs for
+                // multi-line text, and focus is not re-verified BETWEEN runs.
+                // That is the same granularity the clipboard path has always
+                // had (one check, then one chord), not a new gap.
+                if let Some(guard) = anchor_guard_ref {
+                    if !crate::anchor::await_guard_ready(guard, remote_jump) {
+                        return Err(ANCHOR_FOCUS_LOST.to_string());
+                    }
+                }
                 #[cfg(target_os = "linux")]
                 {
                     paste_direct(&mut enigo, &text, settings.typing_tool)?;
                 }
-                // On Windows/macOS, use clipboard paste to avoid character-by-character flicker
                 #[cfg(not(target_os = "linux"))]
                 {
-                    paste_via_clipboard(
-                        &mut enigo,
-                        &text,
-                        &app_handle,
-                        &PasteMethod::CtrlV,
-                        paste_delay_ms,
-                        restore_after_ms,
-                        anchor_guard_ref,
-                        remote_jump,
-                    )?;
+                    input::paste_text_direct(&mut enigo, &text)?;
                 }
             }
             PasteMethod::CtrlV | PasteMethod::CtrlShiftV | PasteMethod::ShiftInsert => {

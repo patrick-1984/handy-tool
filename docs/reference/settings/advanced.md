@@ -63,7 +63,7 @@ Catalog: [A hotkey another app already owns](../../features.md#a-hotkey-another-
 
 `Advanced › Transcription › Transcribe › Paste Method`
 
-Chooses how ordinary dictation inserts text. `Direct` types without a paste keystroke; `None` leaves delivery to you. **Default:** `Clipboard (Ctrl+V)`.
+Chooses how ordinary dictation inserts text. `Direct` uses simulated keystrokes without reading or writing the clipboard; `None` leaves delivery to you. **Default:** `Clipboard (Ctrl+V)`.
 
 Catalog: [Ctrl+V doesn't work in that app](../../features.md#ctrl-v-doesnt-work-in-that-app).
 
@@ -86,9 +86,9 @@ Chooses which Linux input-injection utility backs `Direct` delivery. The control
 
 `Advanced › Transcription › Transcribe › Clipboard Handling`
 
-Chooses whether delivery restores the previous clipboard text or leaves the transcription there. It combines with [Clipboard restore delay](#transcribe-clipboard-restore-delay). **Default:** `Don't Modify Clipboard`.
+Chooses the final clipboard state after clipboard-based delivery. `Don't Modify Clipboard` restores previous text and withholds a recovery write after failure; the take remains in History. It combines with [Clipboard restore delay](#transcribe-clipboard-restore-delay). **Default:** `Don't Modify Clipboard`.
 
-Catalog: [Dictation doesn't steal your clipboard](../../features.md#dictation-doesnt-steal-your-clipboard).
+Catalog: [Dictation doesn't steal your clipboard](../../features.md#dictation-doesnt-steal-your-clipboard); [The paste didn't land — get the words back without re-dictating](../../features.md#the-paste-didnt-land-get-the-words-back).
 
 #### Auto Submit
 
@@ -190,9 +190,9 @@ Catalog: [Pressing it when nothing is recording](../../features.md#pressing-it-w
 
 `Advanced › Transcription › Transcribe & Submit › Clipboard`
 
-Sets this flow's clipboard policy independently of [Clipboard Handling](#clipboard-handling). **Default:** `Don't Modify Clipboard`.
+Sets this flow's final clipboard state independently of [Clipboard Handling](#clipboard-handling). With `Don't Modify Clipboard`, a failed delivery does not park the transcript; recovery remains available from History. **Default:** `Don't Modify Clipboard`.
 
-Catalog: [Its own clipboard policy](../../features.md#its-own-clipboard-policy).
+Catalog: [Its own clipboard policy](../../features.md#its-own-clipboard-policy); [The paste didn't land — get the words back without re-dictating](../../features.md#the-paste-didnt-land-get-the-words-back).
 
 <a id="submit-clipboard-restore-delay"></a>
 #### Clipboard restore delay

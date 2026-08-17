@@ -369,7 +369,8 @@
             "title": "完成時的跳轉槽動作",
             "description": "此快速鍵在錄音結束時，會對左側所選插槽執行的動作。預設：不執行任何動作。「跳轉／傳遞至插槽」會將轉錄結果送到該記憶欄位,而非你目前所在的位置,讓你可以在語音輸入時閱讀其他內容；「將插槽設為目前焦點」與「清除插槽」僅在文字傳遞完成後才執行，而「僅在以相同方式開始時才於完成後跳轉」（跳轉頁面）可進一步限制何時允許跳轉（僅限 Windows）。"
           }
-        }
+        },
+        "deliveryFailedHistoryOnly": "錨點傳送失敗：{{reason}}。剪貼簿未被更動，錨點已保留 — 文字在歷史紀錄中。{{recovery}}"
       },
       "transcribeGroup": {
         "title": "轉錄"
@@ -1185,7 +1186,10 @@
   "toasts": {
     "pasteFailed": "貼上轉錄失敗:{{reason}}。文字已儲存於歷史紀錄中",
     "pasteFailedParked": "貼上轉錄失敗:{{reason}}。文字已在您的剪貼簿中(並儲存於歷史紀錄)——請手動貼上",
-    "transcriptionFailed": "轉錄失敗:{{reason}}。請確認所選模型正常運作,然後再試一次"
+    "transcriptionFailed": "轉錄失敗:{{reason}}。請確認所選模型正常運作,然後再試一次",
+    "pasteFailedHistoryOnly": "貼上轉錄失敗：{{reason}}。剪貼簿未被更動 — 文字已儲存於歷史紀錄中。{{recovery}}",
+    "recoverWithPasteLast": "按下 {{shortcut}} 即可貼上。",
+    "recoverFromHistory": "開啟設定 › 歷史紀錄以複製文字。"
   },
   "flm": {
     "windowsApplicationControlBlocked": "Windows 應用程式控制已封鎖 flm.exe，因為它未經數位簽署。NPU 引擎無法使用。請選擇其他轉錄模型。",
