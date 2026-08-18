@@ -309,14 +309,14 @@
         },
         "jumperPasteDelay": {
           "title": "Paste delay after jump (Windows)",
-          "description": "Thời gian chờ thêm sau khi một lần nhảy đưa cửa sổ mục tiêu lên trước và trước khi phím dán được gửi, vì một cửa sổ vừa được kích hoạt vẫn có thể nuốt mất phím. Mặc định: Local apps 250 ms, Remote desktop 1 s — cột nào áp dụng do Remote match strings ở trang Jumper quyết định. Chỉ chạy khi có một lần nhảy thực sự; khi bạn đã ở sẵn trong mục tiêu, việc dán vẫn diễn ra ngay lập tức, và cả hai dropdown được dùng chung bởi Transcribe và Transcribe & Submit.",
+          "description": "Thời gian chờ thêm sau khi một lần nhảy đưa cửa sổ mục tiêu lên trước và trước khi phím dán được gửi, vì một cửa sổ vừa được kích hoạt vẫn có thể nuốt mất phím. Mặc định: Local apps 300 ms, Remote desktop 600 ms — cột nào áp dụng do Remote match strings ở trang Jumper quyết định. Chỉ chạy khi có một lần nhảy thực sự; khi bạn đã ở sẵn trong mục tiêu, việc dán vẫn diễn ra ngay lập tức, và cả hai dropdown được dùng chung bởi Transcribe và Transcribe & Submit.",
           "options": {
             "none": "Off (instant)"
           }
         },
         "jumperSubmitDelay": {
-          "title": "Submit delay after jump (Windows)",
-          "description": "Thời gian chờ thêm giữa lúc dán và phím submit khi việc gửi phải nhảy, vì cửa sổ vừa được kích hoạt có thể vẫn đang xử lý văn bản dán và làm mất phím Enter. Mặc định: Local apps 250 ms, Remote desktop 500 ms — Remote match strings ở trang Jumper quyết định giá trị nào áp dụng. Chỉ chạy sau một lần nhảy thực sự; nếu bạn đã ở sẵn trong mục tiêu, việc gửi vẫn diễn ra ngay lập tức.",
+          "title": "Độ trễ gửi trước khi nhấn Enter (Windows)",
+          "description": "Thời gian chờ thêm giữa lúc gửi văn bản và lúc nhấn phím gửi, vì một đích vẫn đang xác nhận văn bản sẽ bỏ mất Enter. Mặc định: ứng dụng cục bộ 300 ms, máy tính từ xa 600 ms - danh sách khớp trên trang Jumper quyết định giá trị nào được áp dụng. Nó chạy sau một lần nhảy thực sự, và luôn chạy với đích là máy tính từ xa dù bạn đã ở trong đó, bởi phiên từ xa cần một lượt đi về để xác nhận văn bản, bất kể Handy có kích hoạt cửa sổ hay không. Chỉ một đích cục bộ đang được lấy tiêu điểm mới gửi ngay. Thay đổi ở 1.3.0: trước đó một đích từ xa đang được lấy tiêu điểm không chờ chút nào, nên Enter có thể phát khi văn bản còn đang trên đường và gửi đi một phần bản đọc chính tả.",
           "options": {
             "none": "Off (instant)"
           }
@@ -770,6 +770,11 @@
           "opus": "Opus — nhỏ hơn (khuyến nghị)",
           "wav": "WAV — tương thích nhất"
         }
+      },
+      "clipboardRestoreDelayRemote": {
+        "title": "Độ trễ khôi phục khay nhớ tạm cho máy tính từ xa",
+        "description": "Ghi đè độ trễ khôi phục khay nhớ tạm khi cửa sổ bạn đang đọc chính tả vào là một phiên máy tính từ xa. Mặc định: chưa đặt, nghĩa là kế thừa độ trễ thông thường ở trên. Vì sao có tuỳ chọn này: RDP và Citrix lấy dữ liệu khay nhớ tạm theo yêu cầu SAU khi phím dán tới, qua một kênh chậm hơn ứng dụng cục bộ, nên khôi phục quá sớm sẽ đưa cho ứng dụng từ xa thứ bạn đã sao chép trước đó. 1 s là điểm khởi đầu hợp lý. Chi phí thật: khôi phục lâu hơn giữ bản phiên âm trên khay nhớ tạm lâu hơn, mở rộng khoảng thời gian mà lịch sử và trình quản lý khay nhớ tạm có thể thu được nó. Cửa sổ nào được coi là từ xa lấy từ danh sách khớp trên trang Jumper. *{Windows only}*",
+        "inherit": "Chưa đặt (dùng độ trễ ở trên)"
       }
     },
     "postProcessing": {
@@ -974,13 +979,13 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "Một mục tiêu nhảy mà ứng dụng, lớp cửa sổ, hoặc lớp điều khiển chứa một trong các đoạn này (không phân biệt hoa thường) được coi là remote desktop, nên nó dùng giá trị Remote của 'Paste delay after jump (Windows)' và 'Submit delay after jump (Windows)' ở Advanced → Transcription thay vì giá trị Local. Mặc định: msrdc, mstsc, Citrix. Thêm tên tiến trình mà ứng dụng RDP hoặc Citrix của bạn dùng nếu việc gửi vào đó liên tục bị mất; một danh sách trống coi mọi mục tiêu là local.",
+        "description": "Một đích nhận có tên ứng dụng, lớp cửa sổ hoặc lớp điều khiển chứa một trong các đoạn này (không phân biệt chữ hoa chữ thường) sẽ được coi là máy tính từ xa, nên dùng giá trị Từ xa của 'Paste delay after jump (Windows)' và 'Submit delay before Enter (Windows)' trong Advanced → Transcription thay vì giá trị Cục bộ. Nó không còn phải là đích của một lần nhảy: từ 1.3.0, cửa sổ từ xa đang được lấy tiêu điểm cũng được phân loại, và đó là điều làm cho độ trễ gửi được áp dụng ở đó. Mặc định: msrdc, mstsc, Citrix. Hãy thêm tên tiến trình mà ứng dụng RDP hoặc Citrix của bạn dùng nếu các lần gửi vào đó vẫn bị mất; danh sách trống coi mọi đích là cục bộ.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
         "duplicate": "'{{value}}' is already in the list",
         "badge": "Remote ✓",
-        "badgeTooltip": "This target matches a remote match string, so it uses the Remote jump delays."
+        "badgeTooltip": "Đích này khớp một chuỗi từ xa, nên dùng các giá trị thời gian Từ xa."
       },
       "windowsOnly": "Jumper chỉ khả dụng trên Windows.",
       "hot": {
@@ -1040,10 +1045,6 @@
         "groupTitle": "Hành vi khi kết thúc",
         "label": "Chỉ nhảy khi kết thúc nếu bắt đầu theo cùng cách",
         "description": "Khi bật, 'Jump slot action on finish' của một luồng chỉ chạy nếu bản ghi được bắt đầu và kết thúc bằng cùng một phím tắt. Mặc định: Tắt. Ví dụ: bắt đầu bằng Transcribe và kết thúc bằng Transcribe & Submit thì sẽ không có nhảy — việc dán và gửi vẫn diễn ra, chỉ có việc nhảy bị chặn. Bật nếu việc dùng lẫn hai phím tắt liên tục đưa bạn đến nơi không mong muốn."
-      },
-      "directTypingForRemote": {
-        "label": "Gõ vào máy tính từ xa thay vì dán",
-        "description": "Khi cửa sổ bạn đang đọc chính tả vào là một phiên máy tính từ xa, văn bản được gửi dưới dạng các lần nhấn phím mô phỏng thay vì qua clipboard. Mặc định: bật. Vì sao điều này quan trọng: phương thức dán bằng clipboard phải đặt bản phiên âm vào clipboard của bạn, sau đó tính năng chuyển hướng clipboard của RDP hoặc Citrix sao chép nó sang clipboard của máy TỪ XA — một clipboard riêng trên một máy tính riêng, được lưu trong lịch sử clipboard của máy đó. Việc khôi phục clipboard của bạn sau đó không thể tác động đến clipboard ấy. Cách gõ không chạm vào clipboard ở cả hai phía. Giới hạn thực tế: văn bản được gõ có thể kích hoạt tự động hoàn thành, tự động đóng ngoặc và hành vi IME mà thao tác dán không gây ra, đồng thời cần nhiều bước hoàn tác thay vì một. Văn bản được gửi theo từng nhóm nhỏ để phiên từ xa có thể theo kịp. Cách này chỉ ngăn rò rỉ trong tương lai — không thể xóa các bản phiên âm đã nằm trong lịch sử clipboard của máy từ xa. Danh sách khớp ở trên kiểm soát cửa sổ nào được coi là từ xa. Không áp dụng khi Xử lý khay nhớ tạm được đặt thành «Sao chép vào Clipboard»: tuỳ chọn đó cố ý giữ bản phiên âm trên khay nhớ tạm sau khi gửi, nên chuyển hướng vẫn mang nó sang và việc gõ chỉ chuốc lấy nhược điểm. Tuỳ chọn này cũng không áp dụng cho bản phiên âm có ngắt dòng: khi gõ, mỗi lần ngắt dòng phải được gửi dưới dạng phím Enter, điều này sẽ gửi tin nhắn trong khung chat và gửi biểu mẫu. Vì vậy bản phiên âm nhiều dòng vẫn giữ cách dán của bạn và sẽ tới khay nhớ tạm của máy từ xa. *{Windows only}*"
       }
     },
     "translator": {

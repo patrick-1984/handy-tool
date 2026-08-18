@@ -889,8 +889,6 @@ pub struct AppSettings {
     /// copies it to the REMOTE machine's clipboard — where Handy cannot reach
     /// it, and where the remote clipboard history keeps it permanently.
     /// Typing never touches either clipboard. Windows-only in effect.
-    #[serde(default = "default_direct_typing_for_remote_targets")]
-    pub direct_typing_for_remote_targets: bool,
     /// Characters per batch when typing directly. One `SendInput` carrying a
     /// whole transcript is instant locally but drops characters over RDP;
     /// batching gives the far end time to drain. `0` = never split.
@@ -1091,6 +1089,21 @@ pub struct AppSettings {
     /// Extra wait before restoring the original clipboard after a normal paste.
     #[serde(default)]
     pub clipboard_restore_delay: ClipboardRestoreDelay,
+    /// Optional override of the restore wait when the delivery target is a
+    /// remote-desktop session.
+    ///
+    /// `None` means "inherit whatever this flow would otherwise use" — which is
+    /// why this is an `Option` rather than a bare enum: `ClipboardRestoreDelay::None`
+    /// already means *zero milliseconds*, so a plain enum could not express
+    /// "leave it alone" and every existing install would have been silently
+    /// reset to no delay.
+    ///
+    /// Exists because RDP/Citrix fetch clipboard data on demand AFTER the paste
+    /// keystroke, over a slower channel than a local app. The honest cost of
+    /// raising it: the transcript stays on the local clipboard longer, so
+    /// clipboard history and managers have a wider window to capture it.
+    #[serde(default)]
+    pub clipboard_restore_delay_remote: Option<ClipboardRestoreDelay>,
     /// Extra wait before restoring the original clipboard after a
     /// "Transcribe & Submit" paste.
     #[serde(default)]
@@ -1361,15 +1374,6 @@ fn default_typing_key_delay_ms() -> u32 {
     15
 }
 
-/// ON by default. A clipboard paste into an RDP window leaks the transcript to
-/// the remote machine's clipboard and its history, which nothing on this side
-/// can retract — a privacy failure the user cannot see or undo. Typing avoids
-/// it entirely, and chunking (below) removes the reliability cost that made
-/// typing unusable over RDP. One toggle turns it off.
-fn default_direct_typing_for_remote_targets() -> bool {
-    true
-}
-
 /// 40 characters per batch. With the 15 ms inter-batch pause this puts a
 /// 500-character transcript at roughly 200 ms — visually immediate, and ~38x
 /// faster than the per-character Keyboard Typer, while still pacing input for
@@ -1410,18 +1414,32 @@ pub const TYPING_CHUNK_DELAY_MS_MAX: u32 = 500;
 /// earlier version bounded against a fixed 1000-character reference, which let
 /// a 10,000-character dictation still sleep for roughly 100 seconds while
 /// holding the Enigo mutex -- the bound has to scale with the real work.
-pub fn typing_chunk_params(settings: &AppSettings, text_chars: usize) -> (usize, u64) {
+/// `paced_keys` is the number of line breaks and tabs in the transcript. Since
+/// 1.3.0 those are injected with the same pause as a text batch, so they COUNT
+/// toward the total-pause bound. Omitting them let a newline-heavy transcript
+/// (in the limit, 10,000 blank lines) sleep for minutes while holding the Enigo
+/// mutex -- the exact runaway this bound exists to prevent.
+pub fn typing_chunk_params(
+    settings: &AppSettings,
+    text_chars: usize,
+    paced_keys: usize,
+) -> (usize, u64) {
     let chars = settings.typing_chunk_chars.min(TYPING_CHUNK_CHARS_MAX);
     let mut delay = settings
         .typing_chunk_delay_ms
         .min(TYPING_CHUNK_DELAY_MS_MAX);
     if chars > 0 && delay > 0 {
-        // Keep the total of the inter-batch pauses under ~10 s.
+        // Keep the total of the inter-injection pauses under ~10 s.
         const MAX_TOTAL_PAUSE_MS: u32 = 10_000;
         let len = u32::try_from(text_chars).unwrap_or(u32::MAX);
-        let batches = len.div_ceil(chars).saturating_sub(1).max(1);
-        if delay.saturating_mul(batches) > MAX_TOTAL_PAUSE_MS {
-            delay = (MAX_TOTAL_PAUSE_MS / batches).max(1);
+        let keys = u32::try_from(paced_keys).unwrap_or(u32::MAX);
+        let injections = len
+            .div_ceil(chars)
+            .saturating_sub(1)
+            .saturating_add(keys)
+            .max(1);
+        if delay.saturating_mul(injections) > MAX_TOTAL_PAUSE_MS {
+            delay = (MAX_TOTAL_PAUSE_MS / injections).max(1);
         }
     }
     (chars as usize, delay as u64)
@@ -2175,7 +2193,6 @@ pub fn get_default_settings() -> AppSettings {
         silent_update_jitter_minutes: default_silent_update_jitter_minutes(),
         typing_start_delay_secs: default_typing_start_delay_secs(),
         typing_key_delay_ms: default_typing_key_delay_ms(),
-        direct_typing_for_remote_targets: default_direct_typing_for_remote_targets(),
         typing_chunk_chars: default_typing_chunk_chars(),
         typing_chunk_delay_ms: default_typing_chunk_delay_ms(),
         selected_model: "".to_string(),
@@ -2245,6 +2262,7 @@ pub fn get_default_settings() -> AppSettings {
         cancel_behavior: CancelBehavior::default(),
         submit_clipboard_handling: ClipboardHandling::default(),
         clipboard_restore_delay: ClipboardRestoreDelay::default(),
+        clipboard_restore_delay_remote: None,
         submit_clipboard_restore_delay: ClipboardRestoreDelay::default(),
         jumper_submit_delay: JumperSubmitDelay::default(),
         jumper_paste_delay: JumperPasteDelay::default(),
@@ -3132,10 +3150,19 @@ mod tests {
     }
 
     fn chunk_params_len(chars: u32, delay: u32, text_chars: usize) -> (usize, u64) {
+        chunk_params_keys(chars, delay, text_chars, 0)
+    }
+
+    fn chunk_params_keys(
+        chars: u32,
+        delay: u32,
+        text_chars: usize,
+        paced_keys: usize,
+    ) -> (usize, u64) {
         let mut settings = get_default_settings();
         settings.typing_chunk_chars = chars;
         settings.typing_chunk_delay_ms = delay;
-        typing_chunk_params(&settings, text_chars)
+        typing_chunk_params(&settings, text_chars, paced_keys)
     }
 
     fn chunk_params(chars: u32, delay: u32) -> (usize, u64) {
@@ -3145,9 +3172,9 @@ mod tests {
     #[test]
     fn typing_chunk_defaults_pass_through_unchanged() {
         let settings = get_default_settings();
-        assert_eq!(typing_chunk_params(&settings, 1000), (40, 15));
+        assert_eq!(typing_chunk_params(&settings, 1000, 0), (40, 15));
         // A short dictation must not be slowed down by the long-transcript bound.
-        assert_eq!(typing_chunk_params(&settings, 12), (40, 15));
+        assert_eq!(typing_chunk_params(&settings, 12, 0), (40, 15));
     }
 
     #[test]
@@ -3162,6 +3189,22 @@ mod tests {
             "projected total pause {pauses}ms is unbounded"
         );
         assert!(delay >= 1);
+    }
+
+    #[test]
+    fn typing_chunk_bound_counts_paced_line_breaks() {
+        // Since 1.3.0 every line break is a paced injection. A transcript that
+        // is nothing but blank lines must still respect the ~10 s total bound
+        // rather than sleeping for minutes under the Enigo mutex.
+        let (_chars, delay) = chunk_params_keys(40, 15, 10_000, 10_000);
+        assert!(
+            delay * 10_000 <= 10_000,
+            "10k paced line breaks project {}ms of pauses",
+            delay * 10_000
+        );
+        assert!(delay >= 1, "pacing must never be disabled outright");
+        // A handful of line breaks must NOT slow an ordinary transcript.
+        assert_eq!(chunk_params_keys(40, 15, 200, 6), (40, 15));
     }
 
     #[test]

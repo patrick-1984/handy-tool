@@ -625,10 +625,13 @@ started it, and applies the submit flow's delivery recipe to it.
 and did not submit when it had to jump to it — reliably so over RDP.
 **What Handy does.** Enter used to fire a fixed 50 ms after the paste, and on a jump the focus
 was handed straight back to your previous window, racing the Enter that had been injected a moment earlier.
-Now, only on a real jump, there is a configurable settle before Enter plus a short grace that
-keeps the target in the foreground until the key has been processed. The already-focused path is
-byte-for-byte unchanged.
-**Where.** `Advanced › Transcription › Transcribe & Submit › Submit delay after jump (Windows)`
+Now there is a configurable settle before Enter, plus - on a jump - a short grace that keeps the
+target in the foreground until the key has been processed. Since 1.3.0 the settle also applies to a
+remote desktop target that was **already focused**: before that it was gated on the jump alone, so
+dictating into an RDP window you were already in got no wait at all and the Enter could fire while
+the text was still crossing the remote session, submitting a partial dictation. An already-focused
+**local** target still submits instantly.
+**Where.** `Advanced › Transcription › Transcribe & Submit › Submit delay before Enter (Windows)`
 *{Windows only}*.
 **Since.** 0.53.0.
 
@@ -901,7 +904,7 @@ nothing. Before this you had to slow down every jump to make the remote one work
 **What Handy does.** The post-jump paste delay and the submit delay are each split into a Local
 and a Remote value, shown side by side. Handy picks the column based on what the target is.
 **Where.** `Advanced › Transcription › Transcribe & Submit › Paste delay after jump (Windows)`
-and `Advanced › Transcription › Transcribe & Submit › Submit delay after jump (Windows)`
+and `Advanced › Transcription › Transcribe & Submit › Submit delay before Enter (Windows)`
 *{Windows only}*.
 **Since.** 0.56.0.
 
@@ -917,37 +920,54 @@ rather than guess at it.
 **Where.** `Jumper › Remote desktop detection › Remote match strings` *{Windows only}*.
 **Since.** 0.56.0.
 
-### Your dictation stays out of the remote machine's clipboard
+### Your dictation stays out of the remote machine's clipboard (retired)
 
 <a id="your-dictation-stays-out-of-the-remote-machines-clipboard"></a>
+**Retired in 1.3.0.** This behavior shipped in 1.2.0 and was withdrawn one release later. It is
+kept here because its anchor is permanent; the automatic switch it describes no longer exists.
 **The situation.** You dictate into an RDP or Citrix session, Handy restores your local
 clipboard, and the transcript still remains in the remote computer's separate clipboard history.
-**What Handy does.** A remote target receives simulated keystrokes instead of a clipboard paste
-when the default-on switch is enabled. This works for a remote window that was already focused as
-well as one reached through a Jumper slot. Text is sent in batches of 40 characters with 15 ms
-between batches by default, so a remote session can keep up; about 500 characters take roughly
-200 ms. No clipboard is touched on either computer. This prevents future leaks only: it cannot
-remove transcripts already in the remote machine's clipboard history. Typed text can trigger
-autocomplete, bracket auto-closing and IME behavior that a paste does not, and arrives as many
-undo steps rather than one. Turning the switch off restores the configured paste behavior and
-the remote-clipboard leak with it. Two combinations are deliberately left alone. With
-`Advanced › Clipboard Handling = Copy to Clipboard` the transcript is meant to stay on your
-clipboard after delivery, so redirection carries it across whatever Handy types, and the paste is
-kept rather than trading typing's downsides for no privacy gain; choose
-`Don't Modify Clipboard` if you want the remote clipboard left clean. And a transcript containing
-**line breaks always keeps your paste method**, because typing has to send each line break as an
-Enter key press - which in a chat box sends the message and in a form submits it, posting or
-submitting part of your dictation. A pasted line break is inert text; a typed one is a command.
-Post-processed transcripts are usually multi-line, so this exemption is common: for those, the
-text still reaches the remote clipboard.
-**Where.** `Jumper › Remote desktop detection › Type into remote desktops instead of pasting = On`
+**What Handy did.** A recognized remote target received simulated keystrokes instead of a
+clipboard paste, on the reasoning that typing touches no clipboard on either computer. In practice
+it delivered text unreliably over RDP - characters missing, characters jumbled - because each
+batch was a single instantaneous burst of input events through the remote session's virtual
+channel, and because the auto-submit Enter fired while that text was still draining. The catalog
+already carried the warning, under [Ctrl+V doesn't work in that
+app](#ctrl-v-doesnt-work-in-that-app), that keystroke delivery "can drop characters in RDP, Citrix
+and VM consoles"; the 1.2.0 entry contradicted it.
+**What replaced it.** Nothing automatic. Keystroke delivery is still available as a deliberate,
+global choice - `Advanced › Transcription › Transcribe › Paste method = Direct` - with the same
+caveats it always had. Remote targets otherwise use your configured paste method, which means the
+transcript does reach the remote machine's clipboard and its history; see
+[Privacy and data flow](privacy.md) for what that exposes. 1.3.0 also fixed the
+timing defect that made the failure so visible, described under [The Enter key lands in the remote
+window](#the-enter-key-lands-in-the-remote-window).
+**Where.** No control. The switch that enabled this was removed from the Jumper page in 1.3.0
 *{Windows only}*.
-**Applies to.** Windows dictation deliveries whose focused or jumped-to target matches
-`Jumper › Remote desktop detection › Remote match strings`, except under
-`Advanced › Clipboard Handling = Copy to Clipboard`.
-**Since.** 1.2.0.
+**Since.** 1.2.0. **Retired.** 1.3.0.
 
-<!-- prov: remote clipboard isolation | src: src-tauri/src/clipboard.rs; src-tauri/src/anchor.rs; src-tauri/src/settings.rs; src/components/settings/jumper/DirectTypingForRemote.tsx; src/i18n/locales/en/translation.json | claim: safety -->
+<!-- prov: remote clipboard isolation (retired) | src: src-tauri/src/clipboard.rs; src-tauri/src/anchor.rs; src-tauri/src/settings.rs | claim: safety -->
+
+### A remote paste gets the right clipboard, not the one before it
+
+<a id="a-remote-paste-gets-the-right-clipboard"></a>
+**The situation.** RDP and Citrix ask for clipboard data on demand *after* your paste keystroke
+arrives, over a slower channel than a local application. If Handy puts your previous clipboard back
+before the remote session has fetched the transcript, the remote app pastes whatever you had copied
+earlier instead.
+**What Handy does.** The restore wait is configurable, and since 1.3.0 you can set a separate,
+longer value that applies only when the target is a recognized remote desktop — so a local paste
+stays snappy while a remote one gets the time it needs. It is unset by default and changes nothing
+until you choose a value; 1 s is a sensible starting point. The honest cost is stated in the
+setting itself: a longer restore leaves the transcript on your clipboard for longer, which widens
+the window in which clipboard history and clipboard managers can capture it.
+**Where.** `Advanced › Transcription › Transcribe › Clipboard restore delay for remote desktops`
+*{Windows only}*.
+**Applies to.** Deliveries whose target matches `Jumper › Remote desktop detection › Remote match
+strings`.
+**Since.** 1.3.0.
+
+<!-- prov: remote clipboard restore delay | src: src-tauri/src/clipboard.rs; src-tauri/src/settings.rs; src/components/settings/ClipboardRestoreDelayRemote.tsx | claim: reliability -->
 
 ### Citrix and RDP deliveries land
 

@@ -1,6 +1,76 @@
 # Changelog
 
 
+## [1.3.0] - 2026-08-18
+
+### Changed
+
+- **The automatic "type into remote desktops" behaviour from 1.2.0 has been withdrawn.** It made
+  things worse, not better. Dictating into an RDP or Citrix session produced text with characters
+  missing, characters jumbled, and line breaks in places you did not put them. If you were affected,
+  this release ends it — there is nothing to turn off, because the switch is gone.
+
+  Why it failed, precisely, because it is not what the 1.2.0 notes assumed. Typing sent each batch
+  of 40 characters as a *single instantaneous burst* of input events into the remote session's
+  virtual channel; pausing between bursts does not make any one burst gentler. Worse, when the take
+  used Transcribe & Submit, the Enter key fired about 50 ms after the last batch — while the text
+  was still crossing the wire. The message got submitted in pieces. That is where the phantom "line
+  breaks" came from: not from your dictation, but from Enter arriving too early, repeatedly.
+
+  Keystroke delivery has not been removed, only the *automatic* targeting of it. If you want it,
+  choose it deliberately: `Advanced › Transcription › Transcribe › Paste method = Direct`. It
+  carries the caveats it always did, and the catalog has said so all along — it can drop characters
+  in RDP, Citrix and VM consoles.
+
+  **What this means for privacy.** Remote targets now use your configured paste method again, so the
+  transcript does reach the remote machine's clipboard and its clipboard history, and nothing on
+  this side can retract it. That is the trade this release makes deliberately, in favour of your
+  dictation arriving intact. `Direct` remains the only delivery path that touches no clipboard.
+
+### Fixed
+
+- **The submit key no longer fires before your text has landed in a remote window.** This one is
+  older than 1.2.0 and worth understanding, because it silently affected clipboard pastes too.
+
+  The remote-specific delays — the ones you configure per Local / Remote desktop — were only ever
+  applied when Handy had *jumped* to the target window. Dictating into a remote window that already
+  had focus, which is the ordinary way most people work, took neither branch and got **no wait at
+  all**. A `Submit delay before Enter = 500 ms` setting could sit there for months and never once
+  apply. Remote targets now get their remote timing whether Handy activated the window or not.
+
+  An already-focused **local** target still submits instantly. That is deliberate and there is a
+  test named after it: the fix must not add a quarter of a second to every ordinary dictation.
+
+  The setting was called *Submit delay after jump* — which was true before and is not now. It is
+  now **Submit delay before Enter**. Your configured value is preserved.
+
+- **A failed submit no longer tells you the text was not delivered.** When focus moved during the
+  settle before Enter, the message said the delivery had failed — so you would press Paste Last and
+  end up with the transcript inserted twice. It now says plainly that the text arrived and only the
+  submit key was withheld. This matters more than it used to, because the longer remote settle makes
+  that window wider.
+
+- **`Paste method = Direct` no longer rushes line breaks.** Return and Tab were injected with no
+  pause at all and did not count toward the pacing, so a blank line fired two Enter presses
+  back-to-back at machine speed. They are now paced like any other injected key, and the safety
+  bound that caps total typing time counts them, so a transcript that is mostly blank lines can no
+  longer stall a delivery.
+
+- **The documented defaults for the jump delays were wrong in three places.** `settings.rs` has
+  always defaulted both delays to 300 ms local / 600 ms remote, but the settings UI fell back to
+  250 ms / 1 s, and every tooltip in all 17 languages quoted those wrong numbers. If you never
+  changed the delays, your actual behaviour did not change - only the numbers you were shown. All
+  sources now agree with the code. Pre-existing, unrelated to the RDP work.
+
+### Added
+
+- **`Clipboard restore delay for remote desktops`** (`Advanced › Transcription › Transcribe`).
+  An optional, separate restore delay for remote targets, so a local paste can stay fast while a
+  remote one gets the time RDP needs to fetch the clipboard before the original is put back.
+  Unset by default — it changes nothing until you pick a value. Stated plainly in the setting: a
+  longer restore leaves the transcript on your clipboard for longer.
+
+
 ## [1.2.0] - 2026-08-18
 
 ### Fixed

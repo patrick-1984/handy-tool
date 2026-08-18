@@ -309,14 +309,14 @@
         },
         "jumperPasteDelay": {
           "title": "Paste delay after jump (Windows)",
-          "description": "Attente supplémentaire après qu'un saut a ramené la fenêtre cible au premier plan et avant que la frappe de collage ne se déclenche, car une fenêtre activée il y a un instant avale encore les frappes. Par défaut : 250 ms pour les applications locales, 1 seconde pour le bureau distant — la colonne qui s'applique est décidée par « Remote match strings » sur la page Jumper. Ne s'exécute jamais que lors d'un vrai saut ; quand vous êtes déjà sur la cible, le collage reste instantané, et les deux menus déroulants sont partagés par Transcrire et Transcrire et envoyer.",
+          "description": "Attente supplémentaire après qu'un saut a ramené la fenêtre cible au premier plan et avant que la frappe de collage ne se déclenche, car une fenêtre activée il y a un instant avale encore les frappes. Par défaut : 300 ms pour les applications locales, 600 ms pour le bureau distant — la colonne qui s'applique est décidée par « Remote match strings » sur la page Jumper. Ne s'exécute jamais que lors d'un vrai saut ; quand vous êtes déjà sur la cible, le collage reste instantané, et les deux menus déroulants sont partagés par Transcrire et Transcrire et envoyer.",
           "options": {
             "none": "Off (instant)"
           }
         },
         "jumperSubmitDelay": {
-          "title": "Submit delay after jump (Windows)",
-          "description": "Attente supplémentaire entre le collage et la touche d'envoi lorsque la livraison a dû sauter, car la fenêtre juste activée peut encore être en train de valider le texte collé et perdre la touche Entrée. Par défaut : 250 ms pour les applications locales, 500 ms pour le bureau distant — « Remote match strings » sur la page Jumper décide laquelle s'applique. Ne s'exécute qu'après un vrai saut ; si vous étiez déjà sur la cible, l'envoi reste instantané.",
+          "title": "Délai d'envoi avant Entrée (Windows)",
+          "description": "Attente supplémentaire entre la remise du texte et l'appui sur la touche d'envoi, car une cible qui valide encore le texte perd la touche Entrée. Par défaut : applications locales 300 ms, bureau distant 600 ms - la liste de correspondances de la page Jumper décide laquelle s'applique. Elle s'exécute après un vrai saut, et toujours pour une cible de bureau distant même si vous y étiez déjà, car une session distante a besoin d'un aller-retour pour valider le texte, que Handy ait activé la fenêtre ou non. Seule une cible locale déjà au premier plan envoie instantanément. Changement en 1.3.0 : avant, une cible distante déjà au premier plan n'attendait pas du tout, donc la touche Entrée pouvait partir alors que le texte était encore en transit et envoyer une dictée partielle.",
           "options": {
             "none": "Off (instant)"
           }
@@ -770,6 +770,11 @@
           "opus": "Opus — plus léger (recommandé)",
           "wav": "WAV — le plus compatible"
         }
+      },
+      "clipboardRestoreDelayRemote": {
+        "title": "Délai de restauration du presse-papiers pour les bureaux distants",
+        "description": "Remplace le délai de restauration lorsque la fenêtre dans laquelle vous dictez est une session de bureau distant. Par défaut : non défini, donc hérite du délai normal ci-dessus. Pourquoi : RDP et Citrix récupèrent les données du presse-papiers à la demande APRÈS l'arrivée de la touche de collage, via un canal plus lent qu'une application locale ; restaurer trop tôt livre donc à l'application distante ce que vous aviez copié avant. 1 s est un bon point de départ. Coût honnête : une restauration plus longue laisse la transcription plus longtemps dans votre presse-papiers, ce qui élargit la fenêtre pendant laquelle l'historique et les gestionnaires de presse-papiers peuvent la capturer. Les fenêtres considérées comme distantes viennent de la liste de la page Jumper. *{Windows only}*",
+        "inherit": "Non défini (utiliser le délai ci-dessus)"
       }
     },
     "postProcessing": {
@@ -974,13 +979,13 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "Une cible de saut dont l'application, la classe de fenêtre ou la classe de contrôle contient l'un de ces fragments (insensible à la casse) est traitée comme un bureau distant, et utilise donc la valeur Remote de « Paste delay after jump (Windows) » et « Submit delay after jump (Windows) » sur Avancé → Transcription au lieu de la valeur Local. Par défaut : msrdc, mstsc, Citrix. Ajoutez le nom de processus utilisé par votre client RDP ou Citrix si les livraisons y sont sans cesse avalées ; une liste vide traite chaque cible comme locale.",
+        "description": "Une cible de remise dont l'application, la classe de fenêtre ou la classe de contrôle contient l'un de ces fragments (insensible à la casse) est traitée comme un bureau distant, et utilise donc la valeur Distant de 'Paste delay after jump (Windows)' et 'Submit delay before Enter (Windows)' dans Advanced → Transcription au lieu de la valeur Local. Ce n'est plus forcément une cible de saut : depuis 1.3.0 une fenêtre distante déjà au premier plan est aussi classée, et c'est ce qui fait que le délai d'envoi s'y applique. Par défaut : msrdc, mstsc, Citrix. Ajoutez le nom du processus de votre client RDP ou Citrix si les remises continuent d'être avalées ; une liste vide traite chaque cible comme locale.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
         "duplicate": "'{{value}}' is already in the list",
         "badge": "Remote ✓",
-        "badgeTooltip": "This target matches a remote match string, so it uses the Remote jump delays."
+        "badgeTooltip": "Cette cible correspond à une chaîne distante, elle utilise donc les valeurs de délai Distant."
       },
       "windowsOnly": "Le Jumper est disponible uniquement sur Windows.",
       "hot": {
@@ -1040,10 +1045,6 @@
         "groupTitle": "Comportement à la fin",
         "label": "Sauter à la fin uniquement si démarré de la même façon",
         "description": "Une fois activé, « Action sur l'emplacement à la fin » d'un flux ne se déclenche que si la prise a été démarrée et terminée avec le même raccourci. Désactivé par défaut. Exemple : démarrer avec Transcrire et terminer avec Transcrire et envoyer ne produit aucun saut — le collage et l'envoi ont tout de même lieu, seul le saut est conditionné. Activez-le si mélanger les deux raccourcis vous téléporte sans cesse là où vous ne l'attendiez pas."
-      },
-      "directTypingForRemote": {
-        "label": "Taper dans les bureaux distants au lieu de coller",
-        "description": "Lorsque la fenêtre dans laquelle vous dictez est une session de bureau distant, le texte est livré sous forme de frappes simulées plutôt que via le presse-papiers. Par défaut : activé. Pourquoi c'est important : une méthode de collage par le presse-papiers doit placer la transcription dans votre presse-papiers, puis la redirection du presse-papiers RDP ou Citrix la copie dans le presse-papiers de la machine DISTANTE — un presse-papiers distinct sur un autre ordinateur, conservé dans l'historique du presse-papiers de cette machine. Restaurer ensuite votre propre presse-papiers ne permet pas de l'atteindre. La frappe ne touche au presse-papiers d'aucun côté. Limites franches : le texte tapé peut déclencher l'autocomplétion, la fermeture automatique des parenthèses et le comportement de l'IME qu'un collage ne déclenche pas, et il arrive sous la forme de nombreuses étapes d'annulation au lieu d'une seule. Le texte est envoyé par petits lots pour que la session distante puisse suivre. Cela empêche uniquement les fuites futures — les transcriptions déjà présentes dans l'historique du presse-papiers de la machine distante ne peuvent pas être supprimées. La liste de correspondances ci-dessus détermine quelles fenêtres sont considérées comme distantes. Ne s’applique pas lorsque la gestion du presse-papiers est réglée sur « Copier dans le presse-papiers » : la transcription y reste alors volontairement, la redirection l’emporte donc de toute façon et la saisie n’apporterait que ses inconvénients. Elle ne s'applique pas non plus à une transcription contenant des sauts de ligne : la saisie doit envoyer chaque saut comme une touche Entrée, ce qui envoie le message dans une zone de discussion et valide un formulaire ; les transcriptions multilignes conservent donc votre méthode de collage et atteignent bien le presse-papiers distant. *{Windows only}*"
       }
     },
     "translator": {

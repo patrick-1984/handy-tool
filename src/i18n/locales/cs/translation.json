@@ -309,14 +309,14 @@
         },
         "jumperPasteDelay": {
           "title": "Paste delay after jump (Windows)",
-          "description": "Dodatečné čekání po tom, co přechod přivede cílové okno do popředí, a před odeslání klávesy pro vložení, protože okno aktivované před okamžikem může stisky kláves ještě polykat. Výchozí: Místní aplikace 250 ms, Vzdálená plocha 1 s — který sloupec platí, určují Řetězce pro rozpoznání vzdálené plochy na stránce Přechody. Uplatní se jen po skutečném přechodu; jste-li v cíli už předtím, vložení zůstává okamžité, a obě nabídky sdílejí Přepis i Přepsat a odeslat.",
+          "description": "Dodatečné čekání po tom, co přechod přivede cílové okno do popředí, a před odeslání klávesy pro vložení, protože okno aktivované před okamžikem může stisky kláves ještě polykat. Výchozí: Místní aplikace 300 ms, Vzdálená plocha 600 ms — který sloupec platí, určují Řetězce pro rozpoznání vzdálené plochy na stránce Přechody. Uplatní se jen po skutečném přechodu; jste-li v cíli už předtím, vložení zůstává okamžité, a obě nabídky sdílejí Přepis i Přepsat a odeslat.",
           "options": {
             "none": "Off (instant)"
           }
         },
         "jumperSubmitDelay": {
-          "title": "Submit delay after jump (Windows)",
-          "description": "Dodatečné čekání mezi vložením a klávesou pro odeslání, když doručení musel předcházet přechod, protože právě aktivované okno může přepis ještě zpracovávat. Výchozí: Místní aplikace 250 ms, Vzdálená plocha 500 ms — které se použije, určují Řetězce pro rozpoznání vzdálené plochy na stránce Přechody. Uplatní se jen po skutečném přechodu; pokud jste v cíli byli už předtím, odeslání zůstává okamžité.",
+          "title": "Zpoždění odeslání před Enter (Windows)",
+          "description": "Další čekání mezi doručením textu a stiskem klávesy odeslání, protože cíl, který text ještě potvrzuje, Enter ztratí. Výchozí: místní aplikace 300 ms, vzdálená plocha 600 ms - který sloupec platí, určuje seznam na stránce Jumper. Běží po skutečném skoku a vždy u cíle na vzdálené ploše, i když jste v něm už byli, protože vzdálené sezení potřebuje k potvrzení textu obrátku bez ohledu na to, zda Handy okno aktivoval. Okamžitě odesílá jen již zaostřený místní cíl. Změna ve 1.3.0: předtím již zaostřený vzdálený cíl nečekal vůbec, takže Enter mohl padnout, když byl text ještě na cestě, a odeslat nedokončený diktát.",
           "options": {
             "none": "Off (instant)"
           }
@@ -770,6 +770,11 @@
           "opus": "Opus — menší (doporučeno)",
           "wav": "WAV — nejvíce kompatibilní"
         }
+      },
+      "clipboardRestoreDelayRemote": {
+        "title": "Zpoždění obnovení schránky pro vzdálené plochy",
+        "description": "Přepíše zpoždění obnovení schránky, když je okno, do kterého diktujete, sezením vzdálené plochy. Výchozí: nenastaveno, tedy dědí běžné zpoždění výše. Proč existuje: RDP a Citrix si vyžádají data schránky až PO doručení klávesy vložení, přes pomalejší kanál než místní aplikace, takže příliš rané obnovení podstrčí vzdálené aplikaci to, co jste měli zkopírované předtím. 1 s je rozumný začátek. Skutečná cena: delší obnovení nechá přepis ve schránce déle, což rozšiřuje okno, ve kterém jej může zachytit historie schránky nebo její správce. Která okna se počítají jako vzdálená, určuje seznam na stránce Jumper. *{Windows only}*",
+        "inherit": "Nenastaveno (použít zpoždění výše)"
       }
     },
     "postProcessing": {
@@ -974,13 +979,13 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "Cíl přechodu, jehož aplikace, třída okna nebo třída ovládacího prvku obsahuje jeden z těchto fragmentů (nerozlišuje velikost písmen), se považuje za vzdálenou plochu, takže se pro něj použije hodnota Vzdálená plocha z „Paste delay after jump (Windows)“ a „Submit delay after jump (Windows)“ na stránce Pokročilé → Přepis místo hodnoty Místní. Výchozí: msrdc, mstsc, Citrix. Přidejte název procesu vašeho klienta RDP nebo Citrix, pokud se doručení do něj stále ztrácí; prázdný seznam považuje každý cíl za místní.",
+        "description": "Cíl doručení, jehož aplikace, třída okna nebo třída ovládacího prvku obsahuje některý z těchto úryvků (bez ohledu na velikost písmen), je považován za vzdálenou plochu, takže použije vzdálenou hodnotu 'Paste delay after jump (Windows)' a 'Submit delay before Enter (Windows)' v Advanced → Transcription místo místní. Už to nemusí být cíl skoku: od 1.3.0 se klasifikuje i již zaostřené vzdálené okno, díky čemuž tam zpoždění odeslání platí. Výchozí: msrdc, mstsc, Citrix. Přidejte název procesu svého klienta RDP nebo Citrix, pokud se do něj doručení stále ztrácejí; prázdný seznam považuje každý cíl za místní.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
         "duplicate": "'{{value}}' is already in the list",
         "badge": "Remote ✓",
-        "badgeTooltip": "This target matches a remote match string, so it uses the Remote jump delays."
+        "badgeTooltip": "Tento cíl odpovídá vzdálenému vzoru, takže používá vzdálené hodnoty časování."
       },
       "windowsOnly": "Přechody jsou dostupné pouze ve Windows.",
       "hot": {
@@ -1040,10 +1045,6 @@
         "groupTitle": "Chování při ukončení",
         "label": "Při ukončení přejít jen při stejné zkratce",
         "description": "Když je zapnuto, „Akce skokového slotu při ukončení“ postupu proběhne jen tehdy, když byla nahrávka zahájena i ukončena stejnou zkratkou. Výchozí: Vypnuto. Příklad: zahájíte Přepisem a ukončíte Přepsat a odeslat a přechod se neuskuteční — vložení i odeslání proběhnou dál, jen přechod je podmíněný. Zapněte, pokud vás kombinování obou zkratek stále teleportuje někam, kam jste nechtěli."
-      },
-      "directTypingForRemote": {
-        "label": "Do vzdálených ploch psát místo vkládání",
-        "description": "Když je okno, do kterého diktujete, relací vzdálené plochy, doručí se text jako simulované stisky kláves namísto použití schránky. Výchozí: zapnuto. Proč je to důležité: způsob vložení přes schránku musí přepis vložit do vaší schránky a přesměrování schránky RDP nebo Citrix jej potom zkopíruje do schránky VZDÁLENÉHO počítače — samostatné schránky v samostatném počítači, uchovávané v historii schránky tohoto počítače. Pozdější obnovení vaší vlastní schránky se k ní nedostane. Psaní se schránky nedotkne ani na jedné straně. Otevřená omezení: psaný text může spustit automatické dokončování, automatické uzavírání závorek a chování IME, které vložení nespouští, a dorazí jako mnoho kroků zpět namísto jednoho. Text se odesílá v malých dávkách, aby jej vzdálená relace stíhala přijímat. Tím se zabrání pouze budoucím únikům — přepisy, které už jsou v historii schránky vzdáleného počítače, nelze odstranit. O tom, která okna se považují za vzdálená, rozhoduje seznam shod výše. Neuplatní se, když je Zacházení se schránkou nastaveno na „Kopírovat do schránky“: to záměrně ponechá přepis ve schránce i po vložení, takže jej přesměrování přenese tak jako tak a psaní by přineslo jen své nevýhody. Neplatí to ani pro přepis obsahující zalomení řádků: psaní musí odeslat každé zalomení jako stisk klávesy Enter, což v chatu odešle zprávu a ve formuláři jej odešle, takže víceřádkové přepisy si ponechají vaši metodu vkládání a do vzdálené schránky se dostanou. *{Windows only}*"
       }
     },
     "translator": {

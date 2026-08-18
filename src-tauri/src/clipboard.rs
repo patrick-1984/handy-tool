@@ -107,6 +107,16 @@ static SUBMIT_OVERRIDE: Lazy<Mutex<Option<SubmitOverride>>> = Lazy::new(|| Mutex
 /// copies of a magic string that must stay equal is a defect waiting to happen.
 const ANCHOR_FOCUS_LOST: &str = input::DELIVERY_ABORTED;
 
+/// The text was delivered in full, but focus moved during the pre-submit settle
+/// so the submit key was withheld.
+///
+/// Distinct from [`ANCHOR_FOCUS_LOST`] because the recovery advice is opposite:
+/// nothing needs re-inserting, and telling the user otherwise makes them paste
+/// the transcript a second time. 1.3.0 lengthened the no-jump remote settle from
+/// 50 ms to the remote submit delay, which makes this outcome markedly more
+/// reachable than it was.
+const ANCHOR_SUBMIT_ABORTED: &str = "__anchor_submit_aborted_text_delivered__";
+
 /// As [`ANCHOR_FOCUS_LOST`], but part of the transcript had ALREADY been typed
 /// into the target. Handled by the same fail-closed path, with different user
 /// messaging -- see the abort handler in `paste_inner`.
@@ -255,6 +265,82 @@ pub(crate) fn effective_clipboard_handling(
         .unwrap_or(global)
 }
 
+/// How long to wait after delivering the text and before pressing the submit key.
+///
+/// 1.2.0 gated this on `jumped` alone, so an already-focused remote target got
+/// ZERO settle: the user's logs show `foreground_switched=false,
+/// pre_submit_extra_ms=0` and Enter arriving ~50 ms after the text, while it was
+/// still draining through the RDP virtual channel. The submitted message was
+/// therefore truncated or split. That is the defect this closes.
+///
+/// |          | remote                     | local                |
+/// |----------|----------------------------|----------------------|
+/// | jump     | `submit_remote_ms`         | `submit_local_ms`    |
+/// | no jump  | `submit_remote_ms` (fixed) | **0**                |
+///
+/// The no-jump/local cell MUST stay 0. That is the overwhelmingly common case —
+/// ordinary dictation into the window you are already looking at — and charging
+/// it the local delay would add a quarter to half a second to every single take.
+///
+/// Reusing `submit_remote_ms` for no-jump/remote is safe by construction: it
+/// already has to cover activation PLUS transport, so it is a strict upper bound
+/// on the transport-only wait needed here. It can be too generous; it cannot be
+/// too short.
+/// Total settle before the submit key: the fixed base, the target-aware pacing,
+/// and — for `Direct` only — one more inter-injection pause.
+///
+/// A `SendInput` returns as soon as the LOCAL input queue accepts it, not when
+/// the target has rendered anything. Typing therefore has a tail that a single
+/// paste chord does not, and the Enter is simply the next injection, so it
+/// deserves at least the same pause every chunk got. Without this a local
+/// `Direct` + auto-submit fires Enter at zero delay after the final chunk.
+fn pre_submit_total_ms(
+    base_ms: u64,
+    pacing_extra_ms: u64,
+    method: PasteMethod,
+    chunk_delay_ms: u64,
+) -> u64 {
+    let typing_tail = if method == PasteMethod::Direct {
+        chunk_delay_ms
+    } else {
+        0
+    };
+    base_ms + pacing_extra_ms + typing_tail
+}
+
+/// Extra wait before restoring the original clipboard.
+///
+/// `remote_override` is `None` for "inherit", so a user who has never touched
+/// the remote control keeps byte-identical behaviour. A per-flow submit override
+/// still wins over both, because that is an explicit per-shortcut choice.
+fn restore_extra_for_target(
+    submit_override_ms: Option<u64>,
+    remote: bool,
+    remote_override_ms: Option<u64>,
+    global_ms: u64,
+) -> u64 {
+    if let Some(ms) = submit_override_ms {
+        return ms;
+    }
+    match (remote, remote_override_ms) {
+        (true, Some(ms)) => ms,
+        _ => global_ms,
+    }
+}
+
+fn pre_submit_extra_ms(
+    jumped: bool,
+    remote: bool,
+    submit_local_ms: u64,
+    submit_remote_ms: u64,
+) -> u64 {
+    match (jumped, remote) {
+        (_, true) => submit_remote_ms,
+        (true, false) => submit_local_ms,
+        (false, false) => 0,
+    }
+}
+
 /// Is the pinned unanchored delivery target still the foreground window?
 ///
 /// `None` means the foreground could not be identified when the delivery was
@@ -282,65 +368,6 @@ fn still_valid_for(
         Some(g) => crate::anchor::await_guard_ready(g, false),
         None => unanchored_target_intact(pinned),
     }
-}
-
-/// Should this delivery type the text instead of pasting it?
-///
-/// A clipboard paste method necessarily puts the transcript on the local
-/// clipboard, and RDP/Citrix clipboard redirection then copies it to the REMOTE
-/// machine's clipboard — a separate clipboard on a separate OS that Handy has
-/// no handle to, and whose clipboard history keeps the text permanently. The
-/// local restore cannot retract any of that. Typing never touches a clipboard
-/// on either side, so it is the only delivery path that avoids the leak.
-///
-/// Only CLIPBOARD methods are substituted. `None` (deliberately deliver
-/// nothing), `ExternalScript` (the user's own command) and `Direct` (already
-/// typing) are left exactly as chosen.
-///
-/// `CopyToClipboard` is also left alone, deliberately. That handling exists to
-/// leave the transcript ON the clipboard after delivery, and `paste_inner`
-/// parks it there at the end regardless of how the text was delivered — RDP
-/// redirection then carries it across anyway. Typing cannot prevent the leak in
-/// that combination, so substituting would impose typing's real costs
-/// (autocomplete, IME, one undo step per batch) for no privacy gain, while
-/// silently overriding an explicit user choice.
-///
-/// MULTI-LINE TEXT IS NEVER SUBSTITUTED, and this is the important one.
-///
-/// A paste inserts a line break as DATA. Typing cannot: `paste_text_direct`
-/// must emit `Key::Return` for each newline, which is a COMMAND the target is free
-/// to act on. In a chat composer (Teams, Outlook, a web message box — exactly
-/// the things people run inside Citrix and RDP) the first Return SENDS the
-/// message, and the remaining lines are then sent as further messages. In a
-/// form, it submits. That is irreversible, and it is a far worse outcome than
-/// the clipboard leak this substitution exists to prevent.
-///
-/// It is not a corner case either: the shipped default post-processing prompt
-/// asks for a summary heading plus a bulleted or numbered body, so a
-/// post-processed transcript is multi-line by construction, and both this
-/// setting and `DontModify` are defaults.
-///
-/// So multi-line transcripts keep the user's chosen paste method. The leak
-/// remains for them — stated plainly in the UI and the docs rather than traded
-/// silently for the risk of posting half a dictation into a colleague's chat.
-/// A user who explicitly selects `Direct` still gets typing for multi-line
-/// text: that is their own informed choice, and it is unchanged by this.
-fn should_type_instead_of_paste(
-    enabled: bool,
-    target_is_remote: bool,
-    method: PasteMethod,
-    clipboard_handling: ClipboardHandling,
-    text: &str,
-) -> bool {
-    enabled
-        && target_is_remote
-        && clipboard_handling != ClipboardHandling::CopyToClipboard
-        && !text.contains('\n')
-        && !text.contains('\r')
-        && matches!(
-            method,
-            PasteMethod::CtrlV | PasteMethod::CtrlShiftV | PasteMethod::ShiftInsert
-        )
 }
 
 /// Decide what this paste must treat as "the user's clipboard".
@@ -518,152 +545,94 @@ mod restore_race_tests {
         assert_eq!(restore_retry_delay_ms(2), None);
     }
 
+    // ---- pre-submit pacing matrix (1.3.0) ----
+    //
+    // The bug these encode: 1.2.0 gated the settle on `jumped` alone, so an
+    // already-focused RDP target got 0 ms and Enter raced the text through the
+    // virtual channel.
+
     #[test]
-    fn remote_targets_type_instead_of_pasting() {
-        // The reported bug: a clipboard paste into RDP leaks the transcript to
-        // the REMOTE machine's clipboard, which the local restore cannot undo.
+    fn no_jump_remote_pays_the_remote_submit_delay() {
+        // THE regression these tests exist for. Reported symptom: text truncated
+        // or split because Enter fired ~50 ms after the last keystroke.
+        assert_eq!(pre_submit_extra_ms(false, true, 300, 600), 600);
+    }
+
+    #[test]
+    fn local_no_jump_delivery_pays_no_pacing_at_all() {
+        // DO NOT DELETE. This is the guard against "fixing" RDP by charging
+        // every ordinary dictation 300-600 ms it never needed.
+        assert_eq!(pre_submit_extra_ms(false, false, 300, 600), 0);
+    }
+
+    #[test]
+    fn a_remote_jump_is_not_double_charged() {
+        // A remote jump already paid the post-activation settle; it must get the
+        // same remote value here, not that value twice.
+        assert_eq!(pre_submit_extra_ms(true, true, 300, 600), 600);
+    }
+
+    #[test]
+    fn a_local_jump_keeps_the_local_delay() {
+        assert_eq!(pre_submit_extra_ms(true, false, 300, 600), 300);
+    }
+
+    #[test]
+    fn pre_submit_pacing_honours_a_zero_setting() {
+        // "Off" must mean off in every cell, not silently floored.
+        for (jumped, remote) in [(false, false), (false, true), (true, false), (true, true)] {
+            assert_eq!(pre_submit_extra_ms(jumped, remote, 0, 0), 0);
+        }
+    }
+
+    #[test]
+    fn pre_submit_total_adds_a_typing_tail_only_for_direct() {
+        // A SendInput returns when the LOCAL queue accepts it, not when the
+        // target rendered it, so typing has a tail a single chord does not.
+        assert_eq!(
+            pre_submit_total_ms(50, 600, PasteMethod::Direct, 15),
+            50 + 600 + 15
+        );
         for m in [
             PasteMethod::CtrlV,
             PasteMethod::CtrlShiftV,
             PasteMethod::ShiftInsert,
+            PasteMethod::ExternalScript,
         ] {
-            assert!(
-                should_type_instead_of_paste(
-                    true,
-                    true,
-                    m,
-                    ClipboardHandling::DontModify,
-                    "one line"
-                ),
-                "{m:?} into a remote target must be typed"
-            );
+            assert_eq!(pre_submit_total_ms(50, 600, m, 15), 650, "{m:?}");
         }
+        // A zero chunk delay must not invent a tail.
+        assert_eq!(pre_submit_total_ms(50, 0, PasteMethod::Direct, 0), 50);
     }
 
     #[test]
-    fn local_targets_are_never_substituted() {
-        for m in [
-            PasteMethod::CtrlV,
-            PasteMethod::CtrlShiftV,
-            PasteMethod::ShiftInsert,
-        ] {
-            assert!(!should_type_instead_of_paste(
-                true,
-                false,
-                m,
-                ClipboardHandling::DontModify,
-                "one line"
-            ));
-        }
+    fn remote_restore_override_is_inert_until_set() {
+        // The whole point of Option: a user who never touches the remote control
+        // keeps byte-identical behaviour.
+        assert_eq!(restore_extra_for_target(None, true, None, 250), 250);
+        assert_eq!(restore_extra_for_target(None, false, None, 250), 250);
     }
 
     #[test]
-    fn substitution_respects_the_setting() {
-        assert!(!should_type_instead_of_paste(
-            false,
-            true,
-            PasteMethod::CtrlV,
-            ClipboardHandling::DontModify,
-            "one line"
-        ));
+    fn remote_restore_override_applies_only_to_remote_targets() {
+        assert_eq!(restore_extra_for_target(None, true, Some(1000), 250), 1000);
+        assert_eq!(restore_extra_for_target(None, false, Some(1000), 250), 250);
     }
 
     #[test]
-    fn copy_to_clipboard_is_never_substituted() {
-        // `paste_inner` parks the transcript on the clipboard at the end under
-        // this handling no matter how it was delivered, so RDP redirection
-        // carries it across regardless. Typing would cost the user its
-        // downsides and buy no privacy — and would override an explicit choice.
-        for m in [
-            PasteMethod::CtrlV,
-            PasteMethod::CtrlShiftV,
-            PasteMethod::ShiftInsert,
-        ] {
-            assert!(!should_type_instead_of_paste(
-                true,
-                true,
-                m,
-                ClipboardHandling::CopyToClipboard,
-                "one line"
-            ));
-        }
-    }
-
-    #[test]
-    fn multi_line_transcripts_are_never_substituted() {
-        // Typing must emit Key::Return for each line break, and Return is a
-        // COMMAND: in a chat composer it SENDS the message, so the rest of the
-        // transcript would be posted as further messages. Posting half a
-        // dictation into someone's chat is worse than the clipboard leak this
-        // substitution prevents, so multi-line text keeps the paste method.
-        for text in [
-            "line one\nline two",
-            "line one\r\nline two",
-            "line one\rline two",
-            "trailing newline\n",
-            "\nleading newline",
-            "summary\n\n- bullet one\n- bullet two",
-        ] {
-            assert!(
-                !should_type_instead_of_paste(
-                    true,
-                    true,
-                    PasteMethod::CtrlV,
-                    ClipboardHandling::DontModify,
-                    text,
-                ),
-                "multi-line text must not be typed: {text:?}"
-            );
-        }
-    }
-
-    #[test]
-    fn single_line_transcripts_on_remote_targets_still_type() {
-        // The protection must still apply to the ordinary case, otherwise the
-        // multi-line carve-out would have disabled the whole feature.
-        for text in [
-            "a normal dictated sentence.",
-            "",
-            "  spaced  ",
-            "tab	separated",
-        ] {
-            assert!(
-                should_type_instead_of_paste(
-                    true,
-                    true,
-                    PasteMethod::CtrlV,
-                    ClipboardHandling::DontModify,
-                    text,
-                ),
-                "single-line text must still be typed: {text:?}"
-            );
-        }
+    fn a_per_flow_submit_override_beats_both() {
+        // An explicit per-shortcut choice is the most specific intent there is.
+        assert_eq!(
+            restore_extra_for_target(Some(50), true, Some(1000), 250),
+            50
+        );
+        assert_eq!(restore_extra_for_target(Some(0), true, Some(1000), 250), 0);
     }
 
     #[test]
     fn unanchored_target_absent_imposes_no_constraint() {
         // "Could not identify the foreground window" must not block delivery.
         assert!(unanchored_target_intact(None));
-    }
-
-    #[test]
-    fn non_clipboard_methods_are_left_alone_on_remote_targets() {
-        // None means "deliver nothing" and ExternalScript is the user's own
-        // command — substituting either would change what the user asked for.
-        // Direct is already typing.
-        for m in [
-            PasteMethod::None,
-            PasteMethod::ExternalScript,
-            PasteMethod::Direct,
-        ] {
-            assert!(!should_type_instead_of_paste(
-                true,
-                true,
-                m,
-                ClipboardHandling::DontModify,
-                "one line"
-            ));
-        }
     }
 
     #[test]
@@ -1700,17 +1669,10 @@ fn paste_inner(
     };
 
     let paste_delay_ms = settings.paste_delay_ms;
-    // Base 50 ms settle + user-configured extra (per-shortcut override or global).
-    // CopyToClipboard leaves the transcription as the final clipboard state, so
-    // there is nothing to restore.
-    let restore_extra_ms = submit_override
-        .map(|o| o.restore_extra_ms)
-        .unwrap_or_else(|| settings.clipboard_restore_delay.to_ms());
-    let restore_after_ms = if clipboard_handling == ClipboardHandling::CopyToClipboard {
-        None
-    } else {
-        Some(50 + restore_extra_ms)
-    };
+    // NOTE: `restore_after_ms` is resolved LATER, after the target has been
+    // classified local vs remote — the remote override needs that answer and it
+    // is not known yet at this point in the function.
+    let submit_restore_override_ms: Option<u64> = submit_override.map(|o| o.restore_extra_ms);
 
     // Append trailing space if setting is enabled
     let text = if settings.append_trailing_space {
@@ -1823,51 +1785,46 @@ fn paste_inner(
     // T-309: classify this delivery's target ONCE. `remote_jump` is true only
     // on a real jump (`foreground_switched`) whose target matches the user's
     // remote-desktop classifier — it selects the longer `*_remote` delays AND
-    // the bounded readiness retry in the per-keystroke re-checks below. An
-    // already-focused delivery or a local target keeps the snappy behavior.
+    // the bounded readiness retry in the per-keystroke re-checks below.
+    //
+    // THREE distinct booleans, deliberately named apart because 1.2.0 conflated
+    // them and shipped a bug:
+    //   `jumped`           - this delivery actually activated a window.
+    //   `target_is_remote` - the target is an RDP/Citrix session, jump or not.
+    //   `remote_jump`      - both. Its ONLY job is the bounded readiness retry
+    //                        below; it must NOT gate pacing, because a target
+    //                        reached without a jump is still remote.
     #[cfg(windows)]
-    let remote_jump: bool = anchor_guard
+    let jumped: bool = anchor_guard
         .as_ref()
-        .map(|g| g.foreground_switched() && g.is_remote(&settings.jumper_remote_match_strings))
+        .map(|g| g.foreground_switched())
         .unwrap_or(false);
     #[cfg(not(windows))]
-    let remote_jump: bool = false;
+    let jumped: bool = false;
 
-    // Remote-desktop targets: TYPE instead of pasting.
-    //
-    // A clipboard paste method must put the transcript on the local clipboard,
-    // and RDP/Citrix clipboard redirection then copies it to the REMOTE
-    // machine's clipboard — a separate clipboard on a separate OS, kept in that
-    // machine's clipboard history. Restoring the local clipboard cannot reach
-    // any of it. Typing never touches a clipboard on either side.
-    //
     // Classified AFTER `begin_delivery` deliberately. An anchored delivery
-    // activates its target here, so classifying earlier would read whatever the
-    // user happened to be looking at — dictating from a local editor into an
-    // RDP anchor would have kept the clipboard method and leaked exactly as
-    // before. Prefer the guard's own captured identity; fall back to the
+    // activates its target there, so classifying earlier would read whatever
+    // the user happened to be looking at rather than the window the text will
+    // land in. Prefer the guard's own captured identity; fall back to the
     // foreground only when there is no anchor, which is the ordinary
     // "dictate straight into the focused RDP window" case that
     // `DeliveryGuard::is_remote` cannot answer.
     //
     // For an UNANCHORED delivery the snapshot ALSO yields the identity of the
-    // window the decision was made about (`unanchored_target`). Everything
-    // downstream re-validates against that exact window, so the classification
-    // and the keystrokes can never end up describing two different windows --
-    // the anchored path has `DeliveryGuard` for precisely this, and until now
-    // the unanchored path had nothing.
+    // window the decision was made about (`unanchored_target`), so everything
+    // downstream re-validates against that exact window and the classification
+    // and the keystrokes can never describe two different windows.
+    //
+    // NOTE: no setting term. 1.2.0 multiplied this by
+    // `direct_typing_for_remote_targets`, which quietly made "is this target
+    // remote?" mean "is this target remote AND do we want to type into it?".
+    // Remoteness is a property of the target; what we DO about it belongs at
+    // the use site.
     #[cfg(windows)]
     let (unanchored_target, target_is_remote) = match anchor_guard.as_ref() {
-        Some(g) => (
-            None,
-            settings.direct_typing_for_remote_targets
-                && g.is_remote(&settings.jumper_remote_match_strings),
-        ),
+        Some(g) => (None, g.is_remote(&settings.jumper_remote_match_strings)),
         None => match crate::anchor::foreground_snapshot(&settings.jumper_remote_match_strings) {
-            Some((hwnd, remote)) => (
-                Some(hwnd),
-                settings.direct_typing_for_remote_targets && remote,
-            ),
+            Some((hwnd, remote)) => (Some(hwnd), remote),
             None => (None, false),
         },
     };
@@ -1876,31 +1833,31 @@ fn paste_inner(
     #[cfg(not(windows))]
     let unanchored_target: Option<isize> = None;
 
-    let paste_method = if should_type_instead_of_paste(
-        settings.direct_typing_for_remote_targets,
+    let remote_jump: bool = jumped && target_is_remote;
+
+    // Base 50 ms settle + the extra for this target. `CopyToClipboard` leaves
+    // the transcript as the final clipboard state, so there is nothing to undo.
+    let restore_extra_ms = restore_extra_for_target(
+        submit_restore_override_ms,
         target_is_remote,
-        chosen_paste_method,
-        clipboard_handling,
-        &text,
-    ) {
-        info!(
-            "Remote desktop target — typing instead of {:?} so the transcript never reaches the \
-             remote machine's clipboard",
-            chosen_paste_method
-        );
-        PasteMethod::Direct
+        settings.clipboard_restore_delay_remote.map(|d| d.to_ms()),
+        settings.clipboard_restore_delay.to_ms(),
+    );
+    let restore_after_ms = if clipboard_handling == ClipboardHandling::CopyToClipboard {
+        None
     } else {
-        if target_is_remote
-            && settings.direct_typing_for_remote_targets
-            && (text.contains('\n') || text.contains('\r'))
-        {
-            info!(
-                "Remote desktop target, but the transcript has line breaks - keeping {:?}. \n                 Typing would send each line break as an Enter key, which posts or submits in \n                 chat and form fields. The transcript will reach the remote clipboard.",
-                chosen_paste_method
-            );
-        }
-        chosen_paste_method
+        Some(50 + restore_extra_ms)
     };
+
+    // 1.2.0 substituted `PasteMethod::Direct` here whenever the target was
+    // remote, to keep the transcript off the remote machine's clipboard. It was
+    // WITHDRAWN in 1.3.0: batched Unicode injection mangles text over RDP
+    // (missing and jumbled characters), and its unpaced auto-submit Enter fired
+    // while the text was still draining through the virtual channel. Keystroke
+    // delivery is still available, but only as a deliberate, global choice
+    // (`Paste method = Direct`) — never auto-selected for a subset of
+    // deliveries the user cannot predict from the UI.
+    let paste_method = chosen_paste_method;
 
     // After a real jump, the freshly-activated target (especially an
     // RDP/Citrix session) may still be transitioning — completing activation,
@@ -1921,9 +1878,9 @@ fn paste_inner(
                 };
                 if extra_ms > 0 {
                     log::debug!(
-                        "paste timing: post-jump settle before paste = {} ms (remote={})",
+                        "paste timing: settle before paste = {} ms (jumped=true, remote={})",
                         extra_ms,
-                        remote_jump
+                        target_is_remote
                     );
                     std::thread::sleep(Duration::from_millis(extra_ms));
                 }
@@ -2006,16 +1963,12 @@ fn paste_inner(
     let jump_submit_extra_ms: u64 = {
         #[cfg(windows)]
         {
-            anchor_guard_ref
-                .filter(|g| g.foreground_switched())
-                .map(|_| {
-                    if remote_jump {
-                        settings.jumper_submit_delay_remote.to_ms()
-                    } else {
-                        settings.jumper_submit_delay.to_ms()
-                    }
-                })
-                .unwrap_or(0)
+            pre_submit_extra_ms(
+                jumped,
+                target_is_remote,
+                settings.jumper_submit_delay.to_ms(),
+                settings.jumper_submit_delay_remote.to_ms(),
+            )
         }
         #[cfg(not(windows))]
         {
@@ -2086,8 +2039,13 @@ fn paste_inner(
                 // its input queue; one burst is instant locally but drops
                 // characters over RDP. Normalised at the read boundary so a
                 // hand-edited settings file cannot stall a delivery.
-                let (chunk_chars, chunk_delay_ms) =
-                    crate::settings::typing_chunk_params(&settings, text.chars().count());
+                let (chunk_chars, chunk_delay_ms) = crate::settings::typing_chunk_params(
+                    &settings,
+                    text.chars().count(),
+                    text.chars()
+                        .filter(|c| matches!(c, '\n' | '\r' | '\t'))
+                        .count(),
+                );
                 #[cfg(target_os = "linux")]
                 {
                     paste_direct(
@@ -2141,21 +2099,26 @@ fn paste_inner(
         if do_submit {
             #[cfg(windows)]
             log::debug!(
-                "submit timing: foreground_switched={}, pre_submit_extra_ms={}",
-                anchor_guard_ref
-                    .map(|g| g.foreground_switched())
-                    .unwrap_or(false),
+                "submit timing: jumped={}, remote={}, pre_submit_extra_ms={}",
+                jumped,
+                target_is_remote,
                 jump_submit_extra_ms,
             );
-            // Base ~50 ms settle + the jump-only extra.
-            std::thread::sleep(Duration::from_millis(50 + jump_submit_extra_ms));
+            // Base ~50 ms settle, the target-aware pacing, and a typing tail.
+            let submit_settle_ms = pre_submit_total_ms(
+                50,
+                jump_submit_extra_ms,
+                paste_method,
+                settings.typing_chunk_delay_ms as u64,
+            );
+            std::thread::sleep(Duration::from_millis(submit_settle_ms));
             // T-103 (finding 1): re-verify immediately before the auto-submit
             // keystroke too — the settle above is exactly the kind of gap a
             // focus-stealing popup can land in after the paste itself already
             // succeeded.
             if let Some(guard) = anchor_guard_ref {
                 if !crate::anchor::await_guard_ready(guard, remote_jump) {
-                    return Err(ANCHOR_FOCUS_LOST.to_string());
+                    return Err(ANCHOR_SUBMIT_ABORTED.to_string());
                 }
             } else if !unanchored_target_intact(unanchored_target) {
                 // An UNANCHORED delivery had no guard, so this key used to be
@@ -2164,7 +2127,7 @@ fn paste_inner(
                 // message, submit a form or confirm a dialog in an application
                 // the user never dictated into. The text itself already landed
                 // in the original window; only the submit key is aborted.
-                return Err(ANCHOR_FOCUS_LOST.to_string());
+                return Err(ANCHOR_SUBMIT_ABORTED.to_string());
             }
             send_return_key(&mut enigo, submit_key)?;
             // Post-Enter focus-return grace: keep the jumped-to target
@@ -2198,7 +2161,8 @@ fn paste_inner(
     // plain `Err` would otherwise trigger in the caller.
     #[cfg(windows)]
     if let Err(e) = &delivered {
-        if e == ANCHOR_FOCUS_LOST || e == ANCHOR_FOCUS_LOST_PARTIAL {
+        if e == ANCHOR_FOCUS_LOST || e == ANCHOR_FOCUS_LOST_PARTIAL || e == ANCHOR_SUBMIT_ABORTED {
+            let submit_only = e == ANCHOR_SUBMIT_ABORTED;
             let partial = e == ANCHOR_FOCUS_LOST_PARTIAL;
             let anchored = anchor_guard.is_some();
             // Be honest about BOTH dimensions. Reporting a partial typed
@@ -2206,16 +2170,27 @@ fn paste_inner(
             // whole transcript and duplicate the prefix already in the window;
             // and calling an unanchored abort an "anchored delivery" names a
             // feature the user may not even be using.
-            let reason = match (anchored, partial) {
-                (_, true) => "focus changed while typing — part of the transcript may already                               have been inserted, so check the target before re-inserting"
+            let reason = if submit_only {
+                // The text IS in the target. Saying otherwise sends the user to
+                // Paste Last and gets the transcript inserted twice.
+                "your text was delivered, but focus moved before the submit key so it was not sent"
+                    .to_string()
+            } else {
+                match (anchored, partial) {
+                    (_, true) => "focus changed while typing — part of the transcript may already have been inserted, so check the target before re-inserting"
                     .to_string(),
-                (true, false) => "focus changed mid-paste (per-keystroke re-check)".to_string(),
-                (false, false) => {
-                    "focus changed before the text was delivered (per-keystroke re-check)"
-                        .to_string()
+                    (true, false) => {
+                        "focus changed mid-paste (per-keystroke re-check)".to_string()
+                    }
+                    (false, false) => {
+                        "focus changed before the text was delivered (per-keystroke re-check)"
+                            .to_string()
+                    }
                 }
             };
-            info!("Delivery aborted (anchored={anchored}, partial={partial}): {reason}");
+            info!(
+                "Delivery aborted (anchored={anchored}, partial={partial}, submit_only={submit_only}): {reason}"
+            );
             park_anchor_failure_detail(reason, anchored, partial);
             // Finding 1 (second adversarial re-verify): same fix as the
             // TOCTOU-close abort above — run `finish_delivery` (delivered_ok
