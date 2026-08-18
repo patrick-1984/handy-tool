@@ -1288,6 +1288,23 @@ pub fn change_submit_clipboard_restore_delay_setting(
     Ok(())
 }
 
+/// `""` (empty) clears the override back to "inherit the global value".
+#[tauri::command]
+#[specta::specta]
+pub fn change_clipboard_restore_delay_remote_setting(
+    app: AppHandle,
+    delay: String,
+) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    settings.clipboard_restore_delay_remote = if delay.is_empty() {
+        None
+    } else {
+        Some(parse_clipboard_restore_delay(&delay))
+    };
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
 fn parse_jumper_submit_delay(value: &str) -> JumperSubmitDelay {
     match value {
         "none" => JumperSubmitDelay::None,
@@ -2095,20 +2112,6 @@ pub fn set_post_process_selected_prompt(app: AppHandle, id: String) -> Result<()
 pub fn change_mute_while_recording_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
     let mut settings = settings::get_settings(&app);
     settings.mute_while_recording = enabled;
-    settings::write_settings(&app, settings);
-    Ok(())
-}
-
-/// Type instead of pasting when the target is a remote desktop, so the
-/// transcript never reaches the remote machine's clipboard.
-#[tauri::command]
-#[specta::specta]
-pub fn change_direct_typing_for_remote_targets_setting(
-    app: AppHandle,
-    enabled: bool,
-) -> Result<(), String> {
-    let mut settings = settings::get_settings(&app);
-    settings.direct_typing_for_remote_targets = enabled;
     settings::write_settings(&app, settings);
     Ok(())
 }

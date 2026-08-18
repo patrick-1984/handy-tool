@@ -28,6 +28,7 @@ import { TypingToolSetting } from "../TypingTool";
 import { ClipboardHandlingSetting } from "../ClipboardHandling";
 import { AutoSubmit } from "../AutoSubmit";
 import { ClipboardRestoreDelaySetting } from "../ClipboardRestoreDelay";
+import { ClipboardRestoreDelayRemoteSetting } from "../ClipboardRestoreDelayRemote";
 import { AnchorActionSetting } from "../AnchorActionSetting";
 import { useNavStore } from "@/stores/navStore";
 
@@ -88,6 +89,10 @@ export const AdvancedSettings: React.FC = () => {
               <AutoSubmit descriptionMode="tooltip" grouped={true} />
               <ClipboardRestoreDelaySetting
                 settingKey="clipboard_restore_delay"
+                descriptionMode="tooltip"
+                grouped={true}
+              />
+              <ClipboardRestoreDelayRemoteSetting
                 descriptionMode="tooltip"
                 grouped={true}
               />

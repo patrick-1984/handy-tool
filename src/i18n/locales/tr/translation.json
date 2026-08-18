@@ -309,14 +309,14 @@
         },
         "jumperPasteDelay": {
           "title": "Paste delay after jump (Windows)",
-          "description": "Bir atlama hedef pencereyi öne getirdikten sonra ve yapıştırma tuş vuruşu ateşlenmeden önceki ek bekleme; çünkü az önce etkinleşen bir pencere tuş vuruşlarını hâlâ yutabilir. Varsayılanlar: Local apps için 250 ms, Remote desktop için 1 sn — hangi sütunun uygulanacağına Atlayıcı sayfasındaki Remote match strings karar verir. Yalnızca gerçek bir atlamada çalışır; zaten hedefteyseniz yapıştırma anında kalır ve her iki açılır menü de Transkribe Et ve Transkribe Et ve Gönder tarafından paylaşılır.",
+          "description": "Bir atlama hedef pencereyi öne getirdikten sonra ve yapıştırma tuş vuruşu ateşlenmeden önceki ek bekleme; çünkü az önce etkinleşen bir pencere tuş vuruşlarını hâlâ yutabilir. Varsayılanlar: Local apps için 300 ms, Remote desktop için 600 ms — hangi sütunun uygulanacağına Atlayıcı sayfasındaki Remote match strings karar verir. Yalnızca gerçek bir atlamada çalışır; zaten hedefteyseniz yapıştırma anında kalır ve her iki açılır menü de Transkribe Et ve Transkribe Et ve Gönder tarafından paylaşılır.",
           "options": {
             "none": "Off (instant)"
           }
         },
         "jumperSubmitDelay": {
-          "title": "Submit delay after jump (Windows)",
-          "description": "Teslimat atlamak zorunda kaldığında, yapıştırma ile gönderme tuşu arasındaki ek bekleme; çünkü az önce etkinleşen pencere yapıştırılan metni hâlâ işliyor olabilir ve Enter'ı kaçırır. Varsayılanlar: Local apps için 250 ms, Remote desktop için 500 ms — hangisinin uygulanacağına Atlayıcı sayfasındaki Remote match strings karar verir. Yalnızca gerçek bir atlamadan sonra çalışır; zaten hedefteyseniz gönderme anında kalır.",
+          "title": "Enter öncesi gönderme gecikmesi (Windows)",
+          "description": "Metnin teslimi ile gönderme tuşuna basılması arasındaki ek bekleme; metni hâlâ işleyen bir hedef Enter'ı kaybeder. Varsayılan: yerel uygulamalar 300 ms, uzak masaüstü 600 ms - hangisinin geçerli olduğuna Jumper sayfasındaki eşleşme listesi karar verir. Gerçek bir atlamadan sonra ve uzak masaüstü hedefinde, zaten içinde olsanız bile her zaman çalışır; çünkü uzak oturum, Handy pencereyi etkinleştirmiş olsun ya da olmasın, metni işlemek için bir gidiş dönüş gerektirir. Yalnızca hâlihazırda odakta olan yerel bir hedef anında gönderir. 1.3.0'da değişti: öncesinde hâlihazırda odakta olan uzak bir hedef hiç beklemiyordu, bu yüzden metin hâlâ yoldayken Enter tetiklenip diktenin bir kısmını gönderebiliyordu.",
           "options": {
             "none": "Off (instant)"
           }
@@ -770,6 +770,11 @@
           "opus": "Opus — daha küçük (önerilen)",
           "wav": "WAV — en uyumlu"
         }
+      },
+      "clipboardRestoreDelayRemote": {
+        "title": "Uzak masaüstleri için pano geri yükleme gecikmesi",
+        "description": "Dikte ettiğiniz pencere bir uzak masaüstü oturumu olduğunda pano geri yükleme gecikmesini geçersiz kılar. Varsayılan: ayarlanmadı, yani yukarıdaki normal gecikmeyi devralır. Neden var: RDP ve Citrix pano verisini, yapıştırma tuşu ulaştıktan SONRA, yerel bir uygulamadan daha yavaş bir kanal üzerinden ister; bu yüzden çok erken geri yüklemek uzak uygulamaya daha önce kopyaladığınızı verir. 1 s makul bir başlangıç noktasıdır. Dürüst maliyet: daha uzun bir geri yükleme transkripti panonuzda daha uzun bırakır ve pano geçmişi ile pano yöneticilerinin onu yakalayabileceği pencereyi genişletir. Hangi pencerelerin uzak sayılacağı Jumper sayfasındaki listeden gelir. *{Windows only}*",
+        "inherit": "Ayarlanmadı (yukarıdaki gecikmeyi kullan)"
       }
     },
     "postProcessing": {
@@ -974,13 +979,13 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "Uygulaması, pencere sınıfı veya denetim sınıfı bu parçalardan birini içeren (büyük/küçük harf duyarsız) bir atlama hedefi, bir uzak masaüstü olarak kabul edilir; bu nedenle Gelişmiş → Transkripsiyon'daki 'Paste delay after jump (Windows)' ve 'Submit delay after jump (Windows)' için Local değeri yerine Remote değerini kullanır. Varsayılan: msrdc, mstsc, Citrix. RDP veya Citrix istemcinizin kullandığı süreç adını, ona yapılan teslimatlar sürekli yutuluyorsa ekleyin; boş bir liste her hedefi yerel olarak kabul eder.",
+        "description": "Uygulaması, pencere sınıfı veya denetim sınıfı bu parçalardan birini içeren bir teslim hedefi (büyük/küçük harf duyarsız) uzak masaüstü sayılır ve Advanced → Transcription altındaki 'Paste delay after jump (Windows)' ile 'Submit delay before Enter (Windows)' için Yerel yerine Uzak değeri kullanır. Artık bir atlama hedefi olması gerekmiyor: 1.3.0'dan bu yana hâlihazırda odakta olan uzak pencere de sınıflandırılır ve gönderme gecikmesi orada bu sayede uygulanır. Varsayılan: msrdc, mstsc, Citrix. Oraya yapılan teslimler yutulmaya devam ediyorsa RDP veya Citrix istemcinizin süreç adını ekleyin; boş liste her hedefi yerel sayar.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
         "duplicate": "'{{value}}' is already in the list",
         "badge": "Remote ✓",
-        "badgeTooltip": "This target matches a remote match string, so it uses the Remote jump delays."
+        "badgeTooltip": "Bu hedef bir uzak eşleşme dizesiyle eşleşiyor, bu yüzden Uzak zamanlama değerlerini kullanır."
       },
       "windowsOnly": "Atlayıcı yalnızca Windows'ta kullanılabilir.",
       "hot": {
@@ -1040,10 +1045,6 @@
         "groupTitle": "Bitişte davranış",
         "label": "Yalnızca aynı şekilde başlatıldıysa bitişte atla",
         "description": "Açıkken, bir akışın 'Bitişte yuva eylemi' yalnızca kayıt aynı kısayolla başlatılıp bitirildiyse tetiklenir. Varsayılan: Kapalı. Örnek: Transkribe Et ile başlayıp Transkribe Et ve Gönder ile bitirirseniz hiçbir atlama olmaz — yapıştırma ve gönderme yine gerçekleşir, yalnızca atlama koşula bağlanır. İki kısayolu karıştırmak sizi sürekli beklenmedik bir yere taşıyorsa açın."
-      },
-      "directTypingForRemote": {
-        "label": "Uzak masaüstlerine yapıştırmak yerine yaz",
-        "description": "Dikte ettiğiniz pencere bir uzak masaüstü oturumuysa metin, pano üzerinden değil simüle edilmiş tuş vuruşları olarak teslim edilir. Varsayılan: açık. Neden önemli: panoya dayalı bir yapıştırma yöntemi transkripsiyonu panonuza koymak zorundadır; ardından RDP veya Citrix pano yönlendirmesi bunu UZAK makinenin panosuna kopyalar — ayrı bir bilgisayardaki ayrı bir pano olarak o makinenin pano geçmişinde tutulur. Kendi panonuzu daha sonra geri yüklemek ona ulaşamaz. Yazma, iki taraftaki panoya da dokunmaz. Açık sınırlamalar: yazılan metin, yapıştırmanın tetiklemediği otomatik tamamlama, otomatik parantez kapatma ve IME davranışlarını tetikleyebilir; ayrıca tek bir işlem yerine çok sayıda geri alma adımı olarak gelir. Uzak oturumun yetişebilmesi için metin küçük gruplar hâlinde gönderilir. Bu yalnızca gelecekteki sızıntıları önler — uzak makinenin pano geçmişinde zaten bulunan transkripsiyonları kaldıramaz. Hangi pencerelerin uzak sayılacağını yukarıdaki eşleşme listesi belirler. Pano işleme «Panoya Kopyala» olarak ayarlandığında uygulanmaz: bu seçenek transkripti teslimden sonra bilerek panonuzda bırakır, dolayısıyla yönlendirme onu zaten karşı tarafa taşır ve yazma yalnızca dezavantajlarını getirir. Satır sonu içeren bir transkripte de uygulanmaz: yazma sırasında her satır sonunun Enter tuşu olarak gönderilmesi gerekir; bu da sohbet kutusunda mesajı gönderir, formda ise formu gönderir. Bu nedenle çok satırlı transkriptler yapıştırma yönteminizi korur ve uzak panoya ulaşır. *{Windows only}*"
       }
     },
     "translator": {

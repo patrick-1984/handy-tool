@@ -309,14 +309,14 @@
         },
         "jumperPasteDelay": {
           "title": "Paste delay after jump (Windows)",
-          "description": "Zusätzliche Wartezeit, nachdem ein Sprung das Zielfenster nach vorne gebracht hat und bevor der Einfüge-Tastendruck ausgelöst wird, weil ein gerade eben aktiviertes Fenster Tastendrücke noch verschluckt. Standardwerte: Lokale Apps 250 ms, Remote-Desktop 1 s — welche Spalte gilt, entscheidet Remote match strings auf der Jumper-Seite. Sie greift nur bei einem echten Sprung; bist du bereits im Ziel, bleibt das Einfügen sofort, und beide Dropdowns werden von Transkribieren und Transkribieren & Absenden gemeinsam genutzt.",
+          "description": "Zusätzliche Wartezeit, nachdem ein Sprung das Zielfenster nach vorne gebracht hat und bevor der Einfüge-Tastendruck ausgelöst wird, weil ein gerade eben aktiviertes Fenster Tastendrücke noch verschluckt. Standardwerte: Lokale Apps 300 ms, Remote-Desktop 600 ms — welche Spalte gilt, entscheidet Remote match strings auf der Jumper-Seite. Sie greift nur bei einem echten Sprung; bist du bereits im Ziel, bleibt das Einfügen sofort, und beide Dropdowns werden von Transkribieren und Transkribieren & Absenden gemeinsam genutzt.",
           "options": {
             "none": "Off (instant)"
           }
         },
         "jumperSubmitDelay": {
-          "title": "Submit delay after jump (Windows)",
-          "description": "Zusätzliche Wartezeit zwischen dem Einfügen und der Absende-Taste, wenn die Zustellung springen musste, weil das frisch aktivierte Fenster den eingefügten Text noch übernimmt und das Enter verschluckt. Standardwerte: Lokale Apps 250 ms, Remote-Desktop 500 ms — Remote match strings auf der Jumper-Seite entscheidet, welcher Wert gilt. Sie greift nur nach einem echten Sprung; warst du bereits im Ziel, bleibt das Absenden sofort.",
+          "title": "Senden-Verzögerung vor Enter (Windows)",
+          "description": "Zusätzliche Wartezeit zwischen der Textübergabe und dem Senden-Tastendruck, weil ein Ziel, das den Text noch übernimmt, die Eingabetaste verliert. Standard: lokale Anwendungen 300 ms, Remotedesktop 600 ms - welche Spalte gilt, entscheidet die Liste auf der Jumper-Seite. Läuft nach einem echten Sprung und immer bei einem Remotedesktop-Ziel, auch wenn Sie schon darin waren, denn eine Remote-Sitzung braucht für die Übernahme einen Roundtrip, unabhängig davon, ob Handy das Fenster aktiviert hat. Nur ein bereits fokussiertes lokales Ziel sendet sofort. Geändert in 1.3.0: davor wartete ein bereits fokussiertes Remote-Ziel überhaupt nicht, sodass die Eingabetaste feuern konnte, während der Text noch unterwegs war, und ein unvollständiges Diktat abschickte.",
           "options": {
             "none": "Off (instant)"
           }
@@ -770,6 +770,11 @@
           "opus": "Opus — kleiner (empfohlen)",
           "wav": "WAV — am kompatibelsten"
         }
+      },
+      "clipboardRestoreDelayRemote": {
+        "title": "Verzögerung der Zwischenablage-Wiederherstellung für Remotedesktops",
+        "description": "Überschreibt die Wiederherstellungsverzögerung, wenn das Fenster, in das Sie diktieren, eine Remotedesktop-Sitzung ist. Standard: nicht gesetzt, erbt also die normale Verzögerung oben. Grund: RDP und Citrix holen Zwischenablage-Daten erst NACH dem Einfügen-Tastendruck ab, über einen langsameren Kanal als eine lokale Anwendung — eine zu frühe Wiederherstellung übergibt der Gegenseite also das, was Sie vorher kopiert hatten. 1 s ist ein sinnvoller Startwert. Ehrliche Kosten: eine längere Wiederherstellung lässt die Transkription länger in Ihrer Zwischenablage, was das Zeitfenster für Zwischenablage-Verlauf und -Manager vergrößert. Welche Fenster als Remote gelten, bestimmt die Liste auf der Jumper-Seite. *{Windows only}*",
+        "inherit": "Nicht gesetzt (Verzögerung von oben verwenden)"
       }
     },
     "postProcessing": {
@@ -974,13 +979,13 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "Ein Sprungziel, dessen App, Fensterklasse oder Steuerelementklasse eines dieser Fragmente enthält (ohne Berücksichtigung der Groß-/Kleinschreibung), wird als Remote-Desktop behandelt und nutzt dann den Remote-Wert von „Paste delay after jump (Windows)“ und „Submit delay after jump (Windows)“ unter Erweitert → Transkription statt des lokalen Werts. Standard: msrdc, mstsc, Citrix. Füge den Prozessnamen deines RDP- oder Citrix-Clients hinzu, wenn Zustellungen dorthin weiterhin verschluckt werden; eine leere Liste behandelt jedes Ziel als lokal.",
+        "description": "Ein Zustellungsziel, dessen App, Fensterklasse oder Steuerelementklasse einen dieser Bestandteile enthält (ohne Groß-/Kleinschreibung), gilt als Remotedesktop und verwendet daher den Remote-Wert von 'Paste delay after jump (Windows)' und 'Submit delay before Enter (Windows)' unter Advanced → Transcription statt des lokalen. Es muss kein Sprungziel mehr sein: seit 1.3.0 wird auch ein bereits fokussiertes Remote-Fenster klassifiziert, und genau dadurch greift dort die Senden-Verzögerung. Standard: msrdc, mstsc, Citrix. Fügen Sie den Prozessnamen Ihres RDP- oder Citrix-Clients hinzu, wenn Zustellungen dorthin weiterhin verschluckt werden; eine leere Liste behandelt jedes Ziel als lokal.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
         "duplicate": "'{{value}}' is already in the list",
         "badge": "Remote ✓",
-        "badgeTooltip": "This target matches a remote match string, so it uses the Remote jump delays."
+        "badgeTooltip": "Dieses Ziel entspricht einer Remote-Zeichenfolge und verwendet daher die Remote-Zeitwerte."
       },
       "windowsOnly": "Der Jumper ist nur unter Windows verfügbar.",
       "hot": {
@@ -1040,10 +1045,6 @@
         "groupTitle": "Verhalten beim Beenden",
         "label": "Nur beim Beenden springen, wenn auf dieselbe Weise gestartet",
         "description": "Ist dies aktiviert, löst die „Slot-Aktion beim Beenden“ eines Ablaufs nur aus, wenn die Aufnahme mit demselben Tastenkürzel gestartet und beendet wurde. Standard: Aus. Beispiel: Startest du mit Transkribieren und beendest mit Transkribieren & Absenden, springt nichts — Einfügen und Absenden laufen trotzdem, nur der Sprung wird blockiert. Aktiviere es, wenn das Mischen der beiden Tastenkürzel dich immer wieder an eine unerwartete Stelle teleportiert."
-      },
-      "directTypingForRemote": {
-        "label": "In Remote-Desktops tippen statt einzufügen",
-        "description": "Wenn das Fenster, in das du diktierst, eine Remote-Desktop-Sitzung ist, wird der Text als simulierte Tastenanschläge statt über die Zwischenablage zugestellt. Standard: Ein. Warum das wichtig ist: Eine Einfügemethode über die Zwischenablage muss die Transkription in deine Zwischenablage legen. Die Zwischenablagenumleitung von RDP oder Citrix kopiert sie dann in die Zwischenablage des REMOTE-COMPUTERS — eine separate Zwischenablage auf einem separaten Computer, die im Zwischenablageverlauf dieses Computers aufbewahrt wird. Die anschließende Wiederherstellung deiner eigenen Zwischenablage kann sie nicht erreichen. Beim Tippen wird auf keiner Seite eine Zwischenablage berührt. Ehrliche Einschränkungen: Getippter Text kann Autovervollständigung, automatisches Schließen von Klammern und IME-Verhalten auslösen, die beim Einfügen nicht auftreten, und er kommt in vielen Rückgängig-Schritten statt in einem an. Der Text wird in kleinen Blöcken gesendet, damit die Remote-Sitzung mithalten kann. Dies verhindert nur zukünftige Datenlecks — Transkriptionen, die bereits im Zwischenablageverlauf des Remote-Computers liegen, können nicht entfernt werden. Welche Fenster als remote gelten, bestimmt die obige Trefferliste. Wird nicht angewendet, wenn die Zwischenablage-Behandlung auf „In Zwischenablage kopieren“ steht: Dabei bleibt die Transkription absichtlich in Ihrer Zwischenablage, sodass die Umleitung sie ohnehin überträgt und das Tippen nur seine Nachteile brächte. Ebenso wenig gilt sie für eine Transkription mit Zeilenumbrüchen: Beim Tippen muss jeder Umbruch als Eingabetaste gesendet werden, was in einem Chatfeld die Nachricht abschickt und in einem Formular absendet. Mehrzeilige Transkriptionen behalten daher Ihre Einfügemethode und gelangen in die Zwischenablage des Remote-Rechners. *{Windows only}*"
       }
     },
     "translator": {

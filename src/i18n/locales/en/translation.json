@@ -351,14 +351,14 @@
         },
         "jumperPasteDelay": {
           "title": "Paste delay after jump (Windows)",
-          "description": "Extra wait after a jump brings the target window to the front and before the paste keystroke fires, because a window activated a heartbeat ago still swallows keystrokes. Defaults: Local apps 250 ms, Remote desktop 1 s — which column applies is decided by Remote match strings on the Jumper page. It only ever runs on a real jump; when you are already in the target, pasting stays instant, and both dropdowns are shared by Transcribe and Transcribe & Submit.",
+          "description": "Extra wait after a jump brings the target window to the front and before the paste keystroke fires, because a window activated a heartbeat ago still swallows keystrokes. Defaults: Local apps 300 ms, Remote desktop 600 ms — which column applies is decided by Remote match strings on the Jumper page. It only ever runs on a real jump; when you are already in the target, pasting stays instant, and both dropdowns are shared by Transcribe and Transcribe & Submit.",
           "options": {
             "none": "Off (instant)"
           }
         },
         "jumperSubmitDelay": {
-          "title": "Submit delay after jump (Windows)",
-          "description": "Extra wait between the paste and the submit key when the delivery had to jump, because the freshly activated window may still be committing the pasted text and loses the Enter. Defaults: Local apps 250 ms, Remote desktop 500 ms — Remote match strings on the Jumper page decides which one applies. It runs only after a real jump; if you were already in the target, submitting stays instant.",
+          "title": "Submit delay before Enter (Windows)",
+          "description": "Extra wait between delivering the text and pressing the submit key, because a target that is still committing the text loses the Enter. Defaults: Local apps 300 ms, Remote desktop 600 ms - Remote match strings on the Jumper page decides which applies. It runs after a real jump, and always for a remote desktop target even when you were already in it, because a remote session needs a round trip to commit the text whether or not Handy activated the window. Only an already-focused local target submits instantly. Changed in 1.3.0: before that an already-focused remote target waited not at all, so the Enter could fire while the text was still in flight and submit a partial dictation.",
           "options": {
             "none": "Off (instant)"
           }
@@ -448,13 +448,13 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "A jump target whose app, window class, or control class contains one of these fragments (case-insensitive) is treated as a remote desktop, so it uses the Remote value of 'Paste delay after jump (Windows)' and 'Submit delay after jump (Windows)' on Advanced → Transcription instead of the Local one. Default: msrdc, mstsc, Citrix. Add the process name your RDP or Citrix client uses if deliveries into it keep getting swallowed; an empty list treats every target as local.",
+        "description": "A delivery target whose app, window class, or control class contains one of these fragments (case-insensitive) is treated as a remote desktop, so it uses the Remote value of 'Paste delay after jump (Windows)' and 'Submit delay before Enter (Windows)' on Advanced → Transcription instead of the Local one. It no longer has to be a jump target: since 1.3.0 an already-focused remote window is classified too, which is what makes the submit delay apply there. Default: msrdc, mstsc, Citrix. Add the process name your RDP or Citrix client uses if deliveries into it keep getting swallowed; an empty list treats every target as local.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
         "duplicate": "'{{value}}' is already in the list",
         "badge": "Remote ✓",
-        "badgeTooltip": "This target matches a remote match string, so it uses the Remote jump delays."
+        "badgeTooltip": "This target matches a remote match string, so it uses the Remote timing values."
       },
       "hot": {
         "title": "Hot slot (Anchor & Deliver)",
@@ -513,10 +513,6 @@
         "groupTitle": "On-finish behavior",
         "label": "Only jump on finish if started the same way",
         "description": "When on, a flow's 'Jump slot action on finish' fires only if the take was started and finished with the same shortcut. Default: Off. Example: start with Transcribe and finish with Transcribe & Submit and you get no jump — the paste and the submit still happen, only the jump is gated. Turn it on if mixing the two shortcuts keeps teleporting you somewhere unexpected."
-      },
-      "directTypingForRemote": {
-        "label": "Type into remote desktops instead of pasting",
-        "description": "When the window you are dictating into is a remote desktop session, deliver the text as simulated keystrokes rather than through the clipboard. Default: on. Why it matters: a clipboard paste method has to put the transcript on your clipboard, and RDP or Citrix clipboard redirection then copies it across to the REMOTE machine's clipboard — a separate clipboard on a separate computer, kept in that machine's clipboard history. Restoring your own clipboard afterwards cannot reach it. Typing never touches a clipboard on either side. Honest limits: typed text can trigger autocomplete, bracket auto-closing and IME behaviour that a paste does not, and it arrives as many undo steps rather than one. Text is sent in small batches so a remote session can keep up. This prevents future leaks only — it cannot remove transcripts already sitting in the remote machine's clipboard history. Which windows count as remote is controlled by the match list above. Not applied when Clipboard handling is set to Copy to Clipboard: that deliberately leaves the transcript on your clipboard after delivery, so redirection carries it across either way and typing would cost you its downsides for nothing. It also does not apply to a transcript containing line breaks: typing has to send each line break as an Enter key press, which sends the message in a chat box and submits in a form, so multi-line transcripts keep your paste method and do reach the remote clipboard. *{Windows only}*"
       }
     },
     "translator": {
@@ -912,6 +908,11 @@
           "opus": "Opus — smaller (recommended)",
           "wav": "WAV — most compatible"
         }
+      },
+      "clipboardRestoreDelayRemote": {
+        "title": "Clipboard restore delay for remote desktops",
+        "description": "Overrides the clipboard restore delay when the window you are dictating into is a remote desktop session. Default: not set, which inherits the normal delay above. Why it exists: RDP and Citrix fetch clipboard data on demand AFTER the paste keystroke arrives, over a slower channel than a local application, so restoring too early hands the remote app whatever you had copied before. 1 s is a sensible starting point. Honest cost: a longer restore leaves the transcript on your clipboard for longer, which widens the window in which clipboard history and clipboard managers can capture it. Which windows count as remote comes from the match list on the Jumper page. *{Windows only}*",
+        "inherit": "Not set (use the delay above)"
       }
     },
     "postProcessing": {

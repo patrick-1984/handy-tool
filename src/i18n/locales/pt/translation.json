@@ -291,14 +291,14 @@
         },
         "jumperPasteDelay": {
           "title": "Paste delay after jump (Windows)",
-          "description": "Espera extra depois que um salto traz a janela de destino para a frente e antes que a tecla de colar seja enviada, porque uma janela ativada há pouco ainda pode engolir teclas. Padrões: Local apps 250 ms, Remote desktop 1 s — qual coluna se aplica é decidido por Remote match strings na página Saltos. Só ocorre em um salto real; quando você já está no destino, colar permanece instantâneo, e os dois menus são compartilhados por Transcrever e Transcrever e Enviar.",
+          "description": "Espera extra depois que um salto traz a janela de destino para a frente e antes que a tecla de colar seja enviada, porque uma janela ativada há pouco ainda pode engolir teclas. Padrões: Local apps 300 ms, Remote desktop 600 ms — qual coluna se aplica é decidido por Remote match strings na página Saltos. Só ocorre em um salto real; quando você já está no destino, colar permanece instantâneo, e os dois menus são compartilhados por Transcrever e Transcrever e Enviar.",
           "options": {
             "none": "Off (instant)"
           }
         },
         "jumperSubmitDelay": {
-          "title": "Submit delay after jump (Windows)",
-          "description": "Espera extra entre colar e pressionar a tecla de envio quando a entrega precisou saltar, porque a janela recém-ativada ainda pode estar processando o texto colado e perder o Enter. Padrões: Local apps 250 ms, Remote desktop 500 ms — Remote match strings, na página Saltos, decide qual se aplica. Só ocorre depois de um salto real; se você já estava no destino, o envio permanece instantâneo.",
+          "title": "Atraso de envio antes do Enter (Windows)",
+          "description": "Espera adicional entre a entrega do texto e a tecla de envio, porque um destino que ainda está a confirmar o texto perde o Enter. Predefinição: aplicações locais 300 ms, ambiente de trabalho remoto 600 ms - a lista de correspondências na página Jumper decide qual se aplica. Corre depois de um salto real e sempre para um destino de ambiente de trabalho remoto, mesmo que já estivesse nele, porque uma sessão remota precisa de uma ida e volta para confirmar o texto, tenha o Handy activado a janela ou não. Só um destino local já em primeiro plano envia instantaneamente. Alterado em 1.3.0: antes, um destino remoto já em primeiro plano não esperava nada, pelo que o Enter podia disparar com o texto ainda em trânsito e enviar um ditado parcial.",
           "options": {
             "none": "Off (instant)"
           }
@@ -770,6 +770,11 @@
           "opus": "Opus — menor (recomendado)",
           "wav": "WAV — mais compatível"
         }
+      },
+      "clipboardRestoreDelayRemote": {
+        "title": "Atraso de restauro da área de transferência para ambientes de trabalho remotos",
+        "description": "Substitui o atraso de restauro quando a janela para a qual está a ditar é uma sessão de ambiente de trabalho remoto. Predefinição: não definido, ou seja, herda o atraso normal acima. Porque existe: o RDP e o Citrix pedem os dados da área de transferência DEPOIS de a tecla de colar chegar, por um canal mais lento do que uma aplicação local, pelo que restaurar demasiado cedo entrega à aplicação remota o que tinha copiado antes. 1 s é um bom ponto de partida. Custo honesto: um restauro mais longo deixa a transcrição na área de transferência durante mais tempo, alargando a janela em que o histórico e os gestores a podem capturar. Quais as janelas que contam como remotas vem da lista na página Jumper. *{Windows only}*",
+        "inherit": "Não definido (usar o atraso acima)"
       }
     },
     "postProcessing": {
@@ -974,13 +979,13 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "Um destino de salto cujo aplicativo, classe de janela ou classe de controle contiver um destes fragmentos (sem diferenciar maiúsculas/minúsculas) é tratado como uma área de trabalho remota, então usa o valor Remote de 'Paste delay after jump (Windows)' e 'Submit delay after jump (Windows)', em Avançado → Transcrição, em vez do valor Local. Padrão: msrdc, mstsc, Citrix. Adicione o nome do processo que o seu cliente RDP ou Citrix usa se as entregas nele continuarem sendo engolidas; uma lista vazia trata todo destino como local.",
+        "description": "Um destino de entrega cuja aplicação, classe de janela ou classe de controlo contenha um destes fragmentos (sem distinguir maiúsculas) é tratado como ambiente de trabalho remoto, pelo que usa o valor Remoto de 'Paste delay after jump (Windows)' e 'Submit delay before Enter (Windows)' em Advanced → Transcription em vez do Local. Já não tem de ser um destino de salto: desde a 1.3.0 uma janela remota já em primeiro plano também é classificada, e é isso que faz o atraso de envio aplicar-se ali. Predefinição: msrdc, mstsc, Citrix. Adicione o nome do processo do seu cliente RDP ou Citrix se as entregas continuarem a perder-se; uma lista vazia trata todos os destinos como locais.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
         "duplicate": "'{{value}}' is already in the list",
         "badge": "Remote ✓",
-        "badgeTooltip": "This target matches a remote match string, so it uses the Remote jump delays."
+        "badgeTooltip": "Este destino corresponde a uma cadeia remota, pelo que usa os valores de tempo Remoto."
       },
       "windowsOnly": "Os saltos estão disponíveis apenas no Windows.",
       "hot": {
@@ -1040,10 +1045,6 @@
         "groupTitle": "Comportamento ao finalizar",
         "label": "Só saltar ao finalizar se iniciado da mesma forma",
         "description": "Quando ativado, a 'Ação do slot de salto ao finalizar' de um fluxo só é disparada se a gravação tiver sido iniciada e finalizada com o mesmo atalho. Padrão: Desligado. Exemplo: iniciar com Transcrever e finalizar com Transcrever e Enviar não gera salto — colar e enviar ainda acontecem, apenas o salto é bloqueado. Ative se alternar entre os dois atalhos continuar te teleportando para algum lugar inesperado."
-      },
-      "directTypingForRemote": {
-        "label": "Digitar em áreas de trabalho remotas em vez de colar",
-        "description": "Quando a janela em que você está ditando é uma sessão de área de trabalho remota, o texto é entregue como pressionamentos de tecla simulados em vez de passar pela área de transferência. Padrão: ativado. Por que isso importa: um método de colar pela área de transferência precisa colocar a transcrição na sua área de transferência, e o redirecionamento da área de transferência do RDP ou Citrix então a copia para a área de transferência da máquina REMOTA — uma área de transferência separada em outro computador, mantida no histórico da área de transferência dessa máquina. Restaurar depois a sua própria área de transferência não consegue alcançá-la. A digitação não toca na área de transferência de nenhum dos lados. Limites reais: o texto digitado pode acionar preenchimento automático, fechamento automático de parênteses e comportamentos de IME que uma colagem não aciona, e chega como várias etapas de desfazer em vez de uma. O texto é enviado em pequenos lotes para que a sessão remota consiga acompanhar. Isso evita apenas vazamentos futuros — não pode remover transcrições que já estejam no histórico da área de transferência da máquina remota. A lista de correspondências acima controla quais janelas são consideradas remotas. Não se aplica quando o tratamento da área de transferência está em «Copiar para Área de Transferência»: isso deixa a transcrição lá de propósito após a entrega, portanto o redirecionamento leva-a de qualquer forma e digitar só traria as suas desvantagens. Também não se aplica a uma transcrição com quebras de linha: ao escrever, cada quebra tem de ser enviada como uma tecla Enter, o que envia a mensagem numa caixa de conversa e submete um formulário; as transcrições de várias linhas mantêm assim o seu método de colagem e chegam à área de transferência remota. *{Windows only}*"
       }
     },
     "translator": {

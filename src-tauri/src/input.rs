@@ -380,6 +380,32 @@ pub fn paste_text_direct(
         Ok(())
     }
 
+    // Return/Tab used to be injected with NO pacing and without setting the
+    // "something was injected" flag. So a blank line emitted two Enter presses
+    // back to back at machine speed, and the character right after a line break
+    // followed instantly. Over a remote session that is exactly the burst that
+    // arrives out of order or not at all -- the reported "unexpected line
+    // breaks". A line break is an injection like any other and gets the same
+    // pause.
+    fn send_key_paced(
+        enigo: &mut Enigo,
+        key: Key,
+        label: &str,
+        injected_anything: &mut bool,
+        chunk_delay_ms: u64,
+        still_valid: Option<DeliveryStillValid<'_>>,
+    ) -> Result<(), String> {
+        if *injected_anything && chunk_delay_ms > 0 {
+            std::thread::sleep(std::time::Duration::from_millis(chunk_delay_ms));
+        }
+        check(still_valid, *injected_anything)?;
+        enigo
+            .key(key, enigo::Direction::Click)
+            .map_err(|e| format!("Failed to send {}: {}", label, e))?;
+        *injected_anything = true;
+        Ok(())
+    }
+
     // Flush the accumulated ordinary-text run, split into chunk_chars batches.
     // Splitting is by CHARACTER, never by byte, so a multi-byte character can
     // never be torn in half. Surrogate pairs are formed inside enigo from a
@@ -439,10 +465,14 @@ pub fn paste_text_direct(
                     &mut sent_a_batch,
                     still_valid,
                 )?;
-                check(still_valid, sent_a_batch)?;
-                enigo
-                    .key(Key::Return, enigo::Direction::Click)
-                    .map_err(|e| format!("Failed to send Return: {}", e))?;
+                send_key_paced(
+                    enigo,
+                    Key::Return,
+                    "Return",
+                    &mut sent_a_batch,
+                    chunk_delay_ms,
+                    still_valid,
+                )?;
             }
             // enigo returns Err on a NUL; it cannot be typed. Drop it rather
             // than failing the whole delivery.
@@ -456,10 +486,14 @@ pub fn paste_text_direct(
                     &mut sent_a_batch,
                     still_valid,
                 )?;
-                check(still_valid, sent_a_batch)?;
-                enigo
-                    .key(Key::Return, enigo::Direction::Click)
-                    .map_err(|e| format!("Failed to send Return: {}", e))?;
+                send_key_paced(
+                    enigo,
+                    Key::Return,
+                    "Return",
+                    &mut sent_a_batch,
+                    chunk_delay_ms,
+                    still_valid,
+                )?;
             }
             '\t' => {
                 flush(
@@ -470,10 +504,14 @@ pub fn paste_text_direct(
                     &mut sent_a_batch,
                     still_valid,
                 )?;
-                check(still_valid, sent_a_batch)?;
-                enigo
-                    .key(Key::Tab, enigo::Direction::Click)
-                    .map_err(|e| format!("Failed to send Tab: {}", e))?;
+                send_key_paced(
+                    enigo,
+                    Key::Tab,
+                    "Tab",
+                    &mut sent_a_batch,
+                    chunk_delay_ms,
+                    still_valid,
+                )?;
             }
             _ => run.push(ch),
         }

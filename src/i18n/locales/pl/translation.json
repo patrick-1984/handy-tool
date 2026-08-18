@@ -309,14 +309,14 @@
         },
         "jumperPasteDelay": {
           "title": "Paste delay after jump (Windows)",
-          "description": "Dodatkowe oczekiwanie po tym, jak skok przywoła okno docelowe na wierzch, a przed wywołaniem klawisza wklejania, ponieważ okno aktywowane chwilę wcześniej wciąż może „przełykać” naciśnięcia klawiszy. Wartości domyślne: Local apps 250 ms, Remote desktop 1 s — o tym, która wartość obowiązuje, decyduje Remote match strings na stronie Skoki. Działa tylko przy prawdziwym skoku; jeśli byłeś już w miejscu docelowym, wklejanie pozostaje natychmiastowe, a obie listy rozwijane są współdzielone przez Transkrybuj i Transkrybuj i wyślij.",
+          "description": "Dodatkowe oczekiwanie po tym, jak skok przywoła okno docelowe na wierzch, a przed wywołaniem klawisza wklejania, ponieważ okno aktywowane chwilę wcześniej wciąż może „przełykać” naciśnięcia klawiszy. Wartości domyślne: Local apps 300 ms, Remote desktop 600 ms — o tym, która wartość obowiązuje, decyduje Remote match strings na stronie Skoki. Działa tylko przy prawdziwym skoku; jeśli byłeś już w miejscu docelowym, wklejanie pozostaje natychmiastowe, a obie listy rozwijane są współdzielone przez Transkrybuj i Transkrybuj i wyślij.",
           "options": {
             "none": "Off (instant)"
           }
         },
         "jumperSubmitDelay": {
-          "title": "Submit delay after jump (Windows)",
-          "description": "Dodatkowe oczekiwanie między wklejeniem a klawiszem wysyłania, gdy dostarczenie wymagało skoku, ponieważ świeżo aktywowane okno może wciąż przetwarzać wklejony tekst i zgubić Enter. Wartości domyślne: Local apps 250 ms, Remote desktop 500 ms — o tym, która wartość obowiązuje, decyduje Remote match strings na stronie Skoki. Działa tylko po prawdziwym skoku; jeśli byłeś już w miejscu docelowym, wysyłanie pozostaje natychmiastowe.",
+          "title": "Opóźnienie wysłania przed Enter (Windows)",
+          "description": "Dodatkowe oczekiwanie między dostarczeniem tekstu a naciśnięciem klawisza wysyłania, ponieważ cel, który wciąż zatwierdza tekst, gubi Enter. Domyślnie: aplikacje lokalne 300 ms, pulpit zdalny 600 ms - który z nich obowiązuje, decyduje lista na stronie Jumper. Działa po prawdziwym skoku i zawsze dla celu na pulpicie zdalnym, nawet jeśli już w nim byłeś, bo sesja zdalna potrzebuje pełnego obiegu, aby zatwierdzić tekst, niezależnie od tego, czy Handy aktywował okno. Natychmiast wysyła tylko już aktywny cel lokalny. Zmiana w 1.3.0: wcześniej już aktywny cel zdalny nie czekał wcale, więc Enter mógł zadziałać, gdy tekst był jeszcze w drodze, i wysłać niepełne dyktowanie.",
           "options": {
             "none": "Off (instant)"
           }
@@ -770,6 +770,11 @@
           "opus": "Opus — mniejszy (polecane)",
           "wav": "WAV — najbardziej kompatybilny"
         }
+      },
+      "clipboardRestoreDelayRemote": {
+        "title": "Opóźnienie przywracania schowka dla pulpitów zdalnych",
+        "description": "Zastępuje opóźnienie przywracania schowka, gdy okno, do którego dyktujesz, jest sesją pulpitu zdalnego. Domyślnie: nieustawione, czyli dziedziczy zwykłe opóźnienie powyżej. Dlaczego istnieje: RDP i Citrix pobierają dane schowka na żądanie PO nadejściu klawisza wklejania, kanałem wolniejszym niż aplikacja lokalna, więc zbyt wczesne przywrócenie podaje aplikacji zdalnej to, co skopiowałeś wcześniej. 1 s to sensowny punkt wyjścia. Uczciwy koszt: dłuższe przywracanie zostawia transkrypcję w schowku na dłużej, co poszerza okno, w którym historia schowka i menedżery mogą ją przechwycić. Które okna liczą się jako zdalne, określa lista na stronie Jumper. *{Windows only}*",
+        "inherit": "Nieustawione (użyj opóźnienia powyżej)"
       }
     },
     "postProcessing": {
@@ -974,13 +979,13 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "Cel skoku, którego aplikacja, klasa okna lub klasa kontrolki zawiera jeden z tych fragmentów (bez uwzględniania wielkości liter), jest traktowany jako sesja zdalna, więc korzysta z wartości Remote w „Paste delay after jump (Windows)” i „Submit delay after jump (Windows)” na stronie Zaawansowane → Transkrypcja, a nie z wartości Local. Domyślnie: msrdc, mstsc, Citrix. Dodaj nazwę procesu używanego przez Twojego klienta RDP lub Citrix, jeśli dostarczenia do niego wciąż są gubione; pusta lista traktuje każdy cel jako lokalny.",
+        "description": "Cel dostarczenia, którego aplikacja, klasa okna lub klasa kontrolki zawiera jeden z tych fragmentów (bez uwzględniania wielkości liter), jest traktowany jako pulpit zdalny, więc używa wartości Zdalnej z 'Paste delay after jump (Windows)' i 'Submit delay before Enter (Windows)' w Advanced → Transcription zamiast Lokalnej. Nie musi już być celem skoku: od 1.3.0 klasyfikowane jest także już aktywne okno zdalne, i właśnie dzięki temu opóźnienie wysłania tam obowiązuje. Domyślnie: msrdc, mstsc, Citrix. Dodaj nazwę procesu swojego klienta RDP lub Citrix, jeśli dostarczenia do niego nadal przepadają; pusta lista traktuje każdy cel jako lokalny.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
         "duplicate": "'{{value}}' is already in the list",
         "badge": "Remote ✓",
-        "badgeTooltip": "This target matches a remote match string, so it uses the Remote jump delays."
+        "badgeTooltip": "Ten cel pasuje do zdalnego wzorca, więc używa zdalnych wartości czasu."
       },
       "windowsOnly": "Skoki są dostępne tylko w systemie Windows.",
       "hot": {
@@ -1040,10 +1045,6 @@
         "groupTitle": "Zachowanie po zakończeniu",
         "label": "Skacz po zakończeniu tylko przy tym samym skrócie",
         "description": "Gdy włączone, „Akcja slotu skoku po zakończeniu” danego przepływu uruchamia się tylko, jeśli nagranie zostało rozpoczęte i zakończone tym samym skrótem. Domyślnie: Wyłączone. Przykład: rozpoczęcie Transkrybuj i zakończenie Transkrybuj i wyślij nie wywoła skoku — wklejenie i wysłanie wciąż się odbywają, ograniczony jest tylko skok. Włącz, jeśli mieszanie tych dwóch skrótów wciąż przenosi Cię gdzieś niespodziewanie."
-      },
-      "directTypingForRemote": {
-        "label": "Wpisuj na zdalnych pulpitach zamiast wklejać",
-        "description": "Gdy okno, do którego dyktujesz, jest sesją pulpitu zdalnego, tekst jest dostarczany jako symulowane naciśnięcia klawiszy zamiast przez schowek. Domyślnie: włączone. Dlaczego to ważne: metoda wklejania przez schowek musi umieścić transkrypcję w Twoim schowku, a przekierowanie schowka RDP lub Citrix kopiuje ją następnie do schowka ZDALNEGO komputera — osobnego schowka na osobnym komputerze, przechowywanego w historii schowka tego komputera. Późniejsze przywrócenie własnego schowka nie może do niego dotrzeć. Wpisywanie nie dotyka schowka po żadnej ze stron. Uczciwe ograniczenia: wpisywany tekst może uruchamiać autouzupełnianie, automatyczne domykanie nawiasów i zachowanie IME, których nie wywołuje wklejanie, oraz trafia jako wiele kroków cofania zamiast jednego. Tekst jest wysyłany małymi partiami, aby sesja zdalna mogła nadążyć. Zapobiega to tylko przyszłym wyciekom — nie może usunąć transkrypcji już znajdujących się w historii schowka zdalnego komputera. Lista dopasowań powyżej określa, które okna są uznawane za zdalne. Nie działa, gdy Obsługa schowka jest ustawiona na „Kopiuj do schowka“: to celowo zostawia transkrypcję w schowku po dostarczeniu, więc przekierowanie i tak przeniesie ją dalej, a pisanie przyniosłoby wyłącznie swoje wady. Nie dotyczy też transkrypcji zawierającej złamania wierszy: pisanie musi wysłać każde złamanie jako naciśnięcie Enter, co w oknie czatu wysyła wiadomość, a w formularzu go zatwierdza. Transkrypcje wielowierszowe zachowują więc wybraną metodę wklejania i trafiają do zdalnego schowka. *{Windows only}*"
       }
     },
     "translator": {

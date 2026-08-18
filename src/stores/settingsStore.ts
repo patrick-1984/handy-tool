@@ -164,6 +164,10 @@ const settingUpdaters: {
     commands.changeSubmitClipboardHandlingSetting(value as string),
   clipboard_restore_delay: (value) =>
     commands.changeClipboardRestoreDelaySetting(value as string),
+  clipboard_restore_delay_remote: (value) =>
+    commands.changeClipboardRestoreDelayRemoteSetting(
+      (value as string | null) ?? "",
+    ),
   submit_clipboard_restore_delay: (value) =>
     commands.changeSubmitClipboardRestoreDelaySetting(value as string),
   jumper_submit_delay: (value) =>
@@ -234,8 +238,6 @@ const settingUpdaters: {
     commands.changeMuteWhileRecordingSetting(value as boolean),
   append_trailing_space: (value) =>
     commands.changeAppendTrailingSpaceSetting(value as boolean),
-  direct_typing_for_remote_targets: (value) =>
-    commands.changeDirectTypingForRemoteTargetsSetting(value as boolean),
   typing_chunk_chars: (value) =>
     commands.changeTypingChunkCharsSetting(value as number),
   typing_chunk_delay_ms: (value) =>

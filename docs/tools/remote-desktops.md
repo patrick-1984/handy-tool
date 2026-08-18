@@ -36,5 +36,5 @@ Tune remote delivery only after the same flow works in a local application. Your
 2. Give the activated remote target time before a plain paste at `Advanced › Transcription › Transcribe › Paste delay after jump (Windows) = 600 ms` *{Windows only}*.
 3. Give Citrix or RDP time to fetch the clipboard at `Advanced › Transcription › Transcribe › Clipboard restore delay = 1 s`.
 4. For the sending flow, delay its paste at `Advanced › Transcription › Transcribe & Submit › Paste delay after jump (Windows) = 600 ms` *{Windows only}*.
-5. Delay its submit separately at `Advanced › Transcription › Transcribe & Submit › Submit delay after jump (Windows) = 600 ms` *{Windows only}*.
+5. Delay its submit separately at `Advanced › Transcription › Transcribe & Submit › Submit delay before Enter (Windows) = 600 ms` *{Windows only}*.
 6. Test with harmless text, then shorten or lengthen one delay at a time until the target is reliable.

@@ -40,8 +40,12 @@ export const JumperDelaySetting: React.FC<JumperDelaySettingProps> = React.memo(
       kind === "paste"
         ? "jumper_paste_delay_remote"
         : "jumper_submit_delay_remote";
-    const localDefault = "ms250";
-    const remoteDefault = kind === "paste" ? "ms1000" : "ms500";
+    // Must match settings.rs, which is authoritative: JumperPasteDelay and
+    // JumperSubmitDelay both default to Ms300, and both *_remote defaults are
+    // Ms600. These fallbacks are only reached before the store has loaded, but
+    // a wrong value here is shown to the user as if it were their setting.
+    const localDefault = "ms300";
+    const remoteDefault = "ms600";
 
     const localValue = (getSetting(localKey) || localDefault) as
       | JumperPasteDelay

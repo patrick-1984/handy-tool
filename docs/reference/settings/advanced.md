@@ -108,6 +108,14 @@ Adds a wait before restoring clipboard text; it matters only with [Clipboard Han
 Catalog: [Your remote session pastes the right thing](../../features.md#your-remote-session-pastes-the-right-thing).
 
 <a id="transcribe-paste-delay-after-jump-windows"></a>
+#### Clipboard restore delay for remote desktops
+
+`Advanced › Transcription › Transcribe › Clipboard restore delay for remote desktops` *{Windows only}*
+
+Overrides the restore delay when the delivery target is classified remote by [Remote match strings](jumper.md#remote-match-strings). `Not set` inherits the value above — and is the default, so this control changes nothing until you pick a value. The remaining choices match the delay above. Raising it trades exposure for reliability: the transcript stays on your clipboard longer. **Default:** `Not set`.
+
+Catalog: [A remote paste gets the right clipboard, not the one before it](../../features.md#a-remote-paste-gets-the-right-clipboard).
+
 #### Paste delay after jump (Windows)
 
 `Advanced › Transcription › Transcribe › Paste delay after jump (Windows)` *{Windows only}*
@@ -212,11 +220,11 @@ Shows the same shared local and remote paste-delay values as the Transcribe grou
 
 Catalog: [The paste is swallowed right after a jump](../../features.md#the-paste-is-swallowed-right-after-a-jump).
 
-#### Submit delay after jump (Windows)
+#### Submit delay before Enter (Windows)
 
-`Advanced › Transcription › Transcribe & Submit › Submit delay after jump (Windows)` *{Windows only}*
+`Advanced › Transcription › Transcribe & Submit › Submit delay before Enter (Windows)` *{Windows only}*
 
-Waits before sending the submit key after a real jump; [Remote match strings](jumper.md#remote-match-strings) selects the timing. The choices are `Off`, `100`, `200`, `300`, `400`, `500`, `600`, `700`, `800`, `900`, `1000`, `1500`, and `2000` ms. **Default:** Local apps `300 ms`; Remote desktop `600 ms`.
+Waits before sending the submit key. It applies after a real jump, and always for a remote desktop target even when that window was already focused; an already-focused local target submits instantly. [Remote match strings](jumper.md#remote-match-strings) selects the timing. Changed in 1.3.0 - before that an already-focused remote target got no wait at all. The choices are `Off`, `100`, `200`, `300`, `400`, `500`, `600`, `700`, `800`, `900`, `1000`, `1500`, and `2000` ms. **Default:** Local apps `300 ms`; Remote desktop `600 ms`.
 
 Catalog: [The Enter key lands in the remote window](../../features.md#the-enter-key-lands-in-the-remote-window).
 

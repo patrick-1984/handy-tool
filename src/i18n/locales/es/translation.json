@@ -309,14 +309,14 @@
         },
         "jumperPasteDelay": {
           "title": "Paste delay after jump (Windows)",
-          "description": "Espera adicional después de que un salto trae al frente la ventana de destino y antes de que se dispare la pulsación de pegado, porque una ventana activada hace un instante todavía puede tragarse las pulsaciones. Predeterminados: apps locales 250 ms, escritorio remoto 1 s; qué columna se aplica lo decide 'Remote match strings' en la página Jumper. Solo se ejecuta en un salto real; cuando ya estás en el destino, pegar sigue siendo instantáneo, y ambos desplegables los comparten Transcribir y Transcribir y Enviar.",
+          "description": "Espera adicional después de que un salto trae al frente la ventana de destino y antes de que se dispare la pulsación de pegado, porque una ventana activada hace un instante todavía puede tragarse las pulsaciones. Predeterminados: apps locales 300 ms, escritorio remoto 600 ms; qué columna se aplica lo decide 'Remote match strings' en la página Jumper. Solo se ejecuta en un salto real; cuando ya estás en el destino, pegar sigue siendo instantáneo, y ambos desplegables los comparten Transcribir y Transcribir y Enviar.",
           "options": {
             "none": "Off (instant)"
           }
         },
         "jumperSubmitDelay": {
-          "title": "Submit delay after jump (Windows)",
-          "description": "Espera adicional entre el pegado y la tecla de envío cuando la entrega tuvo que saltar, porque la ventana recién activada puede seguir confirmando el texto pegado y perderse el Enter. Predeterminados: apps locales 250 ms, escritorio remoto 500 ms; 'Remote match strings' en la página Jumper decide cuál se aplica. Solo se ejecuta después de un salto real; si ya estabas en el destino, enviar sigue siendo instantáneo.",
+          "title": "Retardo de envío antes de Intro (Windows)",
+          "description": "Espera adicional entre la entrega del texto y la pulsación de la tecla de envío, porque un destino que todavía está confirmando el texto pierde el Intro. Predeterminado: aplicaciones locales 300 ms, escritorio remoto 600 ms - la lista de coincidencias de la página Jumper decide cuál se aplica. Se ejecuta tras un salto real, y siempre para un destino de escritorio remoto aunque ya estuvieras en él, porque una sesión remota necesita una ida y vuelta para confirmar el texto, tanto si Handy activó la ventana como si no. Solo un destino local ya enfocado envía al instante. Cambiado en 1.3.0: antes, un destino remoto ya enfocado no esperaba nada, así que el Intro podía dispararse con el texto aún en camino y enviar un dictado parcial.",
           "options": {
             "none": "Off (instant)"
           }
@@ -770,6 +770,11 @@
           "opus": "Opus — más pequeño (recomendado)",
           "wav": "WAV — el más compatible"
         }
+      },
+      "clipboardRestoreDelayRemote": {
+        "title": "Retardo de restauración del portapapeles para escritorios remotos",
+        "description": "Sustituye el retardo de restauración cuando la ventana en la que dictas es una sesión de escritorio remoto. Predeterminado: sin definir, es decir, hereda el retardo normal de arriba. Por qué existe: RDP y Citrix piden los datos del portapapeles DESPUÉS de que llega la pulsación de pegado, por un canal más lento que una aplicación local, así que restaurar demasiado pronto le entrega a la aplicación remota lo que tenías copiado antes. 1 s es un punto de partida razonable. Coste honesto: una restauración más larga deja la transcripción en tu portapapeles más tiempo, lo que amplía la ventana en la que el historial y los gestores de portapapeles pueden capturarla. Qué ventanas cuentan como remotas se define en la lista de la página Jumper. *{Windows only}*",
+        "inherit": "Sin definir (usar el retardo de arriba)"
       }
     },
     "postProcessing": {
@@ -974,13 +979,13 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "Un destino de salto cuya app, clase de ventana o clase de control contiene uno de estos fragmentos (sin distinguir mayúsculas) se trata como un escritorio remoto, así que usa el valor Remote de 'Paste delay after jump (Windows)' y 'Submit delay after jump (Windows)' en Avanzado → Transcripción en vez del Local. Predeterminado: msrdc, mstsc, Citrix. Agrega el nombre de proceso que use tu cliente de RDP o Citrix si las entregas hacia él se siguen perdiendo; una lista vacía trata todos los destinos como locales.",
+        "description": "Un destino de entrega cuya aplicación, clase de ventana o clase de control contenga uno de estos fragmentos (sin distinguir mayúsculas) se trata como escritorio remoto, por lo que usa el valor Remoto de 'Paste delay after jump (Windows)' y 'Submit delay before Enter (Windows)' en Advanced → Transcription en lugar del Local. Ya no tiene que ser un destino de salto: desde 1.3.0 también se clasifica una ventana remota ya enfocada, que es lo que hace que allí se aplique el retardo de envío. Predeterminado: msrdc, mstsc, Citrix. Añade el nombre del proceso que use tu cliente RDP o Citrix si las entregas siguen perdiéndose; una lista vacía trata todos los destinos como locales.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
         "duplicate": "'{{value}}' is already in the list",
         "badge": "Remote ✓",
-        "badgeTooltip": "This target matches a remote match string, so it uses the Remote jump delays."
+        "badgeTooltip": "Este destino coincide con una cadena remota, por lo que usa los valores de tiempo Remoto."
       },
       "windowsOnly": "Jumper solo está disponible en Windows.",
       "hot": {
@@ -1040,10 +1045,6 @@
         "groupTitle": "Comportamiento al finalizar",
         "label": "Saltar al finalizar solo si se inició de la misma forma",
         "description": "Cuando está activado, la 'Acción de ranura al finalizar' de un flujo solo se dispara si la toma se inició y terminó con el mismo atajo. Ejemplo: iniciar con Transcribir y terminar con Transcribir y Enviar no produce salto; el pegado y el envío siguen ocurriendo, solo el salto queda condicionado. Actívalo si mezclar los dos atajos te sigue teletransportando a un lugar inesperado."
-      },
-      "directTypingForRemote": {
-        "label": "Escribir en escritorios remotos en vez de pegar",
-        "description": "Cuando la ventana en la que estás dictando es una sesión de escritorio remoto, entrega el texto como pulsaciones simuladas en vez de usar el portapapeles. Predeterminado: activado. Por qué importa: un método de pegado mediante el portapapeles tiene que poner la transcripción en tu portapapeles, y la redirección del portapapeles de RDP o Citrix la copia después al portapapeles de la máquina REMOTA: un portapapeles separado en otro equipo, conservado en el historial del portapapeles de esa máquina. Restaurar después tu propio portapapeles no puede alcanzarlo. La escritura no toca el portapapeles de ninguno de los dos lados. Límites reales: el texto escrito puede activar el autocompletado, el cierre automático de corchetes y el comportamiento del IME que un pegado no activa, y llega como muchos pasos de deshacer en vez de uno. El texto se envía en lotes pequeños para que la sesión remota pueda seguir el ritmo. Esto solo evita filtraciones futuras: no puede eliminar transcripciones que ya estén en el historial del portapapeles de la máquina remota. La lista de coincidencias de arriba controla qué ventanas se consideran remotas. No se aplica cuando la gestión del portapapeles está en «Copiar al Portapapeles»: eso deja la transcripción en tu portapapeles a propósito, así que la redirección la lleva igualmente y escribir solo aportaría sus inconvenientes. Tampoco se aplica a una transcripción con saltos de línea: al escribir, cada salto debe enviarse como una pulsación de Intro, lo que envía el mensaje en un chat y envía el formulario, así que las transcripciones de varias líneas conservan tu método de pegado y sí llegan al portapapeles remoto. *{Windows only}*"
       }
     },
     "translator": {

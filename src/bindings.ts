@@ -280,6 +280,14 @@ async changeSubmitClipboardRestoreDelaySetting(delay: string) : Promise<Result<n
     else return { status: "error", error: e  as any };
 }
 },
+async changeClipboardRestoreDelayRemoteSetting(delay: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_clipboard_restore_delay_remote_setting", { delay }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async changeJumperSubmitDelaySetting(delay: string) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("change_jumper_submit_delay_setting", { delay }) };
@@ -699,14 +707,6 @@ async changeMuteWhileRecordingSetting(enabled: boolean) : Promise<Result<null, s
 async changeAppendTrailingSpaceSetting(enabled: boolean) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("change_append_trailing_space_setting", { enabled }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
-async changeDirectTypingForRemoteTargetsSetting(enabled: boolean) : Promise<Result<null, string>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("change_direct_typing_for_remote_targets_setting", { enabled }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -1463,7 +1463,7 @@ async isLaptop() : Promise<Result<boolean, string>> {
 
 /** user-defined types **/
 
-export type AppSettings = { bindings: Partial<{ [key in string]: ShortcutBinding }>; push_to_talk: boolean; audio_feedback: boolean; audio_feedback_volume?: number; sound_theme?: SoundTheme; start_hidden?: boolean; autostart_enabled?: boolean; portable_autostart_consent?: PortableAutostartConsent; automatic_update_checks?: boolean; automatic_silent_updates?: boolean; silent_update_time_local?: string; silent_update_jitter_minutes?: number; typing_start_delay_secs?: number; typing_key_delay_ms?: number; direct_typing_for_remote_targets?: boolean; typing_chunk_chars?: number; typing_chunk_delay_ms?: number; selected_model?: string;
+export type AppSettings = { bindings: Partial<{ [key in string]: ShortcutBinding }>; push_to_talk: boolean; audio_feedback: boolean; audio_feedback_volume?: number; sound_theme?: SoundTheme; start_hidden?: boolean; autostart_enabled?: boolean; portable_autostart_consent?: PortableAutostartConsent; automatic_update_checks?: boolean; automatic_silent_updates?: boolean; silent_update_time_local?: string; silent_update_jitter_minutes?: number; typing_start_delay_secs?: number; typing_key_delay_ms?: number; typing_chunk_chars?: number; typing_chunk_delay_ms?: number; selected_model?: string;
 /**
  * Vulkan GPU device selection for local Whisper transcription (T-212).
  * Sentinel-encoded rather than a parallel accelerator enum: `-1`
@@ -1524,7 +1524,7 @@ mcp_server_port?: number;
 /**
  * Bearer token guarding the MCP/CLI server. Generated on first enable.
  */
-mcp_server_token?: string; submit_paste_method?: PasteMethod; submit_key?: AutoSubmitKey; submit_idle_behavior?: SubmitIdleBehavior; cancel_behavior?: CancelBehavior; submit_clipboard_handling?: ClipboardHandling; clipboard_restore_delay?: ClipboardRestoreDelay; submit_clipboard_restore_delay?: ClipboardRestoreDelay; jumper_submit_delay?: JumperSubmitDelay; jumper_paste_delay?: JumperPasteDelay; jumper_submit_delay_remote?: JumperSubmitDelay; jumper_paste_delay_remote?: JumperPasteDelay; jumper_remote_match_strings?: string[]; return_focus_output?: boolean; return_focus_submit?: boolean; anchor_return_focus?: boolean; anchor_action_output_idle?: AnchorAction; anchor_action_output_stop?: AnchorAction; anchor_action_submit_idle?: AnchorAction; anchor_action_submit_stop?: AnchorAction; anchor_action_output_idle_slot?: number; anchor_action_output_stop_slot?: number; anchor_action_submit_idle_slot?: number; anchor_action_submit_stop_slot?: number; jumper_track_enabled?: boolean; jumper_track_slot?: number; jumper_track_output?: boolean; jumper_track_submit?: boolean; jumper_track_output_enabled?: boolean; jumper_track_output_slot?: number; jumper_track_submit_enabled?: boolean; jumper_track_submit_slot?: number; jumper_save_cursor_slots?: boolean[]; jumper_cursor_mode_slots?: CursorMode[]; anchor_on_finish_require_same_flow?: boolean; jumper_cursor_mode?: CursorMode; jumper_v2_migrated?: boolean; jumper_v3_migrated?: boolean; jumper_v4_migrated?: boolean;translator_enabled?: boolean; translator_folders?: TranslatorFolder[]; translator_seeded?: boolean; translator_priority?: TranslatorPriority; translator_model?: string; translator_model_unload_timeout?: ModelUnloadTimeout; translator_model_unload_custom_seconds?: number; translator_poll_secs?: number; jumper_persist?: boolean; jumper_saved_slots?: (SavedJumpSlot | null)[] }
+mcp_server_token?: string; submit_paste_method?: PasteMethod; submit_key?: AutoSubmitKey; submit_idle_behavior?: SubmitIdleBehavior; cancel_behavior?: CancelBehavior; submit_clipboard_handling?: ClipboardHandling; clipboard_restore_delay?: ClipboardRestoreDelay; clipboard_restore_delay_remote?: ClipboardRestoreDelay | null; submit_clipboard_restore_delay?: ClipboardRestoreDelay; jumper_submit_delay?: JumperSubmitDelay; jumper_paste_delay?: JumperPasteDelay; jumper_submit_delay_remote?: JumperSubmitDelay; jumper_paste_delay_remote?: JumperPasteDelay; jumper_remote_match_strings?: string[]; return_focus_output?: boolean; return_focus_submit?: boolean; anchor_return_focus?: boolean; anchor_action_output_idle?: AnchorAction; anchor_action_output_stop?: AnchorAction; anchor_action_submit_idle?: AnchorAction; anchor_action_submit_stop?: AnchorAction; anchor_action_output_idle_slot?: number; anchor_action_output_stop_slot?: number; anchor_action_submit_idle_slot?: number; anchor_action_submit_stop_slot?: number; jumper_track_enabled?: boolean; jumper_track_slot?: number; jumper_track_output?: boolean; jumper_track_submit?: boolean; jumper_track_output_enabled?: boolean; jumper_track_output_slot?: number; jumper_track_submit_enabled?: boolean; jumper_track_submit_slot?: number; jumper_save_cursor_slots?: boolean[]; jumper_cursor_mode_slots?: CursorMode[]; anchor_on_finish_require_same_flow?: boolean; jumper_cursor_mode?: CursorMode; jumper_v2_migrated?: boolean; jumper_v3_migrated?: boolean; jumper_v4_migrated?: boolean;translator_enabled?: boolean; translator_folders?: TranslatorFolder[]; translator_seeded?: boolean; translator_priority?: TranslatorPriority; translator_model?: string; translator_model_unload_timeout?: ModelUnloadTimeout; translator_model_unload_custom_seconds?: number; translator_poll_secs?: number; jumper_persist?: boolean; jumper_saved_slots?: (SavedJumpSlot | null)[] }
 export type AudioDevice = { index: string; name: string; is_default: boolean }
 export type AutoSubmitKey = "enter" | "ctrl_enter" | "cmd_enter"
 export type SubmitIdleBehavior = "start_normal" | "do_nothing" | "start_and_submit"
