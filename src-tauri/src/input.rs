@@ -280,6 +280,27 @@ pub fn send_paste_shift_insert(enigo: &mut Enigo) -> Result<(), String> {
     Ok(())
 }
 
+/// Re-verify, immediately before each injected batch or key, that delivery may
+/// still proceed. Chunking made this mandatory: the caller's single pre-flight
+/// check no longer covers the whole delivery, because ordinary single-line text
+/// is now split into batches with sleeps between them, and focus can move in
+/// any of those gaps. Returning `false` aborts fail-closed.
+pub type DeliveryStillValid<'a> = &'a dyn Fn() -> bool;
+
+/// Error string raised when `still_valid` refuses BEFORE any text was injected.
+/// `clipboard.rs` aliases this as `ANCHOR_FOCUS_LOST` and routes it through its
+/// fail-closed park path rather than the generic paste-failure toast.
+pub const DELIVERY_ABORTED: &str = "__anchor_focus_lost_mid_paste__";
+
+/// As [`DELIVERY_ABORTED`], but at least one batch had ALREADY been typed into
+/// the target when the refusal happened.
+///
+/// Typing cannot be atomic the way a single paste chord is, so this outcome is
+/// unavoidable -- but it must not be reported as if nothing was delivered. The
+/// recovery advice differs: re-pasting the full transcript would duplicate the
+/// prefix that already landed.
+pub const DELIVERY_ABORTED_PARTIAL: &str = "__anchor_focus_lost_mid_paste_partial__";
+
 /// Type text directly as simulated keystrokes — the ONLY delivery path that
 /// never reads or writes the clipboard.
 ///
@@ -295,19 +316,107 @@ pub fn send_paste_shift_insert(enigo: &mut Enigo) -> Result<(), String> {
 /// multi-line transcripts. They are sent as explicit key clicks instead, and a
 /// `\r` is dropped because the following `\n` already covers the break (the
 /// same rule `typing.rs` applies).
-pub fn paste_text_direct(enigo: &mut Enigo, text: &str) -> Result<(), String> {
+///
+/// CHUNKING: one `SendInput` carrying a whole transcript is instant locally but
+/// is exactly the "instant injection" that drops characters in remote desktop
+/// sessions and some VM consoles. `chunk_chars` splits the run into batches with
+/// `chunk_delay_ms` between them, giving the far end time to drain its input
+/// queue. At the defaults (40 chars / 15 ms) a 500-character transcript takes
+/// roughly 200 ms — far quicker than the 15 ms-per-character Keyboard Typer,
+/// and paced enough for RDP. `chunk_delay_ms == 0` restores the single-burst
+/// behaviour; `chunk_chars == 0` means "never split".
+///
+/// `still_valid` is consulted before every injected batch and before every
+/// Return/Tab. It aborts with the caller's fail-closed sentinel so a transcript
+/// cannot keep typing into a window that stole focus mid-delivery.
+pub fn paste_text_direct(
+    enigo: &mut Enigo,
+    text: &str,
+    chunk_chars: usize,
+    chunk_delay_ms: u64,
+    still_valid: Option<DeliveryStillValid<'_>>,
+) -> Result<(), String> {
     let mut run = String::new();
+    // Only pause BETWEEN batches, never before the first or after the last.
+    let mut sent_a_batch = false;
 
-    // Flush the accumulated ordinary-text run as ONE batched injection.
-    fn flush(enigo: &mut Enigo, run: &mut String) -> Result<(), String> {
+    // `already_typed` distinguishes "nothing was delivered" from "the target
+    // already has part of the transcript", which the caller needs in order to
+    // give honest recovery advice.
+    fn check(
+        still_valid: Option<DeliveryStillValid<'_>>,
+        already_typed: bool,
+    ) -> Result<(), String> {
+        match still_valid {
+            Some(f) if !f() => Err(if already_typed {
+                DELIVERY_ABORTED_PARTIAL.to_string()
+            } else {
+                DELIVERY_ABORTED.to_string()
+            }),
+            _ => Ok(()),
+        }
+    }
+
+    fn send_batch(
+        enigo: &mut Enigo,
+        batch: &str,
+        sent_a_batch: &mut bool,
+        chunk_delay_ms: u64,
+        still_valid: Option<DeliveryStillValid<'_>>,
+    ) -> Result<(), String> {
+        if batch.is_empty() {
+            return Ok(());
+        }
+        if *sent_a_batch && chunk_delay_ms > 0 {
+            std::thread::sleep(std::time::Duration::from_millis(chunk_delay_ms));
+        }
+        // AFTER the sleep and immediately BEFORE injecting: the sleep is
+        // exactly the window in which focus can move.
+        check(still_valid, *sent_a_batch)?;
+        enigo
+            .text(batch)
+            .map_err(|e| format!("Failed to send text directly: {}", e))?;
+        *sent_a_batch = true;
+        Ok(())
+    }
+
+    // Flush the accumulated ordinary-text run, split into chunk_chars batches.
+    // Splitting is by CHARACTER, never by byte, so a multi-byte character can
+    // never be torn in half. Surrogate pairs are formed inside enigo from a
+    // whole `char`, so a chunk boundary cannot split one either.
+    fn flush(
+        enigo: &mut Enigo,
+        run: &mut String,
+        chunk_chars: usize,
+        chunk_delay_ms: u64,
+        sent_a_batch: &mut bool,
+        still_valid: Option<DeliveryStillValid<'_>>,
+    ) -> Result<(), String> {
         if run.is_empty() {
             return Ok(());
         }
-        let result = enigo
-            .text(run)
-            .map_err(|e| format!("Failed to send text directly: {}", e));
+        if chunk_chars == 0 {
+            let r = send_batch(enigo, run, sent_a_batch, chunk_delay_ms, still_valid);
+            run.clear();
+            return r;
+        }
+        // `chunk_chars` is bounded by settings::typing_chunk_params before it
+        // reaches here, so this allocation cannot be made pathological by a
+        // hand-edited settings file.
+        let mut batch = String::with_capacity(chunk_chars);
+        let mut count = 0usize;
+        for ch in run.chars() {
+            batch.push(ch);
+            count += 1;
+            if count >= chunk_chars {
+                send_batch(enigo, &batch, sent_a_batch, chunk_delay_ms, still_valid)?;
+                batch.clear();
+                count = 0;
+            }
+        }
+        let r = send_batch(enigo, &batch, sent_a_batch, chunk_delay_ms, still_valid);
         run.clear();
-        result
+        r
     }
 
     // Peekable so a lone CR can be told apart from a CRLF pair. Dropping every
@@ -322,7 +431,15 @@ pub fn paste_text_direct(enigo: &mut Enigo, text: &str) -> Result<(), String> {
                 if chars.peek() == Some(&'\n') {
                     chars.next();
                 }
-                flush(enigo, &mut run)?;
+                flush(
+                    enigo,
+                    &mut run,
+                    chunk_chars,
+                    chunk_delay_ms,
+                    &mut sent_a_batch,
+                    still_valid,
+                )?;
+                check(still_valid, sent_a_batch)?;
                 enigo
                     .key(Key::Return, enigo::Direction::Click)
                     .map_err(|e| format!("Failed to send Return: {}", e))?;
@@ -331,13 +448,29 @@ pub fn paste_text_direct(enigo: &mut Enigo, text: &str) -> Result<(), String> {
             // than failing the whole delivery.
             '\0' => {}
             '\n' => {
-                flush(enigo, &mut run)?;
+                flush(
+                    enigo,
+                    &mut run,
+                    chunk_chars,
+                    chunk_delay_ms,
+                    &mut sent_a_batch,
+                    still_valid,
+                )?;
+                check(still_valid, sent_a_batch)?;
                 enigo
                     .key(Key::Return, enigo::Direction::Click)
                     .map_err(|e| format!("Failed to send Return: {}", e))?;
             }
             '\t' => {
-                flush(enigo, &mut run)?;
+                flush(
+                    enigo,
+                    &mut run,
+                    chunk_chars,
+                    chunk_delay_ms,
+                    &mut sent_a_batch,
+                    still_valid,
+                )?;
+                check(still_valid, sent_a_batch)?;
                 enigo
                     .key(Key::Tab, enigo::Direction::Click)
                     .map_err(|e| format!("Failed to send Tab: {}", e))?;
@@ -346,5 +479,88 @@ pub fn paste_text_direct(enigo: &mut Enigo, text: &str) -> Result<(), String> {
         }
     }
 
-    flush(enigo, &mut run)
+    flush(
+        enigo,
+        &mut run,
+        chunk_chars,
+        chunk_delay_ms,
+        &mut sent_a_batch,
+        still_valid,
+    )
+}
+
+/// Split a run into batches exactly as [`paste_text_direct`] does, so the
+/// chunking rule is unit-testable without simulating any input.
+#[cfg(test)]
+pub(crate) fn chunk_run(run: &str, chunk_chars: usize) -> Vec<String> {
+    if run.is_empty() {
+        return Vec::new();
+    }
+    if chunk_chars == 0 {
+        return vec![run.to_string()];
+    }
+    let mut out = Vec::new();
+    let mut batch = String::new();
+    for ch in run.chars() {
+        batch.push(ch);
+        if batch.chars().count() >= chunk_chars {
+            out.push(std::mem::take(&mut batch));
+        }
+    }
+    if !batch.is_empty() {
+        out.push(batch);
+    }
+    out
+}
+
+#[cfg(test)]
+mod direct_typing_tests {
+    use super::chunk_run;
+
+    #[test]
+    fn empty_run_produces_no_batches() {
+        assert!(chunk_run("", 40).is_empty());
+    }
+
+    #[test]
+    fn run_shorter_than_a_chunk_is_one_batch() {
+        assert_eq!(chunk_run("hello", 40), vec!["hello".to_string()]);
+    }
+
+    #[test]
+    fn exact_multiple_does_not_emit_a_trailing_empty_batch() {
+        // The classic off-by-one: 8 chars at chunk 4 must be 2 batches, not 3.
+        assert_eq!(
+            chunk_run("abcdefgh", 4),
+            vec!["abcd".to_string(), "efgh".to_string()]
+        );
+    }
+
+    #[test]
+    fn remainder_becomes_a_final_short_batch() {
+        assert_eq!(
+            chunk_run("abcdefghi", 4),
+            vec!["abcd".to_string(), "efgh".to_string(), "i".to_string()]
+        );
+    }
+
+    #[test]
+    fn chunking_is_by_character_so_multibyte_is_never_torn() {
+        // Polish diacritics and an astral-plane emoji. Splitting by BYTE here
+        // would corrupt them; splitting by char cannot.
+        let s = "ąćęłń😀śźż";
+        let batches = chunk_run(s, 3);
+        assert_eq!(batches.concat(), s);
+        assert_eq!(
+            batches,
+            vec!["ąćę".to_string(), "łń😀".to_string(), "śźż".to_string()]
+        );
+        // Every batch is independently valid UTF-8 with the expected char count.
+        assert!(batches.iter().all(|b| b.chars().count() <= 3));
+    }
+
+    #[test]
+    fn zero_chunk_size_means_one_unsplit_batch() {
+        assert_eq!(chunk_run("abcdefgh", 0), vec!["abcdefgh".to_string()]);
+    }
 }

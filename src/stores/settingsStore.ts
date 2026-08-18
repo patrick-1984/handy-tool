@@ -234,6 +234,12 @@ const settingUpdaters: {
     commands.changeMuteWhileRecordingSetting(value as boolean),
   append_trailing_space: (value) =>
     commands.changeAppendTrailingSpaceSetting(value as boolean),
+  direct_typing_for_remote_targets: (value) =>
+    commands.changeDirectTypingForRemoteTargetsSetting(value as boolean),
+  typing_chunk_chars: (value) =>
+    commands.changeTypingChunkCharsSetting(value as number),
+  typing_chunk_delay_ms: (value) =>
+    commands.changeTypingChunkDelaySetting(value as number),
   crash_resilient_recording: (value) =>
     commands.changeCrashResilientRecordingSetting(value as boolean),
   log_level: (value) => commands.setLogLevel(value as any),

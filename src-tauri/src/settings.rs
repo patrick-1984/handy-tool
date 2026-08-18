@@ -883,6 +883,23 @@ pub struct AppSettings {
     pub typing_start_delay_secs: u32,
     #[serde(default = "default_typing_key_delay_ms")]
     pub typing_key_delay_ms: u32,
+    /// Deliver by TYPING rather than pasting when the target is a remote
+    /// desktop session. A clipboard paste method necessarily puts the
+    /// transcript on the local clipboard, and RDP clipboard redirection then
+    /// copies it to the REMOTE machine's clipboard — where Handy cannot reach
+    /// it, and where the remote clipboard history keeps it permanently.
+    /// Typing never touches either clipboard. Windows-only in effect.
+    #[serde(default = "default_direct_typing_for_remote_targets")]
+    pub direct_typing_for_remote_targets: bool,
+    /// Characters per batch when typing directly. One `SendInput` carrying a
+    /// whole transcript is instant locally but drops characters over RDP;
+    /// batching gives the far end time to drain. `0` = never split.
+    #[serde(default = "default_typing_chunk_chars")]
+    pub typing_chunk_chars: u32,
+    /// Pause between typed batches, in milliseconds. `0` restores the old
+    /// single-burst behaviour.
+    #[serde(default = "default_typing_chunk_delay_ms")]
+    pub typing_chunk_delay_ms: u32,
     #[serde(default = "default_model")]
     pub selected_model: String,
     /// Vulkan GPU device selection for local Whisper transcription (T-212).
@@ -1342,6 +1359,72 @@ fn default_typing_start_delay_secs() -> u32 {
 /// sessions and some VM consoles.
 fn default_typing_key_delay_ms() -> u32 {
     15
+}
+
+/// ON by default. A clipboard paste into an RDP window leaks the transcript to
+/// the remote machine's clipboard and its history, which nothing on this side
+/// can retract — a privacy failure the user cannot see or undo. Typing avoids
+/// it entirely, and chunking (below) removes the reliability cost that made
+/// typing unusable over RDP. One toggle turns it off.
+fn default_direct_typing_for_remote_targets() -> bool {
+    true
+}
+
+/// 40 characters per batch. With the 15 ms inter-batch pause this puts a
+/// 500-character transcript at roughly 200 ms — visually immediate, and ~38x
+/// faster than the per-character Keyboard Typer, while still pacing input for
+/// a remote session.
+fn default_typing_chunk_chars() -> u32 {
+    40
+}
+
+/// 15 ms between batches, matching the per-keystroke delay the Keyboard Typer
+/// already proved reliable locally and over RDP.
+fn default_typing_chunk_delay_ms() -> u32 {
+    15
+}
+
+/// Upper bound on characters per typed batch. Guards the `String::with_capacity`
+/// in the typing path against a hand-edited settings file asking for gigabytes.
+pub const TYPING_CHUNK_CHARS_MAX: u32 = 1000;
+
+/// Upper bound on the pause between typed batches. Without it a hand-edited
+/// `u32::MAX` would sleep for ~49 days mid-delivery while holding the Enigo
+/// mutex.
+pub const TYPING_CHUNK_DELAY_MS_MAX: u32 = 500;
+
+/// Sanitise the typing-chunk settings at the point of USE.
+///
+/// The Tauri setters clamp, but `get_settings` deserializes whatever is on disk
+/// without normalising, so a hand-edited `settings_store.json` reaches delivery
+/// unchecked. Returns `(chunk_chars, chunk_delay_ms)` already bounded, with `0`
+/// chars preserved as the documented "never split" sentinel.
+///
+/// Also bounds the COMBINED worst case: chars and delay are individually sane
+/// but `1` char at `500` ms would take four minutes for a 500-character
+/// transcript while holding the Enigo mutex. When the projected duration is
+/// absurd, the delay is reduced rather than the batch size, because batch size
+/// is what protects against dropped characters.
+///
+/// `text_chars` is the ACTUAL length of the transcript about to be typed. An
+/// earlier version bounded against a fixed 1000-character reference, which let
+/// a 10,000-character dictation still sleep for roughly 100 seconds while
+/// holding the Enigo mutex -- the bound has to scale with the real work.
+pub fn typing_chunk_params(settings: &AppSettings, text_chars: usize) -> (usize, u64) {
+    let chars = settings.typing_chunk_chars.min(TYPING_CHUNK_CHARS_MAX);
+    let mut delay = settings
+        .typing_chunk_delay_ms
+        .min(TYPING_CHUNK_DELAY_MS_MAX);
+    if chars > 0 && delay > 0 {
+        // Keep the total of the inter-batch pauses under ~10 s.
+        const MAX_TOTAL_PAUSE_MS: u32 = 10_000;
+        let len = u32::try_from(text_chars).unwrap_or(u32::MAX);
+        let batches = len.div_ceil(chars).saturating_sub(1).max(1);
+        if delay.saturating_mul(batches) > MAX_TOTAL_PAUSE_MS {
+            delay = (MAX_TOTAL_PAUSE_MS / batches).max(1);
+        }
+    }
+    (chars as usize, delay as u64)
 }
 
 fn default_openrouter_transcription_url() -> String {
@@ -2092,6 +2175,9 @@ pub fn get_default_settings() -> AppSettings {
         silent_update_jitter_minutes: default_silent_update_jitter_minutes(),
         typing_start_delay_secs: default_typing_start_delay_secs(),
         typing_key_delay_ms: default_typing_key_delay_ms(),
+        direct_typing_for_remote_targets: default_direct_typing_for_remote_targets(),
+        typing_chunk_chars: default_typing_chunk_chars(),
+        typing_chunk_delay_ms: default_typing_chunk_delay_ms(),
         selected_model: "".to_string(),
         transcribe_gpu_device: default_transcribe_gpu_device(),
         always_on_microphone: false,
@@ -2466,10 +2552,7 @@ mod tests {
     #[test]
     fn ensure_default_bindings_only_backfills_missing_bindings() {
         let mut settings = get_default_settings();
-        let old_submit = settings
-            .bindings
-            .get_mut("transcribe_and_submit")
-            .unwrap();
+        let old_submit = settings.bindings.get_mut("transcribe_and_submit").unwrap();
         old_submit.current_binding = "ctrl+alt+s".to_string();
         old_submit.default_binding = "ctrl+alt+s".to_string();
         settings.bindings.remove("paste_last");
@@ -3046,5 +3129,85 @@ mod tests {
         let json = serde_json::to_string(&settings).unwrap();
         let restored: AppSettings = serde_json::from_str(&json).unwrap();
         assert_eq!(restored.transcribe_gpu_device, -2);
+    }
+
+    fn chunk_params_len(chars: u32, delay: u32, text_chars: usize) -> (usize, u64) {
+        let mut settings = get_default_settings();
+        settings.typing_chunk_chars = chars;
+        settings.typing_chunk_delay_ms = delay;
+        typing_chunk_params(&settings, text_chars)
+    }
+
+    fn chunk_params(chars: u32, delay: u32) -> (usize, u64) {
+        chunk_params_len(chars, delay, 1000)
+    }
+
+    #[test]
+    fn typing_chunk_defaults_pass_through_unchanged() {
+        let settings = get_default_settings();
+        assert_eq!(typing_chunk_params(&settings, 1000), (40, 15));
+        // A short dictation must not be slowed down by the long-transcript bound.
+        assert_eq!(typing_chunk_params(&settings, 12), (40, 15));
+    }
+
+    #[test]
+    fn typing_chunk_bound_scales_with_the_actual_transcript() {
+        // Bounding against a fixed 1000-char reference let a 10k-char
+        // transcript sleep ~100 s while holding the Enigo mutex.
+        let (chars, delay) = chunk_params_len(1, 500, 10_000);
+        assert_eq!(chars, 1);
+        let pauses = (10_000u64 - 1) * delay;
+        assert!(
+            pauses <= 10_000,
+            "projected total pause {pauses}ms is unbounded"
+        );
+        assert!(delay >= 1);
+    }
+
+    #[test]
+    fn typing_chunk_handles_empty_and_single_char_transcripts() {
+        assert_eq!(chunk_params_len(40, 15, 0), (40, 15));
+        assert_eq!(chunk_params_len(40, 15, 1), (40, 15));
+    }
+
+    #[test]
+    fn typing_chunk_params_clamps_values_from_disk() {
+        // The Tauri setters clamp, but a hand-edited settings_store.json does
+        // not go through them. Without this, `u32::MAX` ms would sleep for
+        // ~49 days mid-delivery while holding the Enigo mutex.
+        let (chars, delay) = chunk_params(u32::MAX, u32::MAX);
+        assert_eq!(chars, TYPING_CHUNK_CHARS_MAX as usize);
+        assert!(delay <= TYPING_CHUNK_DELAY_MS_MAX as u64);
+    }
+
+    #[test]
+    fn typing_chunk_params_preserves_the_never_split_sentinel() {
+        // 0 chars means "one burst", NOT "one character per batch".
+        assert_eq!(chunk_params(0, 15), (0, 15));
+        assert_eq!(chunk_params(0, u32::MAX).0, 0);
+    }
+
+    #[test]
+    fn typing_chunk_params_bounds_the_combined_worst_case() {
+        // Individually sane, jointly absurd: 1 char per batch at 500 ms is
+        // over four minutes for a 500-character transcript.
+        let (chars, delay) = chunk_params(1, TYPING_CHUNK_DELAY_MS_MAX);
+        assert_eq!(chars, 1);
+        // 1000 reference chars => 999 pauses; total must stay near ~10 s.
+        assert!(
+            delay * 999 <= 10_000,
+            "projected total pause {}ms is not bounded",
+            delay * 999
+        );
+        // Never reduced to zero — zero would silently disable the pacing that
+        // stops remote sessions dropping characters.
+        assert!(delay >= 1);
+    }
+
+    #[test]
+    fn typing_chunk_params_never_sleeps_when_the_delay_is_zero() {
+        // 0 ms is the documented "restore single-burst speed" choice and must
+        // survive the combined-worst-case adjustment untouched.
+        assert_eq!(chunk_params(1, 0), (1, 0));
     }
 }

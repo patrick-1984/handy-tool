@@ -1040,6 +1040,10 @@
         "groupTitle": "Chování při ukončení",
         "label": "Při ukončení přejít jen při stejné zkratce",
         "description": "Když je zapnuto, „Akce skokového slotu při ukončení“ postupu proběhne jen tehdy, když byla nahrávka zahájena i ukončena stejnou zkratkou. Výchozí: Vypnuto. Příklad: zahájíte Přepisem a ukončíte Přepsat a odeslat a přechod se neuskuteční — vložení i odeslání proběhnou dál, jen přechod je podmíněný. Zapněte, pokud vás kombinování obou zkratek stále teleportuje někam, kam jste nechtěli."
+      },
+      "directTypingForRemote": {
+        "label": "Do vzdálených ploch psát místo vkládání",
+        "description": "Když je okno, do kterého diktujete, relací vzdálené plochy, doručí se text jako simulované stisky kláves namísto použití schránky. Výchozí: zapnuto. Proč je to důležité: způsob vložení přes schránku musí přepis vložit do vaší schránky a přesměrování schránky RDP nebo Citrix jej potom zkopíruje do schránky VZDÁLENÉHO počítače — samostatné schránky v samostatném počítači, uchovávané v historii schránky tohoto počítače. Pozdější obnovení vaší vlastní schránky se k ní nedostane. Psaní se schránky nedotkne ani na jedné straně. Otevřená omezení: psaný text může spustit automatické dokončování, automatické uzavírání závorek a chování IME, které vložení nespouští, a dorazí jako mnoho kroků zpět namísto jednoho. Text se odesílá v malých dávkách, aby jej vzdálená relace stíhala přijímat. Tím se zabrání pouze budoucím únikům — přepisy, které už jsou v historii schránky vzdáleného počítače, nelze odstranit. O tom, která okna se považují za vzdálená, rozhoduje seznam shod výše. Neuplatní se, když je Zacházení se schránkou nastaveno na „Kopírovat do schránky“: to záměrně ponechá přepis ve schránce i po vložení, takže jej přesměrování přenese tak jako tak a psaní by přineslo jen své nevýhody. Neplatí to ani pro přepis obsahující zalomení řádků: psaní musí odeslat každé zalomení jako stisk klávesy Enter, což v chatu odešle zprávu a ve formuláři jej odešle, takže víceřádkové přepisy si ponechají vaši metodu vkládání a do vzdálené schránky se dostanou. *{Windows only}*"
       }
     },
     "translator": {

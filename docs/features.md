@@ -869,13 +869,13 @@ are not trivia — they are the whole reason delivery into a remote session work
 <a id="your-remote-session-pastes-the-right-thing"></a>
 **The situation.** You dictate into a Citrix ticket field and what lands is the text you copied
 ten minutes ago, not what you had said.
-**What Handy does.** Remote sessions fetch clipboard data on demand *after* the paste keystroke
-arrives, over a separate and slower virtual channel — so restoring your previous clipboard 50 ms
-after pasting hands the remote application the pre-recording content, a race Citrix lost
-reliably. The restore now runs on a background thread after 50 ms plus your configured delay.
-It is skipped when you ask Handy to keep the transcription, and an ownership check leaves a
-newer take or anything you copy during the delay alone. Restore failures are retried, then
-written to the log at warn level.
+**What Handy does.** When a remote target is using a clipboard paste method, remote sessions
+fetch clipboard data on demand *after* the paste keystroke arrives, over a separate and slower
+virtual channel — so restoring your previous clipboard 50 ms after pasting hands the remote
+application the pre-recording content, a race Citrix lost reliably. The restore now runs on a
+background thread after 50 ms plus your configured delay. It is skipped when you ask Handy to
+keep the transcription, and an ownership check leaves a newer take or anything you copy during
+the delay alone. Restore failures are retried, then written to the log at warn level.
 **Where.** `Advanced › Transcription › Transcribe › Clipboard restore delay = 1 s`, with a
 separate value at
 `Advanced › Transcription › Transcribe & Submit › Clipboard restore delay`.
@@ -916,6 +916,38 @@ class contains one of your match strings — case-insensitive, seeded with `msrd
 rather than guess at it.
 **Where.** `Jumper › Remote desktop detection › Remote match strings` *{Windows only}*.
 **Since.** 0.56.0.
+
+### Your dictation stays out of the remote machine's clipboard
+
+<a id="your-dictation-stays-out-of-the-remote-machines-clipboard"></a>
+**The situation.** You dictate into an RDP or Citrix session, Handy restores your local
+clipboard, and the transcript still remains in the remote computer's separate clipboard history.
+**What Handy does.** A remote target receives simulated keystrokes instead of a clipboard paste
+when the default-on switch is enabled. This works for a remote window that was already focused as
+well as one reached through a Jumper slot. Text is sent in batches of 40 characters with 15 ms
+between batches by default, so a remote session can keep up; about 500 characters take roughly
+200 ms. No clipboard is touched on either computer. This prevents future leaks only: it cannot
+remove transcripts already in the remote machine's clipboard history. Typed text can trigger
+autocomplete, bracket auto-closing and IME behavior that a paste does not, and arrives as many
+undo steps rather than one. Turning the switch off restores the configured paste behavior and
+the remote-clipboard leak with it. Two combinations are deliberately left alone. With
+`Advanced › Clipboard Handling = Copy to Clipboard` the transcript is meant to stay on your
+clipboard after delivery, so redirection carries it across whatever Handy types, and the paste is
+kept rather than trading typing's downsides for no privacy gain; choose
+`Don't Modify Clipboard` if you want the remote clipboard left clean. And a transcript containing
+**line breaks always keeps your paste method**, because typing has to send each line break as an
+Enter key press - which in a chat box sends the message and in a form submits it, posting or
+submitting part of your dictation. A pasted line break is inert text; a typed one is a command.
+Post-processed transcripts are usually multi-line, so this exemption is common: for those, the
+text still reaches the remote clipboard.
+**Where.** `Jumper › Remote desktop detection › Type into remote desktops instead of pasting = On`
+*{Windows only}*.
+**Applies to.** Windows dictation deliveries whose focused or jumped-to target matches
+`Jumper › Remote desktop detection › Remote match strings`, except under
+`Advanced › Clipboard Handling = Copy to Clipboard`.
+**Since.** 1.2.0.
+
+<!-- prov: remote clipboard isolation | src: src-tauri/src/clipboard.rs; src-tauri/src/anchor.rs; src-tauri/src/settings.rs; src/components/settings/jumper/DirectTypingForRemote.tsx; src/i18n/locales/en/translation.json | claim: safety -->
 
 ### Citrix and RDP deliveries land
 

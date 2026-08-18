@@ -33,8 +33,7 @@ const FAILURE_COOLDOWN: Duration = Duration::from_secs(60);
 
 /// Stable error code sent to the frontend when Windows Application Control
 /// refuses to start an unsigned FLM executable (Win32 error 4551).
-pub const WINDOWS_APPLICATION_CONTROL_BLOCKED: &str =
-    "flm_windows_application_control_blocked";
+pub const WINDOWS_APPLICATION_CONTROL_BLOCKED: &str = "flm_windows_application_control_blocked";
 
 #[cfg(windows)]
 static WINDOWS_APPLICATION_CONTROL_BLOCKED_STATE: std::sync::atomic::AtomicBool =

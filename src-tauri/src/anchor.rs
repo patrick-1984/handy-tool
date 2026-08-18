@@ -655,6 +655,70 @@ mod win {
         }
     }
 
+    /// Bare handle of the current foreground window, or `None` if there is
+    /// none. See the cross-platform wrapper for why the delivery path wants it.
+    pub fn foreground_window_id() -> Option<isize> {
+        let hwnd = unsafe { GetForegroundWindow() };
+        if hwnd.0.is_null() {
+            None
+        } else {
+            Some(hwnd.0 as isize)
+        }
+    }
+
+    /// One-shot snapshot of the current foreground window: its handle AND
+    /// whether it classifies as a remote-desktop session, both derived from a
+    /// SINGLE `GetForegroundWindow` call.
+    ///
+    /// Returning them together is the point. Reading the classification and the
+    /// identity separately lets a window switch land between the two reads, so
+    /// the delivery method gets chosen for one window and then validated
+    /// against a different one. `DeliveryGuard::is_remote` only answers for an
+    /// anchored delivery that actually JUMPED, which misses the ordinary case:
+    /// dictating straight into an RDP window that already has focus.
+    ///
+    /// Deliberately NOT `capture_current_target`: that one is a full anchor
+    /// capture with password-field refusal and slot semantics, none of which
+    /// belongs on a per-paste classification. `None` means "could not tell",
+    /// which callers treat as "no constraint, and not remote" so a
+    /// classification problem can never block a delivery outright.
+    pub fn foreground_snapshot(match_strings: &[String]) -> Option<(isize, bool)> {
+        unsafe {
+            let hwnd = GetForegroundWindow();
+            if hwnd.0.is_null() {
+                return None;
+            }
+            let id = hwnd.0 as isize;
+            if match_strings.is_empty() {
+                return Some((id, false));
+            }
+            let mut pid = 0u32;
+            let tid = GetWindowThreadProcessId(hwnd, Some(&mut pid));
+            if tid == 0 || pid == std::process::id() {
+                return Some((id, false));
+            }
+            let window_class = class_name(hwnd);
+            let mut gti = GUITHREADINFO {
+                cbSize: std::mem::size_of::<GUITHREADINFO>() as u32,
+                ..Default::default()
+            };
+            let control = if GetGUIThreadInfo(tid, &mut gti).is_ok() && !gti.hwndFocus.0.is_null() {
+                gti.hwndFocus
+            } else {
+                hwnd
+            };
+            let control_class = class_name(control);
+            let app = process_name(pid).unwrap_or_default();
+            let remote = crate::settings::is_remote_target(
+                &app,
+                &window_class,
+                &control_class,
+                match_strings,
+            );
+            Some((id, remote))
+        }
+    }
+
     /// Executable stem for the anchored process ("notepad", "chrome", …).
     fn process_name(pid: u32) -> Option<String> {
         unsafe {
@@ -3622,6 +3686,52 @@ pub fn await_guard_ready(guard: &DeliveryGuard, remote_retry: bool) -> bool {
     {
         let _ = (guard, remote_retry);
         true
+    }
+}
+
+/// Does the window in front right now belong to a remote-desktop session?
+///
+/// Snapshot of the current foreground window: `(hwnd_id, is_remote)`.
+///
+/// Used by the delivery path to decide whether a clipboard paste would leak the
+/// transcript across to the remote machine's clipboard, AND to pin the identity
+/// of the window that decision was made about, so the same window can be
+/// re-validated before every subsequent keystroke. Unlike
+/// `DeliveryGuard::is_remote` this does NOT require a jump, so it also covers
+/// dictating into an already-focused RDP window -- the common case. Always
+/// `None` off Windows (the Jumper and its remote classifier are Windows-only).
+pub fn foreground_snapshot(match_strings: &[String]) -> Option<(isize, bool)> {
+    #[cfg(windows)]
+    {
+        win::foreground_snapshot(match_strings)
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = match_strings;
+        None
+    }
+}
+
+/// Identity of the current foreground window, for callers with no anchor guard.
+///
+/// An UNANCHORED delivery has no `DeliveryGuard` to re-verify, which was
+/// harmless while every such delivery was a single instant keystroke. Chunked
+/// typing is not instant: a long transcript spends hundreds of milliseconds
+/// injecting, so the window can change underneath it. Comparing this token
+/// before each batch keeps that path fail-closed too.
+///
+/// Deliberately just the window handle: cheaper than a full capture, and enough
+/// to answer "is this still the same window". `None` means "could not tell" —
+/// callers treat that as no constraint, matching the non-Windows behaviour where
+/// there is nothing to compare.
+pub fn foreground_window_id() -> Option<isize> {
+    #[cfg(windows)]
+    {
+        win::foreground_window_id()
+    }
+    #[cfg(not(windows))]
+    {
+        None
     }
 }
 

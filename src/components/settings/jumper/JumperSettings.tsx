@@ -12,6 +12,7 @@ import { useSettings } from "../../../hooks/useSettings";
 import { useOsType } from "../../../hooks/useOsType";
 import { commands, type AnchorStatus, type CursorMode } from "@/bindings";
 import { RemoteMatchStrings } from "./RemoteMatchStrings";
+import { DirectTypingForRemote } from "./DirectTypingForRemote";
 
 /**
  * The Jumper (Windows-only): eleven jump slots for desktop text fields. Slots 0
@@ -211,6 +212,7 @@ export const JumperSettings: React.FC = () => {
     <div className="w-full space-y-6">
       <SettingsGroup title={t("settings.jumper.remoteMatch.groupTitle")}>
         <RemoteMatchStrings grouped={true} />
+        <DirectTypingForRemote grouped={true} />
       </SettingsGroup>
       <SettingsGroup title={t("settings.jumper.hot.title")}>
         <ShortcutInput shortcutId="anchor_set" grouped={true} />

@@ -13,6 +13,7 @@ Tune remote delivery only after the same flow works in a local application. Your
 - [Your remote session pastes the right thing](../features.md#your-remote-session-pastes-the-right-thing)
 - [Separate timing for remote desktops and local apps](../features.md#separate-timing-for-remote-desktops-and-local-apps)
 - [Handy knows which of your windows is a remote session](../features.md#handy-knows-which-of-your-windows-is-a-remote-session)
+- [Your dictation stays out of the remote machine's clipboard](../features.md#your-dictation-stays-out-of-the-remote-machines-clipboard)
 - [Type it instead, when the console refuses a paste](../features.md#type-it-instead-when-the-console-refuses-a-paste)
 - [The paste is swallowed right after a jump](../features.md#the-paste-is-swallowed-right-after-a-jump)
 - [The paste delay applies to plain dictation too](../features.md#the-paste-delay-applies-to-plain-dictation-too)

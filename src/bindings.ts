@@ -704,6 +704,30 @@ async changeAppendTrailingSpaceSetting(enabled: boolean) : Promise<Result<null, 
     else return { status: "error", error: e  as any };
 }
 },
+async changeDirectTypingForRemoteTargetsSetting(enabled: boolean) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_direct_typing_for_remote_targets_setting", { enabled }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async changeTypingChunkCharsSetting(chars: number) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_typing_chunk_chars_setting", { chars }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async changeTypingChunkDelaySetting(delay: number) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_typing_chunk_delay_setting", { delay }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async changeCrashResilientRecordingSetting(enabled: boolean) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("change_crash_resilient_recording_setting", { enabled }) };
@@ -1439,7 +1463,7 @@ async isLaptop() : Promise<Result<boolean, string>> {
 
 /** user-defined types **/
 
-export type AppSettings = { bindings: Partial<{ [key in string]: ShortcutBinding }>; push_to_talk: boolean; audio_feedback: boolean; audio_feedback_volume?: number; sound_theme?: SoundTheme; start_hidden?: boolean; autostart_enabled?: boolean; portable_autostart_consent?: PortableAutostartConsent; automatic_update_checks?: boolean; automatic_silent_updates?: boolean; silent_update_time_local?: string; silent_update_jitter_minutes?: number; typing_start_delay_secs?: number; typing_key_delay_ms?: number; selected_model?: string;
+export type AppSettings = { bindings: Partial<{ [key in string]: ShortcutBinding }>; push_to_talk: boolean; audio_feedback: boolean; audio_feedback_volume?: number; sound_theme?: SoundTheme; start_hidden?: boolean; autostart_enabled?: boolean; portable_autostart_consent?: PortableAutostartConsent; automatic_update_checks?: boolean; automatic_silent_updates?: boolean; silent_update_time_local?: string; silent_update_jitter_minutes?: number; typing_start_delay_secs?: number; typing_key_delay_ms?: number; direct_typing_for_remote_targets?: boolean; typing_chunk_chars?: number; typing_chunk_delay_ms?: number; selected_model?: string;
 /**
  * Vulkan GPU device selection for local Whisper transcription (T-212).
  * Sentinel-encoded rather than a parallel accelerator enum: `-1`
