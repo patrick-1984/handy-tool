@@ -13,6 +13,21 @@ Edits the case-insensitive substrings used to classify a target by application, 
 
 Catalog: [Handy knows which of your windows is a remote session](../../features.md#handy-knows-which-of-your-windows-is-a-remote-session).
 
+### Type into remote desktops instead of pasting
+
+`Jumper › Remote desktop detection › Type into remote desktops instead of pasting` *{Windows only}*
+
+Uses batched simulated keystrokes instead of the configured paste method when the current target
+matches [Remote match strings](#remote-match-strings). Turning it off returns remote targets to
+the configured paste method. Has no effect under
+`Advanced › Clipboard Handling = Copy to Clipboard`, which deliberately leaves the transcript on
+your clipboard after delivery — redirection carries it to the remote machine regardless, so the
+paste is kept. Also has no effect on a transcript containing line breaks: typing sends each line
+break as an Enter key, which submits in a form and sends in a chat box, so multi-line transcripts
+keep the configured paste method. **Default:** On.
+
+Catalog: [Your dictation stays out of the remote machine's clipboard](../../features.md#your-dictation-stays-out-of-the-remote-machines-clipboard).
+
 ## Hot slot (Anchor & Deliver)
 
 ### Set Anchor

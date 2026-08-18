@@ -1,6 +1,56 @@
 # Changelog
 
 
+## [1.2.0] - 2026-08-18
+
+### Fixed
+
+- **Your dictation no longer ends up on the remote machine's clipboard.** With "Don't Modify
+  Clipboard" set, transcriptions still turned up on the clipboard of the RDP or Citrix host you
+  were dictating into. The local fixes in 1.1.0 were working exactly as intended — this is a
+  different leak, one floor down. A clipboard paste method *has* to put the transcript on your
+  local clipboard, and clipboard redirection then copies it across to the remote computer's own
+  clipboard and its clipboard history. That is a separate clipboard on a separate operating
+  system. Restoring yours afterwards cannot reach it; Handy has no handle on it at all.
+
+  Handy now **types** into remote desktops instead of pasting, which touches no clipboard on
+  either machine. Three parts:
+
+  - **Remote targets are recognised even when you did not jump to them.** Previously a window only
+    counted as remote if Handy had jumped to it, which missed the ordinary case of dictating into
+    a remote window that already had focus. Which windows count as remote still comes from your
+    own match list on the Jumper page (`msrdc`, `mstsc`, `Citrix` by default).
+
+  - **Typed text is paced so a remote session can keep up.** One instant burst is fine locally but
+    drops characters over RDP. Text now goes out in batches of 40 characters with 15 ms between
+    them — about 200 ms for a 500-character transcript, and both numbers are adjustable.
+
+  - **Focus is re-checked between batches.** Typing takes hundreds of milliseconds where a paste
+    took one keystroke, so Handy verifies the target is still the right one before each batch and
+    stops rather than typing the rest of your transcript into whatever stole focus.
+
+  **This is a behaviour change for remote desktop users** and one switch turns it off:
+  `Jumper › Remote desktop detection › Type into remote desktops instead of pasting`. Two honest
+  limits. It prevents *future* leaks only — it cannot remove transcripts already sitting in the
+  remote machine's clipboard history, and nothing Handy can do reaches those. And typed text can
+  trigger autocomplete, bracket auto-closing and IME behaviour that a paste does not, and arrives
+  as many undo steps rather than one.
+
+  **It deliberately does nothing to a transcript containing line breaks.** A paste inserts a
+  line break as inert text. Typing cannot -- it has to send each one as an Enter key press,
+  which is a command: in a chat box that sends the message, and in a form it submits. Your
+  first line would be posted and the rest sent as follow-up messages. Post-processed
+  transcripts are multi-line by construction (the default prompt asks for a summary and a
+  bulleted body), so this exemption is common, and for those the transcript still reaches
+  the remote clipboard. Posting half a dictation into a colleague's chat is a worse outcome
+  than the leak, and unlike the leak it cannot be undone.
+
+  It also deliberately does nothing when `Advanced › Clipboard Handling` is set to *Copy to Clipboard*.
+  That mode is defined by leaving the transcript on your clipboard after delivery, so redirection
+  carries it across however Handy delivered it — switching to typing would cost you its downsides
+  and buy no privacy. Use *Don't Modify Clipboard* if you want the remote clipboard left clean.
+
+
 ## [1.1.0] - 2026-08-17
 
 ### Fixed

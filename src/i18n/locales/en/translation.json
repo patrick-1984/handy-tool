@@ -513,6 +513,10 @@
         "groupTitle": "On-finish behavior",
         "label": "Only jump on finish if started the same way",
         "description": "When on, a flow's 'Jump slot action on finish' fires only if the take was started and finished with the same shortcut. Default: Off. Example: start with Transcribe and finish with Transcribe & Submit and you get no jump — the paste and the submit still happen, only the jump is gated. Turn it on if mixing the two shortcuts keeps teleporting you somewhere unexpected."
+      },
+      "directTypingForRemote": {
+        "label": "Type into remote desktops instead of pasting",
+        "description": "When the window you are dictating into is a remote desktop session, deliver the text as simulated keystrokes rather than through the clipboard. Default: on. Why it matters: a clipboard paste method has to put the transcript on your clipboard, and RDP or Citrix clipboard redirection then copies it across to the REMOTE machine's clipboard — a separate clipboard on a separate computer, kept in that machine's clipboard history. Restoring your own clipboard afterwards cannot reach it. Typing never touches a clipboard on either side. Honest limits: typed text can trigger autocomplete, bracket auto-closing and IME behaviour that a paste does not, and it arrives as many undo steps rather than one. Text is sent in small batches so a remote session can keep up. This prevents future leaks only — it cannot remove transcripts already sitting in the remote machine's clipboard history. Which windows count as remote is controlled by the match list above. Not applied when Clipboard handling is set to Copy to Clipboard: that deliberately leaves the transcript on your clipboard after delivery, so redirection carries it across either way and typing would cost you its downsides for nothing. It also does not apply to a transcript containing line breaks: typing has to send each line break as an Enter key press, which sends the message in a chat box and submits in a form, so multi-line transcripts keep your paste method and do reach the remote clipboard. *{Windows only}*"
       }
     },
     "translator": {

@@ -2099,6 +2099,45 @@ pub fn change_mute_while_recording_setting(app: AppHandle, enabled: bool) -> Res
     Ok(())
 }
 
+/// Type instead of pasting when the target is a remote desktop, so the
+/// transcript never reaches the remote machine's clipboard.
+#[tauri::command]
+#[specta::specta]
+pub fn change_direct_typing_for_remote_targets_setting(
+    app: AppHandle,
+    enabled: bool,
+) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    settings.direct_typing_for_remote_targets = enabled;
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
+/// Characters per batch when typing directly. Upper-bounded so a pathological
+/// value cannot ask for a gigantic allocation. `0` is preserved deliberately —
+/// it is the documented "never split" sentinel, so this must NOT clamp up to 1
+/// (that would silently turn "one burst" into one-character batches, the
+/// slowest possible setting).
+#[tauri::command]
+#[specta::specta]
+pub fn change_typing_chunk_chars_setting(app: AppHandle, chars: u32) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    settings.typing_chunk_chars = chars.min(settings::TYPING_CHUNK_CHARS_MAX);
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
+/// Pause between typed batches, in milliseconds. Upper bound keeps a 500-char
+/// transcript from taking longer than a few seconds even at the slowest setting.
+#[tauri::command]
+#[specta::specta]
+pub fn change_typing_chunk_delay_setting(app: AppHandle, delay: u32) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    settings.typing_chunk_delay_ms = delay.min(settings::TYPING_CHUNK_DELAY_MS_MAX);
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
 #[tauri::command]
 #[specta::specta]
 pub fn change_append_trailing_space_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
