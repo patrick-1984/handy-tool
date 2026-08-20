@@ -1,6 +1,20 @@
 fn main() {
-    #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
-    build_apple_intelligence_bridge();
+    // The Swift bridge must be built when the TARGET is macOS/aarch64 — which is
+    // NOT what `cfg!(target_arch)` reports here. In a build script those cfgs
+    // describe the HOST, so cross-compiling from an Intel Mac to arm64 silently
+    // skipped the bridge while the crate itself (gated on the target) still
+    // referenced its symbols, and the link failed with:
+    //     Undefined symbols for architecture arm64:
+    //       _is_apple_intelligence_available, _free_apple_llm_response, ...
+    // CARGO_CFG_TARGET_* are the target-side values, so use those instead.
+    #[cfg(target_os = "macos")]
+    {
+        let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap_or_default();
+        let target_arch = std::env::var("CARGO_CFG_TARGET_ARCH").unwrap_or_default();
+        if target_os == "macos" && target_arch == "aarch64" {
+            build_apple_intelligence_bridge();
+        }
+    }
 
     generate_tray_translations();
 
@@ -111,7 +125,7 @@ fn escape_string(s: &str) -> String {
         .replace('\t', "\\t")
 }
 
-#[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+#[cfg(target_os = "macos")]
 fn build_apple_intelligence_bridge() {
     use std::env;
     use std::path::{Path, PathBuf};

@@ -1,23 +1,33 @@
 # Changelog
 
 
-## [1.3.1] - 2026-08-20
+## [1.3.2] - 2026-08-20
 
 ### Added
 
-- **macOS builds are published again.** 1.3.0 shipped Windows only. This release adds macOS
-  packages for both Intel (`x86_64`) and Apple Silicon (`arm64`), as `.dmg` disk images and as
-  zipped `.app` bundles.
+- **macOS builds for Intel and Apple Silicon**, as `.dmg` disk images and zipped `.app` bundles.
+  1.3.0 shipped Windows only, and 1.3.1 was never released.
 
-  Two honest caveats. They are **unsigned and unnotarized**, so Gatekeeper will refuse them on
-  first open — right-click the app and choose *Open*, or clear the quarantine attribute. And the
-  Apple Silicon build is **cross-compiled from an Intel host and has not been run on Apple
-  Silicon hardware**; it is published so it can be tested, not because it has been verified.
+  Both are **unsigned and unnotarized**, so Gatekeeper refuses them on first open — right-click the
+  app and choose *Open*, or clear the quarantine attribute. The Apple Silicon build is
+  **cross-compiled from an Intel host and has not been run on Apple Silicon hardware**; it is
+  published so it can be tested, not because it has been verified.
+
+### Fixed
+
+- **The Apple Silicon build could not be produced at all.** `build.rs` decided whether to compile
+  the Apple Intelligence Swift bridge using `cfg!(target_arch)`, which in a build script describes
+  the machine doing the building rather than the machine being built for. Cross-compiling from an
+  Intel Mac therefore skipped the bridge while the application itself — gated on the real target —
+  still referenced its symbols, and the link failed with `Undefined symbols for architecture
+  arm64`. The decision now reads `CARGO_CFG_TARGET_OS` / `CARGO_CFG_TARGET_ARCH`, which are the
+  target's values. This only ever affected cross-compilation, which is why it went unnoticed: an
+  Apple Silicon build had never been attempted.
 
 ### Changed
 
-- No functional change to the application. The Windows build is identical to 1.3.0 apart from the
-  version string, so there is nothing to gain by updating if you are already on 1.3.0.
+- No functional change to the application on Windows. The Windows build is identical to 1.3.0 apart
+  from the version string, so there is nothing to gain by updating if you are already on 1.3.0.
 
 ## [1.3.0] - 2026-08-18
 

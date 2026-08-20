@@ -197,10 +197,36 @@ worse: it discards proc-macro DLLs that Smart App Control has already accepted,
 forcing them to be rebuilt with new hashes that are evaluated as unknown all
 over again.
 
-**What actually works.** The blocking is reputation-based and transient — retry
-the build. It typically clears within a few attempts with nothing changed. Keep
-the target directory intact between attempts so already-accepted DLLs are
-reused.
+**What actually works — and what does not.** The verdict is reputation-based. It
+is sometimes transient, in which case retrying with the target directory intact
+clears it within a few attempts. **But it can also be persistent**, and the two
+cases look identical in the build output. Tell them apart from the *hash suffix*
+in the error:
+
+- **Same DLL, same hash on every attempt** → the verdict is against that exact
+  cached file. Retrying only reloads the file SAC already rejected; it cannot
+  succeed. Stop retrying.
+- **Different DLLs or changing hashes** → genuinely transient. Retry.
+
+For the persistent case, a per-crate `cargo clean -p <crate> --release` looks
+like the answer — it forces a fresh artifact while leaving already-accepted DLLs
+alone. **It does not work, and it makes things worse.** Measured on
+2026-08-20: the rebuilt `schemars_derive.dll` was blocked within seconds, and
+removing it forced dependents to rebuild *their* proc-macros, taking the count of
+blocked DLLs from one to three (`schemars_derive`, `serde_with_macros`,
+`phf_macros`) and turning a single clear error into the `can't find crate for
+phf / html5ever / kuchikiki / serde_with` cascade. A fresh unsigned proc-macro
+gets evaluated as unknown, and when SAC is in a rejecting mood the replacement is
+refused too. The per-crate clean is not meaningfully safer than a full one.
+
+When it is persistent, the only things that actually help are **time** (wait for
+the cloud verdict to change, hours not minutes) or **building elsewhere** — this
+repository has `.github/workflows/windows-nsis-build.yml` for that, though note
+the updater signing key is deliberately absent from CI, so a CI-built installer
+still has to be signed locally with `tauri signer sign`.
+
+Do not disable Smart App Control to get past this. Turning it off is one-way:
+re-enabling requires a Windows reinstall.
 
 `proc-macro-hack` deserves a note because its filename alarms people:
 `proc_macro_hack-<hash>.dll` is the deprecated-but-published
