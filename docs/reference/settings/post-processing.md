@@ -6,7 +6,7 @@ Enable `Advanced › Post-processing › Post Processing = On` to reveal this pa
 
 ### Post-Processing Hotkey
 
-`Post Process › Hotkey › Post-Processing Hotkey` *{requires: Post-processing enabled}*
+`Post Process › Hotkey › Post-Processing Hotkey` _{requires: Post-processing enabled}_
 
 Sets the shortcut that transcribes and then sends the result through the configured provider and prompt. **Default:** `ctrl+shift+space`.
 
@@ -16,7 +16,7 @@ Catalog: [A second key for "clean this up with AI"](../../features.md#a-second-k
 
 ### Provider
 
-`Post Process › API (OpenAI Compatible) › Provider` *{requires: Post-processing enabled}*
+`Post Process › API (OpenAI Compatible) › Provider` _{requires: Post-processing enabled}_
 
 Selects a chat-capable entry from Registered LLM Providers. Its key, model, and base URL remain configured on [Advanced](advanced.md#registered-llm-providers). **Default:** no provider selected.
 
@@ -24,7 +24,7 @@ Catalog: [Configure a provider once, use it everywhere](../../features.md#config
 
 ### Temperature
 
-`Post Process › API (OpenAI Compatible) › Temperature` *{requires: Post-processing enabled}*
+`Post Process › API (OpenAI Compatible) › Temperature` _{requires: Post-processing enabled}_
 
 Sets sampling temperature from 0 through 1 for post-processing. **Default:** `0.3`.
 
@@ -32,7 +32,7 @@ Catalog: [Dial how creative the cleanup is allowed to be](../../features.md#dial
 
 ### Disable Thinking
 
-`Post Process › API (OpenAI Compatible) › Disable Thinking` *{requires: Post-processing enabled}*
+`Post Process › API (OpenAI Compatible) › Disable Thinking` _{requires: Post-processing enabled}_
 
 Requests suppression of reasoning output when the selected model supports the provider-specific option. **Default:** Off.
 
@@ -42,7 +42,7 @@ Catalog: [Dial how creative the cleanup is allowed to be](../../features.md#dial
 
 ### Selected Prompt
 
-`Post Process › Prompt › Selected Prompt` *{requires: Post-processing enabled}*
+`Post Process › Prompt › Selected Prompt` _{requires: Post-processing enabled}_
 
 Selects and edits the active prompt; its expanded editor creates, updates, or deletes saved prompts. **Default:** `Structure & Clean` (`default_structure`).
 

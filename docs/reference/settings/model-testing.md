@@ -73,6 +73,7 @@ Sets the instructions used by selected judge providers. **Default:** empty.
 Catalog: [Let a panel score the answers](../../features.md#let-a-panel-score-the-answers).
 
 <a id="judge-parameters"></a>
+
 ### Judge
 
 `Model Testing › Judge`
@@ -82,6 +83,7 @@ Sets judge temperature; the adjacent unlabeled choice uses the shared [Thinking]
 Catalog: [Thinking on or off, per model](../../features.md#thinking-on-or-off-per-model).
 
 <a id="model-parameters"></a>
+
 ### Models
 
 `Model Testing › Models`

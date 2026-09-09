@@ -1,6 +1,5 @@
 # Changelog
 
-
 ## [1.3.2] - 2026-08-20
 
 ### Added
@@ -9,7 +8,7 @@
   1.3.0 shipped Windows only, and 1.3.1 was never released.
 
   Both are **unsigned and unnotarized**, so Gatekeeper refuses them on first open — right-click the
-  app and choose *Open*, or clear the quarantine attribute. The Apple Silicon build is
+  app and choose _Open_, or clear the quarantine attribute. The Apple Silicon build is
   **cross-compiled from an Intel host and has not been run on Apple Silicon hardware**; it is
   published so it can be tested, not because it has been verified.
 
@@ -20,7 +19,7 @@
   the machine doing the building rather than the machine being built for. Cross-compiling from an
   Intel Mac therefore skipped the bridge while the application itself — gated on the real target —
   still referenced its symbols, and the link failed with `Undefined symbols for architecture
-  arm64`. The decision now reads `CARGO_CFG_TARGET_OS` / `CARGO_CFG_TARGET_ARCH`, which are the
+arm64`. The decision now reads `CARGO_CFG_TARGET_OS` / `CARGO_CFG_TARGET_ARCH`, which are the
   target's values. This only ever affected cross-compilation, which is why it went unnoticed: an
   Apple Silicon build had never been attempted.
 
@@ -39,13 +38,13 @@
   this release ends it — there is nothing to turn off, because the switch is gone.
 
   Why it failed, precisely, because it is not what the 1.2.0 notes assumed. Typing sent each batch
-  of 40 characters as a *single instantaneous burst* of input events into the remote session's
+  of 40 characters as a _single instantaneous burst_ of input events into the remote session's
   virtual channel; pausing between bursts does not make any one burst gentler. Worse, when the take
   used Transcribe & Submit, the Enter key fired about 50 ms after the last batch — while the text
   was still crossing the wire. The message got submitted in pieces. That is where the phantom "line
   breaks" came from: not from your dictation, but from Enter arriving too early, repeatedly.
 
-  Keystroke delivery has not been removed, only the *automatic* targeting of it. If you want it,
+  Keystroke delivery has not been removed, only the _automatic_ targeting of it. If you want it,
   choose it deliberately: `Advanced › Transcription › Transcribe › Paste method = Direct`. It
   carries the caveats it always did, and the catalog has said so all along — it can drop characters
   in RDP, Citrix and VM consoles.
@@ -61,7 +60,7 @@
   older than 1.2.0 and worth understanding, because it silently affected clipboard pastes too.
 
   The remote-specific delays — the ones you configure per Local / Remote desktop — were only ever
-  applied when Handy had *jumped* to the target window. Dictating into a remote window that already
+  applied when Handy had _jumped_ to the target window. Dictating into a remote window that already
   had focus, which is the ordinary way most people work, took neither branch and got **no wait at
   all**. A `Submit delay before Enter = 500 ms` setting could sit there for months and never once
   apply. Remote targets now get their remote timing whether Handy activated the window or not.
@@ -69,7 +68,7 @@
   An already-focused **local** target still submits instantly. That is deliberate and there is a
   test named after it: the fix must not add a quarter of a second to every ordinary dictation.
 
-  The setting was called *Submit delay after jump* — which was true before and is not now. It is
+  The setting was called _Submit delay after jump_ — which was true before and is not now. It is
   now **Submit delay before Enter**. Your configured value is preserved.
 
 - **A failed submit no longer tells you the text was not delivered.** When focus moved during the
@@ -98,7 +97,6 @@
   Unset by default — it changes nothing until you pick a value. Stated plainly in the setting: a
   longer restore leaves the transcript on your clipboard for longer.
 
-
 ## [1.2.0] - 2026-08-18
 
 ### Fixed
@@ -106,14 +104,13 @@
 - **Your dictation no longer ends up on the remote machine's clipboard.** With "Don't Modify
   Clipboard" set, transcriptions still turned up on the clipboard of the RDP or Citrix host you
   were dictating into. The local fixes in 1.1.0 were working exactly as intended — this is a
-  different leak, one floor down. A clipboard paste method *has* to put the transcript on your
+  different leak, one floor down. A clipboard paste method _has_ to put the transcript on your
   local clipboard, and clipboard redirection then copies it across to the remote computer's own
   clipboard and its clipboard history. That is a separate clipboard on a separate operating
   system. Restoring yours afterwards cannot reach it; Handy has no handle on it at all.
 
   Handy now **types** into remote desktops instead of pasting, which touches no clipboard on
   either machine. Three parts:
-
   - **Remote targets are recognised even when you did not jump to them.** Previously a window only
     counted as remote if Handy had jumped to it, which missed the ordinary case of dictating into
     a remote window that already had focus. Which windows count as remote still comes from your
@@ -129,7 +126,7 @@
 
   **This is a behaviour change for remote desktop users** and one switch turns it off:
   `Jumper › Remote desktop detection › Type into remote desktops instead of pasting`. Two honest
-  limits. It prevents *future* leaks only — it cannot remove transcripts already sitting in the
+  limits. It prevents _future_ leaks only — it cannot remove transcripts already sitting in the
   remote machine's clipboard history, and nothing Handy can do reaches those. And typed text can
   trigger autocomplete, bracket auto-closing and IME behaviour that a paste does not, and arrives
   as many undo steps rather than one.
@@ -143,11 +140,10 @@
   the remote clipboard. Posting half a dictation into a colleague's chat is a worse outcome
   than the leak, and unlike the leak it cannot be undone.
 
-  It also deliberately does nothing when `Advanced › Clipboard Handling` is set to *Copy to Clipboard*.
+  It also deliberately does nothing when `Advanced › Clipboard Handling` is set to _Copy to Clipboard_.
   That mode is defined by leaving the transcript on your clipboard after delivery, so redirection
   carries it across however Handy delivered it — switching to typing would cost you its downsides
-  and buy no privacy. Use *Don't Modify Clipboard* if you want the remote clipboard left clean.
-
+  and buy no privacy. Use _Don't Modify Clipboard_ if you want the remote clipboard left clean.
 
 ## [1.1.0] - 2026-08-17
 
@@ -157,16 +153,15 @@
   is the default — old transcriptions could still end up on your clipboard and stay there,
   displacing what you had copied. Several separate faults combined to cause it, and all of them
   are fixed:
-
   - **Handy could hand you back one of its own transcripts as if it were your clipboard.** When a
-    transcript was already sitting on the clipboard, the next dictation captured *that* as "your
+    transcript was already sitting on the clipboard, the next dictation captured _that_ as "your
     previous clipboard" and faithfully restored it afterwards — so one leak became permanent, and
     every later dictation re-restored the same old text. Handy now recognises its own writing and
     restores what was really yours.
 
   - **A failed delivery wrote your clipboard anyway.** When an anchored jump or a paste could not
     be verified, the transcript was parked on the clipboard to avoid losing it — ignoring your
-    setting entirely. It no longer does. The take is not lost: it is saved to History *before*
+    setting entirely. It no longer does. The take is not lost: it is saved to History _before_
     delivery is attempted, and the failure message now tells you to press your Paste Last
     Transcription shortcut, naming the actual key you have bound to it.
 
@@ -195,7 +190,7 @@
 
 - **A recovery that could go stale.** The in-memory "last transcription" buffer behind the Paste
   Last shortcut was skipped rather than recovered if its lock had been poisoned by an unrelated
-  crash, which would have left the shortcut re-pasting an *older* take. It now recovers.
+  crash, which would have left the shortcut re-pasting an _older_ take. It now recovers.
 
 - **Multi-line dictation with unusual line endings.** A lone carriage return was dropped entirely
   when typing, silently joining two lines into one.
@@ -237,8 +232,6 @@
   architecture-matched Visual C++ runtime DLLs are deployed app-locally beside
   `handy.exe`. This preserves the current-user/no-admin install while fixing the
   `MSVCP140.dll was not found` loader failure reproduced by WinGet Sandbox.
-
-
 
 ## [1.0.3] - 2026-08-07
 
@@ -318,6 +311,7 @@
 ### Fixed
 
 - **A portable copy will no longer install a second, normal copy of itself.** The updater would have downloaded the Windows installer and run it, quietly creating an ordinary installation in `%LOCALAPPDATA%` with registry entries and leaving the portable folder stale. Portable builds now check for updates and point you at the new ZIP instead, and the nightly silent-update schedule can never fire an installer there. No portable build was ever published before this release, so no one could have hit it — it is closed before the first portable ZIP exists.
+
 ## [1.0.0] - 2026-08-06
 
 **First public release.** The version number marks the point where this stops being one
@@ -379,7 +373,7 @@ paste method is a dropdown. See `docs/start/` for the guided route and
   - A **manual "Update now"** ignores the schedule and the silent-update setting. It does
     not ignore the recording guard or the signature check.
   - **Portable installs are check-only.** Running the NSIS installer against a
-    `portable.marker` copy would create a *second*, installed copy rather than replace the
+    `portable.marker` copy would create a _second_, installed copy rather than replace the
     portable one, so in-place updating is refused there and you are pointed at the download.
 - **An update banner below About** in the sidebar, showing exactly one state at a time:
   checking, available, downloading with progress, ready to restart, waiting for dictation
@@ -390,7 +384,7 @@ paste method is a dropdown. See `docs/start/` for the guided route and
   until at least one LLM provider has a key, and both used to leave you to find
   Advanced → Providers yourself.
 - **Current Audio now explains itself.** The panel says when text appears progressively
-  (the shortcut you pressed is set to Live *and* you are on a local model) and when the
+  (the shortcut you pressed is set to Live _and_ you are on a local model) and when the
   whole transcript arrives at once (Post-Recording, API Transcription, OpenRouter
   Transcription) — instead of looking broken while it waits.
 - **A written documentation set** in `docs/`: a numbered install-to-working-setup path, a
@@ -452,7 +446,7 @@ paste method is a dropdown. See `docs/start/` for the guided route and
   not log transcript content. Debug logging is still available when you are diagnosing
   something (Debug page → log level), and it still writes what it always did — that is now a
   choice you make, not the default.
-- **Log files no longer accumulate forever.** Rotation kept *every* rotated 10 MB file, with
+- **Log files no longer accumulate forever.** Rotation kept _every_ rotated 10 MB file, with
   nothing cleaning them up — history retention does not touch logs — so the oldest dictation
   metadata on the machine could outlive the recordings it described. At most three files are
   now retained (~30 MB), which is enough recent context to diagnose a failure and a bounded
@@ -464,6 +458,7 @@ paste method is a dropdown. See `docs/start/` for the guided route and
   with the manual-download fallback, never as "no update available". This is minisign
   verification of the update payload — it is not Authenticode, so a manually downloaded
   installer can still show a SmartScreen "unknown publisher" warning.
+
 ## [0.63.0] - 2026-08-01
 
 ### Added

@@ -14,14 +14,14 @@ See [A handy command on your PATH](../features.md#a-handy-command-on-your-path) 
 
 ## Six desktop flags
 
-| Flag | Effect | Example |
-| --- | --- | --- |
-| `CLI › handy --start-hidden` | Starts without showing the main window. | `handy --start-hidden` |
-| `CLI › handy --no-tray` | Starts without the tray icon. | `handy --no-tray` |
-| `CLI › handy --toggle-transcription` | Sends a Transcribe press to the running instance; invoke it again to stop. | `handy --toggle-transcription` |
-| `CLI › handy --toggle-post-process` | Sends a Transcribe with Post-Processing press. | `handy --toggle-post-process` |
-| `CLI › handy --cancel` | Sends Cancel. Current Cancel Behavior decides whether the take is saved silently or discarded. | `handy --cancel` |
-| `CLI › handy --debug` | Starts with debug mode and verbose logging. | `handy --debug` |
+| Flag                                 | Effect                                                                                         | Example                        |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------- | ------------------------------ |
+| `CLI › handy --start-hidden`         | Starts without showing the main window.                                                        | `handy --start-hidden`         |
+| `CLI › handy --no-tray`              | Starts without the tray icon.                                                                  | `handy --no-tray`              |
+| `CLI › handy --toggle-transcription` | Sends a Transcribe press to the running instance; invoke it again to stop.                     | `handy --toggle-transcription` |
+| `CLI › handy --toggle-post-process`  | Sends a Transcribe with Post-Processing press.                                                 | `handy --toggle-post-process`  |
+| `CLI › handy --cancel`               | Sends Cancel. Current Cancel Behavior decides whether the take is saved silently or discarded. | `handy --cancel`               |
+| `CLI › handy --debug`                | Starts with debug mode and verbose logging.                                                    | `handy --debug`                |
 
 Launch flags can be combined:
 
@@ -41,22 +41,22 @@ Runs one prompt across provider IDs or names, optionally asks a judge panel to a
 handy model-test --run "anthropic,openrouter1" --judge "gemini" --prompt "Propose three failure cases for a retry queue." --out model-test-report.md
 ```
 
-| Argument | Required | Meaning |
-| --- | --- | --- |
-| `--run <ids-or-names>` | Yes | Comma-separated runner provider IDs or names. |
-| `--judge <ids-or-names>` | No | Comma-separated judge provider IDs or names. |
-| `--prompt <text>` | No | Inline main prompt; takes precedence over `--prompt-file`. |
-| `--prompt-file <path>` | No | Reads the main prompt from a file. |
-| `--judge-prompt <text>` | No | Inline judge instructions; takes precedence over `--judge-prompt-file`. |
-| `--judge-prompt-file <path>` | No | Reads judge instructions from a file. |
-| `--preset <name-or-id>` | No | Uses a saved prompt preset. |
-| `--model-temp <number>` | No | Runner temperature; default `0.3`. |
-| `--model-thinking <auto|on|off>` | No | Runner thinking mode; default `auto`. |
-| `--judge-temp <number>` | No | Judge temperature; default `0.3`. |
-| `--judge-thinking <auto|on|off>` | No | Judge thinking mode; default `auto`. |
-| `--image <path>` | No | Attaches an image as a data URL for vision-capable runners. |
-| `--out <path>` | No | Writes Markdown relative to the shell directory; otherwise prints it. |
-| `--json` | No | Prints full JSON instead of Markdown. |
+| Argument                     | Required | Meaning                                                                 |
+| ---------------------------- | -------- | ----------------------------------------------------------------------- | --- | ------------------------------------- |
+| `--run <ids-or-names>`       | Yes      | Comma-separated runner provider IDs or names.                           |
+| `--judge <ids-or-names>`     | No       | Comma-separated judge provider IDs or names.                            |
+| `--prompt <text>`            | No       | Inline main prompt; takes precedence over `--prompt-file`.              |
+| `--prompt-file <path>`       | No       | Reads the main prompt from a file.                                      |
+| `--judge-prompt <text>`      | No       | Inline judge instructions; takes precedence over `--judge-prompt-file`. |
+| `--judge-prompt-file <path>` | No       | Reads judge instructions from a file.                                   |
+| `--preset <name-or-id>`      | No       | Uses a saved prompt preset.                                             |
+| `--model-temp <number>`      | No       | Runner temperature; default `0.3`.                                      |
+| `--model-thinking <auto      | on       | off>`                                                                   | No  | Runner thinking mode; default `auto`. |
+| `--judge-temp <number>`      | No       | Judge temperature; default `0.3`.                                       |
+| `--judge-thinking <auto      | on       | off>`                                                                   | No  | Judge thinking mode; default `auto`.  |
+| `--image <path>`             | No       | Attaches an image as a data URL for vision-capable runners.             |
+| `--out <path>`               | No       | Writes Markdown relative to the shell directory; otherwise prints it.   |
+| `--json`                     | No       | Prints full JSON instead of Markdown.                                   |
 
 At least `--run` is required. A preset can supply prompts; otherwise provide a prompt for a useful run. See [Scriptable model tests that produce the same artifact as the interface](../features.md#scriptable-model-tests-that-match-the-interface).
 
@@ -68,11 +68,11 @@ Counts with Handy’s built-in offline tokenizer command; this CLI subcommand do
 handy token-count --file .\prompt.txt --tokenizer o200k_base
 ```
 
-| Argument | Required | Meaning |
-| --- | --- | --- |
-| `<text>` | One input form | Positional inline text. |
-| `--file <path>` | One input form | Reads a file. Inline text wins if both are present. |
-| `--tokenizer <name>` | No | Tokenizer name; default `cl100k_base`. |
+| Argument             | Required       | Meaning                                             |
+| -------------------- | -------------- | --------------------------------------------------- |
+| `<text>`             | One input form | Positional inline text.                             |
+| `--file <path>`      | One input form | Reads a file. Inline text wins if both are present. |
+| `--tokenizer <name>` | No             | Tokenizer name; default `cl100k_base`.              |
 
 Inline example: `handy token-count "Summarize the incident without assigning blame."`
 
@@ -123,19 +123,19 @@ Updates one registered provider and prints the redacted record.
 handy providers-set --id openrouter1 --model "openai/gpt-4.1-mini" --enabled true
 ```
 
-| Argument | Required | Meaning |
-| --- | --- | --- |
-| `--id <provider-id>` | Yes | Existing provider ID. |
-| `--model <model-id>` | No | Model ID; changing it can auto-fill known costs. |
-| `--api-key <key>` | No | Persists a key. It is not returned later, but the literal can remain in shell history and process inspection. |
-| `--name <name>` | No | Display name. |
-| `--base-url <url>` | No | Base URL. Handy permits HTTP; use HTTPS for remote providers. |
-| `--enabled <true|false>` | No | Provider enabled state. |
-| `--sequential <true|false>` | No | Serializes the provider with its concurrency family. |
-| `--concurrency-group <name>` | No | Concurrency-family name. |
-| `--persist-price <true|false>` | No | Retains manual prices instead of replacing them from provider data. |
-| `--cost-input <number>` | No | Input USD per million tokens. |
-| `--cost-output <number>` | No | Output USD per million tokens. |
+| Argument                     | Required | Meaning                                                                                                       |
+| ---------------------------- | -------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `--id <provider-id>`         | Yes      | Existing provider ID.                                                                                         |
+| `--model <model-id>`         | No       | Model ID; changing it can auto-fill known costs.                                                              |
+| `--api-key <key>`            | No       | Persists a key. It is not returned later, but the literal can remain in shell history and process inspection. |
+| `--name <name>`              | No       | Display name.                                                                                                 |
+| `--base-url <url>`           | No       | Base URL. Handy permits HTTP; use HTTPS for remote providers.                                                 |
+| `--enabled <true             | false>`  | No                                                                                                            | Provider enabled state.                                             |
+| `--sequential <true          | false>`  | No                                                                                                            | Serializes the provider with its concurrency family.                |
+| `--concurrency-group <name>` | No       | Concurrency-family name.                                                                                      |
+| `--persist-price <true       | false>`  | No                                                                                                            | Retains manual prices instead of replacing them from provider data. |
+| `--cost-input <number>`      | No       | Input USD per million tokens.                                                                                 |
+| `--cost-output <number>`     | No       | Output USD per million tokens.                                                                                |
 
 An API key is write-only over MCP/CLI, but remains plaintext in settings and backups. See [An agent can set a key but never read one](../features.md#an-agent-can-set-a-key-but-never-read-one).
 
@@ -177,9 +177,9 @@ POST requests require the token and bind to `127.0.0.1`, but another process run
 
 macOS and Linux builds are planned and unavailable in 1.0.0. The source reserves these Unix signals for future builds:
 
-| Signal | Planned action | Future Unix example |
-| --- | --- | --- |
-| `SIGUSR2` | Toggle ordinary transcription. | `kill -USR2 $(pidof handy)` |
+| Signal    | Planned action                             | Future Unix example         |
+| --------- | ------------------------------------------ | --------------------------- |
+| `SIGUSR2` | Toggle ordinary transcription.             | `kill -USR2 $(pidof handy)` |
 | `SIGUSR1` | Toggle transcription with post-processing. | `kill -USR1 $(pidof handy)` |
 
 They are one-shot toggles, not Push-to-Talk. They cannot be used with today’s Windows-only release.

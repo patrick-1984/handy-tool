@@ -110,18 +110,43 @@ function parseArgs(argv) {
     };
     const name = a.split("=")[0];
     switch (name) {
-      case "--docs": o.docs = val(); break;
-      case "--i18n": o.i18n = val(); break;
-      case "--nav-map": o.navMap = val(); break;
-      case "--sep": o.sep = val(); break;
-      case "--threshold": o.threshold = Number(val()); break;
-      case "--fix-suggestions": o.fixSuggestions = true; break;
-      case "--strict": o.strict = true; break;
-      case "--warn-only": o.warnOnly = true; break;
-      case "--json": o.json = true; break;
-      case "--loose": o.loose = true; break;
-      case "--quiet": o.quiet = true; break;
-      case "-h": case "--help": o.help = true; break;
+      case "--docs":
+        o.docs = val();
+        break;
+      case "--i18n":
+        o.i18n = val();
+        break;
+      case "--nav-map":
+        o.navMap = val();
+        break;
+      case "--sep":
+        o.sep = val();
+        break;
+      case "--threshold":
+        o.threshold = Number(val());
+        break;
+      case "--fix-suggestions":
+        o.fixSuggestions = true;
+        break;
+      case "--strict":
+        o.strict = true;
+        break;
+      case "--warn-only":
+        o.warnOnly = true;
+        break;
+      case "--json":
+        o.json = true;
+        break;
+      case "--loose":
+        o.loose = true;
+        break;
+      case "--quiet":
+        o.quiet = true;
+        break;
+      case "-h":
+      case "--help":
+        o.help = true;
+        break;
       default:
         if (name.startsWith("-")) {
           console.error(`Unknown option: ${name}`);
@@ -133,17 +158,22 @@ function parseArgs(argv) {
 }
 
 const opts = parseArgs(process.argv.slice(2));
-if (opts.help) { console.log(HELP.trim()); process.exit(0); }
+if (opts.help) {
+  console.log(HELP.trim());
+  process.exit(0);
+}
 
 const DOCS_DIR = resolve(opts.docs || join(DEFAULT_ROOT, "docs"));
 const I18N_FILE = resolve(
-  opts.i18n || join(DEFAULT_ROOT, "src", "i18n", "locales", "en", "translation.json")
+  opts.i18n ||
+    join(DEFAULT_ROOT, "src", "i18n", "locales", "en", "translation.json"),
 );
 const NAV_MAP_FILE = resolve(
-  opts.navMap ||
-    join(HERE, "nav-map.json") // sibling agent writes it next to this script by default
+  opts.navMap || join(HERE, "nav-map.json"), // sibling agent writes it next to this script by default
 );
-const SEPARATORS = (opts.sep ? opts.sep.split(",") : ["->", "\u2192", ">", "\u203a", "\u00bb"])
+const SEPARATORS = (
+  opts.sep ? opts.sep.split(",") : ["->", "\u2192", ">", "\u203a", "\u00bb"]
+)
   .map((s) => s.trim())
   .filter(Boolean);
 
@@ -176,10 +206,10 @@ function flattenTranslations(node, prefix = "", out = []) {
  */
 function normalize(s) {
   return String(s)
-    .replace(/\{\{[^}]*\}\}/g, " ")          // i18n interpolation {{count}}
-    .replace(/[\u2018\u2019]/g, "'")          // curly single quotes
-    .replace(/[\u201c\u201d]/g, '"')          // curly double quotes
-    .replace(/[\u2010-\u2015\u2212]/g, "-")   // all dash flavours -> hyphen
+    .replace(/\{\{[^}]*\}\}/g, " ") // i18n interpolation {{count}}
+    .replace(/[\u2018\u2019]/g, "'") // curly single quotes
+    .replace(/[\u201c\u201d]/g, '"') // curly double quotes
+    .replace(/[\u2010-\u2015\u2212]/g, "-") // all dash flavours -> hyphen
     .replace(/[\u2026]/g, "...")
     .toLowerCase()
     .replace(/&/g, " and ")
@@ -195,7 +225,9 @@ if (!existsSync(I18N_FILE)) {
 
 let translationPairs;
 try {
-  translationPairs = flattenTranslations(JSON.parse(readFileSync(I18N_FILE, "utf8")));
+  translationPairs = flattenTranslations(
+    JSON.parse(readFileSync(I18N_FILE, "utf8")),
+  );
 } catch (e) {
   console.error(`FATAL: could not parse ${I18N_FILE}: ${e.message}`);
   process.exit(2);
@@ -225,8 +257,9 @@ function matchesInterpolatedLabel(label, templates) {
       .split(/(\{\{[^}]+\}\})/g)
       .map((part) =>
         /^\{\{[^}]+\}\}$/.test(part)
-          ? /^(?:index|count|percent|percentage|seconds|ms|start|end|total|done|failed|matched|typed)$/i
-              .test(part.slice(2, -2).trim())
+          ? /^(?:index|count|percent|percentage|seconds|ms|start|end|total|done|failed|matched|typed)$/i.test(
+              part.slice(2, -2).trim(),
+            )
             ? "\\d+(?:\\.\\d+)?"
             : ".+?"
           : part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
@@ -238,14 +271,20 @@ function matchesInterpolatedLabel(label, templates) {
 
 /** Accept an exact translation or a concrete UI rendering of an i18n template. */
 function isKnownLabel(label) {
-  return LABELS.has(label) || NAV_LABELS.has(label) || RESERVED_LABELS.has(label) ||
+  return (
+    LABELS.has(label) ||
+    NAV_LABELS.has(label) ||
+    RESERVED_LABELS.has(label) ||
     matchesInterpolatedLabel(label, INTERPOLATED_LABELS) ||
-    matchesInterpolatedLabel(label, NAV_INTERPOLATED_LABELS);
+    matchesInterpolatedLabel(label, NAV_INTERPOLATED_LABELS)
+  );
 }
 
 /** Used only to diagnose keyed nav-map entries that drifted from i18n. */
 function isKnownTranslationLabel(label) {
-  return LABELS.has(label) || matchesInterpolatedLabel(label, INTERPOLATED_LABELS);
+  return (
+    LABELS.has(label) || matchesInterpolatedLabel(label, INTERPOLATED_LABELS)
+  );
 }
 /** normalized -> [{key,value}] for near-miss / cosmetic-drift detection. */
 const BY_NORM = new Map();
@@ -257,7 +296,8 @@ for (const p of translationPairs) {
 }
 /** value -> first i18n key, for reporting provenance. */
 const KEY_OF = new Map();
-for (const p of translationPairs) if (!KEY_OF.has(p.value)) KEY_OF.set(p.value, p.key);
+for (const p of translationPairs)
+  if (!KEY_OF.has(p.value)) KEY_OF.set(p.value, p.key);
 
 /* ------------------------------------------------------------------ *
  * 3. Optional nav-map.json (contract documented in checker-README.md)
@@ -275,7 +315,12 @@ for (const p of translationPairs) if (!KEY_OF.has(p.value)) KEY_OF.set(p.value, 
  * decides pass/fail. The nav-map buys us (a) page-scoped "did you mean"
  * suggestions and (b) detection of nav-map entries that have themselves drifted.
  */
-const navMap = { loaded: false, entries: [], labelsByPage: new Map(), stale: [] };
+const navMap = {
+  loaded: false,
+  entries: [],
+  labelsByPage: new Map(),
+  stale: [],
+};
 
 function loadNavMap(file) {
   if (!existsSync(file)) return;
@@ -286,7 +331,11 @@ function loadNavMap(file) {
     navMap.parseError = e.message;
     return;
   }
-  const entries = Array.isArray(raw) ? raw : Array.isArray(raw?.entries) ? raw.entries : [];
+  const entries = Array.isArray(raw)
+    ? raw
+    : Array.isArray(raw?.entries)
+      ? raw.entries
+      : [];
   if (!entries.length) return;
   navMap.loaded = true;
   for (const e of entries) {
@@ -297,36 +346,54 @@ function loadNavMap(file) {
     // `control` is the LABEL when there is no explicit `label` field, and the control
     // TYPE when there is. Everything else falls back through the aliases.
     const label =
-      typeof e.label === "string" ? e.label
-      : typeof e.control === "string" ? e.control
-      : typeof e.title === "string" ? e.title
-      : null;
+      typeof e.label === "string"
+        ? e.label
+        : typeof e.control === "string"
+          ? e.control
+          : typeof e.title === "string"
+            ? e.title
+            : null;
     if (!label) continue;
     const rec = {
       page: e.page ?? null,
       tab: e.tab ?? null,
       group: e.group ?? null,
       sidebarGroup: e.sidebarGroup ?? null,
-      control: e.type ?? (typeof e.label === "string" ? e.control : null) ?? null,
+      control:
+        e.type ?? (typeof e.label === "string" ? e.control : null) ?? null,
       label,
       key: e.key ?? e.titleKey ?? null,
       options: Array.isArray(e.options)
-        ? e.options.map((o) => (typeof o === "string" ? o : o?.label)).filter(Boolean)
+        ? e.options
+            .map((o) => (typeof o === "string" ? o : o?.label))
+            .filter(Boolean)
         : [],
-      labels: Array.isArray(e.labels) ? e.labels.filter((v) => typeof v === "string") : [],
+      labels: Array.isArray(e.labels)
+        ? e.labels.filter((v) => typeof v === "string")
+        : [],
     };
     navMap.entries.push(rec);
     const authoritativeLabels = [
-      rec.page, rec.tab, rec.group, rec.sidebarGroup, rec.label, ...rec.options, ...rec.labels,
-    ]
-      .filter((value) => typeof value === "string" && value.length > 0);
+      rec.page,
+      rec.tab,
+      rec.group,
+      rec.sidebarGroup,
+      rec.label,
+      ...rec.options,
+      ...rec.labels,
+    ].filter((value) => typeof value === "string" && value.length > 0);
     for (const value of authoritativeLabels) {
       NAV_LABELS.add(value);
-      if (/\{\{[^}]+\}\}/.test(value) && !NAV_INTERPOLATED_LABELS.includes(value)) {
+      if (
+        /\{\{[^}]+\}\}/.test(value) &&
+        !NAV_INTERPOLATED_LABELS.includes(value)
+      ) {
         NAV_INTERPOLATED_LABELS.push(value);
       }
     }
-    for (const scope of [rec.page, rec.tab, rec.group, rec.sidebarGroup].filter(Boolean)) {
+    for (const scope of [rec.page, rec.tab, rec.group, rec.sidebarGroup].filter(
+      Boolean,
+    )) {
       if (!navMap.labelsByPage.has(scope)) navMap.labelsByPage.set(scope, []);
       navMap.labelsByPage.get(scope).push(rec);
     }
@@ -338,9 +405,9 @@ function loadNavMap(file) {
     // and reporting them buries the real signal. They are still loaded, because the
     // "valid options are ..." suggestion depends on them.
     const isPlaceholder =
-      /^<.*>$/.test(rec.label) ||        // doc placeholder: <model name>
-      rec.label.includes("…") ||     // collapsed range: "Slot 2 ... Slot 9"
-      rec.label.includes(" / ");          // collapsed alternatives
+      /^<.*>$/.test(rec.label) || // doc placeholder: <model name>
+      rec.label.includes("…") || // collapsed range: "Slot 2 ... Slot 9"
+      rec.label.includes(" / "); // collapsed alternatives
     // A null key denotes a runtime/hardcoded control label; translation.json cannot
     // validate it. Keyed labels, including concrete renderings of templates, must match.
     if (rec.key && !isKnownTranslationLabel(rec.label) && !isPlaceholder) {
@@ -349,7 +416,11 @@ function loadNavMap(file) {
   }
 }
 loadNavMap(NAV_MAP_FILE);
-const KNOWN_LABEL_COUNT = new Set([...LABELS, ...NAV_LABELS, ...RESERVED_LABELS]).size;
+const KNOWN_LABEL_COUNT = new Set([
+  ...LABELS,
+  ...NAV_LABELS,
+  ...RESERVED_LABELS,
+]).size;
 
 /* ------------------------------------------------------------------ *
  * 4. String similarity (built-in, no dependencies)
@@ -370,7 +441,9 @@ function levenshtein(a, b) {
       const cost = ca === b.charCodeAt(j - 1) ? 0 : 1;
       cur[j] = Math.min(cur[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost);
     }
-    const t = prev; prev = cur; cur = t;
+    const t = prev;
+    prev = cur;
+    cur = t;
   }
   return prev[b.length];
 }
@@ -404,10 +477,16 @@ function suggest(label, scopeHints = [], limit = 3, parentControl = null) {
   // nav-map knows that control's real option list. Enumerate the valid options
   // outright — string similarity cannot know that "Realtime" should be "Live".
   if (parentControl) {
-    const rec = navMap.entries.find((e) => e.label === parentControl && e.options.length);
+    const rec = navMap.entries.find(
+      (e) => e.label === parentControl && e.options.length,
+    );
     if (rec) {
       return rec.options.slice(0, 6).map((v) => ({
-        value: v, key: KEY_OF.get(v) || rec.key, score: 1, scoped: true, validOption: true,
+        value: v,
+        key: KEY_OF.get(v) || rec.key,
+        score: 1,
+        scoped: true,
+        validOption: true,
       }));
     }
   }
@@ -426,26 +505,42 @@ function suggest(label, scopeHints = [], limit = 3, parentControl = null) {
     if (!cand) continue;
     // Long prose strings are never breadcrumb leaves; skip to keep suggestions sane.
     if (p.value.length > 80) continue;
-    let score = Math.max(ratio(target, cand), tokenOverlap(target, cand) * 0.95);
-    if (cand === target) score = 1;                       // cosmetic-only difference
-    else if (cand.includes(target) || target.includes(cand)) score = Math.max(score, 0.8);
+    let score = Math.max(
+      ratio(target, cand),
+      tokenOverlap(target, cand) * 0.95,
+    );
+    if (cand === target)
+      score = 1; // cosmetic-only difference
+    else if (cand.includes(target) || target.includes(cand))
+      score = Math.max(score, 0.8);
     if (scoped.has(p.value)) score = Math.min(1, score + 0.08);
-    if (score > 0) scored.push({ value: p.value, key: p.key, score, scoped: scoped.has(p.value) });
+    if (score > 0)
+      scored.push({
+        value: p.value,
+        key: p.key,
+        score,
+        scoped: scoped.has(p.value),
+      });
   }
   for (const value of NAV_LABELS) {
     if (LABELS.has(value)) continue;
     const cand = normalize(value);
     if (!cand || value.length > 80) continue;
-    let score = Math.max(ratio(target, cand), tokenOverlap(target, cand) * 0.95);
+    let score = Math.max(
+      ratio(target, cand),
+      tokenOverlap(target, cand) * 0.95,
+    );
     if (cand === target) score = 1;
-    else if (cand.includes(target) || target.includes(cand)) score = Math.max(score, 0.8);
+    else if (cand.includes(target) || target.includes(cand))
+      score = Math.max(score, 0.8);
     if (scoped.has(value)) score = Math.min(1, score + 0.08);
-    if (score > 0) scored.push({
-      value,
-      key: KEY_OF.get(value) || null,
-      score,
-      scoped: scoped.has(value),
-    });
+    if (score > 0)
+      scored.push({
+        value,
+        key: KEY_OF.get(value) || null,
+        score,
+        scoped: scoped.has(value),
+      });
   }
 
   scored.sort((a, b) => b.score - a.score || a.value.length - b.value.length);
@@ -465,7 +560,14 @@ function suggest(label, scopeHints = [], limit = 3, parentControl = null) {
  * 5. Docs discovery
  * ------------------------------------------------------------------ */
 
-const SKIP_DIRS = new Set(["node_modules", ".git", "target", "dist", "build", ".next"]);
+const SKIP_DIRS = new Set([
+  "node_modules",
+  ".git",
+  "target",
+  "dist",
+  "build",
+  ".next",
+]);
 
 /** Repo-relative POSIX path for reporting; falls back to absolute when outside the repo. */
 function displayPath(abs) {
@@ -524,12 +626,16 @@ const SEG = `(?:${QUOTED_SEG}|${BARE_SEG})`;
 const CHAIN_RE = new RegExp(`${SEG}(?:(?:${SEP_RE_SRC})${SEG})+`, "g");
 
 // Trailing dropdown selection: ... = "Live"  /  ... set to "Live"  /  ... : "Live"
-const OPTION_RE = new RegExp(`^\\s*(?:=|:|set to|choose|select)\\s*(${QUOTED_SEG})`, "i");
+const OPTION_RE = new RegExp(
+  `^\\s*(?:=|:|set to|choose|select)\\s*(${QUOTED_SEG})`,
+  "i",
+);
 
 // Anchors that mark a chain as "this is navigation, not prose".
 const INLINE_CODE_RE = /`([^`\n]+)`/g;
 const BOLD_RE = /(?:\*\*|__)([^*_\n][^\n]*?)(?:\*\*|__)/g;
-const NAV_PREFIX_RE = /(?:^|[\s(])(?:Nav|Path|Go to|Navigate|Location|Where)\s*:\s*(.+)$/i;
+const NAV_PREFIX_RE =
+  /(?:^|[\s(])(?:Nav|Path|Go to|Navigate|Location|Where)\s*:\s*(.+)$/i;
 
 const DRIFT_OK_LINE_RE = /<!--\s*drift-ok\s*-->/i;
 const DRIFT_OK_SEL_RE = /<!--\s*drift-ok\s*:\s*([^>]*?)\s*-->/i;
@@ -537,21 +643,32 @@ const DRIFT_OK_FILE_RE = /<!--\s*drift-ok-file\s*-->/i;
 
 const SHORTCUT_VALUE_RE =
   /^(?:ctrl|alt|shift|super|cmd|win)(?:\+(?:ctrl|alt|shift|super|cmd|win|space|enter|tab|escape|[a-z0-9]))+$/i;
-const CLI_TARGET_RE = /^handy(?:\s+(?:--?[a-z0-9][a-z0-9-]*|[a-z0-9][a-z0-9-]*))*$/i;
-const FILE_TARGET_RE = /^(?:%APPDATA%\\pr\.handy(?:\\[A-Za-z0-9._-]+)*|portable\.marker)$/;
+const CLI_TARGET_RE =
+  /^handy(?:\s+(?:--?[a-z0-9][a-z0-9-]*|[a-z0-9][a-z0-9-]*))*$/i;
+const FILE_TARGET_RE =
+  /^(?:%APPDATA%\\pr\.handy(?:\\[A-Za-z0-9._-]+)*|portable\.marker)$/;
 
 function isKnownContextualSegment(segment, root, parentControl) {
   if (root === "CLI") return CLI_TARGET_RE.test(segment.text);
   if (root === "File") return FILE_TARGET_RE.test(segment.text);
   if (root === "Shortcut") return SHORTCUT_VALUE_RE.test(segment.text);
-  if (!segment.isOption || !parentControl || !SHORTCUT_VALUE_RE.test(segment.text)) return false;
+  if (
+    !segment.isOption ||
+    !parentControl ||
+    !SHORTCUT_VALUE_RE.test(segment.text)
+  )
+    return false;
   return navMap.entries.some(
-    (entry) => entry.label === parentControl && entry.control === "shortcut recorder",
+    (entry) =>
+      entry.label === parentControl && entry.control === "shortcut recorder",
   );
 }
 
 const isQuoted = (s) =>
-  /^".*"$/.test(s) || /^'.*'$/.test(s) || /^\u201c.*\u201d$/.test(s) || /^`.*`$/.test(s);
+  /^".*"$/.test(s) ||
+  /^'.*'$/.test(s) ||
+  /^\u201c.*\u201d$/.test(s) ||
+  /^`.*`$/.test(s);
 
 /** Strip surrounding quotes and markdown emphasis from a raw segment. */
 function cleanSegment(raw) {
@@ -668,7 +785,7 @@ if (!existsSync(DOCS_DIR)) {
 
 const files = walkMarkdown(DOCS_DIR).sort();
 
-const problems = [];   // unresolved canonical labels -> FAIL
+const problems = []; // unresolved canonical labels -> FAIL
 const advisories = []; // unquoted segments, unknown -> advisory (FAIL only with --strict)
 const stats = {
   files: files.length,
@@ -681,19 +798,25 @@ const stats = {
 
 for (const file of files) {
   const text = readFileSync(file, "utf8");
-  if (DRIFT_OK_FILE_RE.test(text)) { stats.filesSkipped++; continue; }
+  if (DRIFT_OK_FILE_RE.test(text)) {
+    stats.filesSkipped++;
+    continue;
+  }
 
   const lines = text.split(/\r?\n/);
   const rel = displayPath(file);
 
   let inFence = false;
-  let carryAllowAll = false;   // <!-- drift-ok --> on its own line applies to the next line
+  let carryAllowAll = false; // <!-- drift-ok --> on its own line applies to the next line
   let carryAllowList = null;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
 
-    if (/^\s*(```|~~~)/.test(line)) { inFence = !inFence; continue; }
+    if (/^\s*(```|~~~)/.test(line)) {
+      inFence = !inFence;
+      continue;
+    }
     if (inFence) continue;
 
     // --- opt-out handling -------------------------------------------------
@@ -707,13 +830,20 @@ for (const file of files) {
     const markerOnly = /^\s*<!--\s*drift-ok[^>]*-->\s*$/i.test(line);
 
     if (sel) {
-      const list = (sel[1].match(/"[^"]+"|'[^']+'/g) || []).map((s) => s.slice(1, -1));
-      if (markerOnly) carryAllowList = list; else allowList = (allowList || []).concat(list);
+      const list = (sel[1].match(/"[^"]+"|'[^']+'/g) || []).map((s) =>
+        s.slice(1, -1),
+      );
+      if (markerOnly) carryAllowList = list;
+      else allowList = (allowList || []).concat(list);
     } else if (bare) {
-      if (markerOnly) carryAllowAll = true; else allowAll = true;
+      if (markerOnly) carryAllowAll = true;
+      else allowAll = true;
     }
     if (markerOnly) continue;
-    if (allowAll) { stats.skipped++; continue; }
+    if (allowAll) {
+      stats.skipped++;
+      continue;
+    }
 
     // --- breadcrumbs ------------------------------------------------------
     for (const crumb of extractBreadcrumbs(line)) {
@@ -726,17 +856,25 @@ for (const file of files) {
         const isLast = s === crumb.segments.length - 1;
         const role = segment.isOption ? "option" : isLast ? "leaf" : "crumb";
         // For a dropdown value, the control it belongs to is the preceding segment.
-        const parentControl = segment.isOption && s > 0 ? crumb.segments[s - 1].text : null;
+        const parentControl =
+          segment.isOption && s > 0 ? crumb.segments[s - 1].text : null;
 
-        if (allowList && allowList.includes(segment.text)) { stats.skipped++; continue; }
+        if (allowList && allowList.includes(segment.text)) {
+          stats.skipped++;
+          continue;
+        }
 
         // Canonical inline-code breadcrumbs are strict regardless of quoting.
         // Preserve the old advisory behavior only for legacy bold/prose paths.
         if (!segment.quoted && crumb.anchor !== "code") {
           if (!isKnownLabel(segment.text)) {
             advisories.push({
-              file: rel, line: i + 1, label: segment.text, role,
-              breadcrumb: crumb.raw, anchor: crumb.anchor,
+              file: rel,
+              line: i + 1,
+              label: segment.text,
+              role,
+              breadcrumb: crumb.raw,
+              anchor: crumb.anchor,
               suggestions: suggest(segment.text, segTexts.slice(0, s)),
             });
           }
@@ -744,7 +882,8 @@ for (const file of files) {
         }
 
         stats.checked++;
-        const reservedInWrongPosition = RESERVED_LABELS.has(segment.text) && s !== 0;
+        const reservedInWrongPosition =
+          RESERVED_LABELS.has(segment.text) && s !== 0;
         if (
           (!reservedInWrongPosition && isKnownLabel(segment.text)) ||
           (s > 0 && isKnownContextualSegment(segment, root, parentControl))
@@ -754,10 +893,19 @@ for (const file of files) {
         }
 
         problems.push({
-          file: rel, line: i + 1, label: segment.text, role,
-          breadcrumb: crumb.raw, anchor: crumb.anchor,
+          file: rel,
+          line: i + 1,
+          label: segment.text,
+          role,
+          breadcrumb: crumb.raw,
+          anchor: crumb.anchor,
           column: Math.max(0, line.indexOf(segment.text)) + 1,
-          suggestions: suggest(segment.text, segTexts.slice(0, s), 3, parentControl),
+          suggestions: suggest(
+            segment.text,
+            segTexts.slice(0, s),
+            3,
+            parentControl,
+          ),
         });
       }
     }
@@ -768,9 +916,17 @@ for (const file of files) {
  * 8. Report
  * ------------------------------------------------------------------ */
 
-const C = process.stdout.isTTY && !process.env.NO_COLOR
-  ? { red: "\x1b[31m", yellow: "\x1b[33m", green: "\x1b[32m", dim: "\x1b[2m", bold: "\x1b[1m", off: "\x1b[0m" }
-  : { red: "", yellow: "", green: "", dim: "", bold: "", off: "" };
+const C =
+  process.stdout.isTTY && !process.env.NO_COLOR
+    ? {
+        red: "\x1b[31m",
+        yellow: "\x1b[33m",
+        green: "\x1b[32m",
+        dim: "\x1b[2m",
+        bold: "\x1b[1m",
+        off: "\x1b[0m",
+      }
+    : { red: "", yellow: "", green: "", dim: "", bold: "", off: "" };
 
 const fmtSuggestions = (list) => {
   if (!list.length) return null;
@@ -778,70 +934,119 @@ const fmtSuggestions = (list) => {
     return `valid options are ${list.map((s) => `"${s.value}"`).join(", ")}`;
   }
   return list
-    .map((s) => `"${s.value}" (${Math.round(s.score * 100)}%${s.scoped ? ", same page" : ""})`)
+    .map(
+      (s) =>
+        `"${s.value}" (${Math.round(s.score * 100)}%${s.scoped ? ", same page" : ""})`,
+    )
     .join("  |  ");
 };
 
 if (opts.json) {
-  console.log(JSON.stringify({
-    ok: problems.length === 0 && (!opts.strict || advisories.length === 0),
-    stats,
-    truthSource: displayPath(I18N_FILE),
-    labelCount: KNOWN_LABEL_COUNT,
-    navMap: { loaded: navMap.loaded, entries: navMap.entries.length, stale: navMap.stale },
-    problems, advisories,
-  }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        ok: problems.length === 0 && (!opts.strict || advisories.length === 0),
+        stats,
+        truthSource: displayPath(I18N_FILE),
+        labelCount: KNOWN_LABEL_COUNT,
+        navMap: {
+          loaded: navMap.loaded,
+          entries: navMap.entries.length,
+          stale: navMap.stale,
+        },
+        problems,
+        advisories,
+      },
+      null,
+      2,
+    ),
+  );
 } else if (opts.fixSuggestions) {
-  console.log(`${C.bold}Proposed replacements (patch preview — nothing is written)${C.off}\n`);
+  console.log(
+    `${C.bold}Proposed replacements (patch preview — nothing is written)${C.off}\n`,
+  );
   const all = problems.concat(opts.strict ? advisories : []);
   if (!all.length) {
     console.log("  (no unresolved labels — nothing to suggest)");
   }
   let current = null;
   for (const p of all) {
-    if (p.file !== current) { current = p.file; console.log(`${C.bold}--- ${p.file}${C.off}`); }
+    if (p.file !== current) {
+      current = p.file;
+      console.log(`${C.bold}--- ${p.file}${C.off}`);
+    }
     const best = p.suggestions[0];
     if (best) {
       console.log(`@@ line ${p.line} @@ (${p.role})`);
       console.log(`${C.red}-  "${p.label}"${C.off}`);
-      console.log(`${C.green}+  "${best.value}"${C.off}   ${C.dim}# ${best.key} — ${Math.round(best.score * 100)}% match${C.off}`);
+      console.log(
+        `${C.green}+  "${best.value}"${C.off}   ${C.dim}# ${best.key} — ${Math.round(best.score * 100)}% match${C.off}`,
+      );
       if (p.suggestions.length > 1) {
-        console.log(`${C.dim}   alternatives: ${p.suggestions.slice(1).map((s) => `"${s.value}"`).join(", ")}${C.off}`);
+        console.log(
+          `${C.dim}   alternatives: ${p.suggestions
+            .slice(1)
+            .map((s) => `"${s.value}"`)
+            .join(", ")}${C.off}`,
+        );
       }
     } else {
       console.log(`@@ line ${p.line} @@ (${p.role})`);
       console.log(`${C.red}-  "${p.label}"${C.off}`);
-      console.log(`${C.dim}?  no candidate above ${Math.round(opts.threshold * 100)}% — the control may have been REMOVED.`);
-      console.log(`${C.dim}   Rewrite the breadcrumb, or mark it <!-- drift-ok --> if intentionally generic.${C.off}`);
+      console.log(
+        `${C.dim}?  no candidate above ${Math.round(opts.threshold * 100)}% — the control may have been REMOVED.`,
+      );
+      console.log(
+        `${C.dim}   Rewrite the breadcrumb, or mark it <!-- drift-ok --> if intentionally generic.${C.off}`,
+      );
     }
     console.log("");
   }
 } else if (!opts.quiet) {
   if (problems.length) {
-    console.log(`${C.red}${C.bold}UNRESOLVED UI LABELS${C.off} ${C.dim}(breadcrumb segments absent from the UI label truth sources)${C.off}\n`);
+    console.log(
+      `${C.red}${C.bold}UNRESOLVED UI LABELS${C.off} ${C.dim}(breadcrumb segments absent from the UI label truth sources)${C.off}\n`,
+    );
     for (const p of problems) {
-      console.log(`  ${C.bold}${p.file}:${p.line}:${p.column}${C.off}  ${C.red}"${p.label}"${C.off} ${C.dim}(${p.role})${C.off}`);
+      console.log(
+        `  ${C.bold}${p.file}:${p.line}:${p.column}${C.off}  ${C.red}"${p.label}"${C.off} ${C.dim}(${p.role})${C.off}`,
+      );
       console.log(`    ${C.dim}in: ${p.breadcrumb}${C.off}`);
       const s = fmtSuggestions(p.suggestions);
-      console.log(s ? `    did you mean: ${C.green}${s}${C.off}` : `    ${C.yellow}no close match — control may have been removed${C.off}`);
+      console.log(
+        s
+          ? `    did you mean: ${C.green}${s}${C.off}`
+          : `    ${C.yellow}no close match — control may have been removed${C.off}`,
+      );
       console.log("");
     }
   }
   if (advisories.length) {
-    console.log(`${C.yellow}${C.bold}ADVISORY${C.off} ${C.dim}(unquoted breadcrumb segments — not verifiable against i18n; quote them to enforce)${C.off}`);
+    console.log(
+      `${C.yellow}${C.bold}ADVISORY${C.off} ${C.dim}(unquoted breadcrumb segments — not verifiable against i18n; quote them to enforce)${C.off}`,
+    );
     for (const a of advisories) {
       const s = fmtSuggestions(a.suggestions);
-      console.log(`  ${a.file}:${a.line}  ${C.yellow}${a.label}${C.off} ${C.dim}in "${a.breadcrumb}"${C.off}${s ? `  ${C.dim}~ ${s}${C.off}` : ""}`);
+      console.log(
+        `  ${a.file}:${a.line}  ${C.yellow}${a.label}${C.off} ${C.dim}in "${a.breadcrumb}"${C.off}${s ? `  ${C.dim}~ ${s}${C.off}` : ""}`,
+      );
     }
     console.log("");
   }
   if (navMap.stale.length) {
-    console.log(`${C.yellow}NAV-MAP DRIFT${C.off} ${C.dim}(nav-map.json labels absent from translation.json)${C.off}`);
-    for (const s of navMap.stale.slice(0, 20)) console.log(`  ${C.yellow}"${s.label}"${C.off} ${C.dim}${s.page || ""} ${s.key || ""}${C.off}`);
+    console.log(
+      `${C.yellow}NAV-MAP DRIFT${C.off} ${C.dim}(nav-map.json labels absent from translation.json)${C.off}`,
+    );
+    for (const s of navMap.stale.slice(0, 20))
+      console.log(
+        `  ${C.yellow}"${s.label}"${C.off} ${C.dim}${s.page || ""} ${s.key || ""}${C.off}`,
+      );
     console.log("");
   }
   if (navMap.parseError) {
-    console.log(`${C.yellow}WARN${C.off} nav-map.json present but unparseable (${navMap.parseError}); continuing with translation.json alone.\n`);
+    console.log(
+      `${C.yellow}WARN${C.off} nav-map.json present but unparseable (${navMap.parseError}); continuing with translation.json alone.\n`,
+    );
   }
 }
 
@@ -857,10 +1062,10 @@ if (!opts.json) {
       : `${C.green}PASS${C.off}`;
   console.log(
     `${verdict}  ${stats.files} file(s), ${stats.breadcrumbs} breadcrumb(s), ` +
-    `${stats.checked} label(s) checked, ${stats.ok} resolved, ` +
-    `${problems.length} unresolved, ${advisories.length} advisory, ` +
-    `${stats.skipped} opted out${stats.filesSkipped ? `, ${stats.filesSkipped} file(s) skipped` : ""}.  ` +
-    `${C.dim}${KNOWN_LABEL_COUNT} known labels; ${navNote}${C.off}`
+      `${stats.checked} label(s) checked, ${stats.ok} resolved, ` +
+      `${problems.length} unresolved, ${advisories.length} advisory, ` +
+      `${stats.skipped} opted out${stats.filesSkipped ? `, ${stats.filesSkipped} file(s) skipped` : ""}.  ` +
+      `${C.dim}${KNOWN_LABEL_COUNT} known labels; ${navNote}${C.off}`,
   );
 }
 

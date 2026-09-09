@@ -4,8 +4,9 @@ Handy Tool is a local-first dictation tool for Windows: press a key, speak, and 
 
 It exists because of an escalation. “I type too slowly. My brain is faster than my hands.” You start dictating, and then the promotion arrives: “Wait — I can run more than one session.” Soon it is, “Actually, five sessions and two remote hosts.” Then the cost catches up with the throughput: “…and now I’m losing it.” The terminal you need is buried, your left hand keeps traveling to Enter, one thought lands in the wrong session, and a stray key threatens a long take. Handy Tool is the set of pieces that keeps that escalation from collapsing: capture the thought, preserve it, and deliver it to the work that needs it.
 
-Note from current author: 
-- original Handy (tool) was my choice to go when I got stuck typing too slow for  my ADHD brain - blame Claude Code and Codex for it!
+Note from current author:
+
+- original Handy (tool) was my choice to go when I got stuck typing too slow for my ADHD brain - blame Claude Code and Codex for it!
   - big kudos to CJ Pais - oryginal author of the app when I took it over (for myself) in v. ...... 0.8 ? - man - thank you for your work!
 - very quickly it become my number one app I use on Windows ... but you know how it is - always want more so I've added:
   - key typer tool to enter passwords on virtual machines in scenarios when policy prohibits copy-paste
@@ -23,7 +24,7 @@ Note from current author:
 
 Windows x64. Three ways in — pick one.
 
-### winget — *pending review*
+### winget — _pending review_
 
 ```powershell
 winget install patrick-1984.HandyTool
@@ -80,15 +81,15 @@ Moving between large screens and apps buried under other windows costs time. Whi
 
 ## Platform status
 
-| Platform     | Status                                                                          |
-| ------------ | ------------------------------------------------------------------------------- |
-| Windows x64  | Built, tested, and released                                                     |
-| macOS Intel  | **Experimental.** Built and released, but not yet used in anger. Not notarized. |
-| macOS Apple Silicon | Planned — no build is produced, because none can be verified yet         |
-| Linux        | Planned — in the queue; no build is produced or released                        |
+| Platform            | Status                                                                          |
+| ------------------- | ------------------------------------------------------------------------------- |
+| Windows x64         | Built, tested, and released                                                     |
+| macOS Intel         | **Experimental.** Built and released, but not yet used in anger. Not notarized. |
+| macOS Apple Silicon | Planned — no build is produced, because none can be verified yet                |
+| Linux               | Planned — in the queue; no build is produced or released                        |
 
 The macOS build compiles, bundles, passes signature verification, and the binary runs.
-What has *not* happened is somebody granting it Microphone and Accessibility permission
+What has _not_ happened is somebody granting it Microphone and Accessibility permission
 and dictating a sentence — those permissions can only be granted through GUI dialogs, so
 they cannot be exercised by an automated build. Treat it as a first cut, not a finished
 port. The Apple Silicon gap is deliberate: builds are produced on an Intel Mac, which

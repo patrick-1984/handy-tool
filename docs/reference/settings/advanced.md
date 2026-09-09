@@ -59,6 +59,7 @@ Catalog: [A hotkey another app already owns](../../features.md#a-hotkey-another-
 ### Transcribe
 
 <a id="paste-method"></a>
+
 #### Paste Method
 
 `Advanced › Transcription › Transcribe › Paste Method`
@@ -68,6 +69,7 @@ Chooses how ordinary dictation inserts text. `Direct` uses simulated keystrokes 
 Catalog: [Ctrl+V doesn't work in that app](../../features.md#ctrl-v-doesnt-work-in-that-app).
 
 <a id="paste-method-ptt"></a>
+
 #### Paste Method (PTT)
 
 `Advanced › Transcription › Transcribe › Paste Method (PTT)`
@@ -78,7 +80,7 @@ Catalog: [Ctrl+V doesn't work in that app](../../features.md#ctrl-v-doesnt-work-
 
 #### Typing Tool
 
-`Advanced › Transcription › Transcribe › Typing Tool` *{planned}*
+`Advanced › Transcription › Transcribe › Typing Tool` _{planned}_
 
 Chooses which Linux input-injection utility backs `Direct` delivery. The control is not present in the shipped Windows build; macOS and Linux builds are planned. **Default:** `Auto (Recommended)`.
 
@@ -99,6 +101,7 @@ Chooses whether ordinary dictation sends Enter, Ctrl+Enter, or Super+Enter after
 Catalog: [Send it without reaching for Enter](../../features.md#send-it-without-reaching-for-enter).
 
 <a id="transcribe-clipboard-restore-delay"></a>
+
 #### Clipboard restore delay
 
 `Advanced › Transcription › Transcribe › Clipboard restore delay`
@@ -108,9 +111,10 @@ Adds a wait before restoring clipboard text; it matters only with [Clipboard Han
 Catalog: [Your remote session pastes the right thing](../../features.md#your-remote-session-pastes-the-right-thing).
 
 <a id="transcribe-paste-delay-after-jump-windows"></a>
+
 #### Clipboard restore delay for remote desktops
 
-`Advanced › Transcription › Transcribe › Clipboard restore delay for remote desktops` *{Windows only}*
+`Advanced › Transcription › Transcribe › Clipboard restore delay for remote desktops` _{Windows only}_
 
 Overrides the restore delay when the delivery target is classified remote by [Remote match strings](jumper.md#remote-match-strings). `Not set` inherits the value above — and is the default, so this control changes nothing until you pick a value. The remaining choices match the delay above. Raising it trades exposure for reliability: the transcript stays on your clipboard longer. **Default:** `Not set`.
 
@@ -118,43 +122,47 @@ Catalog: [A remote paste gets the right clipboard, not the one before it](../../
 
 #### Paste delay after jump (Windows)
 
-`Advanced › Transcription › Transcribe › Paste delay after jump (Windows)` *{Windows only}*
+`Advanced › Transcription › Transcribe › Paste delay after jump (Windows)` _{Windows only}_
 
 Sets the shared post-jump wait for local and remote targets. [Remote match strings](jumper.md#remote-match-strings) chooses the column. The choices are `Off`, `100`, `200`, `300`, `400`, `500`, `600`, `700`, `800`, `900`, `1000`, `1500`, and `2000` ms. **Default:** Local apps `300 ms`; Remote desktop `600 ms`.
 
 Catalog: [Separate timing for remote desktops and local apps](../../features.md#separate-timing-for-remote-desktops-and-local-apps).
 
 <a id="transcribe-jump-slot-action-on-start"></a>
+
 #### Jump slot action on start
 
-`Advanced › Transcription › Transcribe › Jump slot action on start` *{Windows only}*
+`Advanced › Transcription › Transcribe › Jump slot action on start` _{Windows only}_
 
 Chooses a slot and the additional Jumper action taken when an idle Transcribe press starts a take. **Default:** slot `Hot 1`; `Do nothing`.
 
 Catalog: [Decide what a jump does at the start and at the end of a take](../../features.md#what-a-jump-does-at-the-start-and-end-of-a-take).
 
 <a id="transcribe-jump-slot-action-on-finish"></a>
+
 #### Jump slot action on finish
 
-`Advanced › Transcription › Transcribe › Jump slot action on finish` *{Windows only}*
+`Advanced › Transcription › Transcribe › Jump slot action on finish` _{Windows only}_
 
 Chooses a slot and the Jumper action taken when Transcribe finishes a take. A jump action delivers to that slot. **Default:** slot `Hot 1`; `Do nothing`.
 
 Catalog: [Decide what a jump does at the start and at the end of a take](../../features.md#what-a-jump-does-at-the-start-and-end-of-a-take).
 
 <a id="transcribe-track-last-output-location"></a>
+
 #### Track last output location
 
-`Advanced › Transcription › Transcribe › Track last output location` *{Windows only}*
+`Advanced › Transcription › Transcribe › Track last output location` _{Windows only}_
 
 When enabled, records the ordinary flow's delivery target into the selected `Save location into` slot. **Default:** Off; slot `Hot 1`.
 
 Catalog: [Remember where the text actually landed](../../features.md#remember-where-the-text-actually-landed).
 
 <a id="transcribe-return-focus-after-delivery"></a>
+
 #### Return focus after delivery
 
-`Advanced › Transcription › Transcribe › Return focus after delivery` *{Windows only}*
+`Advanced › Transcription › Transcribe › Return focus after delivery` _{Windows only}_
 
 Returns focus to the starting window after an anchored ordinary delivery, unless you changed windows yourself. **Default:** On.
 
@@ -203,6 +211,7 @@ Sets this flow's final clipboard state independently of [Clipboard Handling](#cl
 Catalog: [Its own clipboard policy](../../features.md#its-own-clipboard-policy); [The paste didn't land — get the words back without re-dictating](../../features.md#the-paste-didnt-land-get-the-words-back).
 
 <a id="submit-clipboard-restore-delay"></a>
+
 #### Clipboard restore delay
 
 `Advanced › Transcription › Transcribe & Submit › Clipboard restore delay`
@@ -212,9 +221,10 @@ Adds this flow's wait before restoring preserved clipboard text. **Default:** `O
 Catalog: [Your remote session pastes the right thing](../../features.md#your-remote-session-pastes-the-right-thing).
 
 <a id="submit-paste-delay-after-jump-windows"></a>
+
 #### Paste delay after jump (Windows)
 
-`Advanced › Transcription › Transcribe & Submit › Paste delay after jump (Windows)` *{Windows only}*
+`Advanced › Transcription › Transcribe & Submit › Paste delay after jump (Windows)` _{Windows only}_
 
 Shows the same shared local and remote paste-delay values as the Transcribe group. The choices are `Off`, `100`, `200`, `300`, `400`, `500`, `600`, `700`, `800`, `900`, `1000`, `1500`, and `2000` ms. **Default:** Local apps `300 ms`; Remote desktop `600 ms`.
 
@@ -222,43 +232,47 @@ Catalog: [The paste is swallowed right after a jump](../../features.md#the-paste
 
 #### Submit delay before Enter (Windows)
 
-`Advanced › Transcription › Transcribe & Submit › Submit delay before Enter (Windows)` *{Windows only}*
+`Advanced › Transcription › Transcribe & Submit › Submit delay before Enter (Windows)` _{Windows only}_
 
 Waits before sending the submit key. It applies after a real jump, and always for a remote desktop target even when that window was already focused; an already-focused local target submits instantly. [Remote match strings](jumper.md#remote-match-strings) selects the timing. Changed in 1.3.0 - before that an already-focused remote target got no wait at all. The choices are `Off`, `100`, `200`, `300`, `400`, `500`, `600`, `700`, `800`, `900`, `1000`, `1500`, and `2000` ms. **Default:** Local apps `300 ms`; Remote desktop `600 ms`.
 
 Catalog: [The Enter key lands in the remote window](../../features.md#the-enter-key-lands-in-the-remote-window).
 
 <a id="submit-jump-slot-action-on-start"></a>
+
 #### Jump slot action on start
 
-`Advanced › Transcription › Transcribe & Submit › Jump slot action on start` *{Windows only}*
+`Advanced › Transcription › Transcribe & Submit › Jump slot action on start` _{Windows only}_
 
 Chooses a slot and additional Jumper action for an idle press of this flow. **Default:** slot `Hot 1`; `Do nothing`.
 
 Catalog: [Decide what a jump does at the start and at the end of a take](../../features.md#what-a-jump-does-at-the-start-and-end-of-a-take).
 
 <a id="submit-jump-slot-action-on-finish"></a>
+
 #### Jump slot action on finish
 
-`Advanced › Transcription › Transcribe & Submit › Jump slot action on finish` *{Windows only}*
+`Advanced › Transcription › Transcribe & Submit › Jump slot action on finish` _{Windows only}_
 
 Chooses a slot and Jumper action when this flow finishes a take. **Default:** slot `Hot 1`; `Do nothing`.
 
 Catalog: [You can see which slot an action targets](../../features.md#you-can-see-which-slot-an-action-targets).
 
 <a id="submit-return-focus-after-delivery"></a>
+
 #### Return focus after delivery
 
-`Advanced › Transcription › Transcribe & Submit › Return focus after delivery` *{Windows only}*
+`Advanced › Transcription › Transcribe & Submit › Return focus after delivery` _{Windows only}_
 
 Returns focus after this flow's anchored delivery. **Default:** On.
 
 Catalog: [Focus comes back to you](../../features.md#focus-comes-back-to-you).
 
 <a id="submit-track-last-output-location"></a>
+
 #### Track last output location
 
-`Advanced › Transcription › Transcribe & Submit › Track last output location` *{Windows only}*
+`Advanced › Transcription › Transcribe & Submit › Track last output location` _{Windows only}_
 
 When enabled, records this flow's delivery target into its selected `Save location into` slot. **Default:** Off; slot `Hot 1`.
 

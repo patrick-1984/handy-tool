@@ -153,8 +153,8 @@ export const CurrentAudioView: React.FC = () => {
             )}
           </div>
           <p className="mt-3 text-xs leading-relaxed text-mid-gray">
-            {t("settings.currentAudio.streamingHint")} {" "}
-            {t("settings.currentAudio.finalHint")} {" "}
+            {t("settings.currentAudio.streamingHint")}{" "}
+            {t("settings.currentAudio.finalHint")}{" "}
             <button
               type="button"
               onClick={() => navigateTo("advanced", "transcription")}

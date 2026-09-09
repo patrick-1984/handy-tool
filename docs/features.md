@@ -9,8 +9,8 @@ does, this file is the one that is right.
 
 **Platform.** Windows x64 is the only build produced and released. macOS and Linux builds are
 planned and in the queue; nothing below is available on them today. A number of features are
-Windows-only *in code* — the entire Jumper family, portable mode, the GPU picker — and they
-will not arrive with the macOS and Linux builds either. Those carry a *{Windows only}* marker.
+Windows-only _in code_ — the entire Jumper family, portable mode, the GPU picker — and they
+will not arrive with the macOS and Linux builds either. Those carry a _{Windows only}_ marker.
 
 **Where.** Locations are written as breadcrumbs in the app's own words:
 `Advanced › Transcription › Transcribe › Paste Method`. Read them as page, then tab, then
@@ -35,7 +35,7 @@ changelog; their entries say "the 0.3x series" rather than invent a number.
 | [Defaults — what you get out of the box](#defaults)      | What happens if you change nothing.                                    |
 | [Transcription](#section-transcription)                  | Press a key, speak, get the text where your cursor is.                 |
 | [Transcribe & Submit](#section-transcribe-and-submit)    | Dictate and send in one keystroke.                                     |
-| [Jumper](#section-jumper)                                | Mark a window and deliver your words back into it. *{Windows only}*    |
+| [Jumper](#section-jumper)                                | Mark a window and deliver your words back into it. _{Windows only}_    |
 | [Remote desktops](#section-remote-desktops)              | Making delivery land inside RDP and Citrix sessions.                   |
 | [History and recovery](#section-history)                 | Finding, replaying and recovering a take.                              |
 | [Providers and post-processing](#section-providers)      | Remote engines, LLM cleanup, cost and keys.                            |
@@ -102,9 +102,9 @@ this is what happens if you change nothing.
 | `ctrl+alt+p`                          | Paste the most recent transcription again, into whatever has focus now.                                |
 | `ctrl+alt+t`                          | Type the Keyboard Typer text into the focused window, one keystroke at a time.                         |
 | `Escape`                              | Stop the recording, transcribe it, save it to History — and deliver nothing.                           |
-| `ctrl+alt+k` / `ctrl+alt+j`           | Mark the focused field as your hot destination / jump back to it. *{Windows only}*                     |
-| `ctrl+alt+h` / `ctrl+alt+g`           | The same for a second hot destination. *{Windows only}*                                                |
-| `ctrl+alt+shift+1…9` / `ctrl+alt+1…9` | Mark / jump to numbered destinations 1 to 9. *{Windows only}*                                          |
+| `ctrl+alt+k` / `ctrl+alt+j`           | Mark the focused field as your hot destination / jump back to it. _{Windows only}_                     |
+| `ctrl+alt+h` / `ctrl+alt+g`           | The same for a second hot destination. _{Windows only}_                                                |
+| `ctrl+alt+shift+1…9` / `ctrl+alt+1…9` | Mark / jump to numbered destinations 1 to 9. _{Windows only}_                                          |
 
 `ctrl+shift+space` runs a take through an LLM before delivering it, but the post-processing
 page is hidden until you switch it on, so that key does nothing on a fresh install.
@@ -151,7 +151,7 @@ only to places where you know which one means "send".
 
 | Delay               | Default                                    | What it is for                                                                                                           |
 | ------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| Clipboard restore   | `Off (instant)` — the built-in ~50 ms only | Remote sessions fetch the clipboard *after* your paste keystroke arrives. Raise it if a remote app pastes stale content. |
+| Clipboard restore   | `Off (instant)` — the built-in ~50 ms only | Remote sessions fetch the clipboard _after_ your paste keystroke arrives. Raise it if a remote app pastes stale content. |
 | Paste after a jump  | 300 ms local, 600 ms remote                | A window activated a heartbeat ago is still settling and eats the keystroke.                                             |
 | Submit after a jump | 300 ms local, 600 ms remote                | The target may still be committing the pasted text when Enter arrives.                                                   |
 
@@ -300,11 +300,11 @@ is left alone. The old behavior is still available as `Discard recording`.
 <a id="cancel-means-the-same-thing-however-you-trigger-it"></a>
 **The situation.** A script cancels a take and gets different behavior from pressing Escape.
 **What Handy does.** Escape, the tray item, the in-app command and the CLI flag all run the same
-path and honor the same setting. Canceling *after* the recorder has already stopped — while
+path and honor the same setting. Canceling _after_ the recorder has already stopped — while
 transcription is still running — suppresses only the delivery instead of tearing the pipeline
 down mid-flight.
 **Where.** `Tray › Cancel` and `CLI › handy --cancel`; the shortcut itself is
-`Debug › Cancel Shortcut` *{requires: Debug mode}*.
+`Debug › Cancel Shortcut` _{requires: Debug mode}_.
 **Since.** 0.63.0.
 
 ### What a cancel can and cannot take back
@@ -326,7 +326,7 @@ retention setting.
 <a id="stop-the-recording-with-whichever-key-is-under-your-finger"></a>
 **The situation.** You started a take with Transcribe & Submit, then pressed Transcribe to stop
 it — and got a "busy" beep. You had to remember which key you started with.
-**What Handy does.** The plain Transcribe toggle finishes a recording started by *any* binding,
+**What Handy does.** The plain Transcribe toggle finishes a recording started by _any_ binding,
 delivering it as an ordinary paste with no submit key. It stops the recording's real owner, so
 the microphone can never be left running by a mismatched pair of keypresses.
 **Where.** No control — this is always active.
@@ -379,7 +379,7 @@ against that list using edit distance plus a phonetic comparison and substitutes
 spelling — no retraining, no model surgery. How eager the matching is can be tuned if it starts
 correcting things you did not mean.
 **Where.** `General › Transcription › Custom Words`; aggressiveness at
-`Debug › Word Correction Threshold` *{requires: Debug mode}*.
+`Debug › Word Correction Threshold` _{requires: Debug mode}_.
 **Since.** Present since the fork's early releases.
 
 ### The next dictation doesn't run into the last one
@@ -467,7 +467,7 @@ with any paste method.
 **What Handy does.** The shortcut used to fire while its own Ctrl and Alt were still physically
 down, so the synthesized paste came out as Ctrl+Alt+V and every target ignored it. Handy now
 polls real key state, bounded at about two seconds, and injects only once the modifiers are
-genuinely released. The general rule this taught: a global shortcut that *synthesizes*
+genuinely released. The general rule this taught: a global shortcut that _synthesizes_
 keystrokes must first prove its own trigger keys are up.
 **Where.** No control — this is always active.
 **Since.** 0.58.0.
@@ -477,7 +477,7 @@ keystrokes must first prove its own trigger keys are up.
 <a id="the-re-paste-happens-the-moment-you-let-go"></a>
 **The situation.** The fix above worked but cost up to a second of dead time — exactly the case
 where a macro pad holds the chord for you.
-**What Handy does.** The action now runs on key *release* instead of key press: the trigger key
+**What Handy does.** The action now runs on key _release_ instead of key press: the trigger key
 is already up, so nothing repeats into the target, still-held modifiers (including right
 Alt / AltGr) are force-cleared, and the paste lands immediately. Honest caveat, because it is
 inherent rather than fixable: if your macro physically holds the chord for a second, the paste
@@ -632,7 +632,7 @@ dictating into an RDP window you were already in got no wait at all and the Ente
 the text was still crossing the remote session, submitting a partial dictation. An already-focused
 **local** target still submits instantly.
 **Where.** `Advanced › Transcription › Transcribe & Submit › Submit delay before Enter (Windows)`
-*{Windows only}*.
+_{Windows only}_.
 **Since.** 0.53.0.
 
 ---
@@ -652,12 +652,12 @@ macOS and Linux builds.
 documentation while still talking about it. By the time you finish, the window you were
 prompting into is buried under everything else, and you have to dig it out with the mouse.
 **What Handy does.** Click into the target field once and press Set Anchor: the exact window
-*and control* are remembered. Wander anywhere. When the transcription finishes, Handy activates
+_and control_ are remembered. Wander anywhere. When the transcription finishes, Handy activates
 the anchored window, focuses the anchored field, verifies both actually happened, delivers the
 text, and hands focus back to where you were.
 **Where.** `Jumper › Hot slot (Anchor & Deliver) › Set Anchor` — `ctrl+alt+k` by default — then
 `Advanced › Transcription › Transcribe › Jump slot action on finish = Jump / deliver to slot`
-*{Windows only}*.
+_{Windows only}_.
 **Since.** 0.31.0.
 
 ### Jump back to your draft without pasting anything
@@ -668,7 +668,7 @@ you were writing in, cursor in place, without hunting for it.
 **What Handy does.** Jump to Anchor is pure navigation: it brings the anchored window and field
 into focus and delivers nothing. A "back to my draft" key.
 **Where.** `Jumper › Hot slot (Anchor & Deliver) › Jump to Anchor` — `ctrl+alt+j` by default
-*{Windows only}*.
+_{Windows only}_.
 **Since.** 0.31.0.
 
 ### It never pastes blind
@@ -732,7 +732,7 @@ alternating between them all afternoon.
 Transcribe & Submit can each own a different hot anchor, so the two intents land in two places
 without touching the numbered slots.
 **Where.** `Jumper › Second hot slot (Anchor & Deliver) › Set Anchor 2` — `ctrl+alt+h` by
-default *{Windows only}*.
+default _{Windows only}_.
 **Since.** 0.50.0.
 
 ### Nine memorised destinations
@@ -744,44 +744,44 @@ and two hot slots are not enough.
 own cursor behavior and its own status row showing what it currently points at, with Test and
 Clear buttons.
 **Where.** `Jumper › Static slot 1 › Set Jump Slot 1` — `ctrl+alt+shift+1` to set, `ctrl+alt+1`
-to jump *{Windows only}*.
+to jump _{Windows only}_.
 **Since.** 0.52.0.
 
 ### Decide what a jump does at the start and at the end of a take
 
 <a id="what-a-jump-does-at-the-start-and-end-of-a-take"></a>
-**The situation.** Sometimes you want to be taken to the target *before* you start talking;
+**The situation.** Sometimes you want to be taken to the target _before_ you start talking;
 sometimes you want to stay where you are and have only the text travel.
 **What Handy does.** Each flow has an on-start action and an on-finish action, and each picks
 its own slot. The action can be: do nothing, jump and deliver to the slot, set the slot to
 whatever has focus right now, or clear the slot. Ordinary dictation and Transcribe & Submit
 configure these independently.
 **Where.** `Advanced › Transcription › Transcribe › Jump slot action on start` and
-`Advanced › Transcription › Transcribe › Jump slot action on finish` *{Windows only}*.
+`Advanced › Transcription › Transcribe › Jump slot action on finish` _{Windows only}_.
 **Since.** 0.36.0.
 
 ### You can see which slot an action targets
 
 <a id="you-can-see-which-slot-an-action-targets"></a>
-**The situation.** You set an action to jump and cannot find anywhere to say *which* slot it
+**The situation.** You set an action to jump and cannot find anywhere to say _which_ slot it
 should jump to.
 **What Handy does.** The slot picker sits to the left of the action dropdown and is always
 rendered, greyed out until you choose an action. It used to be hidden entirely while the action
 was "Do nothing", which made the slot look unselectable.
 **Where.** `Advanced › Transcription › Transcribe & Submit › Jump slot action on finish`
-*{Windows only}*.
+_{Windows only}_.
 **Since.** 0.62.0.
 
 ### Remember where the text actually landed
 
 <a id="remember-where-the-text-actually-landed"></a>
-**The situation.** You dictate into a field, wander off, and want the *next* jump to come back
+**The situation.** You dictate into a field, wander off, and want the _next_ jump to come back
 to that same field without setting an anchor by hand.
 **What Handy does.** With tracking on, the chosen slot auto-captures where the text landed after
 every paste of that flow, before any focus return. Ordinary dictation and Transcribe & Submit
 track independently, into slots of your choosing.
 **Where.** `Advanced › Transcription › Transcribe › Track last output location = On`
-*{Windows only}*.
+_{Windows only}_.
 **Since.** 0.46.0.
 
 ### Focus comes back to you
@@ -794,7 +794,7 @@ location captured automatically at the moment delivery begins. It is conditional
 switched windows yourself while it was working, it leaves you where you chose to be. Each flow
 decides for itself whether to return focus.
 **Where.** `Advanced › Transcription › Transcribe › Return focus after delivery = On`
-*{Windows only}*.
+_{Windows only}_.
 **Since.** 0.40.0.
 
 ### Anchors stay put, and can survive a restart
@@ -806,7 +806,7 @@ do not want to re-anchor between them.
 destroyed or you clear it. Optionally, slot targets are remembered across restarts: window
 handles cannot survive a reboot, so the saved identity is re-resolved against live windows and
 an unresolved slot shows red until its application comes back.
-**Where.** `Jumper › Persistence › Remember slots across restarts = On` *{Windows only}*.
+**Where.** `Jumper › Persistence › Remember slots across restarts = On` _{Windows only}_.
 **Since.** 0.40.0.
 
 ### The mouse goes back too
@@ -818,7 +818,7 @@ other monitor, so you still reach for the mouse.
 jump — after the paste, so the pointer cannot interfere with delivery. Multi-monitor aware, and
 disabled outright on machines that are not per-monitor-DPI aware rather than producing wrong
 coordinates.
-**Where.** `Jumper › Hot slot (Anchor & Deliver) › Save mouse position = On` *{Windows only}*.
+**Where.** `Jumper › Hot slot (Anchor & Deliver) › Save mouse position = On` _{Windows only}_.
 **Since.** 0.48.0.
 
 ### Each destination remembers the cursor the way that app needs
@@ -831,7 +831,7 @@ inside the window — surviving moves, resizes and monitors of different DPI. Sc
 restores a fixed monitor pixel. The dropdown is always visible, greyed when that slot is not
 saving the cursor at all.
 **Where.** `Jumper › Hot slot (Anchor & Deliver) › Cursor position mode = App-relative (follows the window)`
-*{Windows only}*.
+_{Windows only}_.
 **Since.** 0.51.0.
 
 ### No surprise teleports when you mix shortcuts
@@ -842,7 +842,7 @@ and get thrown to the submit flow's target — which is not where you were worki
 **What Handy does.** With this on, a flow's on-finish jump fires only when the take was both
 started and finished by that flow. The submit itself still happens; only the jump is gated.
 **Where.** `Jumper › On-finish behavior › Only jump on finish if started the same way = On`
-*{Windows only}*.
+_{Windows only}_.
 **Since.** 0.49.0.
 
 ### Check a destination before you trust it
@@ -855,7 +855,7 @@ anything real before you dictate two paragraphs at it.
 anything, and Clear. Targets recognized as remote sessions carry a badge, so you can see why a
 slot is being treated differently.
 **Where.** `Jumper › Hot slot (Anchor & Deliver) › Current anchor` and
-`Jumper › Static slot 1 › Slot 1 target` *{Windows only}*.
+`Jumper › Static slot 1 › Slot 1 target` _{Windows only}_.
 **Since.** 0.36.0; the remote badge in 0.56.0.
 
 ---
@@ -873,7 +873,7 @@ are not trivia — they are the whole reason delivery into a remote session work
 **The situation.** You dictate into a Citrix ticket field and what lands is the text you copied
 ten minutes ago, not what you had said.
 **What Handy does.** When a remote target is using a clipboard paste method, remote sessions
-fetch clipboard data on demand *after* the paste keystroke arrives, over a separate and slower
+fetch clipboard data on demand _after_ the paste keystroke arrives, over a separate and slower
 virtual channel — so restoring your previous clipboard 50 ms after pasting hands the remote
 application the pre-recording content, a race Citrix lost reliably. The restore now runs on a
 background thread after 50 ms plus your configured delay. It is skipped when you ask Handy to
@@ -893,7 +893,7 @@ pasted into it.
 and eats the keystroke. A settle is inserted after the foreground changes and before the paste.
 It applies only on a real jump; when you are already in the target, pasting stays instant.
 **Where.** `Advanced › Transcription › Transcribe › Paste delay after jump (Windows)`
-*{Windows only}*.
+_{Windows only}_.
 **Since.** 0.55.0.
 
 ### Separate timing for remote desktops and local apps
@@ -905,7 +905,7 @@ nothing. Before this you had to slow down every jump to make the remote one work
 and a Remote value, shown side by side. Handy picks the column based on what the target is.
 **Where.** `Advanced › Transcription › Transcribe & Submit › Paste delay after jump (Windows)`
 and `Advanced › Transcription › Transcribe & Submit › Submit delay before Enter (Windows)`
-*{Windows only}*.
+_{Windows only}_.
 **Since.** 0.56.0.
 
 ### Handy knows which of your windows is a remote session
@@ -917,7 +917,7 @@ which is which to apply the right timing.
 class contains one of your match strings — case-insensitive, seeded with `msrdc`, `mstsc` and
 `Citrix`, and fully editable. Matching anchors show a badge so you can see the classification
 rather than guess at it.
-**Where.** `Jumper › Remote desktop detection › Remote match strings` *{Windows only}*.
+**Where.** `Jumper › Remote desktop detection › Remote match strings` _{Windows only}_.
 **Since.** 0.56.0.
 
 ### Your dictation stays out of the remote machine's clipboard (retired)
@@ -943,7 +943,7 @@ transcript does reach the remote machine's clipboard and its history; see
 timing defect that made the failure so visible, described under [The Enter key lands in the remote
 window](#the-enter-key-lands-in-the-remote-window).
 **Where.** No control. The switch that enabled this was removed from the Jumper page in 1.3.0
-*{Windows only}*.
+_{Windows only}_.
 **Since.** 1.2.0. **Retired.** 1.3.0.
 
 <!-- prov: remote clipboard isolation (retired) | src: src-tauri/src/clipboard.rs; src-tauri/src/anchor.rs; src-tauri/src/settings.rs | claim: safety -->
@@ -951,7 +951,7 @@ window](#the-enter-key-lands-in-the-remote-window).
 ### A remote paste gets the right clipboard, not the one before it
 
 <a id="a-remote-paste-gets-the-right-clipboard"></a>
-**The situation.** RDP and Citrix ask for clipboard data on demand *after* your paste keystroke
+**The situation.** RDP and Citrix ask for clipboard data on demand _after_ your paste keystroke
 arrives, over a slower channel than a local application. If Handy puts your previous clipboard back
 before the remote session has fetched the transcript, the remote app pastes whatever you had copied
 earlier instead.
@@ -962,7 +962,7 @@ until you choose a value; 1 s is a sensible starting point. The honest cost is s
 setting itself: a longer restore leaves the transcript on your clipboard for longer, which widens
 the window in which clipboard history and clipboard managers can capture it.
 **Where.** `Advanced › Transcription › Transcribe › Clipboard restore delay for remote desktops`
-*{Windows only}*.
+_{Windows only}_.
 **Applies to.** Deliveries whose target matches `Jumper › Remote desktop detection › Remote match
 strings`.
 **Since.** 1.3.0.
@@ -978,9 +978,9 @@ transcript parked on the clipboard.
 freshly activated remote window is usually still moving focus between its inner controls at that
 exact moment — so the check aborted. On a remote jump the re-check now tolerates a target that is
 still settling, polling every 25 ms for up to 250 ms while the expected window stays in the
-foreground. It still aborts instantly if a *different* window takes focus, and it still never
+foreground. It still aborts instantly if a _different_ window takes focus, and it still never
 pastes into a password field or a foreign window. Local jumps are unchanged.
-**Where.** No control — this is always active. *{Windows only}*
+**Where.** No control — this is always active. _{Windows only}_
 **Since.** 0.56.0.
 
 ### The paste delay applies to plain dictation too
@@ -991,7 +991,7 @@ its paste after a jump.
 **What Handy does.** Ordinary dictation jumps and pastes as well, so the paste-delay control is
 offered for that flow too, using the same setting.
 **Where.** `Advanced › Transcription › Transcribe › Paste delay after jump (Windows)`
-*{Windows only}*.
+_{Windows only}_.
 **Since.** 0.56.0.
 
 ### The app stays responsive during a two-second remote delivery
@@ -1002,7 +1002,7 @@ went unresponsive while it waited.
 **What Handy does.** Delivery on Windows runs off the interface thread, with only the small
 amount of work that genuinely must touch the window system marshaled back — which also avoids a
 known deadlock between the tray, the overlay and the theme reader.
-**Where.** No control — this is always active. *{Windows only}*
+**Where.** No control — this is always active. _{Windows only}_
 **Since.** 0.56.0.
 
 ### Type it instead, when the console refuses a paste
@@ -1164,7 +1164,7 @@ with a prompt you control, before delivering it. Raw and processed dictation are
 apart, and the raw transcription is always kept in History alongside the processed version.
 **Where.** `Advanced › Post-processing › Post Processing = On` to reveal the page, then
 `Post Process › Hotkey › Post-Processing Hotkey` — `ctrl+shift+space` by default
-*{requires: Post-processing enabled}*.
+_{requires: Post-processing enabled}_.
 **Since.** Present since the fork's early releases.
 
 ### A default prompt that respects your words
@@ -1175,7 +1175,7 @@ apart, and the raw transcription is always kept in History alongside the process
 content suggests, and **preserves your wording**. Where the transcription was probably a
 mishearing it flags the guess inline for you to confirm rather than inventing a correction. If
 your dictation opens with an instruction, it follows the instruction instead of formatting it.
-**Where.** `Post Process › Prompt › Selected Prompt` *{requires: Post-processing enabled}*.
+**Where.** `Post Process › Prompt › Selected Prompt` _{requires: Post-processing enabled}_.
 **Since.** 0.15.0.
 
 ### Your own post-processing prompts
@@ -1184,7 +1184,7 @@ your dictation opens with an instruction, it follows the instruction instead of 
 **The situation.** You want commit messages formatted one way and meeting notes another.
 **What Handy does.** A prompt library you edit in the app: create, name, update and delete
 prompts, and switch the active one without touching anything else.
-**Where.** `Post Process › Prompt › Selected Prompt` *{requires: Post-processing enabled}*.
+**Where.** `Post Process › Prompt › Selected Prompt` _{requires: Post-processing enabled}_.
 **Since.** Present since the fork's early releases.
 
 ### Your dictated words can't hijack the model
@@ -1207,7 +1207,7 @@ you wanted a rewrite.
 reasoning output for models that emit it — sent in the dialect each vendor actually accepts,
 rather than one shape that returns an error on half of them.
 **Where.** `Post Process › API (OpenAI Compatible) › Temperature` and
-`Post Process › API (OpenAI Compatible) › Disable Thinking` *{requires: Post-processing enabled}*.
+`Post Process › API (OpenAI Compatible) › Disable Thinking` _{requires: Post-processing enabled}_.
 **Since.** 0.15.0; per-vendor thinking dialects in 0.18.0.
 
 ### Configure a provider once, use it everywhere
@@ -1421,7 +1421,7 @@ integrated one is actually the better choice for a small model.
 **What Handy does.** A device picker for local Whisper: automatic, CPU only, or a specific
 adapter by name. An unavailable or invalid choice falls back to automatic instead of failing the
 model load.
-**Where.** `General › Transcription › GPU Device = CPU Only` *{Windows only}*.
+**Where.** `General › Transcription › GPU Device = CPU Only` _{Windows only}_.
 **Since.** 0.42.0.
 
 ### Transcribe without tying up the CPU or GPU
@@ -1441,6 +1441,7 @@ only Windows x64 today; Linux remains planned and in the queue.
 **Where.** No path control — install FLM in one of the auto-detected locations, then open
 `Models › Downloaded Models` and select **FLM Whisper V3 Turbo (NPU)**.
 **Since.** 0.8.2.
+
 <!-- prov: FLM documentation audit | src: src-tauri/src/managers/flm.rs; src-tauri/src/managers/model.rs; src-tauri/src/managers/transcription.rs; src/components/settings/models/ModelsSettings.tsx -->
 
 ### Windows blocked FLM — know which choices are real
@@ -1461,8 +1462,9 @@ which is outside Handy's control. The remaining choice is to turn Smart App Cont
 that is one-way: it cannot be switched back on without resetting or reinstalling Windows. Weigh
 that cost before changing it. Smart App Control blocks unsigned binaries generally, so an
 enforced machine may reject other unsigned developer tools too.
-**Where.** `Windows Security › App & browser control › Smart App Control settings` *{Windows only}*. <!-- drift-ok -->
+**Where.** `Windows Security › App & browser control › Smart App Control settings` _{Windows only}_. <!-- drift-ok -->
 **Since.** 1.0.0.
+
 <!-- prov: verified 2026-08-07 | src: src-tauri/src/managers/flm.rs; src/lib/flm.ts; src/App.tsx; src/components/model-selector/ModelSelector.tsx; src/i18n/locales/en/translation.json | claim: safety -->
 
 ### Orphaned NPU servers can't block your next take
@@ -1475,7 +1477,7 @@ the port and the accelerator. Handy binds its child process to a Windows job obj
 operating system kills it the instant Handy dies, and sweeps for its **own** orphans at launch
 and before every start. The sweep is signature-exact: another application's server is never
 touched.
-**Where.** No control — this is always active. *{Windows only}*
+**Where.** No control — this is always active. _{Windows only}_
 **Since.** 0.53.0.
 
 ### The NPU error tells you what to close
@@ -1500,6 +1502,7 @@ Transcription uses `POST /v1/audio/transcriptions` with model `whisper-v3:turbo`
 sets a 60-second cooldown so a broken installation cannot keep blocking your takes.
 **Where.** No control — this is always active.
 **Since.** 0.38.0.
+
 <!-- prov: D-169 | src: src-tauri/src/managers/flm.rs; src-tauri/src/managers/transcription.rs -->
 
 ### Cancel a stuck download and it stops now
@@ -1811,7 +1814,7 @@ you keep using the app normally.
 <a id="your-existing-files-are-left-alone"></a>
 **The situation.** You point it at a folder with two thousand old recordings and it starts
 grinding through all of them.
-**What Handy does.** Only files that appear *after* watching starts are queued. The existing
+**What Handy does.** Only files that appear _after_ watching starts are queued. The existing
 contents are snapshotted and deliberately ignored. Handy's own recorder-internal files — chunk
 parts, temporary files, partial downloads — are never picked up.
 **Where.** `Translator › Watched folders`.
@@ -1921,7 +1924,7 @@ plain text in the settings file and in backups.
 <a id="bound-to-localhost-behind-a-token"></a>
 **The situation.** You want to know exactly what you are exposing before you switch a server on.
 **What Handy does.** It binds to the loopback address only, never to a network interface, and
-every call except a liveness check requires the exact bearer token. What it does *not* do is
+every call except a liveness check requires the exact bearer token. What it does _not_ do is
 isolate Handy from other processes running as you: the token is stored in plain text in the
 settings file and in a small discovery file, so any local process running as your user can read
 it and then read your history, change provider URLs or run a model test. Traffic is plain HTTP
@@ -2038,7 +2041,7 @@ want an application writing into your profile.
 history, recordings, logs, web-view data — lives in a folder beside it, with no machine-level
 change: no autostart entry, no command-line installation. If that folder cannot be written it
 falls back to the normal per-user location rather than failing.
-**Where.** `File › portable.marker` beside `handy.exe` *{Windows only}*.
+**Where.** `File › portable.marker` beside `handy.exe` _{Windows only}_.
 **Since.** 0.43.0.
 
 ---
@@ -2080,7 +2083,7 @@ stopped, because you were looking at something else.
 to know the state. Volume, output device and the sound set are all configurable, including
 supplying your own two files.
 **Where.** `General › Sound › Audio Feedback = On`, `General › Sound › Volume`, and
-`Debug › Sound Theme = Custom` *{requires: Debug mode}*.
+`Debug › Sound Theme = Custom` _{requires: Debug mode}_.
 **Since.** 0.1.5.
 
 ### The microphone light is off when you're not dictating
@@ -2092,7 +2095,7 @@ indicator, which is both a privacy question and a distraction.
 Optionally you can keep it open — which removes the small first-syllable clip at the very start
 of a take — at the cost of a permanently active indicator. That is an explicit choice, not the
 default.
-**Where.** `Debug › Always-On Microphone = On` *{requires: Debug mode}*.
+**Where.** `Debug › Always-On Microphone = On` _{requires: Debug mode}_.
 **Since.** 0.2.0.
 
 ### Change microphone without restarting
@@ -2223,7 +2226,7 @@ released build writes its file log at **info**, so ordinary logging does not rec
 dictated. The honest counterpart: raise the level to `Debug` yourself and transcript fragments,
 complete API responses and prompt previews **can** appear in the log file. Put it back to `Info`
 when you are finished diagnosing.
-**Where.** `Debug › Log Level = Info` *{requires: Debug mode}*.
+**Where.** `Debug › Log Level = Info` _{requires: Debug mode}_.
 **Since.** 0.38.0.
 
 ### The logs still exist when you finally need them
@@ -2321,7 +2324,7 @@ screen and vanishes. It looks like malware and it steals focus.
 **What Handy does.** Detection of the optional NPU runtime was running a command-line probe on
 every model-list rebuild, which on Windows spawns a visible console. Those subprocesses now run
 hidden, and detection is cached to once per session.
-**Where.** No control — this is always active. *{Windows only}*
+**Where.** No control — this is always active. _{Windows only}_
 **Since.** 0.24.0.
 
 ### The installer tells you what's missing, and the build runs on your CPU
@@ -2334,7 +2337,7 @@ prerequisites and guides you, without blocking the installation. Separately, Win
 target a broad CPU baseline so they run on hardware that a natively-tuned build would crash on.
 Note that the installer is not code-signed, so Windows will show a SmartScreen warning on first
 run.
-**Where.** No control — this is always active. *{Windows only}*
+**Where.** No control — this is always active. _{Windows only}_
 **Since.** 0.40.0.
 
 ### A hotkey another app already owns

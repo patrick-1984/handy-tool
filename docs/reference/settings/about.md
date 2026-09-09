@@ -63,4 +63,3 @@ Shows the upstream project acknowledgment. **Default:** read-only acknowledgment
 `About › Acknowledgments › Whisper.cpp`
 
 Shows the speech-engine acknowledgment. **Default:** read-only acknowledgment text.
-
