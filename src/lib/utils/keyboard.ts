@@ -216,3 +216,32 @@ export const normalizeKey = (key: string): string => {
   }
   return key;
 };
+
+/**
+ * True when `binding` is a chord that AltGr can type a character with.
+ *
+ * Mirrors `is_altgr_risky_chord` in `src-tauri/src/settings.rs` — keep the two
+ * in step. Windows reports AltGr as Ctrl+Alt, so a global `ctrl+alt+<letter>`
+ * hotkey fires instead of typing the character European layouts put there (the
+ * Polish Programmers layout maps AltGr + a c e l n o s x z to ą ć ę ł ń ó ś ź ż).
+ * Space counts too, because AltGr is routinely still held down when the space
+ * after an accented word is pressed.
+ *
+ * Digits are deliberately not flagged: no common European layout maps
+ * AltGr+<digit> to a character, and the Jumper's slot chords rely on that.
+ */
+export const isAltGrRiskyChord = (binding: string): boolean => {
+  // Side-qualified modifiers ("ctrl_left", "alt_right") are what the handy-keys
+  // backend stores, and AltGr IS the right Alt — stripping the side is the case
+  // that matters most, not an edge case.
+  const parts = binding
+    .split("+")
+    .map((part) => part.trim().toLowerCase().replace(/_(?:left|right)$/, ""))
+    .filter((part) => part.length > 0);
+
+  const hasCtrl = parts.some((p) => p === "ctrl" || p === "control");
+  const hasAlt = parts.some((p) => p === "alt" || p === "option");
+  if (!hasCtrl || !hasAlt) return false;
+
+  return parts.some((p) => p === "space" || /^[a-z]$/.test(p));
+};

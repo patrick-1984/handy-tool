@@ -16,7 +16,7 @@ Catalog: [Press one key, speak, and the text appears where you were typing](../.
 
 `General › Push-to-Talk Shortcut`
 
-Sets the hold-to-record shortcut. It uses [Transcription Mode (PTT)](#transcription-mode-ptt) and the separate Advanced [Paste Method (PTT)](advanced.md#paste-method-ptt). **Default:** `ctrl+alt+space`.
+Sets the hold-to-record shortcut. It uses [Transcription Mode (PTT)](#transcription-mode-ptt) and the separate Advanced [Paste Method (PTT)](advanced.md#paste-method-ptt). **Default:** `ctrl+shift+space`.
 
 Catalog: [Hold a key for a one-line thought](../../features.md#hold-to-talk).
 
@@ -27,6 +27,22 @@ Catalog: [Hold a key for a one-line thought](../../features.md#hold-to-talk).
 Chooses whether every recording-cancel entry point finishes without delivery or destroys the take. **Default:** `Finish, save to history only`.
 
 Catalog: [Escape stops the delivery, not your words](../../features.md#escape-stops-the-delivery-not-your-words).
+
+### Transcribe & Submit Shortcut
+
+`General › Transcribe & Submit Shortcut`
+
+Sets the shortcut that uses this group's delivery recipe. **Default:** `ctrl+shift+f9`.
+
+Catalog: [Dictate and send in one keystroke](../../features.md#dictate-and-send-in-one-keystroke).
+
+### Paste Last Transcription
+
+`General › Paste Last Transcription`
+
+Sets the recovery shortcut that re-pastes the most recent in-memory transcription, or falls back to History after restart. A delivery-failure toast names this shortcut when it is bound. It uses the two controls below and never submits. **Default:** `ctrl+shift+f10`.
+
+Catalog: [The paste didn't land — get the words back without re-dictating](../../features.md#the-paste-didnt-land-get-the-words-back).
 
 ## Model settings
 
@@ -89,32 +105,6 @@ Catalog: [Names and jargon stop coming back mangled](../../features.md#names-and
 Adds one space to the delivered text so consecutive takes do not run together. **Default:** Off.
 
 Catalog: [The next dictation doesn't run into the last one](../../features.md#the-next-dictation-doesnt-run-into-the-last-one).
-
-## Paste last transcription
-
-### Paste Last Transcription
-
-`General › Paste last transcription › Paste Last Transcription`
-
-Sets the recovery shortcut that re-pastes the most recent in-memory transcription, or falls back to History after restart. A delivery-failure toast names this shortcut when it is bound. It uses the two controls below and never submits. **Default:** `ctrl+alt+p`.
-
-Catalog: [The paste didn't land — get the words back without re-dictating](../../features.md#the-paste-didnt-land-get-the-words-back).
-
-### Paste method
-
-`General › Paste last transcription › Paste method`
-
-Chooses the delivery method used only by [Paste Last Transcription](#paste-last-transcription). **Default:** `Clipboard (Ctrl+V)`.
-
-Catalog: [Ctrl+V doesn't work in that app](../../features.md#ctrl-v-doesnt-work-in-that-app).
-
-### Clipboard
-
-`General › Paste last transcription › Clipboard`
-
-Chooses whether re-pasting restores the previous clipboard text or leaves the transcription there. **Default:** `Don't Modify Clipboard`.
-
-Catalog: [Dictation doesn't steal your clipboard](../../features.md#dictation-doesnt-steal-your-clipboard).
 
 ## Sound
 

@@ -1,6 +1,5 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { ShortcutInput } from "./ShortcutInput";
 import { SettingsGroup } from "../ui/SettingsGroup";
 import { SettingContainer } from "../ui/SettingContainer";
 import { Dropdown } from "../ui/Dropdown";
@@ -13,7 +12,8 @@ import type { PasteMethod, ClipboardHandling } from "@/bindings";
  * "Paste Last Transcription" shortcut: re-pastes the most recent transcription
  * from history into the focused window — a manual fallback for when the
  * automatic paste didn't land. Has its own paste method + clipboard handling
- * (independent of the global ones), so it can be tuned per target app.
+ * (independent of the global ones), so it can be tuned per target app. The
+ * shortcut itself lives in General with the other trigger shortcuts.
  */
 export const PasteLastSettings: React.FC = React.memo(() => {
   const { t } = useTranslation();
@@ -39,7 +39,6 @@ export const PasteLastSettings: React.FC = React.memo(() => {
 
   return (
     <SettingsGroup title={t("settings.general.pasteLast.title")}>
-      <ShortcutInput shortcutId="paste_last" grouped={true} />
       <SettingContainer
         title={t("settings.general.pasteLast.pasteMethod.title")}
         description={t("settings.general.pasteLast.pasteMethod.description")}

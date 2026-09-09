@@ -183,6 +183,7 @@
         "none": "لا توجد اختصارات مجهزة",
         "notFound": "الاختصار غير موجود",
         "pressKeys": "...اضغط على المفاتيح",
+        "altGrConflict": "يُبلِغ Windows عن AltGr على أنه Ctrl+Alt، لذا يعمل هذا الاختصار بدلاً من كتابة أحرف AltGr مثل ą أو ó. اختر تركيبة بدون Ctrl+Alt.",
         "bindings": {
           "transcribe": {
             "name": "اختصار التفريغ الصوتي",

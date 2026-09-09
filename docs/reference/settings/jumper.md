@@ -20,7 +20,7 @@ Catalog: [Handy knows which of your windows is a remote session](../../features.
 
 `Jumper › Hot slot (Anchor & Deliver) › Set Anchor` _{Windows only}_
 
-Sets the shortcut that captures the focused field as Hot 1. **Default:** `ctrl+alt+k`.
+Sets the shortcut that captures the focused field as Hot 1. **Default:** `ctrl+shift+f1`.
 
 Catalog: [Send it where you were](../../features.md#send-it-where-you-were).
 
@@ -28,7 +28,7 @@ Catalog: [Send it where you were](../../features.md#send-it-where-you-were).
 
 `Jumper › Hot slot (Anchor & Deliver) › Jump to Anchor` _{Windows only}_
 
-Sets the shortcut that focuses Hot 1 without delivering text. **Default:** `ctrl+alt+j`.
+Sets the shortcut that focuses Hot 1 without delivering text. **Default:** `ctrl+shift+f2`.
 
 Catalog: [Jump back to your draft without pasting anything](../../features.md#jump-back-to-your-draft).
 
@@ -74,7 +74,7 @@ Catalog: [Decide what a jump does at the start and at the end of a take](../../f
 
 `Jumper › Second hot slot (Anchor & Deliver) › Set Anchor 2` _{Windows only}_
 
-Sets the shortcut that captures the focused field as Hot 2. **Default:** `ctrl+alt+h`.
+Sets the shortcut that captures the focused field as Hot 2. **Default:** `ctrl+shift+f3`.
 
 Catalog: [Two live destinations at once](../../features.md#two-live-destinations-at-once).
 
@@ -82,7 +82,7 @@ Catalog: [Two live destinations at once](../../features.md#two-live-destinations
 
 `Jumper › Second hot slot (Anchor & Deliver) › Jump to Anchor 2` _{Windows only}_
 
-Sets the shortcut that focuses Hot 2 without delivering text. **Default:** `ctrl+alt+g`.
+Sets the shortcut that focuses Hot 2 without delivering text. **Default:** `ctrl+shift+f4`.
 
 Catalog: [Two live destinations at once](../../features.md#two-live-destinations-at-once).
 

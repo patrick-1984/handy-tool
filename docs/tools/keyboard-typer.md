@@ -30,5 +30,5 @@ Use Keyboard Typer for locked-down consoles, virtual machines, and prompts that 
 1. Enter the temporary text at `Keyboard Typer › Enter the text to type...`.
 2. Leave enough time to reach the destination at `Keyboard Typer › Start delay`.
 3. Keep character delivery conservative for the target at `Keyboard Typer › Key delay`.
-4. Bind the action at `Keyboard Typer › Type Text Shortcut = ctrl+alt+t`.
+4. Bind the action at `Keyboard Typer › Type Text Shortcut = ctrl+shift+f11`.
 5. Start from `Keyboard Typer › Go`, switch to a harmless target during the countdown, and verify the complete text before using the same timing in a console or password prompt.

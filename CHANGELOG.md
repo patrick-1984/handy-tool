@@ -1,5 +1,47 @@
 # Changelog
 
+## [1.4.0] - 2026-09-09
+
+### Fixed
+
+- **The Transcribe & Submit default no longer eats the space after an accented letter.** Windows
+  reports AltGr as Ctrl+Alt, so the old `ctrl+alt+space` default was the same chord a Polish,
+  German or French typist produces when AltGr is still held down for the space that follows a word
+  like _mamą_. The new default is `ctrl+shift+f9`, which is identical on every keyboard layout.
+
+  **Your saved chord is not touched.** If you already have the app installed, whatever you have
+  bound keeps working — upgrading has never rewritten a binding and still does not. What does
+  change is where _Reset to default_ lands: it now points at the new chord, so you can move onto it
+  deliberately.
+
+### Added
+
+- **A warning next to any shortcut AltGr can type with.** Choosing something like `ctrl+alt+o`
+  steals ó from anyone on a Polish (Programmers) layout — the shortcut fires and the character
+  never arrives. An amber marker now appears beside such a chord and explains the conflict. The
+  app cannot silently change a chord you chose, so it tells you instead.
+
+- **A test over the whole default set** (`no_default_binding_collides_with_altgr`) fails the build
+  if any future default lands on a chord AltGr types a character with. The Jumper's eighteen slot
+  chords stay on `ctrl+alt+<digit>` and `ctrl+alt+shift+<digit>` as a documented exception: no
+  common European layout puts a character on AltGr+digit, and no other free chord space of that
+  size exists.
+
+### Changed
+
+- **Every trigger shortcut now lives on the General page.** Transcribe & Submit was reachable only
+  from `Advanced › Transcription`, and Paste Last Transcription was buried in its own group further
+  down General. Both chords now sit with Transcribe and Push-to-Talk at the top of General.
+
+  The options behind them — paste method, submit key, clipboard handling, jump timings — moved the
+  other way, into `Advanced › Transcription`, next to the equivalent global settings. Shortcuts in
+  General, tuning in Advanced.
+
+- **The shortcut documentation matched a release from several versions ago.** The reference tables
+  still advertised `ctrl+alt+k`, `ctrl+alt+j`, `ctrl+alt+s`, `ctrl+alt+p` and `ctrl+alt+t` — nine
+  AltGr-colliding chords that the application itself had already moved onto Ctrl+Shift function
+  keys. Every default chord in `docs/` was regenerated from the source of truth in `settings.rs`.
+
 ## [1.3.2] - 2026-08-20
 
 ### Added

@@ -36,8 +36,8 @@ Use Jumper when your attention moves but the destination of your words does not.
 
 ## Set it up
 
-1. Put the cursor in your main destination and capture it with `Jumper › Hot slot (Anchor & Deliver) › Set Anchor = ctrl+alt+k` _{Windows only}_.
-2. Leave that window, then return to the captured field with `Jumper › Hot slot (Anchor & Deliver) › Jump to Anchor = ctrl+alt+j` _{Windows only}_.
+1. Put the cursor in your main destination and capture it with `Jumper › Hot slot (Anchor & Deliver) › Set Anchor = ctrl+shift+f1` _{Windows only}_.
+2. Leave that window, then return to the captured field with `Jumper › Hot slot (Anchor & Deliver) › Jump to Anchor = ctrl+shift+f2` _{Windows only}_.
 3. If the mouse position matters inside that application, enable `Jumper › Hot slot (Anchor & Deliver) › Save mouse position = On` _{Windows only}_.
 4. For a target that moves with its window, choose `Jumper › Hot slot (Anchor & Deliver) › Cursor position mode = App-relative (follows the window)` _{Windows only}_.
 5. After the hot slot behaves as expected, keep it for future launches at `Jumper › Persistence › Remember slots across restarts = On` _{Windows only}_.

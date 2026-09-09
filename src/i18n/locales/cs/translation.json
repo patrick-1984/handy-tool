@@ -209,6 +209,7 @@
         "none": "Žádné zkratky nejsou nastavené",
         "notFound": "Zkratka nenalezena",
         "pressKeys": "Stiskněte klávesy...",
+        "altGrConflict": "Windows hlásí AltGr jako Ctrl+Alt, takže se místo napsání znaků AltGr jako ą nebo ó spustí tato zkratka. Zvolte kombinaci bez Ctrl+Alt.",
         "bindings": {
           "transcribe": {
             "name": "Zkratka přepisu",

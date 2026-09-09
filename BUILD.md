@@ -192,38 +192,103 @@ Windows Defender's antivirus is **not** involved and records no detection, so
 `Get-MpThreatDetection` looks clean and an antivirus exclusion changes nothing.
 Smart App Control is a separate mechanism with no exclusion list.
 
-**Do NOT run `cargo clean`.** It is the natural reflex and it makes the problem
-worse: it discards proc-macro DLLs that Smart App Control has already accepted,
-forcing them to be rebuilt with new hashes that are evaluated as unknown all
-over again.
+**What the verdict is actually against.** A single file, identified by its
+content — not "unsigned Rust proc-macros" as a class, and not a path. Measured on
+2026-08-29: `serde_derive-5f0c21d65f4cceea.dll` built on 08-17 was refused on
+every attempt, while the *same crate* compiled fresh into a throwaway project a
+minute later loaded without complaint. So "SAC is blocking my build" and "SAC is
+blocking Rust" are different claims, and only the first one is ever true.
 
-**What actually works — and what does not.** The verdict is reputation-based. It
-is sometimes transient, in which case retrying with the target directory intact
-clears it within a few attempts. **But it can also be persistent**, and the two
-cases look identical in the build output. Tell them apart from the _hash suffix_
-in the error:
+**Diagnose with the event log, not the build output.** The build output tells you
+a crate is missing; only the event log tells you which file was refused, and when:
 
-- **Same DLL, same hash on every attempt** → the verdict is against that exact
-  cached file. Retrying only reloads the file SAC already rejected; it cannot
-  succeed. Stop retrying.
-- **Different DLLs or changing hashes** → genuinely transient. Retry.
+```powershell
+Get-WinEvent -FilterHashtable @{
+    LogName='Microsoft-Windows-CodeIntegrity/Operational'; Id=3077
+    StartTime=(Get-Date).AddMinutes(-30) } |
+  ForEach-Object { [regex]::Matches($_.Message,
+      '\Device\HarddiskVolume\d+(\tmp\hb\[^\s]+?\.(?:dll|exe))') } |
+  ForEach-Object { $_.Groups[1].Value } | Group-Object | Sort-Object Count -Descending
+```
 
-For the persistent case, a per-crate `cargo clean -p <crate> --release` looks
-like the answer — it forces a fresh artifact while leaving already-accepted DLLs
-alone. **It does not work, and it makes things worse.** Measured on
-2026-08-20: the rebuilt `schemars_derive.dll` was blocked within seconds, and
-removing it forced dependents to rebuild _their_ proc-macros, taking the count of
-blocked DLLs from one to three (`schemars_derive`, `serde_with_macros`,
-`phf_macros`) and turning a single clear error into the `can't find crate for
-phf / html5ever / kuchikiki / serde_with` cascade. A fresh unsigned proc-macro
-gets evaluated as unknown, and when SAC is in a rejecting mood the replacement is
-refused too. The per-crate clean is not meaningfully safer than a full one.
+`os error 4551` appears in the build log **only** when cargo tries to *execute* a
+blocked build script. When `rustc` fails to *load* a blocked proc-macro you get a
+bare `E0463` and no OS error at all, so "no 4551 in the log" does **not** mean SAC
+is uninvolved.
 
-When it is persistent, the only things that actually help are **time** (wait for
-the cloud verdict to change, hours not minutes) or **building elsewhere** — this
-repository has `.github/workflows/windows-nsis-build.yml` for that, though note
-the updater signing key is deliberately absent from CI, so a CI-built installer
-still has to be signed locally with `tauri signer sign`.
+**Build with `CARGO_BUILD_JOBS=1` before concluding the machine is unusable.** This is
+the single most effective lever found so far, and it points at what SAC is actually
+doing. Measured 2026-09-09: a normal parallel build refused the `serde_json` and
+`anyhow` build scripts within a minute; the same tree with `CARGO_BUILD_JOBS=1`
+compiled straight past both with no `4551` at all. The reputation check is a
+per-binary cloud lookup, and a full-throttle cargo build presents hundreds of unknown
+binaries at once — enough of those lookups fail or time out that SAC falls back to
+deny. One at a time, each gets a real verdict. It is much slower. It is also the
+difference between a build and no build.
+
+Note this also explains the "control probe passes but the real build fails"
+contradiction: the probe compiles two or three binaries, never enough to saturate the
+lookups.
+
+**Clearing one artifact is worth trying. Clearing many is not.** Deleting a single
+refused artifact so cargo rebuilds it sometimes produces bytes SAC then accepts —
+that worked for `serde_derive` and for the `whisper-rs-sys` build script on 08-29.
+It also sometimes does not: the rebuilt `windows_implement` and
+`tauri-plugin-global-shortcut` artifacts were refused again the same minute.
+
+Beyond one or two artifacts this stops being a repair and becomes damage, in two
+ways that were both measured on 08-29:
+
+- Forcing *every* build script to recompile (via
+  `CARGO_PROFILE_RELEASE_BUILD_OVERRIDE_OPT_LEVEL`, to change their bytes) took the
+  refused set from **1 crate to 9 in eight attempts**. This is the same effect the
+  2026-08-20 note recorded as "the per-crate clean makes it worse", and it is real —
+  though the mechanism is presenting many unknown binaries at once, not the clean
+  itself.
+- Purging a crate that is *not* a proc-macro leaves `can't find crate for X` with
+  nothing to repair, because the missing artifact is a plain rlib whose build was
+  never reached. Six crates ended up in that state and no amount of retrying
+  recovered them.
+
+**When a whole artifact generation is refused, move the target directory aside.**
+This is the reliable fix and it should be reached for early rather than after an
+hour of purging:
+
+```powershell
+Rename-Item C:	mp\hb hb-sac-damaged-<date>     # keep it; it is recoverable
+```
+
+The next build recreates `C:	mp\hb` from scratch, so every artifact is fresh and
+the stale generation that SAC objected to is gone in one step. It costs a full
+whisper.cpp rebuild. Budget an hour, run it detached, and watch the log.
+
+**Where a binary lives affects whether it may run.** On 08-29 a freshly compiled
+test executable under `%LOCALAPPDATA%\Temp\...` was refused, while the byte-identical
+build under `C:	mp\` ran normally. Keep scratch builds and test binaries out of
+`%TEMP%`.
+
+**`cargo fmt` can be refused while the toolchain works.** The `cargo-fmt.exe` shim
+is a separate binary and was blocked on 08-29 while `cargo` and `rustc` were fine.
+Call the real formatter directly:
+`& "$env:USERPROFILE\.rustup	oolchains\stable-x86_64-pc-windows-msvcin
+ustfmt.exe" --edition 2021 <files>`
+
+**`sac-unblock-loop.ps1`** in the repository root automates the bounded version of
+the single-artifact repair: it runs `unittest.cmd`, reads the event log for what was
+actually refused, purges the artifact **and both fingerprint spellings**, and
+retries. Two things it gets right that a hand-run does not — cargo's `.fingerprint`
+directories are named after the **package** (`windows-implement`, hyphens) while the
+artifact is named after the **crate** (`windows_implement`, underscores), so
+deleting only the DLL leaves cargo believing the unit is fresh and it never
+rebuilds; and it stops immediately on any failure that is not a blocked artifact,
+so a real compile error is never retried into noise. If it has not converged within
+a few attempts, stop it and move the target directory aside instead.
+
+If even a fresh tree is refused, the remaining levers are **time** (the verdict does
+change, hours not minutes) or **building elsewhere** — this repository has
+`.github/workflows/windows-nsis-build.yml` for that, though note the updater signing
+key is deliberately absent from CI, so a CI-built installer still has to be signed
+locally with `tauri signer sign`.
 
 Do not disable Smart App Control to get past this. Turning it off is one-way:
 re-enabling requires a Windows reinstall.

@@ -209,6 +209,7 @@
         "none": "未配置快捷键",
         "notFound": "未找到快捷键",
         "pressKeys": "请按键...",
+        "altGrConflict": "Windows 将 AltGr 识别为 Ctrl+Alt，因此按下时会触发此快捷键，而不会输入 ą、ó 等 AltGr 字符。请选择不含 Ctrl+Alt 的组合键。",
         "bindings": {
           "transcribe": {
             "name": "转录快捷键",

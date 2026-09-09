@@ -191,6 +191,7 @@
         "none": "未設定快捷鍵",
         "notFound": "未找到快捷鍵",
         "pressKeys": "請按鍵...",
+        "altGrConflict": "Windows 會將 AltGr 視為 Ctrl+Alt，因此按下時會觸發此快速鍵，而不會輸入 ą、ó 等 AltGr 字元。請選擇不含 Ctrl+Alt 的組合鍵。",
         "bindings": {
           "transcribe": {
             "name": "轉錄快捷鍵",

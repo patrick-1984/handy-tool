@@ -209,6 +209,7 @@
         "none": "Brak skonfigurowanych skrótów",
         "notFound": "Nie znaleziono skrótu",
         "pressKeys": "Naciśnij klawisze...",
+        "altGrConflict": "Windows zgłasza AltGr jako Ctrl+Alt, więc ten skrót uruchamia się zamiast wpisania znaków AltGr, takich jak ą czy ó. Wybierz kombinację bez Ctrl+Alt.",
         "bindings": {
           "transcribe": {
             "name": "Skrót transkrypcji",

@@ -1299,23 +1299,23 @@
     "sidebarGroup": "Configuration",
     "tab": null,
     "tabKey": null,
-    "group": "Paste last transcription",
-    "groupKey": "settings.general.pasteLast.title",
+    "group": "General",
+    "groupKey": "settings.general.title",
     "control": "Paste Last Transcription",
     "titleKey": null,
     "descKey": null,
     "type": "shortcut recorder",
     "options": [],
     "gating": "none",
-    "file": "src/components/settings/PasteLastSettings.tsx",
-    "notes": "UNRESOLVED against translation.json: there is no settings.general.shortcut.bindings.paste_last key, so the row falls back to the backend binding name. Literal from src-tauri/src/settings.rs:2055 (\"Paste Last Transcription\"). Not localisable today."
+    "file": "src/components/settings/general/GeneralSettings.tsx",
+    "notes": "Moved out of the \"Paste last transcription\" group in 1.4.0; that group now holds only the options and lives in Advanced > Transcription."
   },
   {
-    "page": "General",
-    "pageKey": "sidebar.general",
+    "page": "Advanced",
+    "pageKey": "sidebar.advanced",
     "sidebarGroup": "Configuration",
-    "tab": null,
-    "tabKey": null,
+    "tab": "Transcription",
+    "tabKey": "settings.advanced.tabs.transcription",
     "group": "Paste last transcription",
     "groupKey": "settings.general.pasteLast.title",
     "control": "Paste method",
@@ -1331,14 +1331,14 @@
     ],
     "gating": "none",
     "file": "src/components/settings/PasteLastSettings.tsx",
-    "notes": "Option set is per-OS (buildPasteMethodOptions in PasteMethod.tsx). The first label is interpolated: \"Clipboard ({{modifier}}+V)\" → \"Clipboard (Cmd+V)\" on macOS. Ctrl+Shift+V and Shift+Insert appear on Windows/Linux only; \"External Script\" is appended on Linux only. Values: ctrl_v, direct, none, ctrl_shift_v, shift_insert, external_script."
+    "notes": "Moved to Advanced > Transcription in 1.4.0, alongside the Transcribe & Submit options."
   },
   {
-    "page": "General",
-    "pageKey": "sidebar.general",
+    "page": "Advanced",
+    "pageKey": "sidebar.advanced",
     "sidebarGroup": "Configuration",
-    "tab": null,
-    "tabKey": null,
+    "tab": "Transcription",
+    "tabKey": "settings.advanced.tabs.transcription",
     "group": "Paste last transcription",
     "groupKey": "settings.general.pasteLast.title",
     "control": "Clipboard",
@@ -1348,7 +1348,7 @@
     "options": ["Don't Modify Clipboard", "Copy to Clipboard"],
     "gating": "none",
     "file": "src/components/settings/PasteLastSettings.tsx",
-    "notes": "Values: dont_modify, copy_to_clipboard."
+    "notes": "Moved to Advanced > Transcription in 1.4.0, alongside the Transcribe & Submit options."
   },
   {
     "page": "General",
@@ -1969,20 +1969,21 @@
     "notes": "\"output\" flow instance (return_focus_output). NOTE: settings.general.anchor.returnFocus.label carries the same English string but is unused."
   },
   {
-    "page": "Advanced",
-    "pageKey": "sidebar.advanced",
+    "page": "General",
+    "pageKey": "sidebar.general",
     "sidebarGroup": "Configuration",
-    "tab": "Transcription",
-    "tabKey": "settings.advanced.tabs.transcription",
-    "group": "Transcribe & Submit",
-    "groupKey": "settings.general.transcribeAndSubmit.title",
+    "tab": null,
+    "tabKey": null,
+    "group": "General",
+    "groupKey": "settings.general.title",
     "control": "Transcribe & Submit Shortcut",
     "titleKey": "settings.general.shortcut.bindings.transcribe_and_submit.name",
     "descKey": "settings.general.shortcut.bindings.transcribe_and_submit.description",
     "type": "shortcut recorder",
     "options": [],
     "gating": "none",
-    "file": "src/components/settings/ShortcutInput.tsx"
+    "file": "src/components/settings/general/GeneralSettings.tsx",
+    "notes": "Moved to General in 1.4.0 so every trigger shortcut lives in one place; the flow options stayed in Advanced > Transcription."
   },
   {
     "page": "Advanced",

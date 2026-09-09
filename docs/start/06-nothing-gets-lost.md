@@ -25,7 +25,7 @@ Now rehearse the misfire that is easy to overlook:
 2. Confirm `Advanced › Transcription › Transcribe › Clipboard Handling = Don't Modify Clipboard`.
 3. Dictate a short disposable sentence with `ctrl+space` and let it appear.
 4. Pretend that delivery missed: delete that sentence without copying it, then click where it should have gone.
-5. Press `General › Paste last transcription › Paste Last Transcription` using its default `ctrl+alt+p`.
+5. Press `General › Paste Last Transcription` using its default `ctrl+shift+f10`.
 6. Paste your clipboard into another blank line and confirm that `KEEP THIS CLIPBOARD` is still there.
 
 This rehearsal makes the designed pair concrete: [Dictation doesn't steal your clipboard](../features.md#dictation-doesnt-steal-your-clipboard) and [The paste didn't land — get the words back without re-dictating](../features.md#the-paste-didnt-land-get-the-words-back).

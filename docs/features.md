@@ -97,16 +97,16 @@ this is what happens if you change nothing.
 | You press                             | What happens                                                                                           |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | `ctrl+space`                          | Start recording. Press again to stop; the text is pasted where your cursor is.                         |
-| `ctrl+alt+space`                      | Hold to record, release to stop and paste.                                                             |
-| `ctrl+alt+s`                          | Finish the recording, paste, then press **Enter** for you. Also starts a recording if none is running. |
-| `ctrl+alt+p`                          | Paste the most recent transcription again, into whatever has focus now.                                |
-| `ctrl+alt+t`                          | Type the Keyboard Typer text into the focused window, one keystroke at a time.                         |
+| `ctrl+shift+space`                    | Hold to record, release to stop and paste.                                                             |
+| `ctrl+shift+f9`                       | Finish the recording, paste, then press **Enter** for you. Also starts a recording if none is running. |
+| `ctrl+shift+f10`                      | Paste the most recent transcription again, into whatever has focus now.                                |
+| `ctrl+shift+f11`                      | Type the Keyboard Typer text into the focused window, one keystroke at a time.                         |
 | `Escape`                              | Stop the recording, transcribe it, save it to History — and deliver nothing.                           |
-| `ctrl+alt+k` / `ctrl+alt+j`           | Mark the focused field as your hot destination / jump back to it. _{Windows only}_                     |
-| `ctrl+alt+h` / `ctrl+alt+g`           | The same for a second hot destination. _{Windows only}_                                                |
+| `ctrl+shift+f1` / `ctrl+shift+f2`     | Mark the focused field as your hot destination / jump back to it. _{Windows only}_                     |
+| `ctrl+shift+f3` / `ctrl+shift+f4`     | The same for a second hot destination. _{Windows only}_                                                |
 | `ctrl+alt+shift+1…9` / `ctrl+alt+1…9` | Mark / jump to numbered destinations 1 to 9. _{Windows only}_                                          |
 
-`ctrl+shift+space` runs a take through an LLM before delivering it, but the post-processing
+`ctrl+shift+f12` runs a take through an LLM before delivering it, but the post-processing
 page is hidden until you switch it on, so that key does nothing on a fresh install.
 
 #### What happens to your clipboard
@@ -230,7 +230,7 @@ rather not think about whether the recorder is still running.
 release it. The microphone goes cold on release, before any transcription finishes, so
 post-release chatter cannot leak into your text. It has its own transcription mode and its own
 paste method, so it can behave differently from the toggle.
-**Where.** `General › Push-to-Talk Shortcut` — `ctrl+alt+space` by default.
+**Where.** `General › Push-to-Talk Shortcut` — `ctrl+shift+space` by default.
 **Since.** 0.1.0; hardened in 0.30.0.
 
 ### Watch the text appear, or wait for the most accurate pass
@@ -455,8 +455,8 @@ under `Don't Modify Clipboard`, the toast names the bound Paste Last Transcripti
 points to the History page when none is bound. This is why
 [Dictation doesn't steal your clipboard](#dictation-doesnt-steal-your-clipboard) is safe to
 switch on.
-**Where.** `General › Paste last transcription › Paste Last Transcription` — `ctrl+alt+p` by
-default; `General › Paste last transcription › Paste method`.
+**Where.** `General › Paste Last Transcription` — `ctrl+shift+f10` by
+default; `Advanced › Transcription › Paste last transcription › Paste method`.
 **Since.** 0.57.0; pre-delivery History storage and shortcut-aware failure recovery since 1.0.5.
 
 ### Your re-paste key fires while you are still holding it
@@ -484,6 +484,28 @@ inherent rather than fixable: if your macro physically holds the chord for a sec
 fires when it lets go. A tap is instant.
 **Where.** No control — this is always active.
 **Since.** 0.59.0.
+
+### Your shortcuts don't eat the accented letters you type
+
+<a id="shortcuts-dont-eat-accented-letters"></a>
+**The situation.** You write in Polish, German, French, Spanish, Czech or Hungarian, so you reach
+for AltGr constantly — `AltGr+o` for ó, `AltGr+e` for ę or €. Windows reports AltGr as Ctrl+Alt,
+which means a global `ctrl+alt+<letter>` shortcut is the _same chord_. The shortcut fires, the
+character never arrives, and nothing in the interface says why.
+**What Handy does.** No default binding uses a chord AltGr can type a character with. The
+trigger shortcuts sit on Ctrl+Space, Ctrl+Shift+Space and the Ctrl+Shift function keys, all of
+which are identical on every layout; a test over the whole default set fails the build if one
+regresses. When _you_ pick a colliding chord by hand, an amber warning appears beside it naming
+the conflict, because the app cannot safely change a chord you chose. The one deliberate
+exception is the Jumper's eighteen slot chords, which stay on `ctrl+alt+<digit>` and
+`ctrl+alt+shift+<digit>`: no common European layout puts a character on AltGr+digit, and no other
+free chord space of that size exists.
+**Where.** Every shortcut control; the warning appears next to the chord itself.
+**Applies to.** All platforms; AltGr is a Windows keyboard concept, so the collision itself is
+Windows-only.
+**Since.** 1.4.0. Push-to-Talk, Transcribe & Submit, Type Text, Paste Last and the four anchor
+keys moved off `ctrl+alt+<letter>` chords across earlier releases; 1.4.0 finished the job by
+moving Transcribe & Submit off `ctrl+alt+space` and adding the test and the warning.
 
 ### When delivery can't be verified, the text is still recoverable
 
@@ -560,8 +582,8 @@ especially while your other hand is on the mouse reading something else.
 method, presses **its own** submit key and applies **its own** clipboard policy. "Still
 speaking" becomes "message sent" in a chat box, or a command executed in a terminal, without
 touching the mouse. Bind it only where Enter means send.
-**Where.** `Advanced › Transcription › Transcribe & Submit › Transcribe & Submit Shortcut` —
-`ctrl+alt+s` by default.
+**Where.** `General › Transcribe & Submit Shortcut` —
+`ctrl+shift+f9` by default.
 **Since.** The 0.3x series.
 
 ### Enter, Ctrl+Enter, or Super+Enter
@@ -655,7 +677,7 @@ prompting into is buried under everything else, and you have to dig it out with 
 _and control_ are remembered. Wander anywhere. When the transcription finishes, Handy activates
 the anchored window, focuses the anchored field, verifies both actually happened, delivers the
 text, and hands focus back to where you were.
-**Where.** `Jumper › Hot slot (Anchor & Deliver) › Set Anchor` — `ctrl+alt+k` by default — then
+**Where.** `Jumper › Hot slot (Anchor & Deliver) › Set Anchor` — `ctrl+shift+f1` by default — then
 `Advanced › Transcription › Transcribe › Jump slot action on finish = Jump / deliver to slot`
 _{Windows only}_.
 **Since.** 0.31.0.
@@ -667,7 +689,7 @@ _{Windows only}_.
 you were writing in, cursor in place, without hunting for it.
 **What Handy does.** Jump to Anchor is pure navigation: it brings the anchored window and field
 into focus and delivers nothing. A "back to my draft" key.
-**Where.** `Jumper › Hot slot (Anchor & Deliver) › Jump to Anchor` — `ctrl+alt+j` by default
+**Where.** `Jumper › Hot slot (Anchor & Deliver) › Jump to Anchor` — `ctrl+shift+f2` by default
 _{Windows only}_.
 **Since.** 0.31.0.
 
@@ -731,7 +753,7 @@ alternating between them all afternoon.
 **What Handy does.** A second hot anchor with its own set and jump keys. Ordinary dictation and
 Transcribe & Submit can each own a different hot anchor, so the two intents land in two places
 without touching the numbered slots.
-**Where.** `Jumper › Second hot slot (Anchor & Deliver) › Set Anchor 2` — `ctrl+alt+h` by
+**Where.** `Jumper › Second hot slot (Anchor & Deliver) › Set Anchor 2` — `ctrl+shift+f3` by
 default _{Windows only}_.
 **Since.** 0.50.0.
 
@@ -1013,7 +1035,7 @@ raw canvas that has no clipboard at all.
 **What Handy does.** The Keyboard Typer sends the text as individual keystrokes with a
 configurable gap, which is what remote consoles and VM viewers actually accept. See
 [When paste is blocked, type it instead](#when-paste-is-blocked-type-it-instead).
-**Where.** `Keyboard Typer › Type Text Shortcut` — `ctrl+alt+t` by default.
+**Where.** `Keyboard Typer › Type Text Shortcut` — `ctrl+shift+f11` by default.
 **Since.** 0.12.0.
 
 ---
@@ -1163,7 +1185,7 @@ you said it. Sometimes you want that verbatim, and sometimes you want it tidied.
 with a prompt you control, before delivering it. Raw and processed dictation are one keystroke
 apart, and the raw transcription is always kept in History alongside the processed version.
 **Where.** `Advanced › Post-processing › Post Processing = On` to reveal the page, then
-`Post Process › Hotkey › Post-Processing Hotkey` — `ctrl+shift+space` by default
+`Post Process › Hotkey › Post-Processing Hotkey` — `ctrl+shift+f12` by default
 _{requires: Post-processing enabled}_.
 **Since.** Present since the fork's early releases.
 
@@ -1574,7 +1596,7 @@ remote session. The password prompt must never see a clipboard at all.
 **What Handy does.** A page where you put text and a shortcut that types it into whatever window
 has focus, as individual simulated keystrokes. No clipboard is involved at any point.
 **Where.** `Keyboard Typer › Enter the text to type...` then
-`Keyboard Typer › Type Text Shortcut` — `ctrl+alt+t` by default.
+`Keyboard Typer › Type Text Shortcut` — `ctrl+shift+f11` by default.
 **Since.** 0.12.0.
 
 ### The text never touches your disk

@@ -1,6 +1,5 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { ShortcutInput } from "./ShortcutInput";
 import { SettingsGroup } from "../ui/SettingsGroup";
 import { SettingContainer } from "../ui/SettingContainer";
 import { Dropdown } from "../ui/Dropdown";
@@ -22,7 +21,8 @@ import type {
 /**
  * "Transcribe & Submit" shortcut: finishes the active recording, pastes the
  * transcription with a chosen paste method, then presses a submit key (Enter by
- * default). The shortcut itself plus its two options live together here.
+ * default). Only the options live here — the shortcut itself sits with every
+ * other trigger shortcut in General, which is where users look for it.
  */
 export const TranscribeAndSubmitSettings: React.FC = React.memo(() => {
   const { t } = useTranslation();
@@ -85,7 +85,6 @@ export const TranscribeAndSubmitSettings: React.FC = React.memo(() => {
 
   return (
     <SettingsGroup title={t("settings.general.transcribeAndSubmit.title")}>
-      <ShortcutInput shortcutId="transcribe_and_submit" grouped={true} />
       <SettingContainer
         title={t("settings.general.transcribeAndSubmit.pasteMethod.title")}
         description={t(

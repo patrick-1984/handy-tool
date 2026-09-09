@@ -11,24 +11,24 @@ Nothing in either table runs anywhere but Windows today. The `Survives to planne
 | Bindable action                 | Default chord      | What it does                                           | Survives to planned builds | Suggested deck key                           |
 | ------------------------------- | ------------------ | ------------------------------------------------------ | -------------------------- | -------------------------------------------- |
 | Transcribe                      | `ctrl+space`       | Toggles recording.                                     | Yes                        | **Transcribe (toggle)** on every layout      |
-| Push-to-Talk                    | `ctrl+alt+space`   | Records while held.                                    | Yes                        | **PTT hold**, center key on every layout     |
-| Transcribe with Post-Processing | `ctrl+shift+space` | Toggles recording and runs the post-processing prompt. | Yes                        | **Post-Proc.** on 9/12 keys                  |
-| Transcribe & Submit             | `ctrl+alt+s`       | Toggles recording, delivers, and sends the submit key. | Yes                        | **Transcribe & Submit** on every layout      |
+| Push-to-Talk                    | `ctrl+shift+space` | Records while held.                                    | Yes                        | **PTT hold**, center key on every layout     |
+| Transcribe with Post-Processing | `ctrl+shift+f12`   | Toggles recording and runs the post-processing prompt. | Yes                        | **Post-Proc.** on 9/12 keys                  |
+| Transcribe & Submit             | `ctrl+shift+f9`    | Toggles recording, delivers, and sends the submit key. | Yes                        | **Transcribe & Submit** on every layout      |
 | Cancel                          | `escape`           | Applies Cancel behavior to the running take.           | Yes                        | **Cancel** on every layout                   |
-| Type Text                       | `ctrl+alt+t`       | Types the prepared Keyboard Typer text.                | Yes                        | **Type Text** on 12 keys; Fn layer on 9 keys |
-| Paste Last Transcription        | `ctrl+alt+p`       | Delivers the most recent transcription again.          | Yes                        | **Paste Last** on every layout               |
+| Type Text                       | `ctrl+shift+f11`   | Types the prepared Keyboard Typer text.                | Yes                        | **Type Text** on 12 keys; Fn layer on 9 keys |
+| Paste Last Transcription        | `ctrl+shift+f10`   | Delivers the most recent transcription again.          | Yes                        | **Paste Last** on every layout               |
 
 Rebind them at:
 
 - `General › Transcribe Shortcut`
 - `General › Push-to-Talk Shortcut`
-- `Advanced › Transcription › Transcribe & Submit › Transcribe & Submit Shortcut`
+- `General › Transcribe & Submit Shortcut`
 - `Keyboard Typer › Type Text Shortcut`
-- `General › Paste last transcription › Paste Last Transcription`
+- `General › Paste Last Transcription`
 - `Post Process › Hotkey › Post-Processing Hotkey` _{requires: Post-processing enabled}_
 - `Debug › Cancel Shortcut` _{requires: Debug mode}_
 
-Catalog: [Press one key, speak, and the text appears where you were typing](../features.md#press-one-key-and-speak), [Push-to-talk you can trust](../features.md#push-to-talk-you-can-trust), [Dictate and send in one keystroke](../features.md#dictate-and-send-in-one-keystroke), [The paste didn't land — get the words back without re-dictating](../features.md#the-paste-didnt-land-get-the-words-back), [A second key for "clean this up with AI"](../features.md#a-second-key-for-clean-this-up), and [When paste is blocked, type it instead](../features.md#when-paste-is-blocked-type-it-instead).
+Catalog: [Press one key, speak, and the text appears where you were typing](../features.md#press-one-key-and-speak), [Push-to-talk you can trust](../features.md#push-to-talk-you-can-trust), [Dictate and send in one keystroke](../features.md#dictate-and-send-in-one-keystroke), [The paste didn't land — get the words back without re-dictating](../features.md#the-paste-didnt-land-get-the-words-back), [A second key for "clean this up with AI"](../features.md#a-second-key-for-clean-this-up), [When paste is blocked, type it instead](../features.md#when-paste-is-blocked-type-it-instead), and [Your shortcuts don't eat the accented letters you type](../features.md#shortcuts-dont-eat-accented-letters).
 
 ## Jumper and slots
 
@@ -36,10 +36,10 @@ All 22 actions below are Windows-only. Set remembers the focused field; Jump ret
 
 | Bindable action  | Default chord      | What it does                               | Survives to planned builds | Suggested deck key                                   |
 | ---------------- | ------------------ | ------------------------------------------ | -------------------------- | ---------------------------------------------------- |
-| Set Anchor       | `ctrl+alt+k`       | Stores the focused field as Hot 1.         | No                         | **Fn + Jump Hot 1** on 9/12 keys; keyboard on 6 keys |
-| Jump to Anchor   | `ctrl+alt+j`       | Focuses Hot 1 without delivery.            | No                         | **Jump Hot 1** on every layout                       |
-| Set Anchor 2     | `ctrl+alt+h`       | Stores the focused field as Hot 2.         | No                         | **Fn + Jump Hot 2** on 9/12 keys; keyboard on 6 keys |
-| Jump to Anchor 2 | `ctrl+alt+g`       | Focuses Hot 2 without delivery.            | No                         | **Jump Hot 2** on 9/12 keys; keyboard on 6 keys      |
+| Set Anchor       | `ctrl+shift+f1`    | Stores the focused field as Hot 1.         | No                         | **Fn + Jump Hot 1** on 9/12 keys; keyboard on 6 keys |
+| Jump to Anchor   | `ctrl+shift+f2`    | Focuses Hot 1 without delivery.            | No                         | **Jump Hot 1** on every layout                       |
+| Set Anchor 2     | `ctrl+shift+f3`    | Stores the focused field as Hot 2.         | No                         | **Fn + Jump Hot 2** on 9/12 keys; keyboard on 6 keys |
+| Jump to Anchor 2 | `ctrl+shift+f4`    | Focuses Hot 2 without delivery.            | No                         | **Jump Hot 2** on 9/12 keys; keyboard on 6 keys      |
 | Set Jump Slot 1  | `ctrl+alt+shift+1` | Stores the focused field as static slot 1. | No                         | **Fn + Slot 1** on 12 keys                           |
 | Jump to Slot 1   | `ctrl+alt+1`       | Focuses static slot 1.                     | No                         | **Slot 1** on 12 keys                                |
 | Set Jump Slot 2  | `ctrl+alt+shift+2` | Stores the focused field as static slot 2. | No                         | **Fn + Slot 2** on 12 keys                           |

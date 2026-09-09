@@ -37,7 +37,7 @@ The bottom row is home.
 └────────────────┴────────────────┴────────────────┘
 ```
 
-Set Hot 1 from the normal `ctrl+alt+k` chord. The pad's jump key emits `ctrl+alt+j`. Put the heaviest or most tactile switch under PTT so you can find and hold it without looking.
+Set Hot 1 from the normal `ctrl+shift+f1` chord. The pad's jump key emits `ctrl+shift+f2`. Put the heaviest or most tactile switch under PTT so you can find and hold it without looking.
 
 ## Nine keys: the daily deck
 
