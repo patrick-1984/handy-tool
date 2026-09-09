@@ -6,6 +6,7 @@ import {
   normalizeKey,
 } from "../../lib/utils/keyboard";
 import { ResetButton } from "../ui/ResetButton";
+import { AltGrWarning } from "./AltGrWarning";
 import { SettingContainer } from "../ui/SettingContainer";
 import { useSettings } from "../../hooks/useSettings";
 import { useOsType } from "../../hooks/useOsType";
@@ -290,6 +291,7 @@ export const GlobalShortcutInput: React.FC<GlobalShortcutInputProps> = ({
       layout="horizontal"
     >
       <div className="flex items-center space-x-1">
+        <AltGrWarning binding={binding.current_binding} />
         {editingShortcutId === shortcutId ? (
           <div
             ref={(ref) => setShortcutRef(shortcutId, ref)}

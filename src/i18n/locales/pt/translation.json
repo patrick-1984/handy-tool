@@ -191,6 +191,7 @@
         "none": "Nenhum atalho configurado",
         "notFound": "Atalho não encontrado",
         "pressKeys": "Pressione as teclas...",
+        "altGrConflict": "O Windows reporta o AltGr como Ctrl+Alt, por isso este atalho é acionado em vez de escrever caracteres AltGr como ą ou ó. Escolha uma combinação sem Ctrl+Alt.",
         "bindings": {
           "transcribe": {
             "name": "Atalho de Transcrição",

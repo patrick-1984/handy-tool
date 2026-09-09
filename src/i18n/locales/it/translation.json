@@ -209,6 +209,7 @@
         "none": "Nessuna scorciatoia configurata",
         "notFound": "Scorciatoia non trovata",
         "pressKeys": "Premi i tasti...",
+        "altGrConflict": "Windows segnala AltGr come Ctrl+Alt, quindi questa scorciatoia si attiva invece di digitare caratteri AltGr come ą o ó. Scegli una combinazione senza Ctrl+Alt.",
         "bindings": {
           "transcribe": {
             "name": "Scorciatoia Trascrizione",

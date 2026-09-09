@@ -8,7 +8,7 @@ Enable `Advanced › Post-processing › Post Processing = On` to reveal this pa
 
 `Post Process › Hotkey › Post-Processing Hotkey` _{requires: Post-processing enabled}_
 
-Sets the shortcut that transcribes and then sends the result through the configured provider and prompt. **Default:** `ctrl+shift+space`.
+Sets the shortcut that transcribes and then sends the result through the configured provider and prompt. **Default:** `ctrl+shift+f12`.
 
 Catalog: [A second key for "clean this up with AI"](../../features.md#a-second-key-for-clean-this-up).
 

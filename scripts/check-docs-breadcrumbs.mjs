@@ -641,8 +641,11 @@ const DRIFT_OK_LINE_RE = /<!--\s*drift-ok\s*-->/i;
 const DRIFT_OK_SEL_RE = /<!--\s*drift-ok\s*:\s*([^>]*?)\s*-->/i;
 const DRIFT_OK_FILE_RE = /<!--\s*drift-ok-file\s*-->/i;
 
+// f1-f24 matter: the application's layout-safe defaults live on function keys
+// precisely because Windows reports AltGr as Ctrl+Alt, so ctrl+alt+<letter>
+// chords swallow the accented characters European layouts put there.
 const SHORTCUT_VALUE_RE =
-  /^(?:ctrl|alt|shift|super|cmd|win)(?:\+(?:ctrl|alt|shift|super|cmd|win|space|enter|tab|escape|[a-z0-9]))+$/i;
+  /^(?:ctrl|alt|shift|super|cmd|win)(?:\+(?:ctrl|alt|shift|super|cmd|win|space|enter|tab|escape|insert|delete|f(?:1[0-9]|2[0-4]|[1-9])|[a-z0-9]))+$/i;
 const CLI_TARGET_RE =
   /^handy(?:\s+(?:--?[a-z0-9][a-z0-9-]*|[a-z0-9][a-z0-9-]*))*$/i;
 const FILE_TARGET_RE =

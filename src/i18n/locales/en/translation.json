@@ -203,6 +203,7 @@
         "none": "No shortcuts configured",
         "notFound": "Shortcut not found",
         "pressKeys": "Press keys...",
+        "altGrConflict": "Windows reports AltGr as Ctrl+Alt, so this shortcut fires instead of typing AltGr characters such as ą or ó. Pick a chord without Ctrl+Alt.",
         "bindings": {
           "transcribe": {
             "name": "Transcribe Shortcut",

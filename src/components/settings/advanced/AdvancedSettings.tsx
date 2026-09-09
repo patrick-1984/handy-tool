@@ -19,6 +19,7 @@ import { RegisteredLlmProviders } from "./RegisteredLlmProviders";
 import { McpSettings } from "./McpSettings";
 import { TranscriptionCostReport } from "./TranscriptionCostReport";
 import { TranscribeAndSubmitSettings } from "../TranscribeAndSubmitSettings";
+import { PasteLastSettings } from "../PasteLastSettings";
 import { JumperDelaySetting } from "../JumperDelaySetting";
 import { JumperTrackToggle } from "../JumperTrackToggle";
 import { JumperReturnFocusToggle } from "../JumperReturnFocusToggle";
@@ -111,6 +112,7 @@ export const AdvancedSettings: React.FC = () => {
               <JumperReturnFocusToggle flow="output" grouped={true} />
             </SettingsGroup>
             <TranscribeAndSubmitSettings />
+            <PasteLastSettings />
             <SettingsGroup title={t("settings.advanced.groups.transcription")}>
               <TranscriptionModelOptions
                 descriptionMode="tooltip"

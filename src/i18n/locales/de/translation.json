@@ -209,6 +209,7 @@
         "none": "Keine Tastenkürzel konfiguriert",
         "notFound": "Tastenkürzel nicht gefunden",
         "pressKeys": "Tasten drücken...",
+        "altGrConflict": "Windows meldet AltGr als Strg+Alt, daher wird dieses Kürzel ausgelöst, statt AltGr-Zeichen wie ą oder ó einzugeben. Wähle eine Kombination ohne Strg+Alt.",
         "bindings": {
           "transcribe": {
             "name": "Transkriptions-Tastenkürzel",

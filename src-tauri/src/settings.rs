@@ -2003,13 +2003,56 @@ pub fn normalize_language_for_engine(selected_language: &str) -> Option<String> 
     }
 }
 
+/// True when `binding` is a chord that AltGr can type a character with.
+///
+/// Windows reports AltGr as Ctrl+Alt, so a global `ctrl+alt+<letter>` hotkey
+/// swallows the character the user was trying to type. The Polish
+/// (Programmers) layout puts ą ć ę ł ń ó ś ź ż on
+/// AltGr + a c e l n o s x z; German, French, Spanish, Czech and Hungarian
+/// layouts put other characters on the same chords. Space is included because
+/// AltGr is routinely still held down when the space after an accented word is
+/// pressed.
+///
+/// Digits are deliberately NOT flagged. No common European layout maps
+/// AltGr+<digit> to a character, and the Jumper's 18 slot bindings have no
+/// other free chord space of that size.
+pub fn is_altgr_risky_chord(binding: &str) -> bool {
+    // The handy-keys backend stores side-qualified modifiers ("ctrl_left",
+    // "alt_right"), and AltGr IS the right Alt — so stripping the side is not a
+    // nicety, it is the case that matters most.
+    let parts: Vec<String> = binding
+        .split('+')
+        .map(|p| {
+            let p = p.trim().to_lowercase();
+            match p.strip_suffix("_left").or_else(|| p.strip_suffix("_right")) {
+                Some(stripped) => stripped.to_string(),
+                None => p,
+            }
+        })
+        .filter(|p| !p.is_empty())
+        .collect();
+
+    let has_ctrl = parts.iter().any(|p| p == "ctrl" || p == "control");
+    let has_alt = parts.iter().any(|p| p == "alt" || p == "option");
+    if !(has_ctrl && has_alt) {
+        return false;
+    }
+
+    parts
+        .iter()
+        .any(|p| p == "space" || (p.len() == 1 && p.chars().all(|c| c.is_ascii_alphabetic())))
+}
+
 pub const SETTINGS_STORE_PATH: &str = "settings_store.json";
 
 pub fn get_default_settings() -> AppSettings {
-    // Never default to Alt/Option+letter: AltGr is reported as Ctrl+Alt on
-    // Windows and those chords type accented characters on many European
-    // layouts. Keep defaults on Space, function keys, digits, or Ctrl+Shift
-    // chords so changing keyboard layouts cannot turn dictation into text input.
+    // Never default to a chord AltGr can type with: AltGr is reported as
+    // Ctrl+Alt on Windows, so ctrl+alt+<letter> steals the accented characters
+    // European layouts put there (Polish Programmers: AltGr+a c e l n o s x z)
+    // and ctrl+alt+space fires on the space that follows them. Keep defaults on
+    // Space, function keys, digits, or Ctrl+Shift chords so changing keyboard
+    // layouts cannot turn dictation into text input. Enforced by
+    // `no_default_binding_collides_with_altgr`.
     let default_shortcut = "ctrl+space";
 
     let mut bindings = HashMap::new();
@@ -2073,7 +2116,12 @@ pub fn get_default_settings() -> AppSettings {
         },
     );
 
-    let default_submit_shortcut = "ctrl+alt+space";
+    // Was ctrl+alt+space until 1.4.0. Windows reports AltGr as Ctrl+Alt, so
+    // that chord fired whenever a Polish/German/French typist still had AltGr
+    // held when they hit the space after an accented word. See
+    // `is_altgr_risky_chord`, which `no_default_binding_collides_with_altgr`
+    // enforces over every default in this function.
+    let default_submit_shortcut = "ctrl+shift+f9";
 
     // Anchor & Deliver (Windows-only feature; bindings are skipped at
     // registration time on other platforms). Function-key defaults are
@@ -2354,16 +2402,39 @@ impl AppSettings {
     }
 }
 
-/// Insert only default bindings that are missing from saved settings (bindings
-/// added in newer app versions, such as type_text). Existing stored bindings are
-/// never rewritten when application defaults change.
+/// Insert default bindings that are missing from saved settings (bindings added
+/// in newer app versions, such as type_text) and refresh the *metadata* of the
+/// ones that are already there.
+///
+/// `current_binding` — the chord the user actually chose — is NEVER rewritten
+/// here; that is the v0.30.0 PTT-hardening invariant and a saved chord must
+/// survive every upgrade. What does follow the application's defaults is
+/// `default_binding` (the target of the "Reset to default" button) plus the
+/// display `name`/`description`. Without that refresh, an existing store keeps
+/// pointing Reset at whatever chord shipped when the store was created — so the
+/// 1.4.0 move off the AltGr-colliding `ctrl+alt+space` would never reach anyone
+/// who already had the app installed.
 fn ensure_default_bindings(settings: &mut AppSettings) -> bool {
     let mut updated = false;
     for (key, value) in get_default_settings().bindings {
-        if !settings.bindings.contains_key(&key) {
-            debug!("Adding missing binding: {}", key);
-            settings.bindings.insert(key, value);
-            updated = true;
+        match settings.bindings.get_mut(&key) {
+            None => {
+                debug!("Adding missing binding: {}", key);
+                settings.bindings.insert(key, value);
+                updated = true;
+            }
+            Some(existing) => {
+                if existing.default_binding != value.default_binding
+                    || existing.name != value.name
+                    || existing.description != value.description
+                {
+                    debug!("Refreshing binding metadata: {}", key);
+                    existing.default_binding = value.default_binding;
+                    existing.name = value.name;
+                    existing.description = value.description;
+                    updated = true;
+                }
+            }
         }
     }
     updated
@@ -2568,7 +2639,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn ensure_default_bindings_only_backfills_missing_bindings() {
+    fn ensure_default_bindings_backfills_missing_and_never_touches_a_saved_chord() {
         let mut settings = get_default_settings();
         let old_submit = settings.bindings.get_mut("transcribe_and_submit").unwrap();
         old_submit.current_binding = "ctrl+alt+s".to_string();
@@ -2577,13 +2648,96 @@ mod tests {
 
         assert!(ensure_default_bindings(&mut settings));
         let preserved = &settings.bindings["transcribe_and_submit"];
+        // The chord the user chose survives verbatim. This is the load-bearing
+        // half of the v0.30.0 invariant — do not weaken it.
         assert_eq!(preserved.current_binding, "ctrl+alt+s");
-        assert_eq!(preserved.default_binding, "ctrl+alt+s");
+        // The Reset target follows the application default so a store created
+        // before 1.4.0 can still reset onto the AltGr-safe chord.
+        assert_eq!(
+            preserved.default_binding,
+            get_default_settings().bindings["transcribe_and_submit"].default_binding
+        );
         assert_eq!(
             settings.bindings["paste_last"].current_binding,
             get_default_settings().bindings["paste_last"].current_binding
         );
         assert!(!ensure_default_bindings(&mut settings));
+    }
+
+    #[test]
+    fn ensure_default_bindings_leaves_every_saved_chord_alone() {
+        let mut settings = get_default_settings();
+        for binding in settings.bindings.values_mut() {
+            binding.current_binding = "ctrl+shift+f24".to_string();
+        }
+        ensure_default_bindings(&mut settings);
+        for (id, binding) in &settings.bindings {
+            assert_eq!(
+                binding.current_binding, "ctrl+shift+f24",
+                "binding {id} had its saved chord rewritten"
+            );
+        }
+    }
+
+    #[test]
+    fn altgr_risky_chords_are_ctrl_alt_plus_a_letter_or_space() {
+        // AltGr + letter types a regional character on European layouts.
+        assert!(is_altgr_risky_chord("ctrl+alt+o"));
+        assert!(is_altgr_risky_chord("ctrl+alt+a"));
+        assert!(is_altgr_risky_chord("Ctrl+Alt+Z"));
+        assert!(is_altgr_risky_chord("ctrl+alt+shift+e"));
+        assert!(is_altgr_risky_chord("control+option+s"));
+        // Side-qualified modifiers, which is exactly how a chord captured from a
+        // physical AltGr press is stored by the handy-keys backend.
+        assert!(is_altgr_risky_chord("ctrl_left+alt_right+o"));
+        assert!(is_altgr_risky_chord("ctrl_right+alt_right+space"));
+        assert!(is_altgr_risky_chord("option_left+ctrl_left+e"));
+        // AltGr is commonly still held for the space after an accented word.
+        assert!(is_altgr_risky_chord("ctrl+alt+space"));
+
+        // Digits carry no AltGr character on common European layouts, which is
+        // what keeps the Jumper's 18 slot chords usable.
+        assert!(!is_altgr_risky_chord("ctrl+alt+1"));
+        assert!(!is_altgr_risky_chord("ctrl+alt+shift+9"));
+        // Not an AltGr chord at all without BOTH ctrl and alt.
+        assert!(!is_altgr_risky_chord("ctrl+shift+f9"));
+        assert!(!is_altgr_risky_chord("alt+o"));
+        assert!(!is_altgr_risky_chord("ctrl+o"));
+        assert!(!is_altgr_risky_chord("ctrl+space"));
+        assert!(!is_altgr_risky_chord(""));
+        // Function keys are two or more characters, never a bare letter.
+        assert!(!is_altgr_risky_chord("ctrl+alt+f9"));
+    }
+
+    #[test]
+    fn no_two_default_bindings_claim_the_same_chord() {
+        // Two defaults on one chord means one of them silently fails to register
+        // at startup, which surfaces as "the shortcut does nothing" with no
+        // obvious cause. Cheap to guard, painful to diagnose.
+        let mut seen: HashMap<String, String> = HashMap::new();
+        for (id, binding) in get_default_settings().bindings {
+            if let Some(other) = seen.insert(binding.current_binding.clone(), id.clone()) {
+                panic!(
+                    "default bindings '{}' and '{}' both claim '{}'",
+                    other, id, binding.current_binding
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn no_default_binding_collides_with_altgr() {
+        for (id, binding) in get_default_settings().bindings {
+            assert!(
+                !is_altgr_risky_chord(&binding.default_binding),
+                "default binding {id} = {} is a chord AltGr types a character with",
+                binding.default_binding
+            );
+            assert_eq!(
+                binding.default_binding, binding.current_binding,
+                "default binding {id} disagrees with its own current_binding"
+            );
+        }
     }
 
     #[test]

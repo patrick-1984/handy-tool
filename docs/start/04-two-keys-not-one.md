@@ -11,7 +11,7 @@ Sometimes you want the text so you can inspect it. Sometimes you already trust w
 1. Open a blank Notepad document.
 2. Press `ctrl+space`, the chord set at `General › Transcribe Shortcut`. Say a sentence, press it again, inspect the text, and decide what to do with it.
 3. Open a disposable chat or prompt field where **Enter really means send**.
-4. Press `ctrl+alt+s`, the chord set at `Advanced › Transcription › Transcribe & Submit › Transcribe & Submit Shortcut`. Say a harmless test message and press it again.
+4. Press `ctrl+shift+f9`, the chord set at `General › Transcribe & Submit Shortcut`. Say a harmless test message and press it again.
 
 The second path is [Dictate and send in one keystroke](../features.md#dictate-and-send-in-one-keystroke). Keep it away from editors where Enter inserts a newline or shells where a test command could do real work. Applications disagree, so the available choices are covered by [Enter, Ctrl+Enter, or Super+Enter](../features.md#enter-ctrl-enter-or-super-enter).
 

@@ -14,7 +14,6 @@ import { TranscriptionModePttSetting } from "../TranscriptionModePttSetting";
 import { GpuDeviceSelector } from "../GpuDeviceSelector";
 import { CustomWords } from "../CustomWords";
 import { AppendTrailingSpace } from "../AppendTrailingSpace";
-import { PasteLastSettings } from "../PasteLastSettings";
 import { CancelBehaviorSetting } from "../CancelBehaviorSetting";
 import { UpdateSettings } from "./UpdateSettings";
 import { ShortcutRegistrationFailures } from "../ShortcutRegistrationFailures";
@@ -27,6 +26,12 @@ export const GeneralSettings: React.FC = () => {
       <SettingsGroup title={t("settings.general.title")}>
         <ShortcutInput shortcutId="transcribe" grouped={true} />
         <ShortcutInput shortcutId="transcribe_ptt" grouped={true} />
+        {/* Both of these used to be reachable only from a feature-specific
+            group — Transcribe & Submit from the Advanced tab, Paste Last from
+            further down this page. Every trigger shortcut now lives here; the
+            options behind them stay in Advanced › Transcription. */}
+        <ShortcutInput shortcutId="transcribe_and_submit" grouped={true} />
+        <ShortcutInput shortcutId="paste_last" grouped={true} />
         <CancelBehaviorSetting descriptionMode="tooltip" grouped={true} />
       </SettingsGroup>
       <ShortcutRegistrationFailures />
@@ -38,7 +43,6 @@ export const GeneralSettings: React.FC = () => {
         <CustomWords descriptionMode="tooltip" grouped />
         <AppendTrailingSpace descriptionMode="tooltip" grouped={true} />
       </SettingsGroup>
-      <PasteLastSettings />
       <SettingsGroup title={t("settings.sound.title")}>
         <MicrophoneSelector descriptionMode="tooltip" grouped={true} />
         <MuteWhileRecording descriptionMode="tooltip" grouped={true} />

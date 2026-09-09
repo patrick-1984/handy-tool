@@ -191,6 +191,7 @@
         "none": "설정된 단축키 없음",
         "notFound": "단축키를 찾을 수 없음",
         "pressKeys": "키를 눌러주세요...",
+        "altGrConflict": "Windows는 AltGr을 Ctrl+Alt로 인식하므로 ą 또는 ó 같은 AltGr 문자를 입력하는 대신 이 단축키가 실행됩니다. Ctrl+Alt가 없는 조합을 선택하세요.",
         "bindings": {
           "transcribe": {
             "name": "음성 텍스트 변환 단축키",

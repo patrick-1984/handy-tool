@@ -209,6 +209,7 @@
         "none": "Chưa cấu hình phím tắt",
         "notFound": "Không tìm thấy phím tắt",
         "pressKeys": "Nhấn phím...",
+        "altGrConflict": "Windows báo AltGr là Ctrl+Alt, nên phím tắt này sẽ kích hoạt thay vì gõ các ký tự AltGr như ą hoặc ó. Hãy chọn tổ hợp không có Ctrl+Alt.",
         "bindings": {
           "transcribe": {
             "name": "Phím tắt phiên âm",

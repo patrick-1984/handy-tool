@@ -209,6 +209,7 @@
         "none": "No hay atajos configurados",
         "notFound": "Atajo no encontrado",
         "pressKeys": "Presiona teclas...",
+        "altGrConflict": "Windows informa de AltGr como Ctrl+Alt, así que este atajo se activa en lugar de escribir caracteres AltGr como ą u ó. Elige una combinación sin Ctrl+Alt.",
         "bindings": {
           "transcribe": {
             "name": "Atajo de Transcripción",

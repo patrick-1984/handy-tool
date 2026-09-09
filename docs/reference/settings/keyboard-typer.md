@@ -38,7 +38,7 @@ Catalog: [Slow enough for a remote console](../../features.md#slow-enough-for-a-
 
 `Keyboard Typer › Type Text Shortcut`
 
-Sets the global shortcut that starts typing into the focused window or cancels an active typing session. **Default:** `ctrl+alt+t`.
+Sets the global shortcut that starts typing into the focused window or cancels an active typing session. **Default:** `ctrl+shift+f11`.
 
 Catalog: [When paste is blocked, type it instead](../../features.md#when-paste-is-blocked-type-it-instead).
 

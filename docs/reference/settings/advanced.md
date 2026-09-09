@@ -170,14 +170,6 @@ Catalog: [Focus comes back to you](../../features.md#focus-comes-back-to-you).
 
 ### Transcribe & Submit
 
-#### Transcribe & Submit Shortcut
-
-`Advanced › Transcription › Transcribe & Submit › Transcribe & Submit Shortcut`
-
-Sets the shortcut that uses this group's delivery recipe. **Default:** `ctrl+alt+s`.
-
-Catalog: [Dictate and send in one keystroke](../../features.md#dictate-and-send-in-one-keystroke).
-
 #### Paste method
 
 `Advanced › Transcription › Transcribe & Submit › Paste method`
@@ -277,6 +269,24 @@ Catalog: [Focus comes back to you](../../features.md#focus-comes-back-to-you).
 When enabled, records this flow's delivery target into its selected `Save location into` slot. **Default:** Off; slot `Hot 1`.
 
 Catalog: [Remember where the text actually landed](../../features.md#remember-where-the-text-actually-landed).
+
+### Paste last transcription
+
+#### Paste method
+
+`Advanced › Transcription › Paste last transcription › Paste method`
+
+Chooses the delivery method used only by [Paste Last Transcription](general.md#paste-last-transcription). **Default:** `Clipboard (Ctrl+V)`.
+
+Catalog: [Ctrl+V doesn't work in that app](../../features.md#ctrl-v-doesnt-work-in-that-app).
+
+#### Clipboard
+
+`Advanced › Transcription › Paste last transcription › Clipboard`
+
+Chooses whether re-pasting restores the previous clipboard text or leaves the transcription there. **Default:** `Don't Modify Clipboard`.
+
+Catalog: [Dictation doesn't steal your clipboard](../../features.md#dictation-doesnt-steal-your-clipboard).
 
 ### Transcription
 

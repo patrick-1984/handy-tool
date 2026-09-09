@@ -209,6 +209,7 @@
         "none": "Kısayol yapılandırılmadı",
         "notFound": "Kısayol bulunamadı",
         "pressKeys": "Tuşlara basın...",
+        "altGrConflict": "Windows, AltGr tuşunu Ctrl+Alt olarak bildirir; bu nedenle ą veya ó gibi AltGr karakterleri yazılmak yerine bu kısayol çalışır. Ctrl+Alt içermeyen bir kombinasyon seçin.",
         "bindings": {
           "transcribe": {
             "name": "Transkripsiyon Kısayolu",

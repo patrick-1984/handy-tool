@@ -578,6 +578,19 @@ fn register_all_shortcuts_for_implementation(
             reset_bindings.push(id.clone());
         }
 
+        // Surface AltGr collisions in the log. Windows reports AltGr as
+        // Ctrl+Alt, so a `ctrl+alt+<letter>` chord swallows the accented
+        // character the user was trying to type - a symptom that looks like a
+        // broken keyboard rather than a shortcut conflict. The application's own
+        // defaults are kept clear of these chords, but a user can pick one by
+        // hand and a store written before 1.4.0 can still hold one.
+        if settings::is_altgr_risky_chord(&binding.current_binding) {
+            warn!(
+                "Shortcut '{}' is bound to '{}', which Windows also produces as AltGr + key; typing an AltGr character will trigger it instead of typing the character.",
+                id, binding.current_binding
+            );
+        }
+
         // Register with the appropriate implementation
         let current = binding.current_binding.clone();
         let result = match implementation {

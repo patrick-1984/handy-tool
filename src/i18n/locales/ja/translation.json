@@ -209,6 +209,7 @@
         "none": "ショートカットが設定されていません",
         "notFound": "ショートカットが見つかりません",
         "pressKeys": "キーを押してください...",
+        "altGrConflict": "Windows は AltGr を Ctrl+Alt として扱うため、ą や ó などの AltGr 文字を入力する代わりにこのショートカットが実行されます。Ctrl+Alt を含まない組み合わせを選んでください。",
         "bindings": {
           "transcribe": {
             "name": "文字起こしショートカット",

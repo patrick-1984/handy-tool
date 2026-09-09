@@ -31,7 +31,7 @@ Reserve this flow for fields where a submit key has a predictable meaning. Keep 
 
 ## Set it up
 
-1. Give the flow its own binding at `Advanced › Transcription › Transcribe & Submit › Transcribe & Submit Shortcut = ctrl+alt+s`.
+1. Give the flow its own binding at `General › Transcribe & Submit Shortcut = ctrl+shift+f9`.
 2. Match the target field at `Advanced › Transcription › Transcribe & Submit › Paste method = Clipboard (Ctrl+V)`.
 3. Choose what sends in that target at `Advanced › Transcription › Transcribe & Submit › Submit key = Enter`.
 4. Make an idle press begin a take at `Advanced › Transcription › Transcribe & Submit › When no recording is active = Start a recording`.

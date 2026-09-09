@@ -13,7 +13,7 @@ Open your mouse manufacturer's configuration app and assign:
 | Mouse button        | Keystroke to send | Handy action        |
 | ------------------- | ----------------- | ------------------- |
 | Thumb 1             | `ctrl+space`      | Transcribe toggle   |
-| Thumb 2             | `ctrl+alt+s`      | Transcribe & Submit |
+| Thumb 2             | `ctrl+shift+f9`   | Transcribe & Submit |
 | Thumb 3, if present | `escape`          | Cancel              |
 
 Use a global profile if these buttons are otherwise unused. Use per-application profiles when your editor, browser, or game already assigns them. A conflict can make both actions fire or let the other application win; [A hotkey another app already owns](../features.md#a-hotkey-another-app-already-owns) is the symptom index for Handy's side of that collision.
