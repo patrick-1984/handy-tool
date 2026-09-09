@@ -30,8 +30,32 @@ use crate::tray;
 // Note: Commands are accessed via shortcut::handy_keys:: in lib.rs
 
 /// Initialize shortcuts using the configured implementation
+/// Log a warning when a chord is one AltGr can type a character with.
+///
+/// Windows reports AltGr as Ctrl+Alt, so `ctrl+alt+<letter>` swallows the accented
+/// character the user was trying to type - a symptom that looks like a broken
+/// keyboard rather than a shortcut conflict, which is why it is worth a log line.
+/// The application's own defaults are kept clear of these chords
+/// (`no_default_binding_collides_with_altgr`), but a user can pick one by hand and
+/// a store written before 1.4.0 can still hold one.
+fn warn_if_altgr_risky(id: &str, chord: &str) {
+    if settings::is_altgr_risky_chord(chord) {
+        warn!(
+            "Shortcut '{}' is bound to '{}', which Windows also produces as AltGr + key; typing an AltGr character will trigger it instead of typing the character.",
+            id, chord
+        );
+    }
+}
+
 pub fn init_shortcuts(app: &AppHandle) {
     let user_settings = settings::load_or_create_app_settings(app);
+
+    // Audit every saved chord once per launch. This has to live here rather than in
+    // register_all_shortcuts_for_implementation, which only runs when the keyboard
+    // implementation CHANGES and so never fires on a normal start.
+    for (id, binding) in &user_settings.bindings {
+        warn_if_altgr_risky(id, &binding.current_binding);
+    }
 
     // Check which implementation to use
     match user_settings.keyboard_implementation {
@@ -578,18 +602,7 @@ fn register_all_shortcuts_for_implementation(
             reset_bindings.push(id.clone());
         }
 
-        // Surface AltGr collisions in the log. Windows reports AltGr as
-        // Ctrl+Alt, so a `ctrl+alt+<letter>` chord swallows the accented
-        // character the user was trying to type - a symptom that looks like a
-        // broken keyboard rather than a shortcut conflict. The application's own
-        // defaults are kept clear of these chords, but a user can pick one by
-        // hand and a store written before 1.4.0 can still hold one.
-        if settings::is_altgr_risky_chord(&binding.current_binding) {
-            warn!(
-                "Shortcut '{}' is bound to '{}', which Windows also produces as AltGr + key; typing an AltGr character will trigger it instead of typing the character.",
-                id, binding.current_binding
-            );
-        }
+        warn_if_altgr_risky(id, &binding.current_binding);
 
         // Register with the appropriate implementation
         let current = binding.current_binding.clone();
