@@ -1,4 +1,10 @@
-import { copyFile, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import {
+  copyFile,
+  mkdir,
+  readFile,
+  readdir,
+  writeFile,
+} from "node:fs/promises";
 import { basename, join, resolve } from "node:path";
 
 interface TauriConfig {
@@ -42,7 +48,9 @@ if (
   !decodedSignature.includes("untrusted comment:") ||
   !decodedSignature.includes("trusted comment:")
 ) {
-  throw new Error(`${signaturePath} does not contain a complete minisign signature`);
+  throw new Error(
+    `${signaturePath} does not contain a complete minisign signature`,
+  );
 }
 
 const outputDirectory = resolve(
@@ -70,5 +78,9 @@ await writeFile(
   "utf8",
 );
 
-console.log(`Prepared updater assets from ${basename(installer)} in ${outputDirectory}`);
-console.log(`Upload ${assetName}, ${assetName}.sig, and latest.json to release v${config.version}.`);
+console.log(
+  `Prepared updater assets from ${basename(installer)} in ${outputDirectory}`,
+);
+console.log(
+  `Upload ${assetName}, ${assetName}.sig, and latest.json to release v${config.version}.`,
+);

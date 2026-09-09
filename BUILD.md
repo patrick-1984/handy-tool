@@ -38,12 +38,12 @@ Two things that will otherwise cost you an afternoon:
 
 - **libopus.** `audiopus_sys` vendors libopus as a bare git checkout with no `configure`,
   so it falls back to `autogen.sh` and fails on a missing `autoreconf`. Rather than
-  installing autotools, build a static libopus from an official *release* tarball (those
+  installing autotools, build a static libopus from an official _release_ tarball (those
   ship a pre-generated `configure`) and point the crate at it with `LIBOPUS_LIB_DIR` and
   `LIBOPUS_STATIC=1`.
 - **Bundle target.** `tauri.conf.json` pins `bundle.targets` to `nsis` for Windows. Pass
   `--bundles app` on macOS. The DMG bundler drives Finder through AppleScript and cannot
-  run without a GUI session, so it fails over SSH *after* producing a perfectly good `.app`.
+  run without a GUI session, so it fails over SSH _after_ producing a perfectly good `.app`.
 
 #### Linux (planned — no build is produced or released)
 
@@ -172,8 +172,8 @@ error[E0463]: can't find crate for `schemars`
 error: could not compile `tauri-utils` (lib)
 ```
 
-**Cause.** Rust procedural macros compile to DLLs that `rustc` loads *while
-building* — `thiserror_impl.dll`, `schemars_derive.dll`, `proc_macro_hack.dll`
+**Cause.** Rust procedural macros compile to DLLs that `rustc` loads _while
+building_ — `thiserror_impl.dll`, `schemars_derive.dll`, `proc_macro_hack.dll`
 and friends, in `<target>/release/deps/`. They are freshly compiled and
 unsigned, so Smart App Control refuses to load them. `rustc` cannot distinguish
 "blocked by the OS" from "not there" and reports the crate as missing.
@@ -200,7 +200,7 @@ over again.
 **What actually works — and what does not.** The verdict is reputation-based. It
 is sometimes transient, in which case retrying with the target directory intact
 clears it within a few attempts. **But it can also be persistent**, and the two
-cases look identical in the build output. Tell them apart from the *hash suffix*
+cases look identical in the build output. Tell them apart from the _hash suffix_
 in the error:
 
 - **Same DLL, same hash on every attempt** → the verdict is against that exact
@@ -212,7 +212,7 @@ For the persistent case, a per-crate `cargo clean -p <crate> --release` looks
 like the answer — it forces a fresh artifact while leaving already-accepted DLLs
 alone. **It does not work, and it makes things worse.** Measured on
 2026-08-20: the rebuilt `schemars_derive.dll` was blocked within seconds, and
-removing it forced dependents to rebuild *their* proc-macros, taking the count of
+removing it forced dependents to rebuild _their_ proc-macros, taking the count of
 blocked DLLs from one to three (`schemars_derive`, `serde_with_macros`,
 `phf_macros`) and turning a single clear error into the `can't find crate for
 phf / html5ever / kuchikiki / serde_with` cascade. A fresh unsigned proc-macro

@@ -68,7 +68,7 @@ Catalog: [Watch the text appear, or wait for the most accurate pass](../../featu
 
 ### GPU Device
 
-`General › Transcription › GPU Device` *{Windows only}*
+`General › Transcription › GPU Device` _{Windows only}_
 
 Chooses automatic selection, CPU-only processing, or a named Vulkan adapter for local Whisper. It appears only while a Whisper model is selected. **Default:** `Auto (Default)`.
 

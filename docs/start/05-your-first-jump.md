@@ -11,9 +11,9 @@ You start a prompt, then look through documentation while you keep thinking. Whe
 ## Set one hot slot
 
 1. Open Notepad, type `COME BACK HERE`, and leave the caret in that document.
-2. Set the destination with `Jumper › Hot slot (Anchor & Deliver) › Set Anchor` *{Windows only}*. Its default shortcut is `ctrl+alt+k`.
+2. Set the destination with `Jumper › Hot slot (Anchor & Deliver) › Set Anchor` _{Windows only}_. Its default shortcut is `ctrl+alt+k`.
 3. Move to another application and cover Notepad with a few windows.
-4. Jump with `Jumper › Hot slot (Anchor & Deliver) › Jump to Anchor` *{Windows only}*. Its default shortcut is `ctrl+alt+j`.
+4. Jump with `Jumper › Hot slot (Anchor & Deliver) › Jump to Anchor` _{Windows only}_. Its default shortcut is `ctrl+alt+j`.
 5. Confirm that Notepad and the marked document field are active again.
 
 You have used one hot slot and one jump. Leave the second hot slot, the nine static slots, cursor modes, and delivery recipes for later. The full behavior is catalogued under [Jump back to your draft without pasting anything](../features.md#jump-back-to-your-draft) and [Send it where you were](../features.md#send-it-where-you-were).

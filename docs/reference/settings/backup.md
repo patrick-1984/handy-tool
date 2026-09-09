@@ -49,4 +49,3 @@ Catalog: [Move machines, or undo a bad week](../../features.md#move-machines-or-
 Opens an archive and restores the selected categories. A `Restart Handy Tool now` action appears when the restored data requires it. **Default:** not applicable; this is an action.
 
 Catalog: [Why a restore asks for a restart](../../features.md#why-a-restore-asks-for-a-restart).
-

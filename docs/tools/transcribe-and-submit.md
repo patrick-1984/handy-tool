@@ -35,6 +35,6 @@ Reserve this flow for fields where a submit key has a predictable meaning. Keep 
 2. Match the target field at `Advanced › Transcription › Transcribe & Submit › Paste method = Clipboard (Ctrl+V)`.
 3. Choose what sends in that target at `Advanced › Transcription › Transcribe & Submit › Submit key = Enter`.
 4. Make an idle press begin a take at `Advanced › Transcription › Transcribe & Submit › When no recording is active = Start a recording`.
-5. If you use the Windows Jumper, route the finish at `Advanced › Transcription › Transcribe & Submit › Jump slot action on finish = Jump / deliver to slot` *{Windows only}*.
-6. Select `Hot 1` in the adjacent destination list for `Advanced › Transcription › Transcribe & Submit › Jump slot action on finish` *{Windows only}*.
-7. Return to what you were reading with `Advanced › Transcription › Transcribe & Submit › Return focus after delivery = On` *{Windows only}*.
+5. If you use the Windows Jumper, route the finish at `Advanced › Transcription › Transcribe & Submit › Jump slot action on finish = Jump / deliver to slot` _{Windows only}_.
+6. Select `Hot 1` in the adjacent destination list for `Advanced › Transcription › Transcribe & Submit › Jump slot action on finish` _{Windows only}_.
+7. Return to what you were reading with `Advanced › Transcription › Transcribe & Submit › Return focus after delivery = On` _{Windows only}_.

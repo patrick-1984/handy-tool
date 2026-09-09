@@ -10,7 +10,7 @@ Nine numbered rungs, in order. Each one is short, and each one ends at a point w
 - [02 — Trust the safety net](start/02-first-words.md) — rehearse Escape and read the History page.
 - [03 — Make five choices](start/03-make-it-yours.md) — the five settings worth changing on day one.
 - [04 — Two keys, not one](start/04-two-keys-not-one.md) — add the second dictation key and use both.
-- [05 — Your first jump](start/05-your-first-jump.md) — mark a field, bury it, come back to it *{Windows only}*.
+- [05 — Your first jump](start/05-your-first-jump.md) — mark a field, bury it, come back to it _{Windows only}_.
 - [06 — Nothing gets lost](start/06-nothing-gets-lost.md) — practice recovering a take on purpose.
 - [07 — The buttons you already own](start/07-mouse-buttons.md) — map the spare buttons on your mouse.
 - [08 — The deck](start/08-the-deck.md) — the 6-, 9-, and 12-key layouts, and how to program them.
@@ -20,7 +20,7 @@ Nine numbered rungs, in order. Each one is short, and each one ends at a point w
 
 - [Transcription](tools/transcription.md) — set up the everyday dictation key and its delivery options.
 - [Transcribe & Submit](tools/transcribe-and-submit.md) — set up the second dictation key and its submit options.
-- [Jumper](tools/jumper.md) — set up anchors and jump slots *{Windows only}*.
+- [Jumper](tools/jumper.md) — set up anchors and jump slots _{Windows only}_.
 - [Remote desktops](tools/remote-desktops.md) — tune the delivery timings used inside RDP and Citrix sessions.
 - [History and recovery](tools/history-and-recovery.md) — set retention, and find an earlier take.
 - [Providers](tools/providers.md) — configure local engines and remote endpoints.

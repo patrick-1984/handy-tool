@@ -24,9 +24,9 @@ This shelf mirrors the Windows 1.0.0 sidebar. Open a page below when you need th
 
 ## Hidden pages
 
-Enable `Advanced › Post-processing › Post Processing = On` to reveal the `Post Process` page. Its controls carry *{requires: Post-processing enabled}*.
+Enable `Advanced › Post-processing › Post Processing = On` to reveal the `Post Process` page. Its controls carry _{requires: Post-processing enabled}_.
 
-Press `ctrl+shift+d` to enable debug mode and reveal the `Debug` page. Its controls carry *{requires: Debug mode}*. Press the chord again to hide the page; debug mode defaults to off.
+Press `ctrl+shift+d` to enable debug mode and reveal the `Debug` page. Its controls carry _{requires: Debug mode}_. Press the chord again to hide the page; debug mode defaults to off.
 
 ## Controls with no working interface
 

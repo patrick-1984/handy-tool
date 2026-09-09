@@ -26,16 +26,16 @@ Handy has no telemetry, analytics, crash reporting, account, or identifier. Upda
 
 Nothing below happens during normal dictation with a downloaded local model. Each row requires the listed choice.
 
-| Choice | Data transmitted | Limits |
-| --- | --- | --- |
-| Select API Transcription and configure its URL | The complete VAD-retained recording at stop, as 16 kHz/16-bit WAV multipart data, plus model and global language. A configured bearer key is included. | It sends audio, not a locally generated transcript. Translation can first use the translations route. |
-| Select OpenRouter Transcription and configure URL/key | The complete VAD-retained recording at stop, base64 JSON, plus model, route, language or instructions. STT uses WAV; Chat can use WAV or Ogg/Opus. Headers identify Handy. | Stale comments say per-segment; the current planner sends one assembled recording at stop. |
-| Enable post-processing, select a provider/prompt, and use its shortcut | Full transcript, system prompt, model parameters, temperature/reasoning values, and credentials. | Audio is not sent. The selected provider reference runs even when its registry `enabled` flag is off. |
-| Run Model Testing | Prompts, provider/model parameters, and optional image. Judges also receive instructions, the original prompt, and candidate outputs. | History and dictation audio are not added automatically. |
-| Count tokens with a configured provider or Count All | Complete submitted text. OpenAI-compatible calibration sends another request containing `a`. | Built-in tiktoken/estimate counting is offline. MCP and `handy token-count` use the offline command. |
-| Open or refresh a provider model picker | A GET to the configured provider, possibly with its API key. | No prompt, transcript, or audio. |
-| Commit certain remote model names without a manual price | A public GET to OpenRouter’s catalogue, cached in WebView local storage for 24 hours. | No API key or user content. |
-| Explicitly download a model | HTTPS GET and a byte range when resuming. | No speech, transcript, prompt, history, setting, or key. |
+| Choice                                                                 | Data transmitted                                                                                                                                                           | Limits                                                                                                |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Select API Transcription and configure its URL                         | The complete VAD-retained recording at stop, as 16 kHz/16-bit WAV multipart data, plus model and global language. A configured bearer key is included.                     | It sends audio, not a locally generated transcript. Translation can first use the translations route. |
+| Select OpenRouter Transcription and configure URL/key                  | The complete VAD-retained recording at stop, base64 JSON, plus model, route, language or instructions. STT uses WAV; Chat can use WAV or Ogg/Opus. Headers identify Handy. | Stale comments say per-segment; the current planner sends one assembled recording at stop.            |
+| Enable post-processing, select a provider/prompt, and use its shortcut | Full transcript, system prompt, model parameters, temperature/reasoning values, and credentials.                                                                           | Audio is not sent. The selected provider reference runs even when its registry `enabled` flag is off. |
+| Run Model Testing                                                      | Prompts, provider/model parameters, and optional image. Judges also receive instructions, the original prompt, and candidate outputs.                                      | History and dictation audio are not added automatically.                                              |
+| Count tokens with a configured provider or Count All                   | Complete submitted text. OpenAI-compatible calibration sends another request containing `a`.                                                                               | Built-in tiktoken/estimate counting is offline. MCP and `handy token-count` use the offline command.  |
+| Open or refresh a provider model picker                                | A GET to the configured provider, possibly with its API key.                                                                                                               | No prompt, transcript, or audio.                                                                      |
+| Commit certain remote model names without a manual price               | A public GET to OpenRouter’s catalogue, cached in WebView local storage for 24 hours.                                                                                      | No API key or user content.                                                                           |
+| Explicitly download a model                                            | HTTPS GET and a byte range when resuming.                                                                                                                                  | No speech, transcript, prompt, history, setting, or key.                                              |
 
 Provider base URLs are editable and not restricted to HTTPS. A remote `http://` URL sends content and credentials without transport encryption.
 
@@ -47,14 +47,14 @@ Dedicated per-engine API/OpenRouter language fields exist but are unused by the 
 
 Normal Windows state is under `File › %APPDATA%\pr.handy`. Use `About › App Data Directory` to open the active location. With a usable `portable.marker` beside the executable, state goes to an adjacent `data` directory; if it cannot be created or written, Handy falls back to the profile location.
 
-| Data | Content | Retention |
-| --- | --- | --- |
-| `settings_store.json` | Settings, shortcuts, provider URLs/models, API/LLM keys, MCP token, prompts, model-test library and embedded images, retention choices, and UI state. | No TTL; remains until changed, reset, deleted, or restored. |
-| `history.db` | Raw/post-processed text, post-processing prompt, title, timestamp, saved state, filename, cost, duration, and model. | Automatic cleanup applies only to unsaved rows. |
-| `recordings\` | Default Ogg/Opus; WAV when crash resilience is off; temporary Opus chunks in progress. | Follows history cleanup when deletion succeeds. Saved entries remain. |
-| `models\` | Downloaded models and resumable partial archives. | Until explicitly deleted. |
-| File logs | Rotated logs that can contain sensitive previews or complete text. | Rotate at 10 MB; `KeepAll` retains rotated files. History cleanup does not remove them. |
-| WebView local storage | UI state, last model-test save path, sidebar width, and cached public prices. | Until WebView storage is cleared. |
+| Data                  | Content                                                                                                                                               | Retention                                                                               |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `settings_store.json` | Settings, shortcuts, provider URLs/models, API/LLM keys, MCP token, prompts, model-test library and embedded images, retention choices, and UI state. | No TTL; remains until changed, reset, deleted, or restored.                             |
+| `history.db`          | Raw/post-processed text, post-processing prompt, title, timestamp, saved state, filename, cost, duration, and model.                                  | Automatic cleanup applies only to unsaved rows.                                         |
+| `recordings\`         | Default Ogg/Opus; WAV when crash resilience is off; temporary Opus chunks in progress.                                                                | Follows history cleanup when deletion succeeds. Saved entries remain.                   |
+| `models\`             | Downloaded models and resumable partial archives.                                                                                                     | Until explicitly deleted.                                                               |
+| File logs             | Rotated logs that can contain sensitive previews or complete text.                                                                                    | Rotate at 10 MB; `KeepAll` retains rotated files. History cleanup does not remove them. |
+| WebView local storage | UI state, last model-test save path, sidebar width, and cached public prices.                                                                         | Until WebView storage is cleared.                                                       |
 
 Default cleanup preserves the five newest unsaved history entries and recordings. It runs after saving an entry and when retention/count changes, not continuously. It deletes the database row before the audio file, so a failed file deletion can leave an orphan. It refuses filenames outside Handy’s recording pattern.
 
@@ -68,7 +68,7 @@ Release builds default to **Info**, which does not record transcript content. Th
 
 At Debug, logs can record transcript fragments, complete API-transcription responses, complete final transcriptions in some flows, and LLM prompt/transcript previews.
 
-Use `About › Log Directory` to inspect files. Press `ctrl+shift+d` to reveal the page, then change `Debug › Log Level` *{requires: Debug mode}*. Lowering the level reduces future detail but does not erase existing logs.
+Use `About › Log Directory` to inspect files. Press `ctrl+shift+d` to reveal the page, then change `Debug › Log Level` _{requires: Debug mode}_. Lowering the level reduces future detail but does not erase existing logs.
 
 See [The logs still exist when you finally need them](features.md#the-logs-still-exist-when-you-need-them).
 

@@ -28,12 +28,12 @@ Description: |-
   Handy Tool is a fork of Handy by CJ Pais, developed independently.
 Moniker: handy-tool
 Tags:
-- dictation
-- speech-recognition
-- speech-to-text
-- transcription
-- voice
-- whisper
+  - dictation
+  - speech-recognition
+  - speech-to-text
+  - transcription
+  - voice
+  - whisper
 ReleaseNotes: |-
   Fixed: with the default "Don't Modify Clipboard" setting, previous transcriptions could be
   left on the clipboard and displace copied content. Six separate faults caused this and all
@@ -45,7 +45,7 @@ ReleaseNotes: |-
   or writes the clipboard.
 ReleaseNotesUrl: https://github.com/patrick-1984/handy-tool/releases/tag/v1.1.0
 Documentations:
-- DocumentLabel: Documentation
-  DocumentUrl: https://github.com/patrick-1984/handy-tool/blob/main/docs/README.md
+  - DocumentLabel: Documentation
+    DocumentUrl: https://github.com/patrick-1984/handy-tool/blob/main/docs/README.md
 ManifestType: defaultLocale
 ManifestVersion: 1.12.0
