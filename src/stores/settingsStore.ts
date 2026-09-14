@@ -238,6 +238,32 @@ const settingUpdaters: {
     commands.changeMuteWhileRecordingSetting(value as boolean),
   append_trailing_space: (value) =>
     commands.changeAppendTrailingSpaceSetting(value as boolean),
+  preserve_transcriptions: (value) =>
+    commands.changePreserveTranscriptionsSetting(value as boolean),
+  output_prefix_enabled: (value) =>
+    commands.changeOutputPrefixEnabledSetting(value as boolean),
+  output_prefix_text: (value) =>
+    commands.changeOutputPrefixTextSetting(value as string),
+  output_prefix_newline: (value) =>
+    commands.changeOutputPrefixNewlineSetting(value as boolean),
+  output_suffix_enabled: (value) =>
+    commands.changeOutputSuffixEnabledSetting(value as boolean),
+  output_suffix_text: (value) =>
+    commands.changeOutputSuffixTextSetting(value as string),
+  output_suffix_newline: (value) =>
+    commands.changeOutputSuffixNewlineSetting(value as boolean),
+  submit_prefix_enabled: (value) =>
+    commands.changeSubmitPrefixEnabledSetting(value as boolean),
+  submit_prefix_text: (value) =>
+    commands.changeSubmitPrefixTextSetting(value as string),
+  submit_prefix_newline: (value) =>
+    commands.changeSubmitPrefixNewlineSetting(value as boolean),
+  submit_suffix_enabled: (value) =>
+    commands.changeSubmitSuffixEnabledSetting(value as boolean),
+  submit_suffix_text: (value) =>
+    commands.changeSubmitSuffixTextSetting(value as string),
+  submit_suffix_newline: (value) =>
+    commands.changeSubmitSuffixNewlineSetting(value as boolean),
   typing_chunk_chars: (value) =>
     commands.changeTypingChunkCharsSetting(value as number),
   typing_chunk_delay_ms: (value) =>

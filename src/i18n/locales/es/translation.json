@@ -776,6 +776,34 @@
         "title": "Retardo de restauración del portapapeles para escritorios remotos",
         "description": "Sustituye el retardo de restauración cuando la ventana en la que dictas es una sesión de escritorio remoto. Predeterminado: sin definir, es decir, hereda el retardo normal de arriba. Por qué existe: RDP y Citrix piden los datos del portapapeles DESPUÉS de que llega la pulsación de pegado, por un canal más lento que una aplicación local, así que restaurar demasiado pronto le entrega a la aplicación remota lo que tenías copiado antes. 1 s es un punto de partida razonable. Coste honesto: una restauración más larga deja la transcripción en tu portapapeles más tiempo, lo que amplía la ventana en la que el historial y los gestores de portapapeles pueden capturarla. Qué ventanas cuentan como remotas se define en la lista de la página Jumper. *{Windows only}*",
         "inherit": "Sin definir (usar el retardo de arriba)"
+      },
+      "preserveTranscriptions": {
+        "label": "Conservar las transcripciones al eliminar las grabaciones",
+        "description": "La limpieza elimina solo el archivo de audio y conserva el texto para siempre. Activado por defecto. El límite del historial pasa a limitar cuántas grabaciones conservan su audio, no cuántas transcripciones guardas."
+      },
+      "affix": {
+        "prefix": {
+          "enable": {
+            "title": "Añadir texto antes",
+            "description": "Inserta tu propio texto al principio de cada transcripción entregada. El historial conserva la transcripción sin añadidos."
+          },
+          "placeholder": "Texto a insertar antes",
+          "newline": {
+            "title": "Salto de línea después",
+            "description": "Coloca la transcripción en su propia línea debajo de tu texto. Activado por defecto."
+          }
+        },
+        "suffix": {
+          "enable": {
+            "title": "Añadir texto después",
+            "description": "Añade tu propio texto al final de cada transcripción entregada. El historial conserva la transcripción sin añadidos."
+          },
+          "placeholder": "Texto a añadir después",
+          "newline": {
+            "title": "Salto de línea antes",
+            "description": "Coloca tu texto en su propia línea debajo de la transcripción. Activado por defecto."
+          }
+        }
       }
     },
     "postProcessing": {

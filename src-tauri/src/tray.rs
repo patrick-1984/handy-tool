@@ -226,6 +226,7 @@ mod tests {
             cost_usd: None,
             duration_seconds: None,
             model_used: None,
+            audio_purged_at: None,
         }
     }
 

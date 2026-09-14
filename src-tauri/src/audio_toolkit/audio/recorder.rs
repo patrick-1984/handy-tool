@@ -60,6 +60,13 @@ enum Cmd {
 pub struct AudioRecorder {
     device: Option<Device>,
     cmd_tx: Option<mpsc::Sender<Cmd>>,
+    /// Set by the CPAL error callback when the stream faults (device unplugged,
+    /// endpoint invalidated, driver reset). The callback must stay trivial, so it
+    /// only does a relaxed store - exactly like `first_buffer_seen`. Callers check
+    /// `stream_faulted()` before REUSING an already-open recorder; without it a
+    /// dead stream is silently kept and every later take returns no audio while
+    /// the overlay still says "recording".
+    stream_errored: Arc<AtomicBool>,
     worker_handle: Option<std::thread::JoinHandle<()>>,
     vad: Option<Arc<Mutex<Box<dyn vad::VoiceActivityDetector>>>>,
     level_cb: Option<Arc<dyn Fn(Vec<f32>) + Send + Sync + 'static>>,
@@ -72,6 +79,7 @@ impl AudioRecorder {
         Ok(AudioRecorder {
             device: None,
             cmd_tx: None,
+            stream_errored: Arc::new(AtomicBool::new(false)),
             worker_handle: None,
             vad: None,
             level_cb: None,
@@ -167,13 +175,17 @@ impl AudioRecorder {
         let first_buffer_nanos = Arc::new(AtomicU64::new(0));
         let first_buffer_seen_cb = Arc::clone(&first_buffer_seen);
         let first_buffer_nanos_cb = Arc::clone(&first_buffer_nanos);
+        let stream_errored_cb = Arc::clone(&self.stream_errored);
+        // A fresh open starts healthy - clear any fault from a previous stream.
+        self.stream_errored.store(false, Ordering::Relaxed);
 
         let worker = std::thread::spawn(move || {
             let config = AudioRecorder::get_preferred_config(&thread_device)
                 .expect("failed to fetch preferred config");
+            let config_negotiated_in = open_start.elapsed();
             log::debug!(
                 "T-113: recorder worker config negotiated {:?} after open() was called",
-                open_start.elapsed()
+                config_negotiated_in
             );
 
             let sample_rate = config.sample_rate().0;
@@ -204,6 +216,7 @@ impl AudioRecorder {
                     stream_start,
                     Arc::clone(&first_buffer_seen_cb),
                     Arc::clone(&first_buffer_nanos_cb),
+                    Arc::clone(&stream_errored_cb),
                 )
                 .unwrap(),
                 cpal::SampleFormat::I8 => AudioRecorder::build_stream::<i8>(
@@ -214,6 +227,7 @@ impl AudioRecorder {
                     stream_start,
                     Arc::clone(&first_buffer_seen_cb),
                     Arc::clone(&first_buffer_nanos_cb),
+                    Arc::clone(&stream_errored_cb),
                 )
                 .unwrap(),
                 cpal::SampleFormat::I16 => AudioRecorder::build_stream::<i16>(
@@ -224,6 +238,7 @@ impl AudioRecorder {
                     stream_start,
                     Arc::clone(&first_buffer_seen_cb),
                     Arc::clone(&first_buffer_nanos_cb),
+                    Arc::clone(&stream_errored_cb),
                 )
                 .unwrap(),
                 cpal::SampleFormat::I32 => AudioRecorder::build_stream::<i32>(
@@ -234,6 +249,7 @@ impl AudioRecorder {
                     stream_start,
                     Arc::clone(&first_buffer_seen_cb),
                     Arc::clone(&first_buffer_nanos_cb),
+                    Arc::clone(&stream_errored_cb),
                 )
                 .unwrap(),
                 cpal::SampleFormat::F32 => AudioRecorder::build_stream::<f32>(
@@ -244,15 +260,17 @@ impl AudioRecorder {
                     stream_start,
                     Arc::clone(&first_buffer_seen_cb),
                     Arc::clone(&first_buffer_nanos_cb),
+                    Arc::clone(&stream_errored_cb),
                 )
                 .unwrap(),
                 _ => panic!("unsupported sample format"),
             };
 
             stream.play().expect("failed to start stream");
+            let stream_playing_in = open_start.elapsed();
             log::debug!(
                 "T-113: recorder worker ready (stream playing) {:?} after open() was called",
-                open_start.elapsed()
+                stream_playing_in
             );
 
             // keep the stream alive while we process samples
@@ -266,6 +284,8 @@ impl AudioRecorder {
                 closed_chunk_cb,
                 first_buffer_seen,
                 first_buffer_nanos,
+                config_negotiated_in,
+                stream_playing_in,
             );
             // stream is dropped here, after run_consumer returns
         });
@@ -280,26 +300,46 @@ impl AudioRecorder {
     /// Begin recording. If `params` is `Some`, the recording is also streamed to
     /// crash-safe Opus chunk files in `params.dir` (see [`OpusChunkWriter`]).
     pub fn start(&self, params: Option<StartParams>) -> Result<(), Box<dyn std::error::Error>> {
-        if let Some(tx) = &self.cmd_tx {
-            tx.send(Cmd::Start(params))?;
-        }
+        // A recorder with no `cmd_tx` was never opened, or has been closed. Sending
+        // nothing and returning Ok() reports a recording that does not exist:
+        // `try_start_recording` reads this as success, the overlay says "recording",
+        // and the take comes back empty. Fail loudly instead.
+        let tx = self
+            .cmd_tx
+            .as_ref()
+            .ok_or_else(|| Error::new(std::io::ErrorKind::NotConnected, "recorder is not open"))?;
+        tx.send(Cmd::Start(params))?;
         Ok(())
     }
 
     pub fn stop(&self) -> Result<Vec<f32>, Box<dyn std::error::Error>> {
+        // Check BEFORE creating the channel. Previously `resp_tx` was constructed
+        // first, so when `cmd_tx` was `None` nothing consumed it, the sender stayed
+        // alive in this scope, and `resp_rx.recv()` blocked the calling thread
+        // forever - a hard hang, not an empty result.
+        let tx = self
+            .cmd_tx
+            .as_ref()
+            .ok_or_else(|| Error::new(std::io::ErrorKind::NotConnected, "recorder is not open"))?;
         let (resp_tx, resp_rx) = mpsc::channel();
-        if let Some(tx) = &self.cmd_tx {
-            tx.send(Cmd::Stop(resp_tx))?;
-        }
+        tx.send(Cmd::Stop(resp_tx))?;
         Ok(resp_rx.recv()?) // wait for the samples (and for chunk gluing to finish)
     }
 
     /// Stop recording and discard all audio + chunk files for this take.
     pub fn cancel(&self) -> Result<(), Box<dyn std::error::Error>> {
-        if let Some(tx) = &self.cmd_tx {
-            tx.send(Cmd::Cancel)?;
-        }
+        let tx = self
+            .cmd_tx
+            .as_ref()
+            .ok_or_else(|| Error::new(std::io::ErrorKind::NotConnected, "recorder is not open"))?;
+        tx.send(Cmd::Cancel)?;
         Ok(())
+    }
+
+    /// True when the CPAL error callback has reported a fault on the current
+    /// stream. Consult this before reusing an open recorder.
+    pub fn stream_faulted(&self) -> bool {
+        self.stream_errored.load(Ordering::Relaxed)
     }
 
     pub fn close(&mut self) -> Result<(), Box<dyn std::error::Error>> {
@@ -321,6 +361,7 @@ impl AudioRecorder {
         stream_start: Instant,
         first_buffer_seen: Arc<AtomicBool>,
         first_buffer_nanos: Arc<AtomicU64>,
+        stream_errored: Arc<AtomicBool>,
     ) -> Result<cpal::Stream, cpal::BuildStreamError>
     where
         T: Sample + SizedSample + Send + 'static,
@@ -379,7 +420,11 @@ impl AudioRecorder {
         device.build_input_stream(
             &config.clone().into(),
             stream_cb,
-            |err| log::error!("Stream error: {}", err),
+            move |err| {
+                // Audio-callback discipline: one relaxed store, nothing else.
+                stream_errored.store(true, Ordering::Relaxed);
+                log::error!("Stream error: {}", err);
+            },
             None,
         )
     }
@@ -648,6 +693,11 @@ fn run_consumer(
     // flag, keeping the log call entirely off the audio thread.
     first_buffer_seen: Arc<AtomicBool>,
     first_buffer_nanos: Arc<AtomicU64>,
+    // Precomputed on the worker thread, NOT re-measured here: reading
+    // `open_start.elapsed()` from this loop would fold in a `process_frame` pass
+    // and a loop turn, contaminating the very number this exists to report.
+    config_negotiated_in: Duration,
+    stream_playing_in: Duration,
 ) {
     let mut frame_resampler = FrameResampler::new(
         in_sample_rate as usize,
@@ -686,10 +736,16 @@ fn run_consumer(
         // once the flag reads true, never a stale/default 0ns.
         if !first_buffer_logged && first_buffer_seen.load(Ordering::Acquire) {
             first_buffer_logged = true;
-            let nanos = first_buffer_nanos.load(Ordering::Relaxed);
-            log::debug!(
-                "T-113: first CPAL buffer arrived {:?} after stream start",
-                Duration::from_nanos(nanos)
+            let to_first_buffer = Duration::from_nanos(first_buffer_nanos.load(Ordering::Relaxed));
+            // INFO, not debug: release builds log at INFO, so a debug! line here can
+            // never reach the users whose capture latency we are trying to measure.
+            // One line, once per open, with every phase broken out.
+            log::info!(
+                "capture-latency: open->config {:?} | config->playing {:?} | playing->first-buffer {:?} | TOTAL open->audio {:?}",
+                config_negotiated_in,
+                stream_playing_in.saturating_sub(config_negotiated_in),
+                to_first_buffer,
+                stream_playing_in + to_first_buffer
             );
         }
 

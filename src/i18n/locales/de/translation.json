@@ -776,6 +776,34 @@
         "title": "Verzögerung der Zwischenablage-Wiederherstellung für Remotedesktops",
         "description": "Überschreibt die Wiederherstellungsverzögerung, wenn das Fenster, in das Sie diktieren, eine Remotedesktop-Sitzung ist. Standard: nicht gesetzt, erbt also die normale Verzögerung oben. Grund: RDP und Citrix holen Zwischenablage-Daten erst NACH dem Einfügen-Tastendruck ab, über einen langsameren Kanal als eine lokale Anwendung — eine zu frühe Wiederherstellung übergibt der Gegenseite also das, was Sie vorher kopiert hatten. 1 s ist ein sinnvoller Startwert. Ehrliche Kosten: eine längere Wiederherstellung lässt die Transkription länger in Ihrer Zwischenablage, was das Zeitfenster für Zwischenablage-Verlauf und -Manager vergrößert. Welche Fenster als Remote gelten, bestimmt die Liste auf der Jumper-Seite. *{Windows only}*",
         "inherit": "Nicht gesetzt (Verzögerung von oben verwenden)"
+      },
+      "preserveTranscriptions": {
+        "label": "Transkriptionen behalten, wenn Aufnahmen entfernt werden",
+        "description": "Die Bereinigung löscht nur die Audiodatei und behält den Transkriptionstext dauerhaft. Standardmäßig aktiviert. Das Verlaufslimit begrenzt dann, wie viele Aufnahmen ihr Audio behalten, nicht wie viele Transkriptionen bleiben."
+      },
+      "affix": {
+        "prefix": {
+          "enable": {
+            "title": "Text davor einfügen",
+            "description": "Fügt eigenen Text am Anfang jeder ausgegebenen Transkription ein. Der Verlaufseintrag behält den reinen Text."
+          },
+          "placeholder": "Text davor",
+          "newline": {
+            "title": "Zeilenumbruch danach",
+            "description": "Setzt die Transkription in eine eigene Zeile unter deinen Text. Standardmäßig aktiviert."
+          }
+        },
+        "suffix": {
+          "enable": {
+            "title": "Text danach einfügen",
+            "description": "Hängt eigenen Text an das Ende jeder ausgegebenen Transkription an. Der Verlaufseintrag behält den reinen Text."
+          },
+          "placeholder": "Text danach",
+          "newline": {
+            "title": "Zeilenumbruch davor",
+            "description": "Setzt deinen Text in eine eigene Zeile unter die Transkription. Standardmäßig aktiviert."
+          }
+        }
       }
     },
     "postProcessing": {

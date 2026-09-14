@@ -776,6 +776,34 @@
         "title": "Zpoždění obnovení schránky pro vzdálené plochy",
         "description": "Přepíše zpoždění obnovení schránky, když je okno, do kterého diktujete, sezením vzdálené plochy. Výchozí: nenastaveno, tedy dědí běžné zpoždění výše. Proč existuje: RDP a Citrix si vyžádají data schránky až PO doručení klávesy vložení, přes pomalejší kanál než místní aplikace, takže příliš rané obnovení podstrčí vzdálené aplikaci to, co jste měli zkopírované předtím. 1 s je rozumný začátek. Skutečná cena: delší obnovení nechá přepis ve schránce déle, což rozšiřuje okno, ve kterém jej může zachytit historie schránky nebo její správce. Která okna se počítají jako vzdálená, určuje seznam na stránce Jumper. *{Windows only}*",
         "inherit": "Nenastaveno (použít zpoždění výše)"
+      },
+      "preserveTranscriptions": {
+        "label": "Zachovat přepisy při odstraňování nahrávek",
+        "description": "Úklid smaže pouze zvukový soubor a text přepisu zachová natrvalo. Výchozí je zapnuto. Limit historie pak omezuje, kolik nahrávek si ponechá zvuk, nikoli kolik přepisů si ponecháte."
+      },
+      "affix": {
+        "prefix": {
+          "enable": {
+            "title": "Přidat text před",
+            "description": "Vloží váš text na začátek každého doručeného přepisu. V historii zůstává čistý přepis."
+          },
+          "placeholder": "Text vložený před",
+          "newline": {
+            "title": "Nový řádek za ním",
+            "description": "Umístí přepis na samostatný řádek pod váš text. Výchozí je zapnuto."
+          }
+        },
+        "suffix": {
+          "enable": {
+            "title": "Přidat text za",
+            "description": "Připojí váš text na konec každého doručeného přepisu. V historii zůstává čistý přepis."
+          },
+          "placeholder": "Text připojený za",
+          "newline": {
+            "title": "Nový řádek před ním",
+            "description": "Umístí váš text na samostatný řádek pod přepis. Výchozí je zapnuto."
+          }
+        }
       }
     },
     "postProcessing": {

@@ -776,6 +776,34 @@
         "title": "Độ trễ khôi phục khay nhớ tạm cho máy tính từ xa",
         "description": "Ghi đè độ trễ khôi phục khay nhớ tạm khi cửa sổ bạn đang đọc chính tả vào là một phiên máy tính từ xa. Mặc định: chưa đặt, nghĩa là kế thừa độ trễ thông thường ở trên. Vì sao có tuỳ chọn này: RDP và Citrix lấy dữ liệu khay nhớ tạm theo yêu cầu SAU khi phím dán tới, qua một kênh chậm hơn ứng dụng cục bộ, nên khôi phục quá sớm sẽ đưa cho ứng dụng từ xa thứ bạn đã sao chép trước đó. 1 s là điểm khởi đầu hợp lý. Chi phí thật: khôi phục lâu hơn giữ bản phiên âm trên khay nhớ tạm lâu hơn, mở rộng khoảng thời gian mà lịch sử và trình quản lý khay nhớ tạm có thể thu được nó. Cửa sổ nào được coi là từ xa lấy từ danh sách khớp trên trang Jumper. *{Windows only}*",
         "inherit": "Chưa đặt (dùng độ trễ ở trên)"
+      },
+      "preserveTranscriptions": {
+        "label": "Giữ lại bản ghi chép khi xoá bản thu âm",
+        "description": "Việc dọn dẹp chỉ xoá tệp âm thanh và giữ lại văn bản mãi mãi. Bật theo mặc định. Khi đó giới hạn lịch sử giới hạn số bản thu giữ được âm thanh, không phải số bản ghi chép."
+      },
+      "affix": {
+        "prefix": {
+          "enable": {
+            "title": "Thêm văn bản phía trước",
+            "description": "Chèn văn bản của bạn vào đầu mỗi bản ghi chép được chèn. Lịch sử vẫn giữ bản gốc."
+          },
+          "placeholder": "Văn bản chèn phía trước",
+          "newline": {
+            "title": "Xuống dòng sau đó",
+            "description": "Đặt bản ghi chép xuống dòng riêng bên dưới văn bản của bạn. Bật theo mặc định."
+          }
+        },
+        "suffix": {
+          "enable": {
+            "title": "Thêm văn bản phía sau",
+            "description": "Thêm văn bản của bạn vào cuối mỗi bản ghi chép được chèn. Lịch sử vẫn giữ bản gốc."
+          },
+          "placeholder": "Văn bản thêm phía sau",
+          "newline": {
+            "title": "Xuống dòng trước đó",
+            "description": "Đặt văn bản của bạn xuống dòng riêng bên dưới bản ghi chép. Bật theo mặc định."
+          }
+        }
       }
     },
     "postProcessing": {

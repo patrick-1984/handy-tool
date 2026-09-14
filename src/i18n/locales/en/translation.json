@@ -914,6 +914,34 @@
         "title": "Clipboard restore delay for remote desktops",
         "description": "Overrides the clipboard restore delay when the window you are dictating into is a remote desktop session. Default: not set, which inherits the normal delay above. Why it exists: RDP and Citrix fetch clipboard data on demand AFTER the paste keystroke arrives, over a slower channel than a local application, so restoring too early hands the remote app whatever you had copied before. 1 s is a sensible starting point. Honest cost: a longer restore leaves the transcript on your clipboard for longer, which widens the window in which clipboard history and clipboard managers can capture it. Which windows count as remote comes from the match list on the Jumper page. *{Windows only}*",
         "inherit": "Not set (use the delay above)"
+      },
+      "preserveTranscriptions": {
+        "label": "Keep transcriptions when recordings are removed",
+        "description": "Retention deletes only the audio file and keeps the transcription text forever. On by default. With this on, the history limit caps how many recordings keep their audio, not how many transcriptions you keep."
+      },
+      "affix": {
+        "prefix": {
+          "enable": {
+            "title": "Add text before",
+            "description": "Insert your own text at the start of every delivered transcription. The history entry keeps the plain transcript."
+          },
+          "placeholder": "Text to insert before",
+          "newline": {
+            "title": "New line after it",
+            "description": "Put the transcription on its own line below your text. On by default."
+          }
+        },
+        "suffix": {
+          "enable": {
+            "title": "Add text after",
+            "description": "Append your own text at the end of every delivered transcription. The history entry keeps the plain transcript."
+          },
+          "placeholder": "Text to append after",
+          "newline": {
+            "title": "New line before it",
+            "description": "Put your text on its own line below the transcription. On by default."
+          }
+        }
       }
     },
     "postProcessing": {

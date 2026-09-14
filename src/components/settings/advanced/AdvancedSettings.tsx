@@ -20,6 +20,8 @@ import { McpSettings } from "./McpSettings";
 import { TranscriptionCostReport } from "./TranscriptionCostReport";
 import { TranscribeAndSubmitSettings } from "../TranscribeAndSubmitSettings";
 import { PasteLastSettings } from "../PasteLastSettings";
+import { AffixSettings } from "../AffixSettings";
+import { PreserveTranscriptions } from "../PreserveTranscriptions";
 import { JumperDelaySetting } from "../JumperDelaySetting";
 import { JumperTrackToggle } from "../JumperTrackToggle";
 import { JumperReturnFocusToggle } from "../JumperReturnFocusToggle";
@@ -110,6 +112,7 @@ export const AdvancedSettings: React.FC = () => {
               />
               <JumperTrackToggle flow="output" grouped={true} />
               <JumperReturnFocusToggle flow="output" grouped={true} />
+              <AffixSettings flow="output" grouped={true} />
             </SettingsGroup>
             <TranscribeAndSubmitSettings />
             <PasteLastSettings />
@@ -156,6 +159,7 @@ export const AdvancedSettings: React.FC = () => {
         return (
           <SettingsGroup title={t("settings.advanced.groups.history")}>
             <CrashResilientRecording descriptionMode="tooltip" grouped={true} />
+            <PreserveTranscriptions descriptionMode="tooltip" grouped={true} />
             <OpenRecordingsFolder descriptionMode="tooltip" grouped={true} />
             <HistoryLimit descriptionMode="tooltip" grouped={true} />
             <RecordingRetentionPeriodSelector

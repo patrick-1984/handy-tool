@@ -236,7 +236,12 @@ export const isAltGrRiskyChord = (binding: string): boolean => {
   // that matters most, not an edge case.
   const parts = binding
     .split("+")
-    .map((part) => part.trim().toLowerCase().replace(/_(?:left|right)$/, ""))
+    .map((part) =>
+      part
+        .trim()
+        .toLowerCase()
+        .replace(/_(?:left|right)$/, ""),
+    )
     .filter((part) => part.length > 0);
 
   const hasCtrl = parts.some((p) => p === "ctrl" || p === "control");

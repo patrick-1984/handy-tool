@@ -776,6 +776,34 @@
         "title": "Opóźnienie przywracania schowka dla pulpitów zdalnych",
         "description": "Zastępuje opóźnienie przywracania schowka, gdy okno, do którego dyktujesz, jest sesją pulpitu zdalnego. Domyślnie: nieustawione, czyli dziedziczy zwykłe opóźnienie powyżej. Dlaczego istnieje: RDP i Citrix pobierają dane schowka na żądanie PO nadejściu klawisza wklejania, kanałem wolniejszym niż aplikacja lokalna, więc zbyt wczesne przywrócenie podaje aplikacji zdalnej to, co skopiowałeś wcześniej. 1 s to sensowny punkt wyjścia. Uczciwy koszt: dłuższe przywracanie zostawia transkrypcję w schowku na dłużej, co poszerza okno, w którym historia schowka i menedżery mogą ją przechwycić. Które okna liczą się jako zdalne, określa lista na stronie Jumper. *{Windows only}*",
         "inherit": "Nieustawione (użyj opóźnienia powyżej)"
+      },
+      "preserveTranscriptions": {
+        "label": "Zachowuj transkrypcje przy usuwaniu nagrań",
+        "description": "Czyszczenie usuwa tylko plik dźwiękowy, a tekst transkrypcji zostaje na zawsze. Domyślnie włączone. Limit historii ogranicza wtedy liczbę nagrań zachowujących dźwięk, a nie liczbę transkrypcji."
+      },
+      "affix": {
+        "prefix": {
+          "enable": {
+            "title": "Dodaj tekst przed",
+            "description": "Wstawia własny tekst na początku każdej dostarczonej transkrypcji. W historii pozostaje czysta transkrypcja."
+          },
+          "placeholder": "Tekst wstawiany przed",
+          "newline": {
+            "title": "Nowa linia po nim",
+            "description": "Umieszcza transkrypcję w osobnym wierszu pod Twoim tekstem. Domyślnie włączone."
+          }
+        },
+        "suffix": {
+          "enable": {
+            "title": "Dodaj tekst po",
+            "description": "Dopisuje własny tekst na końcu każdej dostarczonej transkrypcji. W historii pozostaje czysta transkrypcja."
+          },
+          "placeholder": "Tekst dopisywany po",
+          "newline": {
+            "title": "Nowa linia przed nim",
+            "description": "Umieszcza Twój tekst w osobnym wierszu pod transkrypcją. Domyślnie włączone."
+          }
+        }
       }
     },
     "postProcessing": {

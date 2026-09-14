@@ -947,6 +947,53 @@ pub struct AppSettings {
     pub history_limit: usize,
     #[serde(default = "default_recording_retention_period")]
     pub recording_retention_period: RecordingRetentionPeriod,
+    /// When true (the default), retention deletes only the AUDIO of an expired
+    /// recording and keeps its transcription row forever. The row is marked with
+    /// `audio_purged_at` so the UI can show "audio removed" rather than pretending
+    /// the file is still playable.
+    ///
+    /// Defaults to TRUE for existing stores as well as new ones, which IS a
+    /// behaviour change on upgrade - deliberately. The change only ever makes
+    /// Handy delete LESS of the user's data: someone who upgrades and finds their
+    /// transcripts retained has lost nothing, whereas defaulting it off would keep
+    /// silently destroying transcripts for every existing user while the setting
+    /// that would have saved them sat there switched off. Note the shipped
+    /// `default_history_limit()` is 5, so the pre-existing default is aggressive.
+    #[serde(default = "default_preserve_transcriptions")]
+    pub preserve_transcriptions: bool,
+    /// Custom text wrapped around a delivered transcription. Independent per flow
+    /// (plain Transcribe vs Transcribe & Submit), because a chat-submit signature
+    /// is rarely what you want on ordinary dictation - mirroring how the repo
+    /// already splits paste_method / submit_paste_method.
+    ///
+    /// Applied to the DELIVERED text only, never to the stored history row: the
+    /// transcript records what was said, not the boilerplate around it. This also
+    /// keeps Paste Last from re-applying affixes to text that already has them.
+    #[serde(default)]
+    pub output_prefix_enabled: bool,
+    #[serde(default)]
+    pub output_prefix_text: String,
+    #[serde(default = "default_affix_newline")]
+    pub output_prefix_newline: bool,
+    #[serde(default)]
+    pub output_suffix_enabled: bool,
+    #[serde(default)]
+    pub output_suffix_text: String,
+    #[serde(default = "default_affix_newline")]
+    pub output_suffix_newline: bool,
+    #[serde(default)]
+    pub submit_prefix_enabled: bool,
+    #[serde(default)]
+    pub submit_prefix_text: String,
+    #[serde(default = "default_affix_newline")]
+    pub submit_prefix_newline: bool,
+    #[serde(default)]
+    pub submit_suffix_enabled: bool,
+    #[serde(default)]
+    pub submit_suffix_text: String,
+    #[serde(default = "default_affix_newline")]
+    pub submit_suffix_newline: bool,
+
     #[serde(default)]
     pub paste_method: PasteMethod,
     #[serde(default)]
@@ -1501,6 +1548,14 @@ fn default_recording_retention_period() -> RecordingRetentionPeriod {
     RecordingRetentionPeriod::PreserveLimit
 }
 
+fn default_preserve_transcriptions() -> bool {
+    true
+}
+
+fn default_affix_newline() -> bool {
+    true
+}
+
 fn default_audio_feedback_volume() -> f32 {
     1.0
 }
@@ -2043,6 +2098,71 @@ pub fn is_altgr_risky_chord(binding: &str) -> bool {
         .any(|p| p == "space" || (p.len() == 1 && p.chars().all(|c| c.is_ascii_alphabetic())))
 }
 
+/// One flow's prefix/suffix configuration, resolved from settings.
+pub struct AffixSpec<'a> {
+    pub prefix_enabled: bool,
+    pub prefix_text: &'a str,
+    pub prefix_newline: bool,
+    pub suffix_enabled: bool,
+    pub suffix_text: &'a str,
+    pub suffix_newline: bool,
+}
+
+/// Wrap a delivered transcription in its configured prefix/suffix.
+///
+/// Deliberate rules:
+/// - An EMPTY transcription is returned untouched. Nothing was said, so delivering
+///   a bare signature into the focused window would be worse than delivering
+///   nothing - and the caller already skips delivery for empty text.
+/// - An enabled-but-blank affix contributes nothing, including its newline. A
+///   newline is a separator; with nothing to separate it is just a stray blank line.
+pub fn apply_affixes(text: &str, spec: &AffixSpec<'_>) -> String {
+    if text.is_empty() {
+        return text.to_string();
+    }
+    let mut out = String::with_capacity(text.len() + 32);
+    if spec.prefix_enabled && !spec.prefix_text.is_empty() {
+        out.push_str(spec.prefix_text);
+        if spec.prefix_newline {
+            out.push('\n');
+        }
+    }
+    out.push_str(text);
+    if spec.suffix_enabled && !spec.suffix_text.is_empty() {
+        if spec.suffix_newline {
+            out.push('\n');
+        }
+        out.push_str(spec.suffix_text);
+    }
+    out
+}
+
+impl AppSettings {
+    /// Affixes for the flow that is delivering: the Transcribe & Submit flow when
+    /// `submit` is true, otherwise plain Transcribe.
+    pub fn affixes_for(&self, submit: bool) -> AffixSpec<'_> {
+        if submit {
+            AffixSpec {
+                prefix_enabled: self.submit_prefix_enabled,
+                prefix_text: &self.submit_prefix_text,
+                prefix_newline: self.submit_prefix_newline,
+                suffix_enabled: self.submit_suffix_enabled,
+                suffix_text: &self.submit_suffix_text,
+                suffix_newline: self.submit_suffix_newline,
+            }
+        } else {
+            AffixSpec {
+                prefix_enabled: self.output_prefix_enabled,
+                prefix_text: &self.output_prefix_text,
+                prefix_newline: self.output_prefix_newline,
+                suffix_enabled: self.output_suffix_enabled,
+                suffix_text: &self.output_suffix_text,
+                suffix_newline: self.output_suffix_newline,
+            }
+        }
+    }
+}
+
 pub const SETTINGS_STORE_PATH: &str = "settings_store.json";
 
 pub fn get_default_settings() -> AppSettings {
@@ -2261,6 +2381,19 @@ pub fn get_default_settings() -> AppSettings {
         word_correction_threshold: default_word_correction_threshold(),
         history_limit: default_history_limit(),
         recording_retention_period: default_recording_retention_period(),
+        preserve_transcriptions: default_preserve_transcriptions(),
+        output_prefix_enabled: false,
+        output_prefix_text: String::new(),
+        output_prefix_newline: default_affix_newline(),
+        output_suffix_enabled: false,
+        output_suffix_text: String::new(),
+        output_suffix_newline: default_affix_newline(),
+        submit_prefix_enabled: false,
+        submit_prefix_text: String::new(),
+        submit_prefix_newline: default_affix_newline(),
+        submit_suffix_enabled: false,
+        submit_suffix_text: String::new(),
+        submit_suffix_newline: default_affix_newline(),
         paste_method: PasteMethod::default(),
         paste_method_ptt: PasteMethod::default(),
         clipboard_handling: ClipboardHandling::default(),
@@ -2624,6 +2757,10 @@ pub fn get_stored_binding(app: &AppHandle, id: &str) -> ShortcutBinding {
     binding
 }
 
+pub fn get_preserve_transcriptions(app: &AppHandle) -> bool {
+    get_settings(app).preserve_transcriptions
+}
+
 pub fn get_history_limit(app: &AppHandle) -> usize {
     let settings = get_settings(app);
     settings.history_limit
@@ -2677,6 +2814,89 @@ mod tests {
                 "binding {id} had its saved chord rewritten"
             );
         }
+    }
+
+    fn spec<'a>(pe: bool, pt: &'a str, pn: bool, se: bool, st: &'a str, sn: bool) -> AffixSpec<'a> {
+        AffixSpec {
+            prefix_enabled: pe,
+            prefix_text: pt,
+            prefix_newline: pn,
+            suffix_enabled: se,
+            suffix_text: st,
+            suffix_newline: sn,
+        }
+    }
+
+    #[test]
+    fn affixes_off_leave_the_transcript_untouched() {
+        let s = spec(false, "before", true, false, "after", true);
+        assert_eq!(apply_affixes("hello", &s), "hello");
+    }
+
+    #[test]
+    fn prefix_and_suffix_apply_independently() {
+        assert_eq!(
+            apply_affixes("hello", &spec(true, "P", true, false, "", true)),
+            "P\nhello"
+        );
+        assert_eq!(
+            apply_affixes("hello", &spec(false, "", true, true, "S", true)),
+            "hello\nS"
+        );
+        assert_eq!(
+            apply_affixes("hello", &spec(true, "P", true, true, "S", true)),
+            "P\nhello\nS"
+        );
+    }
+
+    #[test]
+    fn the_newline_toggles_are_independent_of_the_affix_toggles() {
+        assert_eq!(
+            apply_affixes("hello", &spec(true, "P", false, true, "S", false)),
+            "PhelloS"
+        );
+        // Mixed: newline after the prefix, none before the suffix.
+        assert_eq!(
+            apply_affixes("hello", &spec(true, "P", true, true, "S", false)),
+            "P\nhelloS"
+        );
+    }
+
+    #[test]
+    fn an_empty_transcript_gets_no_affixes() {
+        // Nothing was said. Delivering a bare signature into the focused window
+        // would be worse than delivering nothing at all.
+        let s = spec(true, "P", true, true, "S", true);
+        assert_eq!(apply_affixes("", &s), "");
+    }
+
+    #[test]
+    fn an_enabled_but_blank_affix_contributes_nothing_not_even_its_newline() {
+        // A newline is a separator; with nothing to separate it is a stray blank line.
+        let s = spec(true, "", true, true, "", true);
+        assert_eq!(apply_affixes("hello", &s), "hello");
+    }
+
+    #[test]
+    fn affixes_for_picks_the_right_flow() {
+        let mut settings = get_default_settings();
+        settings.output_prefix_enabled = true;
+        settings.output_prefix_text = "OUT".to_string();
+        settings.submit_prefix_enabled = true;
+        settings.submit_prefix_text = "SUB".to_string();
+
+        assert_eq!(apply_affixes("x", &settings.affixes_for(false)), "OUT\nx");
+        assert_eq!(apply_affixes("x", &settings.affixes_for(true)), "SUB\nx");
+    }
+
+    #[test]
+    fn affix_defaults_are_off_with_newline_on() {
+        let d = get_default_settings();
+        assert!(!d.output_prefix_enabled && !d.output_suffix_enabled);
+        assert!(!d.submit_prefix_enabled && !d.submit_suffix_enabled);
+        // The newline toggles default ON, per the requested behaviour.
+        assert!(d.output_prefix_newline && d.output_suffix_newline);
+        assert!(d.submit_prefix_newline && d.submit_suffix_newline);
     }
 
     #[test]

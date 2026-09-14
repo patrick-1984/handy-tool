@@ -1,5 +1,56 @@
 # Changelog
 
+## [1.5.0] - 2026-09-14
+
+### Added
+
+- **Custom text before and after a transcription.** A prefix and a suffix, each with its own
+  on/off switch, its own text, and its own "add a newline" toggle (on by default). Configured
+  separately for **Transcribe** and **Transcribe & Submit**, because a chat-submit signature is
+  rarely what you want on ordinary dictation.
+
+  The text is added to what is _delivered_. Your history keeps the plain transcript — otherwise
+  Paste Last would re-apply the prefix and suffix to text that already had them, and you would get
+  two copies. An enabled-but-empty affix adds nothing, not even its newline, and an empty
+  transcription is left alone rather than delivering a bare signature into whatever has focus.
+
+- **Lifetime totals that survive a purge.** When retention deletes a recording, its contribution is
+  rolled into a carried-forward total before the row goes, so statistics stop shrinking as history
+  is cleaned up. Deleting an entry by hand still removes it completely, totals included — pressing
+  the trash can means _forget this_.
+
+  Counts are stored as characters rather than words: `split_whitespace()` is permanently wrong for
+  Chinese, Japanese and Korean, which Handy ships both locales and an ASR engine for, and once the
+  detail is gone it cannot be recomputed.
+
+### Changed
+
+- **Retention no longer deletes your transcriptions — only the audio.** New setting, **on by
+  default for existing installs as well as new ones**. This is a deliberate behaviour change on
+  upgrade: it makes Handy delete _less_ of your data, and the alternative would have kept silently
+  discarding transcripts while the setting that prevents it sat switched off.
+
+  Note this changes what the history limit means. It now caps how many recordings keep their
+  **audio**, not how many transcriptions you keep. The shipped default is 5.
+
+### Fixed
+
+- **A recording that never started was reported as successful.** `AudioRecorder::start` returned
+  `Ok` without sending anything when the recorder was not open, so the overlay said "recording"
+  over a take that could not exist.
+
+- **A hang when stopping a recorder that was never opened.** `stop()` built its response channel
+  before deciding whether to send a command, so the sender stayed alive in scope and the receiver
+  blocked the calling thread forever.
+
+- **A faulted audio stream was reused instead of reopened.** The CPAL error callback only logged;
+  nothing cleared the "stream is open" flag. After a device was unplugged or a driver reset, every
+  later take recorded silence while the interface showed it recording normally.
+
+- **Capture latency is now measurable.** A single `capture-latency` line at INFO reports
+  open→config, config→playing, playing→first-buffer and the total. The existing figures were
+  `debug!`, which release builds never write, and one of them was measured from the wrong point.
+
 ## [1.4.0] - 2026-09-09
 
 ### Fixed
