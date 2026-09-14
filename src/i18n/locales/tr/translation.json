@@ -776,6 +776,34 @@
         "title": "Uzak masaüstleri için pano geri yükleme gecikmesi",
         "description": "Dikte ettiğiniz pencere bir uzak masaüstü oturumu olduğunda pano geri yükleme gecikmesini geçersiz kılar. Varsayılan: ayarlanmadı, yani yukarıdaki normal gecikmeyi devralır. Neden var: RDP ve Citrix pano verisini, yapıştırma tuşu ulaştıktan SONRA, yerel bir uygulamadan daha yavaş bir kanal üzerinden ister; bu yüzden çok erken geri yüklemek uzak uygulamaya daha önce kopyaladığınızı verir. 1 s makul bir başlangıç noktasıdır. Dürüst maliyet: daha uzun bir geri yükleme transkripti panonuzda daha uzun bırakır ve pano geçmişi ile pano yöneticilerinin onu yakalayabileceği pencereyi genişletir. Hangi pencerelerin uzak sayılacağı Jumper sayfasındaki listeden gelir. *{Windows only}*",
         "inherit": "Ayarlanmadı (yukarıdaki gecikmeyi kullan)"
+      },
+      "preserveTranscriptions": {
+        "label": "Kayıtlar silinirken transkripsiyonları koru",
+        "description": "Temizleme yalnızca ses dosyasını siler, transkripsiyon metnini kalıcı olarak saklar. Varsayılan olarak açık. Bu durumda geçmiş sınırı, kaç kaydın sesini koruyacağını sınırlar; sakladığınız transkripsiyon sayısını değil."
+      },
+      "affix": {
+        "prefix": {
+          "enable": {
+            "title": "Önüne metin ekle",
+            "description": "Teslim edilen her transkripsiyonun başına kendi metninizi ekler. Geçmişte düz transkripsiyon kalır."
+          },
+          "placeholder": "Öne eklenecek metin",
+          "newline": {
+            "title": "Sonrasında yeni satır",
+            "description": "Transkripsiyonu metninizin altında kendi satırına yerleştirir. Varsayılan olarak açık."
+          }
+        },
+        "suffix": {
+          "enable": {
+            "title": "Sonuna metin ekle",
+            "description": "Teslim edilen her transkripsiyonun sonuna kendi metninizi ekler. Geçmişte düz transkripsiyon kalır."
+          },
+          "placeholder": "Sona eklenecek metin",
+          "newline": {
+            "title": "Öncesinde yeni satır",
+            "description": "Metninizi transkripsiyonun altında kendi satırına yerleştirir. Varsayılan olarak açık."
+          }
+        }
       }
     },
     "postProcessing": {

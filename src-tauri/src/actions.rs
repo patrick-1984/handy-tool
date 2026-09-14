@@ -1759,11 +1759,21 @@ impl ShortcutAction for TranscribeAction {
 
                 if !text.is_empty() {
                     let is_ptt = binding_id == "transcribe_ptt";
+                    // Custom prefix/suffix, per flow. Applied to what is DELIVERED
+                    // only - the history row keeps the raw transcript, so Paste Last
+                    // cannot re-apply affixes to text that already carries them.
+                    let delivered = {
+                        let st = get_settings(&ah);
+                        crate::settings::apply_affixes(
+                            &text,
+                            &st.affixes_for(submit_override.is_some()),
+                        )
+                    };
                     // Off the event loop on Windows (long remote jump delays);
                     // on the main thread elsewhere (enigo). See dispatch_delivery.
                     dispatch_delivery(
                         ah.clone(),
-                        text.clone(),
+                        delivered,
                         is_ptt,
                         delivery_intent,
                         submit_override,
@@ -1989,9 +1999,16 @@ impl ShortcutAction for TranscribeAction {
                             // Off the event loop on Windows (long remote jump
                             // delays); on the main thread elsewhere (enigo).
                             let is_ptt = binding_id == "transcribe_ptt";
+                            let delivered = {
+                                let st = get_settings(&ah);
+                                crate::settings::apply_affixes(
+                                    &final_text,
+                                    &st.affixes_for(submit_override.is_some()),
+                                )
+                            };
                             dispatch_delivery(
                                 ah.clone(),
-                                final_text,
+                                delivered,
                                 is_ptt,
                                 delivery_intent,
                                 submit_override,

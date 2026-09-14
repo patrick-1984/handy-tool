@@ -776,6 +776,34 @@
         "title": "Atraso de restauro da área de transferência para ambientes de trabalho remotos",
         "description": "Substitui o atraso de restauro quando a janela para a qual está a ditar é uma sessão de ambiente de trabalho remoto. Predefinição: não definido, ou seja, herda o atraso normal acima. Porque existe: o RDP e o Citrix pedem os dados da área de transferência DEPOIS de a tecla de colar chegar, por um canal mais lento do que uma aplicação local, pelo que restaurar demasiado cedo entrega à aplicação remota o que tinha copiado antes. 1 s é um bom ponto de partida. Custo honesto: um restauro mais longo deixa a transcrição na área de transferência durante mais tempo, alargando a janela em que o histórico e os gestores a podem capturar. Quais as janelas que contam como remotas vem da lista na página Jumper. *{Windows only}*",
         "inherit": "Não definido (usar o atraso acima)"
+      },
+      "preserveTranscriptions": {
+        "label": "Manter as transcrições ao remover as gravações",
+        "description": "A limpeza elimina apenas o ficheiro de áudio e mantém o texto para sempre. Ativado por predefinição. O limite do histórico passa a limitar quantas gravações mantêm o áudio, não quantas transcrições guarda."
+      },
+      "affix": {
+        "prefix": {
+          "enable": {
+            "title": "Adicionar texto antes",
+            "description": "Insere o seu texto no início de cada transcrição entregue. O histórico mantém a transcrição simples."
+          },
+          "placeholder": "Texto a inserir antes",
+          "newline": {
+            "title": "Nova linha a seguir",
+            "description": "Coloca a transcrição numa linha própria abaixo do seu texto. Ativado por predefinição."
+          }
+        },
+        "suffix": {
+          "enable": {
+            "title": "Adicionar texto depois",
+            "description": "Acrescenta o seu texto no fim de cada transcrição entregue. O histórico mantém a transcrição simples."
+          },
+          "placeholder": "Texto a acrescentar depois",
+          "newline": {
+            "title": "Nova linha antes",
+            "description": "Coloca o seu texto numa linha própria abaixo da transcrição. Ativado por predefinição."
+          }
+        }
       }
     },
     "postProcessing": {

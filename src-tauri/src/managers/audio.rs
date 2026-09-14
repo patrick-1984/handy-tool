@@ -4,7 +4,7 @@ use crate::audio_toolkit::{
 use crate::helpers::clamshell;
 use crate::settings::{AppSettings, get_settings};
 use crate::utils;
-use log::{debug, error, info};
+use log::{debug, error, info, warn};
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
 use tauri::Manager;
@@ -239,8 +239,28 @@ impl AudioRecordingManager {
     pub fn start_microphone_stream(&self) -> Result<(), anyhow::Error> {
         let mut open_flag = self.is_open.lock().unwrap();
         if *open_flag {
-            debug!("Microphone stream already active");
-            return Ok(());
+            // "Already active" is only safe if the stream is still HEALTHY. The CPAL
+            // error callback fires on device unplug, endpoint invalidation and driver
+            // resets, and nothing used to clear `is_open` when it did - so a faulted
+            // stream stayed cached and every subsequent take recorded nothing while
+            // the overlay still said "recording". Reopen instead.
+            let faulted = self
+                .recorder
+                .lock()
+                .ok()
+                .and_then(|r| r.as_ref().map(|rec| rec.stream_faulted()))
+                .unwrap_or(false);
+            if !faulted {
+                debug!("Microphone stream already active");
+                return Ok(());
+            }
+            warn!("Microphone stream faulted since it was opened; reopening");
+            if let Ok(mut r) = self.recorder.lock() {
+                if let Some(rec) = r.as_mut() {
+                    let _ = rec.close();
+                }
+            }
+            *open_flag = false;
         }
 
         let start_time = Instant::now();

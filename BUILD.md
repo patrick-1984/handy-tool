@@ -195,7 +195,7 @@ Smart App Control is a separate mechanism with no exclusion list.
 **What the verdict is actually against.** A single file, identified by its
 content — not "unsigned Rust proc-macros" as a class, and not a path. Measured on
 2026-08-29: `serde_derive-5f0c21d65f4cceea.dll` built on 08-17 was refused on
-every attempt, while the *same crate* compiled fresh into a throwaway project a
+every attempt, while the _same crate_ compiled fresh into a throwaway project a
 minute later loaded without complaint. So "SAC is blocking my build" and "SAC is
 blocking Rust" are different claims, and only the first one is ever true.
 
@@ -211,8 +211,8 @@ Get-WinEvent -FilterHashtable @{
   ForEach-Object { $_.Groups[1].Value } | Group-Object | Sort-Object Count -Descending
 ```
 
-`os error 4551` appears in the build log **only** when cargo tries to *execute* a
-blocked build script. When `rustc` fails to *load* a blocked proc-macro you get a
+`os error 4551` appears in the build log **only** when cargo tries to _execute_ a
+blocked build script. When `rustc` fails to _load_ a blocked proc-macro you get a
 bare `E0463` and no OS error at all, so "no 4551 in the log" does **not** mean SAC
 is uninvolved.
 
@@ -239,13 +239,13 @@ It also sometimes does not: the rebuilt `windows_implement` and
 Beyond one or two artifacts this stops being a repair and becomes damage, in two
 ways that were both measured on 08-29:
 
-- Forcing *every* build script to recompile (via
+- Forcing _every_ build script to recompile (via
   `CARGO_PROFILE_RELEASE_BUILD_OVERRIDE_OPT_LEVEL`, to change their bytes) took the
   refused set from **1 crate to 9 in eight attempts**. This is the same effect the
   2026-08-20 note recorded as "the per-crate clean makes it worse", and it is real —
   though the mechanism is presenting many unknown binaries at once, not the clean
   itself.
-- Purging a crate that is *not* a proc-macro leaves `can't find crate for X` with
+- Purging a crate that is _not_ a proc-macro leaves `can't find crate for X` with
   nothing to repair, because the missing artifact is a plain rlib whose build was
   never reached. Six crates ended up in that state and no amount of retrying
   recovered them.

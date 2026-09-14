@@ -776,6 +776,34 @@
         "title": "Ritardo di ripristino degli appunti per i desktop remoti",
         "description": "Sostituisce il ritardo di ripristino quando la finestra in cui stai dettando è una sessione di desktop remoto. Predefinito: non impostato, quindi eredita il ritardo normale sopra. Perché esiste: RDP e Citrix richiedono i dati degli appunti DOPO l'arrivo del tasto di incolla, su un canale più lento di un'applicazione locale, quindi ripristinare troppo presto consegna all'app remota ciò che avevi copiato prima. 1 s è un punto di partenza sensato. Costo onesto: un ripristino più lungo lascia la trascrizione negli appunti più a lungo, allargando la finestra in cui la cronologia e i gestori degli appunti possono catturarla. Quali finestre contano come remote deriva dall'elenco nella pagina Jumper. *{Windows only}*",
         "inherit": "Non impostato (usa il ritardo sopra)"
+      },
+      "preserveTranscriptions": {
+        "label": "Conserva le trascrizioni quando le registrazioni vengono rimosse",
+        "description": "La pulizia elimina solo il file audio e conserva il testo per sempre. Attivo per impostazione predefinita. Il limite della cronologia limita quante registrazioni mantengono l'audio, non quante trascrizioni conservi."
+      },
+      "affix": {
+        "prefix": {
+          "enable": {
+            "title": "Aggiungi testo prima",
+            "description": "Inserisce il tuo testo all'inizio di ogni trascrizione consegnata. La cronologia conserva la trascrizione pura."
+          },
+          "placeholder": "Testo da inserire prima",
+          "newline": {
+            "title": "A capo dopo",
+            "description": "Mette la trascrizione su una riga propria sotto il tuo testo. Attivo per impostazione predefinita."
+          }
+        },
+        "suffix": {
+          "enable": {
+            "title": "Aggiungi testo dopo",
+            "description": "Aggiunge il tuo testo alla fine di ogni trascrizione consegnata. La cronologia conserva la trascrizione pura."
+          },
+          "placeholder": "Testo da aggiungere dopo",
+          "newline": {
+            "title": "A capo prima",
+            "description": "Mette il tuo testo su una riga propria sotto la trascrizione. Attivo per impostazione predefinita."
+          }
+        }
       }
     },
     "postProcessing": {

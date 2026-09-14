@@ -90,7 +90,41 @@ static MIGRATIONS: &[M] = &[
     // Human label of the transcription engine/model used (e.g. "Whisper Large —
     // local" or "openai/whisper-large-v3 — OpenRouter"), for the history title.
     M::up("ALTER TABLE transcription_history ADD COLUMN model_used TEXT;"),
+    // Unix timestamp at which retention deliberately deleted this row's audio while
+    // keeping the transcript (settings.preserve_transcriptions). NULL means the audio
+    // was never purged on purpose - so a missing file is a genuine fault, not policy.
+    M::up("ALTER TABLE transcription_history ADD COLUMN audio_purged_at INTEGER;"),
+    // Carry-forward rollup ("balance brought forward"): when retention DELETES a
+    // row, its contribution is accrued here first, so lifetime statistics do not
+    // shrink just because old detail was discarded. Reported totals are
+    // `purged_totals + fold(live rows)`.
+    //
+    // Integer units on purpose: f64 sums drift and cannot be merged. Cost is in
+    // NANOdollars because per-take OpenRouter costs are routinely sub-microdollar -
+    // at microdollar resolution thousands of takes round to $0.0000 while the live
+    // rows beside them visibly sum to more.
+    M::up(
+        "CREATE TABLE IF NOT EXISTS purged_totals (
+            key TEXT PRIMARY KEY,
+            takes INTEGER NOT NULL DEFAULT 0,
+            seconds_milli INTEGER NOT NULL DEFAULT 0,
+            cost_nanos INTEGER NOT NULL DEFAULT 0,
+            chars INTEGER NOT NULL DEFAULT 0,
+            first_ts INTEGER,
+            last_ts INTEGER
+        );",
+    ),
 ];
+
+/// Totals carried forward from history rows that retention has deleted, so
+/// lifetime statistics do not shrink when old detail is purged.
+#[derive(Clone, Debug, Default, Serialize, Deserialize, Type)]
+pub struct PurgedTotals {
+    pub takes: i64,
+    pub seconds: f64,
+    pub cost_usd: f64,
+    pub chars: i64,
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize, Type)]
 pub struct HistoryEntry {
@@ -112,6 +146,11 @@ pub struct HistoryEntry {
     /// Human label of the engine/model that produced this transcription.
     #[serde(default)]
     pub model_used: Option<String>,
+    /// Set when retention deliberately deleted this row's audio while keeping the
+    /// transcript. `None` means the audio was never purged on purpose, so a missing
+    /// file is a fault rather than policy - the UI must distinguish the two.
+    #[serde(default)]
+    pub audio_purged_at: Option<i64>,
 }
 
 pub struct HistoryManager {
@@ -553,6 +592,8 @@ impl HistoryManager {
     ) -> Result<()> {
         let conn = self.get_connection()?;
         conn.execute(
+            // audio_purged_at is deliberately NOT set here: a new row's audio exists,
+            // and NULL is what "never purged on purpose" means.
             "INSERT INTO transcription_history (file_name, timestamp, saved, title, transcription_text, post_processed_text, post_process_prompt, cost_usd, duration_seconds, model_used) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
             params![file_name, timestamp, false, title, transcription_text, post_processed_text, post_process_prompt, cost_usd, duration_seconds, model_used],
         )?;
@@ -605,20 +646,109 @@ impl HistoryManager {
         }
     }
 
+    /// Fold one about-to-be-deleted row into the carry-forward totals.
+    ///
+    /// `chars` counts CHARACTERS, not words: `split_whitespace()` is permanently
+    /// wrong for Chinese, Japanese and Korean - all of which Handy ships locales and
+    /// an ASR engine for - and a 600-character Japanese dictation would score 1 word
+    /// forever, with the detail gone and no way to recompute it.
+    fn accrue_purged_row(conn: &rusqlite::Connection, id: i64) -> Result<()> {
+        let (ts, secs, cost, chars): (i64, Option<f64>, Option<f64>, i64) = conn.query_row(
+            "SELECT timestamp, duration_seconds, cost_usd, LENGTH(transcription_text)
+             FROM transcription_history WHERE id = ?1",
+            params![id],
+            |r| {
+                Ok((
+                    r.get(0)?,
+                    r.get(1)?,
+                    r.get(2)?,
+                    r.get::<_, i64>(3).unwrap_or(0),
+                ))
+            },
+        )?;
+
+        let secs_milli = (secs.unwrap_or(0.0) * 1000.0).round().max(0.0) as i64;
+        let cost_nanos = (cost.unwrap_or(0.0) * 1_000_000_000.0).round().max(0.0) as i64;
+
+        conn.execute(
+            "INSERT INTO purged_totals (key, takes, seconds_milli, cost_nanos, chars, first_ts, last_ts)
+             VALUES ('lifetime', 1, ?1, ?2, ?3, ?4, ?4)
+             ON CONFLICT(key) DO UPDATE SET
+               takes         = takes + 1,
+               seconds_milli = seconds_milli + excluded.seconds_milli,
+               cost_nanos    = cost_nanos + excluded.cost_nanos,
+               chars         = chars + excluded.chars,
+               first_ts      = MIN(COALESCE(first_ts, excluded.first_ts), excluded.first_ts),
+               last_ts       = MAX(COALESCE(last_ts, excluded.last_ts), excluded.last_ts)",
+            params![secs_milli, cost_nanos, chars, ts],
+        )?;
+        Ok(())
+    }
+
+    /// Totals carried forward from rows retention has deleted. Added to the live-row
+    /// fold to produce a lifetime figure that does not shrink when history is purged.
+    pub fn get_purged_totals(&self) -> Result<PurgedTotals> {
+        let conn = self.get_connection()?;
+        let t = conn
+            .query_row(
+                "SELECT takes, seconds_milli, cost_nanos, chars FROM purged_totals WHERE key = 'lifetime'",
+                [],
+                |r| {
+                    Ok(PurgedTotals {
+                        takes: r.get(0)?,
+                        seconds: r.get::<_, i64>(1)? as f64 / 1000.0,
+                        cost_usd: r.get::<_, i64>(2)? as f64 / 1_000_000_000.0,
+                        chars: r.get(3)?,
+                    })
+                },
+            )
+            .unwrap_or_default();
+        Ok(t)
+    }
+
+    /// Discard the carried-forward totals. The escape hatch that makes retaining
+    /// any derived data acceptable.
+    pub fn reset_purged_totals(&self) -> Result<()> {
+        let conn = self.get_connection()?;
+        conn.execute("DELETE FROM purged_totals", [])?;
+        Ok(())
+    }
+
     fn delete_entries_and_files(&self, entries: &[(i64, String)]) -> Result<usize> {
         if entries.is_empty() {
             return Ok(0);
         }
 
+        // When the user has asked to keep transcriptions, retention becomes
+        // audio-only: the row survives with `audio_purged_at` stamped, so the
+        // History page can say "audio removed" instead of silently offering a
+        // play button for a file that is gone. Explicit per-entry deletion is a
+        // different path and still removes everything.
+        let preserve = crate::settings::get_preserve_transcriptions(&self.app_handle);
+
         let conn = self.get_connection()?;
         let mut deleted_count = 0;
+        let now = Utc::now().timestamp();
 
         for (id, file_name) in entries {
-            // Delete database entry
-            conn.execute(
-                "DELETE FROM transcription_history WHERE id = ?1",
-                params![id],
-            )?;
+            if preserve {
+                conn.execute(
+                    "UPDATE transcription_history SET audio_purged_at = ?1 WHERE id = ?2",
+                    params![now, id],
+                )?;
+            } else {
+                // Accrue BEFORE the delete, in the same loop that removes the row, so
+                // a row cannot be deleted without being counted. Explicit per-entry
+                // deletion does not come through here: pressing the trash can means
+                // "forget this", and it should leave no residue in the totals.
+                if let Err(e) = Self::accrue_purged_row(&conn, *id) {
+                    error!("Failed to accrue lifetime totals for entry {}: {}", id, e);
+                }
+                conn.execute(
+                    "DELETE FROM transcription_history WHERE id = ?1",
+                    params![id],
+                )?;
+            }
 
             // Only ever delete files Handy created. Never touch user files.
             if !is_handy_recording_file(file_name) {
@@ -651,7 +781,10 @@ impl HistoryManager {
 
         // Get all entries that are not saved, ordered by timestamp desc
         let mut stmt = conn.prepare(
-            "SELECT id, file_name FROM transcription_history WHERE saved = 0 ORDER BY timestamp DESC"
+            // audio_purged_at IS NULL: a row whose audio retention already removed is
+            // not a candidate again. Preserved rows survive, so without this filter
+            // they would be re-selected on every run forever.
+            "SELECT id, file_name FROM transcription_history              WHERE saved = 0 AND audio_purged_at IS NULL ORDER BY timestamp DESC"
         )?;
 
         let rows = stmt.query_map([], |row| {
@@ -692,7 +825,7 @@ impl HistoryManager {
 
         // Get all unsaved entries older than the cutoff timestamp
         let mut stmt = conn.prepare(
-            "SELECT id, file_name FROM transcription_history WHERE saved = 0 AND timestamp < ?1",
+            "SELECT id, file_name FROM transcription_history              WHERE saved = 0 AND audio_purged_at IS NULL AND timestamp < ?1",
         )?;
 
         let rows = stmt.query_map(params![cutoff_timestamp], |row| {
@@ -719,7 +852,7 @@ impl HistoryManager {
     pub async fn get_history_entries(&self) -> Result<Vec<HistoryEntry>> {
         let conn = self.get_connection()?;
         let mut stmt = conn.prepare(
-            "SELECT id, file_name, timestamp, saved, title, transcription_text, post_processed_text, post_process_prompt, cost_usd, duration_seconds, model_used FROM transcription_history ORDER BY timestamp DESC"
+            "SELECT id, file_name, timestamp, saved, title, transcription_text, post_processed_text, post_process_prompt, cost_usd, duration_seconds, model_used, audio_purged_at FROM transcription_history ORDER BY timestamp DESC"
         )?;
 
         let rows = stmt.query_map([], |row| {
@@ -735,6 +868,7 @@ impl HistoryManager {
                 cost_usd: row.get("cost_usd")?,
                 duration_seconds: row.get("duration_seconds")?,
                 model_used: row.get("model_used")?,
+                audio_purged_at: row.get("audio_purged_at")?,
             })
         })?;
 
@@ -794,7 +928,7 @@ impl HistoryManager {
 
     fn get_latest_entry_with_conn(conn: &Connection) -> Result<Option<HistoryEntry>> {
         let mut stmt = conn.prepare(
-            "SELECT id, file_name, timestamp, saved, title, transcription_text, post_processed_text, post_process_prompt, cost_usd, duration_seconds, model_used
+            "SELECT id, file_name, timestamp, saved, title, transcription_text, post_processed_text, post_process_prompt, cost_usd, duration_seconds, model_used, audio_purged_at
              FROM transcription_history
              ORDER BY timestamp DESC
              LIMIT 1",
@@ -814,6 +948,7 @@ impl HistoryManager {
                     cost_usd: row.get("cost_usd")?,
                     duration_seconds: row.get("duration_seconds")?,
                     model_used: row.get("model_used")?,
+                    audio_purged_at: row.get("audio_purged_at")?,
                 })
             })
             .optional()?;
@@ -855,7 +990,7 @@ impl HistoryManager {
     pub async fn get_entry_by_id(&self, id: i64) -> Result<Option<HistoryEntry>> {
         let conn = self.get_connection()?;
         let mut stmt = conn.prepare(
-            "SELECT id, file_name, timestamp, saved, title, transcription_text, post_processed_text, post_process_prompt, cost_usd, duration_seconds, model_used
+            "SELECT id, file_name, timestamp, saved, title, transcription_text, post_processed_text, post_process_prompt, cost_usd, duration_seconds, model_used, audio_purged_at
              FROM transcription_history WHERE id = ?1",
         )?;
 
@@ -873,6 +1008,7 @@ impl HistoryManager {
                     cost_usd: row.get("cost_usd")?,
                     duration_seconds: row.get("duration_seconds")?,
                     model_used: row.get("model_used")?,
+                    audio_purged_at: row.get("audio_purged_at")?,
                 })
             })
             .optional()?;
@@ -946,7 +1082,8 @@ mod tests {
                 post_process_prompt TEXT,
                 cost_usd REAL,
                 duration_seconds REAL,
-                model_used TEXT
+                model_used TEXT,
+                audio_purged_at INTEGER
             );",
         )
         .expect("create transcription_history table");

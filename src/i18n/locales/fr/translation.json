@@ -776,6 +776,34 @@
         "title": "Délai de restauration du presse-papiers pour les bureaux distants",
         "description": "Remplace le délai de restauration lorsque la fenêtre dans laquelle vous dictez est une session de bureau distant. Par défaut : non défini, donc hérite du délai normal ci-dessus. Pourquoi : RDP et Citrix récupèrent les données du presse-papiers à la demande APRÈS l'arrivée de la touche de collage, via un canal plus lent qu'une application locale ; restaurer trop tôt livre donc à l'application distante ce que vous aviez copié avant. 1 s est un bon point de départ. Coût honnête : une restauration plus longue laisse la transcription plus longtemps dans votre presse-papiers, ce qui élargit la fenêtre pendant laquelle l'historique et les gestionnaires de presse-papiers peuvent la capturer. Les fenêtres considérées comme distantes viennent de la liste de la page Jumper. *{Windows only}*",
         "inherit": "Non défini (utiliser le délai ci-dessus)"
+      },
+      "preserveTranscriptions": {
+        "label": "Conserver les transcriptions lors de la suppression des enregistrements",
+        "description": "Le nettoyage supprime uniquement le fichier audio et conserve le texte indéfiniment. Activé par défaut. La limite d'historique plafonne alors le nombre d'enregistrements qui gardent leur audio, pas le nombre de transcriptions."
+      },
+      "affix": {
+        "prefix": {
+          "enable": {
+            "title": "Ajouter du texte avant",
+            "description": "Insère votre texte au début de chaque transcription livrée. L'historique conserve la transcription brute."
+          },
+          "placeholder": "Texte à insérer avant",
+          "newline": {
+            "title": "Saut de ligne après",
+            "description": "Place la transcription sur sa propre ligne sous votre texte. Activé par défaut."
+          }
+        },
+        "suffix": {
+          "enable": {
+            "title": "Ajouter du texte après",
+            "description": "Ajoute votre texte à la fin de chaque transcription livrée. L'historique conserve la transcription brute."
+          },
+          "placeholder": "Texte à ajouter après",
+          "newline": {
+            "title": "Saut de ligne avant",
+            "description": "Place votre texte sur sa propre ligne sous la transcription. Activé par défaut."
+          }
+        }
       }
     },
     "postProcessing": {

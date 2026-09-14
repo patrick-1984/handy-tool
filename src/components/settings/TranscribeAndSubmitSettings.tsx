@@ -9,6 +9,7 @@ import { AnchorActionSetting } from "./AnchorActionSetting";
 import { JumperReturnFocusToggle } from "./JumperReturnFocusToggle";
 import { JumperTrackToggle } from "./JumperTrackToggle";
 import { JumperDelaySetting } from "./JumperDelaySetting";
+import { AffixSettings } from "./AffixSettings";
 import { useSettings } from "../../hooks/useSettings";
 import { useOsType } from "../../hooks/useOsType";
 import type {
@@ -178,6 +179,7 @@ export const TranscribeAndSubmitSettings: React.FC = React.memo(() => {
           reads/writes jumper_track_submit_enabled/_slot only, and never
           affects the General page's "output" flow instance. */}
       <JumperTrackToggle flow="submit" grouped={true} />
+      <AffixSettings flow="submit" grouped={true} />
     </SettingsGroup>
   );
 });

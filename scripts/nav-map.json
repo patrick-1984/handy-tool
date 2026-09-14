@@ -247,7 +247,11 @@
     "titleKey": "modelTesting.judgeParams",
     "descKey": null,
     "type": "slider",
-    "options": ["Auto", "On", "Off"],
+    "options": [
+      "Auto",
+      "On",
+      "Off"
+    ],
     "gating": "none",
     "file": "src/components/settings/model-testing/ModelTestingPage.tsx",
     "notes": "Row label for the judge temperature slider plus an unlabelled thinking dropdown (modelTesting.thinking.auto/on/off). Same literal \"Judge\" as the per-row checkbox above — disambiguate by position."
@@ -281,7 +285,11 @@
     "titleKey": "modelTesting.thinking.label",
     "descKey": null,
     "type": "dropdown",
-    "options": ["Auto", "On", "Off"],
+    "options": [
+      "Auto",
+      "On",
+      "Off"
+    ],
     "gating": "none",
     "file": "src/components/settings/model-testing/ModelTestingPage.tsx"
   },
@@ -922,7 +930,10 @@
     "descKey": "settings.general.shortcut.bindings.jump_set_slot_2.description",
     "type": "shortcut recorder",
     "options": [],
-    "labels": ["Set Jump Slot {{index}}", "Jump to Slot {{index}}"],
+    "labels": [
+      "Set Jump Slot {{index}}",
+      "Jump to Slot {{index}}"
+    ],
     "gating": "windows",
     "file": "src/components/settings/ShortcutInput.tsx",
     "notes": "PARTIALLY UNRESOLVED. Groups 2–9 repeat the same five rows as \"Static slot 1\". i18n keys exist only for slots 1–4 (jump_set_slot_1..4 / jump_slot_1..4). Slots 5–9 have NO translation key and fall back to the backend-generated names \"Set Jump Slot 5\"…\"Set Jump Slot 9\" and \"Jump to Slot 5\"…\"Jump to Slot 9\" (src-tauri/src/settings.rs:2017,2028). Those literals happen to match the English pattern but are not traceable to translation.json."
@@ -976,7 +987,9 @@
     "titleKey": "settings.translator.model.title",
     "descKey": "settings.translator.model.description",
     "type": "dropdown",
-    "options": ["Same as dictation (default)"],
+    "options": [
+      "Same as dictation (default)"
+    ],
     "gating": "none",
     "file": "src/components/settings/translator/TranslatorSettings.tsx",
     "notes": "Only the first option is a literal (value \"\"). The rest are one entry per downloaded model: either the model name or \"{{name}} — can translate to English\" (settings.translator.model.translates, interpolated)."
@@ -1152,7 +1165,10 @@
     "titleKey": "settings.general.cancelBehavior.title",
     "descKey": "settings.general.cancelBehavior.description",
     "type": "dropdown",
-    "options": ["Finish, save to history only", "Discard recording"],
+    "options": [
+      "Finish, save to history only",
+      "Discard recording"
+    ],
     "gating": "none",
     "file": "src/components/settings/CancelBehaviorSetting.tsx",
     "notes": "Values: finish_silently, discard_recording."
@@ -1169,7 +1185,9 @@
     "titleKey": "settings.general.language.title",
     "descKey": "settings.general.language.description",
     "type": "dropdown",
-    "options": ["Auto"],
+    "options": [
+      "Auto"
+    ],
     "gating": "none",
     "file": "src/components/settings/LanguageSelector.tsx",
     "notes": "GROUP TITLE IS INTERPOLATED — settings.modelSettings.title = \"{{model}} Settings\", filled with the active model's display name (e.g. \"Whisper Large V3 Turbo Settings\"), so this group heading is NOT a fixed literal. The whole card only renders when a model is selected and it exposes at least one option. Searchable dropdown: first option \"Auto\" (settings.general.language.auto), then one entry per language the model supports (dynamic, from src/lib/constants/languages.ts)."
@@ -1220,7 +1238,10 @@
     "titleKey": "settings.advanced.transcriptionMode.title",
     "descKey": "settings.advanced.transcriptionMode.description",
     "type": "dropdown",
-    "options": ["Live", "Post-Recording"],
+    "options": [
+      "Live",
+      "Post-Recording"
+    ],
     "gating": "none",
     "file": "src/components/settings/TranscriptionModeSetting.tsx",
     "notes": "Values: live, post_recording."
@@ -1237,7 +1258,10 @@
     "titleKey": "settings.advanced.transcriptionModePtt.title",
     "descKey": "settings.advanced.transcriptionModePtt.description",
     "type": "dropdown",
-    "options": ["Live", "Post-Recording"],
+    "options": [
+      "Live",
+      "Post-Recording"
+    ],
     "gating": "none",
     "file": "src/components/settings/TranscriptionModePttSetting.tsx",
     "notes": "Values: live, post_recording."
@@ -1254,7 +1278,10 @@
     "titleKey": "settings.advanced.gpuDevice.title",
     "descKey": "settings.advanced.gpuDevice.description",
     "type": "dropdown",
-    "options": ["Auto (Default)", "CPU Only"],
+    "options": [
+      "Auto (Default)",
+      "CPU Only"
+    ],
     "gating": "windows",
     "file": "src/components/settings/GpuDeviceSelector.tsx",
     "notes": "Renders ONLY on Windows AND when the selected model's engine is Whisper. Beyond the two literal options, one entry per enumerated adapter, labelled \"{{name}} (device {{index}})\" or \"{{name}} (device {{index}}, {{vram}} GB)\" (interpolated). Values: -1 = Auto, -2 = CPU Only, otherwise the device index."
@@ -1345,7 +1372,10 @@
     "titleKey": "settings.general.pasteLast.clipboard.title",
     "descKey": "settings.general.pasteLast.clipboard.description",
     "type": "dropdown",
-    "options": ["Don't Modify Clipboard", "Copy to Clipboard"],
+    "options": [
+      "Don't Modify Clipboard",
+      "Copy to Clipboard"
+    ],
     "gating": "none",
     "file": "src/components/settings/PasteLastSettings.tsx",
     "notes": "Moved to Advanced > Transcription in 1.4.0, alongside the Transcribe & Submit options."
@@ -1554,7 +1584,9 @@
     "titleKey": "settings.models.filters.allLanguages",
     "descKey": null,
     "type": "dropdown",
-    "options": ["All Languages"],
+    "options": [
+      "All Languages"
+    ],
     "gating": "none",
     "file": "src/components/settings/models/ModelsSettings.tsx",
     "notes": "Language filter button sitting on the \"Downloaded Models\" section header. Its label IS the current selection: \"All Languages\" by default, otherwise the chosen language's name (dynamic). Opens a searchable list (placeholder \"Search languages...\")."
@@ -1605,7 +1637,11 @@
     "titleKey": "settings.advanced.appearance.title",
     "descKey": "settings.advanced.appearance.description",
     "type": "dropdown",
-    "options": ["System", "Light", "Dark"],
+    "options": [
+      "System",
+      "Light",
+      "Dark"
+    ],
     "gating": "none",
     "file": "src/components/settings/AppearanceSetting.tsx",
     "notes": "The Advanced page is tabbed. Tab strip order: App, Transcription, Providers, MCP & CLI, History, Post-processing. Values: system, light, dark."
@@ -1670,7 +1706,11 @@
     "titleKey": "settings.advanced.overlay.title",
     "descKey": "settings.advanced.overlay.description",
     "type": "dropdown",
-    "options": ["None", "Bottom", "Top"],
+    "options": [
+      "None",
+      "Bottom",
+      "Top"
+    ],
     "gating": "none",
     "file": "src/components/settings/ShowOverlay.tsx",
     "notes": "Values: none, bottom, top."
@@ -1687,7 +1727,10 @@
     "titleKey": "settings.debug.keyboardImplementation.title",
     "descKey": "settings.debug.keyboardImplementation.description",
     "type": "dropdown",
-    "options": ["Tauri Global Shortcut", "Handy Keys"],
+    "options": [
+      "Tauri Global Shortcut",
+      "Handy Keys"
+    ],
     "gating": "none",
     "file": "src/components/settings/debug/KeyboardImplementationSelector.tsx",
     "notes": "Option labels are HARDCODED English literals in the component (KEYBOARD_IMPLEMENTATION_OPTIONS), not i18n keys. Values: tauri, handy_keys."
@@ -1774,7 +1817,10 @@
     "titleKey": "settings.advanced.clipboardHandling.title",
     "descKey": "settings.advanced.clipboardHandling.description",
     "type": "dropdown",
-    "options": ["Don't Modify Clipboard", "Copy to Clipboard"],
+    "options": [
+      "Don't Modify Clipboard",
+      "Copy to Clipboard"
+    ],
     "gating": "none",
     "file": "src/components/settings/ClipboardHandling.tsx",
     "notes": "Values: dont_modify, copy_to_clipboard."
@@ -1791,7 +1837,12 @@
     "titleKey": "settings.advanced.autoSubmit.title",
     "descKey": "settings.advanced.autoSubmit.description",
     "type": "dropdown",
-    "options": ["Off", "Enter", "Ctrl+Enter", "Super+Enter"],
+    "options": [
+      "Off",
+      "Enter",
+      "Ctrl+Enter",
+      "Super+Enter"
+    ],
     "gating": "none",
     "file": "src/components/settings/AutoSubmit.tsx",
     "notes": "Values: off, enter, ctrl_enter, cmd_enter. The last label is OS-dependent: \"Cmd+Enter\" on macOS, \"Super+Enter\" on Windows/Linux."
@@ -2020,7 +2071,11 @@
     "titleKey": "settings.general.transcribeAndSubmit.submitKey.title",
     "descKey": "settings.general.transcribeAndSubmit.submitKey.description",
     "type": "dropdown",
-    "options": ["Enter", "Ctrl+Enter", "Super+Enter"],
+    "options": [
+      "Enter",
+      "Ctrl+Enter",
+      "Super+Enter"
+    ],
     "gating": "none",
     "file": "src/components/settings/TranscribeAndSubmitSettings.tsx",
     "notes": "Values: enter, ctrl_enter, cmd_enter. Last label is \"Cmd+Enter\" on macOS."
@@ -2037,7 +2092,10 @@
     "titleKey": "settings.general.transcribeAndSubmit.idleBehavior.title",
     "descKey": "settings.general.transcribeAndSubmit.idleBehavior.description",
     "type": "dropdown",
-    "options": ["Start a recording", "Do nothing"],
+    "options": [
+      "Start a recording",
+      "Do nothing"
+    ],
     "gating": "none",
     "file": "src/components/settings/TranscribeAndSubmitSettings.tsx",
     "notes": "Values: start_normal, do_nothing."
@@ -2054,7 +2112,10 @@
     "titleKey": "settings.general.transcribeAndSubmit.clipboard.title",
     "descKey": "settings.general.transcribeAndSubmit.clipboard.description",
     "type": "dropdown",
-    "options": ["Don't Modify Clipboard", "Copy to Clipboard"],
+    "options": [
+      "Don't Modify Clipboard",
+      "Copy to Clipboard"
+    ],
     "gating": "none",
     "file": "src/components/settings/TranscribeAndSubmitSettings.tsx"
   },
@@ -2397,7 +2458,10 @@
     "titleKey": "settings.advanced.openRouterTranscription.format.title",
     "descKey": "settings.advanced.openRouterTranscription.format.description",
     "type": "dropdown",
-    "options": ["Opus — smaller (recommended)", "WAV — most compatible"],
+    "options": [
+      "Opus — smaller (recommended)",
+      "WAV — most compatible"
+    ],
     "gating": "none",
     "file": "src/components/settings/OpenRouterTranscriptionSettings.tsx",
     "notes": "Values: opus, wav."
@@ -2842,7 +2906,13 @@
     "titleKey": "settings.debug.logLevel.title",
     "descKey": "settings.debug.logLevel.description",
     "type": "dropdown",
-    "options": ["Error", "Warn", "Info", "Debug", "Trace"],
+    "options": [
+      "Error",
+      "Warn",
+      "Info",
+      "Debug",
+      "Trace"
+    ],
     "gating": "debug",
     "file": "src/components/settings/debug/LogLevelSelector.tsx",
     "notes": "The whole PAGE only appears in the sidebar when debug_mode is true (Ctrl+Shift+D / Cmd+Shift+D). Option labels are HARDCODED English literals (LOG_LEVEL_OPTIONS), not i18n keys. Values: error, warn, info, debug, trace."
@@ -2859,7 +2929,11 @@
     "titleKey": "settings.debug.soundTheme.label",
     "descKey": "settings.debug.soundTheme.description",
     "type": "dropdown",
-    "options": ["Marimba", "Pop", "Custom"],
+    "options": [
+      "Marimba",
+      "Pop",
+      "Custom"
+    ],
     "gating": "debug",
     "file": "src/components/settings/SoundPicker.tsx",
     "notes": "Title/description are passed in as props by DebugSettings.tsx (SoundPicker itself takes literal strings). Option labels are HARDCODED literals; \"Custom\" only appears when both custom sound files exist. A play button preview sits beside it (hardcoded tooltip \"Preview sound theme (plays start then stop)\"). Values: marimba, pop, custom."
@@ -3083,5 +3157,226 @@
     "gating": "none",
     "file": "src/components/settings/about/AboutSettings.tsx",
     "notes": "Read-only text row; body is settings.about.acknowledgments.whisper.details."
+  },
+  {
+    "page": "Advanced",
+    "pageKey": "sidebar.advanced",
+    "sidebarGroup": "Configuration",
+    "tab": "History",
+    "tabKey": "settings.advanced.tabs.history",
+    "group": "History",
+    "groupKey": "settings.advanced.groups.history",
+    "control": "Keep transcriptions when recordings are removed",
+    "titleKey": "settings.advanced.preserveTranscriptions.label",
+    "descKey": "settings.advanced.preserveTranscriptions.description",
+    "type": "toggle",
+    "options": [],
+    "gating": "none",
+    "file": "src/components/settings/PreserveTranscriptions.tsx",
+    "notes": "On by default, including for existing installs. Retention then deletes only the audio; the history limit caps how many recordings keep their audio, not how many transcriptions are kept."
+  },
+  {
+    "page": "Advanced",
+    "pageKey": "sidebar.advanced",
+    "sidebarGroup": "Configuration",
+    "tab": "Transcription",
+    "tabKey": "settings.advanced.tabs.transcription",
+    "group": "Transcribe",
+    "groupKey": "settings.general.transcribeGroup.title",
+    "control": "Add text before",
+    "titleKey": "settings.advanced.affix.prefix.enable.title",
+    "descKey": "settings.advanced.affix.prefix.enable.description",
+    "type": "toggle",
+    "options": [],
+    "gating": "none",
+    "file": "src/components/settings/AffixSettings.tsx",
+    "notes": "Rendered once per flow; the two flows store independent values."
+  },
+  {
+    "page": "Advanced",
+    "pageKey": "sidebar.advanced",
+    "sidebarGroup": "Configuration",
+    "tab": "Transcription",
+    "tabKey": "settings.advanced.tabs.transcription",
+    "group": "Transcribe",
+    "groupKey": "settings.general.transcribeGroup.title",
+    "control": "Text to insert before",
+    "titleKey": "settings.advanced.affix.prefix.placeholder",
+    "descKey": "settings.advanced.affix.prefix.enable.description",
+    "type": "text input",
+    "options": [],
+    "gating": "none",
+    "file": "src/components/settings/AffixSettings.tsx",
+    "notes": "Only rendered while the matching toggle is on."
+  },
+  {
+    "page": "Advanced",
+    "pageKey": "sidebar.advanced",
+    "sidebarGroup": "Configuration",
+    "tab": "Transcription",
+    "tabKey": "settings.advanced.tabs.transcription",
+    "group": "Transcribe",
+    "groupKey": "settings.general.transcribeGroup.title",
+    "control": "New line after it",
+    "titleKey": "settings.advanced.affix.prefix.newline.title",
+    "descKey": "settings.advanced.affix.prefix.newline.description",
+    "type": "toggle",
+    "options": [],
+    "gating": "none",
+    "file": "src/components/settings/AffixSettings.tsx",
+    "notes": "Default on."
+  },
+  {
+    "page": "Advanced",
+    "pageKey": "sidebar.advanced",
+    "sidebarGroup": "Configuration",
+    "tab": "Transcription",
+    "tabKey": "settings.advanced.tabs.transcription",
+    "group": "Transcribe",
+    "groupKey": "settings.general.transcribeGroup.title",
+    "control": "Add text after",
+    "titleKey": "settings.advanced.affix.suffix.enable.title",
+    "descKey": "settings.advanced.affix.suffix.enable.description",
+    "type": "toggle",
+    "options": [],
+    "gating": "none",
+    "file": "src/components/settings/AffixSettings.tsx",
+    "notes": "Rendered once per flow; the two flows store independent values."
+  },
+  {
+    "page": "Advanced",
+    "pageKey": "sidebar.advanced",
+    "sidebarGroup": "Configuration",
+    "tab": "Transcription",
+    "tabKey": "settings.advanced.tabs.transcription",
+    "group": "Transcribe",
+    "groupKey": "settings.general.transcribeGroup.title",
+    "control": "Text to append after",
+    "titleKey": "settings.advanced.affix.suffix.placeholder",
+    "descKey": "settings.advanced.affix.suffix.enable.description",
+    "type": "text input",
+    "options": [],
+    "gating": "none",
+    "file": "src/components/settings/AffixSettings.tsx",
+    "notes": "Only rendered while the matching toggle is on."
+  },
+  {
+    "page": "Advanced",
+    "pageKey": "sidebar.advanced",
+    "sidebarGroup": "Configuration",
+    "tab": "Transcription",
+    "tabKey": "settings.advanced.tabs.transcription",
+    "group": "Transcribe",
+    "groupKey": "settings.general.transcribeGroup.title",
+    "control": "New line before it",
+    "titleKey": "settings.advanced.affix.suffix.newline.title",
+    "descKey": "settings.advanced.affix.suffix.newline.description",
+    "type": "toggle",
+    "options": [],
+    "gating": "none",
+    "file": "src/components/settings/AffixSettings.tsx",
+    "notes": "Default on."
+  },
+  {
+    "page": "Advanced",
+    "pageKey": "sidebar.advanced",
+    "sidebarGroup": "Configuration",
+    "tab": "Transcription",
+    "tabKey": "settings.advanced.tabs.transcription",
+    "group": "Transcribe & Submit",
+    "groupKey": "settings.general.transcribeAndSubmit.title",
+    "control": "Add text before",
+    "titleKey": "settings.advanced.affix.prefix.enable.title",
+    "descKey": "settings.advanced.affix.prefix.enable.description",
+    "type": "toggle",
+    "options": [],
+    "gating": "none",
+    "file": "src/components/settings/AffixSettings.tsx",
+    "notes": "Rendered once per flow; the two flows store independent values."
+  },
+  {
+    "page": "Advanced",
+    "pageKey": "sidebar.advanced",
+    "sidebarGroup": "Configuration",
+    "tab": "Transcription",
+    "tabKey": "settings.advanced.tabs.transcription",
+    "group": "Transcribe & Submit",
+    "groupKey": "settings.general.transcribeAndSubmit.title",
+    "control": "Text to insert before",
+    "titleKey": "settings.advanced.affix.prefix.placeholder",
+    "descKey": "settings.advanced.affix.prefix.enable.description",
+    "type": "text input",
+    "options": [],
+    "gating": "none",
+    "file": "src/components/settings/AffixSettings.tsx",
+    "notes": "Only rendered while the matching toggle is on."
+  },
+  {
+    "page": "Advanced",
+    "pageKey": "sidebar.advanced",
+    "sidebarGroup": "Configuration",
+    "tab": "Transcription",
+    "tabKey": "settings.advanced.tabs.transcription",
+    "group": "Transcribe & Submit",
+    "groupKey": "settings.general.transcribeAndSubmit.title",
+    "control": "New line after it",
+    "titleKey": "settings.advanced.affix.prefix.newline.title",
+    "descKey": "settings.advanced.affix.prefix.newline.description",
+    "type": "toggle",
+    "options": [],
+    "gating": "none",
+    "file": "src/components/settings/AffixSettings.tsx",
+    "notes": "Default on."
+  },
+  {
+    "page": "Advanced",
+    "pageKey": "sidebar.advanced",
+    "sidebarGroup": "Configuration",
+    "tab": "Transcription",
+    "tabKey": "settings.advanced.tabs.transcription",
+    "group": "Transcribe & Submit",
+    "groupKey": "settings.general.transcribeAndSubmit.title",
+    "control": "Add text after",
+    "titleKey": "settings.advanced.affix.suffix.enable.title",
+    "descKey": "settings.advanced.affix.suffix.enable.description",
+    "type": "toggle",
+    "options": [],
+    "gating": "none",
+    "file": "src/components/settings/AffixSettings.tsx",
+    "notes": "Rendered once per flow; the two flows store independent values."
+  },
+  {
+    "page": "Advanced",
+    "pageKey": "sidebar.advanced",
+    "sidebarGroup": "Configuration",
+    "tab": "Transcription",
+    "tabKey": "settings.advanced.tabs.transcription",
+    "group": "Transcribe & Submit",
+    "groupKey": "settings.general.transcribeAndSubmit.title",
+    "control": "Text to append after",
+    "titleKey": "settings.advanced.affix.suffix.placeholder",
+    "descKey": "settings.advanced.affix.suffix.enable.description",
+    "type": "text input",
+    "options": [],
+    "gating": "none",
+    "file": "src/components/settings/AffixSettings.tsx",
+    "notes": "Only rendered while the matching toggle is on."
+  },
+  {
+    "page": "Advanced",
+    "pageKey": "sidebar.advanced",
+    "sidebarGroup": "Configuration",
+    "tab": "Transcription",
+    "tabKey": "settings.advanced.tabs.transcription",
+    "group": "Transcribe & Submit",
+    "groupKey": "settings.general.transcribeAndSubmit.title",
+    "control": "New line before it",
+    "titleKey": "settings.advanced.affix.suffix.newline.title",
+    "descKey": "settings.advanced.affix.suffix.newline.description",
+    "type": "toggle",
+    "options": [],
+    "gating": "none",
+    "file": "src/components/settings/AffixSettings.tsx",
+    "notes": "Default on."
   }
 ]
