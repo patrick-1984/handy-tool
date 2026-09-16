@@ -240,6 +240,14 @@ const settingUpdaters: {
     commands.changeAppendTrailingSpaceSetting(value as boolean),
   preserve_transcriptions: (value) =>
     commands.changePreserveTranscriptionsSetting(value as boolean),
+  capture_source: (value) =>
+    commands.changeCaptureSourceSetting(value as string),
+  system_audio_device: (value) =>
+    commands.changeSystemAudioDeviceSetting(
+      value === null || value === "default" ? "default" : (value as string),
+    ),
+  system_audio_gain: (value) =>
+    commands.changeSystemAudioGainSetting(value as number),
   output_prefix_enabled: (value) =>
     commands.changeOutputPrefixEnabledSetting(value as boolean),
   output_prefix_text: (value) =>

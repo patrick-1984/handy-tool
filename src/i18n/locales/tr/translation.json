@@ -804,6 +804,20 @@
             "description": "Metninizi transkripsiyonun altında kendi satırına yerleştirir. Varsayılan olarak açık."
           }
         }
+      },
+      "captureSource": {
+        "title": "Ses kaynağı",
+        "description": "Kaydın neyi yakalayacağı: mikrofonunuz, bilgisayarınızın çaldığı ses veya ikisinin karışımı. Sistem sesini kaydetmek, görüşmedeki diğer kişilerin de yazıya dökülmesini sağlar. Yalnızca Windows.",
+        "options": {
+          "microphone": "Mikrofon",
+          "systemAudio": "Sistem sesi",
+          "both": "Mikrofon + sistem sesi"
+        }
+      },
+      "systemAudioDevice": {
+        "title": "Yakalanacak oynatma aygıtı",
+        "description": "Hangi hoparlör veya kulaklıktan kaydedileceği. Genellikle sistem varsayılanını izlemek doğrudur ve Windows bir görüşme için aygıt değiştirdiğinde de çalışmaya devam eder.",
+        "followDefault": "Sistem varsayılanını izle"
       }
     },
     "postProcessing": {

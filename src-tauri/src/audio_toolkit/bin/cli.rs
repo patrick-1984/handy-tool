@@ -105,7 +105,7 @@ impl RecorderState {
                     if self.is_open {
                         self.recorder.close()?;
                     }
-                    self.recorder.open(device)?;
+                    self.recorder.open(device, EndpointRole::Capture)?;
                     self.is_open = true;
                     self.current_device_index = device_index;
                     println!("Opened recorder in Always-On mode");
@@ -117,7 +117,7 @@ impl RecorderState {
                 if self.is_open {
                     self.recorder.close()?;
                 }
-                self.recorder.open(device)?;
+                self.recorder.open(device, EndpointRole::Capture)?;
                 self.is_open = true;
                 self.current_device_index = device_index;
                 self.recorder.start()?;

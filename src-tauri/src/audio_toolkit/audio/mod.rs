@@ -2,6 +2,7 @@
 mod decode;
 mod device;
 mod incremental_wav;
+pub mod mixer;
 mod opus_chunk;
 mod recorder;
 mod resampler;
@@ -9,7 +10,12 @@ mod utils;
 mod visualizer;
 
 pub use decode::{SUPPORTED_EXTENSIONS, decode_audio_file};
-pub use device::{CpalDeviceInfo, list_input_devices, list_output_devices};
+pub use device::{
+    CaptureSourceError, CpalDeviceInfo, list_input_devices, list_output_devices,
+    resolve_system_audio_device,
+};
+pub use mixer::{Downmix, DriftStats, SlaveRing, mix_into, mix_sample, soft_clip};
+pub use recorder::EndpointRole;
 // `repair_wav_header` is retained for recovering legacy `*.recording.wav` files
 // from before the chunked-Opus migration. `IncrementalWavWriter` is no longer
 // used by the recorder but kept for that one-release migration window.

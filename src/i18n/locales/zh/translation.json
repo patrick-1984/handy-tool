@@ -804,6 +804,20 @@
             "description": "将你的文本放在转录下方单独一行。默认开启。"
           }
         }
+      },
+      "captureSource": {
+        "title": "声音来源",
+        "description": "录音捕获的内容：麦克风、电脑正在播放的声音，或两者混合。录制系统声音可以让 Handy 转录通话中其他人的发言。仅限 Windows。",
+        "options": {
+          "microphone": "麦克风",
+          "systemAudio": "系统声音",
+          "both": "麦克风 + 系统声音"
+        }
+      },
+      "systemAudioDevice": {
+        "title": "要捕获的播放设备",
+        "description": "从哪个扬声器或耳机录制。通常跟随系统默认设备即可，并且在 Windows 为通话切换设备时仍然有效。",
+        "followDefault": "跟随系统默认"
       }
     },
     "postProcessing": {

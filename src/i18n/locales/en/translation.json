@@ -942,6 +942,20 @@
             "description": "Put your text on its own line below the transcription. On by default."
           }
         }
+      },
+      "captureSource": {
+        "title": "Sound source",
+        "description": "What a recording captures: your microphone, the sound your computer is playing, or both mixed together. Recording system audio lets Handy transcribe the other people on a call. Windows only.",
+        "options": {
+          "microphone": "Microphone",
+          "systemAudio": "System audio",
+          "both": "Microphone + system audio"
+        }
+      },
+      "systemAudioDevice": {
+        "title": "Playback device to capture",
+        "description": "Which speakers or headphones to record from. Following the system default is usually right, and it keeps working when Windows switches devices for a call.",
+        "followDefault": "Follow system default"
       }
     },
     "postProcessing": {

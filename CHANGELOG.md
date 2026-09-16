@@ -1,5 +1,56 @@
 # Changelog
 
+## [1.6.0] - 2026-09-16
+
+### Added
+
+- **Record what your computer is playing, not just your microphone.** A new _Sound source_ setting
+  at `Advanced > Transcription` offers three choices: **Microphone** (unchanged, the default),
+  **System audio**, or **Microphone + system audio** mixed into one transcription.
+
+  The second one is the point: on a call, the other participants' voices come out of your speakers,
+  and until now Handy could not hear them. It can now transcribe both sides of a conversation.
+
+  **Windows only.** This uses WASAPI loopback, which cpal provides for any playback endpoint opened
+  as an input. macOS needs Core Audio process taps and Linux needs a PipeWire monitor source;
+  neither is available through the audio library this version uses, so the control is hidden there
+  rather than offered and then silently recording nothing.
+
+  A device picker appears once a system-audio mode is selected. Leaving it on _Follow system
+  default_ is usually right, and it keeps working when Windows switches your playback device at the
+  start of a call — which is exactly when a pinned device would go quiet.
+
+### Fixed
+
+- **`update_mode` could hang the app.** The microphone-mode mutex is not reentrant, and its guard
+  was released on only one of three paths. Switching from always-on to on-demand _while recording_,
+  or any call that left the mode unchanged, deadlocked the calling thread.
+
+- **Always-on recording never noticed a broken audio stream.** The fault check added in 1.5.0 lives
+  in the on-demand open path, which always-on mode does not use. After a device was unplugged or a
+  driver reset, every subsequent take recorded silence while the interface showed it recording
+  normally. The stream is now re-validated before each take in both modes.
+
+- **An audio stream that failed to start was indistinguishable from a healthy one.** The existing
+  fault flag is set by the stream's error callback, which cannot fire if no stream was ever built —
+  so a failed open left the recorder marked healthy forever. Arm failures are now tracked
+  separately.
+
+- **Config negotiation could kill the app silently.** It ran inside a worker thread under
+  `panic = "abort"`, so any failure terminated the process with nothing in the log. A playback
+  endpoint triggers it immediately, since it advertises no input configurations at all.
+
+- **The updater manifest generator could publish the wrong binary.** It defaulted to a build
+  directory this project does not use, and never checked that the installer it was given matched
+  the version being released. Because signatures cover file _bytes_ rather than names, a stale
+  installer would have shipped under a valid signature — every client "updating" to an older build
+  and then being offered the same update forever. It now resolves the real directory and refuses a
+  version mismatch.
+
+- **The test suite reported failure on a green run.** The doctest phase runs `rustdoc`, which Smart
+  App Control blocks on some machines; this crate has no doctests, so that phase could only ever
+  produce a false failure that hid a passing unit-test run.
+
 ## [1.5.0] - 2026-09-14
 
 ### Added

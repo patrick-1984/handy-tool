@@ -961,6 +961,26 @@ pub struct AppSettings {
     /// `default_history_limit()` is 5, so the pre-existing default is aggressive.
     #[serde(default = "default_preserve_transcriptions")]
     pub preserve_transcriptions: bool,
+
+    /// Which sound source a take records. See [`CaptureSource`].
+    #[serde(default)]
+    pub capture_source: CaptureSource,
+    /// Friendly name of the playback endpoint captured by loopback. `None` = follow
+    /// the CURRENT default playback device, re-resolved per take - which is what
+    /// makes a Bluetooth A2DP<->HFP switch survivable, because Windows moves the
+    /// default endpoint when a call starts.
+    ///
+    /// Deliberately NOT `selected_output_device`: that field only chooses where
+    /// Handy's own cue sounds play, and the two are routinely different endpoints.
+    /// Sharing it would make changing the cue output silently change what is recorded.
+    #[serde(default)]
+    pub system_audio_device: Option<String>,
+    /// Gain applied to the system-audio leg before mixing, as a linear multiplier.
+    /// Loopback is post-volume digital audio and a microphone is quiet and analogue,
+    /// so the two can legitimately sit 25 dB apart with nothing readable predicting
+    /// which way.
+    #[serde(default = "default_system_audio_gain")]
+    pub system_audio_gain: f32,
     /// Custom text wrapped around a delivered transcription. Independent per flow
     /// (plain Transcribe vs Transcribe & Submit), because a chat-submit signature
     /// is rarely what you want on ordinary dictation - mirroring how the repo
@@ -1552,6 +1572,10 @@ fn default_preserve_transcriptions() -> bool {
     true
 }
 
+fn default_system_audio_gain() -> f32 {
+    1.0
+}
+
 fn default_affix_newline() -> bool {
     true
 }
@@ -2138,6 +2162,32 @@ pub fn apply_affixes(text: &str, spec: &AffixSpec<'_>) -> String {
 }
 
 impl AppSettings {
+    /// The capture source that will actually be used.
+    ///
+    /// Non-Windows builds are pinned to `Microphone` regardless of what is stored:
+    /// loopback needs cpal's WASAPI host, so honouring a stored `SystemAudio` on a
+    /// Mac would produce a take that records nothing at all. This single chokepoint
+    /// is what makes a Windows `settings_store.json` harmless elsewhere, and it is
+    /// pure, so it is unit-testable without an AppHandle.
+    pub fn effective_capture_source(&self) -> CaptureSource {
+        if cfg!(target_os = "windows") {
+            self.capture_source
+        } else {
+            CaptureSource::Microphone
+        }
+    }
+
+    /// Whether the output endpoint should be muted while recording.
+    ///
+    /// `mute_while_recording` mutes the DEFAULT render endpoint, which is the very
+    /// thing loopback captures - so with a system-audio source the two settings are
+    /// mutually exclusive and honouring the mute would record pure silence. This is
+    /// the layer that survives a hand-edited store or a `backup.rs` restore, neither
+    /// of which goes through a command.
+    pub fn should_mute_output(&self) -> bool {
+        self.mute_while_recording && self.effective_capture_source() == CaptureSource::Microphone
+    }
+
     /// Affixes for the flow that is delivering: the Transcribe & Submit flow when
     /// `submit` is true, otherwise plain Transcribe.
     pub fn affixes_for(&self, submit: bool) -> AffixSpec<'_> {
@@ -2161,6 +2211,28 @@ impl AppSettings {
             }
         }
     }
+}
+
+/// Which sound source a take records.
+///
+/// PERMANENT VOCABULARY: an unknown enum string aborts the whole `AppSettings`
+/// parse, and both load paths then write defaults over `settings_store.json` -
+/// wiping bindings, LLM API keys and the MCP token. So once a variant ships it can
+/// never be renamed or removed. See the note at the `ClipboardRestoreDelay`
+/// declaration for the full reasoning.
+///
+/// Beyond `Microphone` this is Windows-only: cpal's WASAPI host gives loopback for
+/// free on any render endpoint opened as an input, while its CoreAudio host has no
+/// tap and its ALSA host cannot reach a PipeWire monitor. `effective_capture_source`
+/// pins non-Windows builds to `Microphone` so a settings file copied from Windows
+/// cannot produce a silently dead take elsewhere.
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum CaptureSource {
+    #[default]
+    Microphone,
+    SystemAudio,
+    MicrophoneAndSystemAudio,
 }
 
 pub const SETTINGS_STORE_PATH: &str = "settings_store.json";
@@ -2382,6 +2454,9 @@ pub fn get_default_settings() -> AppSettings {
         history_limit: default_history_limit(),
         recording_retention_period: default_recording_retention_period(),
         preserve_transcriptions: default_preserve_transcriptions(),
+        capture_source: CaptureSource::default(),
+        system_audio_device: None,
+        system_audio_gain: default_system_audio_gain(),
         output_prefix_enabled: false,
         output_prefix_text: String::new(),
         output_prefix_newline: default_affix_newline(),
@@ -2897,6 +2972,80 @@ mod tests {
         // The newline toggles default ON, per the requested behaviour.
         assert!(d.output_prefix_newline && d.output_suffix_newline);
         assert!(d.submit_prefix_newline && d.submit_suffix_newline);
+    }
+
+    #[test]
+    fn capture_source_defaults_to_microphone_and_round_trips() {
+        assert_eq!(CaptureSource::default(), CaptureSource::Microphone);
+        assert_eq!(
+            get_default_settings().capture_source,
+            CaptureSource::Microphone
+        );
+        // These three wire strings are PERMANENT: the Tauri command and the TS
+        // dropdown parse against them, and an unknown value aborts the whole
+        // AppSettings parse, which makes both load paths overwrite the store.
+        for (v, want) in [
+            ("microphone", CaptureSource::Microphone),
+            ("system_audio", CaptureSource::SystemAudio),
+            (
+                "microphone_and_system_audio",
+                CaptureSource::MicrophoneAndSystemAudio,
+            ),
+        ] {
+            let got: CaptureSource =
+                serde_json::from_str(&format!("\"{v}\"")).expect("variant must parse");
+            assert_eq!(got, want, "wire string {v}");
+        }
+    }
+
+    #[test]
+    fn a_pre_1_6_0_store_upgrades_to_microphone() {
+        let mut v = serde_json::to_value(get_default_settings()).unwrap();
+        for k in ["capture_source", "system_audio_device", "system_audio_gain"] {
+            v.as_object_mut().unwrap().remove(k);
+        }
+        let parsed: AppSettings = serde_json::from_value(v).expect("old store must still parse");
+        assert_eq!(parsed.capture_source, CaptureSource::Microphone);
+        assert_eq!(parsed.system_audio_device, None);
+        assert_eq!(parsed.system_audio_gain, 1.0);
+    }
+
+    #[test]
+    fn should_mute_output_truth_table() {
+        let mut s = get_default_settings();
+        for (mute, source, want) in [
+            (false, CaptureSource::Microphone, false),
+            (true, CaptureSource::Microphone, true),
+            // Muting the output endpoint is exactly what loopback captures, so with
+            // any system-audio source the mute must be suppressed or the recording
+            // is pure silence.
+            (true, CaptureSource::SystemAudio, false),
+            (true, CaptureSource::MicrophoneAndSystemAudio, false),
+            (false, CaptureSource::SystemAudio, false),
+        ] {
+            s.mute_while_recording = mute;
+            s.capture_source = source;
+            assert_eq!(
+                s.should_mute_output(),
+                want,
+                "mute={mute} source={source:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn effective_capture_source_is_microphone_off_windows() {
+        let mut s = get_default_settings();
+        s.capture_source = CaptureSource::MicrophoneAndSystemAudio;
+        if cfg!(target_os = "windows") {
+            assert_eq!(
+                s.effective_capture_source(),
+                CaptureSource::MicrophoneAndSystemAudio
+            );
+        } else {
+            // A settings file copied from Windows must not produce a dead take here.
+            assert_eq!(s.effective_capture_source(), CaptureSource::Microphone);
+        }
     }
 
     #[test]

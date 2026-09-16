@@ -1,8 +1,9 @@
 use crate::audio_toolkit::{
-    AudioRecorder, ClosedChunk, SileroVad, StartParams, list_input_devices, vad::SmoothedVad,
+    AudioRecorder, ClosedChunk, EndpointRole, SileroVad, StartParams, list_input_devices,
+    resolve_system_audio_device, vad::SmoothedVad,
 };
 use crate::helpers::clamshell;
-use crate::settings::{AppSettings, get_settings};
+use crate::settings::{AppSettings, CaptureSource, get_settings};
 use crate::utils;
 use log::{debug, error, info, warn};
 use std::sync::{Arc, Mutex};
@@ -219,7 +220,13 @@ impl AudioRecordingManager {
         let settings = get_settings(&self.app_handle);
         let mut did_mute_guard = self.did_mute.lock().unwrap();
 
-        if settings.mute_while_recording && *self.is_open.lock().unwrap() {
+        // should_mute_output(), not the raw flag: muting the default render endpoint
+        // is exactly what a system-audio capture is listening to, so honouring the
+        // mute there records pure silence. Enforcing it HERE (rather than only in the
+        // UI or the setter) is what survives a hand-edited settings_store.json and a
+        // backup.rs restore of a pre-1.6.0 store, neither of which goes through a
+        // command.
+        if settings.should_mute_output() && *self.is_open.lock().unwrap() {
             set_mute(true);
             *did_mute_guard = true;
             debug!("Mute applied");
@@ -290,9 +297,32 @@ impl AudioRecordingManager {
         let settings = get_settings(&self.app_handle);
         let selected_device = self.get_effective_microphone_device(&settings);
 
+        let source = settings.effective_capture_source();
+
         if let Some(rec) = recorder_opt.as_mut() {
-            rec.open(selected_device)
-                .map_err(|e| anyhow::anyhow!("Failed to open recorder: {}", e))?;
+            rec.set_system_audio_gain(settings.system_audio_gain);
+            // Mixed: arm the SLAVE first. The consumer thread captures the ring at
+            // spawn time inside the master's open(), so arming the slave afterwards
+            // would leave the consumer holding None and silently mixing nothing.
+            if source == CaptureSource::MicrophoneAndSystemAudio {
+                let dev = resolve_system_audio_device(settings.system_audio_device.as_deref())
+                    .map_err(|e| anyhow::anyhow!("{e}"))?;
+                rec.open_system_audio(dev)
+                    .map_err(|e| anyhow::anyhow!("Failed to open system audio: {}", e))?;
+            }
+
+            // The microphone leg is opened for every source except SystemAudio-only.
+            if source != CaptureSource::SystemAudio {
+                rec.open(selected_device, EndpointRole::Capture)
+                    .map_err(|e| anyhow::anyhow!("Failed to open recorder: {}", e))?;
+            } else {
+                // System-audio ONLY: the loopback endpoint is the master clock, so it
+                // is opened through the ordinary path and drives the pipeline itself.
+                let dev = resolve_system_audio_device(settings.system_audio_device.as_deref())
+                    .map_err(|e| anyhow::anyhow!("{e}"))?;
+                rec.open(Some(dev), EndpointRole::RenderLoopback)
+                    .map_err(|e| anyhow::anyhow!("Failed to open system audio: {}", e))?;
+            }
         }
 
         *open_flag = true;
@@ -331,18 +361,22 @@ impl AudioRecordingManager {
     /* ---------- mode switching --------------------------------------------- */
 
     pub fn update_mode(&self, new_mode: MicrophoneMode) -> Result<(), anyhow::Error> {
-        let mode_guard = self.mode.lock().unwrap();
-        let cur_mode = mode_guard.clone();
+        // `self.mode` is a std::sync::Mutex, which is NOT reentrant: relocking it on
+        // this thread deadlocks. Read the current mode and release the guard in one
+        // scope, so every path below reaches the final write with nothing held.
+        // Previously the guard was dropped only inside the AlwaysOn->OnDemand `if`,
+        // so an AlwaysOn->OnDemand switch while RECORDING deadlocked, and so did the
+        // `_ => {}` arm (any no-op or same-mode call).
+        let cur_mode = { self.mode.lock().unwrap().clone() };
 
         match (cur_mode, &new_mode) {
             (MicrophoneMode::AlwaysOn, MicrophoneMode::OnDemand) => {
-                if matches!(*self.state.lock().unwrap(), RecordingState::Idle) {
-                    drop(mode_guard);
+                let idle = matches!(*self.state.lock().unwrap(), RecordingState::Idle);
+                if idle {
                     self.stop_microphone_stream();
                 }
             }
             (MicrophoneMode::OnDemand, MicrophoneMode::AlwaysOn) => {
-                drop(mode_guard);
                 self.start_microphone_stream()?;
             }
             _ => {}
@@ -381,8 +415,27 @@ impl AudioRecordingManager {
         let mut state = self.state.lock().unwrap();
 
         if let RecordingState::Idle = *state {
-            // Ensure microphone is open in on-demand mode
-            if matches!(*self.mode.lock().unwrap(), MicrophoneMode::OnDemand) {
+            // Ensure microphone is open in on-demand mode.
+            //
+            // ALWAYS-ON also has to be checked here. Its stream is opened once at
+            // startup and never reopened, so a stream that faulted since then (device
+            // unplugged, driver reset, endpoint invalidated) was reused for every
+            // later take - recording silence while the overlay said "recording". The
+            // fault check lives in start_microphone_stream, which always-on never
+            // called; calling it here is a no-op when the stream is healthy and a
+            // reopen when it is not.
+            let on_demand = matches!(*self.mode.lock().unwrap(), MicrophoneMode::OnDemand);
+            let faulted = !on_demand
+                && self
+                    .recorder
+                    .lock()
+                    .ok()
+                    .and_then(|r| r.as_ref().map(|rec| rec.stream_faulted()))
+                    .unwrap_or(false);
+            if on_demand || faulted {
+                if faulted {
+                    warn!("Always-on microphone stream faulted; reopening before the take");
+                }
                 if let Err(e) = self.start_microphone_stream() {
                     error!("Failed to open microphone stream: {e}");
                     return false;

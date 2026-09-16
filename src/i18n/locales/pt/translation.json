@@ -804,6 +804,20 @@
             "description": "Coloca o seu texto numa linha própria abaixo da transcrição. Ativado por predefinição."
           }
         }
+      },
+      "captureSource": {
+        "title": "Fonte de som",
+        "description": "O que uma gravação capta: o microfone, o som que o computador está a reproduzir, ou ambos misturados. Gravar o áudio do sistema permite transcrever as outras pessoas numa chamada. Apenas Windows.",
+        "options": {
+          "microphone": "Microfone",
+          "systemAudio": "Áudio do sistema",
+          "both": "Microfone + áudio do sistema"
+        }
+      },
+      "systemAudioDevice": {
+        "title": "Dispositivo de reprodução a captar",
+        "description": "De que colunas ou auscultadores gravar. Seguir a predefinição do sistema costuma ser o correto e continua a funcionar quando o Windows muda de dispositivo numa chamada.",
+        "followDefault": "Seguir a predefinição do sistema"
       }
     },
     "postProcessing": {

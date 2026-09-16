@@ -14,6 +14,7 @@ use cpal::{
     traits::{DeviceTrait, HostTrait, StreamTrait},
 };
 
+use crate::audio_toolkit::audio::mixer::{Downmix, SlaveRing, mix_into};
 use crate::audio_toolkit::{
     VoiceActivityDetector,
     audio::{
@@ -57,6 +58,14 @@ enum Cmd {
     Shutdown,
 }
 
+/// Which side of the audio graph a capture device sits on: an ordinary input
+/// (microphone) or an output endpoint captured via loopback (system audio).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum EndpointRole {
+    Capture,
+    RenderLoopback,
+}
+
 pub struct AudioRecorder {
     device: Option<Device>,
     cmd_tx: Option<mpsc::Sender<Cmd>>,
@@ -67,6 +76,21 @@ pub struct AudioRecorder {
     /// dead stream is silently kept and every later take returns no audio while
     /// the overlay still says "recording".
     stream_errored: Arc<AtomicBool>,
+    /// Set by the worker when it could not negotiate a config, build the stream,
+    /// or start it. Distinct from `stream_errored`, which only fires once a stream
+    /// EXISTS and then faults: an arm failure means no stream was ever built, so the
+    /// error callback can never fire and `stream_errored` stays false forever.
+    /// Without this an always-on arm failure leaves is_open=true and every later
+    /// take silently records nothing until the app restarts.
+    arm_errored: Arc<AtomicBool>,
+    /// The system-audio (loopback) leg, when one is open. The ring is shared with the
+    /// owner thread's audio callback; the consumer pulls from it per master frame.
+    sys_ring: Arc<Mutex<SlaveRing>>,
+    sys_errored: Arc<AtomicBool>,
+    sys_kill_tx: Option<mpsc::Sender<()>>,
+    sys_handle: Option<std::thread::JoinHandle<()>>,
+    /// Linear gain applied to the system leg before mixing.
+    sys_gain: f32,
     worker_handle: Option<std::thread::JoinHandle<()>>,
     vad: Option<Arc<Mutex<Box<dyn vad::VoiceActivityDetector>>>>,
     level_cb: Option<Arc<dyn Fn(Vec<f32>) + Send + Sync + 'static>>,
@@ -80,6 +104,12 @@ impl AudioRecorder {
             device: None,
             cmd_tx: None,
             stream_errored: Arc::new(AtomicBool::new(false)),
+            arm_errored: Arc::new(AtomicBool::new(false)),
+            sys_ring: Arc::new(Mutex::new(SlaveRing::new())),
+            sys_errored: Arc::new(AtomicBool::new(false)),
+            sys_kill_tx: None,
+            sys_handle: None,
+            sys_gain: 1.0,
             worker_handle: None,
             vad: None,
             level_cb: None,
@@ -130,7 +160,133 @@ impl AudioRecorder {
         *self.closed_chunk_cb.lock().unwrap() = None;
     }
 
-    pub fn open(&mut self, device: Option<Device>) -> Result<(), Box<dyn std::error::Error>> {
+    /// Open the system-audio (loopback) leg alongside an already-open microphone.
+    ///
+    /// `cpal::Stream` is `!Send` on 0.16 (it holds a raw HANDLE), so the stream has to
+    /// be built, played and dropped on ONE thread. This spawns a thread that does
+    /// exactly that and then blocks until the kill channel closes - it never touches
+    /// the pipeline itself, it only feeds the ring.
+    ///
+    /// Downmix is `FrontPair`, not the mean: a 5.1 endpoint carries a stereo meeting
+    /// in FL/FR and a 6-channel mean is ~9.5 dB down, enough for the VAD to discard
+    /// the far end as noise.
+    pub fn open_system_audio(&mut self, device: Device) -> Result<(), Box<dyn std::error::Error>> {
+        if self.sys_kill_tx.is_some() {
+            return Ok(()); // already open
+        }
+        let ring = Arc::clone(&self.sys_ring);
+        let errored = Arc::clone(&self.sys_errored);
+        errored.store(false, Ordering::Release);
+
+        let (kill_tx, kill_rx) = mpsc::channel::<()>();
+        let (ready_tx, ready_rx) = mpsc::sync_channel::<Result<(), String>>(1);
+
+        let handle = std::thread::spawn(move || {
+            // Everything fallible reports through `ready_tx` exactly once; a panic
+            // here would abort the PROCESS (Cargo.toml sets panic = "abort").
+            let built = (|| -> Result<(cpal::Stream, u32, usize), String> {
+                let config =
+                    AudioRecorder::get_preferred_config_for(&device, EndpointRole::RenderLoopback)
+                        .map_err(|e| format!("config: {e}"))?;
+                let rate = config.sample_rate().0;
+                let channels = config.channels() as usize;
+                let stream = AudioRecorder::build_system_stream(
+                    &device,
+                    &config,
+                    Arc::clone(&ring),
+                    channels,
+                    rate,
+                    Arc::clone(&errored),
+                )
+                .map_err(|e| format!("build: {e}"))?;
+                stream.play().map_err(|e| format!("play: {e}"))?;
+                Ok((stream, rate, channels))
+            })();
+
+            match built {
+                Ok((stream, rate, channels)) => {
+                    log::info!(
+                        "System audio capture open: {} Hz, {} channels",
+                        rate,
+                        channels
+                    );
+                    let _ = ready_tx.send(Ok(()));
+                    // Hold the stream alive until close(). recv() returns the moment
+                    // the sender drops, so teardown is immediate with no polling.
+                    let _ = kill_rx.recv();
+                    drop(stream);
+                }
+                Err(e) => {
+                    errored.store(true, Ordering::Release);
+                    let _ = ready_tx.send(Err(e));
+                }
+            }
+        });
+
+        // Bounded wait: the caller must learn about an arm failure BEFORE the take
+        // starts, otherwise the overlay says "recording" over a leg that does not
+        // exist. WASAPI Initialize is normally well under 100 ms.
+        match ready_rx.recv_timeout(Duration::from_secs(3)) {
+            Ok(Ok(())) => {
+                self.sys_kill_tx = Some(kill_tx);
+                self.sys_handle = Some(handle);
+                Ok(())
+            }
+            Ok(Err(e)) => {
+                let _ = handle.join();
+                Err(Error::new(
+                    std::io::ErrorKind::Other,
+                    format!("system audio capture failed to start ({e})"),
+                )
+                .into())
+            }
+            Err(_) => {
+                drop(kill_tx);
+                let _ = handle.join();
+                Err(Error::new(
+                    std::io::ErrorKind::TimedOut,
+                    "system audio capture did not start within 3s",
+                )
+                .into())
+            }
+        }
+    }
+
+    /// Tear down the system-audio leg. Safe to call when it was never opened.
+    pub fn close_system_audio(&mut self) {
+        drop(self.sys_kill_tx.take());
+        if let Some(h) = self.sys_handle.take() {
+            let _ = h.join();
+        }
+        if let Ok(mut r) = self.sys_ring.lock() {
+            r.clear();
+        }
+    }
+
+    /// Set the linear gain applied to the system leg before mixing. Must be called
+    /// before `open()`, since the consumer captures it at spawn time.
+    pub fn set_system_audio_gain(&mut self, gain: f32) {
+        self.sys_gain = gain;
+    }
+
+    /// The shared system-audio ring, for the consumer to pull from.
+    pub fn system_ring(&self) -> Arc<Mutex<SlaveRing>> {
+        Arc::clone(&self.sys_ring)
+    }
+
+    /// True when the system-audio leg failed to arm or has faulted.
+    pub fn system_audio_faulted(&self) -> bool {
+        self.sys_errored.load(Ordering::Acquire)
+    }
+
+    /// Open a capture stream. `role` says whether `device` is an ordinary input
+    /// (microphone) or an output endpoint to be captured via loopback (system audio);
+    /// the two negotiate their config completely differently.
+    pub fn open(
+        &mut self,
+        device: Option<Device>,
+        role: EndpointRole,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         if self.worker_handle.is_some() {
             return Ok(()); // already open
         }
@@ -176,12 +332,34 @@ impl AudioRecorder {
         let first_buffer_seen_cb = Arc::clone(&first_buffer_seen);
         let first_buffer_nanos_cb = Arc::clone(&first_buffer_nanos);
         let stream_errored_cb = Arc::clone(&self.stream_errored);
-        // A fresh open starts healthy - clear any fault from a previous stream.
+        let arm_errored_worker = Arc::clone(&self.arm_errored);
+        // A fresh open starts healthy - clear any fault from a previous stream, and
+        // any arm failure from a previous open.
         self.stream_errored.store(false, Ordering::Relaxed);
+        self.arm_errored.store(false, Ordering::Relaxed);
+
+        // Only pass the ring when a system leg is actually open: `None` makes
+        // apply_system_mix a no-op and leaves the microphone path untouched.
+        let sys_ring_for_consumer = if self.sys_kill_tx.is_some() {
+            Some(Arc::clone(&self.sys_ring))
+        } else {
+            None
+        };
+        let sys_gain = self.sys_gain;
 
         let worker = std::thread::spawn(move || {
-            let config = AudioRecorder::get_preferred_config(&thread_device)
-                .expect("failed to fetch preferred config");
+            // Cargo.toml sets panic = "abort", so ANY panic on this worker kills the
+            // whole process with no log line. A render endpoint reaches this path on
+            // its first call (it advertises no input configs - probe-verified), so a
+            // negotiation failure has to be an error the caller can observe.
+            let config = match AudioRecorder::get_preferred_config_for(&thread_device, role) {
+                Ok(c) => c,
+                Err(e) => {
+                    log::error!("Capture device config negotiation failed: {e}");
+                    arm_errored_worker.store(true, Ordering::Release);
+                    return;
+                }
+            };
             let config_negotiated_in = open_start.elapsed();
             log::debug!(
                 "T-113: recorder worker config negotiated {:?} after open() was called",
@@ -286,6 +464,8 @@ impl AudioRecorder {
                 first_buffer_nanos,
                 config_negotiated_in,
                 stream_playing_in,
+                sys_ring_for_consumer,
+                sys_gain,
             );
             // stream is dropped here, after run_consumer returns
         });
@@ -339,10 +519,13 @@ impl AudioRecorder {
     /// True when the CPAL error callback has reported a fault on the current
     /// stream. Consult this before reusing an open recorder.
     pub fn stream_faulted(&self) -> bool {
-        self.stream_errored.load(Ordering::Relaxed)
+        self.stream_errored.load(Ordering::Relaxed) || self.arm_errored.load(Ordering::Acquire)
     }
 
     pub fn close(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+        // Tear the system-audio leg down first: it is independent of the consumer
+        // thread, and leaving it running would hold the endpoint open forever.
+        self.close_system_audio();
         if let Some(tx) = self.cmd_tx.take() {
             let _ = tx.send(Cmd::Shutdown);
         }
@@ -427,6 +610,73 @@ impl AudioRecorder {
             },
             None,
         )
+    }
+
+    /// Which side of the audio graph a capture device sits on.
+    ///
+    /// A WASAPI *render* endpoint opened for input gives loopback capture (cpal ORs
+    /// `AUDCLNT_STREAMFLAGS_LOOPBACK` automatically), but it advertises no INPUT
+    /// configs at all - probe-verified on real hardware: `supported_input_configs`
+    /// returns 0 ranges and `default_input_config()` errors. Its only buildable
+    /// config is the endpoint's own output mix format.
+    /// Build the loopback capture stream. Its callback does the minimum the repo's
+    /// audio-thread discipline allows: fold to mono, resample, push into the ring, and
+    /// one relaxed store on error. No logging on the happy path, no allocation beyond
+    /// a reusable scratch buffer.
+    fn build_system_stream(
+        device: &cpal::Device,
+        config: &cpal::SupportedStreamConfig,
+        ring: Arc<Mutex<SlaveRing>>,
+        channels: usize,
+        in_rate: u32,
+        errored: Arc<AtomicBool>,
+    ) -> Result<cpal::Stream, cpal::BuildStreamError> {
+        // The loopback leg arrives at the endpoint's mix rate (48 kHz in practice) and
+        // must reach the pipeline's 16 kHz; the ring is defined in 16 kHz samples, so
+        // the conversion happens here on the owner thread.
+        let mut resampler = FrameResampler::new(
+            in_rate as usize,
+            constants::WHISPER_SAMPLE_RATE as usize,
+            Duration::from_millis(30),
+        );
+        let mut mono: Vec<f32> = Vec::with_capacity(4096);
+        let err_cb = Arc::clone(&errored);
+
+        device.build_input_stream(
+            &config.clone().into(),
+            move |data: &[f32], _: &cpal::InputCallbackInfo| {
+                mono.clear();
+                let ch = channels.max(1);
+                for frame in data.chunks_exact(ch) {
+                    mono.push(Downmix::FrontPair.fold(frame, ch));
+                }
+                resampler.push(&mono, |out| {
+                    if let Ok(mut r) = ring.lock() {
+                        r.push(out);
+                    }
+                });
+            },
+            move |e| {
+                err_cb.store(true, Ordering::Relaxed);
+                log::error!("System audio stream error: {e}");
+            },
+            None,
+        )
+    }
+
+    pub fn get_preferred_config_for(
+        device: &cpal::Device,
+        role: EndpointRole,
+    ) -> Result<cpal::SupportedStreamConfig, Box<dyn std::error::Error>> {
+        match role {
+            EndpointRole::Capture => Self::get_preferred_config(device),
+            EndpointRole::RenderLoopback => {
+                // Do NOT run the 16 kHz preference scan here: WASAPI shared mode
+                // delivers the endpoint's mix format regardless of what is asked for.
+                // FrameResampler already handles 48k->16k for ordinary microphones.
+                Ok(device.default_output_config()?)
+            }
+        }
     }
 
     fn get_preferred_config(
@@ -593,6 +843,24 @@ impl ChunkState {
 /// NOTE: `out_buf` accumulates the whole recording. A future optimization can
 /// skip this in pure-chunked mode (transcription there is per-chunk), bounding
 /// memory for very long recordings.
+/// Mix the system-audio leg into a master frame, in place.
+///
+/// Every frame goes through here, including the ones drained at `Cmd::Stop`: keeping
+/// it in ONE place is what stops the stop-path quietly delivering unmixed audio.
+/// With no system leg this is a no-op and the master frame is untouched - which is
+/// what makes "mixed mode with nothing playing is bit-identical to mic-only" true.
+fn apply_system_mix(
+    frame: &mut Vec<f32>,
+    sys_ring: &Option<Arc<Mutex<SlaveRing>>>,
+    sys_gain: f32,
+    scratch: &mut Vec<f32>,
+) {
+    let Some(ring) = sys_ring else { return };
+    let Ok(mut r) = ring.lock() else { return };
+    r.pull(frame.len(), scratch);
+    mix_into(frame, scratch, sys_gain);
+}
+
 #[allow(clippy::too_many_arguments)]
 fn process_frame(
     samples: &[f32],
@@ -698,7 +966,14 @@ fn run_consumer(
     // and a loop turn, contaminating the very number this exists to report.
     config_negotiated_in: Duration,
     stream_playing_in: Duration,
+    // The system-audio leg, when mixing. `None` for a plain microphone take, which is
+    // what keeps the default path byte-identical.
+    sys_ring: Option<Arc<Mutex<SlaveRing>>>,
+    sys_gain: f32,
 ) {
+    // Reused across every frame so the hot path allocates nothing.
+    let mut mix_buf: Vec<f32> = Vec::with_capacity(1024);
+    let mut mix_scratch: Vec<f32> = Vec::with_capacity(1024);
     let mut frame_resampler = FrameResampler::new(
         in_sample_rate as usize,
         constants::WHISPER_SAMPLE_RATE as usize,
@@ -777,8 +1052,11 @@ fn run_consumer(
 
             // ---------- pipeline ----------------------------------------- //
             frame_resampler.push(&raw, &mut |frame: &[f32]| {
+                mix_buf.clear();
+                mix_buf.extend_from_slice(frame);
+                apply_system_mix(&mut mix_buf, &sys_ring, sys_gain, &mut mix_scratch);
                 process_frame(
-                    frame,
+                    &mix_buf,
                     recording,
                     &vad,
                     &mut chunk_state,
@@ -812,8 +1090,11 @@ fn run_consumer(
                     // Drain any audio chunks captured but not yet consumed.
                     while let Ok(remaining) = sample_rx.try_recv() {
                         frame_resampler.push(&remaining, &mut |frame: &[f32]| {
+                            mix_buf.clear();
+                            mix_buf.extend_from_slice(frame);
+                            apply_system_mix(&mut mix_buf, &sys_ring, sys_gain, &mut mix_scratch);
                             process_frame(
-                                frame,
+                                &mix_buf,
                                 true,
                                 &vad,
                                 &mut chunk_state,
@@ -825,8 +1106,11 @@ fn run_consumer(
                         });
                     }
                     frame_resampler.finish(&mut |frame: &[f32]| {
+                        mix_buf.clear();
+                        mix_buf.extend_from_slice(frame);
+                        apply_system_mix(&mut mix_buf, &sys_ring, sys_gain, &mut mix_scratch);
                         process_frame(
-                            frame,
+                            &mix_buf,
                             true,
                             &vad,
                             &mut chunk_state,

@@ -804,6 +804,20 @@
             "description": "Đặt văn bản của bạn xuống dòng riêng bên dưới bản ghi chép. Bật theo mặc định."
           }
         }
+      },
+      "captureSource": {
+        "title": "Nguồn âm thanh",
+        "description": "Bản thu sẽ ghi lại gì: micrô, âm thanh máy tính đang phát, hoặc cả hai trộn lại. Ghi âm thanh hệ thống cho phép Handy chép lời của những người khác trong cuộc gọi. Chỉ Windows.",
+        "options": {
+          "microphone": "Micrô",
+          "systemAudio": "Âm thanh hệ thống",
+          "both": "Micrô + âm thanh hệ thống"
+        }
+      },
+      "systemAudioDevice": {
+        "title": "Thiết bị phát cần thu",
+        "description": "Ghi âm từ loa hoặc tai nghe nào. Theo thiết bị mặc định của hệ thống thường là lựa chọn đúng và vẫn hoạt động khi Windows đổi thiết bị cho cuộc gọi.",
+        "followDefault": "Theo mặc định hệ thống"
       }
     },
     "postProcessing": {

@@ -485,6 +485,29 @@ fires when it lets go. A tap is instant.
 **Where.** No control — this is always active.
 **Since.** 0.59.0.
 
+### Transcribe the other people on a call, not just yourself
+
+<a id="record-system-audio"></a>
+**The situation.** You are on a call. Everyone else's voice comes out of your speakers, and Handy
+only ever listened to your microphone — so it transcribed your half of the conversation and missed
+theirs. With a headset there is no acoustic path at all; with speakers what reaches the microphone
+is a distant, room-coloured copy that the voice detector discards as noise.
+**What Handy does.** Captures the audio your computer is playing, on its own or mixed with your
+microphone, and transcribes it like any other take. Choosing **System audio** records only what is
+playing; **Microphone + system audio** records both sides into one transcript. Everything
+downstream is unchanged — the same delivery, the same history, the same cancel behaviour.
+The system-audio leg is buffered against your microphone's clock, because the two run on
+independent clocks and would otherwise drift apart over a long recording. A playback device that
+is idle sends nothing at all rather than silence, so a pause in the call is recorded as a pause
+rather than stalling the take.
+**Where.** `Advanced › Transcription › Transcribe › Sound source = Microphone + system audio`
+_{Windows only}_, with `Advanced › Transcription › Transcribe › Playback device to capture` naming
+which speakers to listen to.
+**Applies to.** Windows only. This uses WASAPI loopback; the macOS and Linux equivalents need a
+different audio backend, so the control is hidden rather than offered and silently recording
+nothing.
+**Since.** 1.6.0.
+
 ### Your shortcuts don't eat the accented letters you type
 
 <a id="shortcuts-dont-eat-accented-letters"></a>

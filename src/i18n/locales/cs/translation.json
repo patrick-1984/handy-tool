@@ -804,6 +804,20 @@
             "description": "Umístí váš text na samostatný řádek pod přepis. Výchozí je zapnuto."
           }
         }
+      },
+      "captureSource": {
+        "title": "Zdroj zvuku",
+        "description": "Co nahrávka zachytí: mikrofon, zvuk přehrávaný počítačem, nebo obojí smíchané. Nahrávání systémového zvuku umožní přepsat i ostatní účastníky hovoru. Pouze Windows.",
+        "options": {
+          "microphone": "Mikrofon",
+          "systemAudio": "Systémový zvuk",
+          "both": "Mikrofon + systémový zvuk"
+        }
+      },
+      "systemAudioDevice": {
+        "title": "Zachytávané výstupní zařízení",
+        "description": "Ze kterých reproduktorů či sluchátek nahrávat. Sledovat výchozí zařízení je obvykle správně a funguje dál i když Windows kvůli hovoru zařízení přepne.",
+        "followDefault": "Sledovat výchozí zařízení"
       }
     },
     "postProcessing": {

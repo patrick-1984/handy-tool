@@ -5,6 +5,7 @@ import {
   readdir,
   writeFile,
 } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
 
 interface TauriConfig {
@@ -19,7 +20,13 @@ const arg = (name: string): string | undefined => {
 const findInstaller = async (): Promise<string> => {
   const explicit = arg("--installer");
   if (explicit) return resolve(explicit);
-  const directory = resolve("src-tauri/target/release/bundle/nsis");
+  // src-tauri/.cargo/config.toml sets target-dir = "C:/tmp/hb", so the default
+  // cargo path does not exist on this repo and this used to fail with ENOENT.
+  // Honour CARGO_TARGET_DIR, fall back to the configured dir, then to cargo's default.
+  const targetDir =
+    process.env.CARGO_TARGET_DIR ??
+    (existsSync("C:/tmp/hb") ? "C:/tmp/hb" : "src-tauri/target");
+  const directory = resolve(targetDir, "release/bundle/nsis");
   const entries = await readdir(directory);
   const installers = entries.filter((entry) => entry.endsWith("-setup.exe"));
   if (installers.length !== 1) {
@@ -50,6 +57,19 @@ if (
 ) {
   throw new Error(
     `${signaturePath} does not contain a complete minisign signature`,
+  );
+}
+
+// The installer's filename must carry the version we are about to publish. Tauri
+// signs BYTES, not names - so a stale installer copied to the new asset name yields
+// a VALID signature on the wrong binary, and every client silently "updates" to it
+// and then re-offers the same update forever. The build dir legitimately holds every
+// past release, so this is one bad --installer away at all times.
+if (!basename(installer).includes(config.version)) {
+  throw new Error(
+    `Installer ${basename(installer)} does not carry version ${config.version} from tauri.conf.json. ` +
+      `Refusing to publish a manifest that would point at the wrong binary. ` +
+      `Pass the right --installer, or bump the version first.`,
   );
 }
 
