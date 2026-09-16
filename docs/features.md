@@ -500,9 +500,8 @@ The system-audio leg is buffered against your microphone's clock, because the tw
 independent clocks and would otherwise drift apart over a long recording. A playback device that
 is idle sends nothing at all rather than silence, so a pause in the call is recorded as a pause
 rather than stalling the take.
-**Where.** `Advanced › Transcription › Transcribe › Sound source = Microphone + system audio`
-_{Windows only}_, with `Advanced › Transcription › Transcribe › Playback device to capture` naming
-which speakers to listen to.
+**Where.** `General › Sound › Sound source = Microphone + system audio`
+_{Windows only}_, with `General › Sound › Playback device to capture` naming which speakers to listen to.
 **Applies to.** Windows only. This uses WASAPI loopback; the macOS and Linux equivalents need a
 different audio backend, so the control is hidden rather than offered and silently recording
 nothing.

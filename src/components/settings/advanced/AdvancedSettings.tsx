@@ -22,7 +22,6 @@ import { TranscribeAndSubmitSettings } from "../TranscribeAndSubmitSettings";
 import { PasteLastSettings } from "../PasteLastSettings";
 import { AffixSettings } from "../AffixSettings";
 import { PreserveTranscriptions } from "../PreserveTranscriptions";
-import { CaptureSourceSettings } from "../CaptureSourceSettings";
 import { JumperDelaySetting } from "../JumperDelaySetting";
 import { JumperTrackToggle } from "../JumperTrackToggle";
 import { JumperReturnFocusToggle } from "../JumperReturnFocusToggle";
@@ -83,7 +82,6 @@ export const AdvancedSettings: React.FC = () => {
         return (
           <>
             <SettingsGroup title={t("settings.general.transcribeGroup.title")}>
-              <CaptureSourceSettings descriptionMode="tooltip" grouped={true} />
               <PasteMethodSetting descriptionMode="tooltip" grouped={true} />
               <PasteMethodPttSetting descriptionMode="tooltip" grouped={true} />
               <TypingToolSetting descriptionMode="tooltip" grouped={true} />
