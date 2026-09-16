@@ -65,7 +65,7 @@ jobs:
           [
             {"label": "Windows x64", "group": "windows", "platform": "windows-latest", "args": "--bundles nsis --config src-tauri/tauri.windows-ci.conf.json --no-sign", "target": "x86_64-pc-windows-msvc", "prefix": "handy-windows-x64"},
             {"label": "macOS Apple Silicon", "group": "macos", "platform": "macos-26", "args": "--target aarch64-apple-darwin --bundles dmg --config src-tauri/tauri.ci-unsigned.conf.json", "target": "aarch64-apple-darwin", "prefix": "handy-macos-arm64"},
-            {"label": "macOS Intel", "group": "macos", "platform": "macos-latest", "args": "--target x86_64-apple-darwin --bundles dmg --config src-tauri/tauri.ci-unsigned.conf.json", "target": "x86_64-apple-darwin", "prefix": "handy-macos-x64"},
+            {"label": "macOS Intel", "group": "macos", "platform": "macos-15-intel", "args": "--target x86_64-apple-darwin --bundles dmg --config src-tauri/tauri.ci-unsigned.conf.json", "target": "x86_64-apple-darwin", "prefix": "handy-macos-x64"},
             {"label": "Linux x64 deb", "group": "linux", "platform": "ubuntu-22.04", "args": "--bundles deb --config src-tauri/tauri.ci-unsigned.conf.json", "target": "x86_64-unknown-linux-gnu", "prefix": "handy-linux-x64-deb"},
             {"label": "Linux x64 AppImage + RPM", "group": "linux", "platform": "ubuntu-24.04", "args": "--bundles appimage,rpm --config src-tauri/tauri.ci-unsigned.conf.json", "target": "x86_64-unknown-linux-gnu", "prefix": "handy-linux-x64"},
             {"label": "Linux ARM64", "group": "linux", "platform": "ubuntu-24.04-arm", "args": "--bundles appimage,deb,rpm --config src-tauri/tauri.ci-unsigned.conf.json", "target": "aarch64-unknown-linux-gnu", "prefix": "handy-linux-arm64"}
