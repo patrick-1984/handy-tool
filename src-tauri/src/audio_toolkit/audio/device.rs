@@ -104,10 +104,13 @@ pub fn resolve_system_audio_device(name: Option<&str>) -> Result<cpal::Device, C
         list_output_devices().map_err(|e| CaptureSourceError::Enumeration(e.to_string()))?;
 
     let Some(want) = name else {
-        return devices
-            .into_iter()
-            .find(|d| d.is_default)
-            .map(|d| d.device)
+        // Ask the host directly rather than scanning for `is_default`. That flag is
+        // computed by comparing NAMES (list_output_devices), so with two endpoints
+        // called "Speakers" both are marked default and `find` silently returns the
+        // first - which may not be the one Windows is actually playing through. The
+        // host's own answer cannot be ambiguous.
+        return crate::audio_toolkit::get_cpal_host()
+            .default_output_device()
             .ok_or(CaptureSourceError::NoDefaultPlayback);
     };
 

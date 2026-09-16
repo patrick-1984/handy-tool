@@ -818,6 +818,14 @@
         "title": "Urządzenie odtwarzania do przechwycenia",
         "description": "Z których głośników lub słuchawek nagrywać. Zwykle najlepiej podążać za domyślnym urządzeniem systemu — działa nadal, gdy Windows przełączy urządzenie na czas rozmowy.",
         "followDefault": "Podążaj za domyślnym systemu"
+      },
+      "systemAudioDelay": {
+        "title": "Opóźnienie dźwięku systemowego",
+        "description": "O ile dźwięk systemowy jest opóźniony względem mikrofonu. Właściwa wartość zależy od sprzętu — zestaw USB, łącze Bluetooth i monitor HDMI buforują inaczej. Jeśli słowa rozmówcy trafiają później niż Twoje, zwiększ ją."
+      },
+      "systemAudioGain": {
+        "title": "Poziom dźwięku systemowego",
+        "description": "Jak głośny jest dźwięk systemowy względem Twojego głosu. Zwiększ, jeśli rozmówca jest zbyt cichy do transkrypcji; zmniejsz, jeśli Cię zagłusza. Skalowany jest tylko dźwięk systemowy — mikrofon pozostaje nietknięty."
       }
     },
     "postProcessing": {

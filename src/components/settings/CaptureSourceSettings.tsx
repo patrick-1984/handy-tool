@@ -6,6 +6,24 @@ import { useSettings } from "../../hooks/useSettings";
 import { useOsType } from "../../hooks/useOsType";
 import { commands, type AudioDevice, type CaptureSource } from "@/bindings";
 
+/** Alignment presets. The right value is hardware: a USB headset, a Bluetooth link
+ *  and an HDMI monitor each buffer differently, so this cannot be guessed once. */
+const DELAY_MS = [0, 50, 100, 150, 200, 300, 500, 750, 1000] as const;
+
+/** Loopback is post-volume digital audio and a microphone is quiet and analogue, so
+ *  the two legs can legitimately sit far apart with nothing readable predicting which
+ *  way. Clamped to the same 0.25..4.0 the backend enforces. */
+const GAIN_STEPS = [
+  { value: "0.25", label: "0.25x (quietest)" },
+  { value: "0.5", label: "0.5x" },
+  { value: "0.75", label: "0.75x" },
+  { value: "1", label: "1x (unchanged)" },
+  { value: "1.5", label: "1.5x" },
+  { value: "2", label: "2x" },
+  { value: "3", label: "3x" },
+  { value: "4", label: "4x (loudest)" },
+];
+
 interface CaptureSourceSettingsProps {
   descriptionMode?: "inline" | "tooltip";
   grouped?: boolean;
@@ -73,7 +91,13 @@ export const CaptureSourceSettings: React.FC<CaptureSourceSettingsProps> =
         value: "default",
         label: t("settings.advanced.systemAudioDevice.followDefault"),
       },
-      ...outputs.map((d) => ({ value: d.name, label: d.name })),
+      // get_available_output_devices() prepends a synthetic {index:"default",
+      // name:"Default"} entry. Mapping it by NAME would pin the literal device
+      // "Default", which resolves to nothing and makes every take fail - and this
+      // component already offers its own "Follow system default" above.
+      ...outputs
+        .filter((d) => d.index !== "default")
+        .map((d) => ({ value: d.name, label: d.name })),
     ];
 
     return (
@@ -110,6 +134,47 @@ export const CaptureSourceSettings: React.FC<CaptureSourceSettingsProps> =
               disabled={isUpdating("system_audio_device")}
             />
           </SettingContainer>
+        )}
+
+        {usesSystemAudio && (
+          <>
+            <SettingContainer
+              title={t("settings.advanced.systemAudioDelay.title")}
+              description={t("settings.advanced.systemAudioDelay.description")}
+              descriptionMode={descriptionMode}
+              grouped={grouped}
+            >
+              <Dropdown
+                options={DELAY_MS.map((ms) => ({
+                  value: String(ms),
+                  label: `${ms} ms`,
+                }))}
+                selectedValue={String(
+                  (getSetting("system_audio_delay_ms") as number) ?? 100,
+                )}
+                onSelect={(v) =>
+                  updateSetting("system_audio_delay_ms", Number(v))
+                }
+                disabled={isUpdating("system_audio_delay_ms")}
+              />
+            </SettingContainer>
+
+            <SettingContainer
+              title={t("settings.advanced.systemAudioGain.title")}
+              description={t("settings.advanced.systemAudioGain.description")}
+              descriptionMode={descriptionMode}
+              grouped={grouped}
+            >
+              <Dropdown
+                options={GAIN_STEPS}
+                selectedValue={String(
+                  (getSetting("system_audio_gain") as number) ?? 1,
+                )}
+                onSelect={(v) => updateSetting("system_audio_gain", Number(v))}
+                disabled={isUpdating("system_audio_gain")}
+              />
+            </SettingContainer>
+          </>
         )}
       </>
     );

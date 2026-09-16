@@ -956,6 +956,14 @@
         "title": "Playback device to capture",
         "description": "Which speakers or headphones to record from. Following the system default is usually right, and it keeps working when Windows switches devices for a call.",
         "followDefault": "Follow system default"
+      },
+      "systemAudioDelay": {
+        "title": "System audio delay",
+        "description": "How far the system audio lags your microphone. The right value depends on your hardware — a USB headset, a Bluetooth link and an HDMI monitor each buffer differently. If the other person's words land late relative to yours, raise this."
+      },
+      "systemAudioGain": {
+        "title": "System audio level",
+        "description": "How loud the system audio is relative to your voice. Raise it if the other person comes out too quiet to transcribe; lower it if they drown you out. Only the system audio is scaled — your microphone is never touched."
       }
     },
     "postProcessing": {

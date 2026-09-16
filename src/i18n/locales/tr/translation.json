@@ -818,6 +818,14 @@
         "title": "Yakalanacak oynatma aygıtı",
         "description": "Hangi hoparlör veya kulaklıktan kaydedileceği. Genellikle sistem varsayılanını izlemek doğrudur ve Windows bir görüşme için aygıt değiştirdiğinde de çalışmaya devam eder.",
         "followDefault": "Sistem varsayılanını izle"
+      },
+      "systemAudioDelay": {
+        "title": "Sistem sesi gecikmesi",
+        "description": "Sistem sesinin mikrofonunuzun ne kadar gerisinde kaldığı. Doğru değer donanıma bağlıdır — USB kulaklık, Bluetooth bağlantı ve HDMI monitör farklı arabellek kullanır. Karşı tarafın sözleri geç geliyorsa bunu artırın."
+      },
+      "systemAudioGain": {
+        "title": "Sistem sesi düzeyi",
+        "description": "Sistem sesinin kendi sesinize göre ne kadar yüksek olduğu. Karşı taraf yazıya dökülemeyecek kadar kısıksa artırın, sizi bastırıyorsa azaltın. Yalnızca sistem sesi ölçeklenir — mikrofonunuza dokunulmaz."
       }
     },
     "postProcessing": {

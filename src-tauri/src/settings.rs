@@ -981,6 +981,14 @@ pub struct AppSettings {
     /// which way.
     #[serde(default = "default_system_audio_gain")]
     pub system_audio_gain: f32,
+    /// How far the system-audio leg lags the microphone, in milliseconds.
+    ///
+    /// This is the alignment between the two legs, and the right value is HARDWARE:
+    /// a USB headset, a Bluetooth link and an HDMI monitor each buffer differently,
+    /// and the endpoint driver adds its own. 100 ms suits most setups; a user who
+    /// hears the far end arriving late relative to their own voice raises it.
+    #[serde(default = "default_system_audio_delay_ms")]
+    pub system_audio_delay_ms: i32,
     /// Custom text wrapped around a delivered transcription. Independent per flow
     /// (plain Transcribe vs Transcribe & Submit), because a chat-submit signature
     /// is rarely what you want on ordinary dictation - mirroring how the repo
@@ -1574,6 +1582,10 @@ fn default_preserve_transcriptions() -> bool {
 
 fn default_system_audio_gain() -> f32 {
     1.0
+}
+
+fn default_system_audio_delay_ms() -> i32 {
+    100
 }
 
 fn default_affix_newline() -> bool {
@@ -2457,6 +2469,7 @@ pub fn get_default_settings() -> AppSettings {
         capture_source: CaptureSource::default(),
         system_audio_device: None,
         system_audio_gain: default_system_audio_gain(),
+        system_audio_delay_ms: default_system_audio_delay_ms(),
         output_prefix_enabled: false,
         output_prefix_text: String::new(),
         output_prefix_newline: default_affix_newline(),
@@ -3016,11 +3029,6 @@ mod tests {
         for (mute, source, want) in [
             (false, CaptureSource::Microphone, false),
             (true, CaptureSource::Microphone, true),
-            // Muting the output endpoint is exactly what loopback captures, so with
-            // any system-audio source the mute must be suppressed or the recording
-            // is pure silence.
-            (true, CaptureSource::SystemAudio, false),
-            (true, CaptureSource::MicrophoneAndSystemAudio, false),
             (false, CaptureSource::SystemAudio, false),
         ] {
             s.mute_while_recording = mute;
@@ -3029,6 +3037,23 @@ mod tests {
                 s.should_mute_output(),
                 want,
                 "mute={mute} source={source:?}"
+            );
+        }
+
+        // Muting the output endpoint is exactly what loopback captures, so with a
+        // system-audio source the mute must be suppressed or the take records pure
+        // silence. That is Windows-only: everywhere else effective_capture_source()
+        // clamps to Microphone, so the mute correctly stays ON and this inverts.
+        for source in [
+            CaptureSource::SystemAudio,
+            CaptureSource::MicrophoneAndSystemAudio,
+        ] {
+            s.mute_while_recording = true;
+            s.capture_source = source;
+            assert_eq!(
+                s.should_mute_output(),
+                !cfg!(target_os = "windows"),
+                "source={source:?}"
             );
         }
     }

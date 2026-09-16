@@ -818,6 +818,14 @@
         "title": "Aufzunehmendes Wiedergabegerät",
         "description": "Von welchen Lautsprechern oder Kopfhörern aufgenommen wird. Dem Systemstandard zu folgen ist meist richtig und funktioniert weiter, wenn Windows für einen Anruf das Gerät wechselt.",
         "followDefault": "Systemstandard folgen"
+      },
+      "systemAudioDelay": {
+        "title": "Verzögerung des Systemtons",
+        "description": "Wie weit der Systemton dem Mikrofon hinterherhinkt. Der richtige Wert hängt von der Hardware ab — ein USB-Headset, eine Bluetooth-Verbindung und ein HDMI-Monitor puffern jeweils anders. Kommen die Worte des Gegenübers zu spät, erhöhe den Wert."
+      },
+      "systemAudioGain": {
+        "title": "Pegel des Systemtons",
+        "description": "Wie laut der Systemton im Verhältnis zu deiner Stimme ist. Erhöhe ihn, wenn das Gegenüber zu leise für die Transkription ist; senke ihn, wenn es dich übertönt. Nur der Systemton wird skaliert — dein Mikrofon bleibt unangetastet."
       }
     },
     "postProcessing": {

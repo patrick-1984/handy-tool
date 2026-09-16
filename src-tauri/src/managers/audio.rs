@@ -301,6 +301,7 @@ impl AudioRecordingManager {
 
         if let Some(rec) = recorder_opt.as_mut() {
             rec.set_system_audio_gain(settings.system_audio_gain);
+            rec.set_system_audio_delay_ms(settings.system_audio_delay_ms);
             // Mixed: arm the SLAVE first. The consumer thread captures the ring at
             // spawn time inside the master's open(), so arming the slave afterwards
             // would leave the consumer holding None and silently mixing nothing.
@@ -313,8 +314,15 @@ impl AudioRecordingManager {
 
             // The microphone leg is opened for every source except SystemAudio-only.
             if source != CaptureSource::SystemAudio {
-                rec.open(selected_device, EndpointRole::Capture)
-                    .map_err(|e| anyhow::anyhow!("Failed to open recorder: {}", e))?;
+                if let Err(e) = rec.open(selected_device, EndpointRole::Capture) {
+                    // The slave may already be running (mixed mode arms it first). An
+                    // early return here leaves it holding the endpoint open with
+                    // is_open still false, so stop_microphone_stream() skips cleanup
+                    // and the NEXT take - even one the user switched back to plain
+                    // Microphone - inherits a live system ring.
+                    rec.close_system_audio();
+                    return Err(anyhow::anyhow!("Failed to open recorder: {}", e));
+                }
             } else {
                 // System-audio ONLY: the loopback endpoint is the master clock, so it
                 // is opened through the ordinary path and drives the pipeline itself.
@@ -356,6 +364,32 @@ impl AudioRecordingManager {
 
         *open_flag = false;
         debug!("Microphone stream stopped");
+    }
+
+    /// Re-open the capture streams so a changed capture source, playback device or
+    /// gain takes effect.
+    ///
+    /// Without this, `start_microphone_stream`'s "already active" early return means
+    /// an ALWAYS-ON user who switches to System audio keeps recording their
+    /// microphone - the setting is persisted, the UI agrees with itself, and the next
+    /// take silently captures the wrong thing. On-demand is affected too whenever the
+    /// stream happens to be open. Mirrors what `update_selected_device` already does
+    /// for the microphone picker.
+    pub fn update_capture_source(&self) {
+        let recording = !matches!(*self.state.lock().unwrap(), RecordingState::Idle);
+        if recording {
+            // Never reopen mid-take: stop_microphone_stream discards the samples the
+            // recorder is holding, which would silently destroy the take in progress.
+            info!("Capture source changed while recording; it applies to the next take");
+            return;
+        }
+        let was_open = *self.is_open.lock().unwrap();
+        self.stop_microphone_stream();
+        if was_open || matches!(*self.mode.lock().unwrap(), MicrophoneMode::AlwaysOn) {
+            if let Err(e) = self.start_microphone_stream() {
+                error!("Failed to reopen capture streams after a source change: {e}");
+            }
+        }
     }
 
     /* ---------- mode switching --------------------------------------------- */

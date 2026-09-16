@@ -818,6 +818,14 @@
         "title": "Thiết bị phát cần thu",
         "description": "Ghi âm từ loa hoặc tai nghe nào. Theo thiết bị mặc định của hệ thống thường là lựa chọn đúng và vẫn hoạt động khi Windows đổi thiết bị cho cuộc gọi.",
         "followDefault": "Theo mặc định hệ thống"
+      },
+      "systemAudioDelay": {
+        "title": "Độ trễ âm thanh hệ thống",
+        "description": "Âm thanh hệ thống trễ hơn micrô bao nhiêu. Giá trị phù hợp tuỳ phần cứng — tai nghe USB, kết nối Bluetooth và màn hình HDMI đệm khác nhau. Nếu lời người kia đến muộn hơn lời bạn, hãy tăng lên."
+      },
+      "systemAudioGain": {
+        "title": "Mức âm thanh hệ thống",
+        "description": "Âm thanh hệ thống to đến đâu so với giọng bạn. Tăng lên nếu người kia quá nhỏ để chép lời; giảm xuống nếu họ át tiếng bạn. Chỉ âm thanh hệ thống được chỉnh — micrô không bao giờ bị đụng tới."
       }
     },
     "postProcessing": {

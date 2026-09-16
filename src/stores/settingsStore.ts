@@ -248,6 +248,8 @@ const settingUpdaters: {
     ),
   system_audio_gain: (value) =>
     commands.changeSystemAudioGainSetting(value as number),
+  system_audio_delay_ms: (value) =>
+    commands.changeSystemAudioDelayMsSetting(value as number),
   output_prefix_enabled: (value) =>
     commands.changeOutputPrefixEnabledSetting(value as boolean),
   output_prefix_text: (value) =>
