@@ -28,7 +28,7 @@ Rebind them at:
 - `Post Process › Hotkey › Post-Processing Hotkey` _{requires: Post-processing enabled}_
 - `Debug › Cancel Shortcut` _{requires: Debug mode}_
 
-Catalog: [Press one key, speak, and the text appears where you were typing](../features.md#press-one-key-and-speak), [Push-to-talk you can trust](../features.md#push-to-talk-you-can-trust), [Dictate and send in one keystroke](../features.md#dictate-and-send-in-one-keystroke), [The paste didn't land — get the words back without re-dictating](../features.md#the-paste-didnt-land-get-the-words-back), [A second key for "clean this up with AI"](../features.md#a-second-key-for-clean-this-up), [When paste is blocked, type it instead](../features.md#when-paste-is-blocked-type-it-instead), and [Your shortcuts don't eat the accented letters you type](../features.md#shortcuts-dont-eat-accented-letters).
+Catalog: [Press one key, speak, and the text appears where you were typing](../features.md#press-one-key-and-speak), [Push-to-talk you can trust](../features.md#push-to-talk-you-can-trust), [Dictate and send in one keystroke](../features.md#dictate-and-send-in-one-keystroke), [The paste didn't land — get the words back without re-dictating](../features.md#the-paste-didnt-land-get-the-words-back), [A second key for "clean this up with AI"](../features.md#a-second-key-for-clean-this-up), [When paste is blocked, type it instead](../features.md#when-paste-is-blocked-type-it-instead), [Your shortcuts don't eat the accented letters you type](../features.md#shortcuts-dont-eat-accented-letters), and [Transcribe the other people on a call, not just yourself](../features.md#record-system-audio).
 
 ## Jumper and slots
 

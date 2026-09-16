@@ -804,6 +804,20 @@
             "description": "텍스트를 전사 아래 줄에 배치합니다. 기본적으로 켜져 있습니다."
           }
         }
+      },
+      "captureSource": {
+        "title": "소리 소스",
+        "description": "녹음할 대상: 마이크, 컴퓨터가 재생 중인 소리, 또는 두 가지를 섞은 것. 시스템 오디오를 녹음하면 통화 상대의 말도 전사할 수 있습니다. Windows 전용.",
+        "options": {
+          "microphone": "마이크",
+          "systemAudio": "시스템 오디오",
+          "both": "마이크 + 시스템 오디오"
+        }
+      },
+      "systemAudioDevice": {
+        "title": "캡처할 재생 장치",
+        "description": "어느 스피커나 헤드폰에서 녹음할지. 보통 시스템 기본값을 따르는 것이 맞으며, 통화를 위해 Windows가 장치를 전환해도 계속 동작합니다.",
+        "followDefault": "시스템 기본값 따르기"
       }
     },
     "postProcessing": {

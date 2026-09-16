@@ -804,6 +804,20 @@
             "description": "テキストを文字起こしの下の行に配置します。既定で有効。"
           }
         }
+      },
+      "captureSource": {
+        "title": "音声ソース",
+        "description": "録音で取り込む音：マイク、パソコンが再生している音、またはその両方をミックス。システム音声を録音すると、通話相手の発言も文字起こしできます。Windows のみ。",
+        "options": {
+          "microphone": "マイク",
+          "systemAudio": "システム音声",
+          "both": "マイク + システム音声"
+        }
+      },
+      "systemAudioDevice": {
+        "title": "取り込む再生デバイス",
+        "description": "どのスピーカーやヘッドホンから録音するか。通常はシステム既定に従うのが適切で、通話のために Windows がデバイスを切り替えても動作し続けます。",
+        "followDefault": "システム既定に従う"
       }
     },
     "postProcessing": {

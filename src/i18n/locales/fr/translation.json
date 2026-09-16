@@ -804,6 +804,20 @@
             "description": "Place votre texte sur sa propre ligne sous la transcription. Activé par défaut."
           }
         }
+      },
+      "captureSource": {
+        "title": "Source audio",
+        "description": "Ce qu'un enregistrement capture : votre micro, le son joué par l'ordinateur, ou les deux mélangés. Enregistrer le son système permet de transcrire les autres participants d'un appel. Windows uniquement.",
+        "options": {
+          "microphone": "Microphone",
+          "systemAudio": "Son système",
+          "both": "Microphone + son système"
+        }
+      },
+      "systemAudioDevice": {
+        "title": "Périphérique de lecture à capturer",
+        "description": "Depuis quels haut-parleurs ou écouteurs enregistrer. Suivre le périphérique par défaut est généralement le bon choix et continue de fonctionner quand Windows change d'appareil pour un appel.",
+        "followDefault": "Suivre le périphérique par défaut"
       }
     },
     "postProcessing": {

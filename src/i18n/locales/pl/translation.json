@@ -804,6 +804,20 @@
             "description": "Umieszcza Twój tekst w osobnym wierszu pod transkrypcją. Domyślnie włączone."
           }
         }
+      },
+      "captureSource": {
+        "title": "Źródło dźwięku",
+        "description": "Co nagrywa Handy: mikrofon, dźwięk odtwarzany przez komputer albo oba zmiksowane. Nagrywanie dźwięku systemowego pozwala transkrybować też pozostałe osoby w rozmowie. Tylko Windows.",
+        "options": {
+          "microphone": "Mikrofon",
+          "systemAudio": "Dźwięk systemowy",
+          "both": "Mikrofon + dźwięk systemowy"
+        }
+      },
+      "systemAudioDevice": {
+        "title": "Urządzenie odtwarzania do przechwycenia",
+        "description": "Z których głośników lub słuchawek nagrywać. Zwykle najlepiej podążać za domyślnym urządzeniem systemu — działa nadal, gdy Windows przełączy urządzenie na czas rozmowy.",
+        "followDefault": "Podążaj za domyślnym systemu"
       }
     },
     "postProcessing": {

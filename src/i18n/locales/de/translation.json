@@ -804,6 +804,20 @@
             "description": "Setzt deinen Text in eine eigene Zeile unter die Transkription. Standardmäßig aktiviert."
           }
         }
+      },
+      "captureSource": {
+        "title": "Tonquelle",
+        "description": "Was eine Aufnahme erfasst: dein Mikrofon, den Ton, den dein Computer abspielt, oder beides gemischt. Mit Systemton kann Handy auch die anderen in einem Gespräch transkribieren. Nur Windows.",
+        "options": {
+          "microphone": "Mikrofon",
+          "systemAudio": "Systemton",
+          "both": "Mikrofon + Systemton"
+        }
+      },
+      "systemAudioDevice": {
+        "title": "Aufzunehmendes Wiedergabegerät",
+        "description": "Von welchen Lautsprechern oder Kopfhörern aufgenommen wird. Dem Systemstandard zu folgen ist meist richtig und funktioniert weiter, wenn Windows für einen Anruf das Gerät wechselt.",
+        "followDefault": "Systemstandard folgen"
       }
     },
     "postProcessing": {

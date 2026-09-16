@@ -816,6 +816,30 @@ async changeSubmitSuffixNewlineSetting(enabled: boolean) : Promise<Result<null, 
     else return { status: "error", error: e  as any };
 }
 },
+async changeCaptureSourceSetting(source: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_capture_source_setting", { source }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async changeSystemAudioDeviceSetting(deviceName: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_system_audio_device_setting", { deviceName }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async changeSystemAudioGainSetting(gain: number) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_system_audio_gain_setting", { gain }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async changeTypingChunkCharsSetting(chars: number) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("change_typing_chunk_chars_setting", { chars }) };
@@ -1601,7 +1625,7 @@ post_process_provider_ref?: string;
 /**
  * Sampling temperature for post-processing (0.0 = most deterministic).
  */
-post_process_temperature?: number; post_process_prompts?: LLMPrompt[]; post_process_selected_prompt_id?: string | null; mute_while_recording?: boolean; append_trailing_space?: boolean; preserve_transcriptions?: boolean; output_prefix_enabled?: boolean; output_prefix_text?: string; output_prefix_newline?: boolean; output_suffix_enabled?: boolean; output_suffix_text?: string; output_suffix_newline?: boolean; submit_prefix_enabled?: boolean; submit_prefix_text?: string; submit_prefix_newline?: boolean; submit_suffix_enabled?: boolean; submit_suffix_text?: string; submit_suffix_newline?: boolean; crash_resilient_recording?: boolean; app_language?: string; keyboard_implementation?: KeyboardImplementation; show_tray_icon?: boolean; paste_delay_ms?: number; typing_tool?: TypingTool; external_script_path: string | null; transcription_mode?: TranscriptionMode; transcription_mode_ptt?: TranscriptionMode; api_transcription_url?: string; api_transcription_key?: string; api_transcription_model?: string; post_process_disable_thinking?: boolean; 
+post_process_temperature?: number; post_process_prompts?: LLMPrompt[]; post_process_selected_prompt_id?: string | null; mute_while_recording?: boolean; append_trailing_space?: boolean; preserve_transcriptions?: boolean; capture_source?: CaptureSource; system_audio_device?: string | null; system_audio_gain?: number; output_prefix_enabled?: boolean; output_prefix_text?: string; output_prefix_newline?: boolean; output_suffix_enabled?: boolean; output_suffix_text?: string; output_suffix_newline?: boolean; submit_prefix_enabled?: boolean; submit_prefix_text?: string; submit_prefix_newline?: boolean; submit_suffix_enabled?: boolean; submit_suffix_text?: string; submit_suffix_newline?: boolean; crash_resilient_recording?: boolean; app_language?: string; keyboard_implementation?: KeyboardImplementation; show_tray_icon?: boolean; paste_delay_ms?: number; typing_tool?: TypingTool; external_script_path: string | null; transcription_mode?: TranscriptionMode; transcription_mode_ptt?: TranscriptionMode; api_transcription_url?: string; api_transcription_key?: string; api_transcription_model?: string; post_process_disable_thinking?: boolean; 
 /**
  * Registry provider id (kind `openrouter`) supplying the base URL + API key
  * for OpenRouter transcription.
@@ -1636,6 +1660,8 @@ export type SubmitIdleBehavior = "start_normal" | "do_nothing" | "start_and_subm
  * What the cancel affordances (Escape shortcut, tray "Cancel", the in-app
  * cancel command, `handy --cancel`) do to the take in progress.
  */
+export type CaptureSource = "microphone" | "system_audio" | "microphone_and_system_audio"
+
 export type CancelBehavior = "discard_recording" | "finish_silently"
 export type ClipboardRestoreDelay = "none" | "ms100" | "ms200" | "ms250" | "ms300" | "ms400" | "ms500" | "ms600" | "ms700" | "ms800" | "ms900" | "ms1000" | "ms1500" | "ms2000" | "ms2500" | "ms5000"
 export type JumperSubmitDelay = "none" | "ms100" | "ms200" | "ms250" | "ms300" | "ms400" | "ms500" | "ms600" | "ms700" | "ms800" | "ms900" | "ms1000" | "ms1500" | "ms2000"

@@ -48,7 +48,10 @@ set CMAKE_POLICY_VERSION_MINIMUM=3.5
 set CARGO_TARGET_DIR=C:\tmp\hb
 
 cd src-tauri
-cargo test --release -p handy
+:: --lib only: the doctest phase runs rustdoc.exe, which Smart App Control blocks on
+:: this machine (os error 4551). There are no doctests in this crate, so that phase
+:: only ever contributes a false failure that hides a green unit-test run.
+cargo test --release -p handy --lib
 if errorlevel 1 (
     echo.
     echo ============================================================

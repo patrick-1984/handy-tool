@@ -20,10 +20,10 @@ use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_autostart::ManagerExt;
 
 use crate::settings::{
-    self, AnchorAction, AutoSubmitKey, ClipboardHandling, ClipboardRestoreDelay, CursorMode,
-    JumperPasteDelay, JumperSubmitDelay, KeyboardImplementation, LLMPrompt, ModelUnloadTimeout,
-    OverlayPosition, PasteMethod, ShortcutBinding, SoundTheme, SubmitIdleBehavior, Theme,
-    TranscriptionMode, TypingTool, get_settings,
+    self, AnchorAction, AutoSubmitKey, CaptureSource, ClipboardHandling, ClipboardRestoreDelay,
+    CursorMode, JumperPasteDelay, JumperSubmitDelay, KeyboardImplementation, LLMPrompt,
+    ModelUnloadTimeout, OverlayPosition, PasteMethod, ShortcutBinding, SoundTheme,
+    SubmitIdleBehavior, Theme, TranscriptionMode, TypingTool, get_settings,
 };
 use crate::tray;
 
@@ -2172,6 +2172,60 @@ pub fn change_typing_chunk_delay_setting(app: AppHandle, delay: u32) -> Result<(
 pub fn change_append_trailing_space_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
     let mut settings = settings::get_settings(&app);
     settings.append_trailing_space = enabled;
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn change_capture_source_setting(app: AppHandle, source: String) -> Result<(), String> {
+    // String-in, parsed here: the repo's convention for enum settings, and it means an
+    // unrecognised value degrades to the safe default instead of failing the command.
+    let parsed = match source.as_str() {
+        "microphone" => CaptureSource::Microphone,
+        "system_audio" => CaptureSource::SystemAudio,
+        "microphone_and_system_audio" => CaptureSource::MicrophoneAndSystemAudio,
+        other => {
+            warn!("Unknown capture source '{other}', falling back to microphone");
+            CaptureSource::Microphone
+        }
+    };
+    #[cfg(not(target_os = "windows"))]
+    if parsed != CaptureSource::Microphone {
+        return Err("System audio capture is only available on Windows".to_string());
+    }
+    let mut settings = settings::get_settings(&app);
+    settings.capture_source = parsed;
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn change_system_audio_device_setting(
+    app: AppHandle,
+    device_name: String,
+) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    // "default" is the sentinel for "follow the current default playback device",
+    // which is what survives a Bluetooth A2DP<->HFP switch mid-call.
+    settings.system_audio_device = if device_name == "default" || device_name.is_empty() {
+        None
+    } else {
+        Some(device_name)
+    };
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn change_system_audio_gain_setting(app: AppHandle, gain: f32) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    // Clamp to +/-12 dB in linear terms. Loopback is post-volume digital audio and a
+    // microphone is quiet and analogue, so some trim is genuinely needed - but an
+    // unbounded multiplier just drives the soft clipper.
+    settings.system_audio_gain = gain.clamp(0.25, 4.0);
     settings::write_settings(&app, settings);
     Ok(())
 }

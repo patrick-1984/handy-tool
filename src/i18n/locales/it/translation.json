@@ -804,6 +804,20 @@
             "description": "Mette il tuo testo su una riga propria sotto la trascrizione. Attivo per impostazione predefinita."
           }
         }
+      },
+      "captureSource": {
+        "title": "Sorgente audio",
+        "description": "Che cosa cattura una registrazione: il microfono, l'audio riprodotto dal computer, o entrambi mixati. Registrare l'audio di sistema permette di trascrivere anche gli altri in una chiamata. Solo Windows.",
+        "options": {
+          "microphone": "Microfono",
+          "systemAudio": "Audio di sistema",
+          "both": "Microfono + audio di sistema"
+        }
+      },
+      "systemAudioDevice": {
+        "title": "Dispositivo di riproduzione da catturare",
+        "description": "Da quali altoparlanti o cuffie registrare. Seguire il predefinito di sistema è di solito la scelta giusta e continua a funzionare quando Windows cambia dispositivo per una chiamata.",
+        "followDefault": "Segui il predefinito di sistema"
       }
     },
     "postProcessing": {
