@@ -48,3 +48,49 @@ blob-report/
 
 # Generated from the licensed Visual Studio VC\Redist tree before Windows bundling
 src-tauri/vc-runtime-staging/
+
+# ---------------------------------------------------------------------------
+# Never-publish list.
+#
+# This repository is a CURATED clone: files are copied in by hand, so in normal
+# operation nothing below can arrive here at all. These rules are the second line
+# of defence - they make `git add -A` safe if one of these is ever copied in by
+# mistake, which is exactly the accident a hand-curated flow is prone to.
+# ---------------------------------------------------------------------------
+
+# Assistant instructions and agent working files
+CLAUDE.md
+AGENTS.md
+CRUSH.md
+.claude/
+.codex/
+.cursor/
+
+# Local-only working directory (guides, notes, scratch)
+.local/
+
+# Private issue tracker and planning material
+tickets/
+.docs-work/
+_bmad-output/
+scratchpad*
+transcripts/
+*.jsonl
+
+# Credentials and secrets of every shape
+.keys/
+*.key
+*.key.pub
+*.password
+*.pem
+*.pfx
+*.p12
+.env
+.env.*
+!.env.example
+.npmrc
+credentials.json
+
+# Build and test output that accumulates in the working tree
+*.log
+sac-loop.*

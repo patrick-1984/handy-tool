@@ -1,0 +1,185 @@
+name: "Release on tag"
+
+# Publishes a release when a version tag is pushed.
+#
+#   git tag v1.6.2 && git push origin v1.6.2
+#
+# Why a TAG and not a branch push or a manual button: a tag is an explicit,
+# reviewable statement that a specific commit is the release. Branch pushes happen
+# constantly and would publish noise; a manual button loses the link between the
+# release and the exact commit it came from.
+#
+# SIGNING AND WHO CAN REACH THE KEY
+# ---------------------------------
+# The `publish` job below declares `environment: release`. That is the security
+# boundary, and it is the reason the signing key is NOT a repository secret:
+#
+#   * Repository secrets are readable by any workflow any collaborator with write
+#     access can push. Log masking does not stop `base64 key | curl`.
+#   * Environment secrets are only handed to a job that names that environment, and
+#     if the environment has required reviewers, the job PAUSES until a reviewer
+#     approves it. A malicious workflow change therefore cannot silently obtain the
+#     key - the run stops and waits for a human.
+#   * Pull requests from FORKS never receive secrets of any kind. That is enforced by
+#     GitHub, not by this file.
+#
+# One-time setup (repo Settings -> Environments -> New environment -> "release"):
+#   1. Add yourself under "Required reviewers".
+#   2. Under "Deployment branches and tags", restrict to tag pattern  v*
+#   3. Add these environment secrets (NOT repository secrets):
+#        TAURI_SIGNING_PRIVATE_KEY           <- contents of .keys/handy-updater.key
+#        TAURI_SIGNING_PRIVATE_KEY_PASSWORD  <- contents of .keys/handy-updater.password
+#
+# Until those secrets exist the build still runs and still publishes installers; the
+# updater .sig files are simply absent, and `sign-and-release.ps1` can produce them
+# locally instead. Nothing here breaks in the meantime.
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false # never cancel a half-finished publish
+
+jobs:
+  # ---------------------------------------------------------------- guard ----
+  # Cheap checks first. A tag that disagrees with the manifest is the classic way to
+  # ship 1.6.1's bytes as 1.6.2, and it costs 20 seconds to rule out here rather than
+  # 25 minutes into a seven-platform build.
+  verify:
+    name: Verify the tag matches the manifest
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: check
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          CONF=$(grep -o '"version": "[^"]*"' src-tauri/tauri.conf.json | head -1 | cut -d'"' -f4)
+          PKG=$(grep -o '"version": "[^"]*"' package.json | head -1 | cut -d'"' -f4)
+          echo "tag=$TAG  tauri.conf.json=$CONF  package.json=$PKG"
+          if [ "$TAG" != "$CONF" ] || [ "$TAG" != "$PKG" ]; then
+            echo "::error::Tag v$TAG does not match tauri.conf.json ($CONF) and package.json ($PKG). Bump the version files and re-tag."
+            exit 1
+          fi
+          echo "version=$TAG" >> "$GITHUB_OUTPUT"
+
+  # ----------------------------------------------------------------- build ---
+  build:
+    name: ${{ matrix.label }}
+    needs: verify
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Windows x64
+            platform: "windows-latest"
+            target: "x86_64-pc-windows-msvc"
+            args: "--bundles nsis --config src-tauri/tauri.windows-ci.conf.json"
+          - label: macOS Apple Silicon
+            platform: "macos-26"
+            target: "aarch64-apple-darwin"
+            args: "--target aarch64-apple-darwin --bundles dmg --config src-tauri/tauri.ci-unsigned.conf.json --no-sign"
+          - label: macOS Intel
+            # macos-latest is ARM64. Using it here would cross-compile and fail to link.
+            platform: "macos-15-intel"
+            target: "x86_64-apple-darwin"
+            args: "--target x86_64-apple-darwin --bundles dmg --config src-tauri/tauri.ci-unsigned.conf.json --no-sign"
+          - label: Linux x64 deb
+            platform: "ubuntu-22.04"
+            target: "x86_64-unknown-linux-gnu"
+            args: "--bundles deb --config src-tauri/tauri.ci-unsigned.conf.json"
+          - label: Linux x64 AppImage + RPM
+            platform: "ubuntu-24.04"
+            target: "x86_64-unknown-linux-gnu"
+            args: "--bundles appimage,rpm --config src-tauri/tauri.ci-unsigned.conf.json"
+          - label: Linux ARM64
+            platform: "ubuntu-24.04-arm"
+            target: "aarch64-unknown-linux-gnu"
+            args: "--bundles appimage,deb,rpm --config src-tauri/tauri.ci-unsigned.conf.json"
+
+    uses: ./.github/workflows/build.yml
+    with:
+      platform: ${{ matrix.platform }}
+      target: ${{ matrix.target }}
+      build-args: ${{ matrix.args }}
+      asset-prefix: handy-${{ matrix.target }}
+      upload-artifacts: true
+      # Deliberately false: no secret reaches the BUILD jobs, which are the ones that
+      # execute repository code. Signing happens in `publish`, behind the environment
+      # gate, where the only thing that runs is the signer itself.
+      sign-binaries: false
+      release-id: ""
+
+  # --------------------------------------------------------------- publish ---
+  publish:
+    name: Sign and publish
+    needs: [verify, build]
+    runs-on: windows-latest
+    # THE SECURITY BOUNDARY. Configure required reviewers on this environment and the
+    # job waits for a human before any secret is materialised.
+    environment: release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download every built artifact
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Verify each installer carries the tagged version
+        shell: bash
+        run: |
+          # Exact token, not a substring: "includes 1.6.2" would also accept 11.6.2,
+          # and Tauri signs BYTES not names - a stale installer under a new filename
+          # would carry a perfectly valid signature and every client would "update"
+          # to an older build, then be offered the same update forever.
+          VER="${{ needs.verify.outputs.version }}"
+          BAD=0
+          while IFS= read -r f; do
+            base=$(basename "$f")
+            if ! echo "$base" | grep -qE "[_-]${VER//./\\.}[_.-]"; then
+              echo "::error::$base does not carry version $VER"
+              BAD=1
+            fi
+          done < <(find dist -type f \( -name '*.exe' -o -name '*.dmg' -o -name '*.deb' -o -name '*.rpm' -o -name '*.AppImage' \))
+          [ "$BAD" -eq 0 ] || exit 1
+          echo "All installers carry $VER"
+
+      - name: Sign the Windows installer
+        shell: bash
+        env:
+          # Environment secrets, materialised only after the reviewer approves.
+          # Passed through the ENVIRONMENT, never as command arguments: `bun run`
+          # echoes the command line it executes, which would print the key.
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          if [ -z "$TAURI_PRIVATE_KEY" ]; then
+            echo "::warning::No signing key in the 'release' environment - publishing without updater signatures. Sign locally with scripts/sign-and-release.ps1 if auto-update is required."
+            exit 0
+          fi
+          for exe in $(find dist -type f -name '*_x64-setup.exe'); do
+            echo "signing $(basename "$exe")"
+            bunx @tauri-apps/cli signer sign "$exe"
+          done
+
+      - name: Publish the release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VER="${{ needs.verify.outputs.version }}"
+          mapfile -t ASSETS < <(find dist -type f \( -name '*.exe' -o -name '*.exe.sig' -o -name '*.dmg' -o -name '*.deb' -o -name '*.rpm' -o -name '*.AppImage' \))
+          gh release create "v$VER" "${ASSETS[@]}" \
+            --title "Handy Tool $VER" --generate-notes --latest
