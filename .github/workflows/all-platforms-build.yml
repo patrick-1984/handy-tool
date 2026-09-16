@@ -38,61 +38,55 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  plan:
+    name: Select targets
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.pick.outputs.matrix }}
+    steps:
+      - name: Pick the requested targets
+        id: pick
+        shell: bash
+        env:
+          WANT: ${{ inputs.platforms }}
+        run: |
+          # The full target list lives here rather than in the build job's matrix
+          # because a job-level `if` cannot reference `matrix` for a reusable
+          # workflow call - the filter has to happen before the matrix exists.
+          cat > all.json <<'JSON'
+          [
+            {"label": "Windows x64", "group": "windows", "platform": "windows-latest", "args": "--bundles nsis --config src-tauri/tauri.windows-ci.conf.json --no-sign", "target": "x86_64-pc-windows-msvc", "prefix": "handy-windows-x64"},
+            {"label": "Windows ARM64", "group": "windows", "platform": "windows-11-arm", "args": "--target aarch64-pc-windows-msvc --bundles nsis --config src-tauri/tauri.windows-ci.conf.json --no-sign", "target": "aarch64-pc-windows-msvc", "prefix": "handy-windows-arm64"},
+            {"label": "macOS Apple Silicon", "group": "macos", "platform": "macos-26", "args": "--target aarch64-apple-darwin --bundles dmg --config src-tauri/tauri.ci-unsigned.conf.json", "target": "aarch64-apple-darwin", "prefix": "handy-macos-arm64"},
+            {"label": "macOS Intel", "group": "macos", "platform": "macos-latest", "args": "--target x86_64-apple-darwin --bundles dmg --config src-tauri/tauri.ci-unsigned.conf.json", "target": "x86_64-apple-darwin", "prefix": "handy-macos-x64"},
+            {"label": "Linux x64 deb", "group": "linux", "platform": "ubuntu-22.04", "args": "--bundles deb --config src-tauri/tauri.ci-unsigned.conf.json", "target": "x86_64-unknown-linux-gnu", "prefix": "handy-linux-x64-deb"},
+            {"label": "Linux x64 AppImage + RPM", "group": "linux", "platform": "ubuntu-24.04", "args": "--bundles appimage,rpm --config src-tauri/tauri.ci-unsigned.conf.json", "target": "x86_64-unknown-linux-gnu", "prefix": "handy-linux-x64"},
+            {"label": "Linux ARM64", "group": "linux", "platform": "ubuntu-24.04-arm", "args": "--bundles appimage,deb,rpm --config src-tauri/tauri.ci-unsigned.conf.json", "target": "aarch64-unknown-linux-gnu", "prefix": "handy-linux-arm64"}
+          ]
+          JSON
+          if [ "$WANT" = "all" ]; then
+            SEL=$(jq -c '.' all.json)
+          else
+            SEL=$(jq -c --arg g "$WANT" '[.[] | select(.group == $g)]' all.json)
+          fi
+          COUNT=$(echo "$SEL" | jq 'length')
+          if [ "$COUNT" -eq 0 ]; then
+            echo "No targets matched '$WANT'" >&2
+            exit 1
+          fi
+          echo "Building $COUNT target(s) for '$WANT'"
+          echo "$SEL" | jq -r '.[] | "  - \(.label)"'
+          echo "matrix=$SEL" >> "$GITHUB_OUTPUT"
+
   build:
     name: ${{ matrix.label }}
+    needs: plan
     strategy:
       # Never let one platform's failure hide another's result - the whole point is to
       # learn the state of all of them in a single dispatch.
       fail-fast: false
       matrix:
-        include:
-          - label: Windows x64
-            group: windows
-            platform: "windows-latest"
-            args: "--bundles nsis --config src-tauri/tauri.windows-ci.conf.json --no-sign"
-            target: "x86_64-pc-windows-msvc"
-            prefix: "handy-windows-x64"
-          - label: Windows ARM64
-            group: windows
-            platform: "windows-11-arm"
-            args: "--target aarch64-pc-windows-msvc --bundles nsis --config src-tauri/tauri.windows-ci.conf.json --no-sign"
-            target: "aarch64-pc-windows-msvc"
-            prefix: "handy-windows-arm64"
-          - label: macOS Apple Silicon
-            group: macos
-            # macOS 26 carries the Apple Intelligence SDK the post-processing provider
-            # links against; an older runner cannot build that path.
-            platform: "macos-26"
-            args: "--target aarch64-apple-darwin --bundles dmg --config src-tauri/tauri.ci-unsigned.conf.json"
-            target: "aarch64-apple-darwin"
-            prefix: "handy-macos-arm64"
-          - label: macOS Intel
-            group: macos
-            platform: "macos-latest"
-            args: "--target x86_64-apple-darwin --bundles dmg --config src-tauri/tauri.ci-unsigned.conf.json"
-            target: "x86_64-apple-darwin"
-            prefix: "handy-macos-x64"
-          - label: Linux x64 deb
-            group: linux
-            # 22.04 on purpose: a .deb built against a newer glibc will not install on
-            # older distributions, and the deb is the compatibility floor.
-            platform: "ubuntu-22.04"
-            args: "--bundles deb --config src-tauri/tauri.ci-unsigned.conf.json"
-            target: "x86_64-unknown-linux-gnu"
-            prefix: "handy-linux-x64-deb"
-          - label: Linux x64 AppImage + RPM
-            group: linux
-            platform: "ubuntu-24.04"
-            args: "--bundles appimage,rpm --config src-tauri/tauri.ci-unsigned.conf.json"
-            target: "x86_64-unknown-linux-gnu"
-            prefix: "handy-linux-x64"
-          - label: Linux ARM64
-            group: linux
-            platform: "ubuntu-24.04-arm"
-            args: "--bundles appimage,deb,rpm --config src-tauri/tauri.ci-unsigned.conf.json"
-            target: "aarch64-unknown-linux-gnu"
-            prefix: "handy-linux-arm64"
-
+        include: ${{ fromJSON(needs.plan.outputs.matrix) }}
     uses: ./.github/workflows/build.yml
     with:
       platform: ${{ matrix.platform }}
@@ -105,6 +99,3 @@ jobs:
       sign-binaries: false
       release-id: ""
     secrets: inherit
-    if: >-
-      github.event.inputs.platforms == 'all' ||
-      github.event.inputs.platforms == matrix.group
