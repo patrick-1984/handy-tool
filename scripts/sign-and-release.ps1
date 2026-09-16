@@ -98,16 +98,28 @@ try {
     $keyPath = Join-Path $repoRoot ".keys\handy-updater.key"
     $pwPath = Join-Path $repoRoot ".keys\handy-updater.password"
     if (-not (Test-Path $keyPath)) { throw "Updater key not found at $keyPath" }
+    # `tauri signer sign` reads DIFFERENT variable names than `tauri build` does:
+    # TAURI_PRIVATE_KEY* versus TAURI_SIGNING_PRIVATE_KEY*. Setting only the build
+    # names fails with "Unable to find the private key". Set both.
+    #
+    # Prefer the PATH form: the key's contents then never become a process argument
+    # or a shell variable that something could echo.
+    $env:TAURI_PRIVATE_KEY_PATH = $keyPath
+    $env:TAURI_PRIVATE_KEY_PASSWORD = (Get-Content $pwPath -Raw).Trim()
     $env:TAURI_SIGNING_PRIVATE_KEY = (Get-Content $keyPath -Raw).Trim()
-    $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = (Get-Content $pwPath -Raw).Trim()
+    $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = $env:TAURI_PRIVATE_KEY_PASSWORD
 
     Push-Location $repoRoot
     foreach ($f in $toSign) {
         Write-Host "Signing $($f.Name) ..."
-        & bun run tauri signer sign `
-            --private-key $env:TAURI_SIGNING_PRIVATE_KEY `
-            --password $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD `
-            $f.FullName | Out-Null
+        # NEVER pass the key or password as ARGUMENTS. `bun run` echoes the full
+        # command line it executes, so an argument-passed secret is printed to the
+        # console, to CI logs, and to any transcript capturing this session. The
+        # signer reads TAURI_SIGNING_PRIVATE_KEY / _PASSWORD from the environment,
+        # which is set above and cleared in the finally block.
+        # Call the CLI directly rather than through `bun run`, which prints the
+        # resolved command line it is about to execute.
+        & bunx @tauri-apps/cli signer sign $f.FullName | Out-Null
         if (-not (Test-Path "$($f.FullName).sig")) { throw "Signing produced no .sig for $($f.Name)" }
         Write-Host "  -> $($f.Name).sig" -ForegroundColor Green
     }
@@ -117,6 +129,8 @@ finally {
     # Clear unconditionally, including on failure.
     $env:TAURI_SIGNING_PRIVATE_KEY = $null
     $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = $null
+    $env:TAURI_PRIVATE_KEY_PATH = $null
+    $env:TAURI_PRIVATE_KEY_PASSWORD = $null
 }
 
 if ($DryRun) {
@@ -132,7 +146,11 @@ $assets += $toSign | ForEach-Object { "$($_.FullName).sig" }
 $notesArg = if ($NotesFile -and (Test-Path $NotesFile)) { @("--notes-file", $NotesFile) }
             else { @("--generate-notes") }
 
-$existing = & $gh release view "v$version" --repo $Repo --json tagName 2>$null
+# `gh release view` exits non-zero when the release does not exist, which is the
+# normal first-publish path - so it must not trip $ErrorActionPreference.
+$existing = $null
+try { $existing = & $gh release view "v$version" --repo $Repo --json tagName 2>$null } catch { }
+if ($LASTEXITCODE -ne 0) { $existing = $null }
 if ($existing) {
     Write-Host "`nRelease v$version exists - uploading assets to it." -ForegroundColor Yellow
     & $gh release upload "v$version" @assets --repo $Repo --clobber
