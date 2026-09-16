@@ -272,6 +272,12 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # CMake 4.x refuses `cmake_minimum_required(VERSION <3.5)`, which the
+          # vendored libopus inside audiopus_sys still declares - so its build script
+          # fails on runners that ship CMake 4 (macOS hit this on every target).
+          # The repo's own check.cmd/unittest.cmd already export this; CI did not,
+          # which is why local builds worked and CI did not.
+          CMAKE_POLICY_VERSION_MINIMUM: "3.5"
           APPLE_ID: ${{ inputs.sign-binaries && secrets.APPLE_ID || '' }}
           APPLE_ID_PASSWORD: ${{ inputs.sign-binaries && secrets.APPLE_ID_PASSWORD || '' }}
           APPLE_PASSWORD: ${{ inputs.sign-binaries && secrets.APPLE_PASSWORD || '' }}
