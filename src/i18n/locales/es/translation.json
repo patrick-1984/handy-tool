@@ -818,6 +818,14 @@
         "title": "Dispositivo de reproducción a capturar",
         "description": "Desde qué altavoces o auriculares grabar. Seguir el predeterminado del sistema suele ser lo correcto y sigue funcionando cuando Windows cambia de dispositivo en una llamada.",
         "followDefault": "Seguir el predeterminado del sistema"
+      },
+      "systemAudioDelay": {
+        "title": "Retardo del audio del sistema",
+        "description": "Cuánto se retrasa el audio del sistema respecto a tu micrófono. El valor correcto depende del hardware: unos auriculares USB, un enlace Bluetooth y un monitor HDMI almacenan de forma distinta. Si las palabras de la otra persona llegan tarde, súbelo."
+      },
+      "systemAudioGain": {
+        "title": "Nivel del audio del sistema",
+        "description": "Qué volumen tiene el audio del sistema respecto a tu voz. Súbelo si la otra persona queda demasiado baja para transcribirla; bájalo si te tapa. Solo se escala el audio del sistema: tu micrófono nunca se toca."
       }
     },
     "postProcessing": {

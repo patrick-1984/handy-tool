@@ -75,22 +75,26 @@ impl Downmix {
     }
 }
 
-/// Memoryless soft clip with a knee at 0.7.
+/// Bound a mixed sum to the valid PCM range.
 ///
-/// Two legs each peaking at -12 dBFS sum to -6 dBFS, so plain addition is normally
-/// safe - but a join chime at full scale plus a mic is not. A memoryless curve is
-/// used rather than a look-ahead limiter because there is no attack/release state to
-/// get wrong, and `exp` is only evaluated above the knee, i.e. almost never.
+/// Linear right up to full scale, clamped at it.
+///
+/// This began as a soft knee at 0.7, and that was WRONG in a way worth recording: a
+/// knee below full scale reshapes loud samples unconditionally, so a microphone
+/// sample of 0.9 came back as ~0.846 even when the system leg contributed exactly
+/// nothing. That breaks the one invariant everyone who enables this feature depends
+/// on - that mixing with a silent system leg is identical to microphone-only - and it
+/// breaks it precisely on the loudest speech, where a listener would blame the
+/// engine. Any curve that compresses below 1.0 has this property, so the knee has to
+/// sit AT full scale.
+///
+/// Distortion is therefore confined to sums that would overflow the format anyway,
+/// and `system_audio_gain` exists to keep sums out of that territory.
 ///
 /// Deliberately NOT `(a + b) * 0.5`: halving the sum halves the microphone too, and
 /// the whole pipeline - including the VAD threshold - is tuned to today's mic level.
 pub fn soft_clip(x: f32) -> f32 {
-    let a = x.abs();
-    if a <= 0.7 {
-        x
-    } else {
-        x.signum() * (0.7 + 0.3 * (1.0 - (-(a - 0.7) / 0.3).exp()))
-    }
+    x.clamp(-1.0, 1.0)
 }
 
 /// Root-mean-square of a block, used only to decide whether the slave is quiet
@@ -129,6 +133,8 @@ pub struct SlaveRing {
     /// successful recording of silence, which is the single most likely way this
     /// feature fails without anyone noticing.
     saw_signal: bool,
+    /// Alignment target in samples at 16 kHz. See [`SlaveRing::with_target`].
+    target: usize,
 }
 
 impl Default for SlaveRing {
@@ -139,11 +145,28 @@ impl Default for SlaveRing {
 
 impl SlaveRing {
     pub fn new() -> Self {
+        Self::with_target(RING_TARGET)
+    }
+
+    /// Build a ring holding `target` samples at 16 kHz.
+    ///
+    /// The target IS the alignment: it is how far the system-audio leg lags the
+    /// microphone. 100 ms is a sensible default, but the true offset is hardware -
+    /// a USB headset, a Bluetooth link and an HDMI monitor each buffer differently,
+    /// and the endpoint's own driver adds more - so it has to be tunable rather than
+    /// guessed once and baked in.
+    pub fn with_target(target: usize) -> Self {
         Self {
             buf: VecDeque::with_capacity(RING_HIGH_WATER),
             stats: DriftStats::default(),
             saw_signal: false,
+            target: target.min(RING_HIGH_WATER / 2),
         }
+    }
+
+    /// Current alignment target, in samples at 16 kHz.
+    pub fn target(&self) -> usize {
+        self.target
     }
 
     /// Discard everything. Called at take start and cancel.
@@ -189,6 +212,18 @@ impl SlaveRing {
         }
     }
 
+    /// Take everything still buffered, without drift correction.
+    ///
+    /// The ring is a ~100 ms DELAY LINE: pulls happen 1:1 with master frames, so when
+    /// the master stops there is still far-end audio in here that was captured DURING
+    /// the take and has never been mixed. Dropping it truncates the other participant
+    /// mid-word at the end of every take. Drift correction is deliberately skipped -
+    /// there is no master left to drift against.
+    pub fn drain(&mut self) -> Vec<f32> {
+        let out: Vec<f32> = self.buf.drain(..).collect();
+        out
+    }
+
     /// Pull exactly `n` samples to mix against `n` master samples.
     ///
     /// Applies drift correction first, then fills. An underrun zero-fills rather than
@@ -228,8 +263,8 @@ impl SlaveRing {
             return;
         }
 
-        if len + CORRECTION_BATCH <= RING_TARGET {
-            let debt = RING_TARGET - len;
+        if len + CORRECTION_BATCH <= self.target {
+            let debt = self.target - len;
             let front_quiet = self.front_is_quiet();
             if front_quiet || debt >= HARD_CORRECTION_DEBT {
                 for _ in 0..CORRECTION_BATCH {
@@ -237,8 +272,8 @@ impl SlaveRing {
                 }
                 self.stats.inserted += CORRECTION_BATCH;
             }
-        } else if len >= RING_TARGET + CORRECTION_BATCH {
-            let excess = len - RING_TARGET;
+        } else if len >= self.target + CORRECTION_BATCH {
+            let excess = len - self.target;
             let front_quiet = self.front_is_quiet();
             if front_quiet || excess >= HARD_CORRECTION_DEBT {
                 for _ in 0..CORRECTION_BATCH {
@@ -257,6 +292,17 @@ impl SlaveRing {
         let sum: f32 = self.buf.iter().take(take).map(|s| s * s).sum();
         (sum / take as f32).sqrt() < QUIET_RMS
     }
+}
+
+/// Convert a user-facing alignment offset in milliseconds to a ring target.
+///
+/// Clamped to 0..=2000 ms. Negative values are meaningless here - the system leg
+/// cannot be pulled EARLIER than the microphone, because the microphone is the clock
+/// and the audio has not been captured yet. A user who needs the opposite correction
+/// is describing a microphone that lags, which is not something this ring can fix.
+pub fn target_from_delay_ms(delay_ms: i32) -> usize {
+    let ms = delay_ms.clamp(0, 2_000) as usize;
+    (ms * 16_000) / 1_000
 }
 
 /// Mix one master sample with one slave sample.
@@ -281,6 +327,70 @@ mod tests {
     use super::*;
 
     #[test]
+    fn drain_returns_the_buffered_tail_without_correcting_drift() {
+        // The ring is a delay line: when the master stops, what is left in here is
+        // far-end audio captured DURING the take that no master frame will pull.
+        let mut ring = SlaveRing::new();
+        ring.push(&[0.1, 0.2, 0.3]);
+        let tail = ring.drain();
+        assert_eq!(tail, vec![0.1, 0.2, 0.3]);
+        assert!(ring.is_empty());
+        assert_eq!(
+            ring.stats().inserted,
+            0,
+            "a flush must not manufacture samples"
+        );
+        assert_eq!(ring.stats().dropped, 0);
+    }
+
+    #[test]
+    fn the_alignment_target_is_configurable_and_bounded() {
+        assert_eq!(target_from_delay_ms(100), 1_600); // the default, 100 ms @ 16 kHz
+        assert_eq!(target_from_delay_ms(0), 0);
+        assert_eq!(target_from_delay_ms(250), 4_000);
+        // A negative offset is meaningless: the ring cannot pull audio earlier than
+        // the microphone, because the microphone is the clock.
+        assert_eq!(target_from_delay_ms(-500), 0);
+        // And a typo cannot produce an unbounded ring.
+        assert_eq!(target_from_delay_ms(999_999), target_from_delay_ms(2_000));
+        assert!(SlaveRing::with_target(usize::MAX).target() <= RING_HIGH_WATER / 2);
+    }
+
+    #[test]
+    fn a_larger_target_holds_more_audio_before_correcting() {
+        // 250 ms of hardware lag: the ring must settle at 4000 samples, not 1600.
+        let mut ring = SlaveRing::with_target(target_from_delay_ms(250));
+        assert_eq!(ring.target(), 4_000);
+        ring.push(&vec![0.0; 4_000 + CORRECTION_BATCH * 2]);
+        let mut out = Vec::new();
+        ring.pull(10, &mut out);
+        assert_eq!(
+            ring.stats().dropped,
+            CORRECTION_BATCH,
+            "should trim toward 4000"
+        );
+
+        // The default ring would have trimmed this same occupancy much harder.
+        let mut small = SlaveRing::new();
+        small.push(&vec![0.0; 4_000 + CORRECTION_BATCH * 2]);
+        small.pull(10, &mut out);
+        assert!(small.stats().dropped >= CORRECTION_BATCH);
+    }
+
+    #[test]
+    fn a_silent_slave_is_identical_to_mic_only_across_the_whole_range() {
+        // The earlier version of this test only swept +/-0.3, which never reaches
+        // soft_clip's 0.7 knee - so it could not have caught a loud sample being
+        // reshaped by a mix that adds nothing. Sweep the full range.
+        for i in -100..=100 {
+            let mic = i as f32 / 100.0;
+            let mut buf = vec![mic];
+            mix_into(&mut buf, &[0.0], 1.0);
+            assert_eq!(buf[0], mic, "silent slave must not alter mic sample {mic}");
+        }
+    }
+
+    #[test]
     fn a_silent_system_leg_leaves_the_microphone_bit_identical() {
         // The single most important invariant: enabling the mix must not change
         // ordinary dictation when nothing is playing. If this fails, every user who
@@ -292,18 +402,17 @@ mod tests {
     }
 
     #[test]
-    fn soft_clip_is_transparent_below_the_knee_and_bounded_above_it() {
-        for x in [-0.7, -0.5, 0.0, 0.25, 0.7] {
-            assert_eq!(soft_clip(x), x, "must be untouched below the knee: {x}");
+    fn clipping_is_transparent_across_the_whole_valid_range() {
+        // Every representable PCM sample must pass through untouched. A knee below
+        // full scale would fail here - and would mean enabling the mix quietly
+        // changed loud microphone audio.
+        for i in -100..=100 {
+            let x = i as f32 / 100.0;
+            assert_eq!(soft_clip(x), x, "must be untouched inside full scale: {x}");
         }
-        // Above the knee it compresses but never exceeds 1.0, and stays monotonic.
-        let mut last = soft_clip(0.7);
-        for i in 71..=200 {
-            let v = soft_clip(i as f32 / 100.0);
-            assert!(v > last, "must stay monotonic at {i}");
-            assert!(v < 1.0, "must stay below full scale at {i}: {v}");
-            last = v;
-        }
+        // Only genuine overflow is bounded, and symmetrically.
+        assert_eq!(soft_clip(1.4), 1.0);
+        assert_eq!(soft_clip(-1.4), -1.0);
         assert_eq!(soft_clip(-2.0), -soft_clip(2.0), "must be symmetric");
     }
 

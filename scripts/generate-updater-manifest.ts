@@ -65,9 +65,14 @@ if (
 // a VALID signature on the wrong binary, and every client silently "updates" to it
 // and then re-offers the same update forever. The build dir legitimately holds every
 // past release, so this is one bad --installer away at all times.
-if (!basename(installer).includes(config.version)) {
+// Exact token match, not `includes`: a substring test passes "11.6.0" for version
+// "1.6.0", and also passes any file that merely mentions the version anywhere in its
+// name. The installer name is `Handy Tool_<version>_x64-setup.exe`, so pull the
+// version out and compare it whole.
+const installerVersion = basename(installer).match(/_(\d+\.\d+\.\d+)_/)?.[1];
+if (installerVersion !== config.version) {
   throw new Error(
-    `Installer ${basename(installer)} does not carry version ${config.version} from tauri.conf.json. ` +
+    `Installer ${basename(installer)} carries version ${installerVersion ?? "<unparseable>"}, not ${config.version} from tauri.conf.json. ` +
       `Refusing to publish a manifest that would point at the wrong binary. ` +
       `Pass the right --installer, or bump the version first.`,
   );

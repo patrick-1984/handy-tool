@@ -818,6 +818,14 @@
         "title": "Périphérique de lecture à capturer",
         "description": "Depuis quels haut-parleurs ou écouteurs enregistrer. Suivre le périphérique par défaut est généralement le bon choix et continue de fonctionner quand Windows change d'appareil pour un appel.",
         "followDefault": "Suivre le périphérique par défaut"
+      },
+      "systemAudioDelay": {
+        "title": "Retard du son système",
+        "description": "De combien le son système est en retard sur votre micro. La bonne valeur dépend du matériel : un casque USB, une liaison Bluetooth et un écran HDMI ne tamponnent pas pareil. Si les mots de l'autre arrivent en retard, augmentez-la."
+      },
+      "systemAudioGain": {
+        "title": "Niveau du son système",
+        "description": "Le volume du son système par rapport à votre voix. Augmentez-le si l'autre personne est trop faible pour être transcrite, baissez-le si elle vous couvre. Seul le son système est ajusté — votre micro n'est jamais touché."
       }
     },
     "postProcessing": {

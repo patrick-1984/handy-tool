@@ -818,6 +818,14 @@
         "title": "要擷取的播放裝置",
         "description": "從哪個喇叭或耳機錄製。通常跟隨系統預設裝置即可，並且在 Windows 為通話切換裝置時仍然有效。",
         "followDefault": "跟隨系統預設"
+      },
+      "systemAudioDelay": {
+        "title": "系統聲音延遲",
+        "description": "系統聲音比麥克風延後多少。合適的值取決於硬體——USB 耳機、藍牙連線和 HDMI 螢幕的緩衝各不相同。如果對方的話比你的晚到，就調高。"
+      },
+      "systemAudioGain": {
+        "title": "系統聲音電平",
+        "description": "系統聲音相對於你說話聲的響度。對方太小聲無法轉錄時調高；蓋過你的聲音時調低。只縮放系統聲音——麥克風不會被改動。"
       }
     },
     "postProcessing": {

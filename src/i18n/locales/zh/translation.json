@@ -818,6 +818,14 @@
         "title": "要捕获的播放设备",
         "description": "从哪个扬声器或耳机录制。通常跟随系统默认设备即可，并且在 Windows 为通话切换设备时仍然有效。",
         "followDefault": "跟随系统默认"
+      },
+      "systemAudioDelay": {
+        "title": "系统声音延迟",
+        "description": "系统声音比麦克风滞后多少。合适的值取决于硬件——USB 耳机、蓝牙连接和 HDMI 显示器的缓冲各不相同。如果对方的话比你的晚到，就调高。"
+      },
+      "systemAudioGain": {
+        "title": "系统声音电平",
+        "description": "系统声音相对于你说话声的响度。对方太小声无法转录时调高；盖过你的声音时调低。只缩放系统声音——麦克风不会被改动。"
       }
     },
     "postProcessing": {

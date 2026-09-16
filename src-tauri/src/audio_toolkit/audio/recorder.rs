@@ -14,7 +14,7 @@ use cpal::{
     traits::{DeviceTrait, HostTrait, StreamTrait},
 };
 
-use crate::audio_toolkit::audio::mixer::{Downmix, SlaveRing, mix_into};
+use crate::audio_toolkit::audio::mixer::{self, Downmix, SlaveRing, mix_into};
 use crate::audio_toolkit::{
     VoiceActivityDetector,
     audio::{
@@ -91,6 +91,8 @@ pub struct AudioRecorder {
     sys_handle: Option<std::thread::JoinHandle<()>>,
     /// Linear gain applied to the system leg before mixing.
     sys_gain: f32,
+    /// Configured system-leg lag in ms; sizes the ring at arm time.
+    sys_delay_ms: i32,
     worker_handle: Option<std::thread::JoinHandle<()>>,
     vad: Option<Arc<Mutex<Box<dyn vad::VoiceActivityDetector>>>>,
     level_cb: Option<Arc<dyn Fn(Vec<f32>) + Send + Sync + 'static>>,
@@ -110,6 +112,7 @@ impl AudioRecorder {
             sys_kill_tx: None,
             sys_handle: None,
             sys_gain: 1.0,
+            sys_delay_ms: 100,
             worker_handle: None,
             vad: None,
             level_cb: None,
@@ -173,6 +176,11 @@ impl AudioRecorder {
     pub fn open_system_audio(&mut self, device: Device) -> Result<(), Box<dyn std::error::Error>> {
         if self.sys_kill_tx.is_some() {
             return Ok(()); // already open
+        }
+        // Size the ring to the configured alignment BEFORE the callback can push to
+        // it. The target is the delay, so this is the one place it can be applied.
+        if let Ok(mut r) = self.sys_ring.lock() {
+            *r = SlaveRing::with_target(mixer::target_from_delay_ms(self.sys_delay_ms));
         }
         let ring = Arc::clone(&self.sys_ring);
         let errored = Arc::clone(&self.sys_errored);
@@ -241,8 +249,14 @@ impl AudioRecorder {
                 .into())
             }
             Err(_) => {
+                // Do NOT join here. The thread is stalled inside a COM call by
+                // definition - that is why the timeout fired - so joining it would
+                // block the caller unboundedly while it holds the recording-manager
+                // locks, which is exactly what the timeout exists to prevent.
+                // Dropping the kill sender lets the thread tear its own stream down
+                // and exit if the call ever returns; it owns everything it touches.
                 drop(kill_tx);
-                let _ = handle.join();
+                self.sys_errored.store(true, Ordering::Release);
                 Err(Error::new(
                     std::io::ErrorKind::TimedOut,
                     "system audio capture did not start within 3s",
@@ -267,6 +281,12 @@ impl AudioRecorder {
     /// before `open()`, since the consumer captures it at spawn time.
     pub fn set_system_audio_gain(&mut self, gain: f32) {
         self.sys_gain = gain;
+    }
+
+    /// Set how far the system leg lags the microphone, in milliseconds. Must be
+    /// called before `open_system_audio()`, which is what sizes the ring.
+    pub fn set_system_audio_delay_ms(&mut self, delay_ms: i32) {
+        self.sys_delay_ms = delay_ms;
     }
 
     /// The shared system-audio ring, for the consumer to pull from.
@@ -395,8 +415,8 @@ impl AudioRecorder {
                     Arc::clone(&first_buffer_seen_cb),
                     Arc::clone(&first_buffer_nanos_cb),
                     Arc::clone(&stream_errored_cb),
-                )
-                .unwrap(),
+                    role,
+                ),
                 cpal::SampleFormat::I8 => AudioRecorder::build_stream::<i8>(
                     &thread_device,
                     &config,
@@ -406,8 +426,8 @@ impl AudioRecorder {
                     Arc::clone(&first_buffer_seen_cb),
                     Arc::clone(&first_buffer_nanos_cb),
                     Arc::clone(&stream_errored_cb),
-                )
-                .unwrap(),
+                    role,
+                ),
                 cpal::SampleFormat::I16 => AudioRecorder::build_stream::<i16>(
                     &thread_device,
                     &config,
@@ -417,8 +437,8 @@ impl AudioRecorder {
                     Arc::clone(&first_buffer_seen_cb),
                     Arc::clone(&first_buffer_nanos_cb),
                     Arc::clone(&stream_errored_cb),
-                )
-                .unwrap(),
+                    role,
+                ),
                 cpal::SampleFormat::I32 => AudioRecorder::build_stream::<i32>(
                     &thread_device,
                     &config,
@@ -428,8 +448,8 @@ impl AudioRecorder {
                     Arc::clone(&first_buffer_seen_cb),
                     Arc::clone(&first_buffer_nanos_cb),
                     Arc::clone(&stream_errored_cb),
-                )
-                .unwrap(),
+                    role,
+                ),
                 cpal::SampleFormat::F32 => AudioRecorder::build_stream::<f32>(
                     &thread_device,
                     &config,
@@ -439,12 +459,31 @@ impl AudioRecorder {
                     Arc::clone(&first_buffer_seen_cb),
                     Arc::clone(&first_buffer_nanos_cb),
                     Arc::clone(&stream_errored_cb),
-                )
-                .unwrap(),
-                _ => panic!("unsupported sample format"),
+                    role,
+                ),
+                other => {
+                    // panic = "abort" (Cargo.toml:143) makes any panic here a silent
+                    // whole-process death, and a loopback MASTER reaches this path in
+                    // system-audio-only mode.
+                    log::error!("Unsupported capture sample format: {other:?}");
+                    arm_errored_worker.store(true, Ordering::Release);
+                    return;
+                }
+            };
+            let stream = match stream {
+                Ok(s) => s,
+                Err(e) => {
+                    log::error!("Capture stream construction failed: {e}");
+                    arm_errored_worker.store(true, Ordering::Release);
+                    return;
+                }
             };
 
-            stream.play().expect("failed to start stream");
+            if let Err(e) = stream.play() {
+                log::error!("Capture stream failed to start: {e}");
+                arm_errored_worker.store(true, Ordering::Release);
+                return;
+            }
             let stream_playing_in = open_start.elapsed();
             log::debug!(
                 "T-113: recorder worker ready (stream playing) {:?} after open() was called",
@@ -519,7 +558,13 @@ impl AudioRecorder {
     /// True when the CPAL error callback has reported a fault on the current
     /// stream. Consult this before reusing an open recorder.
     pub fn stream_faulted(&self) -> bool {
-        self.stream_errored.load(Ordering::Relaxed) || self.arm_errored.load(Ordering::Acquire)
+        // The SLAVE counts too. Without it, unplugging the playback endpoint in mixed
+        // mode leaves a dead loopback leg attached: the microphone stays healthy, the
+        // reuse check says "fine", and every later take records only the user's own
+        // voice while the UI still reports system audio is being captured.
+        self.stream_errored.load(Ordering::Relaxed)
+            || self.arm_errored.load(Ordering::Acquire)
+            || self.sys_errored.load(Ordering::Acquire)
     }
 
     pub fn close(&mut self) -> Result<(), Box<dyn std::error::Error>> {
@@ -545,11 +590,20 @@ impl AudioRecorder {
         first_buffer_seen: Arc<AtomicBool>,
         first_buffer_nanos: Arc<AtomicU64>,
         stream_errored: Arc<AtomicBool>,
+        role: EndpointRole,
     ) -> Result<cpal::Stream, cpal::BuildStreamError>
     where
         T: Sample + SizedSample + Send + 'static,
         f32: cpal::FromSample<T>,
     {
+        // A render endpoint opened as the MASTER (system-audio-only mode) must fold
+        // the same way the mixed slave does. The plain mean puts a 5.1 endpoint
+        // carrying its meeting in FL/FR about 9.5 dB down - quiet enough for the VAD
+        // to discard the far end as noise rather than merely sound faint.
+        let downmix = match role {
+            EndpointRole::RenderLoopback => Downmix::FrontPair,
+            EndpointRole::Capture => Downmix::Mean,
+        };
         let mut output_buffer = Vec::new();
 
         let stream_cb = move |data: &[T], _: &cpal::InputCallbackInfo| {
@@ -585,13 +639,11 @@ impl AudioRecorder {
                 let frame_count = data.len() / channels;
                 output_buffer.reserve(frame_count);
 
+                let mut scratch: Vec<f32> = Vec::with_capacity(channels);
                 for frame in data.chunks_exact(channels) {
-                    let mono_sample = frame
-                        .iter()
-                        .map(|&sample| sample.to_sample::<f32>())
-                        .sum::<f32>()
-                        / channels as f32;
-                    output_buffer.push(mono_sample);
+                    scratch.clear();
+                    scratch.extend(frame.iter().map(|&sample| sample.to_sample::<f32>()));
+                    output_buffer.push(downmix.fold(&scratch, channels));
                 }
             }
 
@@ -1072,6 +1124,17 @@ fn run_consumer(
         while let Ok(cmd) = cmd_rx.try_recv() {
             match cmd {
                 Cmd::Start(params) => {
+                    // The slave ring is a ~100ms delay line that the loopback leg has
+                    // been filling since it armed - i.e. since BEFORE the key was
+                    // pressed. Without this clear every mixed take opens with up to two
+                    // seconds of audio captured before the press: a transcript bug and a
+                    // privacy regression at once. The master's own resampler is reset
+                    // just below for exactly the same reason.
+                    if let Some(ring) = sys_ring.as_ref() {
+                        if let Ok(mut r) = ring.lock() {
+                            r.clear();
+                        }
+                    }
                     processed_samples.clear();
                     segment_start_idx = 0;
                     recording = true;
@@ -1120,6 +1183,31 @@ fn run_consumer(
                             &closed_chunk_cb,
                         )
                     });
+
+                    // Flush the slave leg's own tail. The ring is a delay line, so
+                    // when the master stops it still holds far-end audio captured
+                    // during the take that no master frame will ever pull. It is mixed
+                    // against silence (the mic really has stopped) and goes through the
+                    // VAD like any other frame, so a sentence the other participant was
+                    // still finishing is not truncated.
+                    if let Some(ring) = sys_ring.as_ref() {
+                        let tail = ring.lock().ok().map(|mut r| r.drain()).unwrap_or_default();
+                        if !tail.is_empty() {
+                            mix_buf.clear();
+                            mix_buf.resize(tail.len(), 0.0);
+                            mix_into(&mut mix_buf, &tail, sys_gain);
+                            process_frame(
+                                &mix_buf,
+                                true,
+                                &vad,
+                                &mut chunk_state,
+                                &mut processed_samples,
+                                &mut segment_start_idx,
+                                &segment_cb,
+                                &closed_chunk_cb,
+                            );
+                        }
+                    }
 
                     // Flush audio the VAD is still holding back (voiced frames in
                     // an unconfirmed onset) so a trailing word isn't dropped.
@@ -1181,6 +1269,13 @@ fn run_consumer(
                     recording = false;
                     if let Some(mut chunk) = chunk_state.take() {
                         chunk.discard_all();
+                    }
+                    // Same reason as Cmd::Start: otherwise a cancelled take's far-end
+                    // audio leaks into whatever take comes next.
+                    if let Some(ring) = sys_ring.as_ref() {
+                        if let Ok(mut r) = ring.lock() {
+                            r.clear();
+                        }
                     }
                     processed_samples.clear();
                     segment_start_idx = 0;

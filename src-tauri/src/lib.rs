@@ -468,6 +468,7 @@ pub fn run(cli_args: CliArgs) {
         shortcut::change_capture_source_setting,
         shortcut::change_system_audio_device_setting,
         shortcut::change_system_audio_gain_setting,
+        shortcut::change_system_audio_delay_ms_setting,
         shortcut::change_output_prefix_enabled_setting,
         shortcut::change_output_prefix_text_setting,
         shortcut::change_output_prefix_newline_setting,

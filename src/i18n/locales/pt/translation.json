@@ -818,6 +818,14 @@
         "title": "Dispositivo de reprodução a captar",
         "description": "De que colunas ou auscultadores gravar. Seguir a predefinição do sistema costuma ser o correto e continua a funcionar quando o Windows muda de dispositivo numa chamada.",
         "followDefault": "Seguir a predefinição do sistema"
+      },
+      "systemAudioDelay": {
+        "title": "Atraso do áudio do sistema",
+        "description": "Quanto o áudio do sistema está atrasado em relação ao microfone. O valor certo depende do hardware — auscultadores USB, ligação Bluetooth e monitor HDMI têm buffers diferentes. Se as palavras da outra pessoa chegarem atrasadas, aumente."
+      },
+      "systemAudioGain": {
+        "title": "Nível do áudio do sistema",
+        "description": "Quão alto está o áudio do sistema em relação à sua voz. Aumente se a outra pessoa ficar demasiado baixa para transcrever; reduza se o abafar. Só o áudio do sistema é ajustado — o microfone nunca é tocado."
       }
     },
     "postProcessing": {

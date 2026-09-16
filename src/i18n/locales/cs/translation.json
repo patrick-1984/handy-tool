@@ -818,6 +818,14 @@
         "title": "Zachytávané výstupní zařízení",
         "description": "Ze kterých reproduktorů či sluchátek nahrávat. Sledovat výchozí zařízení je obvykle správně a funguje dál i když Windows kvůli hovoru zařízení přepne.",
         "followDefault": "Sledovat výchozí zařízení"
+      },
+      "systemAudioDelay": {
+        "title": "Zpoždění systémového zvuku",
+        "description": "O kolik systémový zvuk zaostává za mikrofonem. Správná hodnota závisí na hardwaru — USB sluchátka, Bluetooth i HDMI monitor mají jinou velikost vyrovnávací paměti. Pokud slova druhé osoby dorazí později než vaše, zvyšte ji."
+      },
+      "systemAudioGain": {
+        "title": "Hlasitost systémového zvuku",
+        "description": "Jak hlasitý je systémový zvuk vůči vašemu hlasu. Zvyšte, pokud je druhá osoba příliš tichá na přepis; snižte, pokud vás přehlušuje. Upravuje se jen systémový zvuk — mikrofonu se to nikdy nedotkne."
       }
     },
     "postProcessing": {

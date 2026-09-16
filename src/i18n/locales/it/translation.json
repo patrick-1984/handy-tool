@@ -818,6 +818,14 @@
         "title": "Dispositivo di riproduzione da catturare",
         "description": "Da quali altoparlanti o cuffie registrare. Seguire il predefinito di sistema è di solito la scelta giusta e continua a funzionare quando Windows cambia dispositivo per una chiamata.",
         "followDefault": "Segui il predefinito di sistema"
+      },
+      "systemAudioDelay": {
+        "title": "Ritardo dell'audio di sistema",
+        "description": "Di quanto l'audio di sistema è in ritardo rispetto al microfono. Il valore giusto dipende dall'hardware: cuffie USB, collegamento Bluetooth e monitor HDMI hanno buffer diversi. Se le parole dell'altra persona arrivano in ritardo, aumentalo."
+      },
+      "systemAudioGain": {
+        "title": "Livello dell'audio di sistema",
+        "description": "Quanto è forte l'audio di sistema rispetto alla tua voce. Alzalo se l'altra persona risulta troppo bassa per essere trascritta; abbassalo se ti copre. Viene scalato solo l'audio di sistema — il microfono non viene mai toccato."
       }
     },
     "postProcessing": {

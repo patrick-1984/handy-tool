@@ -2178,6 +2178,23 @@ pub fn change_append_trailing_space_setting(app: AppHandle, enabled: bool) -> Re
 
 #[tauri::command]
 #[specta::specta]
+pub fn change_system_audio_delay_ms_setting(app: AppHandle, delay_ms: i32) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    // 0..=2000 ms. The ring cannot pull audio EARLIER than the microphone, so a
+    // negative value has no meaning; the upper bound keeps a typo from turning into a
+    // two-second ring the user then has to diagnose.
+    settings.system_audio_delay_ms = delay_ms.clamp(0, 2_000);
+    settings::write_settings(&app, settings);
+    if let Some(rm) =
+        app.try_state::<std::sync::Arc<crate::managers::audio::AudioRecordingManager>>()
+    {
+        rm.update_capture_source();
+    }
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 pub fn change_capture_source_setting(app: AppHandle, source: String) -> Result<(), String> {
     // String-in, parsed here: the repo's convention for enum settings, and it means an
     // unrecognised value degrades to the safe default instead of failing the command.
@@ -2197,6 +2214,13 @@ pub fn change_capture_source_setting(app: AppHandle, source: String) -> Result<(
     let mut settings = settings::get_settings(&app);
     settings.capture_source = parsed;
     settings::write_settings(&app, settings);
+    // Persisting is not enough: an already-open stream is reused, so without
+    // this the change silently applies to no take at all under always-on.
+    if let Some(rm) =
+        app.try_state::<std::sync::Arc<crate::managers::audio::AudioRecordingManager>>()
+    {
+        rm.update_capture_source();
+    }
     Ok(())
 }
 
@@ -2215,6 +2239,13 @@ pub fn change_system_audio_device_setting(
         Some(device_name)
     };
     settings::write_settings(&app, settings);
+    // Persisting is not enough: an already-open stream is reused, so without
+    // this the change silently applies to no take at all under always-on.
+    if let Some(rm) =
+        app.try_state::<std::sync::Arc<crate::managers::audio::AudioRecordingManager>>()
+    {
+        rm.update_capture_source();
+    }
     Ok(())
 }
 
@@ -2227,6 +2258,13 @@ pub fn change_system_audio_gain_setting(app: AppHandle, gain: f32) -> Result<(),
     // unbounded multiplier just drives the soft clipper.
     settings.system_audio_gain = gain.clamp(0.25, 4.0);
     settings::write_settings(&app, settings);
+    // Persisting is not enough: an already-open stream is reused, so without
+    // this the change silently applies to no take at all under always-on.
+    if let Some(rm) =
+        app.try_state::<std::sync::Arc<crate::managers::audio::AudioRecordingManager>>()
+    {
+        rm.update_capture_source();
+    }
     Ok(())
 }
 
