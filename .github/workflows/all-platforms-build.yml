@@ -53,10 +53,17 @@ jobs:
           # The full target list lives here rather than in the build job's matrix
           # because a job-level `if` cannot reference `matrix` for a reusable
           # workflow call - the filter has to happen before the matrix exists.
+          # Windows ARM64 is deliberately absent. It compiles, but the repo's own
+          # VC++ runtime staging step fails there: stage-vc-runtime.ps1 audits every
+          # DLL in the selected arm64 CRT folder and finds one built for x64
+          # ("expected ARM64 (0xAA64), found 0x8664"). Diagnosing that properly needs
+          # an ARM64 Windows machine to inspect the VS redist layout on, and guessing
+          # at packaging code that decides which runtime ships is how you produce an
+          # installer that fails on a user's machine rather than in CI. Re-add the
+          # entry once it can be verified.
           cat > all.json <<'JSON'
           [
             {"label": "Windows x64", "group": "windows", "platform": "windows-latest", "args": "--bundles nsis --config src-tauri/tauri.windows-ci.conf.json --no-sign", "target": "x86_64-pc-windows-msvc", "prefix": "handy-windows-x64"},
-            {"label": "Windows ARM64", "group": "windows", "platform": "windows-11-arm", "args": "--target aarch64-pc-windows-msvc --bundles nsis --config src-tauri/tauri.windows-ci.conf.json --no-sign", "target": "aarch64-pc-windows-msvc", "prefix": "handy-windows-arm64"},
             {"label": "macOS Apple Silicon", "group": "macos", "platform": "macos-26", "args": "--target aarch64-apple-darwin --bundles dmg --config src-tauri/tauri.ci-unsigned.conf.json", "target": "aarch64-apple-darwin", "prefix": "handy-macos-arm64"},
             {"label": "macOS Intel", "group": "macos", "platform": "macos-latest", "args": "--target x86_64-apple-darwin --bundles dmg --config src-tauri/tauri.ci-unsigned.conf.json", "target": "x86_64-apple-darwin", "prefix": "handy-macos-x64"},
             {"label": "Linux x64 deb", "group": "linux", "platform": "ubuntu-22.04", "args": "--bundles deb --config src-tauri/tauri.ci-unsigned.conf.json", "target": "x86_64-unknown-linux-gnu", "prefix": "handy-linux-x64-deb"},

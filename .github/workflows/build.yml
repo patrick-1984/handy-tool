@@ -106,6 +106,17 @@ jobs:
           workspaces: "./src-tauri -> target"
           key: ${{ inputs.platform }}-${{ inputs.target }}
 
+      - name: install dependencies (macOS)
+        if: contains(inputs.platform, 'macos')
+        run: |
+          # audiopus_sys vendors libopus and builds it with AUTOTOOLS: its autogen.sh
+          # calls autoreconf, which macOS runners do not ship. Without these the build
+          # script dies with "autoreconf: command not found" - the actual cause of the
+          # macOS failures, not the CMake policy version I first assumed (Linux
+          # runners already carry autotools, and Windows links a prebuilt libopus from
+          # audiopus_sys's own msvc/x64 directory, which is why only macOS broke).
+          brew install autoconf automake libtool
+
       - name: install dependencies (ubuntu 24.04 x64)
         if: contains(inputs.platform, 'ubuntu-24.04') && !contains(inputs.platform, 'arm')
         run: |
