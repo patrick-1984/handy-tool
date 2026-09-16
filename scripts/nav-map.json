@@ -3306,13 +3306,11 @@
     "notes": "Default on."
   },
   {
-    "page": "Advanced",
-    "pageKey": "sidebar.advanced",
+    "page": "General",
+    "pageKey": "sidebar.general",
     "sidebarGroup": "Configuration",
-    "tab": "Transcription",
-    "tabKey": "settings.advanced.tabs.transcription",
-    "group": "Transcribe",
-    "groupKey": "settings.general.transcribeGroup.title",
+    "group": "Sound",
+    "groupKey": "settings.sound.title",
     "control": "Sound source",
     "titleKey": "settings.advanced.captureSource.title",
     "descKey": "settings.advanced.captureSource.description",
@@ -3336,13 +3334,11 @@
     "notes": "Windows only: WASAPI loopback. Hidden on macOS/Linux, and the backend clamps a stored value to Microphone there."
   },
   {
-    "page": "Advanced",
-    "pageKey": "sidebar.advanced",
+    "page": "General",
+    "pageKey": "sidebar.general",
     "sidebarGroup": "Configuration",
-    "tab": "Transcription",
-    "tabKey": "settings.advanced.tabs.transcription",
-    "group": "Transcribe",
-    "groupKey": "settings.general.transcribeGroup.title",
+    "group": "Sound",
+    "groupKey": "settings.sound.title",
     "control": "Playback device to capture",
     "titleKey": "settings.advanced.systemAudioDevice.title",
     "descKey": "settings.advanced.systemAudioDevice.description",
@@ -3351,5 +3347,35 @@
     "gating": "windows",
     "file": "src/components/settings/CaptureSourceSettings.tsx",
     "notes": "Only rendered when Sound source is not Microphone. Options are the enumerated playback endpoints plus 'Follow system default'."
+  },
+  {
+    "page": "General",
+    "pageKey": "sidebar.general",
+    "sidebarGroup": "Configuration",
+    "group": "Sound",
+    "groupKey": "settings.sound.title",
+    "control": "System audio delay",
+    "titleKey": "settings.advanced.systemAudioDelay.title",
+    "descKey": "settings.advanced.systemAudioDelay.description",
+    "type": "dropdown",
+    "options": [],
+    "gating": "windows",
+    "file": "src/components/settings/CaptureSourceSettings.tsx",
+    "notes": "0-1000 ms, default 100. Only rendered when Sound source is not Microphone. Sizes the mixer's alignment ring; the right value is hardware-specific."
+  },
+  {
+    "page": "General",
+    "pageKey": "sidebar.general",
+    "sidebarGroup": "Configuration",
+    "group": "Sound",
+    "groupKey": "settings.sound.title",
+    "control": "System audio level",
+    "titleKey": "settings.advanced.systemAudioGain.title",
+    "descKey": "settings.advanced.systemAudioGain.description",
+    "type": "dropdown",
+    "options": [],
+    "gating": "windows",
+    "file": "src/components/settings/CaptureSourceSettings.tsx",
+    "notes": "0.25x-4x linear, default 1x. Only rendered when Sound source is not Microphone. Scales the system leg only; the microphone is never touched."
   }
 ]

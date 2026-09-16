@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.6.1] - 2026-09-16
+
+### Changed
+
+- **Moved _Sound source_ to `General > Sound`, beside the microphone picker.** It was
+  in `Advanced > Transcription`, which is the wrong place: the setting decides what a
+  recording captures, so it belongs next to the microphone selector whose meaning it
+  changes - and that is where people look for it. It now sits directly above that
+  picker. The delay and level controls moved with it.
+
+### Added
+
+- **System audio delay** and **System audio level**, shown when a system-audio source
+  is selected. How far system audio lags the microphone is a property of the hardware -
+  a USB headset, a Bluetooth link and an HDMI monitor each buffer differently, and the
+  endpoint driver adds its own - so it is adjustable rather than assumed. The level
+  scales only the system leg; the microphone is never touched.
+
+### Infrastructure
+
+- **All platform builds now run on GitHub runners.** A new _All Platforms Build_
+  workflow compiles seven targets on demand - Windows x64/ARM64, macOS Intel/Apple
+  Silicon, and Linux deb/AppImage+RPM/ARM64 - and uploads them as artifacts.
+  `scripts/sign-and-release.ps1` then signs and publishes from the maintainer's
+  machine, so the updater private key never goes to a third party.
+
 ## [1.6.0] - 2026-09-16
 
 ### Added

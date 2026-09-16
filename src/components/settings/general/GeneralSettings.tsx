@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { MicrophoneSelector } from "../MicrophoneSelector";
+import { CaptureSourceSettings } from "../CaptureSourceSettings";
 import { ShortcutInput } from "../ShortcutInput";
 import { SettingsGroup } from "../../ui/SettingsGroup";
 import { OutputDeviceSelector } from "../OutputDeviceSelector";
@@ -44,6 +45,7 @@ export const GeneralSettings: React.FC = () => {
         <AppendTrailingSpace descriptionMode="tooltip" grouped={true} />
       </SettingsGroup>
       <SettingsGroup title={t("settings.sound.title")}>
+        <CaptureSourceSettings descriptionMode="tooltip" grouped={true} />
         <MicrophoneSelector descriptionMode="tooltip" grouped={true} />
         <MuteWhileRecording descriptionMode="tooltip" grouped={true} />
         <AudioFeedback descriptionMode="tooltip" grouped={true} />

@@ -1,0 +1,110 @@
+name: "All Platforms Build"
+
+# Build every shipping target on GitHub runners and upload the results as workflow
+# artifacts. Nothing is published and nothing is signed here.
+#
+# Why this exists separately from release.yml: release.yml signs during the build,
+# which needs TAURI_SIGNING_PRIVATE_KEY in repo secrets. The updater key for this
+# project is deliberately NOT in CI - it stays on the maintainer's machine - so the
+# flow is: CI compiles -> download artifacts -> sign locally -> publish.
+# `scripts/sign-and-release.ps1` does the second half.
+#
+# This also removes the development machine from the build path entirely, which
+# matters because Smart App Control there refuses freshly built unsigned binaries
+# (see BUILD.md); a GitHub runner has no such policy.
+
+on:
+  workflow_dispatch:
+    inputs:
+      platforms:
+        description: "Which targets to build"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - windows
+          - macos
+          - linux
+
+permissions:
+  # build.yml declares contents:write for its release-capable path. This caller passes
+  # no release-id, so Tauri only uploads an Actions artifact, but GitHub still requires
+  # the inherited permission to match.
+  contents: write
+
+concurrency:
+  group: all-platforms-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: ${{ matrix.label }}
+    strategy:
+      # Never let one platform's failure hide another's result - the whole point is to
+      # learn the state of all of them in a single dispatch.
+      fail-fast: false
+      matrix:
+        include:
+          - label: Windows x64
+            group: windows
+            platform: "windows-latest"
+            args: "--bundles nsis --config src-tauri/tauri.windows-ci.conf.json --no-sign"
+            target: "x86_64-pc-windows-msvc"
+            prefix: "handy-windows-x64"
+          - label: Windows ARM64
+            group: windows
+            platform: "windows-11-arm"
+            args: "--target aarch64-pc-windows-msvc --bundles nsis --config src-tauri/tauri.windows-ci.conf.json --no-sign"
+            target: "aarch64-pc-windows-msvc"
+            prefix: "handy-windows-arm64"
+          - label: macOS Apple Silicon
+            group: macos
+            # macOS 26 carries the Apple Intelligence SDK the post-processing provider
+            # links against; an older runner cannot build that path.
+            platform: "macos-26"
+            args: "--target aarch64-apple-darwin --bundles dmg --config src-tauri/tauri.ci-unsigned.conf.json"
+            target: "aarch64-apple-darwin"
+            prefix: "handy-macos-arm64"
+          - label: macOS Intel
+            group: macos
+            platform: "macos-latest"
+            args: "--target x86_64-apple-darwin --bundles dmg --config src-tauri/tauri.ci-unsigned.conf.json"
+            target: "x86_64-apple-darwin"
+            prefix: "handy-macos-x64"
+          - label: Linux x64 deb
+            group: linux
+            # 22.04 on purpose: a .deb built against a newer glibc will not install on
+            # older distributions, and the deb is the compatibility floor.
+            platform: "ubuntu-22.04"
+            args: "--bundles deb --config src-tauri/tauri.ci-unsigned.conf.json"
+            target: "x86_64-unknown-linux-gnu"
+            prefix: "handy-linux-x64-deb"
+          - label: Linux x64 AppImage + RPM
+            group: linux
+            platform: "ubuntu-24.04"
+            args: "--bundles appimage,rpm --config src-tauri/tauri.ci-unsigned.conf.json"
+            target: "x86_64-unknown-linux-gnu"
+            prefix: "handy-linux-x64"
+          - label: Linux ARM64
+            group: linux
+            platform: "ubuntu-24.04-arm"
+            args: "--bundles appimage,deb,rpm --config src-tauri/tauri.ci-unsigned.conf.json"
+            target: "aarch64-unknown-linux-gnu"
+            prefix: "handy-linux-arm64"
+
+    uses: ./.github/workflows/build.yml
+    with:
+      platform: ${{ matrix.platform }}
+      target: ${{ matrix.target }}
+      build-args: ${{ matrix.args }}
+      asset-prefix: ${{ matrix.prefix }}
+      upload-artifacts: true
+      # Both deliberately unset: no updater signing (the key is local) and no release
+      # upload (publishing happens from the maintainer's machine, after signing).
+      sign-binaries: false
+      release-id: ""
+    secrets: inherit
+    if: >-
+      github.event.inputs.platforms == 'all' ||
+      github.event.inputs.platforms == matrix.group
