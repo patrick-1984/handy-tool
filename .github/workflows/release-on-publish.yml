@@ -1,0 +1,233 @@
+name: "Release"
+
+# Builds every platform and attaches the assets when a GitHub Release is PUBLISHED.
+#
+#   Create a release (draft it, write the notes) -> Publish -> this runs.
+#
+# Why `release: published` rather than a tag push or a manual button: publishing a
+# release is the explicit "ship this" action, it carries the notes and the exact
+# commit, and it is the thing the maintainer already does by hand. Pull requests
+# deliberately do NOT trigger builds - they run the cheap gates only (test, lint,
+# prettier), so an outside contributor's PR costs seconds, not seven platform builds.
+#
+# THE EMPTY-RELEASE WINDOW - read before relying on this
+# ------------------------------------------------------
+# Between publishing and this workflow finishing, the release exists with no
+# binaries. That window is build time + approval wait + upload, and it persists
+# indefinitely if the run fails. It matters more than it looks: the updater endpoint
+# is /releases/latest/download/latest.json, so an empty release that becomes "Latest"
+# makes every client's update check 404 even though the PREVIOUS release was healthy.
+#
+# Mitigation used here: publish the release as a PRERELEASE. GitHub does not treat a
+# prerelease as Latest, so the previous good release keeps serving updates. The final
+# step promotes it to Latest only after the manifest is verified on the server. If you
+# publish a non-prerelease directly, accept that window knowingly.
+#
+# THE SIGNING KEY
+# ---------------
+# `publish` declares `environment: release`. That is the security boundary:
+#   * environment secrets go only to a job naming that environment;
+#   * with required reviewers, that job PAUSES until a human approves;
+#   * fork pull requests never receive secrets at all, enforced by GitHub.
+# The build jobs - the ones that execute repository code - declare no environment and
+# receive `sign-binaries: false`, so no secret is present while contributor code runs.
+#
+# Honest limit: once an approved job HAS the key, code in that job could exfiltrate
+# it. The gate controls access, it does not contain code after approval. The property
+# being protected is "an unapproved change cannot obtain the key", not "the key can
+# never leave".
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event.release.tag_name }}
+  cancel-in-progress: false # never cancel a half-finished publish
+
+jobs:
+  # ---------------------------------------------------------------- verify ----
+  verify:
+    name: Verify the tag matches the manifest
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      # Check out the RELEASED commit, not the default branch - the two can differ.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - id: check
+        shell: bash
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          TAG="${TAG#v}"
+          CONF=$(grep -o '"version": "[^"]*"' src-tauri/tauri.conf.json | head -1 | cut -d'"' -f4)
+          PKG=$(grep -o '"version": "[^"]*"' package.json | head -1 | cut -d'"' -f4)
+          echo "tag=$TAG  tauri.conf.json=$CONF  package.json=$PKG"
+          if [ "$TAG" != "$CONF" ] || [ "$TAG" != "$PKG" ]; then
+            echo "::error::Tag v$TAG does not match tauri.conf.json ($CONF) / package.json ($PKG)."
+            exit 1
+          fi
+          echo "version=$TAG" >> "$GITHUB_OUTPUT"
+
+  # ----------------------------------------------------------------- build ----
+  build:
+    name: ${{ matrix.label }}
+    needs: verify
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Windows x64
+            platform: "windows-latest"
+            target: "x86_64-pc-windows-msvc"
+            args: "--bundles nsis --config src-tauri/tauri.windows-ci.conf.json --no-sign"
+          - label: macOS Apple Silicon
+            platform: "macos-26"
+            target: "aarch64-apple-darwin"
+            args: "--target aarch64-apple-darwin --bundles dmg --config src-tauri/tauri.ci-unsigned.conf.json --no-sign"
+          - label: macOS Intel
+            # macos-latest is ARM64; using it here cross-compiles and fails to link.
+            platform: "macos-15-intel"
+            target: "x86_64-apple-darwin"
+            args: "--target x86_64-apple-darwin --bundles dmg --config src-tauri/tauri.ci-unsigned.conf.json --no-sign"
+          - label: Linux x64 deb
+            platform: "ubuntu-22.04"
+            target: "x86_64-unknown-linux-gnu"
+            args: "--bundles deb --config src-tauri/tauri.ci-unsigned.conf.json"
+          - label: Linux x64 AppImage + RPM
+            platform: "ubuntu-24.04"
+            target: "x86_64-unknown-linux-gnu"
+            args: "--bundles appimage,rpm --config src-tauri/tauri.ci-unsigned.conf.json"
+          - label: Linux ARM64
+            platform: "ubuntu-24.04-arm"
+            target: "aarch64-unknown-linux-gnu"
+            args: "--bundles appimage,deb,rpm --config src-tauri/tauri.ci-unsigned.conf.json"
+
+    uses: ./.github/workflows/build.yml
+    with:
+      platform: ${{ matrix.platform }}
+      target: ${{ matrix.target }}
+      build-args: ${{ matrix.args }}
+      asset-prefix: handy-${{ matrix.target }}
+      upload-artifacts: true
+      ref: ${{ github.event.release.tag_name }}
+      sign-binaries: false # no secret reaches a job that runs repository code
+      release-id: "" # publishing happens below, behind the gate
+    secrets: inherit
+
+  # --------------------------------------------------------------- publish ----
+  publish:
+    name: Sign and attach assets
+    needs: [verify, build]
+    runs-on: windows-latest
+    environment: release # <-- approval gate; see the header
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Download every built artifact
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Verify each installer carries the released version
+        shell: pwsh
+        run: |
+          # PowerShell file objects, not `for f in $(find ...)`: the installers are
+          # named "Handy Tool_1.6.2_x64-setup.exe" and word-splitting on the space
+          # silently mangles every path.
+          $ver = '${{ needs.verify.outputs.version }}'
+          $files = Get-ChildItem dist -Recurse -File |
+                   Where-Object { $_.Extension -in '.exe', '.dmg', '.deb', '.rpm', '.AppImage' }
+          if (-not $files) { throw "No installers were produced." }
+          $bad = $files | Where-Object { $_.Name -notmatch [regex]::Escape($ver) }
+          if ($bad) {
+            $bad | ForEach-Object { Write-Host "::error::$($_.Name) does not carry version $ver" }
+            throw "Version mismatch - refusing to publish."
+          }
+          Write-Host "All $($files.Count) installers carry $ver"
+
+      - name: Sign the Windows installer
+        shell: pwsh
+        env:
+          # Environment secrets, materialised only after a reviewer approves.
+          # Passed through the ENVIRONMENT, never as arguments: `bun run` echoes the
+          # command line it executes, which would print the key into the log.
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          if (-not $env:TAURI_PRIVATE_KEY) {
+            # Fail, do not warn-and-continue. Publishing Windows binaries with no
+            # updater signature silently breaks auto-update for every existing user.
+            throw "No signing key in the 'release' environment. Add TAURI_SIGNING_PRIVATE_KEY there, or publish from a machine that has the key."
+          }
+          $exes = Get-ChildItem dist -Recurse -File -Filter '*_x64-setup.exe'
+          if ($exes.Count -ne 1) { throw "Expected exactly one Windows installer, found $($exes.Count)." }
+          foreach ($exe in $exes) {
+            Write-Host "signing $($exe.Name)"
+            & bunx "@tauri-apps/cli@2.9.1" signer sign $exe.FullName
+            if ($LASTEXITCODE -ne 0) { throw "Signing failed for $($exe.Name)" }
+            if (-not (Test-Path "$($exe.FullName).sig")) { throw "No .sig produced for $($exe.Name)" }
+          }
+
+      - name: Build and validate the updater manifest
+        shell: pwsh
+        run: |
+          # Generated BEFORE anything is attached. Publishing installers without a
+          # matching latest.json leaves the updater endpoint serving nothing.
+          $exe = Get-ChildItem dist -Recurse -File -Filter '*_x64-setup.exe' | Select-Object -First 1
+          & bun scripts/generate-updater-manifest.ts --installer $exe.FullName
+          if ($LASTEXITCODE -ne 0) { throw "Manifest generation failed" }
+          $manifest = "src-tauri/target/release-artifacts/latest.json"
+          if (-not (Test-Path $manifest)) { throw "No manifest produced" }
+          $m = Get-Content $manifest -Raw | ConvertFrom-Json
+          if ($m.version -ne '${{ needs.verify.outputs.version }}') {
+            throw "Manifest says $($m.version), expected ${{ needs.verify.outputs.version }}"
+          }
+          if (-not $m.platforms.'windows-x86_64'.signature) { throw "Manifest carries no signature" }
+          Copy-Item $manifest dist/latest.json
+          Write-Host "manifest validated: v$($m.version)"
+
+      - name: Attach the assets to the published release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # UPLOAD, never create: `release: published` means the release already
+          # exists, and `gh release create` would fail against it.
+          $tag = '${{ github.event.release.tag_name }}'
+          $assets = Get-ChildItem dist -Recurse -File |
+                    Where-Object { $_.Extension -in '.exe','.sig','.dmg','.deb','.rpm','.AppImage' -or $_.Name -eq 'latest.json' }
+          & gh release upload $tag @($assets.FullName) --repo ${{ github.repository }} --clobber
+          if ($LASTEXITCODE -ne 0) { throw "Asset upload failed" }
+
+      - name: Verify from the server, then promote to Latest
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Read back what actually landed rather than trusting the upload step, then
+          # promote. Promoting only now is what keeps the previous good release
+          # serving updates while this one is still incomplete.
+          $tag = '${{ github.event.release.tag_name }}'
+          $names = & gh release view $tag --repo ${{ github.repository }} --json assets --jq '[.assets[].name] | join(",")'
+          if ($LASTEXITCODE -ne 0) { throw "Could not read back the release" }
+          if ($names -notmatch 'latest\.json') { throw "latest.json is NOT attached - auto-update would be broken. Not promoting." }
+          if ($names -notmatch '\.sig') { throw "No updater signature attached. Not promoting." }
+          Write-Host "attached: $names"
+          & gh release edit $tag --repo ${{ github.repository }} --prerelease=false --latest
+          if ($LASTEXITCODE -ne 0) { throw "Could not promote the release to Latest" }
+          Write-Host "promoted to Latest"
