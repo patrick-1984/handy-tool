@@ -183,6 +183,32 @@ jobs:
             if (-not (Test-Path "$($exe.FullName).sig")) { throw "No .sig produced for $($exe.Name)" }
           }
 
+      - name: Verify the signature was made by the key existing clients trust
+        shell: pwsh
+        run: |
+          # Proves the installer was signed by the key that EXISTING clients trust.
+          # A signature from any other valid Tauri key passes every other check in this
+          # workflow, uploads, promotes - and then every 1.6.1 client rejects the update,
+          # because they verify against the public key compiled into their own binary.
+          # A minisign signature embeds the signing key's 8-byte ID, as does the public key.
+          function Get-MinisignKeyId([string]$b64File) {
+            $text  = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($b64File.Trim()))
+            $lines = $text -split "`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+            $bytes = [Convert]::FromBase64String($lines[1])
+            return [BitConverter]::ToString($bytes[2..9]).Replace('-', '').ToLower()
+          }
+          $conf = Get-Content src-tauri/tauri.conf.json -Raw | ConvertFrom-Json
+          $trusted = Get-MinisignKeyId $conf.plugins.updater.pubkey
+          $sig = Get-ChildItem dist -Recurse -File -Filter '*_x64-setup.exe.sig' | Select-Object -First 1
+          if (-not $sig) { throw "No installer signature found to verify." }
+          $signer = Get-MinisignKeyId (Get-Content $sig.FullName -Raw)
+          Write-Host "trusted key id: $trusted"
+          Write-Host "signed with   : $signer"
+          if ($signer -ne $trusted) {
+            throw "The installer was signed with key $signer, but clients trust $trusted. Publishing would break auto-update for every existing install."
+          }
+          Write-Host "signature key matches the key existing clients trust"
+
       - name: Build and validate the updater manifest
         shell: pwsh
         run: |

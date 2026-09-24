@@ -201,7 +201,7 @@ if ($existing) {
 
 # Read back from the SERVER rather than trusting local state: an upload can fail
 # after the release exists, which is precisely the case that used to go unnoticed.
-$published = & $gh release view "v$version" --repo $Repo --json assets --jq "[.assets[].name] | join(\",\")"
+$published = & $gh release view "v$version" --repo $Repo --json assets --jq '[.assets[].name] | join(",")'
 if ($LASTEXITCODE -ne 0) { throw "Could not read back the published release" }
 if ($winInstaller -and $published -notmatch "latest\.json") {
     throw "latest.json is NOT present on the published release. Auto-update is broken for this version - fix it before announcing."
