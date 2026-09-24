@@ -13,7 +13,7 @@
   installer, checks on the next start whether it is actually running that version, and shows a
   banner with a manual-download link if it is not.
 
-  The banner says a security policy *may* have blocked the update rather than asserting it: the
+  The banner says a security policy _may_ have blocked the update rather than asserting it: the
   same symptom can come from a cancelled installer, a full disk, or another copy of the app
   running. A portable copy never consumes an installed copy's update record, and installing a
   different version by hand in the meantime is not misreported as a failure.

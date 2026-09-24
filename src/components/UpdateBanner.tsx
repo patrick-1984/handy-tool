@@ -32,8 +32,9 @@ export const UpdateBanner: React.FC = () => {
       .then((outcome) => {
         if (disposed || !outcome) return;
         if (typeof outcome === "object" && "blocked" in outcome) {
-          const b = (outcome as { blocked: { expected: string; actual: string } })
-            .blocked;
+          const b = (
+            outcome as { blocked: { expected: string; actual: string } }
+          ).blocked;
           setFailedUpdate({ expected: b.expected, actual: b.actual });
         }
       })
