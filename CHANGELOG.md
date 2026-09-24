@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.6.2] - 2026-09-24
+
+### Fixed
+
+- **A blocked update no longer looks like a successful one.** The updater launches the
+  installer and then exits the app - and it reported success at that point, before anything
+  had actually been replaced. When the installer was refused (Windows Smart App Control does
+  exactly this to an unsigned installer), the app restarted on the old version with no message
+  at all, which looks identical to "already up to date" and leaves you stuck on the old version
+  indefinitely. The app now records which version it is updating to before launching the
+  installer, checks on the next start whether it is actually running that version, and shows a
+  banner with a manual-download link if it is not.
+
+  The banner says a security policy *may* have blocked the update rather than asserting it: the
+  same symptom can come from a cancelled installer, a full disk, or another copy of the app
+  running. A portable copy never consumes an installed copy's update record, and installing a
+  different version by hand in the meantime is not misreported as a failure.
+
+### Infrastructure
+
+- **Releases now build entirely on GitHub Actions.** Publishing a release triggers builds for
+  Windows, macOS and Linux; the Windows installer is signed behind a required-reviewer approval
+  gate, so no pull request or unapproved workflow change can obtain the signing key. Pull
+  requests run tests, lint and formatting checks only.
+- **The Rust test suite can run in CI.** Its mock transcription engine previously left one
+  direct engine call unresolved, so the test workflow could never have compiled. That call now
+  goes through the transcription manager like every other engine use.
+- **The winget manifest description no longer uses the word "explicitly".** The Windows Package
+  Manager content scanner treats it as an adult-content marker, which held the package for manual
+  review.
+
 ## [1.6.1] - 2026-09-16
 
 ### Changed

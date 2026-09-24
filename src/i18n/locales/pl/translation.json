@@ -1402,5 +1402,11 @@
     "listening": "Słuchanie…",
     "copy": "Kopiuj",
     "copied": "Skopiowano"
+  },
+  "updater": {
+    "failed": {
+      "message": "Aktualizacja do {{expected}} nie została ukończona — nadal działa {{actual}}. Instalator został uruchomiony, ale nic nie zostało zastąpione; mogła go zablokować zasada zabezpieczeń.",
+      "download": "Pobierz ręcznie"
+    }
   }
 }

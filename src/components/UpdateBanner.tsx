@@ -12,12 +12,34 @@ export const UpdateBanner: React.FC = () => {
   const silent = getSetting("automatic_silent_updates") ?? false;
   const [status, setStatus] = useState<UpdaterStatus | null>(null);
   const [dismissedVersion, setDismissedVersion] = useState<string | null>(null);
+  // Outcome of the PREVIOUS update attempt, resolved by the backend at startup.
+  // Without this the failure mode is invisible: the installer is launched, the
+  // process exits, and the app comes back on the old version reporting nothing at
+  // all - indistinguishable from "already up to date".
+  const [failedUpdate, setFailedUpdate] = useState<{
+    expected: string;
+    actual: string;
+  } | null>(null);
+  const [outcomeDismissed, setOutcomeDismissed] = useState(false);
 
   useEffect(() => {
     let disposed = false;
     void commands.getUpdaterStatus().then((current) => {
       if (!disposed) setStatus(current);
     });
+    void commands
+      .takeUpdateOutcome()
+      .then((outcome) => {
+        if (disposed || !outcome) return;
+        if (typeof outcome === "object" && "blocked" in outcome) {
+          const b = (outcome as { blocked: { expected: string; actual: string } })
+            .blocked;
+          setFailedUpdate({ expected: b.expected, actual: b.actual });
+        }
+      })
+      .catch(() => {
+        /* a missing outcome is normal - most launches follow no update at all */
+      });
     const unlisten = listen<UpdaterStatus>("updater-status", (event) => {
       setStatus(event.payload);
       if (event.payload.state === "checking") {
@@ -29,6 +51,41 @@ export const UpdateBanner: React.FC = () => {
       void unlisten.then((stop) => stop());
     };
   }, []);
+
+  // A failed update outranks any pending-update banner: telling someone an update
+  // is available when their last one silently did not apply is worse than useless.
+  if (failedUpdate && !outcomeDismissed) {
+    return (
+      <div className="flex items-center gap-3 border-b border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm">
+        <RefreshCw className="h-4 w-4 shrink-0 text-amber-500" />
+        <span className="flex-1">
+          {t("updater.failed.message", {
+            expected: failedUpdate.expected,
+            actual: failedUpdate.actual,
+          })}
+        </span>
+        <button
+          type="button"
+          onClick={() =>
+            void openUrl(
+              "https://github.com/patrick-1984/handy-tool/releases/latest",
+            )
+          }
+          className="rounded bg-amber-500/20 px-2 py-1 hover:bg-amber-500/30"
+        >
+          {t("updater.failed.download")}
+        </button>
+        <button
+          type="button"
+          aria-label={t("sidebar.update.later")}
+          onClick={() => setOutcomeDismissed(true)}
+          className="rounded p-1 hover:bg-amber-500/20"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+    );
+  }
 
   if (!status || ["idle", "disabled", "unsupported"].includes(status.state)) {
     return null;

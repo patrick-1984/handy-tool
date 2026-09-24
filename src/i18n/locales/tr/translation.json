@@ -1402,5 +1402,11 @@
     "listening": "Dinleniyor…",
     "copy": "Kopyala",
     "copied": "Kopyalandı"
+  },
+  "updater": {
+    "failed": {
+      "message": "{{expected}} sürümüne güncelleme tamamlanmadı — hâlâ {{actual}} çalışıyor. Yükleyici başlatıldı ancak hiçbir şey değiştirilmedi; bir güvenlik ilkesi engellemiş olabilir.",
+      "download": "Elle indir"
+    }
   }
 }

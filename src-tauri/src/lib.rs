@@ -571,6 +571,7 @@ pub fn run(cli_args: CliArgs) {
         helpers::clamshell::is_laptop,
         updater::get_updater_status,
         updater::check_for_updates,
+        updater::take_update_outcome,
         updater::install_available_update,
     ]);
 
@@ -689,6 +690,14 @@ pub fn run(cli_args: CliArgs) {
 
             let app_handle = app.handle().clone();
             app.manage(TranscriptionCoordinator::new(app_handle.clone()));
+            // Resolve the previous update attempt BEFORE the manager starts, so a
+            // blocked install is known from the first moment the UI can ask. The
+            // installer exits this process on launch, so this is the only place the
+            // outcome can be determined at all.
+            let update_outcome = updater::resolve_pending_update(&app_handle);
+            app.manage(updater::LastUpdateOutcome(std::sync::Mutex::new(
+                update_outcome,
+            )));
             app.manage(updater::UpdateManager::new(app_handle.clone()));
             app.state::<updater::UpdateManager>().start();
 

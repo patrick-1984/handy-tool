@@ -1402,5 +1402,11 @@
     "listening": "Listening…",
     "copy": "Copy",
     "copied": "Copied"
+  },
+  "updater": {
+    "failed": {
+      "message": "Update to {{expected}} did not complete — still running {{actual}}. The installer was launched but nothing was replaced; a security policy may have blocked it.",
+      "download": "Download manually"
+    }
   }
 }

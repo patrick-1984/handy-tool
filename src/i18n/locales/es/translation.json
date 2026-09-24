@@ -1402,5 +1402,11 @@
     "saveAs": "Guardar como…",
     "saveTo": "Guardar en {{path}}",
     "saveDisabled": "Usa “Guardar como…” primero para elegir una ubicación"
+  },
+  "updater": {
+    "failed": {
+      "message": "La actualización a {{expected}} no se completó: sigue ejecutándose {{actual}}. El instalador se inició pero no se reemplazó nada; puede haberlo bloqueado una directiva de seguridad.",
+      "download": "Descargar manualmente"
+    }
   }
 }

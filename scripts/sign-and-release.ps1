@@ -138,11 +138,45 @@ if ($DryRun) {
     return
 }
 
-# -------------------------------------------------------------- publish -----
+# ----------------------------------------- updater manifest (BEFORE publish) --
+# Generate and VALIDATE every asset before anything becomes public. The previous
+# order published first and generated afterwards, checking neither exit code - so a
+# generator failure shipped a release with no latest.json. Every client's update
+# check then 404s against the newest release while the operator is told "Released".
 $assets = @()
 $assets += $installers | ForEach-Object { $_.FullName }
 $assets += $toSign | ForEach-Object { "$($_.FullName).sig" }
 
+$winInstaller = $toSign | Select-Object -First 1
+if ($winInstaller) {
+    Write-Host "`nGenerating the updater manifest ..."
+    $manifest = Join-Path $repoRoot "src-tauri\target\release-artifacts\latest.json"
+    # Remove any manifest a previous run left behind: otherwise a stale file would be
+    # published as though this run had produced it.
+    Remove-Item $manifest -Force -ErrorAction SilentlyContinue
+
+    Push-Location $repoRoot
+    try {
+        & bun scripts/generate-updater-manifest.ts --installer $winInstaller.FullName
+        if ($LASTEXITCODE -ne 0) { throw "generate-updater-manifest.ts failed (exit $LASTEXITCODE)" }
+    }
+    finally { Pop-Location }
+
+    if (-not (Test-Path $manifest)) {
+        throw "No updater manifest was produced. Refusing to publish - clients would receive no update metadata."
+    }
+    $parsed = Get-Content $manifest -Raw | ConvertFrom-Json
+    if ($parsed.version -ne $version) {
+        throw "Manifest reports version $($parsed.version), expected $version. Refusing to publish."
+    }
+    if (-not $parsed.platforms.'windows-x86_64'.signature) {
+        throw "Manifest carries no Windows signature. Refusing to publish - auto-update would reject it."
+    }
+    Write-Host "  manifest validated: v$($parsed.version), signature present" -ForegroundColor Green
+    $assets += $manifest
+}
+
+# -------------------------------------------------------------- publish -----
 $notesArg = if ($NotesFile -and (Test-Path $NotesFile)) { @("--notes-file", $NotesFile) }
             else { @("--generate-notes") }
 
@@ -151,28 +185,27 @@ $notesArg = if ($NotesFile -and (Test-Path $NotesFile)) { @("--notes-file", $Not
 $existing = $null
 try { $existing = & $gh release view "v$version" --repo $Repo --json tagName 2>$null } catch { }
 if ($LASTEXITCODE -ne 0) { $existing = $null }
+
 if ($existing) {
     Write-Host "`nRelease v$version exists - uploading assets to it." -ForegroundColor Yellow
     & $gh release upload "v$version" @assets --repo $Repo --clobber
+    if ($LASTEXITCODE -ne 0) { throw "Asset upload failed" }
 } else {
     Write-Host "`nCreating release v$version ..." -ForegroundColor Cyan
-    & $gh release create "v$version" @assets --repo $Repo `
+    # --verify-tag: refuse to invent a tag. Without it gh happily creates one pointing
+    # at the newest default-branch commit, which need not be the commit that was built.
+    & $gh release create "v$version" @assets --repo $Repo --verify-tag `
         --title "Handy Tool $version" @notesArg --latest
+    if ($LASTEXITCODE -ne 0) { throw "Release publish failed" }
 }
-if ($LASTEXITCODE -ne 0) { throw "Release publish failed" }
 
-# --------------------------------------------------- updater manifest -------
-$winInstaller = $toSign | Select-Object -First 1
-if ($winInstaller) {
-    Write-Host "`nGenerating the updater manifest ..."
-    Push-Location $repoRoot
-    & bun scripts/generate-updater-manifest.ts --installer $winInstaller.FullName
-    $manifest = Join-Path $repoRoot "src-tauri\target\release-artifacts\latest.json"
-    if (Test-Path $manifest) {
-        & $gh release upload "v$version" $manifest --repo $Repo --clobber
-        Write-Host "  latest.json uploaded" -ForegroundColor Green
-    }
-    Pop-Location
+# Read back from the SERVER rather than trusting local state: an upload can fail
+# after the release exists, which is precisely the case that used to go unnoticed.
+$published = & $gh release view "v$version" --repo $Repo --json assets --jq "[.assets[].name] | join(\",\")"
+if ($LASTEXITCODE -ne 0) { throw "Could not read back the published release" }
+if ($winInstaller -and $published -notmatch "latest\.json") {
+    throw "latest.json is NOT present on the published release. Auto-update is broken for this version - fix it before announcing."
 }
+Write-Host "  published assets: $published" -ForegroundColor Green
 
 Write-Host "`nReleased: https://github.com/$Repo/releases/tag/v$version" -ForegroundColor Green

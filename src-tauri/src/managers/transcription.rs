@@ -62,6 +62,34 @@ static VULKAN_OP_LOCK: Mutex<()> = Mutex::new(());
 /// Run `f` while holding [`VULKAN_OP_LOCK`]. `commands::models::list_gpu_devices`
 /// wraps its enumeration call in this so it can never overlap the GPU
 /// Whisper model-load path below.
+/// One GPU adapter, described without reference to the engine crate.
+///
+/// The engine type is deliberately NOT re-exported: `commands/models.rs` used to
+/// call `transcribe_rs` directly, which meant the CI mock - which removes that
+/// dependency entirely to avoid compiling whisper and Vulkan - left an unresolved
+/// path in a module it does not replace. Keeping the engine behind this boundary is
+/// what makes the mock swap actually compile.
+#[derive(Debug, Clone)]
+pub struct GpuDevice {
+    pub index: i32,
+    pub name: String,
+    pub vram_total_mb: u64,
+}
+
+/// Enumerate the GPU adapters the Whisper Vulkan backend can see.
+pub fn list_gpu_devices() -> Vec<GpuDevice> {
+    with_vulkan_op_lock(|| {
+        transcribe_rs::engines::whisper::list_gpu_devices()
+            .into_iter()
+            .map(|d| GpuDevice {
+                index: d.index,
+                name: d.name,
+                vram_total_mb: d.vram_total_mb,
+            })
+            .collect()
+    })
+}
+
 pub fn with_vulkan_op_lock<R>(f: impl FnOnce() -> R) -> R {
     let _guard = VULKAN_OP_LOCK
         .lock()

@@ -1402,5 +1402,11 @@
     "listening": "Höre zu…",
     "copy": "Kopieren",
     "copied": "Kopiert"
+  },
+  "updater": {
+    "failed": {
+      "message": "Update auf {{expected}} wurde nicht abgeschlossen — es läuft weiterhin {{actual}}. Das Installationsprogramm wurde gestartet, aber nichts ersetzt; möglicherweise hat eine Sicherheitsrichtlinie es blockiert.",
+      "download": "Manuell herunterladen"
+    }
   }
 }

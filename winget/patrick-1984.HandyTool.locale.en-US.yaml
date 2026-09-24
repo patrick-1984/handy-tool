@@ -19,7 +19,7 @@ Description: |-
 
   Transcription runs on your machine using local Whisper, Parakeet, Moonshine or SenseVoice
   models, with GPU acceleration through Vulkan. No account is required and no audio or
-  transcript leaves the machine unless you explicitly configure a remote provider.
+  transcript leaves the machine unless you configure a remote provider.
 
   It also includes push-to-talk, a transcribe-and-submit mode, a keyboard typer for contexts
   where pasting is blocked, and a window-anchoring system for delivering dictation into a

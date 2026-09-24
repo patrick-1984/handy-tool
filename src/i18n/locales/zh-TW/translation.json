@@ -1402,5 +1402,11 @@
     "listening": "聆聽中…",
     "copy": "複製",
     "copied": "已複製"
+  },
+  "updater": {
+    "failed": {
+      "message": "更新到 {{expected}} 未完成——仍在執行 {{actual}}。安裝程式已啟動但沒有替換任何檔案；可能被安全性原則封鎖。",
+      "download": "手動下載"
+    }
   }
 }

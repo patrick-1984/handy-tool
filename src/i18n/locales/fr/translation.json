@@ -1402,5 +1402,11 @@
     "saveAs": "Enregistrer sous…",
     "saveTo": "Enregistrer dans {{path}}",
     "saveDisabled": "Utilisez « Enregistrer sous… » d'abord pour choisir un emplacement"
+  },
+  "updater": {
+    "failed": {
+      "message": "La mise à jour vers {{expected}} n'a pas abouti — {{actual}} est toujours en cours d'exécution. L'installateur a été lancé mais rien n'a été remplacé ; une stratégie de sécurité l'a peut-être bloqué.",
+      "download": "Télécharger manuellement"
+    }
   }
 }

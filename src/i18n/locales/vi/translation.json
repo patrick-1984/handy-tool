@@ -1402,5 +1402,11 @@
     "saveAs": "Lưu thành…",
     "saveTo": "Lưu vào {{path}}",
     "saveDisabled": "Dùng “Lưu thành…” trước để chọn vị trí"
+  },
+  "updater": {
+    "failed": {
+      "message": "Bản cập nhật lên {{expected}} chưa hoàn tất — vẫn đang chạy {{actual}}. Trình cài đặt đã khởi chạy nhưng không có gì được thay thế; một chính sách bảo mật có thể đã chặn nó.",
+      "download": "Tải thủ công"
+    }
   }
 }

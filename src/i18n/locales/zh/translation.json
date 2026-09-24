@@ -1402,5 +1402,11 @@
     "listening": "正在聆听…",
     "copy": "复制",
     "copied": "已复制"
+  },
+  "updater": {
+    "failed": {
+      "message": "更新到 {{expected}} 未完成——仍在运行 {{actual}}。安装程序已启动但没有替换任何文件；可能被安全策略阻止。",
+      "download": "手动下载"
+    }
   }
 }

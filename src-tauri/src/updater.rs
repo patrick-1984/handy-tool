@@ -426,9 +426,19 @@ impl UpdateManager {
             ));
         }
 
+        // Record what this installer is supposed to produce BEFORE launching it.
+        // install() exits this process on success, so there is no code path after
+        // it in which to write anything.
+        mark_update_pending(&self.inner.app, &prepared.update.version);
+
         // On Windows this launches NSIS with Tauri's silent update/restart
         // arguments and exits the current process only after launch succeeds.
         if let Err(error) = prepared.update.install(&bytes) {
+            // A reported failure is already surfaced below, so drop the marker -
+            // leaving it would make the next launch report the same thing twice.
+            if let Some(path) = pending_update_path(&self.inner.app) {
+                let _ = std::fs::remove_file(path);
+            }
             self.inner
                 .app
                 .state::<crate::TranscriptionCoordinator>()
@@ -605,6 +615,138 @@ impl UpdateManager {
         }
     }
 }
+
+/// Name of the marker recording an update we were about to install.
+const PENDING_UPDATE_MARKER: &str = "pending-update.json";
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+struct PendingUpdate {
+    /// Version the installer we just launched was supposed to produce.
+    expected_version: String,
+    /// Version we were running when we launched it.
+    previous_version: String,
+    /// Unix seconds, so a stale marker from a crashed session can be recognised.
+    started_at: i64,
+}
+
+fn pending_update_path(app: &AppHandle) -> Option<std::path::PathBuf> {
+    app.path()
+        .app_data_dir()
+        .ok()
+        .map(|d| d.join(PENDING_UPDATE_MARKER))
+}
+
+/// Record that an installer is about to run.
+///
+/// `Update::install` launches NSIS and then exits this process. It reports success
+/// as soon as the LAUNCH succeeds - it cannot know whether the installer actually
+/// replaced anything, and on a machine with an application-control policy the
+/// installer can be refused after launch. Without this marker the app simply
+/// restarts on the old version having reported a successful update, which is
+/// indistinguishable from "already up to date" and leaves the user stuck forever.
+fn mark_update_pending(app: &AppHandle, expected_version: &str) {
+    let Some(path) = pending_update_path(app) else {
+        return;
+    };
+    if let Some(parent) = path.parent() {
+        let _ = std::fs::create_dir_all(parent);
+    }
+    let record = PendingUpdate {
+        expected_version: expected_version.to_string(),
+        previous_version: app.package_info().version.to_string(),
+        started_at: chrono::Utc::now().timestamp(),
+    };
+    match serde_json::to_string(&record) {
+        Ok(json) => {
+            if let Err(e) = std::fs::write(&path, json) {
+                warn!("Could not record the pending update: {e}");
+            }
+        }
+        Err(e) => warn!("Could not serialise the pending update: {e}"),
+    }
+}
+
+/// Outcome of the previous update attempt, determined at startup.
+#[derive(Serialize, Deserialize, Debug, Clone, Type, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum UpdateOutcome {
+    /// No update was attempted.
+    None,
+    /// The version changed to what was expected.
+    Succeeded { version: String },
+    /// The installer ran but the version did not change. Almost always an
+    /// application-control policy (Windows Smart App Control / WDAC) refusing an
+    /// unsigned installer, which produces no error the updater can observe.
+    Blocked { expected: String, actual: String },
+}
+
+/// Read and clear the pending-update marker, reporting what actually happened.
+///
+/// Called once at startup, before any UI exists, so the result can be surfaced.
+pub fn resolve_pending_update(app: &AppHandle) -> UpdateOutcome {
+    // A PORTABLE copy must not consume the INSTALLED copy's marker. The marker lives
+    // under app_data_dir(), which is keyed to the user profile and bundle identifier
+    // and does NOT move for a portable build - so without this guard, launching a
+    // portable copy after a failed install would eat the installed app's outcome and
+    // report it against the portable copy's own version. In-place updates are
+    // refused in portable mode anyway, so there is never a marker of its own.
+    if crate::portable::portable_marker_present() {
+        return UpdateOutcome::None;
+    }
+    let Some(path) = pending_update_path(app) else {
+        return UpdateOutcome::None;
+    };
+    let Ok(raw) = std::fs::read_to_string(&path) else {
+        return UpdateOutcome::None;
+    };
+    // Clear it unconditionally: a marker that survives its own evaluation would
+    // report the same stale failure on every launch thereafter.
+    let _ = std::fs::remove_file(&path);
+
+    let Ok(record) = serde_json::from_str::<PendingUpdate>(&raw) else {
+        return UpdateOutcome::None;
+    };
+    let actual = app.package_info().version.to_string();
+    if actual == record.expected_version {
+        info!("Update to {} completed", actual);
+        UpdateOutcome::Succeeded { version: actual }
+    } else if actual != record.previous_version {
+        // Moved, but not to what this installer promised - e.g. the user installed a
+        // different build by hand in the meantime. Reporting "blocked" here would be
+        // a plain lie, since something clearly did replace the binary.
+        info!(
+            "Version changed from {} to {} (expected {}); treating the update as resolved",
+            record.previous_version, actual, record.expected_version
+        );
+        UpdateOutcome::Succeeded { version: actual }
+    } else {
+        warn!(
+            "Update to {} did NOT take effect - still running {}. The installer was launched              but nothing was replaced; on Windows this is usually Smart App Control or another              application-control policy refusing an unsigned installer.",
+            record.expected_version, actual
+        );
+        UpdateOutcome::Blocked {
+            expected: record.expected_version,
+            actual,
+        }
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn take_update_outcome(app: AppHandle) -> UpdateOutcome {
+    app.try_state::<LastUpdateOutcome>()
+        .map(|s| {
+            s.0.lock()
+                .ok()
+                .map(|g| g.clone())
+                .unwrap_or(UpdateOutcome::None)
+        })
+        .unwrap_or(UpdateOutcome::None)
+}
+
+/// Startup-resolved outcome, held in Tauri state so the frontend can ask for it
+/// once its window exists.
+pub struct LastUpdateOutcome(pub Mutex<UpdateOutcome>);
 
 #[tauri::command]
 #[specta::specta]

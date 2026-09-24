@@ -2450,6 +2450,9 @@ export const commands = {
   async restartApp(): Promise<void> {
     await TAURI_INVOKE("restart_app");
   },
+  async takeUpdateOutcome(): Promise<UpdateOutcome> {
+    return await TAURI_INVOKE("take_update_outcome");
+  },
   async getUpdaterStatus(): Promise<UpdaterStatus> {
     return await TAURI_INVOKE("get_updater_status");
   },
@@ -2791,6 +2794,10 @@ export type TranslatorStatus = {
 };
 export type PortableAutostartConsent = "never_asked" | "granted" | "declined";
 
+export type UpdateOutcome =
+  | "none"
+  | { succeeded: { version: string } }
+  | { blocked: { expected: string; actual: string } };
 export type UpdaterStatus = {
   state: string;
   version: string | null;

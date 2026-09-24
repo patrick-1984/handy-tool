@@ -1402,5 +1402,11 @@
     "listening": "Ouvindo…",
     "copy": "Copiar",
     "copied": "Copiado"
+  },
+  "updater": {
+    "failed": {
+      "message": "A atualização para {{expected}} não foi concluída — continua a executar {{actual}}. O instalador foi iniciado mas nada foi substituído; uma política de segurança pode tê-lo bloqueado.",
+      "download": "Transferir manualmente"
+    }
   }
 }

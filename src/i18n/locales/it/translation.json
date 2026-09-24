@@ -1402,5 +1402,11 @@
     "listening": "In ascolto…",
     "copy": "Copia",
     "copied": "Copiato"
+  },
+  "updater": {
+    "failed": {
+      "message": "L'aggiornamento a {{expected}} non è stato completato: è ancora in esecuzione {{actual}}. Il programma di installazione è stato avviato ma non è stato sostituito nulla; potrebbe averlo bloccato un criterio di sicurezza.",
+      "download": "Scarica manualmente"
+    }
   }
 }

@@ -1402,5 +1402,11 @@
     "listening": "Poslouchám…",
     "copy": "Kopírovat",
     "copied": "Zkopírováno"
+  },
+  "updater": {
+    "failed": {
+      "message": "Aktualizace na {{expected}} neproběhla — stále běží {{actual}}. Instalátor byl spuštěn, ale nic se nenahradilo; mohla ji zablokovat bezpečnostní politika.",
+      "download": "Stáhnout ručně"
+    }
   }
 }

@@ -30,16 +30,14 @@ pub struct GpuDeviceOption {
 #[tauri::command]
 #[specta::specta]
 pub async fn list_gpu_devices() -> Result<Vec<GpuDeviceOption>, String> {
-    Ok(crate::managers::transcription::with_vulkan_op_lock(|| {
-        transcribe_rs::engines::whisper::list_gpu_devices()
-            .into_iter()
-            .map(|d| GpuDeviceOption {
-                index: d.index,
-                name: d.name,
-                vram_total_mb: d.vram_total_mb,
-            })
-            .collect()
-    }))
+    Ok(crate::managers::transcription::list_gpu_devices()
+        .into_iter()
+        .map(|d| GpuDeviceOption {
+            index: d.index,
+            name: d.name,
+            vram_total_mb: d.vram_total_mb,
+        })
+        .collect())
 }
 
 #[tauri::command]

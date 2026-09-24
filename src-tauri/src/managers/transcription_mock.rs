@@ -11,6 +11,19 @@ use tauri::AppHandle;
 /// Mirrors the real module's Vulkan-serialization helper so callers
 /// (`commands/models.rs::list_gpu_devices`) still resolve under the CI mock.
 /// No real Vulkan work happens in CI, so this just runs the closure.
+/// Mirrors the real manager's type so `commands/models.rs` compiles unchanged.
+#[derive(Debug, Clone)]
+pub struct GpuDevice {
+    pub index: i32,
+    pub name: String,
+    pub vram_total_mb: u64,
+}
+
+/// No engine in the mock, so no adapters. The real build enumerates via Vulkan.
+pub fn list_gpu_devices() -> Vec<GpuDevice> {
+    Vec::new()
+}
+
 pub fn with_vulkan_op_lock<R>(f: impl FnOnce() -> R) -> R {
     f()
 }
