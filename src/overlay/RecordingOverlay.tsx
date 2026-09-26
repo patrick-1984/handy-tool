@@ -16,7 +16,16 @@ type OverlayState =
   | "recording"
   | "transcribing"
   | "processing"
-  | "no-microphone";
+  | "no-microphone"
+  | "microphone-blocked"
+  | "microphone-error";
+
+// Why a take could not start; each is shown briefly, then the overlay hides.
+const MICROPHONE_PROBLEMS: Partial<Record<OverlayState, string>> = {
+  "no-microphone": "overlay.noMicrophone",
+  "microphone-blocked": "overlay.microphoneBlocked",
+  "microphone-error": "overlay.microphoneError",
+};
 
 const RecordingOverlay: React.FC = () => {
   const { t } = useTranslation();
@@ -27,6 +36,9 @@ const RecordingOverlay: React.FC = () => {
   // until then, so show "starting" rather than a flat waveform the user talks over.
   // The first mic-level update is the signal that audio is actually flowing.
   const [micLive, setMicLive] = useState(false);
+  // How far the transcription is after stop (percent); null until the backend
+  // reports one (it waits half a second, and has no figure for remote engines).
+  const [progress, setProgress] = useState<number | null>(null);
   const [levels, setLevels] = useState<number[]>(Array(16).fill(0));
   const smoothedLevelsRef = useRef<number[]>(Array(16).fill(0));
   const direction = getLanguageDirection(i18n.language);
@@ -40,8 +52,15 @@ const RecordingOverlay: React.FC = () => {
         const overlayState = event.payload as OverlayState;
         setState(overlayState);
         setMicLive(false);
+        setProgress(null);
         setIsVisible(true);
       });
+
+      // Transcription progress after stop, only meaningful in "transcribing"
+      const unlistenProgress = await listen<number>(
+        "transcription-progress",
+        (event) => setProgress(event.payload),
+      );
 
       // Listen for hide-overlay event from Rust
       const unlistenHide = await listen("hide-overlay", () => {
@@ -67,6 +86,7 @@ const RecordingOverlay: React.FC = () => {
       return () => {
         unlistenShow();
         unlistenHide();
+        unlistenProgress();
         unlistenLevel();
       };
     };
@@ -75,7 +95,7 @@ const RecordingOverlay: React.FC = () => {
   }, []);
 
   const getIcon = () => {
-    if (state === "recording" || state === "no-microphone") {
+    if (state === "recording" || MICROPHONE_PROBLEMS[state]) {
       return <MicrophoneIcon />;
     } else {
       return <TranscriptionIcon />;
@@ -121,13 +141,19 @@ const RecordingOverlay: React.FC = () => {
           </div>
         )}
         {state === "transcribing" && (
-          <div className="transcribing-text">{t("overlay.transcribing")}</div>
+          <div className="transcribing-text">
+            {progress === null
+              ? t("overlay.transcribing")
+              : t("overlay.transcribingProgress", { percent: progress })}
+          </div>
         )}
         {state === "processing" && (
           <div className="transcribing-text">{t("overlay.processing")}</div>
         )}
-        {state === "no-microphone" && (
-          <div className="overlay-message">{t("overlay.noMicrophone")}</div>
+        {MICROPHONE_PROBLEMS[state] && (
+          <div className="overlay-message">
+            {t(MICROPHONE_PROBLEMS[state]!)}
+          </div>
         )}
       </div>
 

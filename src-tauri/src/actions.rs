@@ -5,7 +5,7 @@ use crate::audio_feedback::{SoundType, play_feedback_sound, play_feedback_sound_
 use crate::audio_toolkit::ClosedChunk;
 use crate::managers::audio::{AudioRecordingManager, StartFailure};
 use crate::managers::history::HistoryManager;
-use crate::managers::transcription::TranscriptionManager;
+use crate::managers::transcription::{TranscriptionManager, running_transcription_fraction};
 use crate::settings::{
     APPLE_INTELLIGENCE_PROVIDER_ID, AppSettings, TranscriptionMode, get_settings,
 };
@@ -138,6 +138,42 @@ impl ChunkedSession {
 }
 
 static CHUNKED_SESSION: Lazy<Mutex<Option<Arc<ChunkedSession>>>> = Lazy::new(|| Mutex::new(None));
+
+/// Shows "Transcribing N%" on the overlay while a stopped take is still being
+/// transcribed. The first figure appears after half a second, so a quick finish
+/// never flickers a number; it never goes backwards; it stops when dropped.
+struct ProgressTicker {
+    stop: Arc<AtomicBool>,
+}
+
+impl ProgressTicker {
+    fn start(app: &AppHandle, fraction: impl Fn() -> Option<f32> + Send + 'static) -> Self {
+        let stop = Arc::new(AtomicBool::new(false));
+        let stop_thread = Arc::clone(&stop);
+        let app = app.clone();
+        std::thread::spawn(move || {
+            std::thread::sleep(Duration::from_millis(500));
+            let mut shown = 0u8;
+            while !stop_thread.load(Ordering::Relaxed) {
+                if let Some(f) = fraction() {
+                    let percent = (f.clamp(0.0, 0.99) * 100.0) as u8;
+                    if percent > shown {
+                        shown = percent;
+                        utils::emit_transcription_progress(&app, shown);
+                    }
+                }
+                std::thread::sleep(Duration::from_millis(150));
+            }
+        });
+        Self { stop }
+    }
+}
+
+impl Drop for ProgressTicker {
+    fn drop(&mut self) {
+        self.stop.store(true, Ordering::Relaxed);
+    }
+}
 
 /// Pipeline decisions made in `start()` and consumed by `stop()`, so a
 /// mid-recording settings/model change can never route `stop()` down a path
@@ -1247,11 +1283,18 @@ impl ShortcutAction for TranscribeAction {
                 binding_id
             );
             rm.remove_mute();
-            if start_failure == Some(StartFailure::NoMicrophone) {
-                // Say why instead of flashing the overlay away with no explanation.
-                utils::show_no_microphone_overlay(app);
-            } else {
-                utils::hide_recording_overlay(app);
+            // Say why instead of flashing the overlay away with no explanation.
+            match start_failure {
+                Some(StartFailure::NoMicrophone) => {
+                    utils::show_microphone_problem_overlay(app, "no-microphone")
+                }
+                Some(StartFailure::MicrophoneBlocked) => {
+                    utils::show_microphone_problem_overlay(app, "microphone-blocked")
+                }
+                Some(StartFailure::MicrophoneError) => {
+                    utils::show_microphone_problem_overlay(app, "microphone-error")
+                }
+                _ => utils::hide_recording_overlay(app),
             }
             change_tray_icon(app, TrayIconState::Idle);
         }
@@ -1574,11 +1617,31 @@ impl ShortcutAction for TranscribeAction {
                     // take minutes to transcribe on a slow/CPU engine, so we must
                     // not give up early or the result is lost.
                     let wait_start = Instant::now();
+                    // Progress over what was still left at stop: whole segments
+                    // finished since, plus how far the running one is.
+                    let done_at_stop = session.done_count.load(Ordering::SeqCst);
+                    let progress_session = Arc::clone(&session);
+                    let progress = ProgressTicker::start(&ah, move || {
+                        let left_at_stop = total.saturating_sub(done_at_stop);
+                        if left_at_stop == 0 {
+                            return None;
+                        }
+                        let finished = progress_session
+                            .done_count
+                            .load(Ordering::SeqCst)
+                            .saturating_sub(done_at_stop);
+                        let running = running_transcription_fraction();
+                        if finished == 0 && running.is_none() {
+                            return None; // no basis for a figure yet
+                        }
+                        Some((finished as f32 + running.unwrap_or(0.0)) / left_at_stop as f32)
+                    });
                     while session.done_count.load(Ordering::SeqCst) < total
                         && wait_start.elapsed() < Duration::from_secs(15 * 60)
                     {
                         tokio::time::sleep(Duration::from_millis(100)).await;
                     }
+                    drop(progress);
                     let done = session.done_count.load(Ordering::SeqCst);
                     if done < total {
                         warn!(
@@ -1889,6 +1952,7 @@ impl ShortcutAction for TranscribeAction {
                     let _serial = CHUNK_TRANSCRIBE_LOCK
                         .lock()
                         .unwrap_or_else(|poisoned| poisoned.into_inner());
+                    let _progress = ProgressTicker::start(&ah, running_transcription_fraction);
                     match tm.transcribe(samples) {
                         Ok(text) => Ok(text),
                         Err(e) => {

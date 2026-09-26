@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { writeText } from "@tauri-apps/plugin-clipboard-manager";
 import { Copy, RefreshCw, Check } from "lucide-react";
 import { commands, type McpStatus } from "@/bindings";
+import { RichText } from "../../ui/RichText";
 
 const buttonClass =
   "px-3 py-1.5 rounded-md border border-zinc-700 bg-zinc-800 text-zinc-100 text-sm hover:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer";
@@ -110,9 +111,10 @@ export const McpSettings: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-text/60">
-        {t("settings.advanced.mcp.description")}
-      </p>
+      <RichText
+        text={t("settings.advanced.mcp.description")}
+        className="text-sm text-text/60"
+      />
 
       {/* Enable + status */}
       <div className="flex items-center gap-3 flex-wrap">

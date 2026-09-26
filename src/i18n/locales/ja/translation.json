@@ -1245,10 +1245,13 @@
   },
   "overlay": {
     "transcribing": "文字起こし中...",
+    "transcribingProgress": "文字起こし中 {{percent}}%",
     "processing": "処理中...",
     "openFloatingWindow": "文字起こしウィンドウを開く",
     "startingMic": "マイク起動中...",
-    "noMicrophone": "マイクがありません"
+    "noMicrophone": "マイクがありません",
+    "microphoneBlocked": "マイクがブロック中",
+    "microphoneError": "マイクのエラー"
   },
   "brand": {
     "name": "Handy",

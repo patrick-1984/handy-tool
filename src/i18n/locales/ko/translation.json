@@ -1245,10 +1245,13 @@
   },
   "overlay": {
     "transcribing": "텍스트로 변환 중...",
+    "transcribingProgress": "텍스트로 변환 중 {{percent}}%",
     "processing": "처리 중...",
     "openFloatingWindow": "전사 창 열기",
     "startingMic": "마이크 시작 중...",
-    "noMicrophone": "마이크 없음"
+    "noMicrophone": "마이크 없음",
+    "microphoneBlocked": "마이크 차단됨",
+    "microphoneError": "마이크 오류"
   },
   "brand": {
     "name": "Handy",

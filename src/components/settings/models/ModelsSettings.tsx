@@ -8,6 +8,7 @@ import { ModelUnloadTimeoutSetting } from "../ModelUnloadTimeout";
 import { useModelStore } from "@/stores/modelStore";
 import { LANGUAGES } from "@/lib/constants/languages.ts";
 import type { ModelInfo } from "@/bindings";
+import { RichText } from "../../ui/RichText";
 
 // check if model supports a language based on its supported_languages list
 const modelSupportsLanguage = (model: ModelInfo, langCode: string): boolean => {
@@ -215,9 +216,10 @@ export const ModelsSettings: React.FC = () => {
         <h1 className="text-xl font-semibold mb-2">
           {t("settings.models.title")}
         </h1>
-        <p className="text-sm text-text/60">
-          {t("settings.models.description")}
-        </p>
+        <RichText
+          text={t("settings.models.description")}
+          className="text-sm text-text/60"
+        />
       </div>
       <ModelUnloadTimeoutSetting descriptionMode="tooltip" grouped={false} />
       {filteredModels.length > 0 ? (

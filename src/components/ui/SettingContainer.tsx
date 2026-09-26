@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Tooltip } from "./Tooltip";
+import { RichText } from "./RichText";
 
 interface SettingContainerProps {
   title: string;
@@ -92,9 +93,10 @@ export const SettingContainer: React.FC<SettingContainerProps> = ({
               </svg>
               {showTooltip && (
                 <Tooltip targetRef={tooltipRef} position="top">
-                  <p className="text-sm text-center leading-relaxed">
-                    {description}
-                  </p>
+                  <RichText
+                    text={description}
+                    className="text-sm leading-relaxed"
+                  />
                 </Tooltip>
               )}
             </div>
@@ -110,9 +112,10 @@ export const SettingContainer: React.FC<SettingContainerProps> = ({
           <h3 className={`text-sm font-medium ${disabled ? "opacity-50" : ""}`}>
             {title}
           </h3>
-          <p className={`text-sm ${disabled ? "opacity-50" : ""}`}>
-            {description}
-          </p>
+          <RichText
+            text={description}
+            className={`text-sm ${disabled ? "opacity-50" : ""}`}
+          />
         </div>
         <div className="w-full">{children}</div>
       </div>
@@ -165,9 +168,10 @@ export const SettingContainer: React.FC<SettingContainerProps> = ({
               </svg>
               {showTooltip && (
                 <Tooltip targetRef={tooltipRef} position={tooltipPosition}>
-                  <p className="text-sm text-center leading-relaxed">
-                    {description}
-                  </p>
+                  <RichText
+                    text={description}
+                    className="text-sm leading-relaxed"
+                  />
                 </Tooltip>
               )}
             </div>
@@ -184,9 +188,10 @@ export const SettingContainer: React.FC<SettingContainerProps> = ({
         <h3 className={`text-sm font-medium ${disabled ? "opacity-50" : ""}`}>
           {title}
         </h3>
-        <p className={`text-sm ${disabled ? "opacity-50" : ""}`}>
-          {description}
-        </p>
+        <RichText
+          text={description}
+          className={`text-sm ${disabled ? "opacity-50" : ""}`}
+        />
       </div>
       <div className="relative">{children}</div>
     </div>

@@ -1245,10 +1245,13 @@
   },
   "overlay": {
     "transcribing": "Přepisuji...",
+    "transcribingProgress": "Přepisuji {{percent}}%",
     "processing": "Zpracovávám...",
     "openFloatingWindow": "Otevřít okno přepisu",
     "startingMic": "Spouštím mikrofon...",
-    "noMicrophone": "Žádný mikrofon"
+    "noMicrophone": "Žádný mikrofon",
+    "microphoneBlocked": "Mikrofon zablokován",
+    "microphoneError": "Chyba mikrofonu"
   },
   "brand": {
     "name": "Handy",

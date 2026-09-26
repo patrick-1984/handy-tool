@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.8.0] - 2026-09-26 14:33
+
+### Added
+
+- **Transcription progress on the overlay.** When the transcription left after you stop takes
+  more than half a second, the overlay shows **Transcribing 42%** instead of only
+  "Transcribing...". Whisper models report their real progress (the whisper.cpp progress hook
+  was there but never connected); Parakeet, Moonshine and SenseVoice have no such hook, so the
+  figure is estimated from the audio length and how fast this machine transcribed with that
+  model earlier in the session (it appears once a model has done one take of 2 s or more). The
+  figure never goes backwards and holds at 99% until the text is ready. Remote engines
+  (API, OpenRouter) show no figure.
+- **The overlay says when the microphone cannot start.** "Microphone blocked" when Windows
+  privacy settings deny apps the microphone (the stream start fails with E_ACCESSDENIED), and
+  "Microphone error" for any other device that refuses to start. Until now such a take
+  "started" anyway and recorded silence: the recorder reported success before its audio thread
+  had even tried the device. Opening the microphone now waits up to 3 s for the stream to
+  actually start (normally well under 300 ms); a slower start, such as a Bluetooth headset
+  switching profile, still records.
+
+### Changed
+
+- **Info tooltips are wider and structured.** The (i) popups are 340 px wide instead of 200 px
+  and left-aligned. Descriptions can now carry a bold summary line, separate paragraphs and
+  bullet lists, and the 60 longest English descriptions were rewritten that way - a bold one-line
+  summary, the default on its own line, options as bullets. The other 16 languages keep their
+  existing text, shown wider. Page introductions (Models, Model Testing, Keyboard Typer, MCP) use
+  the same formatting.
+
 ## [1.7.0] - 2026-09-26 02:59
 
 ### Added

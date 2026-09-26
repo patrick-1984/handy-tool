@@ -4,6 +4,7 @@ import { listen } from "@tauri-apps/api/event";
 import { commands } from "@/bindings";
 import { useSettings } from "@/hooks/useSettings";
 import { ShortcutInput } from "../ShortcutInput";
+import { RichText } from "../../ui/RichText";
 
 type TypingStatus =
   | { state: "countdown"; seconds_left: number }
@@ -135,7 +136,10 @@ export const KeyboardTyperPage: React.FC = () => {
       <h2 className="text-lg font-semibold text-text">
         {t("keyboardTyper.title")}
       </h2>
-      <p className="text-sm text-text/60">{t("keyboardTyper.description")}</p>
+      <RichText
+        text={t("keyboardTyper.description")}
+        className="text-sm text-text/60"
+      />
 
       <textarea
         className="flex-1 min-h-[200px] w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-blue-500 focus:outline-none resize-none"

@@ -6,8 +6,9 @@ use crate::settings::{
 use anyhow::Result;
 use log::{debug, error, info, warn};
 use serde::Serialize;
+use std::collections::BTreeMap;
 use std::panic::{AssertUnwindSafe, catch_unwind};
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU64, Ordering};
 use std::sync::{Arc, Condvar, Mutex, MutexGuard};
 use std::thread;
 use std::time::{Duration, SystemTime};
@@ -58,6 +59,54 @@ const TRAILING_SILENCE_PAD_SAMPLES: usize = 16_000;
 /// serializing them here closes the practical race even though the two
 /// locks are technically separate objects.
 static VULKAN_OP_LOCK: Mutex<()> = Mutex::new(());
+
+/* ── Progress of the running engine call (the overlay's percentage) ── */
+
+/// The local engine call running right now. Only one runs at a time per engine
+/// slot: the engine is taken out of it for the duration of the call.
+struct RunningJob {
+    started: std::time::Instant,
+    /// Expected wall time from this model's measured speed; None until the model
+    /// has finished a long-enough transcription since the app started.
+    expected: Option<Duration>,
+    /// Whisper's own percentage (0-100); -1 until it reports. Other engines never do.
+    reported: Arc<AtomicI32>,
+}
+
+static RUNNING_JOB: Mutex<Option<RunningJob>> = Mutex::new(None);
+
+/// Seconds of processing per second of audio, per model id: a moving average of
+/// this machine's recent transcriptions.
+static MODEL_SPEED: Mutex<BTreeMap<String, f64>> = Mutex::new(BTreeMap::new());
+
+/// Clips shorter than this are dominated by fixed overhead and would skew the speed.
+const MIN_SPEED_SAMPLE_SECS: f64 = 2.0;
+
+/// How far the running local engine call is, 0.0..=0.99: real for Whisper,
+/// estimated from audio length × measured speed for the other engines. None when
+/// nothing is running or there is no basis for an estimate yet.
+pub fn running_transcription_fraction() -> Option<f32> {
+    let job = RUNNING_JOB.lock().ok()?;
+    let job = job.as_ref()?;
+    let reported = job.reported.load(Ordering::Relaxed);
+    let fraction = if reported >= 0 {
+        reported as f32 / 100.0
+    } else {
+        job.started.elapsed().as_secs_f32() / job.expected?.as_secs_f32().max(0.001)
+    };
+    Some(fraction.clamp(0.0, 0.99))
+}
+
+/// Clears the running job however the engine call ends, including a panic.
+struct RunningJobGuard;
+
+impl Drop for RunningJobGuard {
+    fn drop(&mut self) {
+        if let Ok(mut job) = RUNNING_JOB.lock() {
+            *job = None;
+        }
+    }
+}
 
 /// Run `f` while holding [`VULKAN_OP_LOCK`]. `commands::models::list_gpu_devices`
 /// wraps its enumeration call in this so it can never overlap the GPU
@@ -1402,6 +1451,26 @@ impl TranscriptionManager {
                 }
             };
 
+            // Publish this call for the overlay's progress percentage, and time it
+            // to keep the model's measured speed current.
+            let audio_secs = audio.len() as f64 / 16_000.0;
+            let speed_key = taken_model_id.clone().unwrap_or_default();
+            let reported = Arc::new(AtomicI32::new(-1));
+            let expected = MODEL_SPEED
+                .lock()
+                .ok()
+                .and_then(|speeds| speeds.get(&speed_key).copied())
+                .map(|speed| Duration::from_secs_f64(speed * audio_secs));
+            let job_started = std::time::Instant::now();
+            if let Ok(mut job) = RUNNING_JOB.lock() {
+                *job = Some(RunningJob {
+                    started: job_started,
+                    expected,
+                    reported: Arc::clone(&reported),
+                });
+            }
+            let job_guard = RunningJobGuard;
+
             let transcribe_result = catch_unwind(AssertUnwindSafe(
                 || -> Result<transcribe_rs::TranscriptionResult> {
                     match &mut engine {
@@ -1411,6 +1480,7 @@ impl TranscriptionManager {
                                     &settings.selected_language,
                                 ),
                                 translate: effective_translate,
+                                progress: Some(Arc::clone(&reported)),
                                 ..Default::default()
                             };
 
@@ -1488,6 +1558,17 @@ impl TranscriptionManager {
                     }
                 },
             ));
+
+            drop(job_guard);
+            if transcribe_result.as_ref().is_ok_and(|r| r.is_ok())
+                && audio_secs >= MIN_SPEED_SAMPLE_SECS
+            {
+                let measured = job_started.elapsed().as_secs_f64() / audio_secs;
+                if let Ok(mut speeds) = MODEL_SPEED.lock() {
+                    let speed = speeds.entry(speed_key).or_insert(measured);
+                    *speed = *speed * 0.7 + measured * 0.3;
+                }
+            }
 
             match transcribe_result {
                 Ok(inner_result) => {

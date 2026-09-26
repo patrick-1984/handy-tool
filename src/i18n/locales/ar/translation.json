@@ -1245,10 +1245,13 @@
   },
   "overlay": {
     "transcribing": "...جاري التفريغ",
+    "transcribingProgress": "جاري التفريغ {{percent}}%",
     "processing": "...جاري المعالجة",
     "openFloatingWindow": "فتح نافذة التفريغ الصوتي",
     "startingMic": "جارٍ تشغيل الميكروفون...",
-    "noMicrophone": "لا يوجد ميكروفون"
+    "noMicrophone": "لا يوجد ميكروفون",
+    "microphoneBlocked": "الميكروفون محظور",
+    "microphoneError": "خطأ في الميكروفون"
   },
   "brand": {
     "name": "Handy",

@@ -18,6 +18,7 @@ import { Dropdown } from "@/components/ui";
 import { useNavStore } from "@/stores/navStore";
 import { useSettings } from "../../../hooks/useSettings";
 import { SavePromptButton } from "./SavePromptButton";
+import { RichText } from "../../ui/RichText";
 
 const actionButtonClass =
   "px-4 py-1.5 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer";
@@ -697,7 +698,10 @@ export const ModelTestingPage: React.FC = () => {
 
   return (
     <div className="w-full space-y-4">
-      <p className="text-sm text-text/60">{t("modelTesting.description")}</p>
+      <RichText
+        text={t("modelTesting.description")}
+        className="text-sm text-text/60"
+      />
 
       {/* Provider selection */}
       <div className="space-y-2">

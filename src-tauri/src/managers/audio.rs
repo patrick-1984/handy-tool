@@ -120,21 +120,33 @@ pub enum MicrophoneMode {
 pub enum StartFailure {
     /// No input device exists, so there is nothing to record from.
     NoMicrophone,
+    /// Windows privacy settings deny this app the microphone.
+    MicrophoneBlocked,
+    /// The microphone exists but its stream would not start.
+    MicrophoneError,
     Other,
 }
 
-/// Marker error for "no input device at all", so `try_start_recording` can tell it
-/// apart from every other open failure.
+/// Why the microphone could not be opened, kept apart from every other start
+/// failure so `try_start_recording` can tell the overlay what happened.
 #[derive(Debug)]
-struct NoInputDevice;
+enum MicOpenError {
+    NoInputDevice,
+    Blocked,
+    Failed(String),
+}
 
-impl std::fmt::Display for NoInputDevice {
+impl std::fmt::Display for MicOpenError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("No input device found")
+        match self {
+            MicOpenError::NoInputDevice => f.write_str("No input device found"),
+            MicOpenError::Blocked => f.write_str("Microphone access is blocked by Windows"),
+            MicOpenError::Failed(e) => write!(f, "Failed to open recorder: {e}"),
+        }
     }
 }
 
-impl std::error::Error for NoInputDevice {}
+impl std::error::Error for MicOpenError {}
 
 /* ──────────────────────────────────────────────────────────────── */
 
@@ -343,13 +355,15 @@ impl AudioRecordingManager {
                     // Microphone - inherits a live system ring.
                     rec.close_system_audio();
                     // open() reports NotFound only when there is no input device at
-                    // all; keep that distinguishable so the overlay can say so.
-                    if e.downcast_ref::<std::io::Error>()
-                        .is_some_and(|io| io.kind() == std::io::ErrorKind::NotFound)
-                    {
-                        return Err(NoInputDevice.into());
+                    // all, and PermissionDenied when Windows privacy blocks the
+                    // microphone; keep them distinguishable so the overlay can say so.
+                    let kind = e.downcast_ref::<std::io::Error>().map(|io| io.kind());
+                    return Err(match kind {
+                        Some(std::io::ErrorKind::NotFound) => MicOpenError::NoInputDevice,
+                        Some(std::io::ErrorKind::PermissionDenied) => MicOpenError::Blocked,
+                        _ => MicOpenError::Failed(e.to_string()),
                     }
-                    return Err(anyhow::anyhow!("Failed to open recorder: {}", e));
+                    .into());
                 }
             } else {
                 // System-audio ONLY: the loopback endpoint is the master clock, so it
@@ -500,10 +514,11 @@ impl AudioRecordingManager {
                 }
                 if let Err(e) = self.start_microphone_stream() {
                     error!("Failed to open microphone stream: {e}");
-                    return Err(if e.is::<NoInputDevice>() {
-                        StartFailure::NoMicrophone
-                    } else {
-                        StartFailure::Other
+                    return Err(match e.downcast_ref::<MicOpenError>() {
+                        Some(MicOpenError::NoInputDevice) => StartFailure::NoMicrophone,
+                        Some(MicOpenError::Blocked) => StartFailure::MicrophoneBlocked,
+                        Some(MicOpenError::Failed(_)) => StartFailure::MicrophoneError,
+                        None => StartFailure::Other,
                     });
                 }
             }

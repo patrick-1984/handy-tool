@@ -1245,10 +1245,13 @@
   },
   "overlay": {
     "transcribing": "Đang phiên âm...",
+    "transcribingProgress": "Đang phiên âm {{percent}}%",
     "processing": "Đang xử lý...",
     "openFloatingWindow": "Mở cửa sổ phiên âm",
     "startingMic": "Đang bật micrô...",
-    "noMicrophone": "Không có micrô"
+    "noMicrophone": "Không có micrô",
+    "microphoneBlocked": "Micrô bị chặn",
+    "microphoneError": "Lỗi micrô"
   },
   "floating": {
     "waiting": "Đang chờ phiên âm…",

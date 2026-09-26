@@ -1,4 +1,5 @@
 import React from "react";
+import { RichText } from "./RichText";
 
 interface SettingsGroupProps {
   title?: string;
@@ -19,7 +20,10 @@ export const SettingsGroup: React.FC<SettingsGroupProps> = ({
             {title}
           </h2>
           {description && (
-            <p className="text-xs text-mid-gray mt-1">{description}</p>
+            <RichText
+              text={description}
+              className="text-xs text-mid-gray mt-1"
+            />
           )}
         </div>
       )}

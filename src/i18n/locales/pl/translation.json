@@ -1245,10 +1245,13 @@
   },
   "overlay": {
     "transcribing": "Transkrypcja...",
+    "transcribingProgress": "Transkrypcja {{percent}}%",
     "processing": "Przetwarzanie...",
     "openFloatingWindow": "Otwórz okno transkrypcji",
     "startingMic": "Włączam mikrofon...",
-    "noMicrophone": "Brak mikrofonu"
+    "noMicrophone": "Brak mikrofonu",
+    "microphoneBlocked": "Mikrofon zablokowany",
+    "microphoneError": "Błąd mikrofonu"
   },
   "tokenCount": {
     "configureProviders": "Skonfiguruj dostawców",

@@ -215,11 +215,11 @@
           },
           "cancel": {
             "name": "Cancel Shortcut",
-            "description": "Cancels the take that is in progress. Default: escape. What cancelling actually does is decided by Cancel behavior on the General page — Finish, save to history only still transcribes and stores the text but delivers nothing to your window, while Discard recording throws the audio away — and the tray Cancel item follows the same setting."
+            "description": "**Cancels the take that is in progress.**\n\n**Default:** escape.\n\nWhat cancelling actually does is decided by Cancel behavior on the General page, and the tray Cancel item follows the same setting:\n\n- Finish, save to history only: still transcribes and stores the text, but delivers nothing to your window.\n- Discard recording: throws the audio away."
           },
           "transcribe_ptt": {
             "name": "Push-to-Talk Shortcut",
-            "description": "Hold this shortcut to record and release to stop; the microphone goes cold on release, so anything you say afterwards cannot leak into the text. Default: Ctrl+Shift+Space. It has its own Transcription Mode (PTT) and its own Paste Method (PTT), so push-to-talk can behave differently from Transcribe Shortcut."
+            "description": "**Hold this shortcut to record, release it to stop.** The microphone goes cold on release, so anything you say afterwards cannot leak into the text.\n\n**Default:** Ctrl+Shift+Space.\n\nIt has its own Transcription Mode (PTT) and its own Paste Method (PTT), so push-to-talk can behave differently from Transcribe Shortcut."
           },
           "transcribe_with_post_process": {
             "name": "Post-Processing Hotkey",
@@ -227,7 +227,7 @@
           },
           "type_text": {
             "name": "Type Text Shortcut",
-            "description": "Types whatever is in the Keyboard Typer box into the window that currently has focus; press it again, or Escape, to cancel. Default: ctrl+shift+F11. It starts after about a second rather than waiting out Start delay, because pressing a shortcut means you are already in the target window — the Go button is the one that uses the full countdown."
+            "description": "**Types whatever is in the Keyboard Typer box into the window that currently has focus.** Press it again, or Escape, to cancel.\n\n**Default:** ctrl+shift+F11.\n\nIt starts after about a second rather than waiting out Start delay, because pressing a shortcut means you are already in the target window — the Go button is the one that uses the full countdown."
           },
           "transcribe_and_submit": {
             "name": "Transcribe & Submit Shortcut",
@@ -235,7 +235,7 @@
           },
           "anchor_set": {
             "name": "Set Anchor",
-            "description": "Captures the text field you currently have focused as the Hot 1 destination. Default: ctrl+shift+F1. On its own it delivers nothing — set 'Jump slot action on finish' to 'Jump / deliver to slot' with the slot set to Hot 1 (Advanced → Transcription) to make your next transcription land there. Password boxes and Handy's own windows are refused."
+            "description": "**Captures the text field you currently have focused as the Hot 1 destination.**\n\n**Default:** ctrl+shift+F1.\n\nOn its own it delivers nothing: set 'Jump slot action on finish' to 'Jump / deliver to slot' with the slot set to Hot 1 (Advanced → Transcription) to make your next transcription land there. Password boxes and Handy's own windows are refused."
           },
           "anchor_jump": {
             "name": "Jump to Anchor",
@@ -243,7 +243,7 @@
           },
           "jump_set_slot_1": {
             "name": "Set Jump Slot 1",
-            "description": "Memorizes the field you currently have focused as static slot 1, replacing whatever it held. Default: ctrl+alt+shift+1. The slot is only a bookmark until something uses it — jump to it with 'Jump to Slot 1', or point a flow's 'Jump slot action on finish' (Advanced → Transcription) at Slot 1 to have transcriptions delivered there."
+            "description": "**Memorizes the field you currently have focused as static slot 1**, replacing whatever it held.\n\n**Default:** ctrl+alt+shift+1.\n\nThe slot is only a bookmark until something uses it: jump to it with 'Jump to Slot 1', or point a flow's 'Jump slot action on finish' (Advanced → Transcription) at Slot 1 to have transcriptions delivered there."
           },
           "jump_set_slot_2": {
             "name": "Set Jump Slot 2",
@@ -293,7 +293,7 @@
         "deliveryFailed": "Anchored delivery failed: {{reason}}. Your text is on the clipboard and the anchor was kept.",
         "status": {
           "title": "Current anchor",
-          "description": "Shows what this hot slot currently points at, with Test (jump there without delivering anything) and Clear; a 'Remote ✓' badge means the target matched your Remote match strings. Default: No anchor set — click into a text field and press this slot's Set Anchor shortcut to arm it. An anchor is never used up by a delivery: it stays until you clear it or its window closes.",
+          "description": "**Shows what this hot slot currently points at**, with Test (jump there without delivering anything) and Clear. A 'Remote ✓' badge means the target matched your Remote match strings.\n\n**Default:** No anchor set — click into a text field and press this slot's Set Anchor shortcut to arm it.\n\nAn anchor is never used up by a delivery: it stays until you clear it or its window closes.",
           "active": "Anchored: {{app}} ({{control}})",
           "none": "No anchor set",
           "clear": "Clear"
@@ -315,11 +315,11 @@
           },
           "idle": {
             "title": "Jump slot action on start",
-            "description": "What this shortcut additionally does with the slot chosen in the dropdown on the left at the moment you press it to start a take. Default: Do nothing, which is why the slot picker starts greyed out. Jump / deliver to slot moves you into that remembered field before you speak, Set slot to current focus records where you are right now, and Clear slot forgets it (Windows only)."
+            "description": "**What this shortcut also does with the slot chosen on the left at the moment you press it to start a take.**\n\n**Default:** Do nothing — which is why the slot picker starts greyed out.\n\n- Jump / deliver to slot: moves you into that remembered field before you speak.\n- Set slot to current focus: records where you are right now.\n- Clear slot: forgets it.\n\nWindows only."
           },
           "stop": {
             "title": "Jump slot action on finish",
-            "description": "What this shortcut does with the slot chosen on the left when the take finishes. Default: Do nothing. Jump / deliver to slot sends the transcription into that remembered field instead of wherever you have drifted to, so you can read something else while dictating; Set slot to current focus and Clear slot run only after the text has been delivered, and Only jump on finish if started the same way on the Jumper page can narrow when a jump is allowed (Windows only)."
+            "description": "**What this shortcut does with the slot chosen on the left when the take finishes.**\n\n**Default:** Do nothing.\n\n- Jump / deliver to slot: sends the transcription into that remembered field instead of wherever you have drifted to, so you can read something else while dictating.\n- Set slot to current focus, Clear slot: run only after the text has been delivered.\n\nOnly jump on finish if started the same way, on the Jumper page, can narrow when a jump is allowed. Windows only."
           }
         },
         "deliveryFailedHistoryOnly": "Anchored delivery failed: {{reason}}. Your clipboard was left untouched and the anchor was kept — the text is in History. {{recovery}}"
@@ -339,7 +339,7 @@
         },
         "idleBehavior": {
           "title": "When no recording is active",
-          "description": "What happens when you press the Transcribe & Submit Shortcut while nothing is being recorded. Default: Start a recording, so one press starts and the next pastes and submits. Choose Do nothing to make this key a pure finisher: you start takes with the Transcribe Shortcut and press this one only when you want that result pasted and sent.",
+          "description": "**What happens when you press the Transcribe & Submit Shortcut while nothing is being recorded.**\n\n**Default:** Start a recording — one press starts, the next pastes and submits.\n\nChoose Do nothing to make this key a pure finisher: you start takes with the Transcribe Shortcut and press this one only when you want that result pasted and sent.",
           "options": {
             "startNormal": "Start a recording",
             "doNothing": "Do nothing"
@@ -347,7 +347,7 @@
         },
         "clipboard": {
           "title": "Clipboard",
-          "description": "This flow's own clipboard policy, independent of Clipboard Handling: restore your existing clipboard after pasting, or deliberately leave the sent transcription on it. Default: Don't Modify Clipboard. Useful when normal dictation should leave your clipboard alone but you want a copy of everything you sent — or the other way round."
+          "description": "**This flow's own clipboard policy, independent of Clipboard Handling:** restore your existing clipboard after pasting, or deliberately leave the sent transcription on it.\n\n**Default:** Don't Modify Clipboard.\n\nUseful when normal dictation should leave your clipboard alone but you want a copy of everything you sent — or the other way round."
         },
         "jumperDelay": {
           "off": "Off (instant)",
@@ -356,14 +356,14 @@
         },
         "jumperPasteDelay": {
           "title": "Paste delay after jump (Windows)",
-          "description": "Extra wait after a jump brings the target window to the front and before the paste keystroke fires, because a window activated a heartbeat ago still swallows keystrokes. Defaults: Local apps 300 ms, Remote desktop 600 ms — which column applies is decided by Remote match strings on the Jumper page. It only ever runs on a real jump; when you are already in the target, pasting stays instant, and both dropdowns are shared by Transcribe and Transcribe & Submit.",
+          "description": "**Extra wait between a jump bringing the target window to the front and the paste keystroke** — a window activated a heartbeat ago still swallows keystrokes.\n\n**Defaults:** Local apps 300 ms, Remote desktop 600 ms. Remote match strings on the Jumper page decides which applies.\n\nIt only ever runs on a real jump: when you are already in the target, pasting stays instant. Both dropdowns are shared by Transcribe and Transcribe & Submit.",
           "options": {
             "none": "Off (instant)"
           }
         },
         "jumperSubmitDelay": {
           "title": "Submit delay before Enter (Windows)",
-          "description": "Extra wait between delivering the text and pressing the submit key, because a target that is still committing the text loses the Enter. Defaults: Local apps 300 ms, Remote desktop 600 ms - Remote match strings on the Jumper page decides which applies. It runs after a real jump, and always for a remote desktop target even when you were already in it, because a remote session needs a round trip to commit the text whether or not Handy activated the window. Only an already-focused local target submits instantly. Changed in 1.3.0: before that an already-focused remote target waited not at all, so the Enter could fire while the text was still in flight and submit a partial dictation.",
+          "description": "**Extra wait between delivering the text and pressing the submit key** — a target that is still committing the text loses the Enter.\n\n**Defaults:** Local apps 300 ms, Remote desktop 600 ms. Remote match strings on the Jumper page decides which applies.\n\n- Runs after a real jump.\n- Always runs for a remote desktop target, even when you were already in it: a remote session needs a round trip to commit the text whether or not Handy activated the window.\n- Only an already-focused local target submits instantly.\n\nChanged in 1.3.0: before that, an already-focused remote target did not wait at all, so the Enter could submit a partial dictation.",
           "options": {
             "none": "Off (instant)"
           }
@@ -371,7 +371,7 @@
       },
       "language": {
         "title": "Language",
-        "description": "Tells the engine which language you are speaking; naming it is usually more accurate than Auto and stops short takes being detected as the wrong language. Default: Auto. It applies to the model named in this card's heading, and with Translate to English on it means the language you speak, not the language you get back.",
+        "description": "**Tells the engine which language you are speaking.** Naming it is usually more accurate than Auto and stops short takes being detected as the wrong language.\n\n**Default:** Auto.\n\nIt applies to the model named in this card's heading. With Translate to English on, it means the language you speak, not the language you get back.",
         "descriptionUnsupported": "Parakeet model automatically detects the language. No manual selection is needed.",
         "searchPlaceholder": "Search languages...",
         "noResults": "No languages found",
@@ -385,16 +385,16 @@
         "title": "Paste last transcription",
         "pasteMethod": {
           "title": "Paste method",
-          "description": "How the Paste Last Transcription shortcut puts the text into the focused window. This is separate from the Advanced page's Paste Method, so you can tune it for the one stubborn target. Default: Clipboard (Ctrl+V) — try Clipboard (Shift+Insert) in a terminal, Direct to type the characters instead of pasting, or None to only place the text on the clipboard so you can paste it by hand."
+          "description": "**How the Paste Last Transcription shortcut puts the text into the focused window** — separate from the Advanced page's Paste Method, so you can tune it for the one stubborn target.\n\n**Default:** Clipboard (Ctrl+V).\n\n- Clipboard (Shift+Insert): try it in a terminal.\n- Direct: types the characters instead of pasting.\n- None: only places the text on the clipboard so you can paste it by hand."
         },
         "clipboard": {
           "title": "Clipboard",
-          "description": "Whether re-pasting puts your previous clipboard back afterwards, or deliberately leaves the transcription on it. Default: Don't Modify Clipboard, which copies the text, pastes it, then restores what you had. Pick Copy to Clipboard to keep the words available after the re-paste; either way only clipboard text is saved and restored, so an image or copied file is lost."
+          "description": "**Whether re-pasting puts your previous clipboard back afterwards, or deliberately leaves the transcription on it.**\n\n**Default:** Don't Modify Clipboard — copies the text, pastes it, then restores what you had.\n\nPick Copy to Clipboard to keep the words available after the re-paste. Either way only clipboard text is saved and restored, so an image or copied file is lost."
         }
       },
       "cancelBehavior": {
         "title": "Cancel behavior",
-        "description": "Decides what cancelling does to the recording in progress — this covers the Cancel Shortcut, the tray \"Cancel\" item and 'handy --cancel'. Default: \"Finish, save to history only\", which stops and transcribes the take, keeps it in History with its audio, and then delivers nothing at all: no paste, no clipboard change, no submit key, no jump. Choose \"Discard recording\" if you would rather a cancelled take were thrown away without being transcribed or stored.",
+        "description": "**What cancelling does to the recording in progress** — covers the Cancel Shortcut, the tray \"Cancel\" item and 'handy --cancel'.\n\n**Default:** \"Finish, save to history only\": stops and transcribes the take, keeps it in History with its audio, and delivers nothing at all — no paste, no clipboard change, no submit key, no jump.\n\nChoose \"Discard recording\" if you would rather a cancelled take were thrown away without being transcribed or stored.",
         "options": {
           "finishSilently": "Finish, save to history only",
           "discardRecording": "Discard recording"
@@ -441,7 +441,7 @@
     },
     "models": {
       "title": "Transcription Models",
-      "description": "Choose which speech model transcribes your dictation — models differ in accuracy, speed and how much memory they hold while loaded. Default: nothing selected on a fresh install; onboarding downloads and selects your first model. Your choice also decides whether Language and Translate to English are offered on the General page, and the Translator uses this same model whenever its Batch model is left on \"Same as dictation (default)\".",
+      "description": "**Choose which speech model transcribes your dictation** — models differ in accuracy, speed and how much memory they hold while loaded.\n\n**Default:** nothing selected on a fresh install; onboarding downloads and selects your first model.\n\nYour choice also decides whether Language and Translate to English are offered on the General page, and the Translator uses this same model whenever its Batch model is left on \"Same as dictation (default)\".",
       "yourModels": "Downloaded Models",
       "availableModels": "Available to Download",
       "downloaded": "Downloaded",
@@ -462,7 +462,7 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "A delivery target whose app, window class, or control class contains one of these fragments (case-insensitive) is treated as a remote desktop, so it uses the Remote value of 'Paste delay after jump (Windows)' and 'Submit delay before Enter (Windows)' on Advanced → Transcription instead of the Local one. It no longer has to be a jump target: since 1.3.0 an already-focused remote window is classified too, which is what makes the submit delay apply there. Default: msrdc, mstsc, Citrix. Add the process name your RDP or Citrix client uses if deliveries into it keep getting swallowed; an empty list treats every target as local.",
+        "description": "**Marks remote desktop windows by name.** A delivery target whose app, window class or control class contains one of these fragments (case-insensitive) is treated as a remote desktop.\n\nRemote targets use the Remote value of 'Paste delay after jump (Windows)' and 'Submit delay before Enter (Windows)' on Advanced → Transcription instead of the Local one. Since 1.3.0 an already-focused remote window is classified too, not only a jump target — which is what makes the submit delay apply there.\n\n**Default:** msrdc, mstsc, Citrix.\n\nAdd the process name your RDP or Citrix client uses if deliveries into it keep getting swallowed. An empty list treats every target as local.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
@@ -474,7 +474,7 @@
         "title": "Hot slot (Anchor & Deliver)",
         "optionsMoved": {
           "title": "Delivery options",
-          "description": "Not a setting — a signpost. What a jump actually does with a slot is configured per flow on Advanced → Transcription: 'Jump slot action on start', 'Jump slot action on finish', 'Track last output location' and 'Return focus after delivery' each exist once for Transcribe and once for Transcribe & Submit.",
+          "description": "**Not a setting — a signpost.** What a jump actually does with a slot is configured per flow on Advanced → Transcription:\n\n- 'Jump slot action on start'\n- 'Jump slot action on finish'\n- 'Track last output location'\n- 'Return focus after delivery'\n\nEach exists once for Transcribe and once for Transcribe & Submit.",
           "hint": "Configured in the Transcribe and Transcribe & Submit groups on the General page."
         }
       },
@@ -484,14 +484,14 @@
       "slot": {
         "title": "Static slot {{index}}",
         "status": "Slot {{index}} target",
-        "description": "Shows what this numbered slot points at, with Test (jump there without delivering anything) and Clear. Default: no target — focus a field you keep coming back to, press this slot's Set shortcut (ctrl+alt+shift+1 … 9), and jump back any time with ctrl+alt+1 … 9. A slot remembers a window and a field, not a browser tab or a text cursor position, and it survives deliveries.",
+        "description": "**Shows what this numbered slot points at**, with Test (jump there without delivering anything) and Clear.\n\n**Default:** no target. Focus a field you keep coming back to, press this slot's Set shortcut (ctrl+alt+shift+1 … 9), and jump back any time with ctrl+alt+1 … 9.\n\nA slot remembers a window and a field — not a browser tab or a text cursor position — and it survives deliveries.",
         "test": "Test",
         "testFailed": "Jump failed: {{reason}}",
         "stale": "Saved: {{app}} ({{control}}) — window not found yet"
       },
       "persist": {
         "label": "Remember slots across restarts",
-        "description": "Remembers every slot's target across app restarts. Default: Off. Windows cannot keep a window handle across a restart, so Handy saves each slot's identity (application plus window and field type) and re-finds the matching window at startup and again the moment you use the slot — a saved slot whose app is not running shows red until it reappears.",
+        "description": "**Remembers every slot's target across app restarts.**\n\n**Default:** Off.\n\nWindows cannot keep a window handle across a restart, so Handy saves each slot's identity (application plus window and field type) and re-finds the matching window at startup and again the moment you use the slot. A saved slot whose app is not running shows red until it reappears.",
         "groupTitle": "Persistence"
       },
       "slotNames": {
@@ -501,7 +501,7 @@
       },
       "track": {
         "label": "Track last output location",
-        "description": "Windows only. After this flow pastes a transcription, the slot chosen in 'Save location into' is overwritten with the field the text actually landed in, so your next jump to that slot returns to the last place you dictated. Default: Off. Turn it on when you want a slot to follow you instead of setting it by hand — Transcribe and Transcribe & Submit track independently, and the capture happens before any 'Return focus after delivery'.",
+        "description": "**Makes a slot follow you.** After this flow pastes a transcription, the slot chosen in 'Save location into' is overwritten with the field the text actually landed in, so your next jump to that slot returns to the last place you dictated.\n\n**Default:** Off.\n\nTranscribe and Transcribe & Submit track independently, and the capture happens before any 'Return focus after delivery'. Windows only.",
         "slot": {
           "title": "Save location into",
           "description": "Which jump slot 'Track last output location' overwrites after every delivery by this flow. Default: Hot 1. Point it at a static slot (Slot 1 to Slot 9) if you do not want automatic tracking to keep overwriting the hot anchor you set by hand with Set Anchor."
@@ -514,30 +514,30 @@
         "perSlotDescription": "Also records the mouse pointer position when this slot is set or tracked, and moves the pointer back there when you jump to this slot — after the paste, so it cannot disturb delivery. Default: Off. Turn it on for a slot on another monitor so keyboard and mouse arrive together; it enables this slot's own 'Cursor position mode' below, and every slot has its own pair of switches.",
         "mode": {
           "title": "Cursor position mode",
-          "description": "Chooses how this slot's saved pointer position is measured. Default: App-relative (follows the window) — it restores the same spot inside the target window even after the window has been moved, resized, or dragged to a monitor with a different DPI. Pick Screen-absolute (exact coordinates) for something that never moves, such as a fixed dashboard; the dropdown is greyed out until 'Save mouse position' for this slot is on.",
+          "description": "**How this slot's saved pointer position is measured.**\n\n**Default:** App-relative (follows the window) — restores the same spot inside the target window even after it has been moved, resized, or dragged to a monitor with a different DPI.\n\nPick Screen-absolute (exact coordinates) for something that never moves, such as a fixed dashboard. The dropdown is greyed out until 'Save mouse position' is on for this slot.",
           "appRelative": "App-relative (follows the window)",
           "screenAbsolute": "Screen-absolute (exact coordinates)"
         }
       },
       "returnFocus": {
         "label": "Return focus after delivery",
-        "description": "After a delivery that had to jump, focus goes back to the window you were in when the delivery started — captured automatically, with no slot to set up. Default: On. It is conditional: if you switched windows yourself while Handy Tool was working, it leaves you where you chose to be, and each flow decides this separately (Windows only)."
+        "description": "**After a delivery that had to jump, focus goes back to the window you were in when the delivery started** — captured automatically, with no slot to set up.\n\n**Default:** On.\n\nIt is conditional: if you switched windows yourself while Handy Tool was working, it leaves you where you chose to be. Each flow decides this separately. Windows only."
       },
       "requireSameFlow": {
         "groupTitle": "On-finish behavior",
         "label": "Only jump on finish if started the same way",
-        "description": "When on, a flow's 'Jump slot action on finish' fires only if the take was started and finished with the same shortcut. Default: Off. Example: start with Transcribe and finish with Transcribe & Submit and you get no jump — the paste and the submit still happen, only the jump is gated. Turn it on if mixing the two shortcuts keeps teleporting you somewhere unexpected."
+        "description": "**When on, a flow's 'Jump slot action on finish' fires only if the take was started and finished with the same shortcut.**\n\n**Default:** Off.\n\nExample: start with Transcribe and finish with Transcribe & Submit and you get no jump — the paste and the submit still happen, only the jump is gated. Turn it on if mixing the two shortcuts keeps teleporting you somewhere unexpected."
       }
     },
     "translator": {
       "title": "Translator",
       "enabled": {
         "label": "Watch folders",
-        "description": "Turn on to transcribe every new .wav, .ogg or .opus file that lands in a watched folder into a .txt file next to it, using your current model, Language and Translate to English settings. Default: off. Files already sitting in a folder when watching starts are deliberately left alone, and the folders themselves are chosen under Add a folder."
+        "description": "**Transcribes every new .wav, .ogg or .opus file that lands in a watched folder** into a .txt file next to it, using your current model, Language and Translate to English settings.\n\n**Default:** off.\n\nFiles already sitting in a folder when watching starts are deliberately left alone. The folders themselves are chosen under Add a folder."
       },
       "priority": {
         "title": "Priority",
-        "description": "Decides who gets the speech engine when a folder file and your own dictation want it at the same moment. Default: Live dictation first — the batch pauses at the next segment boundary the instant you press record and resumes afterwards, so no batch progress is lost. Folder batch first keeps the batch running and your live text arrives a little later; First come, first served lets the file in progress finish, then runs your take before the next file starts.",
+        "description": "**Who gets the speech engine when a folder file and your own dictation want it at the same moment.**\n\n**Default:** Live dictation first — the batch pauses at the next segment boundary the instant you press record and resumes afterwards, so no batch progress is lost.\n\n- Folder batch first: the batch keeps running and your live text arrives a little later.\n- First come, first served: the file in progress finishes, then your take runs before the next file starts.",
         "options": {
           "live_first": "Live dictation first",
           "folder_first": "Folder batch first",
@@ -546,13 +546,13 @@
       },
       "model": {
         "title": "Batch model",
-        "description": "Which speech model transcribes the files in your watched folders; models marked with a globe can also translate to English, which needs Translate to English switched on. Default: Same as dictation (default), reusing whatever is selected on the Models page. Pick a different local model and it loads into a slot of its own alongside the dictation model — batch work on one engine, dictation still instant on the other — at the cost of extra memory, which Unload batch model after can hand back.",
+        "description": "**Which speech model transcribes the files in your watched folders.** Models marked with a globe can also translate to English, which needs Translate to English switched on.\n\n**Default:** Same as dictation (default) — reuses whatever is selected on the Models page.\n\nPick a different local model and it loads into a slot of its own next to the dictation model: batch work on one engine, dictation still instant on the other. The cost is extra memory, which Unload batch model after can hand back.",
         "sameAsDictation": "Same as dictation (default)",
         "translates": "{{name}} — can translate to English"
       },
       "unload": {
         "title": "Unload batch model after",
-        "description": "How long the Translator's own copy of the batch model stays in memory after the queue goes quiet; unloading returns the RAM or VRAM, keeping it loaded avoids a reload when the next file arrives. Default: Never (keep loaded — fastest start). It only has an effect when Batch model names a local model different from your dictation model — otherwise the main Unload Model setting governs."
+        "description": "**How long the Translator's own copy of the batch model stays in memory after the queue goes quiet.** Unloading returns the RAM or VRAM; keeping it loaded avoids a reload when the next file arrives.\n\n**Default:** Never (keep loaded — fastest start).\n\nIt only has an effect when Batch model names a local model different from your dictation model — otherwise the main Unload Model setting governs."
       },
       "status": {
         "title": "Status",
@@ -638,7 +638,7 @@
       },
       "crashResilientRecording": {
         "label": "Crash-Safe Recording",
-        "description": "Encodes your speech to compact Opus files on disk while you talk instead of holding it all in memory, so a crash, a forced update or a flat battery still leaves a recording — it is repaired and added to History on the next launch. Default: On. Switching it off records uncompressed audio, which Full data (with compressed audio) backups deliberately leave out."
+        "description": "**Encodes your speech to compact Opus files on disk while you talk**, instead of holding it all in memory — a crash, a forced update or a flat battery still leaves a recording, which is repaired and added to History on the next launch.\n\n**Default:** On.\n\nSwitching it off records uncompressed audio, which Full data (with compressed audio) backups deliberately leave out."
       },
       "openRecordingsFolder": {
         "label": "Recordings Folder",
@@ -656,7 +656,7 @@
       },
       "startHidden": {
         "label": "Start Hidden",
-        "description": "Starts Handy Tool with no window on screen — it goes straight to the system tray and dictation works immediately. Default: Off. Pair it with Launch on Startup so the app is ready at sign-in without a window appearing, and leave Show Tray Icon on, because the tray is then your only way to open the window."
+        "description": "**Starts Handy Tool with no window on screen** — it goes straight to the system tray and dictation works immediately.\n\n**Default:** Off.\n\nPair it with Launch on Startup so the app is ready at sign-in without a window appearing. Leave Show Tray Icon on: the tray is then your only way to open the window."
       },
       "autostart": {
         "label": "Launch on Startup",
@@ -667,7 +667,7 @@
       },
       "showTrayIcon": {
         "label": "Show Tray Icon",
-        "description": "Shows the Handy Tool icon in the system tray, where it also signals idle, recording and transcribing, and offers a menu for settings, the last transcript and quitting. Default: On. Careful: with it off, closing the main window quits the app instead of hiding it — and if Start Hidden is also on there is nothing on screen to click."
+        "description": "**Shows the Handy Tool icon in the system tray**, where it signals idle, recording and transcribing. On Windows a click opens the window; its menu (right-click) has settings, the last transcript and Quit.\n\n**Default:** On.\n\nCareful: with it off, closing the main window quits the app instead of hiding it — and if Start Hidden is also on, there is nothing on screen to click."
       },
       "overlay": {
         "title": "Overlay Position",
@@ -684,7 +684,7 @@
       },
       "pasteMethod": {
         "title": "Paste Method",
-        "description": "Chooses the keystroke ordinary dictation uses to deliver the text into the focused window; Direct types the characters instead of pasting, and None sends nothing at all. Default: Clipboard (Ctrl+V). Example: a terminal or remote viewer that ignores Ctrl+V usually accepts Clipboard (Shift+Insert), and None combined with Clipboard Handling set to Copy to Clipboard leaves the text ready for you to paste by hand. Push-to-talk ignores this setting and uses Paste Method (PTT).",
+        "description": "**The keystroke ordinary dictation uses to deliver the text into the focused window.**\n\n**Default:** Clipboard (Ctrl+V).\n\n- Clipboard (Shift+Insert): for a terminal or remote viewer that ignores Ctrl+V.\n- Direct: types the characters instead of pasting.\n- None: sends nothing — combined with Clipboard Handling set to Copy to Clipboard, the text is left ready for you to paste by hand.\n\nPush-to-talk ignores this setting and uses Paste Method (PTT).",
         "options": {
           "clipboard": "Clipboard ({{modifier}}+V)",
           "clipboardCtrlShiftV": "Clipboard (Ctrl+Shift+V)",
@@ -704,7 +704,7 @@
       },
       "clipboardRestoreDelay": {
         "title": "Clipboard restore delay",
-        "description": "Extra wait before your previous clipboard text is restored after a paste, added to the built-in 50 ms; it does nothing unless this group's clipboard setting (Clipboard Handling here, or Clipboard under Transcribe & Submit) is Don't Modify Clipboard. Default: Off (instant). Raise it to about 1 s if a Citrix or RDP session pastes your old clipboard instead of what you just said — remote sessions only fetch the clipboard after the paste keystroke has arrived.",
+        "description": "**Extra wait before your previous clipboard text is restored after a paste**, on top of the built-in 50 ms.\n\n**Default:** Off (instant).\n\nIt does nothing unless this group's clipboard setting (Clipboard Handling here, or Clipboard under Transcribe & Submit) is Don't Modify Clipboard.\n\nRaise it to about 1 s if a Citrix or RDP session pastes your old clipboard instead of what you just said — remote sessions only fetch the clipboard after the paste keystroke has arrived.",
         "options": {
           "none": "None (immediate)",
           "ms250": "250 ms",
@@ -716,7 +716,7 @@
       },
       "clipboardHandling": {
         "title": "Clipboard Handling",
-        "description": "Decides what is on your clipboard after ordinary dictation pastes: Don't Modify Clipboard puts the transcript there only long enough to paste and then restores your previous clipboard text, while Copy to Clipboard deliberately leaves the transcript there. Default: Don't Modify Clipboard. Honest limit: only text is restored, so a copied image or file is lost — and Clipboard restore delay has no effect at all unless this is set to Don't Modify Clipboard.",
+        "description": "**What is on your clipboard after ordinary dictation pastes.**\n\n**Default:** Don't Modify Clipboard.\n\n- Don't Modify Clipboard: the transcript is there only long enough to paste, then your previous clipboard text is restored.\n- Copy to Clipboard: deliberately leaves the transcript there.\n\nHonest limit: only text is restored, so a copied image or file is lost — and Clipboard restore delay has no effect unless this is set to Don't Modify Clipboard.",
         "options": {
           "dontModify": "Don't Modify Clipboard",
           "copyToClipboard": "Copy to Clipboard"
@@ -724,7 +724,7 @@
       },
       "autoSubmit": {
         "title": "Auto Submit",
-        "description": "Sends a submit key about 50 ms after every ordinary paste, so a dictated chat message sends itself. Default: Off. Apps disagree about which key sends, so try Ctrl+Enter if plain Enter only adds a new line; it is ignored when Paste Method is None, and it does not govern the Transcribe & Submit Shortcut, which always sends its own Submit key.",
+        "description": "**Sends a submit key about 50 ms after every ordinary paste**, so a dictated chat message sends itself.\n\n**Default:** Off.\n\n- Apps disagree about which key sends: try Ctrl+Enter if plain Enter only adds a new line.\n- Ignored when Paste Method is None.\n- Does not govern the Transcribe & Submit Shortcut, which always sends its own Submit key.",
         "options": {
           "off": "Off",
           "enter": "Enter",
@@ -741,7 +741,7 @@
       },
       "modelUnload": {
         "title": "Unload Model",
-        "description": "Frees the RAM or VRAM the transcription model is holding once it has sat unused for this long; the next take then pays a few seconds to reload it. Default: Never (keep loaded — fastest start), which is the right choice if you dictate throughout the day. Pick a timeout when you dictate in bursts and want the memory back in between — the Translator's separate batch engine is not covered here, it is released by Unload batch model after.",
+        "description": "**Frees the RAM or VRAM the transcription model holds once it has sat unused this long.** The next take then pays a few seconds to reload it.\n\n**Default:** Never (keep loaded — fastest start), the right choice if you dictate throughout the day. Pick a timeout if you dictate in bursts and want the memory back in between.\n\nThe Translator's separate batch engine is not covered here; it is released by Unload batch model after.",
         "options": {
           "never": "Never (keep loaded — fastest start)",
           "immediately": "Immediately after each use",
@@ -761,7 +761,7 @@
       },
       "transcriptionMode": {
         "title": "Transcription Mode",
-        "description": "Live shows the text building up while you are still speaking; Post-Recording records quietly and transcribes in the background. Default: Post-Recording. Either way the full audio gets one final pass when you stop, so the delivered text is always the accurate one and the live text is only a preview — this governs Transcribe Shortcut only, and API transcription models always behave as Post-Recording.",
+        "description": "**Live shows the text building up while you speak; Post-Recording records quietly and transcribes in the background.**\n\n**Default:** Post-Recording.\n\nEither way the full audio gets one final pass when you stop, so the delivered text is always the accurate one — the live text is only a preview. This governs Transcribe Shortcut only, and API transcription models always behave as Post-Recording.",
         "options": {
           "live": "Live",
           "postRecording": "Post-Recording"
@@ -777,7 +777,7 @@
       },
       "gpuDevice": {
         "title": "GPU Device",
-        "description": "Chooses which graphics adapter local Whisper transcribes on, or forces CPU-only processing. Default: Auto (Default); an adapter that fails to start falls back to Auto rather than breaking transcription. Change it to keep a busy discrete card free or to work around a bad driver — it takes effect the next time the model loads, and it only appears on Windows while a Whisper model is selected.",
+        "description": "**Which graphics adapter local Whisper transcribes on, or CPU-only processing.**\n\n**Default:** Auto (Default). An adapter that fails to start falls back to Auto rather than breaking transcription.\n\nChange it to keep a busy discrete card free or to work around a bad driver. It takes effect the next time the model loads, and it only appears on Windows while a Whisper model is selected.",
         "options": {
           "auto": "Auto (Default)",
           "cpu": "CPU Only",
@@ -790,7 +790,7 @@
         "cardTitle": "API Transcription (OpenAI-compatible)",
         "url": {
           "title": "API URL",
-          "description": "Base URL of an OpenAI-compatible speech server, including the version prefix — Handy appends /audio/transcriptions to it, so http://127.0.0.1:8000/v1 becomes http://127.0.0.1:8000/v1/audio/transcriptions. Default: empty; fill it in before choosing API Transcription (OpenAI-compatible) on the Models page or the take fails. This engine always uploads the whole recording as one WAV file when you stop, so Transcription Mode has no effect on it.",
+          "description": "**Base URL of an OpenAI-compatible speech server, including the version prefix.** Handy appends /audio/transcriptions to it, so http://127.0.0.1:8000/v1 becomes http://127.0.0.1:8000/v1/audio/transcriptions.\n\n**Default:** empty — fill it in before choosing API Transcription (OpenAI-compatible) on the Models page, or the take fails.\n\nThis engine always uploads the whole recording as one WAV file when you stop, so Transcription Mode has no effect on it.",
           "placeholder": "http://127.0.0.1:8000/v1"
         },
         "apiKey": {
@@ -800,13 +800,13 @@
         },
         "model": {
           "title": "Model",
-          "description": "The model id your endpoint expects, sent verbatim with the upload — whisper-1 for OpenAI, or whatever name your own server gives its model. Default: empty, which sends an empty model field; set it if your endpoint requires one. When Language is Auto this engine sends English, so pin Language if you dictate in another language.",
+          "description": "**The model id your endpoint expects, sent verbatim with the upload** — whisper-1 for OpenAI, or whatever name your own server gives its model.\n\n**Default:** empty, which sends an empty model field; set it if your endpoint requires one.\n\nWhen Language is Auto this engine sends English, so pin Language if you dictate in another language.",
           "placeholder": "whisper-1"
         }
       },
       "customWords": {
         "title": "Custom Words",
-        "description": "A list of names, products and jargon the engine keeps getting wrong; after each transcription Handy finds similar-sounding words and substitutes your spelling instead. Default: empty. Add whole words as you hit them, and if it starts correcting things you did not mean, lower Word Correction Threshold on the Debug page.",
+        "description": "**Names, products and jargon the engine keeps getting wrong.** After each transcription Handy finds similar-sounding words and substitutes your spelling instead.\n\n**Default:** empty.\n\nAdd whole words as you hit them. If it starts correcting things you did not mean, lower Word Correction Threshold on the Debug page.",
         "placeholder": "Add a word",
         "add": "Add",
         "remove": "Remove {{word}}",
@@ -824,7 +824,7 @@
       },
       "mcp": {
         "loading": "Loading…",
-        "description": "Runs a small local server so Claude (app and Code) and the handy command can use Handy's own tools: count tokens, type text into the focused window, read History, run model tests and edit providers. Default: Off; switching it on starts the server straight away on 127.0.0.1 with the Port and Token below, and never on a network interface. Honest caveat: the token is stored in plain text in your settings file, so any program running as you can read it and drive the app.",
+        "description": "**Runs a small local server so Claude (app and Code) and the handy command can use Handy's own tools:** count tokens, type text into the focused window, read History, run model tests and edit providers.\n\n**Default:** Off. Switching it on starts the server straight away on 127.0.0.1 with the Port and Token below — never on a network interface.\n\nHonest caveat: the token is stored in plain text in your settings file, so any program running as you can read it and drive the app.",
         "enable": "Enable MCP & CLI server",
         "running": "Running",
         "stopped": "Stopped",
@@ -902,30 +902,30 @@
         },
         "apiKey": {
           "title": "API Key",
-          "description": "Your OpenRouter key (openrouter.ai/keys), used only by this speech engine — it is separate from any OpenRouter entry under Registered LLM Providers. Default: empty, and without it the take fails rather than sending an unauthenticated request. Dictating with this engine uploads your audio to OpenRouter and costs money per recording; the real amount is recorded in History and in Transcription cost report.",
+          "description": "**Your OpenRouter key (openrouter.ai/keys), used only by this speech engine** — separate from any OpenRouter entry under Registered LLM Providers.\n\n**Default:** empty — without it the take fails rather than sending an unauthenticated request.\n\nDictating with this engine uploads your audio to OpenRouter and costs money per recording; the real amount is recorded in History and in Transcription cost report.",
           "placeholder": "sk-or-..."
         },
         "model": {
           "title": "Transcription model",
-          "description": "The OpenRouter model id, typed by hand: openai/whisper-large-v3 style ids for the Transcription route, or an audio-capable chat model such as google/gemini-2.5-flash for the Chat route. Default: blank, which falls back to openai/whisper-large-v3. It has to match Endpoint — a mismatch usually comes back as an empty transcription rather than an error.",
+          "description": "**The OpenRouter model id, typed by hand.**\n\n- Transcription route: openai/whisper-large-v3 style ids.\n- Chat route: an audio-capable chat model such as google/gemini-2.5-flash.\n\n**Default:** blank, which falls back to openai/whisper-large-v3.\n\nIt has to match Endpoint — a mismatch usually comes back as an empty transcription rather than an error.",
           "placeholder": "openai/whisper-large-v3"
         },
         "route": {
           "title": "Endpoint",
-          "description": "Chooses which OpenRouter endpoint the audio goes to. Transcription (Whisper-style) posts to the dedicated speech endpoint; Chat model (Gemini / GPT-4o-audio) puts the audio inside a chat message, which is the only way models that are not speech models will accept it. Default: Transcription (Whisper-style). It must agree with Transcription model, and Translate to English is honoured on the Chat route only.",
+          "description": "**Which OpenRouter endpoint the audio goes to.**\n\n**Default:** Transcription (Whisper-style).\n\n- Transcription (Whisper-style): posts to the dedicated speech endpoint.\n- Chat model (Gemini / GPT-4o-audio): puts the audio inside a chat message — the only way models that are not speech models will accept it.\n\nIt must agree with Transcription model. Translate to English is honoured on the Chat route only.",
           "stt": "Transcription (Whisper-style)",
           "chat": "Chat model (Gemini / GPT-4o-audio)"
         },
         "format": {
           "title": "Audio format",
-          "description": "How the audio is encoded before upload: Opus is roughly ten times smaller than WAV, which matters on a tether or a hotel connection. Default: Opus — smaller (recommended). This only applies when Endpoint is Chat model (Gemini / GPT-4o-audio); the Transcription (Whisper-style) route always sends WAV, because Whisper-style models reject Opus.",
+          "description": "**How the audio is encoded before upload.** Opus is roughly ten times smaller than WAV, which matters on a tether or a hotel connection.\n\n**Default:** Opus — smaller (recommended).\n\nThis only applies when Endpoint is Chat model (Gemini / GPT-4o-audio). The Transcription (Whisper-style) route always sends WAV, because Whisper-style models reject Opus.",
           "opus": "Opus — smaller (recommended)",
           "wav": "WAV — most compatible"
         }
       },
       "clipboardRestoreDelayRemote": {
         "title": "Clipboard restore delay for remote desktops",
-        "description": "Overrides the clipboard restore delay when the window you are dictating into is a remote desktop session. Default: not set, which inherits the normal delay above. Why it exists: RDP and Citrix fetch clipboard data on demand AFTER the paste keystroke arrives, over a slower channel than a local application, so restoring too early hands the remote app whatever you had copied before. 1 s is a sensible starting point. Honest cost: a longer restore leaves the transcript on your clipboard for longer, which widens the window in which clipboard history and clipboard managers can capture it. Which windows count as remote comes from the match list on the Jumper page. *{Windows only}*",
+        "description": "**Overrides the clipboard restore delay when you dictate into a remote desktop session.**\n\n**Default:** not set — inherits the normal delay above. 1 s is a sensible starting point.\n\n- Why it exists: RDP and Citrix fetch clipboard data on demand AFTER the paste keystroke arrives, over a slower channel than a local app, so restoring too early hands the remote app whatever you had copied before.\n- Honest cost: a longer restore leaves the transcript on your clipboard longer, widening the window in which clipboard history and clipboard managers can capture it.\n\nWhich windows count as remote comes from the match list on the Jumper page. Windows only.",
         "inherit": "Not set (use the delay above)"
       },
       "preserveTranscriptions": {
@@ -1085,7 +1085,7 @@
       "title": "Debug",
       "logDirectory": {
         "title": "Log Directory",
-        "description": "Opens the folder holding the file logs — the first place to look when something failed without saying why. Logs rotate at 10 MB and older files are kept rather than overwritten, so the evidence survives the restart that usually follows a problem. How much detail lands here is set by Log Level on the Debug page, which defaults to Debug and can include transcript fragments."
+        "description": "**Opens the folder holding the file logs** — the first place to look when something failed without saying why.\n\nLogs rotate at 10 MB and older files are kept rather than overwritten, so the evidence survives the restart that usually follows a problem.\n\nHow much detail lands here is set by Log Level on the Debug page, which defaults to Debug and can include transcript fragments."
       },
       "logLevel": {
         "title": "Log Level",
@@ -1101,12 +1101,12 @@
       },
       "historyLimit": {
         "title": "History Limit",
-        "description": "How many transcriptions History keeps before the oldest ones are removed along with their audio. Default: 5 entries — deliberately low, so raise it if you expect to look things up days later. It only has any effect while Auto-Delete Recordings is set to Keep latest, and entries you mark with Save transcription are kept regardless and never counted against it.",
+        "description": "**How many transcriptions History keeps before the oldest ones are removed along with their audio.**\n\n**Default:** 5 entries — deliberately low, so raise it if you expect to look things up days later.\n\nIt only has an effect while Auto-Delete Recordings is set to Keep latest, and entries you mark with Save transcription are kept regardless and never counted against it.",
         "entries": "entries"
       },
       "recordingRetention": {
         "title": "Auto-Delete Recordings",
-        "description": "Controls automatic cleanup of History: when an entry ages out, its row and its audio file are both deleted. Default: Keep latest, which keeps only the newest entries allowed by History Limit (5 by default) — the time options keep everything from the last 3 days, 2 weeks or 3 months instead, and Never deletes nothing at all. Cleanup runs after each new transcription is saved and again when you change either setting, always spares entries marked with Save transcription, and only ever removes audio files Handy Tool created itself.",
+        "description": "**Automatic cleanup of History:** when an entry ages out, both its row and its audio file are deleted.\n\n**Default:** Keep latest — keeps only the newest entries allowed by History Limit (5 by default).\n\n- 3 days, 2 weeks, 3 months: keep everything from that period instead.\n- Never: delete nothing at all.\n\nCleanup runs after each new transcription is saved and again when you change either setting. It always spares entries marked with Save transcription, and only ever removes audio files Handy Tool created itself.",
         "never": "Never",
         "preserveLimit": "Keep latest {{count}}",
         "days3": "After 3 days",
@@ -1116,15 +1116,15 @@
       },
       "alwaysOnMicrophone": {
         "label": "Always-On Microphone",
-        "description": "Keeps the microphone stream open between takes instead of opening it each time you press a recording shortcut. Default: Off. Turn it on if the first syllable of a take is clipped — the price is that your system microphone indicator stays lit the whole time Handy Tool is running, not just while you dictate."
+        "description": "**Keeps the microphone stream open between takes** instead of opening it each time you press a recording shortcut.\n\n**Default:** Off.\n\nTurn it on if the start of a take is clipped: a microphone that has been idle can take most of a second to wake, and the overlay shows Starting mic... until it does. The price: your system microphone indicator stays lit the whole time Handy Tool is running, not just while you dictate."
       },
       "clamshellMicrophone": {
         "title": "Clamshell Microphone",
-        "description": "Picks a different input device for when a laptop lid is closed, for docked machines whose built-in microphone is unusable that way. Default: none, so Microphone on the General page is always used. Closed-lid detection is macOS-only and macOS builds are still planned, so this has no effect on the Windows build."
+        "description": "**A different input device for when a laptop lid is closed**, for docked machines whose built-in microphone is unusable that way.\n\n**Default:** none — Microphone on the General page is always used.\n\nClosed-lid detection is macOS-only and macOS builds are still planned, so this has no effect on the Windows build."
       },
       "postProcessingToggle": {
         "label": "Post Processing",
-        "description": "Turns on the optional AI clean-up pass and adds a Post Process page to the sidebar, where you choose the provider and the prompt. Default: Off. Your normal Transcribe Shortcut is unaffected — clean-up runs only on the separate Post-Processing Hotkey, and History keeps the raw transcription next to the processed one."
+        "description": "**Turns on the optional AI clean-up pass** and adds a Post Process page to the sidebar, where you choose the provider and the prompt.\n\n**Default:** Off.\n\nYour normal Transcribe Shortcut is unaffected: clean-up runs only on the separate Post-Processing Hotkey, and History keeps the raw transcription next to the processed one."
       },
       "muteWhileRecording": {
         "label": "Mute While Recording",
@@ -1136,7 +1136,7 @@
       },
       "keyboardImplementation": {
         "title": "Keyboard Implementation",
-        "description": "Chooses which backend registers Handy Tool's global shortcuts with the operating system. Default: Tauri Global Shortcut. Switch to Handy Keys when a shortcut you set never fires because another program already owns the combination or Windows refuses the registration — all shortcuts are re-registered when you switch, and the change rolls back if that fails.",
+        "description": "**Which backend registers Handy Tool's global shortcuts with the operating system.**\n\n**Default:** Tauri Global Shortcut.\n\nSwitch to Handy Keys when a shortcut you set never fires because another program already owns the combination or Windows refuses the registration. All shortcuts are re-registered when you switch, and the change rolls back if that fails.",
         "bindingsReset": "Keyboard shortcuts were incompatible and reset to defaults"
       },
       "paths": {
@@ -1146,7 +1146,7 @@
       },
       "pasteDelay": {
         "title": "Paste Delay",
-        "description": "How long Handy Tool waits after putting the transcription on the clipboard before it sends the paste keystroke. Default: 60 ms. Raise it if a slow app pastes your previous clipboard contents instead of the new text; this is a different wait from Paste delay after jump (Windows), which only applies when a Jumper slot has just activated another window."
+        "description": "**How long Handy Tool waits after putting the transcription on the clipboard before it sends the paste keystroke.**\n\n**Default:** 60 ms. Raise it if a slow app pastes your previous clipboard contents instead of the new text.\n\nThis is a different wait from Paste delay after jump (Windows), which only applies when a Jumper slot has just activated another window."
       }
     },
     "backup": {
@@ -1175,7 +1175,7 @@
       },
       "appDataDirectory": {
         "title": "App Data Directory",
-        "description": "Opens the single folder holding everything Handy Tool keeps: settings (including your provider API keys and prompts) in a JSON file, transcripts in a SQLite database, recordings, downloaded models and rotated logs. Default: %APPDATA%\\pr.handy on a normal Windows installation. Nothing in it is encrypted by Handy Tool — file-system permissions are the only protection — so this is also the folder to copy, or clear, when you hand the machine on."
+        "description": "**Opens the single folder holding everything Handy Tool keeps:**\n\n- settings (including your provider API keys and prompts) in a JSON file\n- transcripts in a SQLite database\n- recordings, downloaded models and rotated logs\n\n**Default:** %APPDATA%\\pr.handy on a normal Windows installation.\n\nNothing in it is encrypted by Handy Tool — file-system permissions are the only protection — so this is also the folder to copy, or clear, when you hand the machine on."
       },
       "sourceCode": {
         "title": "Source Code",
@@ -1253,14 +1253,17 @@
   },
   "appLanguage": {
     "title": "Application Language",
-    "description": "Switches the whole interface, including the tray menu, to one of the 17 shipped languages. Default: your Windows display language, falling back to English when that language is not shipped. This is the interface language only — it has nothing to do with the language you speak, which is set by Language on the General page."
+    "description": "**Switches the whole interface, including the tray menu, to one of the 17 shipped languages.**\n\n**Default:** your Windows display language, falling back to English when that language is not shipped.\n\nThis is the interface language only — the language you speak is set by Language on the General page."
   },
   "overlay": {
     "transcribing": "Transcribing...",
+    "transcribingProgress": "Transcribing {{percent}}%",
     "processing": "Processing...",
     "openFloatingWindow": "Open transcription window",
     "startingMic": "Starting mic...",
-    "noMicrophone": "No microphone"
+    "noMicrophone": "No microphone",
+    "microphoneBlocked": "Microphone blocked",
+    "microphoneError": "Microphone error"
   },
   "flm": {
     "windowsApplicationControlBlocked": "Windows Application Control blocked flm.exe because it is not signed. The NPU engine is unavailable. Choose a different transcription model.",
@@ -1313,7 +1316,7 @@
   },
   "keyboardTyper": {
     "title": "Keyboard Typer",
-    "description": "Sends this text to the focused window as individual simulated keystrokes, so it works where pasting is blocked — remote consoles, VM viewers, password prompts. Press Go and you get the Start delay countdown (default 10 s) to click into the target window first; press the Type Text Shortcut when you are already in the target and typing begins after about a second instead. The text lives in memory only — it is never written to your settings, to History, or to the logs.",
+    "description": "**Sends this text to the focused window as individual simulated keystrokes**, so it works where pasting is blocked — remote consoles, VM viewers, password prompts.\n\n- Go: starts the Start delay countdown (default 10 s) so you can click into the target window first.\n- Type Text Shortcut: when you are already in the target, typing begins after about a second.\n\nThe text lives in memory only — it is never written to your settings, to History, or to the logs.",
     "placeholder": "Enter the text to type...",
     "go": "Go",
     "cancel": "Cancel",
@@ -1342,7 +1345,7 @@
     }
   },
   "modelTesting": {
-    "description": "Sends one prompt to every model you tick under Run and lays the answers out side by side with token counts, cost and round-trip time; models ticked under Judge then score all of those answers using your judge prompt. Default: nothing selected and both prompts empty. The list comes from Advanced > Registered LLM Providers, so a run uses your own API keys — your prompt leaves this machine and, for paid providers, costs real money.",
+    "description": "**Sends one prompt to every model you tick under Run and lays the answers out side by side** with token counts, cost and round-trip time. Models ticked under Judge then score all of those answers using your judge prompt.\n\n**Default:** nothing selected and both prompts empty.\n\nThe list comes from Advanced > Registered LLM Providers, so a run uses your own API keys — your prompt leaves this machine and, for paid providers, costs real money.",
     "providersLabel": "Models",
     "configureProviders": "Configure providers",
     "selectAll": "Select all to run",

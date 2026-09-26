@@ -6,6 +6,8 @@
 
 use crate::{TranscriptionEngine, TranscriptionResult, TranscriptionSegment};
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicI32, Ordering};
+use std::sync::Arc;
 use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextParameters};
 
 /// Parameters for configuring Whisper model loading.
@@ -97,6 +99,10 @@ pub struct WhisperInferenceParams {
 
     /// Initial prompt to provide context to the model.
     pub initial_prompt: Option<String>,
+
+    /// Receives whisper.cpp's progress in percent (0-100) while `transcribe_samples`
+    /// runs, for a progress display. None = no progress reporting.
+    pub progress: Option<Arc<AtomicI32>>,
 }
 
 impl Default for WhisperInferenceParams {
@@ -112,6 +118,7 @@ impl Default for WhisperInferenceParams {
             suppress_non_speech_tokens: true,
             no_speech_thold: 0.2,
             initial_prompt: None,
+            progress: None,
         }
     }
 }
@@ -203,6 +210,16 @@ impl TranscriptionEngine for WhisperEngine {
 
         if let Some(ref prompt) = whisper_params.initial_prompt {
             full_params.set_initial_prompt(prompt);
+        }
+
+        // whisper-rs's safe progress hook boxes the closure and never frees it,
+        // so each call leaks one small box holding an Arc clone - negligible.
+        if let Some(progress) = whisper_params.progress.clone() {
+            type ProgressFn = Box<dyn FnMut(i32)>;
+            let report: ProgressFn = Box::new(move |percent| {
+                progress.store(percent, Ordering::Relaxed);
+            });
+            full_params.set_progress_callback_safe::<Option<ProgressFn>, ProgressFn>(Some(report));
         }
 
         state.full(full_params, &samples)?;

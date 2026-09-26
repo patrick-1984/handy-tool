@@ -256,9 +256,11 @@ machine works through everything you had said.
 natural silences every 20 to 45 seconds and each segment is transcribed in the background while
 you keep talking, then joined in order. When you stop, only the last segment is left to do, so
 a long take finishes almost immediately. Cuts are always at silence, so no word is ever split
-across a boundary.
+across a boundary. When what is left still takes more than half a second, the overlay shows how
+far it is — **Transcribing 42%** — reported by the engine itself for Whisper models and estimated
+from the recording's length and this machine's measured speed for the others.
 **Where.** No control — this is always active.
-**Since.** 0.11.2.
+**Since.** 0.11.2. The percentage since 1.8.0.
 
 ### Live mode delivers the end of your sentence
 
@@ -2162,8 +2164,10 @@ indicator, which is both a privacy question and a distraction.
 **What Handy does.** The microphone is opened when a take starts and released when it ends.
 A microphone that has been idle for a while can take most of a second to wake up; until it
 delivers audio the overlay reads **Starting mic...** instead of showing the sound bars, so you
-know when to start speaking. With no microphone connected at all, the overlay says
-**No microphone** for a moment instead of vanishing. Optionally you can keep the microphone
+know when to start speaking. When a take cannot start, the overlay says why for a moment
+instead of vanishing: **No microphone** when none is connected, **Microphone blocked** when
+Windows privacy settings deny apps the microphone, and **Microphone error** when the device
+refuses to start. Optionally you can keep the microphone
 open — which removes the wake-up wait — at the cost of a permanently active indicator. That is
 an explicit choice, not the default.
 **Where.** `Debug › Always-On Microphone = On` _{requires: Debug mode}_.

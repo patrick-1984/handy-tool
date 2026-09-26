@@ -334,11 +334,12 @@ pub fn show_processing_overlay(app_handle: &AppHandle) {
     show_overlay_state(app_handle, "processing");
 }
 
-/// Tells the user a take could not start because there is no microphone, then hides
-/// itself. A new show in the meantime (e.g. a mic was plugged in and the shortcut
-/// pressed again) bumps the generation, which cancels the pending hide.
-pub fn show_no_microphone_overlay(app_handle: &AppHandle) {
-    show_overlay_state(app_handle, "no-microphone");
+/// Tells the user why a take could not start (`state` is one of the overlay's
+/// microphone-problem states: no microphone, blocked, error), then hides itself. A
+/// new show in the meantime (e.g. a mic was plugged in and the shortcut pressed
+/// again) bumps the generation, which cancels the pending hide.
+pub fn show_microphone_problem_overlay(app_handle: &AppHandle, state: &str) {
+    show_overlay_state(app_handle, state);
     let generation = OVERLAY_GENERATION.load(Ordering::SeqCst);
     let app_handle = app_handle.clone();
     std::thread::spawn(move || {
@@ -538,4 +539,13 @@ pub fn emit_levels(app_handle: &AppHandle, levels: &Vec<f32>) {
         return;
     }
     let _ = app_handle.emit_to("recording_overlay", "mic-level", levels);
+}
+
+/// Sends the overlay how far the take's transcription is (percent). Like
+/// `emit_levels`, skipped while the overlay is hidden (same T-306 flag).
+pub fn emit_transcription_progress(app_handle: &AppHandle, percent: u8) {
+    if !OVERLAY_VISIBLE.load(Ordering::Relaxed) {
+        return;
+    }
+    let _ = app_handle.emit_to("recording_overlay", "transcription-progress", percent);
 }

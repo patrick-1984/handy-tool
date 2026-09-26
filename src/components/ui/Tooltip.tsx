@@ -6,6 +6,7 @@ type TooltipPosition = "top" | "bottom";
 interface TooltipCoords {
   top: number;
   left: number;
+  width: number;
   arrowLeft: number;
   actualPosition: TooltipPosition;
 }
@@ -16,7 +17,9 @@ interface TooltipProps {
   children: React.ReactNode;
 }
 
-const TOOLTIP_WIDTH = 200;
+// Wide enough that a long description reads as a few short paragraphs rather
+// than a narrow column; narrower only when the window itself is.
+const TOOLTIP_WIDTH = 340;
 const VIEWPORT_PADDING = 12;
 const GAP = 8;
 const ARROW_MARGIN = 12;
@@ -58,21 +61,25 @@ export const Tooltip: React.FC<TooltipProps> = ({
       }
     }
 
+    const width = Math.min(
+      TOOLTIP_WIDTH,
+      window.innerWidth - 2 * VIEWPORT_PADDING,
+    );
     const targetCenter = targetRect.left + targetRect.width / 2;
-    let left = targetCenter - TOOLTIP_WIDTH / 2;
+    let left = targetCenter - width / 2;
 
     if (left < VIEWPORT_PADDING) {
       left = VIEWPORT_PADDING;
-    } else if (left + TOOLTIP_WIDTH > window.innerWidth - VIEWPORT_PADDING) {
-      left = window.innerWidth - TOOLTIP_WIDTH - VIEWPORT_PADDING;
+    } else if (left + width > window.innerWidth - VIEWPORT_PADDING) {
+      left = window.innerWidth - width - VIEWPORT_PADDING;
     }
 
     const arrowLeft = Math.min(
       Math.max(targetCenter - left, ARROW_MARGIN),
-      TOOLTIP_WIDTH - ARROW_MARGIN,
+      width - ARROW_MARGIN,
     );
 
-    setCoords({ top, left, arrowLeft, actualPosition });
+    setCoords({ top, left, width, arrowLeft, actualPosition });
   }, [targetRef, position]);
 
   useEffect(() => {
@@ -97,7 +104,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
         position: "fixed",
         top: coords?.top ?? -9999,
         left: coords?.left ?? -9999,
-        width: TOOLTIP_WIDTH,
+        width: coords?.width ?? TOOLTIP_WIDTH,
         zIndex: 9999,
         opacity: coords ? 1 : 0,
       }}

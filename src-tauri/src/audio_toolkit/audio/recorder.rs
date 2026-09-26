@@ -367,6 +367,11 @@ impl AudioRecorder {
         };
         let sys_gain = self.sys_gain;
 
+        // The worker reports whether the stream actually started, so a device that
+        // refuses to open (Windows microphone privacy switched off answers
+        // E_ACCESSDENIED) fails the take instead of "recording" silence.
+        let (ready_tx, ready_rx) = mpsc::channel::<Result<(), String>>();
+
         let worker = std::thread::spawn(move || {
             // Cargo.toml sets panic = "abort", so ANY panic on this worker kills the
             // whole process with no log line. A render endpoint reaches this path on
@@ -377,6 +382,7 @@ impl AudioRecorder {
                 Err(e) => {
                     log::error!("Capture device config negotiation failed: {e}");
                     arm_errored_worker.store(true, Ordering::Release);
+                    let _ = ready_tx.send(Err(e.to_string()));
                     return;
                 }
             };
@@ -467,6 +473,7 @@ impl AudioRecorder {
                     // system-audio-only mode.
                     log::error!("Unsupported capture sample format: {other:?}");
                     arm_errored_worker.store(true, Ordering::Release);
+                    let _ = ready_tx.send(Err(format!("unsupported sample format {other:?}")));
                     return;
                 }
             };
@@ -475,6 +482,7 @@ impl AudioRecorder {
                 Err(e) => {
                     log::error!("Capture stream construction failed: {e}");
                     arm_errored_worker.store(true, Ordering::Release);
+                    let _ = ready_tx.send(Err(e.to_string()));
                     return;
                 }
             };
@@ -482,8 +490,10 @@ impl AudioRecorder {
             if let Err(e) = stream.play() {
                 log::error!("Capture stream failed to start: {e}");
                 arm_errored_worker.store(true, Ordering::Release);
+                let _ = ready_tx.send(Err(e.to_string()));
                 return;
             }
+            let _ = ready_tx.send(Ok(()));
             let stream_playing_in = open_start.elapsed();
             log::debug!(
                 "T-113: recorder worker ready (stream playing) {:?} after open() was called",
@@ -508,6 +518,29 @@ impl AudioRecorder {
             );
             // stream is dropped here, after run_consumer returns
         });
+
+        // Bounded wait for the stream to start (normally well under 300 ms, even
+        // from a cold device). A timeout is NOT a failure: a Bluetooth headset
+        // switching profile can take seconds and then records normally.
+        match ready_rx.recv_timeout(Duration::from_secs(3)) {
+            Ok(Ok(())) => {}
+            Ok(Err(e)) => {
+                // The worker has already returned; nothing is left running.
+                let _ = worker.join();
+                return Err(Error::new(stream_error_kind(&e), e).into());
+            }
+            Err(mpsc::RecvTimeoutError::Timeout) => {
+                log::warn!("Capture stream did not report ready within 3s; continuing");
+            }
+            Err(mpsc::RecvTimeoutError::Disconnected) => {
+                let _ = worker.join();
+                return Err(Error::new(
+                    std::io::ErrorKind::Other,
+                    "capture worker exited before the stream started",
+                )
+                .into());
+            }
+        }
 
         self.device = Some(device);
         self.cmd_tx = Some(cmd_tx);
@@ -998,6 +1031,18 @@ fn process_frame(
     }
 }
 
+/// Classify a capture-stream start failure. Windows answers E_ACCESSDENIED
+/// (0x80070005) when microphone access is switched off in its privacy settings;
+/// the message text is localized, the HRESULT is not.
+fn stream_error_kind(message: &str) -> std::io::ErrorKind {
+    let m = message.to_ascii_lowercase();
+    if m.contains("0x80070005") || m.contains("e_accessdenied") {
+        std::io::ErrorKind::PermissionDenied
+    } else {
+        std::io::ErrorKind::Other
+    }
+}
+
 #[allow(clippy::too_many_arguments)]
 fn run_consumer(
     in_sample_rate: u32,
@@ -1283,5 +1328,35 @@ fn run_consumer(
                 Cmd::Shutdown => return,
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod stream_error_tests {
+    use super::stream_error_kind;
+    use std::io::ErrorKind;
+
+    #[test]
+    fn access_denied_hresult_means_permission_denied_in_any_language() {
+        assert_eq!(
+            stream_error_kind("Access is denied. (0x80070005)"),
+            ErrorKind::PermissionDenied
+        );
+        assert_eq!(
+            stream_error_kind("Odmowa dostępu. (0x80070005)"),
+            ErrorKind::PermissionDenied
+        );
+        assert_eq!(
+            stream_error_kind("E_ACCESSDENIED"),
+            ErrorKind::PermissionDenied
+        );
+    }
+
+    #[test]
+    fn other_stream_errors_are_not_permission_denied() {
+        assert_eq!(
+            stream_error_kind("The device is in use. (0x8889000A)"),
+            ErrorKind::Other
+        );
     }
 }

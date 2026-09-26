@@ -1245,10 +1245,13 @@
   },
   "overlay": {
     "transcribing": "Transkribe ediliyor...",
+    "transcribingProgress": "Transkribe ediliyor {{percent}}%",
     "processing": "İşleniyor...",
     "openFloatingWindow": "Transkripsiyon penceresini aç",
     "startingMic": "Mikrofon açılıyor...",
-    "noMicrophone": "Mikrofon yok"
+    "noMicrophone": "Mikrofon yok",
+    "microphoneBlocked": "Mikrofon engellendi",
+    "microphoneError": "Mikrofon hatası"
   },
   "brand": {
     "name": "Handy",

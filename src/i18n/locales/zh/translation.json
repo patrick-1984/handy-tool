@@ -1245,10 +1245,13 @@
   },
   "overlay": {
     "transcribing": "正在转录...",
+    "transcribingProgress": "正在转录 {{percent}}%",
     "processing": "处理中...",
     "openFloatingWindow": "打开转录窗口",
     "startingMic": "正在启动麦克风...",
-    "noMicrophone": "未检测到麦克风"
+    "noMicrophone": "未检测到麦克风",
+    "microphoneBlocked": "麦克风被阻止",
+    "microphoneError": "麦克风错误"
   },
   "brand": {
     "name": "Handy",

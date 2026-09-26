@@ -1245,10 +1245,13 @@
   },
   "overlay": {
     "transcribing": "正在轉錄...",
+    "transcribingProgress": "正在轉錄 {{percent}}%",
     "processing": "處理中...",
     "openFloatingWindow": "開啟轉錄視窗",
     "startingMic": "正在啟動麥克風...",
-    "noMicrophone": "未偵測到麥克風"
+    "noMicrophone": "未偵測到麥克風",
+    "microphoneBlocked": "麥克風遭封鎖",
+    "microphoneError": "麥克風錯誤"
   },
   "brand": {
     "name": "Handy",

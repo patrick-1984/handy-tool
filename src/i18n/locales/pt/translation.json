@@ -1245,10 +1245,13 @@
   },
   "overlay": {
     "transcribing": "Transcrevendo...",
+    "transcribingProgress": "Transcrevendo {{percent}}%",
     "processing": "Processando...",
     "openFloatingWindow": "Abrir janela de transcrição",
     "startingMic": "Iniciando micro...",
-    "noMicrophone": "Sem microfone"
+    "noMicrophone": "Sem microfone",
+    "microphoneBlocked": "Microfone bloqueado",
+    "microphoneError": "Erro no microfone"
   },
   "brand": {
     "name": "Handy",

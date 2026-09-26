@@ -1245,10 +1245,13 @@
   },
   "overlay": {
     "transcribing": "Transcribiendo...",
+    "transcribingProgress": "Transcribiendo {{percent}}%",
     "processing": "Procesando...",
     "openFloatingWindow": "Abrir ventana de transcripción",
     "startingMic": "Iniciando micro...",
-    "noMicrophone": "Sin micrófono"
+    "noMicrophone": "Sin micrófono",
+    "microphoneBlocked": "Micrófono bloqueado",
+    "microphoneError": "Error del micrófono"
   },
   "floating": {
     "waiting": "Esperando la transcripción…",

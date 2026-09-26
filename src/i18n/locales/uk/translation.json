@@ -1245,10 +1245,13 @@
   },
   "overlay": {
     "transcribing": "Обробка...",
+    "transcribingProgress": "Обробка {{percent}}%",
     "processing": "Постобробка...",
     "openFloatingWindow": "Відкрити вікно транскрипції",
     "startingMic": "Запуск мікрофона...",
-    "noMicrophone": "Немає мікрофона"
+    "noMicrophone": "Немає мікрофона",
+    "microphoneBlocked": "Мікрофон заблоковано",
+    "microphoneError": "Помилка мікрофона"
   },
   "brand": {
     "name": "Handy",
