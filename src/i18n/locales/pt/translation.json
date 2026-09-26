@@ -1233,7 +1233,9 @@
   "overlay": {
     "transcribing": "Transcrevendo...",
     "processing": "Processando...",
-    "openFloatingWindow": "Abrir janela de transcrição"
+    "openFloatingWindow": "Abrir janela de transcrição",
+    "startingMic": "Iniciando micro...",
+    "noMicrophone": "Sem microfone"
   },
   "brand": {
     "name": "Handy",

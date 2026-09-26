@@ -115,6 +115,27 @@ pub enum MicrophoneMode {
     OnDemand,
 }
 
+/// Why a take did not start. Only the cases the UI reports differently are told apart.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum StartFailure {
+    /// No input device exists, so there is nothing to record from.
+    NoMicrophone,
+    Other,
+}
+
+/// Marker error for "no input device at all", so `try_start_recording` can tell it
+/// apart from every other open failure.
+#[derive(Debug)]
+struct NoInputDevice;
+
+impl std::fmt::Display for NoInputDevice {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("No input device found")
+    }
+}
+
+impl std::error::Error for NoInputDevice {}
+
 /* ──────────────────────────────────────────────────────────────── */
 
 fn create_audio_recorder(
@@ -321,6 +342,13 @@ impl AudioRecordingManager {
                     // and the NEXT take - even one the user switched back to plain
                     // Microphone - inherits a live system ring.
                     rec.close_system_audio();
+                    // open() reports NotFound only when there is no input device at
+                    // all; keep that distinguishable so the overlay can say so.
+                    if e.downcast_ref::<std::io::Error>()
+                        .is_some_and(|io| io.kind() == std::io::ErrorKind::NotFound)
+                    {
+                        return Err(NoInputDevice.into());
+                    }
                     return Err(anyhow::anyhow!("Failed to open recorder: {}", e));
                 }
             } else {
@@ -440,7 +468,7 @@ impl AudioRecordingManager {
         })
     }
 
-    pub fn try_start_recording(&self, binding_id: &str, ts: u64) -> bool {
+    pub fn try_start_recording(&self, binding_id: &str, ts: u64) -> Result<(), StartFailure> {
         // T-113: split the on-demand mic-open cost (suspect #2 — CPAL device
         // negotiation can cost seconds on some hardware) from the recorder's
         // own start() dispatch (near-instant: it just sends a Cmd to the
@@ -472,7 +500,11 @@ impl AudioRecordingManager {
                 }
                 if let Err(e) = self.start_microphone_stream() {
                     error!("Failed to open microphone stream: {e}");
-                    return false;
+                    return Err(if e.is::<NoInputDevice>() {
+                        StartFailure::NoMicrophone
+                    } else {
+                        StartFailure::Other
+                    });
                 }
             }
             debug!(
@@ -491,13 +523,13 @@ impl AudioRecordingManager {
                         "Recording started for binding {binding_id} (try_start_recording total {:?})",
                         t0.elapsed()
                     );
-                    return true;
+                    return Ok(());
                 }
             }
             error!("Recorder not available");
-            false
+            Err(StartFailure::Other)
         } else {
-            false
+            Err(StartFailure::Other)
         }
     }
 

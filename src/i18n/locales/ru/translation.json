@@ -1233,7 +1233,9 @@
   "overlay": {
     "transcribing": "Расшифровка...",
     "processing": "Обработка...",
-    "openFloatingWindow": "Открыть окно транскрипции"
+    "openFloatingWindow": "Открыть окно транскрипции",
+    "startingMic": "Запуск микрофона...",
+    "noMicrophone": "Нет микрофона"
   },
   "brand": {
     "name": "Handy",

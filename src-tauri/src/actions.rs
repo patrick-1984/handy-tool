@@ -3,7 +3,7 @@ use crate::TranscriptionCoordinator;
 use crate::apple_intelligence;
 use crate::audio_feedback::{SoundType, play_feedback_sound, play_feedback_sound_blocking};
 use crate::audio_toolkit::ClosedChunk;
-use crate::managers::audio::AudioRecordingManager;
+use crate::managers::audio::{AudioRecordingManager, StartFailure};
 use crate::managers::history::HistoryManager;
 use crate::managers::transcription::TranscriptionManager;
 use crate::settings::{
@@ -1169,6 +1169,7 @@ impl ShortcutAction for TranscribeAction {
         crate::managers::openrouter_transcription::reset_session_cost();
 
         let mut recording_started = false;
+        let mut start_failure = None;
         if is_always_on {
             // Always-on mode: Play audio feedback immediately, then apply mute after sound finishes
             debug!("Always-on mode: Playing audio feedback immediately");
@@ -1186,14 +1187,18 @@ impl ShortcutAction for TranscribeAction {
                 }
             });
 
-            recording_started = rm.try_start_recording(&binding_id, ts);
+            match rm.try_start_recording(&binding_id, ts) {
+                Ok(()) => recording_started = true,
+                Err(f) => start_failure = Some(f),
+            }
             debug!("Recording started: {}", recording_started);
         } else {
             // On-demand mode: Start recording first, then play audio feedback, then apply mute
             // This allows the microphone to be activated before playing the sound
             debug!("On-demand mode: Starting recording first, then audio feedback");
             let recording_start_time = Instant::now();
-            if rm.try_start_recording(&binding_id, ts) {
+            let result = rm.try_start_recording(&binding_id, ts);
+            if result.is_ok() {
                 recording_started = true;
                 debug!("Recording started in {:?}", recording_start_time.elapsed());
                 // Small delay to ensure microphone stream is active
@@ -1212,6 +1217,7 @@ impl ShortcutAction for TranscribeAction {
                     }
                 });
             } else {
+                start_failure = result.err();
                 debug!("Failed to start recording");
             }
         }
@@ -1241,7 +1247,12 @@ impl ShortcutAction for TranscribeAction {
                 binding_id
             );
             rm.remove_mute();
-            utils::hide_recording_overlay(app);
+            if start_failure == Some(StartFailure::NoMicrophone) {
+                // Say why instead of flashing the overlay away with no explanation.
+                utils::show_no_microphone_overlay(app);
+            } else {
+                utils::hide_recording_overlay(app);
+            }
             change_tray_icon(app, TrayIconState::Idle);
         }
 

@@ -1233,7 +1233,9 @@
   "overlay": {
     "transcribing": "正在轉錄...",
     "processing": "處理中...",
-    "openFloatingWindow": "開啟轉錄視窗"
+    "openFloatingWindow": "開啟轉錄視窗",
+    "startingMic": "正在啟動麥克風...",
+    "noMicrophone": "未偵測到麥克風"
   },
   "brand": {
     "name": "Handy",

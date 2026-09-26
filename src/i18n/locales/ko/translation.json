@@ -1233,7 +1233,9 @@
   "overlay": {
     "transcribing": "텍스트로 변환 중...",
     "processing": "처리 중...",
-    "openFloatingWindow": "전사 창 열기"
+    "openFloatingWindow": "전사 창 열기",
+    "startingMic": "마이크 시작 중...",
+    "noMicrophone": "마이크 없음"
   },
   "brand": {
     "name": "Handy",

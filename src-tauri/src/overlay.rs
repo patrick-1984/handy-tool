@@ -334,6 +334,21 @@ pub fn show_processing_overlay(app_handle: &AppHandle) {
     show_overlay_state(app_handle, "processing");
 }
 
+/// Tells the user a take could not start because there is no microphone, then hides
+/// itself. A new show in the meantime (e.g. a mic was plugged in and the shortcut
+/// pressed again) bumps the generation, which cancels the pending hide.
+pub fn show_no_microphone_overlay(app_handle: &AppHandle) {
+    show_overlay_state(app_handle, "no-microphone");
+    let generation = OVERLAY_GENERATION.load(Ordering::SeqCst);
+    let app_handle = app_handle.clone();
+    std::thread::spawn(move || {
+        std::thread::sleep(std::time::Duration::from_millis(2500));
+        if OVERLAY_GENERATION.load(Ordering::SeqCst) == generation {
+            hide_recording_overlay(&app_handle);
+        }
+    });
+}
+
 /// Updates the overlay window position based on current settings
 pub fn update_overlay_position(app_handle: &AppHandle) {
     if let Some(overlay_window) = app_handle.get_webview_window("recording_overlay") {

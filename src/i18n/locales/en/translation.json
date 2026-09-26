@@ -1245,7 +1245,9 @@
   "overlay": {
     "transcribing": "Transcribing...",
     "processing": "Processing...",
-    "openFloatingWindow": "Open transcription window"
+    "openFloatingWindow": "Open transcription window",
+    "startingMic": "Starting mic...",
+    "noMicrophone": "No microphone"
   },
   "flm": {
     "windowsApplicationControlBlocked": "Windows Application Control blocked flm.exe because it is not signed. The NPU engine is unavailable. Choose a different transcription model.",

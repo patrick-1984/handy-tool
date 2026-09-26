@@ -2136,9 +2136,12 @@ supplying your own two files.
 **The situation.** A dictation tool that holds the microphone open shows a permanent recording
 indicator, which is both a privacy question and a distraction.
 **What Handy does.** The microphone is opened when a take starts and released when it ends.
-Optionally you can keep it open — which removes the small first-syllable clip at the very start
-of a take — at the cost of a permanently active indicator. That is an explicit choice, not the
-default.
+A microphone that has been idle for a while can take most of a second to wake up; until it
+delivers audio the overlay reads **Starting mic...** instead of showing the sound bars, so you
+know when to start speaking. With no microphone connected at all, the overlay says
+**No microphone** for a moment instead of vanishing. Optionally you can keep the microphone
+open — which removes the wake-up wait — at the cost of a permanently active indicator. That is
+an explicit choice, not the default.
 **Where.** `Debug › Always-On Microphone = On` _{requires: Debug mode}_.
 **Since.** 0.2.0.
 

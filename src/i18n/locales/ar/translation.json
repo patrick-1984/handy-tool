@@ -1233,7 +1233,9 @@
   "overlay": {
     "transcribing": "...جاري التفريغ",
     "processing": "...جاري المعالجة",
-    "openFloatingWindow": "فتح نافذة التفريغ الصوتي"
+    "openFloatingWindow": "فتح نافذة التفريغ الصوتي",
+    "startingMic": "جارٍ تشغيل الميكروفون...",
+    "noMicrophone": "لا يوجد ميكروفون"
   },
   "brand": {
     "name": "Handy",

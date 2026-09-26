@@ -1233,7 +1233,9 @@
   "overlay": {
     "transcribing": "文字起こし中...",
     "processing": "処理中...",
-    "openFloatingWindow": "文字起こしウィンドウを開く"
+    "openFloatingWindow": "文字起こしウィンドウを開く",
+    "startingMic": "マイク起動中...",
+    "noMicrophone": "マイクがありません"
   },
   "brand": {
     "name": "Handy",

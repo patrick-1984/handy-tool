@@ -44,6 +44,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 0;
 }
 
 .overlay-right {
@@ -79,6 +80,15 @@
   color: var(--overlay-text);
   font-size: 12px;
   animation: transcribing-pulse 1.5s infinite ease-in-out;
+}
+
+/* One line in the 36px pill whatever the language; overflow ellipsizes. */
+.overlay-message {
+  color: var(--overlay-text);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @keyframes transcribing-pulse {

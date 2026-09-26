@@ -12,12 +12,21 @@ import { commands } from "@/bindings";
 import i18n, { syncLanguageFromSettings } from "@/i18n";
 import { getLanguageDirection } from "@/lib/utils/rtl";
 
-type OverlayState = "recording" | "transcribing" | "processing";
+type OverlayState =
+  | "recording"
+  | "transcribing"
+  | "processing"
+  | "no-microphone";
 
 const RecordingOverlay: React.FC = () => {
   const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
   const [state, setState] = useState<OverlayState>("recording");
+  // The overlay appears the moment the shortcut is pressed, but a microphone that
+  // has been idle can take most of a second to deliver audio. Nothing is captured
+  // until then, so show "starting" rather than a flat waveform the user talks over.
+  // The first mic-level update is the signal that audio is actually flowing.
+  const [micLive, setMicLive] = useState(false);
   const [levels, setLevels] = useState<number[]>(Array(16).fill(0));
   const smoothedLevelsRef = useRef<number[]>(Array(16).fill(0));
   const direction = getLanguageDirection(i18n.language);
@@ -30,6 +39,7 @@ const RecordingOverlay: React.FC = () => {
         await syncLanguageFromSettings();
         const overlayState = event.payload as OverlayState;
         setState(overlayState);
+        setMicLive(false);
         setIsVisible(true);
       });
 
@@ -50,6 +60,7 @@ const RecordingOverlay: React.FC = () => {
 
         smoothedLevelsRef.current = smoothed;
         setLevels(smoothed.slice(0, 9));
+        setMicLive(true);
       });
 
       // Cleanup function
@@ -64,7 +75,7 @@ const RecordingOverlay: React.FC = () => {
   }, []);
 
   const getIcon = () => {
-    if (state === "recording") {
+    if (state === "recording" || state === "no-microphone") {
       return <MicrophoneIcon />;
     } else {
       return <TranscriptionIcon />;
@@ -89,7 +100,12 @@ const RecordingOverlay: React.FC = () => {
       <div className="overlay-left">{getIcon()}</div>
 
       <div className="overlay-middle">
-        {state === "recording" && (
+        {state === "recording" && !micLive && (
+          <div className="transcribing-text overlay-message">
+            {t("overlay.startingMic")}
+          </div>
+        )}
+        {state === "recording" && micLive && (
           <div className="bars-container">
             {levels.map((v, i) => (
               <div
@@ -109,6 +125,9 @@ const RecordingOverlay: React.FC = () => {
         )}
         {state === "processing" && (
           <div className="transcribing-text">{t("overlay.processing")}</div>
+        )}
+        {state === "no-microphone" && (
+          <div className="overlay-message">{t("overlay.noMicrophone")}</div>
         )}
       </div>
 

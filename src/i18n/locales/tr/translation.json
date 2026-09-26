@@ -1233,7 +1233,9 @@
   "overlay": {
     "transcribing": "Transkribe ediliyor...",
     "processing": "İşleniyor...",
-    "openFloatingWindow": "Transkripsiyon penceresini aç"
+    "openFloatingWindow": "Transkripsiyon penceresini aç",
+    "startingMic": "Mikrofon açılıyor...",
+    "noMicrophone": "Mikrofon yok"
   },
   "brand": {
     "name": "Handy",

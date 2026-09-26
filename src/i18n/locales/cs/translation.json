@@ -1233,7 +1233,9 @@
   "overlay": {
     "transcribing": "Přepisuji...",
     "processing": "Zpracovávám...",
-    "openFloatingWindow": "Otevřít okno přepisu"
+    "openFloatingWindow": "Otevřít okno přepisu",
+    "startingMic": "Spouštím mikrofon...",
+    "noMicrophone": "Žádný mikrofon"
   },
   "brand": {
     "name": "Handy",

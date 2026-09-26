@@ -1233,7 +1233,9 @@
   "overlay": {
     "transcribing": "Transcription...",
     "processing": "Traitement...",
-    "openFloatingWindow": "Ouvrir la fenêtre de transcription"
+    "openFloatingWindow": "Ouvrir la fenêtre de transcription",
+    "startingMic": "Démarrage du micro...",
+    "noMicrophone": "Aucun micro"
   },
   "floating": {
     "waiting": "En attente de la transcription…",

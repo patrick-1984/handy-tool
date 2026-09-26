@@ -1233,7 +1233,9 @@
   "overlay": {
     "transcribing": "Đang phiên âm...",
     "processing": "Đang xử lý...",
-    "openFloatingWindow": "Mở cửa sổ phiên âm"
+    "openFloatingWindow": "Mở cửa sổ phiên âm",
+    "startingMic": "Đang bật micrô...",
+    "noMicrophone": "Không có micrô"
   },
   "floating": {
     "waiting": "Đang chờ phiên âm…",

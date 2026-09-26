@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.6.3] - 2026-09-25 21:52
+
+### Fixed
+
+- **The overlay no longer shows "recording" before the microphone is actually recording.**
+  The microphone is opened when a take starts, and a device that has been idle for a while
+  (about ten minutes, measured on a Realtek input) takes around 0.75 s to wake up and deliver
+  its first audio. The overlay appeared instantly with a flat waveform, so the first words
+  were spoken into nothing. It now reads **Starting mic...** until the first audio arrives and
+  switches to the sound bars at that moment, so you know when to start speaking. A warm
+  microphone arrives in a few tens of milliseconds, so the message is rarely seen then.
+  Always-On Microphone remains the way to remove the wait entirely, and stays off by default.
+- **No microphone connected: the overlay now says so instead of flashing away.** Pressing the
+  shortcut with no input device showed the overlay for a split second and hid it again with no
+  explanation - the error was logged and thrown away. The overlay now shows **No microphone**
+  for 2.5 seconds. Pressing the shortcut again after plugging a microphone in starts normally.
+
 ## [1.6.2] - 2026-09-24
 
 ### Fixed
