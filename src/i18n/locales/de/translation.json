@@ -10,8 +10,6 @@
     "general": "Allgemein",
     "shortcuts": "Tastenkürzel",
     "models": "Modelle",
-    "advanced": "Erweitert",
-    "postProcessing": "Nachbearbeitung",
     "history": "Verlauf",
     "debug": "Debug",
     "about": "Info",
@@ -21,9 +19,10 @@
     "keyboardTyper": "Tastatur-Eingabe",
     "jumper": "Jumper",
     "translator": "Übersetzer",
+    "more": "Mehr",
     "groups": {
-      "tools": "Werkzeuge",
-      "config": "Konfiguration"
+      "settings": "Einstellungen",
+      "tools": "Werkzeuge"
     },
     "modelTesting": "Modelltests",
     "resize": "Zum Ändern der Größe ziehen",
@@ -228,6 +227,14 @@
             "name": "Abbrechen-Tastenkürzel",
             "description": "Bricht die laufende Aufnahme ab. Standard: escape. Was das Abbrechen tatsächlich bewirkt, entscheidet Abbruchverhalten auf der Seite Allgemein — Beenden, nur im Verlauf speichern transkribiert und speichert den Text weiterhin, stellt ihn aber nicht in dein Fenster zu, während Aufnahme verwerfen das Audio wegwirft — und der Taskleisten-Eintrag Abbrechen folgt derselben Einstellung."
           },
+          "pause": {
+            "name": "Pause / Fortsetzen",
+            "description": "Pausiert die laufende Aufnahme oder setzt sie fort. Nur während einer Aufnahme aktiv, wenn die Pausentaste an ist. Standard: Keine."
+          },
+          "undo_word": {
+            "name": "Letztes Wort rückgängig",
+            "description": "Entfernt das letzte Wort einer Live-Aufnahme. Nur während einer Live-Aufnahme aktiv. Standard: Strg+Rücktaste."
+          },
           "transcribe_with_post_process": {
             "name": "Nachbearbeitungs-Tastenkürzel",
             "description": "Optional: Ein dediziertes Tastenkürzel, das immer die KI-Nachbearbeitung auf Ihre Transkription anwendet."
@@ -298,6 +305,24 @@
           "reset": "Tastenkürzel konnte nicht auf Originalwert zurückgesetzt werden",
           "registrationFailed": "Einige Tastenkürzel konnten nicht registriert werden und sind inaktiv: {{bindings}}. Eine andere App verwendet sie möglicherweise bereits — wähle eine andere Kombination in den Einstellungen."
         }
+      },
+      "pauseButton": {
+        "label": "Pausentaste",
+        "description": "Fügt dem Aufnahme-Overlay eine Pausentaste hinzu: Während der Pause wird nichts aufgenommen, Fortsetzen führt dieselbe Aufnahme weiter. Standard: Aus. Nach 10 Minuten Pause wird das Mikrofon bis zum Fortsetzen freigegeben."
+      },
+      "undoWord": {
+        "label": "Letztes Wort rückgängig",
+        "description": "Entfernt bei jedem Druck auf das Tastenkürzel (Standard Strg+Rücktaste) das letzte Wort einer Live-Aufnahme und kürzt den Ton bis zum Anfang dieses Wortes, sodass es auch im Endtext fehlt. Benötigt eine Live-Aufnahme und ein Parakeet-Modell. Standard: Aus."
+      },
+      "liveTextBox": {
+        "label": "Live-Textfeld",
+        "description": "Zeigt in einem kleinen Feld neben dem Aufnahme-Overlay, was Sie sagen – etwa alle 1,5 Sekunden aktualisiert. Solange es an ist, laufen alle Aufnahmen im Live-Modus. Standard: Aus; die T-Taste im Overlay schaltet es ebenfalls."
+      },
+      "liveTextMode": {
+        "title": "Live-Text zeigt",
+        "description": "Eine Zeile mit den neuesten Wörtern oder den ganzen Text in einem dreizeiligen Feld. Die Größe ändert sich beim Sprechen nicht. Standard: Letzte Wörter.",
+        "lastWords": "Letzte Wörter",
+        "fullText": "Ganzer Text"
       },
       "language": {
         "title": "Sprache",
@@ -610,11 +635,6 @@
         "label": "Absturzsichere Aufnahme",
         "description": "Kodiert deine Sprache während des Sprechens in kompakte Opus-Dateien auf der Festplatte, statt alles im Speicher zu halten, sodass ein Absturz, ein erzwungenes Update oder ein leerer Akku trotzdem eine Aufnahme hinterlässt — sie wird beim nächsten Start repariert und dem Verlauf hinzugefügt. Standard: An. Schaltest du es aus, wird unkomprimiertes Audio aufgenommen, das Backups vom Typ Vollständige Daten (mit komprimiertem Audio) bewusst auslassen."
       },
-      "openRecordingsFolder": {
-        "label": "Aufnahmeordner",
-        "description": "Öffnet den Ordner mit deinen Aufnahmen und jedem nach einem Absturz wiederhergestellten Audio (%APPDATA%\\pr.handy\\recordings). Aufnahmen automatisch löschen räumt hier auf, rührt aber ausschließlich Dateien an, die Handy selbst erstellt hat — deine eigenen Notizen oder Exporte in diesem Ordner werden nie umbenannt oder gelöscht.",
-        "button": "Ordner öffnen"
-      },
       "appearance": {
         "title": "Erscheinungsbild",
         "description": "Legt das Farbthema für alle Handy-Tool-Fenster fest, einschließlich des Aufnahme-Overlays und des schwebenden Transkriptionsfensters. Standard: System, das deiner Windows-Hell/Dunkel-Einstellung folgt und Änderungen weiterhin übernimmt; Hell und Dunkel legen eine feste Palette fest und ignorieren spätere Änderungen des Betriebssystems.",
@@ -688,11 +708,9 @@
       "tabs": {
         "app": "App",
         "output": "Ausgabe",
-        "transcription": "Transkription",
         "typer": "Tastatureingabe",
         "providers": "Anbieter",
         "mcp": "MCP & CLI",
-        "history": "Verlauf",
         "postProcessing": "Nachbearbeitung"
       },
       "mcp": {
@@ -1037,17 +1055,6 @@
           "description": "Die ursprüngliche Open-Source-Sprach-zu-Text-App, auf der dieses Projekt aufbaut",
           "details": "Handy Tool ist ein Fork von Handy, erstellt von CJ Pais (github.com/cjpais/Handy, handy.computer). Es wurde bei Upstream-Version v0.8.1 (März 2026) übernommen und wird seitdem eigenständig von Patrick R. weiterentwickelt. Vielen Dank an CJ und die Handy-Mitwirkenden für die Grundlage, auf der dieses Projekt aufbaut."
         }
-      },
-      "updates": {
-        "title": "Updates",
-        "description": "Suchen Sie in der App nach einer neueren Version oder öffnen Sie die Release-Seite direkt im Browser.",
-        "button": "Releases prüfen",
-        "checkWeb": "Im Web prüfen",
-        "checkApp": "Nach Updates suchen",
-        "checkFailed": "Updates konnten nicht geprüft werden: {{reason}}.",
-        "useWebHint": "Verwenden Sie „Im Web prüfen“, falls die Prüfung in der App blockiert wird.",
-        "latestVersion": "Sie verwenden die neueste Version ({{version}}).",
-        "availableVersion": "Version {{version}} ist verfügbar."
       }
     },
     "jumper": {
@@ -1262,7 +1269,11 @@
     "startingMic": "Mikrofon startet...",
     "noMicrophone": "Kein Mikrofon",
     "microphoneBlocked": "Mikrofon blockiert",
-    "microphoneError": "Mikrofonfehler"
+    "microphoneError": "Mikrofonfehler",
+    "paused": "Pausiert",
+    "pause": "Pause",
+    "resume": "Fortsetzen",
+    "liveTextBox": "Live-Textfeld"
   },
   "brand": {
     "name": "Handy",

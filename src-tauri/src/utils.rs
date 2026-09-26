@@ -17,8 +17,8 @@ pub use crate::tray::*;
 pub fn cancel_current_operation(app: &AppHandle) {
     info!("Initiating operation cancellation...");
 
-    // Unregister the cancel shortcut asynchronously
-    shortcut::unregister_cancel_shortcut(app);
+    // Unregister the take-only shortcuts (Cancel, Pause, Undo word) asynchronously
+    shortcut::unregister_take_shortcuts(app);
 
     // Commit take-cancellation BEFORE tearing down the recording device (T-306
     // defense-in-depth): cancel_recording stops the mic stream and joins the

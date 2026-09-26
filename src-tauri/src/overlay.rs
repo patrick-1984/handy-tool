@@ -322,6 +322,7 @@ fn show_overlay_state(app_handle: &AppHandle, state: &str) {
 /// Shows the recording overlay window with fade-in animation
 pub fn show_recording_overlay(app_handle: &AppHandle) {
     show_overlay_state(app_handle, "recording");
+    show_live_text_window(app_handle);
 }
 
 /// Shows the transcribing overlay window
@@ -332,6 +333,11 @@ pub fn show_transcribing_overlay(app_handle: &AppHandle) {
 /// Shows the processing overlay window
 pub fn show_processing_overlay(app_handle: &AppHandle) {
     show_overlay_state(app_handle, "processing");
+}
+
+/// Shows the overlay's paused state (the take is open but takes in no audio)
+pub fn show_paused_overlay(app_handle: &AppHandle) {
+    show_overlay_state(app_handle, "paused");
 }
 
 /// Tells the user why a take could not start (`state` is one of the overlay's
@@ -379,13 +385,134 @@ pub fn hide_recording_overlay(app_handle: &AppHandle) {
         // Capture the current generation so we can skip the hide if a new show happened.
         let generation = OVERLAY_GENERATION.load(Ordering::SeqCst);
         let window_clone = overlay_window.clone();
+        let live_text = app_handle.get_webview_window(LIVE_TEXT_LABEL);
+        if let Some(w) = &live_text {
+            let _ = w.emit("live-text-hide", ());
+        }
         std::thread::spawn(move || {
             std::thread::sleep(std::time::Duration::from_millis(300));
             // Only hide if no new show has occurred since we were spawned
             if OVERLAY_GENERATION.load(Ordering::SeqCst) == generation {
                 let _ = window_clone.hide();
+                if let Some(w) = live_text {
+                    let _ = w.hide();
+                }
             }
         });
+    }
+}
+
+/* ─────────────────────────── Live Text Box ─────────────────────────────── */
+
+const LIVE_TEXT_LABEL: &str = "live_text";
+const LIVE_TEXT_WIDTH: f64 = 460.0;
+/// Room for three lines ("whole text"); "last words" uses the one line next to
+/// the pill. The size never changes, so nothing jumps while text arrives.
+const LIVE_TEXT_HEIGHT: f64 = 76.0;
+const LIVE_TEXT_GAP: f64 = 6.0;
+
+#[derive(Clone, serde::Serialize)]
+struct LiveTextShow {
+    mode: crate::settings::LiveTextMode,
+    /// The box sits below the pill (pill at the top of the screen) instead of above.
+    below_pill: bool,
+}
+
+fn live_text_position(app_handle: &AppHandle, below_pill: bool) -> Option<(f64, f64)> {
+    let (x, y) = calculate_overlay_position(app_handle)?;
+    let lx = x + OVERLAY_WIDTH / 2.0 - LIVE_TEXT_WIDTH / 2.0;
+    let ly = if below_pill {
+        y + OVERLAY_HEIGHT + LIVE_TEXT_GAP
+    } else {
+        y - LIVE_TEXT_HEIGHT - LIVE_TEXT_GAP
+    };
+    Some((lx, ly))
+}
+
+/// Pre-creates the live text box (hidden): a click-through, never-focused strip
+/// next to the recording pill that shows the take's live text.
+#[cfg(not(target_os = "macos"))]
+pub fn create_live_text_window(app_handle: &AppHandle) {
+    let theme_js = crate::theme_init_script(crate::settings::get_settings(app_handle).app_theme);
+    let mut builder = WebviewWindowBuilder::new(
+        app_handle,
+        LIVE_TEXT_LABEL,
+        tauri::WebviewUrl::App("src/livetext/index.html".into()),
+    )
+    .title("Live text")
+    .resizable(false)
+    .inner_size(LIVE_TEXT_WIDTH, LIVE_TEXT_HEIGHT)
+    .shadow(false)
+    .maximizable(false)
+    .minimizable(false)
+    .closable(false)
+    .decorations(false)
+    .always_on_top(true)
+    .skip_taskbar(true)
+    .transparent(true)
+    .focused(false)
+    .focusable(false)
+    .visible(false);
+
+    if !theme_js.is_empty() {
+        builder = builder.initialization_script(theme_js);
+    }
+    // Same portable webview data dir as the other windows (T-114 finding #1).
+    #[cfg(windows)]
+    {
+        if let Some(portable_dir) = crate::portable::portable_data_dir() {
+            builder = builder.data_directory(portable_dir.join("webview"));
+        }
+    }
+
+    match builder.build() {
+        Ok(window) => {
+            // Clicks pass through to whatever is underneath.
+            let _ = window.set_ignore_cursor_events(true);
+            debug!("Live text window created (hidden)");
+        }
+        Err(e) => debug!("Failed to create live text window: {}", e),
+    }
+}
+
+/// macOS: the recording overlay is an NSPanel there; no live text box yet.
+#[cfg(target_os = "macos")]
+pub fn create_live_text_window(_app_handle: &AppHandle) {}
+
+/// Shows the live text box next to the pill for the take, when it is switched on.
+pub fn show_live_text_window(app_handle: &AppHandle) {
+    let settings = settings::get_settings(app_handle);
+    if !settings.live_text_box_enabled || settings.overlay_position == OverlayPosition::None {
+        return;
+    }
+    let below_pill = settings.overlay_position == OverlayPosition::Top;
+    if let Some(window) = app_handle.get_webview_window(LIVE_TEXT_LABEL) {
+        if let Some((x, y)) = live_text_position(app_handle, below_pill) {
+            let _ = window.set_position(tauri::Position::Logical(tauri::LogicalPosition { x, y }));
+        }
+        let _ = window.emit(
+            "live-text-show",
+            LiveTextShow {
+                mode: settings.live_text_mode,
+                below_pill,
+            },
+        );
+        if window.show().is_ok() {
+            #[cfg(target_os = "windows")]
+            force_overlay_topmost(&window);
+        }
+    }
+}
+
+/// Applies a live-text setting change (T button, settings page) to a take in
+/// progress: show or hide the box right away.
+pub fn refresh_live_text_window(app_handle: &AppHandle) {
+    let enabled = settings::get_settings(app_handle).live_text_box_enabled;
+    if enabled && OVERLAY_VISIBLE.load(Ordering::Relaxed) {
+        show_live_text_window(app_handle);
+    } else if let Some(window) = app_handle.get_webview_window(LIVE_TEXT_LABEL) {
+        let _ = window.emit("live-text-hide", ());
+        let _ = window.hide();
     }
 }
 

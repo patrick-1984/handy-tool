@@ -9,7 +9,8 @@ changing a shortcut in either place changes both. For the default chords, see
 `Shortcuts › Dictation`
 
 Transcribe, Push-to-Talk, Transcribe & Submit, Paste Last Transcription and Cancel. The
-Post-Processing Hotkey is listed while post-processing is on. Cancel is not listed on Linux, where
+Post-Processing Hotkey is listed while post-processing is on, and Pause / Resume and Undo Last
+Word while their options on General are on. Cancel is not listed on Linux, where
 it is never registered.
 
 Catalog: [Every shortcut on one page](../../features.md#every-shortcut-on-one-page).

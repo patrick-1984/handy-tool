@@ -68,6 +68,47 @@ static LIVE_TEXT: Lazy<Mutex<Option<Arc<Mutex<String>>>>> = Lazy::new(|| Mutex::
 /// Flag indicating a segment transcription is in flight, used to avoid engine lock races.
 static SEGMENT_BUSY: Lazy<Mutex<Option<Arc<AtomicBool>>>> = Lazy::new(|| Mutex::new(None));
 
+/// Longest stretch of speech the live preview re-transcribes per update. Past
+/// it, all but the last PREVIEW_KEEP_SECS is frozen, so an update stays cheap
+/// however long the take (re-transcribing the whole take cost ~10 s per update
+/// on a CPU-only Parakeet after a minute of speech).
+const PREVIEW_MAX_WINDOW_SECS: f32 = 6.0;
+const PREVIEW_KEEP_SECS: f32 = 2.5;
+
+/// A word of the live preview and where its audio starts in the take's kept
+/// samples (None when the engine gives no word timings).
+#[derive(Clone)]
+struct LiveWord {
+    start: Option<usize>,
+    text: String,
+}
+
+/// The live preview of the take in progress. Only the audio since
+/// `frozen_until` is transcribed on each update; the words before it are frozen
+/// (they ended at a pause, or fell out of the preview window).
+#[derive(Default)]
+struct LivePreview {
+    frozen: Vec<LiveWord>,
+    frozen_until: usize,
+    tail: Vec<LiveWord>,
+    /// Bumped by undo; a result computed on audio that has since been cut is dropped.
+    generation: u64,
+    updates: usize,
+}
+
+impl LivePreview {
+    fn text(&self) -> String {
+        self.frozen
+            .iter()
+            .chain(&self.tail)
+            .map(|w| w.text.as_str())
+            .collect::<Vec<_>>()
+            .join(" ")
+    }
+}
+
+static LIVE_PREVIEW: Lazy<Mutex<Option<Arc<Mutex<LivePreview>>>>> = Lazy::new(|| Mutex::new(None));
+
 /// Recording-start unix timestamp (seconds). Set in `start()`, read in `stop()`
 /// to locate the recorder's glued `handy-{ts}.opus` for the history entry.
 static RECORDING_TS: AtomicU64 = AtomicU64::new(0);
@@ -743,6 +784,9 @@ pub fn end_chunked_session(app: &AppHandle) {
     if let Ok(mut g) = LIVE_TEXT.lock() {
         *g = None;
     }
+    if let Ok(mut g) = LIVE_PREVIEW.lock() {
+        *g = None;
+    }
     if let Ok(mut g) = SEGMENT_BUSY.lock() {
         *g = None;
     }
@@ -1304,11 +1348,14 @@ impl ShortcutAction for TranscribeAction {
             // Reuse the settings snapshot read above — a second read here could
             // diverge from what the recorder was started with and skew the plan.
             let is_ptt_binding = binding_id == "transcribe_ptt";
-            let is_live_mode = if is_ptt_binding {
-                settings.transcription_mode_ptt == TranscriptionMode::Live
-            } else {
-                settings.transcription_mode == TranscriptionMode::Live
-            };
+            // The live text box shows the take as you speak, so it makes every take
+            // live whatever the Transcription Mode says.
+            let is_live_mode = settings.live_text_box_enabled
+                || if is_ptt_binding {
+                    settings.transcription_mode_ptt == TranscriptionMode::Live
+                } else {
+                    settings.transcription_mode == TranscriptionMode::Live
+                };
             let is_api_model = settings.selected_model == "api-whisper";
             // OpenRouter transcription must never stream audio mid-recording (the
             // user may hit network drops). It uses the on-disk chunked recording
@@ -1326,9 +1373,8 @@ impl ShortcutAction for TranscribeAction {
             });
 
             if plan_live {
-                // Live mode: set up segment callback for progressive transcription
+                // Live mode: a preview of the take as you speak (see LivePreview)
                 let app_seg = app.clone();
-                let chunk_index = Arc::new(AtomicUsize::new(0));
                 tm_seg.set_live_transcribing(true);
 
                 let transcribing = Arc::new(AtomicBool::new(false));
@@ -1337,48 +1383,28 @@ impl ShortcutAction for TranscribeAction {
                 let live_text = Arc::new(Mutex::new(String::new()));
                 *LIVE_TEXT.lock().unwrap() = Some(Arc::clone(&live_text));
                 *SEGMENT_BUSY.lock().unwrap() = Some(Arc::clone(&transcribing));
+                let preview = Arc::new(Mutex::new(LivePreview::default()));
+                *LIVE_PREVIEW.lock().unwrap() = Some(Arc::clone(&preview));
 
-                rm.set_on_segment_callback(move |segment_samples| {
-                    // Skip if a previous segment is still being transcribed
+                rm.set_on_segment_callback(move |samples, utterance_ended| {
+                    // Skip if the previous update is still being transcribed
                     if transcribing.swap(true, Ordering::Relaxed) {
                         return;
                     }
-                    let idx = chunk_index.fetch_add(1, Ordering::Relaxed);
                     let tm_inner = Arc::clone(&tm_seg);
                     let app_inner = app_seg.clone();
                     let busy = Arc::clone(&transcribing);
                     let live_text_inner = Arc::clone(&live_text);
+                    let preview = Arc::clone(&preview);
                     std::thread::spawn(move || {
-                        // Serialize with other engine users (Translator batch
-                        // segments): wait briefly instead of failing fast, so
-                        // live preview text is delayed — not dropped — when a
-                        // batch segment holds the engine.
-                        let result = {
-                            let _serial = CHUNK_TRANSCRIBE_LOCK
-                                .lock()
-                                .unwrap_or_else(|poisoned| poisoned.into_inner());
-                            tm_inner.transcribe(segment_samples)
-                        };
-                        match result {
-                            Ok(text) => {
-                                if !text.is_empty() {
-                                    if let Ok(mut live) = live_text_inner.lock() {
-                                        *live = text.clone();
-                                    }
-                                    let _ = app_inner.emit(
-                                        "live-transcription-chunk",
-                                        LiveTranscriptionChunk {
-                                            index: idx,
-                                            text,
-                                            is_final: false,
-                                        },
-                                    );
-                                }
-                            }
-                            Err(e) => {
-                                debug!("Live segment transcription failed: {}", e);
-                            }
-                        }
+                        update_live_preview(
+                            &preview,
+                            &tm_inner,
+                            samples,
+                            utterance_ended,
+                            &live_text_inner,
+                            &app_inner,
+                        );
                         busy.store(false, Ordering::Relaxed);
                     });
                 });
@@ -1460,8 +1486,9 @@ impl ShortcutAction for TranscribeAction {
                 );
             }
 
-            // Dynamically register the cancel shortcut in a separate task to avoid deadlock
-            shortcut::register_cancel_shortcut(app);
+            // Dynamically register the take-only shortcuts (Cancel, and Pause / Undo
+            // word when enabled) in a separate task to avoid deadlock
+            shortcut::register_take_shortcuts(app, plan_live);
         }
 
         debug!(
@@ -1471,8 +1498,8 @@ impl ShortcutAction for TranscribeAction {
     }
 
     fn stop(&self, app: &AppHandle, binding_id: &str, _shortcut_str: &str) {
-        // Unregister the cancel shortcut when transcription stops
-        shortcut::unregister_cancel_shortcut(app);
+        // Unregister the take-only shortcuts when transcription stops
+        shortcut::unregister_take_shortcuts(app);
 
         let stop_time = Instant::now();
         debug!("TranscribeAction::stop called for binding: {}", binding_id);
@@ -1508,11 +1535,12 @@ impl ShortcutAction for TranscribeAction {
         let plan = RECORDING_PLAN.lock().ok().and_then(|mut g| g.take());
         let is_openrouter = settings_snapshot.selected_model == "openrouter-transcription";
         let fallback_live = !is_openrouter
-            && if is_ptt_binding {
-                settings_snapshot.transcription_mode_ptt == TranscriptionMode::Live
-            } else {
-                settings_snapshot.transcription_mode == TranscriptionMode::Live
-            };
+            && (settings_snapshot.live_text_box_enabled
+                || if is_ptt_binding {
+                    settings_snapshot.transcription_mode_ptt == TranscriptionMode::Live
+                } else {
+                    settings_snapshot.transcription_mode == TranscriptionMode::Live
+                });
         let is_api_model = settings_snapshot.selected_model == "api-whisper";
         let use_live = plan.map(|p| p.live).unwrap_or(fallback_live);
         let crash_safe = plan
@@ -1543,6 +1571,10 @@ impl ShortcutAction for TranscribeAction {
         // the async task can wait for in-flight segments off the main thread.
         let busy_flag = SEGMENT_BUSY.lock().ok().and_then(|mut g| g.take());
         let live_text_handle = LIVE_TEXT.lock().ok().and_then(|mut g| g.take());
+        // The take is over: nothing can undo words in it any more.
+        if let Ok(mut g) = LIVE_PREVIEW.lock() {
+            *g = None;
+        }
 
         // Finding 7(a): snapshot the take-cancellation generation FIRST, BEFORE
         // taking ownership of the intent/action below. Capturing intent/action
@@ -2182,6 +2214,198 @@ impl ShortcutAction for CancelAction {
     }
 }
 
+// Pause Action: pauses the take in progress, or resumes it
+struct PauseAction;
+
+impl ShortcutAction for PauseAction {
+    fn start(&self, app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {
+        toggle_pause(app);
+    }
+
+    fn stop(&self, _app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {}
+}
+
+/// Pause or resume the take in progress; the overlay follows. Used by the Pause
+/// shortcut and the overlay's pause button.
+pub fn toggle_pause(app: &AppHandle) {
+    let rm = app.state::<Arc<AudioRecordingManager>>();
+    match rm.toggle_pause() {
+        Some(true) => {
+            info!("Take paused");
+            utils::show_paused_overlay(app);
+        }
+        Some(false) => {
+            info!("Take resumed");
+            show_recording_overlay(app);
+        }
+        None => {}
+    }
+}
+
+/// One live preview update: transcribe the audio since the frozen point, then
+/// freeze what an utterance end (or the window limit) settles.
+fn update_live_preview(
+    preview: &Arc<Mutex<LivePreview>>,
+    tm: &Arc<TranscriptionManager>,
+    samples: Vec<f32>,
+    utterance_ended: bool,
+    live_text: &Arc<Mutex<String>>,
+    app: &AppHandle,
+) {
+    let Ok((generation, from)) = preview.lock().map(|p| (p.generation, p.frozen_until)) else {
+        return;
+    };
+    if from >= samples.len() {
+        return;
+    }
+    let window = samples[from..].to_vec();
+    let window_secs = window.len() as f32 / 16_000.0;
+    // Serialize with other engine users (Translator batch segments): wait
+    // briefly instead of failing fast, so the preview is delayed — not
+    // dropped — when a batch segment holds the engine.
+    let result = {
+        let _serial = CHUNK_TRANSCRIBE_LOCK
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        tm.transcribe_with_words(window)
+    };
+    let (text, timings) = match result {
+        Ok(r) => r,
+        Err(e) => {
+            debug!("Live preview transcription failed: {}", e);
+            return;
+        }
+    };
+    let words: Vec<LiveWord> = match timings {
+        Some(timed) => timed
+            .into_iter()
+            .map(|(secs, text)| LiveWord {
+                start: Some(from + (secs.max(0.0) * 16_000.0) as usize),
+                text,
+            })
+            .collect(),
+        None => text
+            .split_whitespace()
+            .map(|w| LiveWord {
+                start: None,
+                text: w.to_string(),
+            })
+            .collect(),
+    };
+
+    let Ok(mut p) = preview.lock() else {
+        return;
+    };
+    // Undo cut the audio while this ran: these words describe audio that is gone.
+    if p.generation != generation || p.frozen_until != from {
+        return;
+    }
+    if utterance_ended {
+        p.frozen.extend(words);
+        p.frozen_until = samples.len();
+        p.tail.clear();
+    } else if window_secs > PREVIEW_MAX_WINDOW_SECS {
+        // Freeze all but the last few seconds, at a word boundary when the engine
+        // gives word timings; without them, freeze the whole window.
+        let keep_from = samples
+            .len()
+            .saturating_sub((PREVIEW_KEEP_SECS * 16_000.0) as usize);
+        let split = words
+            .iter()
+            .enumerate()
+            .find_map(|(i, w)| w.start.filter(|s| *s >= keep_from).map(|s| (i, s)));
+        match split {
+            Some((i, start)) => {
+                let tail = words[i..].to_vec();
+                p.frozen.extend(words.into_iter().take(i));
+                p.frozen_until = start;
+                p.tail = tail;
+            }
+            None => {
+                p.frozen.extend(words);
+                p.frozen_until = samples.len();
+                p.tail.clear();
+            }
+        }
+    } else {
+        p.tail = words;
+    }
+    p.updates += 1;
+    let index = p.updates;
+    let text = p.text();
+    drop(p);
+
+    if text.is_empty() {
+        return;
+    }
+    if let Ok(mut live) = live_text.lock() {
+        *live = text.clone();
+    }
+    let _ = app.emit(
+        "live-transcription-chunk",
+        LiveTranscriptionChunk {
+            index,
+            text,
+            is_final: false,
+        },
+    );
+}
+
+/// Undo last word (live takes): drop the preview's last word and cut the take's
+/// audio back to where that word started, so the final pass at stop — which
+/// re-transcribes the audio — does not bring it back. Needs word timings
+/// (Parakeet); with other engines there is nothing to cut back to.
+pub fn undo_last_word(app: &AppHandle) {
+    let Some(preview) = LIVE_PREVIEW.lock().ok().and_then(|g| g.clone()) else {
+        return;
+    };
+    let (text, index, cut) = {
+        let Ok(mut p) = preview.lock() else {
+            return;
+        };
+        let last = p.tail.last().or_else(|| p.frozen.last()).cloned();
+        let Some(LiveWord {
+            start: Some(cut), ..
+        }) = last
+        else {
+            debug!("Undo last word: nothing to undo, or this engine gives no word timings");
+            return;
+        };
+        p.generation += 1;
+        p.frozen.retain(|w| w.start.map_or(true, |s| s < cut));
+        p.tail.retain(|w| w.start.is_some_and(|s| s < cut));
+        p.frozen_until = p.frozen_until.min(cut);
+        p.updates += 1;
+        (p.text(), p.updates, cut)
+    };
+    app.state::<Arc<AudioRecordingManager>>()
+        .truncate_recording(cut);
+    if let Some(live) = LIVE_TEXT.lock().ok().and_then(|g| g.clone()) {
+        if let Ok(mut l) = live.lock() {
+            *l = text.clone();
+        }
+    }
+    let _ = app.emit(
+        "live-transcription-chunk",
+        LiveTranscriptionChunk {
+            index,
+            text,
+            is_final: false,
+        },
+    );
+}
+
+// Undo Word Action: removes the last word of a live take
+struct UndoWordAction;
+
+impl ShortcutAction for UndoWordAction {
+    fn start(&self, app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {
+        undo_last_word(app);
+    }
+
+    fn stop(&self, _app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {}
+}
+
 // Type Text Action: toggles the Keyboard Typer session
 struct TypeTextAction;
 
@@ -2449,6 +2673,14 @@ pub static ACTION_MAP: Lazy<HashMap<String, Arc<dyn ShortcutAction>>> = Lazy::ne
     map.insert(
         "cancel".to_string(),
         Arc::new(CancelAction) as Arc<dyn ShortcutAction>,
+    );
+    map.insert(
+        "pause".to_string(),
+        Arc::new(PauseAction) as Arc<dyn ShortcutAction>,
+    );
+    map.insert(
+        "undo_word".to_string(),
+        Arc::new(UndoWordAction) as Arc<dyn ShortcutAction>,
     );
     map.insert(
         "type_text".to_string(),

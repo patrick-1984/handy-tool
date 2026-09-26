@@ -24,6 +24,7 @@ export default defineConfig(async () => ({
         main: resolve(__dirname, "index.html"),
         overlay: resolve(__dirname, "src/overlay/index.html"),
         floating: resolve(__dirname, "src/floating/index.html"),
+        livetext: resolve(__dirname, "src/livetext/index.html"),
       },
     },
   },

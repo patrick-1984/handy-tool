@@ -208,7 +208,7 @@ pub(crate) fn apply_theme_to_aux_windows(app: &AppHandle, theme: settings::Theme
         settings::Theme::Dark => "document.documentElement.setAttribute('data-theme','dark');",
         settings::Theme::System => "document.documentElement.removeAttribute('data-theme');",
     };
-    for label in ["recording_overlay", "floating_transcription"] {
+    for label in ["recording_overlay", "floating_transcription", "live_text"] {
         if let Some(window) = app.get_webview_window(label) {
             if let Err(e) = window.eval(js) {
                 log::warn!("Failed to apply theme to '{}' window: {}", label, e);
@@ -387,6 +387,7 @@ fn initialize_core_logic(app_handle: &AppHandle) {
 
     // Create the floating transcription window (hidden by default)
     overlay::create_floating_transcription_window(app_handle);
+    overlay::create_live_text_window(app_handle);
 
     // Stamp the persisted appearance theme onto both aux windows now that
     // they exist (T-204). `settings` here was fetched above for the
@@ -571,6 +572,12 @@ pub fn run(cli_args: CliArgs) {
         commands::models::list_gpu_devices,
         commands::audio::update_microphone_mode,
         commands::audio::change_mic_keep_warm_setting,
+        commands::audio::change_pause_button_setting,
+        commands::audio::change_undo_word_setting,
+        commands::audio::change_live_text_box_setting,
+        commands::audio::toggle_live_text_box,
+        commands::audio::change_live_text_mode_setting,
+        commands::audio::toggle_pause_recording,
         commands::audio::get_microphone_mode,
         commands::audio::get_available_microphones,
         commands::audio::set_selected_microphone,
@@ -848,6 +855,7 @@ pub fn run(cli_args: CliArgs) {
                 // Hide pre-created windows instead of destroying them
                 if window.label() == "floating_transcription"
                     || window.label() == "recording_overlay"
+                    || window.label() == "live_text"
                 {
                     api.prevent_close();
                     let _ = window.hide();

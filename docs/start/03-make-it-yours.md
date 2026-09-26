@@ -12,7 +12,7 @@ Set exactly these five controls, then leave the rest alone. The goal is a predic
 4. Set `General › Sound › Audio Feedback = On`: [Hear when the microphone is hot](../features.md#hear-when-the-microphone-is-hot).
 5. Try `General › Transcription › Transcription Mode = Live` for one take: it shows text while you talk. The shipped default is `Post-Recording`; go back to it if the moving text distracts you. The trade-off is catalogued under [Watch the text appear, or wait for the most accurate pass](../features.md#live-or-post-recording).
 
-Two pages can appear later but are intentionally out of this stage: `Post Process` is revealed by `Advanced › Post-processing › Post Processing = On`, and `Debug` is revealed with `ctrl+shift+d`. Do not enable either yet.
+Two things can appear later but are intentionally out of this stage: post-processing's controls are revealed by `More › Post-processing › Post Processing = On`, and the `Debug` tab is revealed with `ctrl+shift+d`. Do not enable either yet.
 
 Previous: [02 — Trust the safety net](02-first-words.md) · Next: [04 — Two keys, not one](04-two-keys-not-one.md)
 

@@ -4,7 +4,7 @@ Open `Current Audio`.
 
 ### Open floating window
 
-`Current Audio › Open floating window`
+`More › Current Audio › Open floating window`
 
 Opens the separate live-transcript window. **Default:** closed.
 
@@ -12,7 +12,7 @@ Catalog: [Watch the words arrive in a window you can park anywhere](../../featur
 
 ### Copy
 
-`Current Audio › Copy`
+`More › Current Audio › Copy`
 
 Copies the transcript currently shown; the label briefly becomes `Copied`. **Default:** no transcript is available on a fresh launch.
 

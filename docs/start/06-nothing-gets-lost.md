@@ -22,7 +22,7 @@
 Now rehearse the misfire that is easy to overlook:
 
 1. Copy the text `KEEP THIS CLIPBOARD` from Notepad.
-2. Confirm `Advanced › Transcription › Transcribe › Clipboard Handling = Don't Modify Clipboard`.
+2. Confirm `More › Output › Transcribe › Clipboard Handling = Don't Modify Clipboard`.
 3. Dictate a short disposable sentence with `ctrl+space` and let it appear.
 4. Pretend that delivery missed: delete that sentence without copying it, then click where it should have gone.
 5. Press `General › Paste Last Transcription` using its default `ctrl+shift+f10`.

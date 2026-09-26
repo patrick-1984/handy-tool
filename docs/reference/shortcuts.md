@@ -15,6 +15,8 @@ Nothing in either table runs anywhere but Windows today. The `Survives to planne
 | Transcribe with Post-Processing | `ctrl+shift+f12`   | Toggles recording and runs the post-processing prompt. | Yes                        | **Post-Proc.** on 9/12 keys                  |
 | Transcribe & Submit             | `ctrl+shift+f9`    | Toggles recording, delivers, and sends the submit key. | Yes                        | **Transcribe & Submit** on every layout      |
 | Cancel                          | `escape`           | Applies Cancel behavior to the running take.           | Yes                        | **Cancel** on every layout                   |
+| Pause / Resume                  | none               | Pauses or resumes the running take.                    | Yes                        | —                                            |
+| Undo Last Word                  | `ctrl+backspace`   | Removes the newest word of a live take.                | Yes                        | —                                            |
 | Type Text                       | `ctrl+shift+f11`   | Types the prepared Keyboard Typer text.                | Yes                        | **Type Text** on 12 keys; Fn layer on 9 keys |
 | Paste Last Transcription        | `ctrl+shift+f10`   | Delivers the most recent transcription again.          | Yes                        | **Paste Last** on every layout               |
 
@@ -27,8 +29,9 @@ Rebind them at:
 - `General › Transcribe & Submit Shortcut`
 - `Keyboard Typer › Type Text Shortcut`
 - `General › Paste Last Transcription`
-- `Post Process › Hotkey › Post-Processing Hotkey` _{requires: Post-processing enabled}_
-- `Debug › Cancel Shortcut` _{requires: Debug mode}_
+- `More › Post-processing › Hotkey › Post-Processing Hotkey` _{requires: Post-processing enabled}_
+- `Shortcuts › Dictation › Cancel Shortcut`
+- `General › Pause button` and `General › Undo last word` — each shows its shortcut row once it is On.
 
 Catalog: [Press one key, speak, and the text appears where you were typing](../features.md#press-one-key-and-speak), [Push-to-talk you can trust](../features.md#push-to-talk-you-can-trust), [Dictate and send in one keystroke](../features.md#dictate-and-send-in-one-keystroke), [The paste didn't land — get the words back without re-dictating](../features.md#the-paste-didnt-land-get-the-words-back), [A second key for "clean this up with AI"](../features.md#a-second-key-for-clean-this-up), [When paste is blocked, type it instead](../features.md#when-paste-is-blocked-type-it-instead), [Your shortcuts don't eat the accented letters you type](../features.md#shortcuts-dont-eat-accented-letters), [Turn off a shortcut you don't want](../features.md#turn-off-a-shortcut-you-dont-want), [Every shortcut on one page](../features.md#every-shortcut-on-one-page), and [Transcribe the other people on a call, not just yourself](../features.md#record-system-audio).
 

@@ -17,6 +17,11 @@ import { GpuDeviceSelector } from "../GpuDeviceSelector";
 import { CustomWords } from "../CustomWords";
 import { AppendTrailingSpace } from "../AppendTrailingSpace";
 import { CancelBehaviorSetting } from "../CancelBehaviorSetting";
+import {
+  LiveTextBoxSetting,
+  PauseButtonSetting,
+  UndoWordSetting,
+} from "../TakeControls";
 import { UpdateSettings } from "./UpdateSettings";
 import { ShortcutRegistrationFailures } from "../ShortcutRegistrationFailures";
 
@@ -35,12 +40,15 @@ export const GeneralSettings: React.FC = () => {
         <ShortcutInput shortcutId="transcribe_and_submit" grouped={true} />
         <ShortcutInput shortcutId="paste_last" grouped={true} />
         <CancelBehaviorSetting descriptionMode="tooltip" grouped={true} />
+        <PauseButtonSetting descriptionMode="tooltip" grouped={true} />
+        <UndoWordSetting descriptionMode="tooltip" grouped={true} />
       </SettingsGroup>
       <ShortcutRegistrationFailures />
       <ModelSettingsCard />
       <SettingsGroup title={t("settings.advanced.groups.transcription")}>
         <TranscriptionModeSetting descriptionMode="tooltip" grouped={true} />
         <TranscriptionModePttSetting descriptionMode="tooltip" grouped={true} />
+        <LiveTextBoxSetting descriptionMode="tooltip" grouped={true} />
         <GpuDeviceSelector descriptionMode="tooltip" grouped={true} />
         <CustomWords descriptionMode="tooltip" grouped />
         <AppendTrailingSpace descriptionMode="tooltip" grouped={true} />

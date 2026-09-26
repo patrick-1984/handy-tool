@@ -1,5 +1,5 @@
 import React from "react";
-import { AlertTriangle } from "lucide-react";
+import { WarningIcon } from "@/components/ui/WarningIcon";
 import { useTranslation } from "react-i18next";
 import { useSettings } from "@/hooks/useSettings";
 import { useOsType } from "@/hooks/useOsType";
@@ -23,6 +23,8 @@ export const useShortcutConflicts = (): Map<string, string[]> => {
   const osType = useOsType();
   const bindings = getSetting("bindings") ?? {};
   const postProcessEnabled = getSetting("post_process_enabled") ?? false;
+  const pauseEnabled = getSetting("pause_button_enabled") ?? false;
+  const undoWordEnabled = getSetting("undo_word_enabled") ?? false;
 
   const idsByChord = new Map<string, string[]>();
   for (const [id, binding] of Object.entries(bindings)) {
@@ -31,6 +33,8 @@ export const useShortcutConflicts = (): Map<string, string[]> => {
     if (id === "transcribe_with_post_process" && !postProcessEnabled) continue;
     if (isJumperBinding(id) && osType !== "windows") continue;
     if (id === "cancel" && osType === "linux") continue;
+    if (id === "pause" && !pauseEnabled) continue;
+    if (id === "undo_word" && !undoWordEnabled) continue;
     idsByChord.set(chord, [...(idsByChord.get(chord) ?? []), id]);
   }
 
@@ -70,13 +74,5 @@ export const ShortcutConflictWarning: React.FC<{ shortcutId: string }> = ({
     )
     .join(", ");
   const message = t("settings.general.shortcut.conflict", { names });
-  return (
-    <span
-      title={message}
-      aria-label={message}
-      className="flex items-center text-red-500"
-    >
-      <AlertTriangle className="h-4 w-4 shrink-0" />
-    </span>
-  );
+  return <WarningIcon message={message} className="text-red-500" />;
 };

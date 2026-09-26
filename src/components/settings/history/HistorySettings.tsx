@@ -8,6 +8,11 @@ import { listen } from "@tauri-apps/api/event";
 import { readFile } from "@tauri-apps/plugin-fs";
 import { commands, type HistoryEntry } from "@/bindings";
 import { formatDateTime } from "@/utils/dateFormat";
+import { SettingsGroup } from "../../ui/SettingsGroup";
+import { CrashResilientRecording } from "../CrashResilientRecording";
+import { PreserveTranscriptions } from "../PreserveTranscriptions";
+import { HistoryLimit } from "../HistoryLimit";
+import { RecordingRetentionPeriodSelector } from "../RecordingRetentionPeriod";
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
 const fmtDuration = (s: number) => {
@@ -292,6 +297,16 @@ export const HistorySettings: React.FC = () => {
           {body}
         </div>
       </div>
+      {/* What History keeps and for how long (formerly Advanced › History). */}
+      <SettingsGroup title={t("settings.advanced.groups.history")}>
+        <CrashResilientRecording descriptionMode="tooltip" grouped={true} />
+        <PreserveTranscriptions descriptionMode="tooltip" grouped={true} />
+        <HistoryLimit descriptionMode="tooltip" grouped={true} />
+        <RecordingRetentionPeriodSelector
+          descriptionMode="tooltip"
+          grouped={true}
+        />
+      </SettingsGroup>
     </div>
   );
 };

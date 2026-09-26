@@ -8,7 +8,6 @@ import { Button } from "../../ui/Button";
 import { AppDataDirectory } from "../AppDataDirectory";
 import { AppLanguageSelector } from "../AppLanguageSelector";
 import { LogDirectory } from "../debug";
-import { AboutUpdateCheck } from "./AboutUpdateCheck";
 
 export const AboutSettings: React.FC = () => {
   const { t } = useTranslation();
@@ -55,15 +54,6 @@ export const AboutSettings: React.FC = () => {
           >
             {t("settings.about.sourceCode.button")}
           </Button>
-        </SettingContainer>
-
-        <SettingContainer
-          title={t("settings.about.updates.title")}
-          description={t("settings.about.updates.description")}
-          grouped={true}
-          layout="stacked"
-        >
-          <AboutUpdateCheck currentVersion={version} />
         </SettingContainer>
 
         <AppDataDirectory descriptionMode="tooltip" grouped={true} />

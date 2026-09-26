@@ -162,7 +162,7 @@ export const TranscribeAndSubmitSettings: React.FC = React.memo(() => {
         descriptionMode="tooltip"
         grouped={true}
       />
-      <JumperDelaySetting kind="paste" grouped={true} />
+      {/* The paste delay is shared with Transcribe; it is set once, above. */}
       <JumperDelaySetting kind="submit" grouped={true} />
       <AnchorActionSetting
         settingKey="anchor_action_submit_idle"

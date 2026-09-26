@@ -24,7 +24,16 @@ use crate::audio_toolkit::{
     vad::{self, VadFrame},
 };
 
-type SegmentCb = Arc<Mutex<Option<Arc<dyn Fn(Vec<f32>) + Send + Sync + 'static>>>>;
+/// Live preview callback: all kept audio of the take so far, and whether this
+/// update ends an utterance (speech stopped, or the take was paused).
+type SegmentCb = Arc<Mutex<Option<Arc<dyn Fn(Vec<f32>, bool) + Send + Sync + 'static>>>>;
+
+/// How much new speech triggers a live preview update between pauses.
+const LIVE_PREVIEW_INTERVAL_SECS: f32 = 1.5;
+
+/// A take paused this long releases the microphone device (the system mic
+/// indicator goes out); resuming starts it again.
+const PAUSE_RELEASES_MIC_AFTER: Duration = Duration::from_secs(10 * 60);
 type ClosedChunkCb = Arc<Mutex<Option<Arc<dyn Fn(ClosedChunk) + Send + Sync + 'static>>>>;
 
 /// File-storage chunking: don't split the `.opus` file before this (~10 min);
@@ -55,6 +64,11 @@ enum Cmd {
     Stop(mpsc::Sender<Vec<f32>>),
     /// Stop and discard everything (no reply, no files kept).
     Cancel,
+    /// Stop taking in audio but keep the take open; `Resume` continues it.
+    Pause,
+    Resume,
+    /// Cut the take's kept audio back to this many samples (undo last word).
+    Truncate(usize),
     Shutdown,
 }
 
@@ -134,11 +148,12 @@ impl AudioRecorder {
         self
     }
 
-    /// Set a callback that fires when VAD detects a speech→silence boundary.
-    /// The callback receives the audio samples for that speech segment.
+    /// Set the live preview callback: it fires every ~1.5 s of new speech and at
+    /// each speech→silence boundary (or pause), with all kept audio of the take so
+    /// far and whether the utterance just ended.
     pub fn set_segment_callback<F>(&self, cb: F)
     where
-        F: Fn(Vec<f32>) + Send + Sync + 'static,
+        F: Fn(Vec<f32>, bool) + Send + Sync + 'static,
     {
         *self.segment_cb.lock().unwrap() = Some(Arc::new(cb));
     }
@@ -502,6 +517,7 @@ impl AudioRecorder {
 
             // keep the stream alive while we process samples
             run_consumer(
+                &stream,
                 sample_rate,
                 vad,
                 sample_rx,
@@ -586,6 +602,30 @@ impl AudioRecorder {
             .ok_or_else(|| Error::new(std::io::ErrorKind::NotConnected, "recorder is not open"))?;
         tx.send(Cmd::Cancel)?;
         Ok(())
+    }
+
+    fn send(&self, cmd: Cmd) -> Result<(), Box<dyn std::error::Error>> {
+        let tx = self
+            .cmd_tx
+            .as_ref()
+            .ok_or_else(|| Error::new(std::io::ErrorKind::NotConnected, "recorder is not open"))?;
+        tx.send(cmd)?;
+        Ok(())
+    }
+
+    /// Stop taking in audio without ending the take.
+    pub fn pause(&self) -> Result<(), Box<dyn std::error::Error>> {
+        self.send(Cmd::Pause)
+    }
+
+    /// Continue a paused take.
+    pub fn resume(&self) -> Result<(), Box<dyn std::error::Error>> {
+        self.send(Cmd::Resume)
+    }
+
+    /// Cut the take's kept audio back to `len` samples.
+    pub fn truncate(&self, len: usize) -> Result<(), Box<dyn std::error::Error>> {
+        self.send(Cmd::Truncate(len))
     }
 
     /// True when the CPAL error callback has reported a fault on the current
@@ -1016,7 +1056,7 @@ fn process_frame(
         true
     } else if *segment_start_idx < out_buf.len() {
         let samples_since_last = out_buf.len() - *segment_start_idx;
-        samples_since_last as f32 / 16000.0 >= 3.0
+        samples_since_last as f32 / 16000.0 >= LIVE_PREVIEW_INTERVAL_SECS
     } else {
         false
     };
@@ -1024,7 +1064,7 @@ fn process_frame(
         if let Some(cb) = segment_cb.lock().unwrap().as_ref() {
             let all_audio = out_buf.clone();
             if !all_audio.is_empty() {
-                cb(all_audio);
+                cb(all_audio, speech_ended);
             }
         }
         *segment_start_idx = out_buf.len();
@@ -1045,6 +1085,8 @@ fn stream_error_kind(message: &str) -> std::io::ErrorKind {
 
 #[allow(clippy::too_many_arguments)]
 fn run_consumer(
+    // Only for a long pause: stopped to release the device, started on resume.
+    stream: &cpal::Stream,
     in_sample_rate: u32,
     vad: Option<Arc<Mutex<Box<dyn vad::VoiceActivityDetector>>>>,
     sample_rx: mpsc::Receiver<Vec<f32>>,
@@ -1079,6 +1121,11 @@ fn run_consumer(
 
     let mut processed_samples = Vec::<f32>::new();
     let mut recording = false;
+    // A paused take stays open (`recording` stays true) but takes in no audio.
+    let mut paused = false;
+    let mut paused_since: Option<Instant> = None;
+    // True once a long pause has stopped the device (PAUSE_RELEASES_MIC_AFTER).
+    let mut mic_released = false;
     let mut segment_start_idx: usize = 0;
     // When chunked Opus recording is active this is `Some`; otherwise we
     // accumulate full PCM in `processed_samples` (live / crash-safety-off).
@@ -1137,7 +1184,7 @@ fn run_consumer(
                     // Full rate while recording; throttled while idle (the
                     // always-on mic would otherwise flood the event system).
                     let now = Instant::now();
-                    if recording
+                    if (recording && !paused)
                         || last_level_emit
                             .map_or(true, |t| now.duration_since(t) >= LEVEL_IDLE_INTERVAL)
                     {
@@ -1154,7 +1201,7 @@ fn run_consumer(
                 apply_system_mix(&mut mix_buf, &sys_ring, sys_gain, &mut mix_scratch);
                 process_frame(
                     &mix_buf,
-                    recording,
+                    recording && !paused,
                     &vad,
                     &mut chunk_state,
                     &mut processed_samples,
@@ -1163,6 +1210,19 @@ fn run_consumer(
                     &closed_chunk_cb,
                 )
             });
+        }
+
+        // A long pause releases the device, so the system mic indicator goes out.
+        if let Some(since) = paused_since {
+            if !mic_released && since.elapsed() >= PAUSE_RELEASES_MIC_AFTER {
+                match stream.pause() {
+                    Ok(()) => {
+                        mic_released = true;
+                        log::info!("Take paused for 10 min: microphone released until resumed");
+                    }
+                    Err(e) => log::warn!("Could not release the microphone during a pause: {e}"),
+                }
+            }
         }
 
         // non-blocking check for a command
@@ -1183,6 +1243,12 @@ fn run_consumer(
                     processed_samples.clear();
                     segment_start_idx = 0;
                     recording = true;
+                    paused = false;
+                    paused_since = None;
+                    if mic_released {
+                        let _ = stream.play();
+                        mic_released = false;
+                    }
                     visualizer.reset(); // Reset visualization buffer
                     // Drop pre-press audio buffered in the resampler (always-on
                     // mic feeds it continuously) — the take starts at the press.
@@ -1194,6 +1260,14 @@ fn run_consumer(
                 }
                 Cmd::Stop(reply_tx) => {
                     recording = false;
+                    // Audio queued while the take was paused is not part of it.
+                    let drain = !paused;
+                    paused = false;
+                    paused_since = None;
+                    if mic_released {
+                        let _ = stream.play();
+                        mic_released = false;
+                    }
 
                     // Drain any audio chunks captured but not yet consumed.
                     while let Ok(remaining) = sample_rx.try_recv() {
@@ -1203,7 +1277,7 @@ fn run_consumer(
                             apply_system_mix(&mut mix_buf, &sys_ring, sys_gain, &mut mix_scratch);
                             process_frame(
                                 &mix_buf,
-                                true,
+                                drain,
                                 &vad,
                                 &mut chunk_state,
                                 &mut processed_samples,
@@ -1219,7 +1293,7 @@ fn run_consumer(
                         apply_system_mix(&mut mix_buf, &sys_ring, sys_gain, &mut mix_scratch);
                         process_frame(
                             &mix_buf,
-                            true,
+                            drain,
                             &vad,
                             &mut chunk_state,
                             &mut processed_samples,
@@ -1243,7 +1317,7 @@ fn run_consumer(
                             mix_into(&mut mix_buf, &tail, sys_gain);
                             process_frame(
                                 &mix_buf,
-                                true,
+                                drain,
                                 &vad,
                                 &mut chunk_state,
                                 &mut processed_samples,
@@ -1312,6 +1386,12 @@ fn run_consumer(
                 }
                 Cmd::Cancel => {
                     recording = false;
+                    paused = false;
+                    paused_since = None;
+                    if mic_released {
+                        let _ = stream.play();
+                        mic_released = false;
+                    }
                     if let Some(mut chunk) = chunk_state.take() {
                         chunk.discard_all();
                     }
@@ -1324,6 +1404,59 @@ fn run_consumer(
                     }
                     processed_samples.clear();
                     segment_start_idx = 0;
+                }
+                Cmd::Pause => {
+                    if recording && !paused {
+                        paused = true;
+                        paused_since = Some(Instant::now());
+                        // Keep what the VAD was still holding back, so the last word
+                        // before the pause is not lost...
+                        if let Some(vad_arc) = &vad {
+                            if let Some(tail) = vad_arc.lock().unwrap().flush() {
+                                processed_samples.extend_from_slice(&tail);
+                                if let Some(chunk) = chunk_state.as_mut() {
+                                    chunk.push_speech(&tail);
+                                }
+                            }
+                        }
+                        // ...and let a live preview settle on it: the utterance ended.
+                        if segment_start_idx < processed_samples.len() {
+                            if let Some(cb) = segment_cb.lock().unwrap().as_ref() {
+                                cb(processed_samples.clone(), true);
+                            }
+                            segment_start_idx = processed_samples.len();
+                        }
+                    }
+                }
+                Cmd::Resume => {
+                    if paused {
+                        paused = false;
+                        paused_since = None;
+                        if mic_released {
+                            if let Err(e) = stream.play() {
+                                log::warn!("Could not restart the microphone after a pause: {e}");
+                            }
+                            mic_released = false;
+                        }
+                        // Continue as a fresh start of speech, like Cmd::Start: nothing
+                        // buffered during the pause may leak into the take.
+                        if let Some(ring) = sys_ring.as_ref() {
+                            if let Ok(mut r) = ring.lock() {
+                                r.clear();
+                            }
+                        }
+                        frame_resampler.reset();
+                        visualizer.reset();
+                        if let Some(v) = &vad {
+                            v.lock().unwrap().reset();
+                        }
+                    }
+                }
+                Cmd::Truncate(len) => {
+                    if len < processed_samples.len() {
+                        processed_samples.truncate(len);
+                        segment_start_idx = segment_start_idx.min(len);
+                    }
                 }
                 Cmd::Shutdown => return,
             }

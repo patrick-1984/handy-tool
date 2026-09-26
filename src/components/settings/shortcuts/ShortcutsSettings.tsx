@@ -20,6 +20,8 @@ export const ShortcutsSettings: React.FC = () => {
   const osType = useOsType();
   const conflicts = useShortcutConflicts();
   const postProcessEnabled = getSetting("post_process_enabled") ?? false;
+  const pauseEnabled = getSetting("pause_button_enabled") ?? false;
+  const undoWordEnabled = getSetting("undo_word_enabled") ?? false;
 
   return (
     <div className="w-full space-y-6">
@@ -48,6 +50,11 @@ export const ShortcutsSettings: React.FC = () => {
         {/* Cancel is never registered on Linux (dynamic registration is unstable there) */}
         {osType !== "linux" && (
           <ShortcutInput shortcutId="cancel" grouped={true} />
+        )}
+        {/* Take-only shortcuts, shown while their option (General) is on */}
+        {pauseEnabled && <ShortcutInput shortcutId="pause" grouped={true} />}
+        {undoWordEnabled && (
+          <ShortcutInput shortcutId="undo_word" grouped={true} />
         )}
       </SettingsGroup>
       <SettingsGroup title={t("sidebar.keyboardTyper")}>

@@ -4,16 +4,20 @@ import {
   Archive,
   AudioLines,
   Bot,
+  ClipboardPaste,
   Cog,
   Command,
   Crosshair,
+  Ellipsis,
   FlaskConical,
   Hash,
   History,
   Info,
   Keyboard,
   Languages,
+  Plug,
   Sparkles,
+  Terminal,
   Cpu,
 } from "lucide-react";
 import HandyTextLogo from "./icons/HandyTextLogo";
@@ -21,16 +25,20 @@ import HandyHand from "./icons/HandyHand";
 import { UpdateBanner } from "./UpdateBanner";
 import { SidebarSearch } from "./SidebarSearch";
 import { useSettings } from "../hooks/useSettings";
+import { useNavStore } from "../stores/navStore";
 import {
   GeneralSettings,
   ShortcutsSettings,
-  AdvancedSettings,
+  AppSection,
+  OutputSection,
+  ProvidersSection,
+  McpSection,
+  PostProcessingSection,
   CurrentAudioView,
   HistorySettings,
   DebugSettings,
   AboutSettings,
   BackupSettings,
-  PostProcessingSettings,
   ModelsSettings,
   TokenCountPage,
   KeyboardTyperPage,
@@ -40,7 +48,8 @@ import {
 } from "./settings";
 
 export type SidebarSection = keyof typeof SECTIONS_CONFIG;
-export type SidebarGroup = "tools" | "config";
+/** The sidebar itself, or one of the More page's two tab rows. */
+export type SectionPlacement = "sidebar" | "more-settings" | "more-tools";
 
 interface IconProps {
   width?: number | string;
@@ -54,126 +63,145 @@ interface SectionConfig {
   labelKey: string;
   icon: React.ComponentType<IconProps>;
   component: React.ComponentType;
-  group: SidebarGroup;
+  placement: SectionPlacement;
   enabled: (settings: any) => boolean;
 }
 
-// Order within this object controls the order within each sidebar group.
+// Order within this object is the order in the sidebar and in each More row.
 export const SECTIONS_CONFIG = {
-  // --- Configuration ---
+  // --- Sidebar ---
   general: {
     labelKey: "sidebar.general",
     icon: HandyHand,
     component: GeneralSettings,
-    group: "config",
+    placement: "sidebar",
     enabled: () => true,
   },
   shortcuts: {
     labelKey: "sidebar.shortcuts",
     icon: Command,
     component: ShortcutsSettings,
-    group: "config",
+    placement: "sidebar",
     enabled: () => true,
   },
   models: {
     labelKey: "sidebar.models",
     icon: Cpu,
     component: ModelsSettings,
-    group: "config",
+    placement: "sidebar",
     enabled: () => true,
   },
-  advanced: {
-    labelKey: "sidebar.advanced",
-    icon: Cog,
-    component: AdvancedSettings,
-    group: "config",
-    enabled: () => true,
-  },
-  backup: {
-    labelKey: "sidebar.backup",
-    icon: Archive,
-    component: BackupSettings,
-    group: "config",
-    enabled: () => true,
-  },
-  postprocessing: {
-    labelKey: "sidebar.postProcessing",
-    icon: Sparkles,
-    component: PostProcessingSettings,
-    group: "config",
-    enabled: (settings) => settings?.post_process_enabled ?? false,
-  },
-  debug: {
-    labelKey: "sidebar.debug",
-    icon: FlaskConical,
-    component: DebugSettings,
-    group: "config",
-    enabled: (settings) => settings?.debug_mode ?? false,
-  },
-  about: {
-    labelKey: "sidebar.about",
-    icon: Info,
-    component: AboutSettings,
-    group: "config",
-    enabled: () => true,
-  },
-  // --- Tools --- (order here = order shown in the Tools group)
   history: {
     labelKey: "sidebar.history",
     icon: History,
     component: HistorySettings,
-    group: "tools",
-    enabled: () => true,
-  },
-  modelTesting: {
-    labelKey: "sidebar.modelTesting",
-    icon: Bot,
-    component: ModelTestingPage,
-    group: "tools",
-    enabled: () => true,
-  },
-  keyboardTyper: {
-    labelKey: "sidebar.keyboardTyper",
-    icon: Keyboard,
-    component: KeyboardTyperPage,
-    group: "tools",
-    enabled: () => true,
-  },
-  tokenCount: {
-    labelKey: "sidebar.tokenCount",
-    icon: Hash,
-    component: TokenCountPage,
-    group: "tools",
+    placement: "sidebar",
     enabled: () => true,
   },
   jumper: {
     labelKey: "sidebar.jumper",
     icon: Crosshair,
     component: JumperSettings,
-    group: "tools",
+    placement: "sidebar",
     enabled: () => true,
   },
+  keyboardTyper: {
+    labelKey: "sidebar.keyboardTyper",
+    icon: Keyboard,
+    component: KeyboardTyperPage,
+    placement: "sidebar",
+    enabled: () => true,
+  },
+  // --- More › Settings ---
+  app: {
+    labelKey: "settings.advanced.tabs.app",
+    icon: Cog,
+    component: AppSection,
+    placement: "more-settings",
+    enabled: () => true,
+  },
+  output: {
+    labelKey: "settings.advanced.tabs.output",
+    icon: ClipboardPaste,
+    component: OutputSection,
+    placement: "more-settings",
+    enabled: () => true,
+  },
+  providers: {
+    labelKey: "settings.advanced.tabs.providers",
+    icon: Plug,
+    component: ProvidersSection,
+    placement: "more-settings",
+    enabled: () => true,
+  },
+  postprocessing: {
+    labelKey: "settings.advanced.tabs.postProcessing",
+    icon: Sparkles,
+    component: PostProcessingSection,
+    placement: "more-settings",
+    enabled: () => true,
+  },
+  mcp: {
+    labelKey: "settings.advanced.tabs.mcp",
+    icon: Terminal,
+    component: McpSection,
+    placement: "more-settings",
+    enabled: () => true,
+  },
+  backup: {
+    labelKey: "sidebar.backup",
+    icon: Archive,
+    component: BackupSettings,
+    placement: "more-settings",
+    enabled: () => true,
+  },
+  debug: {
+    labelKey: "sidebar.debug",
+    icon: FlaskConical,
+    component: DebugSettings,
+    placement: "more-settings",
+    enabled: (settings) => settings?.debug_mode ?? false,
+  },
+  about: {
+    labelKey: "sidebar.about",
+    icon: Info,
+    component: AboutSettings,
+    placement: "more-settings",
+    enabled: () => true,
+  },
+  // --- More › Tools ---
   translator: {
     labelKey: "sidebar.translator",
     icon: Languages,
     component: TranslatorSettings,
-    group: "tools",
+    placement: "more-tools",
+    enabled: () => true,
+  },
+  tokenCount: {
+    labelKey: "sidebar.tokenCount",
+    icon: Hash,
+    component: TokenCountPage,
+    placement: "more-tools",
+    enabled: () => true,
+  },
+  modelTesting: {
+    labelKey: "sidebar.modelTesting",
+    icon: Bot,
+    component: ModelTestingPage,
+    placement: "more-tools",
     enabled: () => true,
   },
   currentAudio: {
     labelKey: "sidebar.currentAudio",
     icon: AudioLines,
     component: CurrentAudioView,
-    group: "tools",
+    placement: "more-tools",
     enabled: () => true,
   },
 } as const satisfies Record<string, SectionConfig>;
 
-// Tools first (the primary menu), Configuration below.
-const GROUP_ORDER: { id: SidebarGroup; labelKey: string }[] = [
-  { id: "tools", labelKey: "sidebar.groups.tools" },
-  { id: "config", labelKey: "sidebar.groups.config" },
-];
+export const isMoreSection = (section: SidebarSection) =>
+  SECTIONS_CONFIG[section].placement !== "sidebar";
 
 interface SidebarProps {
   activeSection: SidebarSection;
@@ -183,6 +211,9 @@ interface SidebarProps {
 const MIN_SIDEBAR_WIDTH = 140;
 const MAX_SIDEBAR_WIDTH = 420;
 const DEFAULT_SIDEBAR_WIDTH = 176;
+// While searching the sidebar widens so result names and their locations are not
+// cut off; it returns to the saved width once a result is picked or the box cleared.
+const SEARCH_SIDEBAR_WIDTH = 320;
 const SIDEBAR_WIDTH_KEY = "handy.sidebarWidth";
 
 function loadSidebarWidth(): number {
@@ -200,19 +231,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { t } = useTranslation();
   const { settings } = useSettings();
+  const lastMoreSection = useNavStore((state) => state.lastMoreSection);
   const [width, setWidth] = useState<number>(loadSidebarWidth);
   const [searchQuery, setSearchQuery] = useState("");
 
   const availableSections = Object.entries(SECTIONS_CONFIG)
     .filter(([_, config]) => config.enabled(settings))
     .map(([id, config]) => ({ id: id as SidebarSection, ...config }));
+  const sidebarSections = availableSections.filter(
+    (s) => s.placement === "sidebar",
+  );
   // Stable identity for the search index: rebuild only when the set of shown
   // sections changes, not on every render.
   const sectionIds = availableSections.map((s) => s.id).join(",");
   const searchSections = useMemo(
-    () => availableSections.map(({ id, labelKey }) => ({ id, labelKey })),
+    () =>
+      availableSections.map(({ id, labelKey, placement }) => ({
+        id,
+        labelKey,
+        more: placement !== "sidebar",
+      })),
     [sectionIds],
   );
+  // More reopens the tab last used there, unless it has been hidden since.
+  const moreTarget = availableSections.some((s) => s.id === lastMoreSection)
+    ? lastMoreSection
+    : "app";
 
   // Drag the right edge to resize; persist the width to localStorage on release.
   const startResize = (e: React.MouseEvent) => {
@@ -242,10 +286,37 @@ export const Sidebar: React.FC<SidebarProps> = ({
     window.addEventListener("mouseup", onUp);
   };
 
+  const renderItem = (
+    key: string,
+    Icon: React.ComponentType<IconProps>,
+    label: string,
+    isActive: boolean,
+    onClick: () => void,
+  ) => (
+    <div
+      key={key}
+      className={`flex gap-2 items-center p-2 w-full rounded-lg cursor-pointer transition-colors ${
+        isActive
+          ? "bg-logo-primary/80"
+          : "hover:bg-mid-gray/20 hover:opacity-100 opacity-85"
+      }`}
+      onClick={onClick}
+    >
+      <Icon width={24} height={24} className="shrink-0" />
+      <p className="text-sm font-medium truncate" title={label}>
+        {label}
+      </p>
+    </div>
+  );
+
   return (
     <div
       className="relative flex flex-col h-full shrink-0 border-e border-mid-gray/20 items-center px-2 overflow-y-auto"
-      style={{ width }}
+      style={{
+        width: searchQuery.trim()
+          ? Math.max(width, SEARCH_SIDEBAR_WIDTH)
+          : width,
+      }}
     >
       <HandyTextLogo width={120} className="m-4 shrink-0" />
       <div className="flex flex-col w-full gap-3 pt-2 border-t border-mid-gray/20">
@@ -254,45 +325,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onQueryChange={setSearchQuery}
           sections={searchSections}
         />
-        {!searchQuery.trim() &&
-          GROUP_ORDER.map((group) => {
-            const items = availableSections.filter((s) => s.group === group.id);
-            if (items.length === 0) return null;
-
-            return (
-              <div key={group.id} className="flex flex-col w-full gap-1">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-text/40 px-2 pt-1">
-                  {t(group.labelKey)}
-                </p>
-                {items.map((section) => {
-                  const Icon = section.icon;
-                  const isActive = activeSection === section.id;
-
-                  return (
-                    <React.Fragment key={section.id}>
-                      <div
-                        className={`flex gap-2 items-center p-2 w-full rounded-lg cursor-pointer transition-colors ${
-                          isActive
-                            ? "bg-logo-primary/80"
-                            : "hover:bg-mid-gray/20 hover:opacity-100 opacity-85"
-                        }`}
-                        onClick={() => onSectionChange(section.id)}
-                      >
-                        <Icon width={24} height={24} className="shrink-0" />
-                        <p
-                          className="text-sm font-medium truncate"
-                          title={t(section.labelKey)}
-                        >
-                          {t(section.labelKey)}
-                        </p>
-                      </div>
-                      {section.id === "about" && <UpdateBanner />}
-                    </React.Fragment>
-                  );
-                })}
-              </div>
-            );
-          })}
+        {!searchQuery.trim() && (
+          <div className="flex flex-col w-full gap-1">
+            {sidebarSections.map((section) =>
+              renderItem(
+                section.id,
+                section.icon,
+                t(section.labelKey),
+                activeSection === section.id,
+                () => onSectionChange(section.id),
+              ),
+            )}
+            {renderItem(
+              "more",
+              Ellipsis,
+              t("sidebar.more"),
+              isMoreSection(activeSection),
+              () => onSectionChange(moreTarget),
+            )}
+            <UpdateBanner />
+          </div>
+        )}
       </div>
       {/* Drag handle: resize the sidebar; width persists across launches. */}
       <div

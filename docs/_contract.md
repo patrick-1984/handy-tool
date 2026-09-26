@@ -123,7 +123,7 @@ Mechanical rules:
 - Copy every page, tab, group, control, and option label character-for-character from the generated navigation map backed by `src/i18n/locales/en/translation.json`.
 - Use `›`, never `>`, `->`, or `→`.
 - Use at most four application segments: page, tab, group, control.
-- The `Advanced` tabs are App, Transcription, Providers, MCP & CLI, History, and Post-processing. There is no Experimental tab and no Experimental Features control; never write either.
+- The sidebar pages are General, Shortcuts, Models, History, Jumper, and Keyboard Typer, then `More`. More's tabs are App, Output, Providers, Post-processing, MCP & CLI, Backup, Debug, and About (its Settings row), then Translator, Token Count, Model Testing, and Current Audio (its Tools row). On those tabs `More` is the page segment and the tab name is the tab segment. There is no Advanced page, no Post Process page, no Experimental tab and no Experimental Features control; never write any of them.
 - Omit a group when its visible title equals the page title.
 - Add ` = Value` only when the instruction tells the reader to choose that value. Split on the last `=`.
 - Toggle values are `On` and `Off`. Chords are lowercase, `+`-joined, and contain no spaces.
@@ -136,9 +136,9 @@ Mechanical rules:
 Valid examples:
 
 ```markdown
-Set `Advanced › Transcription › Transcribe › Paste Method = Clipboard (Ctrl+V)`.
+Set `More › Output › Transcribe › Paste Method = Clipboard (Ctrl+V)`.
 
-Set `Advanced › Transcription › Transcribe & Submit › Jump slot action on finish = Jump / deliver to slot` _{Windows only}_.
+Set `More › Output › Transcribe & Submit › Jump slot action on finish = Jump / deliver to slot` _{Windows only}_.
 ```
 
 ## Adding or changing a setting

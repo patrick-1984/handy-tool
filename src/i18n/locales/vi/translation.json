@@ -10,8 +10,6 @@
     "general": "Chung",
     "shortcuts": "Phím tắt",
     "models": "Mô hình",
-    "advanced": "Nâng cao",
-    "postProcessing": "Xử lý sau",
     "history": "Lịch sử",
     "debug": "Gỡ lỗi",
     "about": "Giới thiệu",
@@ -21,9 +19,10 @@
     "keyboardTyper": "Bộ gõ bàn phím",
     "jumper": "Jumper",
     "translator": "Trình dịch",
+    "more": "Thêm",
     "groups": {
-      "tools": "Công cụ",
-      "config": "Cấu hình"
+      "settings": "Cài đặt",
+      "tools": "Công cụ"
     },
     "modelTesting": "Kiểm tra mô hình",
     "resize": "Kéo để đổi kích thước",
@@ -228,6 +227,14 @@
             "name": "Phím tắt hủy",
             "description": "Hủy bản ghi âm đang thực hiện. Mặc định: escape. Việc hủy thực sự làm gì do Cancel behavior ở trang General quyết định — Finish, save to history only vẫn phiên âm và lưu văn bản nhưng không gửi gì vào cửa sổ của bạn, còn Discard recording bỏ luôn âm thanh — và mục Cancel trên tray theo cùng cài đặt này."
           },
+          "pause": {
+            "name": "Tạm dừng / Tiếp tục",
+            "description": "Tạm dừng hoặc tiếp tục bản ghi đang chạy. Chỉ hoạt động khi đang ghi và nút tạm dừng được bật. Mặc định: Không có."
+          },
+          "undo_word": {
+            "name": "Hoàn tác từ cuối",
+            "description": "Xóa từ cuối của bản ghi trực tiếp. Chỉ hoạt động trong bản ghi trực tiếp. Mặc định: Ctrl+Backspace."
+          },
           "transcribe_with_post_process": {
             "name": "Phím tắt xử lý sau",
             "description": "Tùy chọn: Phím tắt chuyên dụng luôn áp dụng xử lý sau bằng AI cho bản phiên âm của bạn."
@@ -298,6 +305,24 @@
           "reset": "Không thể đặt lại phím tắt về giá trị gốc",
           "registrationFailed": "Một số phím tắt không thể đăng ký được và đang không hoạt động: {{bindings}}. Có thể một ứng dụng khác đang sử dụng chúng — hãy chọn tổ hợp phím khác trong Cài đặt."
         }
+      },
+      "pauseButton": {
+        "label": "Nút tạm dừng",
+        "description": "Thêm nút tạm dừng vào lớp phủ ghi âm: khi tạm dừng sẽ không ghi gì, tiếp tục sẽ ghi tiếp vào cùng bản ghi. Mặc định: Tắt. Sau 10 phút tạm dừng, micrô được giải phóng cho đến khi tiếp tục."
+      },
+      "undoWord": {
+        "label": "Hoàn tác từ cuối",
+        "description": "Mỗi lần nhấn phím tắt (mặc định Ctrl+Backspace) sẽ xóa từ cuối của bản ghi trực tiếp và cắt âm thanh về đầu từ đó, nên từ này cũng không quay lại trong văn bản cuối. Cần bản ghi trực tiếp và mô hình Parakeet. Mặc định: Tắt."
+      },
+      "liveTextBox": {
+        "label": "Hộp văn bản trực tiếp",
+        "description": "Hiển thị những gì bạn nói trong một hộp nhỏ cạnh lớp phủ ghi âm, cập nhật khoảng mỗi 1,5 giây. Khi bật, mọi bản ghi đều chạy ở chế độ trực tiếp. Mặc định: Tắt; nút T trên lớp phủ cũng bật/tắt được."
+      },
+      "liveTextMode": {
+        "title": "Văn bản trực tiếp hiển thị",
+        "description": "Một dòng với các từ mới nhất, hoặc toàn bộ văn bản trong hộp ba dòng. Kích thước không đổi khi bạn nói. Mặc định: Các từ cuối.",
+        "lastWords": "Các từ cuối",
+        "fullText": "Toàn bộ văn bản"
       },
       "language": {
         "title": "Ngôn ngữ",
@@ -610,11 +635,6 @@
         "label": "Ghi âm an toàn khi gặp lỗi",
         "description": "Mã hoá giọng nói của bạn thành file Opus gọn nhẹ trên đĩa trong lúc bạn nói thay vì giữ toàn bộ trong bộ nhớ, để một sự cố treo, cập nhật cưỡng ép hoặc hết pin vẫn giữ lại bản ghi âm — nó được sửa và thêm vào History ở lần khởi động tiếp theo. Mặc định: Bật. Tắt đi sẽ ghi âm thanh không nén, và điều này bị Full data (with compressed audio) khi sao lưu chủ ý bỏ qua."
       },
-      "openRecordingsFolder": {
-        "label": "Thư mục ghi âm",
-        "description": "Mở thư mục chứa bản ghi âm của bạn và bất kỳ âm thanh nào được khôi phục sau một sự cố treo (%APPDATA%\\pr.handy\\recordings). Auto-Delete Recordings dọn dẹp ở đây, nhưng chỉ đụng đến các file do Handy tạo ra — ghi chú hay tệp xuất riêng của bạn trong thư mục đó không bao giờ bị đổi tên hoặc xoá.",
-        "button": "Mở thư mục"
-      },
       "appearance": {
         "title": "Giao diện",
         "description": "Đặt tông màu cho mọi cửa sổ Handy Tool, bao gồm lớp phủ ghi âm và cửa sổ phiên âm nổi. Mặc định: System, theo cài đặt sáng/tối của Windows và tiếp tục theo dõi; Light và Dark cố định một bảng màu và bỏ qua thay đổi hệ điều hành sau đó.",
@@ -688,11 +708,9 @@
       "tabs": {
         "app": "Ứng dụng",
         "output": "Đầu ra",
-        "transcription": "Phiên âm",
         "typer": "Bộ gõ",
         "providers": "Nhà cung cấp",
         "mcp": "MCP & CLI",
-        "history": "Lịch sử",
         "postProcessing": "Xử lý sau"
       },
       "mcp": {
@@ -1037,17 +1055,6 @@
           "description": "Ứng dụng phiên âm giọng nói thành văn bản mã nguồn mở nguyên bản mà dự án này được xây dựng dựa trên",
           "details": "Handy Tool là một bản fork của Handy, được tạo bởi CJ Pais (github.com/cjpais/Handy, handy.computer). Nó được tiếp quản tại phiên bản gốc v0.8.1 (tháng 3 năm 2026) và đã được phát triển tiếp một cách độc lập bởi Patrick R. Xin cảm ơn rất nhiều CJ và những người đóng góp cho Handy vì nền tảng mà dự án này đứng trên đó."
         }
-      },
-      "updates": {
-        "title": "Cập nhật",
-        "description": "Kiểm tra phiên bản mới hơn trong ứng dụng hoặc mở thẳng trang phát hành trong trình duyệt.",
-        "button": "Kiểm tra bản phát hành",
-        "checkWeb": "Kiểm tra trên web",
-        "checkApp": "Kiểm tra cập nhật",
-        "checkFailed": "Không thể kiểm tra cập nhật: {{reason}}.",
-        "useWebHint": "Dùng “Kiểm tra trên web” nếu kiểm tra trong ứng dụng bị chặn.",
-        "latestVersion": "Bạn đang dùng phiên bản mới nhất ({{version}}).",
-        "availableVersion": "Đã có phiên bản {{version}}."
       }
     },
     "jumper": {
@@ -1262,7 +1269,11 @@
     "startingMic": "Đang bật micrô...",
     "noMicrophone": "Không có micrô",
     "microphoneBlocked": "Micrô bị chặn",
-    "microphoneError": "Lỗi micrô"
+    "microphoneError": "Lỗi micrô",
+    "paused": "Đã tạm dừng",
+    "pause": "Tạm dừng",
+    "resume": "Tiếp tục",
+    "liveTextBox": "Hộp văn bản trực tiếp"
   },
   "floating": {
     "waiting": "Đang chờ phiên âm…",

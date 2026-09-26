@@ -157,7 +157,7 @@ export const CurrentAudioView: React.FC = () => {
             {t("settings.currentAudio.finalHint")}{" "}
             <button
               type="button"
-              onClick={() => navigateTo("advanced", "transcription")}
+              onClick={() => navigateTo("output")}
               className="cursor-pointer rounded-sm underline underline-offset-2 transition-colors hover:text-white focus-visible:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/60"
             >
               {t("settings.currentAudio.advancedTranscription")}

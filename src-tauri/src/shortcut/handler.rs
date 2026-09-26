@@ -65,6 +65,15 @@ pub fn handle_shortcut_event(
         return;
     }
 
+    // Pause / Undo word: act on press, only during a take (they are only
+    // registered then anyway).
+    if binding_id == "pause" || binding_id == "undo_word" {
+        if is_pressed && app.state::<Arc<AudioRecordingManager>>().is_recording() {
+            action.start(app, binding_id, hotkey_string);
+        }
+        return;
+    }
+
     // Remaining bindings (e.g. "test") use simple start/stop on press/release.
     if is_pressed {
         action.start(app, binding_id, hotkey_string);

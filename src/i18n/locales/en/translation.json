@@ -22,9 +22,7 @@
     "general": "General",
     "shortcuts": "Shortcuts",
     "models": "Models",
-    "advanced": "Advanced",
     "backup": "Backup",
-    "postProcessing": "Post Process",
     "currentAudio": "Current Audio",
     "history": "History",
     "debug": "Debug",
@@ -33,9 +31,10 @@
     "keyboardTyper": "Keyboard Typer",
     "jumper": "Jumper",
     "translator": "Translator",
+    "more": "More",
     "groups": {
-      "tools": "Tools",
-      "config": "Configuration"
+      "settings": "Settings",
+      "tools": "Tools"
     },
     "modelTesting": "Model Testing",
     "resize": "Drag to resize",
@@ -222,6 +221,14 @@
             "name": "Cancel Shortcut",
             "description": "**Cancels the take that is in progress.**\n\n**Default:** escape.\n\nWhat cancelling actually does is decided by Cancel behavior on the General page, and the tray Cancel item follows the same setting:\n\n- Finish, save to history only: still transcribes and stores the text, but delivers nothing to your window.\n- Discard recording: throws the audio away."
           },
+          "pause": {
+            "name": "Pause / Resume",
+            "description": "Pauses the recording in progress, or resumes it. Active only during a take while the pause button is on. Default: None."
+          },
+          "undo_word": {
+            "name": "Undo Last Word",
+            "description": "Removes the last word of a live take. Active only during a live take while Undo last word is on. Default: Ctrl+Backspace."
+          },
           "transcribe_ptt": {
             "name": "Push-to-Talk Shortcut",
             "description": "**Hold this shortcut to record, release it to stop.** The microphone goes cold on release, so anything you say afterwards cannot leak into the text.\n\n**Default:** Ctrl+Shift+Space.\n\nIt has its own Transcription Mode (PTT) and its own Paste Method (PTT), so push-to-talk can behave differently from Transcribe Shortcut."
@@ -292,6 +299,24 @@
           "reset": "Failed to reset shortcut to original value",
           "registrationFailed": "Some shortcuts could not be registered and are inactive: {{bindings}}. Another app may already be using them — pick a different combination in Settings."
         }
+      },
+      "pauseButton": {
+        "label": "Pause button",
+        "description": "**Adds a pause button to the recording overlay**, so one take can span a break: while paused nothing is recorded, and resuming continues the same take.\n\n**Default:** Off.\n\nOnce it is on, a Pause shortcut can be set below. After 10 minutes paused the microphone is released (its indicator goes out) until you resume."
+      },
+      "undoWord": {
+        "label": "Undo last word",
+        "description": "**Removes the last word of a live take** each time you press its shortcut, so you can take back a misheard or unwanted word and keep talking.\n\n**Default:** Off; the shortcut is Ctrl+Backspace, active only during a live take.\n\nIt cuts the recording back to where that word started, so the word stays out of the final text too. Needs a live take (Live mode or the live text box) and a Parakeet model — other engines give no word positions."
+      },
+      "liveTextBox": {
+        "label": "Live text box",
+        "description": "**Shows what you are saying in a small box next to the recording overlay**, updated about every 1.5 seconds.\n\n**Default:** Off. The T button on the overlay switches it too.\n\nWhile it is on, every take runs in Live mode. Text before a pause is fixed and only the last few seconds are re-read, so it stays quick on a busy PC. The final text is still one full pass when you stop."
+      },
+      "liveTextMode": {
+        "title": "Live text shows",
+        "description": "**One line with the newest words, or the whole take so far** in a three-line box whose older lines slide away. Neither changes size while you talk.\n\n**Default:** Last words.",
+        "lastWords": "Last words",
+        "fullText": "Whole text"
       },
       "anchor": {
         "title": "Anchor & Deliver",
@@ -651,11 +676,6 @@
         "label": "Crash-Safe Recording",
         "description": "**Encodes your speech to compact Opus files on disk while you talk**, instead of holding it all in memory — a crash, a forced update or a flat battery still leaves a recording, which is repaired and added to History on the next launch.\n\n**Default:** On.\n\nSwitching it off records uncompressed audio, which Full data (with compressed audio) backups deliberately leave out."
       },
-      "openRecordingsFolder": {
-        "label": "Recordings Folder",
-        "description": "Opens the folder that holds your recordings and any audio recovered after a crash (%APPDATA%\\pr.handy\\recordings). Auto-Delete Recordings cleans up in here, but only ever touches files Handy created itself — your own notes or exports in that folder are never renamed or deleted.",
-        "button": "Open Folder"
-      },
       "appearance": {
         "title": "Appearance",
         "description": "Sets the colour theme for every Handy Tool window, including the recording overlay and the floating transcription window. Default: System, which follows your Windows light/dark setting and keeps tracking it; Light and Dark pin one palette and ignore later OS changes.",
@@ -826,11 +846,9 @@
       "tabs": {
         "app": "App",
         "output": "Output",
-        "transcription": "Transcription",
         "typer": "Typer",
         "providers": "Providers",
         "mcp": "MCP & CLI",
-        "history": "History",
         "postProcessing": "Post-processing"
       },
       "mcp": {
@@ -1193,17 +1211,6 @@
         "description": "View source code and contribute",
         "button": "View on GitHub"
       },
-      "updates": {
-        "title": "Updates",
-        "description": "Check for a newer version in the app, or open the release page directly in your browser.",
-        "button": "Check releases",
-        "checkWeb": "Check on the web",
-        "checkApp": "Check for updates",
-        "checkFailed": "Couldn't check for updates: {{reason}}.",
-        "useWebHint": "Use Check on the web if the in-app check is blocked.",
-        "latestVersion": "You're on the latest version ({{version}}).",
-        "availableVersion": "Version {{version}} is available."
-      },
       "acknowledgments": {
         "title": "Acknowledgments",
         "handy": {
@@ -1274,7 +1281,11 @@
     "startingMic": "Starting mic...",
     "noMicrophone": "No microphone",
     "microphoneBlocked": "Microphone blocked",
-    "microphoneError": "Microphone error"
+    "microphoneError": "Microphone error",
+    "paused": "Paused",
+    "pause": "Pause",
+    "resume": "Resume",
+    "liveTextBox": "Live text box"
   },
   "flm": {
     "windowsApplicationControlBlocked": "Windows Application Control blocked flm.exe because it is not signed. The NPU engine is unavailable. Choose a different transcription model.",

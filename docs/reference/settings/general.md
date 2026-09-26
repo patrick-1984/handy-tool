@@ -16,7 +16,7 @@ Catalog: [Press one key, speak, and the text appears where you were typing](../.
 
 `General › Push-to-Talk Shortcut`
 
-Sets the hold-to-record shortcut. It uses [Transcription Mode (PTT)](#transcription-mode-ptt) and the separate Advanced [Paste Method (PTT)](advanced.md#paste-method-ptt). **Default:** `ctrl+shift+space`.
+Sets the hold-to-record shortcut. It uses [Transcription Mode (PTT)](#transcription-mode-ptt) and the separate [Paste Method (PTT)](advanced.md#paste-method-ptt) on `More › Output`. **Default:** `ctrl+shift+space`.
 
 Catalog: [Hold a key for a one-line thought](../../features.md#hold-to-talk).
 
@@ -27,6 +27,22 @@ Catalog: [Hold a key for a one-line thought](../../features.md#hold-to-talk).
 Chooses whether every recording-cancel entry point finishes without delivery or destroys the take. **Default:** `Finish, save to history only`.
 
 Catalog: [Escape stops the delivery, not your words](../../features.md#escape-stops-the-delivery-not-your-words).
+
+### Pause button
+
+`General › Pause button`
+
+Adds a pause button to the recording overlay. While paused nothing is recorded; resuming continues the same take. After 10 minutes paused the microphone is released until you resume. When on, a Pause / Resume shortcut row appears under it. **Default:** Off; the shortcut has no default.
+
+Catalog: [Pause a take without ending it](../../features.md#pause-a-take).
+
+### Undo last word
+
+`General › Undo last word`
+
+Each press of its shortcut removes the newest word of a live take and cuts the recording back to where that word started. Needs a Parakeet model. When on, an Undo Last Word shortcut row appears under it. **Default:** Off; the shortcut is `ctrl+backspace`, registered only during a live take.
+
+Catalog: [Take back the last word without starting over](../../features.md#undo-last-word).
 
 ### Transcribe & Submit Shortcut
 
@@ -81,6 +97,22 @@ Catalog: [Watch the text appear, or wait for the most accurate pass](../../featu
 Makes the same choice specifically for [Push-to-Talk Shortcut](#push-to-talk-shortcut). **Default:** `Live`.
 
 Catalog: [Watch the text appear, or wait for the most accurate pass](../../features.md#live-or-post-recording).
+
+### Live text box
+
+`General › Transcription › Live text box`
+
+Shows the words being spoken in a small box next to the recording overlay, updated about every 1.5 seconds. While it is on, every take runs in Live mode. The overlay's T button switches the same setting. **Default:** Off.
+
+Catalog: [See your words next to the overlay while you talk](../../features.md#live-text-box).
+
+### Live text shows
+
+`General › Transcription › Live text shows`
+
+Shown while [Live text box](#live-text-box) is on. `Last words` is one line of the newest words; `Whole text` is the take so far in a three-line box. **Default:** `Last words`.
+
+Catalog: [See your words next to the overlay while you talk](../../features.md#live-text-box).
 
 ### GPU Device
 

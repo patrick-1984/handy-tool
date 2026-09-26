@@ -8,7 +8,7 @@ Install or refresh the command on your user PATH:
 handy install-cli
 ```
 
-Companion commands other than `install-cli` require `Advanced › MCP & CLI › Enable MCP & CLI server = On`. The server is off by default. A command uses the discovery file under `%APPDATA%\pr.handy`, starts Handy hidden if necessary, then calls `127.0.0.1`. If persisted settings say the server is disabled, it returns an error instead of starting an orphaned process.
+Companion commands other than `install-cli` require `More › MCP & CLI › Enable MCP & CLI server = On`. The server is off by default. A command uses the discovery file under `%APPDATA%\pr.handy`, starts Handy hidden if necessary, then calls `127.0.0.1`. If persisted settings say the server is disabled, it returns an error instead of starting an orphaned process.
 
 See [A handy command on your PATH](../features.md#a-handy-command-on-your-path) and [Bound to localhost, behind a token — and what that does not cover](../features.md#bound-to-localhost-behind-a-token).
 
@@ -87,7 +87,7 @@ handy type "Deploy after the test suite passes."
 handy type --file .\message.txt
 ```
 
-Supply positional `<text>` or `--file <path>`; inline text wins if both are present. Place focus before running it. The released build logs at `Info` and records no preview of the text, but raising `Debug › Log Level` to `Debug` does record one; review the [privacy limits](../privacy.md) before using sensitive text.
+Supply positional `<text>` or `--file <path>`; inline text wins if both are present. Place focus before running it. The released build logs at `Info` and records no preview of the text, but raising `More › Debug › Log Level` to `Debug` does record one; review the [privacy limits](../privacy.md) before using sensitive text.
 
 ### `history-list`
 

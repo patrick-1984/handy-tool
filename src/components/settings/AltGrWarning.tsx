@@ -1,5 +1,5 @@
 import React from "react";
-import { AlertTriangle } from "lucide-react";
+import { WarningIcon } from "@/components/ui/WarningIcon";
 import { useTranslation } from "react-i18next";
 import { isAltGrRiskyChord } from "@/lib/utils/keyboard";
 
@@ -17,13 +17,5 @@ export const AltGrWarning: React.FC<{ binding: string }> = ({ binding }) => {
   if (!isAltGrRiskyChord(binding)) return null;
 
   const message = t("settings.general.shortcut.altGrConflict");
-  return (
-    <span
-      title={message}
-      aria-label={message}
-      className="flex items-center text-amber-500"
-    >
-      <AlertTriangle className="h-4 w-4 shrink-0" />
-    </span>
-  );
+  return <WarningIcon message={message} className="text-amber-500" />;
 };

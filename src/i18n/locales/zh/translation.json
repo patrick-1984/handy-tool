@@ -10,8 +10,6 @@
     "general": "通用",
     "shortcuts": "快捷键",
     "models": "模型",
-    "advanced": "高级",
-    "postProcessing": "后处理",
     "history": "历史记录",
     "debug": "调试",
     "about": "关于",
@@ -21,9 +19,10 @@
     "keyboardTyper": "键盘输入器",
     "jumper": "跳转器",
     "translator": "翻译器",
+    "more": "更多",
     "groups": {
-      "tools": "工具",
-      "config": "配置"
+      "settings": "设置",
+      "tools": "工具"
     },
     "modelTesting": "模型测试",
     "resize": "拖动以调整大小",
@@ -228,6 +227,14 @@
             "name": "取消快捷键",
             "description": "取消正在进行的录音。默认：escape。取消实际会做什么由“常规”页面的“取消行为”决定——“完成，仅保存到历史记录”仍会转录并保存文本，但不会投递到你的窗口，而“丢弃录音”会直接丢弃音频——托盘中的“取消”项遵循同一设置。"
           },
+          "pause": {
+            "name": "暂停 / 继续",
+            "description": "暂停或继续当前录音。仅在录音期间且暂停按钮开启时有效。默认：无。"
+          },
+          "undo_word": {
+            "name": "撤销最后一个词",
+            "description": "删除实时录音的最后一个词。仅在实时录音期间有效。默认：Ctrl+Backspace。"
+          },
           "transcribe_with_post_process": {
             "name": "后处理快捷键",
             "description": "可选：一个专用快捷键，始终对您的转录应用 AI 后处理。"
@@ -298,6 +305,24 @@
           "reset": "无法将快捷键重置为原始值",
           "registrationFailed": "以下快捷键无法注册，当前处于未激活状态：{{bindings}}。可能已被其他应用程序占用——请在设置中选择其他组合键。"
         }
+      },
+      "pauseButton": {
+        "label": "暂停按钮",
+        "description": "在录音浮层上添加暂停按钮：暂停期间不录任何内容，继续后接着同一段录音。默认：关闭。暂停 10 分钟后会释放麦克风，直到继续。"
+      },
+      "undoWord": {
+        "label": "撤销最后一个词",
+        "description": "每按一次快捷键（默认 Ctrl+Backspace）会删除实时录音的最后一个词，并把音频剪回到该词开头，因此它也不会出现在最终文本中。需要实时录音和 Parakeet 模型。默认：关闭。"
+      },
+      "liveTextBox": {
+        "label": "实时文本框",
+        "description": "在录音浮层旁的小框中显示你说的话，大约每 1.5 秒更新一次。开启期间所有录音都以实时模式进行。默认：关闭；浮层上的 T 按钮也可切换。"
+      },
+      "liveTextMode": {
+        "title": "实时文本显示",
+        "description": "一行最新的词，或在三行框中显示全文。说话时大小不会变化。默认：最后几个词。",
+        "lastWords": "最后几个词",
+        "fullText": "全文"
       },
       "language": {
         "title": "语言",
@@ -610,11 +635,6 @@
         "label": "崩溃安全录制",
         "description": "在你说话时将语音实时编码为紧凑的 Opus 文件写入磁盘，而不是全部保存在内存中，因此即使崩溃、被迫更新或电量耗尽，录音也不会丢失——它会在下次启动时被修复并添加到历史记录中。默认：开启。关闭后会录制未压缩音频，这类音频会被“完整数据（含压缩音频）”备份特意排除。"
       },
-      "openRecordingsFolder": {
-        "label": "录音文件夹",
-        "description": "打开保存你的录音以及崩溃后恢复的任何音频的文件夹（%APPDATA%\\pr.handy\\recordings）。“录音自动删除”会在此清理，但只会处理 Handy 自己创建的文件——你自己在该文件夹中的笔记或导出内容绝不会被重命名或删除。",
-        "button": "打开文件夹"
-      },
       "appearance": {
         "title": "外观",
         "description": "设置 Handy Tool 所有窗口（包括录音悬浮层和浮动转录窗口）的配色主题。默认：跟随系统，随 Windows 明暗模式变化并持续跟踪；“浅色”和“深色”会固定一种配色，忽略之后的系统更改。",
@@ -688,11 +708,9 @@
       "tabs": {
         "app": "应用",
         "output": "输出",
-        "transcription": "转录",
         "typer": "输入器",
         "providers": "提供商",
         "mcp": "MCP 与 CLI",
-        "history": "历史记录",
         "postProcessing": "后处理"
       },
       "mcp": {
@@ -1037,17 +1055,6 @@
           "description": "本项目所基于的原始开源语音转文字应用",
           "details": "Handy Tool 是 Handy 的一个分支项目，Handy 由 CJ Pais 创建（github.com/cjpais/Handy，handy.computer）。本项目从上游 v0.8.1（2026 年 3 月）接手，并由 Patrick R. 独立继续开发。特别感谢 CJ 和 Handy 的贡献者们为本项目奠定的基础。"
         }
-      },
-      "updates": {
-        "title": "更新",
-        "description": "在应用内检查新版本，或直接在浏览器中打开发布页面。",
-        "button": "查看发布",
-        "checkWeb": "在网页上检查",
-        "checkApp": "检查更新",
-        "checkFailed": "无法检查更新：{{reason}}。",
-        "useWebHint": "如果应用内检查受阻，请使用“在网页上检查”。",
-        "latestVersion": "你使用的是最新版本（{{version}}）。",
-        "availableVersion": "版本 {{version}} 已发布。"
       }
     },
     "jumper": {
@@ -1262,7 +1269,11 @@
     "startingMic": "正在启动麦克风...",
     "noMicrophone": "未检测到麦克风",
     "microphoneBlocked": "麦克风被阻止",
-    "microphoneError": "麦克风错误"
+    "microphoneError": "麦克风错误",
+    "paused": "已暂停",
+    "pause": "暂停",
+    "resume": "继续",
+    "liveTextBox": "实时文本框"
   },
   "brand": {
     "name": "Handy",

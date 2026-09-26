@@ -10,8 +10,6 @@
     "general": "Ogólne",
     "shortcuts": "Skróty",
     "models": "Modele",
-    "advanced": "Zaawansowane",
-    "postProcessing": "Postproces",
     "history": "Historia",
     "debug": "Debugowanie",
     "about": "O programie",
@@ -21,9 +19,10 @@
     "tokenCount": "Liczenie tokenów",
     "jumper": "Skoki",
     "translator": "Tłumacz",
+    "more": "Więcej",
     "groups": {
-      "tools": "Narzędzia",
-      "config": "Konfiguracja"
+      "settings": "Ustawienia",
+      "tools": "Narzędzia"
     },
     "modelTesting": "Testowanie modeli",
     "resize": "Przeciągnij, aby zmienić rozmiar",
@@ -228,6 +227,14 @@
             "name": "Skrót anulowania",
             "description": "Anuluje trwające nagranie. Domyślnie: escape. To, co faktycznie robi anulowanie, decyduje Zachowanie anulowania na stronie Ogólne — Zakończ, zapisz tylko w historii wciąż transkrybuje i zapisuje tekst, ale nic nie dostarcza do okna, natomiast Odrzuć nagranie wyrzuca audio — a pozycja Anuluj w zasobniku podąża za tym samym ustawieniem."
           },
+          "pause": {
+            "name": "Wstrzymaj / Wznów",
+            "description": "Wstrzymuje trwające nagranie lub je wznawia. Działa tylko podczas nagrania, gdy przycisk pauzy jest włączony. Domyślnie: brak."
+          },
+          "undo_word": {
+            "name": "Cofnij ostatnie słowo",
+            "description": "Usuwa ostatnie słowo nagrania na żywo. Działa tylko podczas nagrania na żywo. Domyślnie: Ctrl+Backspace."
+          },
           "transcribe_with_post_process": {
             "name": "Skrót postprocessingu",
             "description": "Opcjonalnie: Dedykowany skrót klawiszowy, który zawsze stosuje postprocessing AI do transkrypcji."
@@ -298,6 +305,24 @@
           "reset": "Nie udało się zresetować skrótu do wartości domyślnej",
           "registrationFailed": "Niektórych skrótów nie udało się zarejestrować i są nieaktywne: {{bindings}}. Inna aplikacja może już z nich korzystać — wybierz inną kombinację w Ustawieniach."
         }
+      },
+      "pauseButton": {
+        "label": "Przycisk pauzy",
+        "description": "Dodaje do nakładki nagrywania przycisk pauzy: podczas pauzy nic się nie nagrywa, a wznowienie kontynuuje to samo nagranie. Domyślnie: wyłączone. Po 10 minutach pauzy mikrofon zostaje zwolniony do czasu wznowienia."
+      },
+      "undoWord": {
+        "label": "Cofnij ostatnie słowo",
+        "description": "Każde naciśnięcie skrótu (domyślnie Ctrl+Backspace) usuwa ostatnie słowo nagrania na żywo i przycina dźwięk do początku tego słowa, więc nie wraca ono też w tekście końcowym. Wymaga nagrania na żywo i modelu Parakeet. Domyślnie: wyłączone."
+      },
+      "liveTextBox": {
+        "label": "Pole tekstu na żywo",
+        "description": "Pokazuje to, co mówisz, w małym polu obok nakładki nagrywania, odświeżanym mniej więcej co 1,5 s. Gdy jest włączone, każde nagranie działa w trybie na żywo. Domyślnie: wyłączone; przełącza je też przycisk T."
+      },
+      "liveTextMode": {
+        "title": "Tekst na żywo pokazuje",
+        "description": "Jedną linię z najnowszymi słowami albo cały tekst w polu na trzy linie. Rozmiar nie zmienia się w trakcie mówienia. Domyślnie: ostatnie słowa.",
+        "lastWords": "Ostatnie słowa",
+        "fullText": "Cały tekst"
       },
       "language": {
         "title": "Język",
@@ -610,11 +635,6 @@
         "label": "Nagrywanie odporne na awarie",
         "description": "Koduje mowę do kompaktowych plików Opus na dysku w trakcie mówienia, zamiast trzymać wszystko w pamięci, dzięki czemu awaria, wymuszona aktualizacja lub rozładowana bateria wciąż pozostawiają nagranie — jest ono naprawiane i dodawane do Historii przy następnym uruchomieniu. Domyślnie: Włączone. Wyłączenie powoduje nagrywanie nieskompresowanego audio, które kopie Pełne dane (ze skompresowanym audio) celowo pomijają."
       },
-      "openRecordingsFolder": {
-        "label": "Folder nagrań",
-        "description": "Otwiera folder zawierający Twoje nagrania i wszelkie audio odzyskane po awarii (%APPDATA%\\pr.handy\\recordings). Automatyczne usuwanie nagrań porządkuje tu, ale dotyka wyłącznie plików utworzonych przez samego Handy — Twoje własne notatki lub eksporty w tym folderze nigdy nie są zmieniane czy usuwane.",
-        "button": "Otwórz folder"
-      },
       "appearance": {
         "title": "Wygląd",
         "description": "Ustawia motyw kolorystyczny dla wszystkich okien Handy Tool, w tym nakładki nagrywania i pływającego okna transkrypcji. Domyślnie: System, który stosuje ustawienie jasny/ciemny systemu Windows i śledzi jego zmiany; Jasny i Ciemny ustalają jedną paletę i ignorują późniejsze zmiany systemowe.",
@@ -688,11 +708,9 @@
       "tabs": {
         "app": "Aplikacja",
         "output": "Wyjście",
-        "transcription": "Transkrypcja",
         "typer": "Pisanie",
         "providers": "Dostawcy",
         "mcp": "MCP i CLI",
-        "history": "Historia",
         "postProcessing": "Postproces"
       },
       "mcp": {
@@ -1037,17 +1055,6 @@
           "description": "Oryginalna aplikacja open-source do rozpoznawania mowy, na której oparty jest ten projekt",
           "details": "Handy Tool jest forkiem Handy, stworzonego przez CJ Pais (github.com/cjpais/Handy, handy.computer). Projekt przejęto na etapie wersji v0.8.1 projektu źródłowego (marzec 2026) i jest dalej rozwijany niezależnie przez Patricka R. Ogromne podziękowania dla CJ i współtwórców Handy za fundament, na którym stoi ten projekt."
         }
-      },
-      "updates": {
-        "title": "Aktualizacje",
-        "description": "Sprawdź nowszą wersję w aplikacji albo otwórz stronę wydań bezpośrednio w przeglądarce.",
-        "button": "Sprawdź wydania",
-        "checkWeb": "Sprawdź w sieci",
-        "checkApp": "Sprawdź aktualizacje",
-        "checkFailed": "Nie udało się sprawdzić aktualizacji: {{reason}}.",
-        "useWebHint": "Użyj „Sprawdź w sieci”, jeśli sprawdzanie w aplikacji jest blokowane.",
-        "latestVersion": "Masz najnowszą wersję ({{version}}).",
-        "availableVersion": "Dostępna jest wersja {{version}}."
       }
     },
     "jumper": {
@@ -1262,7 +1269,11 @@
     "startingMic": "Włączam mikrofon...",
     "noMicrophone": "Brak mikrofonu",
     "microphoneBlocked": "Mikrofon zablokowany",
-    "microphoneError": "Błąd mikrofonu"
+    "microphoneError": "Błąd mikrofonu",
+    "paused": "Wstrzymano",
+    "pause": "Wstrzymaj",
+    "resume": "Wznów",
+    "liveTextBox": "Pole tekstu na żywo"
   },
   "tokenCount": {
     "configureProviders": "Skonfiguruj dostawców",

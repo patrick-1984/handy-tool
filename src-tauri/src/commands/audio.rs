@@ -1,12 +1,12 @@
 use crate::audio_feedback;
 use crate::audio_toolkit::audio::{list_input_devices, list_output_devices};
 use crate::managers::audio::{AudioRecordingManager, MicrophoneMode};
-use crate::settings::{get_settings, write_settings};
+use crate::settings::{LiveTextMode, get_settings, write_settings};
 use log::warn;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 use std::sync::Arc;
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Emitter, Manager};
 
 #[derive(Serialize, Type)]
 pub struct CustomSounds {
@@ -60,6 +60,65 @@ pub fn update_microphone_mode(app: AppHandle, always_on: bool) -> Result<(), Str
 
     rm.update_mode(new_mode)
         .map_err(|e| format!("Failed to update microphone mode: {}", e))
+}
+
+/// Show the pause/resume button on the recording overlay (and allow the Pause shortcut).
+#[tauri::command]
+#[specta::specta]
+pub fn change_pause_button_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
+    let mut settings = get_settings(&app);
+    settings.pause_button_enabled = enabled;
+    write_settings(&app, settings);
+    Ok(())
+}
+
+/// Allow the Undo-last-word shortcut during live takes.
+#[tauri::command]
+#[specta::specta]
+pub fn change_undo_word_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
+    let mut settings = get_settings(&app);
+    settings.undo_word_enabled = enabled;
+    write_settings(&app, settings);
+    Ok(())
+}
+
+/// Switch the live text box on or off (from settings or the overlay's T button).
+/// While on, every take runs live. Returns the new state.
+#[tauri::command]
+#[specta::specta]
+pub fn change_live_text_box_setting(app: AppHandle, enabled: bool) -> Result<bool, String> {
+    let mut settings = get_settings(&app);
+    settings.live_text_box_enabled = enabled;
+    write_settings(&app, settings);
+    crate::overlay::refresh_live_text_window(&app);
+    let _ = app.emit("live-text-box-changed", enabled);
+    Ok(enabled)
+}
+
+/// Flip the live text box (the overlay's T button). Returns the new state.
+#[tauri::command]
+#[specta::specta]
+pub fn toggle_live_text_box(app: AppHandle) -> Result<bool, String> {
+    let enabled = !get_settings(&app).live_text_box_enabled;
+    change_live_text_box_setting(app, enabled)
+}
+
+/// What the live text box shows: the last words, or the whole text so far.
+#[tauri::command]
+#[specta::specta]
+pub fn change_live_text_mode_setting(app: AppHandle, mode: LiveTextMode) -> Result<(), String> {
+    let mut settings = get_settings(&app);
+    settings.live_text_mode = mode;
+    write_settings(&app, settings);
+    crate::overlay::refresh_live_text_window(&app);
+    Ok(())
+}
+
+/// Pause the take in progress, or resume it (the overlay's pause button).
+#[tauri::command]
+#[specta::specta]
+pub fn toggle_pause_recording(app: AppHandle) {
+    crate::actions::toggle_pause(&app);
 }
 
 /// Minutes the microphone stays open after a take in on-demand mode (0 = off).

@@ -30,8 +30,8 @@ Use Translator for folders that accumulate audio outside your live dictation flo
 
 ## Set it up
 
-1. Add the source from `Translator › Watched folders › Add a folder`.
-2. Keep interactive work ahead of the queue at `Translator › Priority = Live dictation first`.
-3. Reuse the active dictation engine at `Translator › Batch model = Same as dictation (default)`.
-4. Start folder watching at `Translator › Watch folders = On`.
-5. Confirm the current item at `Translator › Status`, then leave the first file in place until its text sidecar appears.
+1. Add the source from `More › Translator › Watched folders › Add a folder`.
+2. Keep interactive work ahead of the queue at `More › Translator › Priority = Live dictation first`.
+3. Reuse the active dictation engine at `More › Translator › Batch model = Same as dictation (default)`.
+4. Start folder watching at `More › Translator › Watch folders = On`.
+5. Confirm the current item at `More › Translator › Status`, then leave the first file in place until its text sidecar appears.

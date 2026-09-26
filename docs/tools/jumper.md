@@ -25,7 +25,7 @@ Use Jumper when your attention moves but the destination of your words does not.
 ## Settings that matter
 
 - [Jumper settings](../reference/settings/jumper.md)
-- [Advanced settings](../reference/settings/advanced.md)
+- [More settings](../reference/settings/advanced.md)
 
 ## When it goes wrong
 

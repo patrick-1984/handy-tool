@@ -10,8 +10,6 @@
     "general": "Obecné",
     "shortcuts": "Zkratky",
     "models": "Modely",
-    "advanced": "Pokročilé",
-    "postProcessing": "Následné zpracování",
     "history": "Historie",
     "debug": "Ladění",
     "about": "O aplikaci",
@@ -21,9 +19,10 @@
     "keyboardTyper": "Psaní na klávesnici",
     "jumper": "Přechody",
     "translator": "Překladač",
+    "more": "Více",
     "groups": {
-      "tools": "Nástroje",
-      "config": "Konfigurace"
+      "settings": "Nastavení",
+      "tools": "Nástroje"
     },
     "modelTesting": "Testování modelů",
     "resize": "Táhněte pro změnu velikosti",
@@ -228,6 +227,14 @@
             "name": "Zkratka zrušení",
             "description": "Zruší právě probíhající nahrávání. Výchozí: escape. Co zrušení skutečně udělá, určuje Chování při zrušení na stránce Obecné — „Ukončit, uložit jen do historie“ přepis stále vytvoří a uloží, ale nic nedoručí do vašeho okna, zatímco „Zahodit nahrávku“ zvuk zahodí — a stejné nastavení platí i pro položku Zrušit v systémové liště."
           },
+          "pause": {
+            "name": "Pozastavit / Pokračovat",
+            "description": "Pozastaví probíhající nahrávku nebo v ní pokračuje. Aktivní jen během nahrávání, když je zapnuto tlačítko pozastavení. Výchozí: Žádná."
+          },
+          "undo_word": {
+            "name": "Vrátit poslední slovo",
+            "description": "Odstraní poslední slovo živé nahrávky. Aktivní jen během živé nahrávky. Výchozí: Ctrl+Backspace."
+          },
           "transcribe_with_post_process": {
             "name": "Klávesa pro následné zpracování",
             "description": "Volitelné: Vyhrazená klávesová zkratka, která vždy použije AI následné zpracování na váš přepis."
@@ -298,6 +305,24 @@
           "reset": "Nepodařilo se vrátit zkratku na původní hodnotu",
           "registrationFailed": "Některé zkratky se nepodařilo zaregistrovat a jsou neaktivní: {{bindings}}. Možná je již používá jiná aplikace — vyberte v nastavení jinou kombinaci."
         }
+      },
+      "pauseButton": {
+        "label": "Tlačítko pozastavení",
+        "description": "Přidá do panelu nahrávání tlačítko pozastavení: během pauzy se nic nenahrává a pokračování naváže na stejnou nahrávku. Výchozí: Vypnuto. Po 10 minutách pauzy se mikrofon uvolní až do pokračování."
+      },
+      "undoWord": {
+        "label": "Vrátit poslední slovo",
+        "description": "Každým stiskem zkratky (výchozí Ctrl+Backspace) odstraní poslední slovo živé nahrávky a zkrátí zvuk k začátku toho slova, takže se nevrátí ani do výsledného textu. Vyžaduje živou nahrávku a model Parakeet. Výchozí: Vypnuto."
+      },
+      "liveTextBox": {
+        "label": "Živý text",
+        "description": "Zobrazuje, co říkáte, v malém okně vedle panelu nahrávání, aktualizované zhruba každých 1,5 s. Když je zapnuto, všechny nahrávky běží v živém režimu. Výchozí: Vypnuto; přepíná ho i tlačítko T."
+      },
+      "liveTextMode": {
+        "title": "Živý text zobrazuje",
+        "description": "Jeden řádek s nejnovějšími slovy, nebo celý text v okně o třech řádcích. Velikost se během mluvení nemění. Výchozí: Poslední slova.",
+        "lastWords": "Poslední slova",
+        "fullText": "Celý text"
       },
       "language": {
         "title": "Jazyk",
@@ -610,11 +635,6 @@
         "label": "Nahrávání odolné proti pádu",
         "description": "Zatímco mluvíte, zapisuje řeč na disk do kompaktních souborů Opus místo držení celé nahrávky v paměti, takže pád, nucená aktualizace nebo vybitá baterie nahrávku nezničí — při dalším spuštění se opraví a doplní do Historie. Výchozí: Zapnuto. Vypnutím se nahrává nekomprimovaný zvuk, který zálohy Úplná data (s komprimovaným zvukem) záměrně vynechávají."
       },
-      "openRecordingsFolder": {
-        "label": "Složka nahrávek",
-        "description": "Otevře složku s vašimi nahrávkami a se zvukem obnoveným po pádu (%APPDATA%\\pr.handy\\recordings). Automatické mazání nahrávek zde uklízí, ale sahá jen na soubory, které Handy vytvořilo samo — vaše vlastní poznámky nebo exporty v této složce se nikdy nepřejmenují ani nesmažou.",
-        "button": "Otevřít složku"
-      },
       "appearance": {
         "title": "Vzhled",
         "description": "Nastaví barevný motiv pro všechna okna Handy Tool, včetně překryvu při nahrávání a plovoucího okna přepisu. Výchozí: Systém, který sleduje světlý/tmavý režim Windows i jeho pozdější změny; Světlý a Tmavý zafixují jednu paletu a další změny systému ignorují.",
@@ -688,11 +708,9 @@
       "tabs": {
         "app": "Aplikace",
         "output": "Výstup",
-        "transcription": "Přepis",
         "typer": "Psaní",
         "providers": "Poskytovatelé",
         "mcp": "MCP a CLI",
-        "history": "Historie",
         "postProcessing": "Následné zpracování"
       },
       "mcp": {
@@ -1037,17 +1055,6 @@
           "description": "Původní open-source aplikace pro přepis řeči na text, na které tento projekt vznikl",
           "details": "Handy Tool je fork projektu Handy, který vytvořil CJ Pais (github.com/cjpais/Handy, handy.computer). Projekt byl převzat ve verzi původního projektu v0.8.1 (březen 2026) a od té doby jej samostatně vyvíjí Patrick R. Velké poděkování CJ a přispěvatelům Handy za základ, na kterém tento projekt stojí."
         }
-      },
-      "updates": {
-        "title": "Aktualizace",
-        "description": "Vyhledejte novější verzi v aplikaci nebo otevřete stránku vydání přímo v prohlížeči.",
-        "button": "Zobrazit vydání",
-        "checkWeb": "Zkontrolovat na webu",
-        "checkApp": "Zkontrolovat aktualizace",
-        "checkFailed": "Aktualizace se nepodařilo zkontrolovat: {{reason}}.",
-        "useWebHint": "Pokud je kontrola v aplikaci blokována, použijte „Zkontrolovat na webu“.",
-        "latestVersion": "Používáte nejnovější verzi ({{version}}).",
-        "availableVersion": "Je dostupná verze {{version}}."
       }
     },
     "jumper": {
@@ -1262,7 +1269,11 @@
     "startingMic": "Spouštím mikrofon...",
     "noMicrophone": "Žádný mikrofon",
     "microphoneBlocked": "Mikrofon zablokován",
-    "microphoneError": "Chyba mikrofonu"
+    "microphoneError": "Chyba mikrofonu",
+    "paused": "Pozastaveno",
+    "pause": "Pozastavit",
+    "resume": "Pokračovat",
+    "liveTextBox": "Živý text"
   },
   "brand": {
     "name": "Handy",

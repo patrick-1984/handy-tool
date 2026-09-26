@@ -1,13 +1,18 @@
 // Settings section components
 export { GeneralSettings } from "./general/GeneralSettings";
 export { ShortcutsSettings } from "./shortcuts/ShortcutsSettings";
-export { AdvancedSettings } from "./advanced/AdvancedSettings";
+export {
+  AppSection,
+  OutputSection,
+  ProvidersSection,
+  McpSection,
+  PostProcessingSection,
+} from "./advanced/AdvancedSettings";
 export { DebugSettings } from "./debug/DebugSettings";
 export { CurrentAudioView } from "./current-audio/CurrentAudioView";
 export { HistorySettings } from "./history/HistorySettings";
 export { AboutSettings } from "./about/AboutSettings";
 export { BackupSettings } from "./backup/BackupSettings";
-export { PostProcessingSettings } from "./post-processing/PostProcessingSettings";
 export { ModelsSettings } from "./models/ModelsSettings";
 export { TokenCountPage } from "./token-count/TokenCountPage";
 export { KeyboardTyperPage } from "./keyboard-typer/KeyboardTyperPage";

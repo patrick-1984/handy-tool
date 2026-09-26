@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import { ShowOverlay } from "../ShowOverlay";
 import { AppearanceSetting } from "../AppearanceSetting";
@@ -7,13 +7,9 @@ import { StartHidden } from "../StartHidden";
 import { AutostartToggle } from "../AutostartToggle";
 import { ShowTrayIcon } from "../ShowTrayIcon";
 import { PostProcessingToggle } from "../PostProcessingToggle";
-import { CrashResilientRecording } from "../CrashResilientRecording";
-import { OpenRecordingsFolder } from "../OpenRecordingsFolder";
-import { HistoryLimit } from "../HistoryLimit";
-import { RecordingRetentionPeriodSelector } from "../RecordingRetentionPeriod";
+import { PostProcessingSettings } from "../post-processing/PostProcessingSettings";
 import { ApiTranscriptionSettings } from "../ApiTranscriptionSettings";
 import { OpenRouterTranscriptionSettings } from "../OpenRouterTranscriptionSettings";
-import { TranscriptionModelOptions } from "../TranscriptionModelOptions";
 import { KeyboardImplementationSelector } from "../debug/KeyboardImplementationSelector";
 import { RegisteredLlmProviders } from "./RegisteredLlmProviders";
 import { McpSettings } from "./McpSettings";
@@ -21,7 +17,6 @@ import { TranscriptionCostReport } from "./TranscriptionCostReport";
 import { TranscribeAndSubmitSettings } from "../TranscribeAndSubmitSettings";
 import { PasteLastSettings } from "../PasteLastSettings";
 import { AffixSettings } from "../AffixSettings";
-import { PreserveTranscriptions } from "../PreserveTranscriptions";
 import { JumperDelaySetting } from "../JumperDelaySetting";
 import { JumperTrackToggle } from "../JumperTrackToggle";
 import { JumperReturnFocusToggle } from "../JumperReturnFocusToggle";
@@ -33,168 +28,121 @@ import { AutoSubmit } from "../AutoSubmit";
 import { ClipboardRestoreDelaySetting } from "../ClipboardRestoreDelay";
 import { ClipboardRestoreDelayRemoteSetting } from "../ClipboardRestoreDelayRemote";
 import { AnchorActionSetting } from "../AnchorActionSetting";
-import { useNavStore } from "@/stores/navStore";
+import { useSettings } from "../../../hooks/useSettings";
 
-const TABS = [
-  "app",
-  "transcription",
-  "providers",
-  "mcp",
-  "history",
-  "postProcessing",
-] as const;
-export type TabId = (typeof TABS)[number];
+// The former Advanced page's tabs, now tabs of their own on the More page. The
+// History tab moved to the History page; Translate to English lives on General.
 
-export const AdvancedSettings: React.FC = () => {
+/** More › Settings › App */
+export const AppSection: React.FC = () => {
   const { t } = useTranslation();
-  const pendingAdvancedTab = useNavStore((state) => state.pendingAdvancedTab);
-  const consumePendingAdvancedTab = useNavStore(
-    (state) => state.consumePendingAdvancedTab,
-  );
-  const [activeTab, setActiveTab] = useState<TabId>(
-    () => pendingAdvancedTab ?? "app",
-  );
-
-  useEffect(() => {
-    const pendingTab = consumePendingAdvancedTab();
-    if (pendingTab !== null) {
-      setActiveTab(pendingTab);
-    }
-  }, [pendingAdvancedTab, consumePendingAdvancedTab]);
-
-  const renderTab = () => {
-    switch (activeTab) {
-      case "app":
-        return (
-          <SettingsGroup title={t("settings.advanced.groups.app")}>
-            <AppearanceSetting descriptionMode="tooltip" grouped={true} />
-            <StartHidden descriptionMode="tooltip" grouped={true} />
-            <AutostartToggle descriptionMode="tooltip" grouped={true} />
-            <ShowTrayIcon descriptionMode="tooltip" grouped={true} />
-            <ShowOverlay descriptionMode="tooltip" grouped={true} />
-            <KeyboardImplementationSelector
-              descriptionMode="tooltip"
-              grouped={true}
-            />
-          </SettingsGroup>
-        );
-      case "transcription":
-        return (
-          <>
-            <SettingsGroup title={t("settings.general.transcribeGroup.title")}>
-              <PasteMethodSetting descriptionMode="tooltip" grouped={true} />
-              <PasteMethodPttSetting descriptionMode="tooltip" grouped={true} />
-              <TypingToolSetting descriptionMode="tooltip" grouped={true} />
-              <ClipboardHandlingSetting
-                descriptionMode="tooltip"
-                grouped={true}
-              />
-              <AutoSubmit descriptionMode="tooltip" grouped={true} />
-              <ClipboardRestoreDelaySetting
-                settingKey="clipboard_restore_delay"
-                descriptionMode="tooltip"
-                grouped={true}
-              />
-              <ClipboardRestoreDelayRemoteSetting
-                descriptionMode="tooltip"
-                grouped={true}
-              />
-              <JumperDelaySetting kind="paste" grouped={true} />
-              <AnchorActionSetting
-                settingKey="anchor_action_output_idle"
-                moment="idle"
-                grouped={true}
-              />
-              <AnchorActionSetting
-                settingKey="anchor_action_output_stop"
-                moment="stop"
-                grouped={true}
-              />
-              <JumperTrackToggle flow="output" grouped={true} />
-              <JumperReturnFocusToggle flow="output" grouped={true} />
-              <AffixSettings flow="output" grouped={true} />
-            </SettingsGroup>
-            <TranscribeAndSubmitSettings />
-            <PasteLastSettings />
-            <SettingsGroup title={t("settings.advanced.groups.transcription")}>
-              <TranscriptionModelOptions
-                descriptionMode="tooltip"
-                grouped={true}
-              />
-              <TranscriptionCostReport />
-            </SettingsGroup>
-          </>
-        );
-      case "providers":
-        return (
-          <>
-            <SettingsGroup
-              title={t("settings.advanced.apiTranscription.cardTitle")}
-            >
-              <ApiTranscriptionSettings
-                descriptionMode="tooltip"
-                grouped={true}
-              />
-            </SettingsGroup>
-            <SettingsGroup
-              title={t("settings.advanced.openRouterTranscription.cardTitle")}
-            >
-              <OpenRouterTranscriptionSettings
-                descriptionMode="tooltip"
-                grouped={true}
-              />
-            </SettingsGroup>
-            <SettingsGroup title={t("settings.advanced.groups.llmProviders")}>
-              <RegisteredLlmProviders />
-            </SettingsGroup>
-          </>
-        );
-      case "mcp":
-        return (
-          <SettingsGroup title={t("settings.advanced.groups.mcp")}>
-            <McpSettings />
-          </SettingsGroup>
-        );
-      case "history":
-        return (
-          <SettingsGroup title={t("settings.advanced.groups.history")}>
-            <CrashResilientRecording descriptionMode="tooltip" grouped={true} />
-            <PreserveTranscriptions descriptionMode="tooltip" grouped={true} />
-            <OpenRecordingsFolder descriptionMode="tooltip" grouped={true} />
-            <HistoryLimit descriptionMode="tooltip" grouped={true} />
-            <RecordingRetentionPeriodSelector
-              descriptionMode="tooltip"
-              grouped={true}
-            />
-          </SettingsGroup>
-        );
-      case "postProcessing":
-        return (
-          <SettingsGroup title={t("settings.advanced.groups.postProcessing")}>
-            <PostProcessingToggle descriptionMode="tooltip" grouped={true} />
-          </SettingsGroup>
-        );
-    }
-  };
-
   return (
     <div className="w-full space-y-4">
-      <div className="flex gap-1 overflow-x-auto border-b border-mid-gray/20 pb-px">
-        {TABS.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-3 py-1.5 text-sm font-medium whitespace-nowrap rounded-t-md border-b-2 transition-colors cursor-pointer ${
-              activeTab === tab
-                ? "border-logo-primary text-text"
-                : "border-transparent text-text/50 hover:text-text/80"
-            }`}
-          >
-            {t(`settings.advanced.tabs.${tab}`)}
-          </button>
-        ))}
-      </div>
-      {renderTab()}
+      <SettingsGroup title={t("settings.advanced.groups.app")}>
+        <AppearanceSetting descriptionMode="tooltip" grouped={true} />
+        <StartHidden descriptionMode="tooltip" grouped={true} />
+        <AutostartToggle descriptionMode="tooltip" grouped={true} />
+        <ShowTrayIcon descriptionMode="tooltip" grouped={true} />
+        <ShowOverlay descriptionMode="tooltip" grouped={true} />
+        <KeyboardImplementationSelector
+          descriptionMode="tooltip"
+          grouped={true}
+        />
+      </SettingsGroup>
+    </div>
+  );
+};
+
+/** More › Settings › Output: how dictated text is delivered, per flow. */
+export const OutputSection: React.FC = () => {
+  const { t } = useTranslation();
+  return (
+    <div className="w-full space-y-4">
+      <SettingsGroup title={t("settings.general.transcribeGroup.title")}>
+        <PasteMethodSetting descriptionMode="tooltip" grouped={true} />
+        <PasteMethodPttSetting descriptionMode="tooltip" grouped={true} />
+        <TypingToolSetting descriptionMode="tooltip" grouped={true} />
+        <ClipboardHandlingSetting descriptionMode="tooltip" grouped={true} />
+        <AutoSubmit descriptionMode="tooltip" grouped={true} />
+        <ClipboardRestoreDelaySetting
+          settingKey="clipboard_restore_delay"
+          descriptionMode="tooltip"
+          grouped={true}
+        />
+        <ClipboardRestoreDelayRemoteSetting
+          descriptionMode="tooltip"
+          grouped={true}
+        />
+        <JumperDelaySetting kind="paste" grouped={true} />
+        <AnchorActionSetting
+          settingKey="anchor_action_output_idle"
+          moment="idle"
+          grouped={true}
+        />
+        <AnchorActionSetting
+          settingKey="anchor_action_output_stop"
+          moment="stop"
+          grouped={true}
+        />
+        <JumperTrackToggle flow="output" grouped={true} />
+        <JumperReturnFocusToggle flow="output" grouped={true} />
+        <AffixSettings flow="output" grouped={true} />
+      </SettingsGroup>
+      <TranscribeAndSubmitSettings />
+      <PasteLastSettings />
+    </div>
+  );
+};
+
+/** More › Settings › Providers */
+export const ProvidersSection: React.FC = () => {
+  const { t } = useTranslation();
+  return (
+    <div className="w-full space-y-4">
+      <SettingsGroup title={t("settings.advanced.apiTranscription.cardTitle")}>
+        <ApiTranscriptionSettings descriptionMode="tooltip" grouped={true} />
+      </SettingsGroup>
+      <SettingsGroup
+        title={t("settings.advanced.openRouterTranscription.cardTitle")}
+      >
+        <OpenRouterTranscriptionSettings
+          descriptionMode="tooltip"
+          grouped={true}
+        />
+        <TranscriptionCostReport />
+      </SettingsGroup>
+      <SettingsGroup title={t("settings.advanced.groups.llmProviders")}>
+        <RegisteredLlmProviders />
+      </SettingsGroup>
+    </div>
+  );
+};
+
+/** More › Settings › MCP & CLI */
+export const McpSection: React.FC = () => {
+  const { t } = useTranslation();
+  return (
+    <div className="w-full space-y-4">
+      <SettingsGroup title={t("settings.advanced.groups.mcp")}>
+        <McpSettings />
+      </SettingsGroup>
+    </div>
+  );
+};
+
+/**
+ * More › Settings › Post-processing: the switch, and — once it is on — the
+ * provider, prompt and hotkey that used to be a separate Post Process page.
+ */
+export const PostProcessingSection: React.FC = () => {
+  const { t } = useTranslation();
+  const { getSetting } = useSettings();
+  return (
+    <div className="w-full space-y-4">
+      <SettingsGroup title={t("settings.advanced.groups.postProcessing")}>
+        <PostProcessingToggle descriptionMode="tooltip" grouped={true} />
+      </SettingsGroup>
+      {getSetting("post_process_enabled") && <PostProcessingSettings />}
     </div>
   );
 };

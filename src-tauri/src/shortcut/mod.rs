@@ -108,7 +108,7 @@ fn binding_on_same_chord(
 fn activate_waiting_bindings(app: &AppHandle) {
     let bindings = settings::get_bindings(app);
     for failure in get_shortcut_registration_failures() {
-        if failure.id == "cancel" {
+        if is_take_binding(&failure.id) {
             continue;
         }
         if let Some(binding) = bindings.get(&failure.id).cloned() {
@@ -151,22 +151,80 @@ pub fn init_shortcuts(app: &AppHandle) {
     }
 }
 
-/// Register the cancel shortcut (called when recording starts)
-pub fn register_cancel_shortcut(app: &AppHandle) {
-    let settings = get_settings(app);
-    match settings.keyboard_implementation {
-        KeyboardImplementation::Tauri => tauri_impl::register_cancel_shortcut(app),
-        KeyboardImplementation::HandyKeys => handy_keys::register_cancel_shortcut(app),
+/// Bindings that exist only while a take (or a Keyboard Typer session) runs:
+/// registered when it starts, removed when it ends, never at init. Their keys
+/// (Escape, Ctrl+Backspace) belong to other apps the rest of the time.
+pub(crate) fn is_take_binding(id: &str) -> bool {
+    matches!(id, "cancel" | "pause" | "undo_word")
+}
+
+/// The take-only bindings registered for the take in progress.
+static ACTIVE_TAKE_BINDINGS: once_cell::sync::Lazy<std::sync::Mutex<Vec<&'static str>>> =
+    once_cell::sync::Lazy::new(|| std::sync::Mutex::new(Vec::new()));
+
+fn register_dynamic(app: &AppHandle, id: &'static str) {
+    match get_settings(app).keyboard_implementation {
+        KeyboardImplementation::Tauri => tauri_impl::register_dynamic_shortcut(app, id),
+        KeyboardImplementation::HandyKeys => handy_keys::register_dynamic_shortcut(app, id),
     }
 }
 
-/// Unregister the cancel shortcut (called when recording stops)
-pub fn unregister_cancel_shortcut(app: &AppHandle) {
-    let settings = get_settings(app);
-    match settings.keyboard_implementation {
-        KeyboardImplementation::Tauri => tauri_impl::unregister_cancel_shortcut(app),
-        KeyboardImplementation::HandyKeys => handy_keys::unregister_cancel_shortcut(app),
+fn unregister_dynamic(app: &AppHandle, id: &'static str) {
+    match get_settings(app).keyboard_implementation {
+        KeyboardImplementation::Tauri => tauri_impl::unregister_dynamic_shortcut(app, id),
+        KeyboardImplementation::HandyKeys => handy_keys::unregister_dynamic_shortcut(app, id),
     }
+}
+
+/// Register the take-only shortcuts when a take starts: Cancel always, Pause
+/// when the pause button is on, Undo last word when it is on and the take is
+/// live (the only takes with word positions to cut back to).
+pub fn register_take_shortcuts(app: &AppHandle, live: bool) {
+    let settings = get_settings(app);
+    let mut ids = vec!["cancel"];
+    if settings.pause_button_enabled {
+        ids.push("pause");
+    }
+    if settings.undo_word_enabled && live {
+        ids.push("undo_word");
+    }
+    if let Ok(mut active) = ACTIVE_TAKE_BINDINGS.lock() {
+        *active = ids.clone();
+    }
+    for id in ids {
+        register_dynamic(app, id);
+    }
+}
+
+/// Remove whatever take-only shortcuts the take registered.
+pub fn unregister_take_shortcuts(app: &AppHandle) {
+    let ids = ACTIVE_TAKE_BINDINGS
+        .lock()
+        .map(|mut active| std::mem::take(&mut *active))
+        .unwrap_or_default();
+    // A Keyboard Typer session registers Cancel alone, without recording it here.
+    let ids = if ids.is_empty() { vec!["cancel"] } else { ids };
+    for id in ids {
+        unregister_dynamic(app, id);
+    }
+}
+
+/// True when `id` is registered for the take in progress.
+fn is_active_take_binding(id: &str) -> bool {
+    ACTIVE_TAKE_BINDINGS
+        .lock()
+        .map(|active| active.contains(&id))
+        .unwrap_or(false)
+}
+
+/// Register the cancel shortcut alone (a Keyboard Typer session).
+pub fn register_cancel_shortcut(app: &AppHandle) {
+    register_dynamic(app, "cancel");
+}
+
+/// Unregister the cancel shortcut (a Keyboard Typer session ended).
+pub fn unregister_cancel_shortcut(app: &AppHandle) {
+    unregister_dynamic(app, "cancel");
 }
 
 /// Register a shortcut using the appropriate implementation
@@ -358,24 +416,25 @@ pub fn change_binding(
         }
     };
 
-    // If this is the cancel binding, just update the settings and return.
-    // It's managed dynamically (registered only while recording) — but if a
-    // recording is active RIGHT NOW, the old accelerator is registered and
+    // Take-only bindings (Cancel, Pause, Undo word): just update the settings.
+    // They are managed dynamically (registered only while recording) — but if
+    // one is registered for the take RIGHT NOW, the old accelerator is live and
     // must be swapped, or it stays globally swallowed until app exit. The swap
     // uses the SYNCHRONOUS explicit-binding paths: the async cancel helpers
     // re-read settings at execution time and can race the write below
     // (unregistering the new chord instead of the old one).
-    if id == "cancel" {
+    if is_take_binding(&id) {
         if let Some(mut b) = settings.bindings.get(&id).cloned() {
             let recording = app
                 .try_state::<std::sync::Arc<crate::managers::audio::AudioRecordingManager>>()
                 .map(|rm| rm.is_recording())
-                .unwrap_or(false);
+                .unwrap_or(false)
+                && is_active_take_binding(&id);
             let old = b.clone();
             b.current_binding = binding;
             if recording {
                 if let Err(e) = unregister_shortcut(&app, old) {
-                    warn!("cancel swap: failed to unregister old chord: {}", e);
+                    warn!("{} swap: failed to unregister old chord: {}", id, e);
                 }
                 if let Err(e) = register_shortcut(&app, b.clone()) {
                     // register_shortcut recorded the failure for the UI; the
@@ -519,7 +578,7 @@ fn registrable_bindings(app: &AppHandle) -> Vec<ShortcutBinding> {
         .bindings
         .values()
         .filter(|b| {
-            b.id != "cancel"
+            !is_take_binding(&b.id)
                 && !is_unbound(&b.current_binding)
                 && !(b.id == "transcribe_with_post_process" && !settings.post_process_enabled)
                 && !(is_jumper_binding(&b.id) && !cfg!(windows))
@@ -709,8 +768,8 @@ fn unregister_all_shortcuts(app: &AppHandle, implementation: KeyboardImplementat
     let bindings = settings::get_bindings(app);
 
     for (id, binding) in bindings {
-        // Skip cancel shortcut as it's dynamically registered
-        if id == "cancel" {
+        // Skip take-only shortcuts: they are dynamically registered
+        if is_take_binding(&id) {
             continue;
         }
 
@@ -737,11 +796,16 @@ fn unregister_all_shortcuts(app: &AppHandle, implementation: KeyboardImplementat
         .map(|rm| rm.is_recording())
         .unwrap_or(false);
     if recording {
-        if let Some(cancel) = settings::get_bindings(app).get("cancel").cloned() {
-            let _ = match implementation {
-                KeyboardImplementation::Tauri => tauri_impl::unregister_shortcut(app, cancel),
-                KeyboardImplementation::HandyKeys => handy_keys::unregister_shortcut(app, cancel),
-            };
+        let bindings = settings::get_bindings(app);
+        for id in bindings.keys().filter(|id| is_active_take_binding(id)) {
+            if let Some(binding) = bindings.get(id).cloned() {
+                let _ = match implementation {
+                    KeyboardImplementation::Tauri => tauri_impl::unregister_shortcut(app, binding),
+                    KeyboardImplementation::HandyKeys => {
+                        handy_keys::unregister_shortcut(app, binding)
+                    }
+                };
+            }
         }
     }
 }
@@ -756,8 +820,8 @@ fn register_all_shortcuts_for_implementation(
     let mut current_settings = settings::get_settings(app);
 
     for (id, default_binding) in &default_bindings {
-        // Skip cancel shortcut as it's dynamically registered
-        if id == "cancel" {
+        // Skip take-only shortcuts: they are dynamically registered
+        if is_take_binding(id) {
             continue;
         }
 

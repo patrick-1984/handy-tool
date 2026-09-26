@@ -10,7 +10,7 @@ The Jumper is Windows-only in code. Open `Jumper`; every control on this page ca
 
 `Jumper › Remote desktop detection › Remote match strings` _{Windows only}_
 
-Edits the case-insensitive substrings used to classify a target by application, window class, or control class. The result selects the Remote timing values in [Advanced](advanced.md#transcribe-paste-delay-after-jump-windows). **Default:** `msrdc`, `mstsc`, `Citrix`.
+Edits the case-insensitive substrings used to classify a target by application, window class, or control class. The result selects the Remote timing values on [More › Output](advanced.md#transcribe-paste-delay-after-jump-windows). **Default:** `msrdc`, `mstsc`, `Citrix`.
 
 Catalog: [Handy knows which of your windows is a remote session](../../features.md#handy-knows-which-of-your-windows-is-a-remote-session).
 
@@ -64,7 +64,7 @@ Catalog: [Each destination remembers the cursor the way that app needs](../../fe
 
 `Jumper › Hot slot (Anchor & Deliver) › Delivery options` _{Windows only}_
 
-This read-only signpost points to the Transcribe and Transcribe & Submit recipes on `Advanced › Transcription`. **Default:** not applicable.
+This read-only signpost points to the Transcribe and Transcribe & Submit recipes on `More › Output`. **Default:** not applicable.
 
 Catalog: [Decide what a jump does at the start and at the end of a take](../../features.md#what-a-jump-does-at-the-start-and-end-of-a-take).
 

@@ -8,7 +8,7 @@ Catalog: [It looks and behaves like a Windows app](../../features.md#it-looks-an
 
 ### Application Language
 
-`About › Application Language`
+`More › About › Application Language`
 
 Selects one of the shipped interface locales; each option shows its native and English name. **Default:** the operating-system locale.
 
@@ -16,7 +16,7 @@ Catalog: [Use it in your language](../../features.md#use-it-in-your-language).
 
 ### Version
 
-`About › Version`
+`More › About › Version`
 
 Shows the running application version. **Default:** `v1.0.0` for this release.
 
@@ -24,19 +24,13 @@ Catalog: [What runs today, and what is planned](../../features.md#what-runs-toda
 
 ### Source Code
 
-`About › Source Code`
+`More › About › Source Code`
 
 `View on GitHub` opens the public source repository. **Default:** `https://github.com/patrick-1984/handy-tool`.
 
-### Updates
-
-`About › Updates`
-
-`Check releases` opens the repository's releases page in your browser. The button itself performs no check. The scheduled background check is a separate control at [Check for updates automatically](general.md#check-for-updates-automatically), which is On by default. **Default:** the button performs no check.
-
 ### App Data Directory
 
-`About › App Data Directory`
+`More › About › App Data Directory`
 
 Shows and opens the active app-data location. **Default:** `File › %APPDATA%\pr.handy` for a normal Windows installation.
 
@@ -44,7 +38,7 @@ Catalog: [Where your data lives on disk](../../features.md#where-your-data-lives
 
 ### Log Directory
 
-`About › Log Directory`
+`More › About › Log Directory`
 
 Shows and opens the file-log directory. **Default:** the logs directory under the active app-data location.
 
@@ -54,12 +48,12 @@ Catalog: [The logs still exist when you finally need them](../../features.md#the
 
 ### Handy
 
-`About › Acknowledgments › Handy`
+`More › About › Acknowledgments › Handy`
 
 Shows the upstream project acknowledgment. **Default:** read-only acknowledgment text.
 
 ### Whisper.cpp
 
-`About › Acknowledgments › Whisper.cpp`
+`More › About › Acknowledgments › Whisper.cpp`
 
 Shows the speech-engine acknowledgment. **Default:** read-only acknowledgment text.

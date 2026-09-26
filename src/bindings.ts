@@ -2179,6 +2179,83 @@ export const commands = {
     }
   },
   /**
+   * Show the pause/resume button on the recording overlay (and allow the Pause shortcut).
+   */
+  async changePauseButtonSetting(enabled: boolean): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_pause_button_setting", { enabled }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * Allow the Undo-last-word shortcut during live takes.
+   */
+  async changeUndoWordSetting(enabled: boolean): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_undo_word_setting", { enabled }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * Switch the live text box on or off (from settings or the overlay's T button).
+   * While on, every take runs live. Returns the new state.
+   */
+  async changeLiveTextBoxSetting(enabled: boolean): Promise<Result<boolean, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_live_text_box_setting", { enabled }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * Flip the live text box (the overlay's T button). Returns the new state.
+   */
+  async toggleLiveTextBox(): Promise<Result<boolean, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("toggle_live_text_box"),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * What the live text box shows: the last words, or the whole text so far.
+   */
+  async changeLiveTextModeSetting(mode: LiveTextMode): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_live_text_mode_setting", { mode }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * Pause the take in progress, or resume it (the overlay's pause button).
+   */
+  async togglePauseRecording(): Promise<void> {
+    await TAURI_INVOKE("toggle_pause_recording");
+  },
+  /**
    * Minutes the microphone stays open after a take in on-demand mode (0 = off).
    */
   async changeMicKeepWarmSetting(
@@ -2531,6 +2608,22 @@ export type AppSettings = {
    * one starts without an idle device's wake-up delay. 0 (default) = close at once.
    */
   mic_keep_warm_minutes?: number;
+  /**
+   * Pause/resume button on the recording overlay, plus the Pause shortcut.
+   */
+  pause_button_enabled?: boolean;
+  /**
+   * Undo-last-word shortcut, active during live takes.
+   */
+  undo_word_enabled?: boolean;
+  /**
+   * Live text box above the recording overlay; while on, every take is live.
+   */
+  live_text_box_enabled?: boolean;
+  /**
+   * What the live text box shows.
+   */
+  live_text_mode?: LiveTextMode;
   selected_microphone?: string | null;
   clamshell_microphone?: string | null;
   selected_output_device?: string | null;
@@ -3130,6 +3223,18 @@ export type SoundTheme = "marimba" | "pop" | "custom";
  * smaller than WAV â€” light on bandwidth â€” but support varies by model.
  */
 export type TranscriptionAudioFormat = "wav" | "opus";
+/**
+ * What the live text box above the recording overlay shows.
+ */
+export type LiveTextMode =
+  /**
+   * One line: the newest words.
+   */
+  | "last_words"
+  /**
+   * The whole take so far, in a fixed-height box (older lines scroll away).
+   */
+  | "full_text";
 export type TranscriptionMode = "live" | "post_recording";
 export type Theme = "system" | "light" | "dark";
 export type TypingTool =

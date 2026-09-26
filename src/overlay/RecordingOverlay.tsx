@@ -1,6 +1,7 @@
 import { listen } from "@tauri-apps/api/event";
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Pause, Play } from "lucide-react";
 import {
   MicrophoneIcon,
   TranscriptionIcon,
@@ -14,6 +15,7 @@ import { getLanguageDirection } from "@/lib/utils/rtl";
 
 type OverlayState =
   | "recording"
+  | "paused"
   | "transcribing"
   | "processing"
   | "no-microphone"
@@ -39,6 +41,9 @@ const RecordingOverlay: React.FC = () => {
   // How far the transcription is after stop (percent); null until the backend
   // reports one (it waits half a second, and has no figure for remote engines).
   const [progress, setProgress] = useState<number | null>(null);
+  // Pause button (optional) and the live text box switch (the T button).
+  const [pauseEnabled, setPauseEnabled] = useState(false);
+  const [liveTextBox, setLiveTextBox] = useState(false);
   const [levels, setLevels] = useState<number[]>(Array(16).fill(0));
   const smoothedLevelsRef = useRef<number[]>(Array(16).fill(0));
   const direction = getLanguageDirection(i18n.language);
@@ -54,7 +59,17 @@ const RecordingOverlay: React.FC = () => {
         setMicLive(false);
         setProgress(null);
         setIsVisible(true);
+        const settings = await commands.getAppSettings();
+        if (settings.status === "ok") {
+          setPauseEnabled(settings.data.pause_button_enabled ?? false);
+          setLiveTextBox(settings.data.live_text_box_enabled ?? false);
+        }
       });
+
+      const unlistenLiveTextBox = await listen<boolean>(
+        "live-text-box-changed",
+        (event) => setLiveTextBox(event.payload),
+      );
 
       // Transcription progress after stop, only meaningful in "transcribing"
       const unlistenProgress = await listen<number>(
@@ -87,6 +102,7 @@ const RecordingOverlay: React.FC = () => {
         unlistenShow();
         unlistenHide();
         unlistenProgress();
+        unlistenLiveTextBox();
         unlistenLevel();
       };
     };
@@ -95,7 +111,11 @@ const RecordingOverlay: React.FC = () => {
   }, []);
 
   const getIcon = () => {
-    if (state === "recording" || MICROPHONE_PROBLEMS[state]) {
+    if (
+      state === "recording" ||
+      state === "paused" ||
+      MICROPHONE_PROBLEMS[state]
+    ) {
       return <MicrophoneIcon />;
     } else {
       return <TranscriptionIcon />;
@@ -110,9 +130,14 @@ const RecordingOverlay: React.FC = () => {
       <div className="overlay-float-btn">
         <button
           type="button"
-          className="float-button"
-          aria-label={t("overlay.openFloatingWindow")}
-          onClick={() => commands.openFloatingTranscription()}
+          className={`float-button ${liveTextBox ? "active" : ""}`}
+          aria-label={t("overlay.liveTextBox")}
+          aria-pressed={liveTextBox}
+          title={t("overlay.liveTextBox")}
+          onClick={async () => {
+            const result = await commands.toggleLiveTextBox();
+            if (result.status === "ok") setLiveTextBox(result.data);
+          }}
         >
           <TextIcon />
         </button>
@@ -140,6 +165,9 @@ const RecordingOverlay: React.FC = () => {
             ))}
           </div>
         )}
+        {state === "paused" && (
+          <div className="overlay-message">{t("overlay.paused")}</div>
+        )}
         {state === "transcribing" && (
           <div className="transcribing-text">
             {progress === null
@@ -158,7 +186,20 @@ const RecordingOverlay: React.FC = () => {
       </div>
 
       <div className="overlay-right">
-        {state === "recording" && (
+        {pauseEnabled && (state === "recording" || state === "paused") && (
+          <button
+            type="button"
+            className="cancel-button"
+            aria-label={t(
+              state === "paused" ? "overlay.resume" : "overlay.pause",
+            )}
+            title={t(state === "paused" ? "overlay.resume" : "overlay.pause")}
+            onClick={() => commands.togglePauseRecording()}
+          >
+            {state === "paused" ? <Play size={14} /> : <Pause size={14} />}
+          </button>
+        )}
+        {(state === "recording" || state === "paused") && (
           <button
             type="button"
             className="cancel-button"

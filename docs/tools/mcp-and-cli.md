@@ -19,7 +19,7 @@ Enable this surface only when another local tool needs it, and decide who you ar
 
 ## Settings that matter
 
-- [Advanced settings](../reference/settings/advanced.md)
+- [More settings](../reference/settings/advanced.md)
 
 ## When it goes wrong
 
@@ -29,8 +29,8 @@ Enable this surface only when another local tool needs it, and decide who you ar
 
 ## Set it up
 
-1. Turn on the local service at `Advanced › MCP & CLI › Enable MCP & CLI server = On`.
-2. Review the listening value at `Advanced › MCP & CLI › Port`.
-3. Copy or regenerate the credential at `Advanced › MCP & CLI › Token`.
-4. Install the companion from `Advanced › MCP & CLI › Command-line companion`.
+1. Turn on the local service at `More › MCP & CLI › Enable MCP & CLI server = On`.
+2. Review the listening value at `More › MCP & CLI › Port`.
+3. Copy or regenerate the credential at `More › MCP & CLI › Token`.
+4. Install the companion from `More › MCP & CLI › Command-line companion`.
 5. Give the token only to local clients you intend to trust, then verify the connection before exposing history or running provider-backed tools.

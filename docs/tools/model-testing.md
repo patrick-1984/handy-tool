@@ -21,7 +21,7 @@ Use a repeatable test before changing the model that supports your daily work. K
 ## Settings that matter
 
 - [Model Testing settings](../reference/settings/model-testing.md)
-- [Advanced settings](../reference/settings/advanced.md)
+- [More settings](../reference/settings/advanced.md)
 
 ## When it goes wrong
 
@@ -31,10 +31,10 @@ Use a repeatable test before changing the model that supports your daily work. K
 
 ## Set it up
 
-1. Choose the participating providers at `Model Testing › Models`.
-2. Enter one task all candidates should answer at `Model Testing › Prompt for all models`.
-3. Add an image only when the task needs one at `Model Testing › Image (optional, for vision models)`.
-4. Add judging instructions at `Model Testing › Judge / arbiter prompt (optional)`.
-5. Enable scoring at `Model Testing › Judge = On`.
-6. Start the comparison at `Model Testing › Run test` and inspect the results.
-7. Preserve the artifact from `Model Testing › Save as…`.
+1. Choose the participating providers at `More › Model Testing › Models`.
+2. Enter one task all candidates should answer at `More › Model Testing › Prompt for all models`.
+3. Add an image only when the task needs one at `More › Model Testing › Image (optional, for vision models)`.
+4. Add judging instructions at `More › Model Testing › Judge / arbiter prompt (optional)`.
+5. Enable scoring at `More › Model Testing › Judge = On`.
+6. Start the comparison at `More › Model Testing › Run test` and inspect the results.
+7. Preserve the artifact from `More › Model Testing › Save as…`.

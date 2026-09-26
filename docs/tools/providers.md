@@ -21,7 +21,7 @@ Stay local when the machine can carry the work. Configure a remote speech endpoi
 
 ## Settings that matter
 
-- [Advanced settings](../reference/settings/advanced.md)
+- [More settings](../reference/settings/advanced.md)
 - [Models settings](../reference/settings/models.md)
 
 ## When it goes wrong
@@ -33,9 +33,9 @@ Stay local when the machine can carry the work. Configure a remote speech endpoi
 
 ## Set it up
 
-1. For an OpenAI-compatible speech service, enter its endpoint at `Advanced › Providers › API Transcription (OpenAI-compatible) › API URL`.
-2. Enter the credential at `Advanced › Providers › API Transcription (OpenAI-compatible) › API Key`.
-3. Enter the service's model identifier at `Advanced › Providers › API Transcription (OpenAI-compatible) › Model`.
-4. For OpenRouter instead, choose the request shape at `Advanced › Providers › OpenRouter Transcription › Endpoint = Transcription (Whisper-style)`.
-5. Prefer the smaller supported upload at `Advanced › Providers › OpenRouter Transcription › Audio format = Opus — smaller (recommended)`.
+1. For an OpenAI-compatible speech service, enter its endpoint at `More › Providers › API Transcription (OpenAI-compatible) › API URL`.
+2. Enter the credential at `More › Providers › API Transcription (OpenAI-compatible) › API Key`.
+3. Enter the service's model identifier at `More › Providers › API Transcription (OpenAI-compatible) › Model`.
+4. For OpenRouter instead, choose the request shape at `More › Providers › OpenRouter Transcription › Endpoint = Transcription (Whisper-style)`.
+5. Prefer the smaller supported upload at `More › Providers › OpenRouter Transcription › Audio format = Opus — smaller (recommended)`.
 6. Use harmless test audio first. Confirm the provider accepts the selected route and format before sending private or irreplaceable material.

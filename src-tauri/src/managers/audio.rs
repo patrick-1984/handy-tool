@@ -6,7 +6,7 @@ use crate::helpers::clamshell;
 use crate::settings::{AppSettings, CaptureSource, get_settings};
 use crate::utils;
 use log::{debug, error, info, warn};
-use std::sync::atomic::{AtomicU64, Ordering as AtomicOrdering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering as AtomicOrdering};
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
 use tauri::Manager;
@@ -189,6 +189,8 @@ pub struct AudioRecordingManager {
     /// Bumped each time a take ends in on-demand mode; a pending "close the warm
     /// microphone" timer only acts if no later take has ended since it started.
     warm_generation: Arc<AtomicU64>,
+    /// The take in progress is paused (see toggle_pause).
+    paused: Arc<AtomicBool>,
 }
 
 impl AudioRecordingManager {
@@ -212,6 +214,7 @@ impl AudioRecordingManager {
             is_recording: Arc::new(Mutex::new(false)),
             did_mute: Arc::new(Mutex::new(false)),
             warm_generation: Arc::new(AtomicU64::new(0)),
+            paused: Arc::new(AtomicBool::new(false)),
         };
 
         // Always-on?  Open immediately.
@@ -535,6 +538,7 @@ impl AudioRecordingManager {
             let target = self.chunk_target_for_new_recording(ts);
             if let Some(rec) = self.recorder.lock().unwrap().as_ref() {
                 if rec.start(target).is_ok() {
+                    self.paused.store(false, AtomicOrdering::SeqCst);
                     *self.is_recording.lock().unwrap() = true;
                     *state = RecordingState::Recording {
                         binding_id: binding_id.to_string(),
@@ -613,11 +617,45 @@ impl AudioRecordingManager {
         )
     }
 
+    /// Pause or resume the take in progress. Returns the new paused state, or
+    /// None when nothing is recording.
+    pub fn toggle_pause(&self) -> Option<bool> {
+        let _state = self.state.lock().unwrap();
+        if !matches!(*_state, RecordingState::Recording { .. }) {
+            return None;
+        }
+        let pause = !self.paused.load(AtomicOrdering::SeqCst);
+        let rec = self.recorder.lock().unwrap();
+        let rec = rec.as_ref()?;
+        let sent = if pause { rec.pause() } else { rec.resume() };
+        if let Err(e) = sent {
+            error!(
+                "Failed to {} the recording: {e}",
+                if pause { "pause" } else { "resume" }
+            );
+            return None;
+        }
+        self.paused.store(pause, AtomicOrdering::SeqCst);
+        Some(pause)
+    }
+
+    /// Cut the take in progress back to `len` kept samples (undo last word).
+    pub fn truncate_recording(&self, len: usize) {
+        if !self.is_recording() {
+            return;
+        }
+        if let Some(rec) = self.recorder.lock().unwrap().as_ref() {
+            if let Err(e) = rec.truncate(len) {
+                error!("Failed to cut the recording back: {e}");
+            }
+        }
+    }
+
     /// Set a callback that fires when VAD detects a speech→silence boundary during recording.
     /// Used for progressive/live transcription.
     pub fn set_on_segment_callback<F>(&self, cb: F)
     where
-        F: Fn(Vec<f32>) + Send + Sync + 'static,
+        F: Fn(Vec<f32>, bool) + Send + Sync + 'static,
     {
         if let Some(rec) = self.recorder.lock().unwrap().as_ref() {
             rec.set_segment_callback(cb);

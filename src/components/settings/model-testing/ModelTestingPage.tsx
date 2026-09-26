@@ -713,7 +713,7 @@ export const ModelTestingPage: React.FC = () => {
             <button
               type="button"
               className={providerLinkClass}
-              onClick={() => navigateTo("advanced", "providers")}
+              onClick={() => navigateTo("providers")}
             >
               {t("modelTesting.configureProviders")}
             </button>
@@ -742,7 +742,7 @@ export const ModelTestingPage: React.FC = () => {
             <button
               type="button"
               className={providerLinkClass}
-              onClick={() => navigateTo("advanced", "providers")}
+              onClick={() => navigateTo("providers")}
             >
               {t("modelTesting.configureProviders")}
             </button>

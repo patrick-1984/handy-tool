@@ -1,33 +1,36 @@
 # Settings reference
 
-This shelf mirrors the Windows 1.0.0 sidebar. Open a page below when you need the exact control label, location, shipped default, or interaction with another control.
+This shelf mirrors the Windows 1.10.0 sidebar and its More page. Open a page below when you need the exact control label, location, shipped default, or interaction with another control.
 
-## Tools
-
-- [History](history.md) — controls on saved transcription rows and the recordings folder.
-- [Model Testing](model-testing.md) — run, judge, prompt, image, and report controls.
-- [Keyboard Typer](keyboard-typer.md) — the in-memory text buffer and typing timing.
-- [Token Count](token-count.md) — local and provider-backed counting actions.
-- [Jumper](jumper.md) — Windows-only anchors, slots, cursor options, and remote matching.
-- [Translator](translator.md) — folder watching, batch priority, and batch model controls.
-- [Current Audio](current-audio.md) — the live transcript and floating window.
-
-## Configuration
+## Sidebar
 
 - [General](general.md) — shortcuts, model-specific choices, transcription, re-paste, and sound.
 - [Shortcuts](shortcuts.md) — every shortcut on one page, with duplicates flagged.
 - [Models](models.md) — downloads, selection, filtering, and idle unloading.
-- [Advanced](advanced.md) — App, Transcription, Providers, MCP & CLI, History, and Post-processing.
+- [History](history.md) — saved transcription rows, the recordings folder, and retention.
+- [Jumper](jumper.md) — Windows-only anchors, slots, cursor options, and remote matching.
+- [Keyboard Typer](keyboard-typer.md) — the in-memory text buffer and typing timing.
+
+## More › Settings
+
+- [App, Output, Providers, Post-processing, MCP & CLI](advanced.md) — app behavior, how text is delivered, speech and LLM providers, and the local server.
+- [Post-processing](post-processing.md) — provider, prompt, and generation controls under the Post-processing switch.
 - [Backup](backup.md) — export and selective restore.
-- [Post Process](post-processing.md) — provider, prompt, and generation controls.
 - [Debug](debug.md) — logging and low-level timing or device controls.
-- [About](about.md) — language, version, source, releases, and data locations.
+- [About](about.md) — language, version, source, and data locations.
 
-## Hidden pages
+## More › Tools
 
-Enable `Advanced › Post-processing › Post Processing = On` to reveal the `Post Process` page. Its controls carry _{requires: Post-processing enabled}_.
+- [Translator](translator.md) — folder watching, batch priority, and batch model controls.
+- [Token Count](token-count.md) — local and provider-backed counting actions.
+- [Model Testing](model-testing.md) — run, judge, prompt, image, and report controls.
+- [Current Audio](current-audio.md) — the live transcript and floating window.
 
-Press `ctrl+shift+d` to enable debug mode and reveal the `Debug` page. Its controls carry _{requires: Debug mode}_. Press the chord again to hide the page; debug mode defaults to off.
+## Hidden controls
+
+Set `More › Post-processing › Post Processing = On` to reveal post-processing's hotkey, provider, and prompt controls on that tab. They carry _{requires: Post-processing enabled}_.
+
+Press `ctrl+shift+d` to enable debug mode and reveal the `Debug` tab on More. Its controls carry _{requires: Debug mode}_. Press the chord again to hide the tab; debug mode defaults to off.
 
 ## Controls with no working interface
 

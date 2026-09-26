@@ -1182,6 +1182,26 @@ impl TranscriptionManager {
     /// caller's preflight and the take-out below. Empty `expected_model`
     /// skips the check (no expectation).
     pub fn transcribe_expecting(&self, expected_model: &str, audio: Vec<f32>) -> Result<String> {
+        self.transcribe_inner(expected_model, audio, false)
+            .map(|(text, _)| text)
+    }
+
+    /// Transcribe for the live preview: the text plus, when the engine can tell
+    /// (Parakeet), each word with its start in seconds from the start of `audio`.
+    pub fn transcribe_with_words(
+        &self,
+        audio: Vec<f32>,
+    ) -> Result<(String, Option<Vec<(f32, String)>>)> {
+        let expected = get_settings(&self.app_handle).selected_model;
+        self.transcribe_inner(&expected, audio, true)
+    }
+
+    fn transcribe_inner(
+        &self,
+        expected_model: &str,
+        audio: Vec<f32>,
+        want_words: bool,
+    ) -> Result<(String, Option<Vec<(f32, String)>>)> {
         // Update last activity timestamp
         self.last_activity.store(
             SystemTime::now()
@@ -1198,7 +1218,7 @@ impl TranscriptionManager {
         if audio.is_empty() {
             debug!("Empty audio vector");
             self.maybe_unload_immediately("empty audio");
-            return Ok(String::new());
+            return Ok((String::new(), None));
         }
 
         // Check if model is loaded, if not try to load it
@@ -1282,7 +1302,7 @@ impl TranscriptionManager {
                         };
                         let filtered = filter_transcription_output(&corrected);
                         self.maybe_unload_immediately("FLM transcription");
-                        return Ok(filtered);
+                        return Ok((filtered, None));
                     }
                     // Engine state says FLM but the subprocess is gone (e.g. a
                     // failed restart) — fail loudly instead of falling through to
@@ -1324,7 +1344,7 @@ impl TranscriptionManager {
                 };
                 let filtered = filter_transcription_output(&corrected);
                 self.maybe_unload_immediately("API transcription");
-                return Ok(filtered);
+                return Ok((filtered, None));
             }
         }
 
@@ -1384,13 +1404,16 @@ impl TranscriptionManager {
                 };
                 let filtered = filter_transcription_output(&corrected);
                 self.maybe_unload_immediately("OpenRouter transcription");
-                return Ok(filtered);
+                return Ok((filtered, None));
             }
         }
 
         // Perform transcription with the appropriate engine.
         // We use catch_unwind to prevent engine panics from poisoning the mutex,
         // which would make the app hang indefinitely on subsequent operations.
+        // Only Parakeet returns real word segments (TimestampGranularity::Word);
+        // other engines' segments are sentences or tokens, not words.
+        let is_parakeet;
         let result = {
             let mut engine_guard = self.lock_engine();
 
@@ -1412,6 +1435,7 @@ impl TranscriptionManager {
             // this SAME combined mutex (finding 8b) and would deadlock here.
             let taken_model_id = engine_guard.model_id.clone();
             let taken_instance = engine_guard.instance;
+            is_parakeet = matches!(engine, LoadedEngine::Parakeet(_));
 
             // Revalidate the EXPECTED model at actual inference time (pass-3
             // finding 8a): the preflight comparison happens long before this
@@ -1501,7 +1525,11 @@ impl TranscriptionManager {
                         }
                         LoadedEngine::Parakeet(parakeet_engine) => {
                             let params = ParakeetInferenceParams {
-                                timestamp_granularity: TimestampGranularity::Segment,
+                                timestamp_granularity: if want_words {
+                                    TimestampGranularity::Word
+                                } else {
+                                    TimestampGranularity::Segment
+                                },
                                 ..Default::default()
                             };
                             parakeet_engine
@@ -1667,6 +1695,18 @@ impl TranscriptionManager {
             }
         };
 
+        let words = if want_words && is_parakeet {
+            result.segments.as_ref().map(|segments| {
+                segments
+                    .iter()
+                    .map(|seg| (seg.start, seg.text.trim().to_string()))
+                    .filter(|(_, word)| !word.is_empty())
+                    .collect()
+            })
+        } else {
+            None
+        };
+
         // Apply word correction if custom words are configured
         let corrected_result = if !settings.custom_words.is_empty() {
             apply_custom_words(
@@ -1706,7 +1746,7 @@ impl TranscriptionManager {
 
         self.maybe_unload_immediately("transcription");
 
-        Ok(final_result)
+        Ok((final_result, words))
     }
 
     // ===================================================================

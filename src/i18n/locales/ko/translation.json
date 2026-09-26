@@ -10,8 +10,6 @@
     "general": "일반",
     "shortcuts": "단축키",
     "models": "모델",
-    "advanced": "고급",
-    "postProcessing": "후처리",
     "history": "히스토리",
     "debug": "디버그",
     "about": "정보",
@@ -21,9 +19,10 @@
     "keyboardTyper": "키보드 타이퍼",
     "jumper": "점퍼",
     "translator": "번역기",
+    "more": "더 보기",
     "groups": {
-      "tools": "도구",
-      "config": "구성"
+      "settings": "설정",
+      "tools": "도구"
     },
     "modelTesting": "모델 테스트",
     "resize": "드래그하여 크기 조정",
@@ -210,6 +209,14 @@
             "name": "취소 단축키",
             "description": "진행 중인 녹음을 취소합니다. 기본값: escape. 취소가 실제로 무엇을 하는지는 일반 페이지의 취소 동작이 결정합니다 — 종료 후 히스토리에만 저장은 여전히 전사하고 텍스트를 저장하지만 창에는 아무것도 전달하지 않고, 녹음 삭제는 오디오를 그냥 버립니다 — 트레이의 취소 항목도 같은 설정을 따릅니다."
           },
+          "pause": {
+            "name": "일시 정지 / 재개",
+            "description": "진행 중인 녹음을 일시 정지하거나 재개합니다. 일시 정지 버튼이 켜져 있을 때 녹음 중에만 작동합니다. 기본값: 없음."
+          },
+          "undo_word": {
+            "name": "마지막 단어 취소",
+            "description": "실시간 녹음의 마지막 단어를 지웁니다. 실시간 녹음 중에만 작동합니다. 기본값: Ctrl+Backspace."
+          },
           "transcribe_with_post_process": {
             "name": "후처리 단축키",
             "description": "선택 사항: 항상 AI 후처리를 적용하는 전용 단축키입니다."
@@ -280,6 +287,24 @@
           "reset": "단축키를 원래 값으로 재설정하는데 실패했습니다",
           "registrationFailed": "일부 단축키를 등록할 수 없어 비활성 상태입니다: {{bindings}}. 다른 앱이 이미 사용 중일 수 있습니다 — 설정에서 다른 조합을 선택하세요."
         }
+      },
+      "pauseButton": {
+        "label": "일시 정지 버튼",
+        "description": "녹음 오버레이에 일시 정지 버튼을 추가합니다. 일시 정지 중에는 아무것도 녹음되지 않고, 재개하면 같은 녹음이 이어집니다. 기본값: 끔. 10분 동안 일시 정지하면 재개할 때까지 마이크가 해제됩니다."
+      },
+      "undoWord": {
+        "label": "마지막 단어 취소",
+        "description": "단축키(기본 Ctrl+Backspace)를 누를 때마다 실시간 녹음의 마지막 단어를 지우고 그 단어의 시작 지점까지 오디오를 잘라, 최종 텍스트에도 다시 나오지 않습니다. 실시간 녹음과 Parakeet 모델이 필요합니다. 기본값: 끔."
+      },
+      "liveTextBox": {
+        "label": "실시간 텍스트 상자",
+        "description": "말하는 내용을 녹음 오버레이 옆 작은 상자에 약 1.5초마다 표시합니다. 켜져 있는 동안 모든 녹음은 실시간 모드로 진행됩니다. 기본값: 끔. 오버레이의 T 버튼으로도 전환됩니다."
+      },
+      "liveTextMode": {
+        "title": "실시간 텍스트 표시",
+        "description": "최신 단어 한 줄, 또는 전체 텍스트를 세 줄 상자에 표시합니다. 말하는 동안 크기가 변하지 않습니다. 기본값: 마지막 단어.",
+        "lastWords": "마지막 단어",
+        "fullText": "전체 텍스트"
       },
       "language": {
         "title": "언어",
@@ -610,11 +635,6 @@
         "label": "충돌 복구형 녹음",
         "description": "말하는 동안 모든 것을 메모리에 담아두는 대신 디스크에 압축된 Opus 파일로 인코딩하여, 크래시나 강제 업데이트, 배터리 방전이 있어도 녹음이 남습니다 — 다음 실행 시 복구되어 히스토리에 추가됩니다. 기본값: 켜짐. 꺼두면 비압축 오디오로 녹음되며, 이는 전체 데이터 (압축 오디오 포함) 백업에서 의도적으로 제외됩니다."
       },
-      "openRecordingsFolder": {
-        "label": "녹음 폴더",
-        "description": "녹음 파일과 크래시 후 복구된 오디오가 저장되는 폴더를 엽니다 (%APPDATA%\\pr.handy\\recordings). 녹음 자동 삭제가 이 안을 정리하지만, Handy가 직접 만든 파일만 건드립니다 — 그 폴더에 있는 사용자 본인의 노트나 내보낸 파일은 절대 이름이 바뀌거나 삭제되지 않습니다.",
-        "button": "폴더 열기"
-      },
       "appearance": {
         "title": "테마",
         "description": "녹음 오버레이와 플로팅 전사 창을 포함한 모든 Handy Tool 창의 색상 테마를 설정합니다. 기본값: 시스템 — Windows의 명암 설정을 따르며 이후 변경도 계속 반영합니다. 밝게와 어둡게는 하나의 팔레트로 고정하고 이후 OS 변경은 무시합니다.",
@@ -688,11 +708,9 @@
       "tabs": {
         "app": "앱",
         "output": "출력",
-        "transcription": "전사",
         "typer": "타이퍼",
         "providers": "제공자",
         "mcp": "MCP 및 CLI",
-        "history": "히스토리",
         "postProcessing": "후처리"
       },
       "mcp": {
@@ -1037,17 +1055,6 @@
           "description": "이 프로젝트의 기반이 된 원본 오픈소스 음성-텍스트 앱",
           "details": "Handy Tool은 CJ Pais(github.com/cjpais/Handy, handy.computer)가 만든 Handy의 포크입니다. 업스트림 v0.8.1(2026년 3월)에서 인수되어 이후 Patrick R.이 독자적으로 계속 개발하고 있습니다. 이 프로젝트가 서 있는 토대를 만들어 준 CJ와 Handy 기여자들에게 깊은 감사를 전합니다."
         }
-      },
-      "updates": {
-        "title": "업데이트",
-        "description": "앱에서 새 버전을 확인하거나 브라우저에서 릴리스 페이지를 직접 엽니다.",
-        "button": "릴리스 확인",
-        "checkWeb": "웹에서 확인",
-        "checkApp": "업데이트 확인",
-        "checkFailed": "업데이트를 확인할 수 없습니다: {{reason}}.",
-        "useWebHint": "앱 내 확인이 차단되면 “웹에서 확인”을 사용하세요.",
-        "latestVersion": "최신 버전({{version}})을 사용 중입니다.",
-        "availableVersion": "버전 {{version}}을 사용할 수 있습니다."
       }
     },
     "jumper": {
@@ -1262,7 +1269,11 @@
     "startingMic": "마이크 시작 중...",
     "noMicrophone": "마이크 없음",
     "microphoneBlocked": "마이크 차단됨",
-    "microphoneError": "마이크 오류"
+    "microphoneError": "마이크 오류",
+    "paused": "일시 정지됨",
+    "pause": "일시 정지",
+    "resume": "재개",
+    "liveTextBox": "실시간 텍스트 상자"
   },
   "brand": {
     "name": "Handy",

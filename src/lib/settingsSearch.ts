@@ -9,9 +9,8 @@ import type { OSType } from "@/lib/utils/keyboard";
  */
 export interface SearchEntry {
   section: string;
-  advancedTab?: string;
   title: string;
-  /** Where it lives, e.g. "Advanced › Transcription › Paste last transcription". */
+  /** Where it lives, e.g. "More › Output › Paste last transcription". */
   where: string;
   haystack: string;
 }
@@ -41,17 +40,21 @@ const plain = (text: string) => text.replace(/\*\*/g, "");
  * The settings index: every control listed in scripts/nav-map.json (the same map
  * the docs checker uses, so keep it current when a control is added) plus every
  * shortcut, which point to the Shortcuts page. Only pages that are currently
- * shown count, so hidden pages (Debug, Post Process) and other platforms' controls
- * never appear.
+ * shown count, so hidden pages (Debug) and other platforms' controls never
+ * appear, nor post-processing's own controls while it is switched off.
  */
 export const buildSearchIndex = (
   t: TFunction,
-  sections: { id: string; labelKey: string }[],
+  /** Pages currently shown; `more` marks those on the More page. */
+  sections: { id: string; labelKey: string; more: boolean }[],
   osType: OSType,
   bindings: Partial<Record<string, ShortcutBinding>>,
   postProcessEnabled: boolean,
+  /** Take-only shortcuts that are switched on (Pause, Undo word). */
+  enabledTakeShortcuts: string[],
 ): SearchEntry[] => {
-  const sectionByLabelKey = new Map(sections.map((s) => [s.labelKey, s.id]));
+  const sectionByLabelKey = new Map(sections.map((s) => [s.labelKey, s]));
+  const more = t("sidebar.more");
   const entries: SearchEntry[] = [];
 
   for (const e of navMap as NavMapEntry[]) {
@@ -61,15 +64,17 @@ export const buildSearchIndex = (
     if (!section) continue;
     if (e.gating === "windows" && osType !== "windows") continue;
     if (e.gating === "linux" && osType !== "linux") continue;
+    if (e.gating === "post-processing" && !postProcessEnabled) continue;
 
     const title = e.titleKey ? t(e.titleKey, e.control) : e.control;
     const tab = e.tabKey ? t(e.tabKey) : null;
     const group = e.groupKey ? t(e.groupKey, e.group ?? "") : e.group;
     const description = e.descKey ? plain(t(e.descKey)) : "";
-    const where = [t(e.pageKey), tab, group].filter(Boolean).join(" › ");
+    const where = [section.more ? more : null, t(e.pageKey), tab, group]
+      .filter(Boolean)
+      .join(" › ");
     entries.push({
-      section,
-      advancedTab: e.tabKey?.split(".").pop(),
+      section: section.id,
       title,
       where,
       haystack: [title, where, description, ...e.options]
@@ -84,6 +89,11 @@ export const buildSearchIndex = (
     if (isJumperBinding(id) && osType !== "windows") continue;
     if (id === "cancel" && osType === "linux") continue;
     if (id === "transcribe_with_post_process" && !postProcessEnabled) continue;
+    if (
+      (id === "pause" || id === "undo_word") &&
+      !enabledTakeShortcuts.includes(id)
+    )
+      continue;
     const title = t(
       `settings.general.shortcut.bindings.${id}.name`,
       binding.name,

@@ -10,8 +10,6 @@
     "general": "Generale",
     "shortcuts": "Scorciatoie",
     "models": "Modelli",
-    "advanced": "Avanzate",
-    "postProcessing": "Post-Elaborazione",
     "history": "Cronologia",
     "debug": "Debug",
     "about": "Informazioni",
@@ -21,9 +19,10 @@
     "keyboardTyper": "Digitatore da Tastiera",
     "jumper": "Jumper",
     "translator": "Traduttore",
+    "more": "Altro",
     "groups": {
-      "tools": "Strumenti",
-      "config": "Configurazione"
+      "settings": "Impostazioni",
+      "tools": "Strumenti"
     },
     "modelTesting": "Test dei Modelli",
     "resize": "Trascina per ridimensionare",
@@ -228,6 +227,14 @@
             "name": "Scorciatoia Annulla",
             "description": "Annulla la registrazione in corso. Predefinito: escape. Cosa fa esattamente l'annullamento è deciso da Comportamento di annullamento nella pagina Generale — 'Termina, salva solo nella cronologia' trascrive e salva comunque il testo ma non lo consegna alla finestra, mentre 'Scarta registrazione' elimina l'audio — e la voce Annulla nella barra di sistema segue la stessa impostazione."
           },
+          "pause": {
+            "name": "Pausa / Riprendi",
+            "description": "Mette in pausa la registrazione in corso o la riprende. Attiva solo durante una registrazione con il pulsante pausa attivo. Predefinito: Nessuna."
+          },
+          "undo_word": {
+            "name": "Annulla l'ultima parola",
+            "description": "Rimuove l'ultima parola di una registrazione dal vivo. Attiva solo durante una registrazione dal vivo. Predefinito: Ctrl+Backspace."
+          },
           "transcribe_with_post_process": {
             "name": "Tasto di post-elaborazione",
             "description": "Facoltativo: Un tasto di scelta rapida dedicato che applica sempre la post-elaborazione IA alla trascrizione."
@@ -298,6 +305,24 @@
           "reset": "Errore nella reinizializzazione della scorciatoia al valore originale",
           "registrationFailed": "Non è stato possibile registrare alcune scorciatoie, che risultano inattive: {{bindings}}. Un'altra app potrebbe già utilizzarle — scegli una combinazione diversa nelle Impostazioni."
         }
+      },
+      "pauseButton": {
+        "label": "Pulsante pausa",
+        "description": "Aggiunge un pulsante di pausa all'overlay di registrazione: in pausa non si registra nulla e la ripresa continua la stessa registrazione. Predefinito: Disattivato. Dopo 10 minuti di pausa il microfono viene rilasciato fino alla ripresa."
+      },
+      "undoWord": {
+        "label": "Annulla l'ultima parola",
+        "description": "A ogni pressione della scorciatoia (Ctrl+Backspace di default) rimuove l'ultima parola di una registrazione dal vivo e taglia l'audio all'inizio di quella parola, così non torna nel testo finale. Richiede una registrazione dal vivo e un modello Parakeet. Predefinito: Disattivato."
+      },
+      "liveTextBox": {
+        "label": "Riquadro testo dal vivo",
+        "description": "Mostra ciò che dici in un piccolo riquadro accanto all'overlay di registrazione, aggiornato circa ogni 1,5 s. Quando è attivo, tutte le registrazioni vanno in modalità dal vivo. Predefinito: Disattivato; anche il pulsante T lo attiva."
+      },
+      "liveTextMode": {
+        "title": "Il testo dal vivo mostra",
+        "description": "Una riga con le parole più recenti, oppure tutto il testo in un riquadro di tre righe. Non cambia dimensione mentre parli. Predefinito: Ultime parole.",
+        "lastWords": "Ultime parole",
+        "fullText": "Testo completo"
       },
       "language": {
         "title": "Lingua",
@@ -610,11 +635,6 @@
         "label": "Registrazione recuperabile dopo un arresto anomalo",
         "description": "Codifica la tua voce in file Opus compatti su disco mentre parli invece di tenerla tutta in memoria, così un crash, un aggiornamento forzato o una batteria scarica lasciano comunque una registrazione — viene riparata e aggiunta alla Cronologia al successivo avvio. Predefinito: Attivo. Disattivandola registra audio non compresso, che i backup Dati completi (con audio compresso) escludono deliberatamente."
       },
-      "openRecordingsFolder": {
-        "label": "Cartella delle Registrazioni",
-        "description": "Apre la cartella con le tue registrazioni e l'audio recuperato dopo un eventuale crash (%APPDATA%\\pr.handy\\recordings). Salvataggio delle Registrazioni fa qui la sua pulizia, ma toccando solo i file creati da Handy stesso — i tuoi appunti o esportazioni personali in quella cartella non vengono mai rinominati né eliminati.",
-        "button": "Apri Cartella"
-      },
       "appearance": {
         "title": "Aspetto",
         "description": "Imposta il tema dei colori per tutte le finestre di Handy Tool, incluse la sovrimpressione di registrazione e la finestra flottante di trascrizione. Predefinito: Sistema, che segue l'impostazione chiaro/scuro di Windows e continua a tracciarla; Chiaro e Scuro fissano una palette e ignorano i successivi cambiamenti del sistema operativo.",
@@ -688,11 +708,9 @@
       "tabs": {
         "app": "App",
         "output": "Output",
-        "transcription": "Trascrizione",
         "typer": "Digitatore",
         "providers": "Provider",
         "mcp": "MCP e CLI",
-        "history": "Cronologia",
         "postProcessing": "Post-Elaborazione"
       },
       "mcp": {
@@ -1037,17 +1055,6 @@
           "description": "L'app open-source originale di riconoscimento vocale su cui si basa questo progetto",
           "details": "Handy Tool è un fork di Handy, creato da CJ Pais (github.com/cjpais/Handy, handy.computer). È stato rilevato dalla versione upstream v0.8.1 (marzo 2026) e da allora è stato sviluppato ulteriormente in modo indipendente da Patrick R. Un grande grazie a CJ e ai contributori di Handy per le basi su cui si fonda questo progetto."
         }
-      },
-      "updates": {
-        "title": "Aggiornamenti",
-        "description": "Cerca una versione più recente nell'app oppure apri direttamente la pagina delle versioni nel browser.",
-        "button": "Controlla le release",
-        "checkWeb": "Controlla sul Web",
-        "checkApp": "Controlla aggiornamenti",
-        "checkFailed": "Impossibile controllare gli aggiornamenti: {{reason}}.",
-        "useWebHint": "Usa «Controlla sul Web» se il controllo nell'app è bloccato.",
-        "latestVersion": "Stai usando la versione più recente ({{version}}).",
-        "availableVersion": "È disponibile la versione {{version}}."
       }
     },
     "jumper": {
@@ -1262,7 +1269,11 @@
     "startingMic": "Avvio microfono...",
     "noMicrophone": "Nessun microfono",
     "microphoneBlocked": "Microfono bloccato",
-    "microphoneError": "Errore microfono"
+    "microphoneError": "Errore microfono",
+    "paused": "In pausa",
+    "pause": "Pausa",
+    "resume": "Riprendi",
+    "liveTextBox": "Riquadro testo dal vivo"
   },
   "brand": {
     "name": "Handy",

@@ -10,8 +10,6 @@
     "general": "General",
     "shortcuts": "Atajos",
     "models": "Modelos",
-    "advanced": "Avanzado",
-    "postProcessing": "Post Proceso",
     "history": "Historial",
     "debug": "Depuración",
     "about": "Acerca de",
@@ -21,9 +19,10 @@
     "keyboardTyper": "Escritura de Teclado",
     "jumper": "Jumper",
     "translator": "Traductor",
+    "more": "Más",
     "groups": {
-      "tools": "Herramientas",
-      "config": "Configuración"
+      "settings": "Ajustes",
+      "tools": "Herramientas"
     },
     "modelTesting": "Prueba de Modelos",
     "resize": "Arrastra para cambiar el tamaño",
@@ -228,6 +227,14 @@
             "name": "Atajo de Cancelar",
             "description": "Cancela la toma en curso. Predeterminado: escape. Lo que realmente hace cancelar lo decide Comportamiento de cancelar en la página General: \"Terminar, guardar solo en el historial\" sigue transcribiendo y guardando el texto pero no entrega nada a tu ventana, mientras que \"Descartar grabación\" desecha el audio; el elemento Cancelar de la bandeja sigue el mismo ajuste."
           },
+          "pause": {
+            "name": "Pausa / Reanudar",
+            "description": "Pausa la grabación en curso o la reanuda. Solo activo durante una toma con el botón de pausa activado. Predeterminado: Ninguno."
+          },
+          "undo_word": {
+            "name": "Deshacer la última palabra",
+            "description": "Quita la última palabra de una toma en vivo. Solo activo durante una toma en vivo. Predeterminado: Ctrl+Retroceso."
+          },
           "transcribe_with_post_process": {
             "name": "Tecla de Post Procesamiento",
             "description": "Opcional: Una tecla de acceso rápido dedicada que siempre aplica post procesamiento con IA a tu transcripción."
@@ -298,6 +305,24 @@
           "reset": "Error al restablecer el atajo al valor original",
           "registrationFailed": "Algunos atajos no se pudieron registrar y están inactivos: {{bindings}}. Es posible que otra aplicación ya los esté usando: elige una combinación distinta en Configuración."
         }
+      },
+      "pauseButton": {
+        "label": "Botón de pausa",
+        "description": "Añade un botón de pausa a la superposición de grabación: en pausa no se graba nada y al reanudar sigue la misma toma. Predeterminado: Desactivado. Tras 10 minutos en pausa se libera el micrófono hasta reanudar."
+      },
+      "undoWord": {
+        "label": "Deshacer la última palabra",
+        "description": "Cada pulsación del atajo (Ctrl+Retroceso por defecto) quita la última palabra de una toma en vivo y recorta el audio hasta el inicio de esa palabra, para que tampoco vuelva en el texto final. Requiere una toma en vivo y un modelo Parakeet. Predeterminado: Desactivado."
+      },
+      "liveTextBox": {
+        "label": "Cuadro de texto en vivo",
+        "description": "Muestra lo que dices en un pequeño cuadro junto a la superposición de grabación, actualizado cada 1,5 s aproximadamente. Mientras está activo, todas las tomas van en modo en vivo. Predeterminado: Desactivado; el botón T también lo cambia."
+      },
+      "liveTextMode": {
+        "title": "El texto en vivo muestra",
+        "description": "Una línea con las palabras más recientes, o todo el texto en un cuadro de tres líneas. No cambia de tamaño mientras hablas. Predeterminado: Últimas palabras.",
+        "lastWords": "Últimas palabras",
+        "fullText": "Texto completo"
       },
       "language": {
         "title": "Idioma",
@@ -610,11 +635,6 @@
         "label": "Grabación recuperable tras fallos",
         "description": "Codifica tu voz en archivos Opus compactos en el disco mientras hablas en vez de retenerlo todo en memoria, así que un fallo, una actualización forzada o una batería agotada todavía dejan una grabación: se repara y se agrega al Historial en el siguiente inicio. Predeterminado: Activado. Desactivarlo graba audio sin comprimir, algo que las copias de seguridad de Datos completos (con audio comprimido) excluyen a propósito."
       },
-      "openRecordingsFolder": {
-        "label": "Carpeta de Grabaciones",
-        "description": "Abre la carpeta que contiene tus grabaciones y cualquier audio recuperado tras un fallo (%APPDATA%\\pr.handy\\recordings). Eliminación automática de grabaciones limpia aquí, pero solo toca archivos que Handy creó él mismo: tus propias notas o exportaciones en esa carpeta nunca se renombran ni se eliminan.",
-        "button": "Abrir Carpeta"
-      },
       "appearance": {
         "title": "Apariencia",
         "description": "Fija el tema de color para todas las ventanas de Handy Tool, incluidas la superposición de grabación y la ventana flotante de transcripción. Predeterminado: Sistema, que sigue tu configuración de claro/oscuro de Windows y continúa rastreándola; Claro y Oscuro fijan una paleta e ignoran cambios posteriores del sistema.",
@@ -688,11 +708,9 @@
       "tabs": {
         "app": "Aplicación",
         "output": "Salida",
-        "transcription": "Transcripción",
         "typer": "Escritura",
         "providers": "Proveedores",
         "mcp": "MCP y CLI",
-        "history": "Historial",
         "postProcessing": "Post Proceso"
       },
       "mcp": {
@@ -1037,17 +1055,6 @@
           "description": "La app original de código abierto de voz a texto sobre la que se construye este proyecto",
           "details": "Handy Tool es un fork de Handy, creado por CJ Pais (github.com/cjpais/Handy, handy.computer). Se tomó a partir de la versión original v0.8.1 (marzo de 2026) y ha sido desarrollado de forma independiente por Patrick R. Muchas gracias a CJ y a los colaboradores de Handy por la base sobre la que se sostiene este proyecto."
         }
-      },
-      "updates": {
-        "title": "Actualizaciones",
-        "description": "Busca una versión más reciente en la aplicación o abre directamente la página de versiones en el navegador.",
-        "button": "Ver lanzamientos",
-        "checkWeb": "Comprobar en la web",
-        "checkApp": "Buscar actualizaciones",
-        "checkFailed": "No se pudieron buscar actualizaciones: {{reason}}.",
-        "useWebHint": "Usa «Comprobar en la web» si la comprobación integrada está bloqueada.",
-        "latestVersion": "Tienes la versión más reciente ({{version}}).",
-        "availableVersion": "La versión {{version}} está disponible."
       }
     },
     "jumper": {
@@ -1262,7 +1269,11 @@
     "startingMic": "Iniciando micro...",
     "noMicrophone": "Sin micrófono",
     "microphoneBlocked": "Micrófono bloqueado",
-    "microphoneError": "Error del micrófono"
+    "microphoneError": "Error del micrófono",
+    "paused": "En pausa",
+    "pause": "Pausa",
+    "resume": "Reanudar",
+    "liveTextBox": "Cuadro de texto en vivo"
   },
   "floating": {
     "waiting": "Esperando la transcripción…",

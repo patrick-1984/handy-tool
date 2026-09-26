@@ -10,8 +10,6 @@
     "general": "Genel",
     "shortcuts": "Kısayollar",
     "models": "Modeller",
-    "advanced": "Gelişmiş",
-    "postProcessing": "Son İşlem",
     "history": "Geçmiş",
     "debug": "Hata Ayıklama",
     "about": "Hakkında",
@@ -21,9 +19,10 @@
     "keyboardTyper": "Klavye Yazıcısı",
     "jumper": "Atlayıcı",
     "translator": "Çevirmen",
+    "more": "Daha fazla",
     "groups": {
-      "tools": "Araçlar",
-      "config": "Yapılandırma"
+      "settings": "Ayarlar",
+      "tools": "Araçlar"
     },
     "modelTesting": "Model Testi",
     "resize": "Boyutlandırmak için sürükleyin",
@@ -228,6 +227,14 @@
             "name": "İptal Kısayolu",
             "description": "Devam eden kaydı iptal eder. Varsayılan: escape. İptalin gerçekte ne yapacağına Genel sayfasındaki İptal davranışı karar verir — Bitir, sadece geçmişe kaydet metni yine transkribe edip saklar ama pencerenize hiçbir şey teslim etmez; Kaydı at ise sesi atar — ve tepsideki İptal öğesi de aynı ayarı izler."
           },
+          "pause": {
+            "name": "Duraklat / Devam et",
+            "description": "Süren kaydı duraklatır veya devam ettirir. Yalnızca kayıt sırasında, duraklatma düğmesi açıkken etkindir. Varsayılan: Yok."
+          },
+          "undo_word": {
+            "name": "Son kelimeyi geri al",
+            "description": "Canlı kaydın son kelimesini siler. Yalnızca canlı kayıt sırasında etkindir. Varsayılan: Ctrl+Backspace."
+          },
           "transcribe_with_post_process": {
             "name": "Son İşlem Kısayolu",
             "description": "İsteğe bağlı: Transkripsiyonunuza her zaman AI son işleme uygulayan özel bir kısayol tuşu."
@@ -298,6 +305,24 @@
           "reset": "Kısayol orijinal değerine sıfırlanamadı",
           "registrationFailed": "Bazı kısayollar kaydedilemedi ve devre dışı: {{bindings}}. Başka bir uygulama bunları zaten kullanıyor olabilir — Ayarlar'dan farklı bir kombinasyon seçin."
         }
+      },
+      "pauseButton": {
+        "label": "Duraklatma düğmesi",
+        "description": "Kayıt katmanına bir duraklatma düğmesi ekler: duraklatılmışken hiçbir şey kaydedilmez, devam etmek aynı kaydı sürdürür. Varsayılan: Kapalı. 10 dakika duraklatıldıktan sonra mikrofon devam edene kadar bırakılır."
+      },
+      "undoWord": {
+        "label": "Son kelimeyi geri al",
+        "description": "Kısayola (varsayılan Ctrl+Backspace) her basışta canlı kaydın son kelimesini siler ve sesi o kelimenin başına kadar keser; böylece son metinde de geri gelmez. Canlı kayıt ve Parakeet modeli gerekir. Varsayılan: Kapalı."
+      },
+      "liveTextBox": {
+        "label": "Canlı metin kutusu",
+        "description": "Söylediklerinizi kayıt katmanının yanındaki küçük bir kutuda yaklaşık 1,5 saniyede bir gösterir. Açıkken tüm kayıtlar canlı modda çalışır. Varsayılan: Kapalı; katmandaki T düğmesi de değiştirir."
+      },
+      "liveTextMode": {
+        "title": "Canlı metin gösterimi",
+        "description": "En yeni kelimeleri tek satırda ya da tüm metni üç satırlık bir kutuda gösterir. Konuşurken boyutu değişmez. Varsayılan: Son kelimeler.",
+        "lastWords": "Son kelimeler",
+        "fullText": "Tüm metin"
       },
       "language": {
         "title": "Dil",
@@ -610,11 +635,6 @@
         "label": "Çökmeye Dayanıklı Kayıt",
         "description": "Konuşmanızı bellekte tutmak yerine konuşurken diske küçük Opus dosyaları olarak kodlar; böylece bir çökme, zorunlu güncelleme veya biten pil bile bir kayıt bırakır — bu kayıt bir sonraki açılışta onarılıp Geçmiş'e eklenir. Varsayılan: Açık. Kapatmak sıkıştırılmamış sesi kaydeder; bu da Tam veri (sıkıştırılmış sesle) yedeklerinin kasıtlı olarak dışarıda tuttuğu şeydir."
       },
-      "openRecordingsFolder": {
-        "label": "Kayıtlar Klasörü",
-        "description": "Kayıtlarınızı ve bir çökmenin ardından kurtarılan sesleri tutan klasörü açar (%APPDATA%\\pr.handy\\recordings). Kayıtları Otomatik Sil burada temizlik yapar, ama yalnızca Handy'nin kendisinin oluşturduğu dosyalara dokunur — o klasördeki kendi notlarınız veya dışa aktarımlarınız asla yeniden adlandırılmaz veya silinmez.",
-        "button": "Klasörü Aç"
-      },
       "appearance": {
         "title": "Görünüm",
         "description": "Kayıt overlay'i ve yüzen transkripsiyon penceresi dahil her Handy Tool penceresi için renk temasını ayarlar. Varsayılan: Windows açık/koyu ayarınızı takip edip izlemeye devam eden Sistem; Açık ve Koyu tek bir paleti sabitler ve sonraki işletim sistemi değişikliklerini yoksayar.",
@@ -688,11 +708,9 @@
       "tabs": {
         "app": "Uygulama",
         "output": "Çıktı",
-        "transcription": "Transkripsiyon",
         "typer": "Yazıcı",
         "providers": "Sağlayıcılar",
         "mcp": "MCP ve CLI",
-        "history": "Geçmiş",
         "postProcessing": "Son İşlem"
       },
       "mcp": {
@@ -1037,17 +1055,6 @@
           "description": "Bu projenin üzerine inşa edildiği orijinal açık kaynaklı konuşmadan metne uygulaması",
           "details": "Handy Tool, CJ Pais tarafından oluşturulan Handy'nin (github.com/cjpais/Handy, handy.computer) bir çatalıdır. Üst kaynak v0.8.1 sürümünde (Mart 2026) devralınmış ve Patrick R. tarafından bağımsız olarak geliştirilmeye devam edilmiştir. Bu projenin üzerine kurulduğu temel için CJ'ye ve Handy katkıda bulunanlarına çok teşekkürler."
         }
-      },
-      "updates": {
-        "title": "Güncellemeler",
-        "description": "Uygulamada daha yeni bir sürüm arayın veya sürümler sayfasını doğrudan tarayıcıda açın.",
-        "button": "Yayınları Kontrol Et",
-        "checkWeb": "Web'de kontrol et",
-        "checkApp": "Güncellemeleri denetle",
-        "checkFailed": "Güncellemeler denetlenemedi: {{reason}}.",
-        "useWebHint": "Uygulama içi denetim engellenirse “Web'de kontrol et” düğmesini kullanın.",
-        "latestVersion": "En son sürümü kullanıyorsunuz ({{version}}).",
-        "availableVersion": "{{version}} sürümü mevcut."
       }
     },
     "jumper": {
@@ -1262,7 +1269,11 @@
     "startingMic": "Mikrofon açılıyor...",
     "noMicrophone": "Mikrofon yok",
     "microphoneBlocked": "Mikrofon engellendi",
-    "microphoneError": "Mikrofon hatası"
+    "microphoneError": "Mikrofon hatası",
+    "paused": "Duraklatıldı",
+    "pause": "Duraklat",
+    "resume": "Devam et",
+    "liveTextBox": "Canlı metin kutusu"
   },
   "brand": {
     "name": "Handy",

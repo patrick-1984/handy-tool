@@ -13,7 +13,7 @@ Windows-only _in code_ — the entire Jumper family, portable mode, the GPU pick
 will not arrive with the macOS and Linux builds either. Those carry a _{Windows only}_ marker.
 
 **Where.** Locations are written as breadcrumbs in the app's own words:
-`Advanced › Transcription › Transcribe › Paste Method`. Read them as page, then tab, then
+`More › Output › Transcribe › Paste Method`. Read them as page, then tab, then
 group, then control; `= Value` means "set it to this". Labels are copied character-for-character
 from the app, including capitalization, `&` and `...`.
 
@@ -106,12 +106,12 @@ this is what happens if you change nothing.
 | `ctrl+shift+f3` / `ctrl+shift+f4`     | The same for a second hot destination. _{Windows only}_                                                |
 | `ctrl+alt+shift+1…9` / `ctrl+alt+1…9` | Mark / jump to numbered destinations 1 to 9. _{Windows only}_                                          |
 
-`ctrl+shift+f12` runs a take through an LLM before delivering it, but the post-processing
-page is hidden until you switch it on, so that key does nothing on a fresh install.
+`ctrl+shift+f12` runs a take through an LLM before delivering it, but post-processing is off
+until you switch it on, so that key does nothing on a fresh install.
 
 #### What happens to your clipboard
 
-The default is `Advanced › Transcription › Transcribe › Clipboard Handling = Don't Modify Clipboard`,
+The default is `More › Output › Transcribe › Clipboard Handling = Don't Modify Clipboard`,
 which does not mean the clipboard is untouched — it means Handy tries to **put the real previous
 text back**. Clipboard-based delivery places the transcript on the system clipboard for roughly
 100–300 ms, sends the paste keystroke, and restores only while Handy still owns the clipboard.
@@ -140,7 +140,7 @@ consoles. `None` puts the text on the clipboard and sends nothing.
 
 #### Is a submit key sent?
 
-Not for plain dictation: `Advanced › Transcription › Transcribe › Auto Submit = Off`. The
+Not for plain dictation: `More › Output › Transcribe › Auto Submit = Off`. The
 Transcribe & Submit shortcut is the one that sends a key, and it always sends one —
 `Submit key = Enter` by default. **Enter and Ctrl+Enter are not interchangeable either**: chat
 applications disagree about which one sends and which one inserts a newline. Slack and Teams
@@ -174,7 +174,7 @@ dropdown away as `Discard recording`.
 Audio is written to `File › %APPDATA%\pr.handy\recordings` as 16 kHz mono Ogg/Opus while you
 speak, transcripts to `File › %APPDATA%\pr.handy\history.db`, settings to
 `File › %APPDATA%\pr.handy\settings_store.json`. History keeps the 5 most recent entries and
-`Advanced › History › Auto-Delete Recordings` keeps audio for exactly those entries — an entry
+`History › Auto-Delete Recordings` keeps audio for exactly those entries — an entry
 you mark as saved is never cleaned up. Handy only ever deletes files it created; your own files
 in that folder are not touched.
 
@@ -274,6 +274,52 @@ cannot run.
 **Where.** No control — this is always active.
 **Since.** 0.25.0.
 
+### See your words next to the overlay while you talk
+
+<a id="live-text-box"></a>
+**The situation.** You want to know the microphone is hearing you correctly without switching
+to a window to look — and re-reading a whole long take every few seconds would slow a busy PC.
+**What Handy does.** A small box next to the recording overlay shows what you are saying,
+updated about every 1.5 seconds. Only the last few seconds are re-read each time; words before a
+pause are fixed and never re-transcribed, so the cost stays the same however long you talk. It
+shows either one line with the newest words or the whole take so far, and neither changes size
+while you speak. The box ignores the mouse and never takes focus. While it is on, every take
+runs in Live mode; the delivered text still comes from one full pass when you stop. The overlay's
+**T** button switches it for the next take. The preview shows raw words, before Custom Words
+corrections.
+**Where.** `General › Transcription › Live text box = On` and
+`General › Transcription › Live text shows = Whole text`.
+**Since.** 1.10.0.
+
+### Take back the last word without starting over
+
+<a id="undo-last-word"></a>
+**The situation.** Mid-sentence you say the wrong word, or the live text shows a word the model
+misheard, and the only fix used to be cancelling the whole take.
+**What Handy does.** Each press of the Undo Last Word shortcut removes the newest word of a live
+take and cuts the recording back to where that word started, so it stays out of the final text
+too — keep talking and the new words take its place. It needs word positions, which only
+Parakeet models report; with other engines the shortcut does nothing. The audio kept in History
+still contains the removed words.
+**Where.** `General › Undo last word = On`; the shortcut is
+`Shortcuts › Dictation › Undo Last Word` — `ctrl+backspace` by default, active only during a
+live take.
+**Since.** 1.10.0.
+
+### Pause a take without ending it
+
+<a id="pause-a-take"></a>
+**The situation.** Someone walks in, or you need a minute to think, and stopping would split one
+dictation into two deliveries.
+**What Handy does.** The overlay gets a pause button. While paused nothing is recorded and the
+overlay says so; resume and the same take continues, and one text is delivered when you stop.
+The microphone stays open so resuming is instant, but after 10 minutes paused it is released —
+its indicator goes out — until you resume. A Pause / Resume shortcut can be set as well; it has
+no default.
+**Where.** `General › Pause button = On`; the shortcut is
+`Shortcuts › Dictation › Pause / Resume`.
+**Since.** 1.10.0.
+
 ### A long recording that came back empty
 
 <a id="a-long-recording-that-came-back-empty"></a>
@@ -306,7 +352,7 @@ path and honor the same setting. Canceling _after_ the recorder has already stop
 transcription is still running — suppresses only the delivery instead of tearing the pipeline
 down mid-flight.
 **Where.** `Tray › Cancel` and `CLI › handy --cancel`; the shortcut itself is
-`Debug › Cancel Shortcut` _{requires: Debug mode}_.
+`Shortcuts › Dictation › Cancel Shortcut`.
 **Since.** 0.63.0.
 
 ### What a cancel can and cannot take back
@@ -381,7 +427,7 @@ against that list using edit distance plus a phonetic comparison and substitutes
 spelling — no retraining, no model surgery. How eager the matching is can be tuned if it starts
 correcting things you did not mean.
 **Where.** `General › Transcription › Custom Words`; aggressiveness at
-`Debug › Word Correction Threshold` _{requires: Debug mode}_.
+`More › Debug › Word Correction Threshold` _{requires: Debug mode}_.
 **Since.** Present since the fork's early releases.
 
 ### The next dictation doesn't run into the last one
@@ -406,8 +452,8 @@ simulated keystrokes. That can trigger autocomplete, bracket auto-closing and IM
 creates many undo steps instead of one, and can drop characters in RDP, Citrix and VM consoles,
 so it is not the default or a general upgrade. `None` puts the text on the clipboard and sends
 nothing at all, which is the right answer for apps where you want to paste by hand.
-**Where.** `Advanced › Transcription › Transcribe › Paste Method = Clipboard (Shift+Insert)`
-and `Advanced › Transcription › Transcribe › Paste Method (PTT)` _{Windows only}_.
+**Where.** `More › Output › Transcribe › Paste Method = Clipboard (Shift+Insert)`
+and `More › Output › Transcribe › Paste Method (PTT)` _{Windows only}_.
 **Since.** Present since the fork's early releases; genuine Direct keystroke delivery since
 1.0.5.
 
@@ -426,7 +472,7 @@ under `Don't Modify Clipboard`, Handy withholds the clipboard write: the take is
 History and can be recovered with Paste Last Transcription. Only `Direct` avoids the clipboard
 entirely; clipboard-based methods expose the transcript to watchers for roughly 100–300 ms, and
 only text — not images or files — can be preserved.
-**Where.** `Advanced › Transcription › Transcribe › Clipboard Handling = Don't Modify Clipboard`.
+**Where.** `More › Output › Transcribe › Clipboard Handling = Don't Modify Clipboard`.
 **Since.** Present since the fork's early releases; the delayed restore since 0.29.0; ownership
 checks, restore retries and history-only failure recovery since 1.0.5.
 
@@ -439,7 +485,7 @@ every single time.
 Ctrl+Enter or Super+Enter, because applications disagree about which one sends. It is ignored
 when the paste method is `None`, and it is separate from the dedicated Transcribe & Submit
 shortcut, which always submits.
-**Where.** `Advanced › Transcription › Transcribe › Auto Submit = Enter`.
+**Where.** `More › Output › Transcribe › Auto Submit = Enter`.
 **Since.** Present since the fork's early releases.
 
 ### The paste didn't land — get the words back without re-dictating
@@ -458,7 +504,7 @@ points to the History page when none is bound. This is why
 [Dictation doesn't steal your clipboard](#dictation-doesnt-steal-your-clipboard) is safe to
 switch on.
 **Where.** `General › Paste Last Transcription` — `ctrl+shift+f10` by
-default; `Advanced › Transcription › Paste last transcription › Paste method`.
+default; `More › Output › Paste last transcription › Paste method`.
 **Since.** 0.57.0; pre-delivery History storage and shortcut-aware failure recovery since 1.0.5.
 
 ### Your re-paste key fires while you are still holding it
@@ -561,11 +607,28 @@ modifier, such as `f`, gets an amber warning: it would fire every time you type 
 <a id="find-a-setting-by-typing-its-name"></a>
 **The situation.** You remember that a setting exists but not which page, tab or group it is on.
 **What Handy does.** A search box at the top of the sidebar matches setting names, their
-descriptions, their options and every shortcut. Picking a result opens its page — and the right
-tab of Advanced — and briefly outlines the setting. Hidden pages and other platforms' controls
-never show up.
+descriptions, their options and every shortcut. Picking a result opens its page — on More, the right
+tab — and briefly outlines the setting. While you type, the sidebar widens so long names and
+their locations fit, and it narrows again once you pick one. Hidden pages, other platforms'
+controls and post-processing's own controls while it is off never show up.
 **Where.** The search box above the sidebar's page list.
-**Since.** 1.9.0.
+**Since.** 1.9.0. The widening sidebar since 1.10.0.
+
+### Six pages in the sidebar, everything else under More
+
+<a id="six-pages-and-more"></a>
+**The situation.** The sidebar had grown to seventeen entries in two groups, and some settings
+were in two places at once — History settings on both History and Advanced, the Cancel shortcut
+on Debug and Shortcuts.
+**What Handy does.** The sidebar holds the six pages used most — General, Shortcuts, Models,
+History, Jumper and Keyboard Typer — and a **More** entry. More shows two rows of tabs: Settings
+(App, Output, Providers, Post-processing, MCP & CLI, Backup, Debug, About) and Tools
+(Translator, Token Count, Model Testing, Current Audio), and it reopens the tab you used last.
+Every setting now has one home: History's settings sit at the bottom of History, the
+post-processing provider and prompt appear under the Post-processing switch, and the duplicate
+rows are gone.
+**Where.** `More`.
+**Since.** 1.10.0.
 
 ### When delivery can't be verified, the text is still recoverable
 
@@ -588,7 +651,7 @@ you are dictating into.
 **What Handy does.** A small always-available floating window shows the current transcription,
 with a copy button in the corner. It is created hidden at startup so its web view cannot block
 the app's first keystroke.
-**Where.** `Current Audio › Open floating window`.
+**Where.** `More › Current Audio › Open floating window`.
 **Since.** 0.8.2.
 
 ### The transcript panel doesn't go blank between takes
@@ -599,7 +662,7 @@ empty because a new take has started.
 **What Handy does.** Current Audio keeps the previous transcript on screen until the new take
 actually produces text — live and push-to-talk stream the in-progress result, post-recording
 holds the last one until the final arrives. A copy button sits in the transcript box itself.
-**Where.** `Current Audio › Copy`.
+**Where.** `More › Current Audio › Copy`.
 **Since.** 0.49.0 and 0.50.0.
 
 ### Speak any language, get English
@@ -610,7 +673,7 @@ holds the last one until the final arrives. A copy button sits in the transcript
 The switch is greyed out — with a reason — for models that cannot translate, rather than
 silently doing nothing. You can also pin the spoken language for engines that accept a hint,
 which is usually more accurate than auto-detection.
-**Where.** `Advanced › Transcription › Translate to English = On`; language at
+**Where.** `More › Output › Translate to English = On`; language at
 `General › Language`.
 **Since.** 0.3.0; the greyed-out honesty in 0.10.0 and 0.17.0.
 
@@ -655,7 +718,7 @@ instead of sending.
 clients usually send on Enter; several LLM consoles, comment boxes and ticket systems want
 Ctrl+Enter. This key is always sent by this shortcut, independently of the global auto-submit
 setting.
-**Where.** `Advanced › Transcription › Transcribe & Submit › Submit key = Ctrl+Enter`.
+**Where.** `More › Output › Transcribe & Submit › Submit key = Ctrl+Enter`.
 **Since.** The 0.3x series.
 
 ### Its own paste method, for the one app that needs it
@@ -666,7 +729,7 @@ and you do not want to change a global setting for one target.
 **What Handy does.** Transcribe & Submit carries a complete delivery recipe of its own — paste
 method, clipboard policy, clipboard restore delay — that shadows the global settings for this
 one shortcut. Nothing you set here affects ordinary dictation.
-**Where.** `Advanced › Transcription › Transcribe & Submit › Paste method`.
+**Where.** `More › Output › Transcribe & Submit › Paste method`.
 **Since.** The 0.3x series.
 
 ### Its own clipboard policy
@@ -676,7 +739,7 @@ one shortcut. Nothing you set here affects ordinary dictation.
 flow to keep a copy of what it sent — or the reverse.
 **What Handy does.** The submit flow has a separate clipboard handling choice and a separate
 restore delay, so the two intents can differ without compromise.
-**Where.** `Advanced › Transcription › Transcribe & Submit › Clipboard = Copy to Clipboard`.
+**Where.** `More › Output › Transcribe & Submit › Clipboard = Copy to Clipboard`.
 **Since.** The 0.3x series.
 
 ### Pressing it when nothing is recording
@@ -687,7 +750,7 @@ like to control what that means.
 **What Handy does.** Three outcomes, your choice: start an ordinary recording, do nothing at all
 (making the key a pure finisher you cannot misfire), or start a recording that will paste and
 submit when it stops.
-**Where.** `Advanced › Transcription › Transcribe & Submit › When no recording is active = Do nothing`.
+**Where.** `More › Output › Transcribe & Submit › When no recording is active = Do nothing`.
 **Since.** The 0.3x series.
 
 ### It finishes a take you started with another key
@@ -713,7 +776,7 @@ remote desktop target that was **already focused**: before that it was gated on 
 dictating into an RDP window you were already in got no wait at all and the Enter could fire while
 the text was still crossing the remote session, submitting a partial dictation. An already-focused
 **local** target still submits instantly.
-**Where.** `Advanced › Transcription › Transcribe & Submit › Submit delay before Enter (Windows)`
+**Where.** `More › Output › Transcribe & Submit › Submit delay before Enter (Windows)`
 _{Windows only}_.
 **Since.** 0.53.0.
 
@@ -738,7 +801,7 @@ _and control_ are remembered. Wander anywhere. When the transcription finishes, 
 the anchored window, focuses the anchored field, verifies both actually happened, delivers the
 text, and hands focus back to where you were.
 **Where.** `Jumper › Hot slot (Anchor & Deliver) › Set Anchor` — `ctrl+shift+f1` by default — then
-`Advanced › Transcription › Transcribe › Jump slot action on finish = Jump / deliver to slot`
+`More › Output › Transcribe › Jump slot action on finish = Jump / deliver to slot`
 _{Windows only}_.
 **Since.** 0.31.0.
 
@@ -838,8 +901,8 @@ sometimes you want to stay where you are and have only the text travel.
 its own slot. The action can be: do nothing, jump and deliver to the slot, set the slot to
 whatever has focus right now, or clear the slot. Ordinary dictation and Transcribe & Submit
 configure these independently.
-**Where.** `Advanced › Transcription › Transcribe › Jump slot action on start` and
-`Advanced › Transcription › Transcribe › Jump slot action on finish` _{Windows only}_.
+**Where.** `More › Output › Transcribe › Jump slot action on start` and
+`More › Output › Transcribe › Jump slot action on finish` _{Windows only}_.
 **Since.** 0.36.0.
 
 ### You can see which slot an action targets
@@ -850,7 +913,7 @@ should jump to.
 **What Handy does.** The slot picker sits to the left of the action dropdown and is always
 rendered, greyed out until you choose an action. It used to be hidden entirely while the action
 was "Do nothing", which made the slot look unselectable.
-**Where.** `Advanced › Transcription › Transcribe & Submit › Jump slot action on finish`
+**Where.** `More › Output › Transcribe & Submit › Jump slot action on finish`
 _{Windows only}_.
 **Since.** 0.62.0.
 
@@ -862,7 +925,7 @@ to that same field without setting an anchor by hand.
 **What Handy does.** With tracking on, the chosen slot auto-captures where the text landed after
 every paste of that flow, before any focus return. Ordinary dictation and Transcribe & Submit
 track independently, into slots of your choosing.
-**Where.** `Advanced › Transcription › Transcribe › Track last output location = On`
+**Where.** `More › Output › Transcribe › Track last output location = On`
 _{Windows only}_.
 **Since.** 0.46.0.
 
@@ -875,7 +938,7 @@ in another window. Losing focus for a second is fine; being dumped in the other 
 location captured automatically at the moment delivery begins. It is conditional: if you
 switched windows yourself while it was working, it leaves you where you chose to be. Each flow
 decides for itself whether to return focus.
-**Where.** `Advanced › Transcription › Transcribe › Return focus after delivery = On`
+**Where.** `More › Output › Transcribe › Return focus after delivery = On`
 _{Windows only}_.
 **Since.** 0.40.0.
 
@@ -961,9 +1024,9 @@ application the pre-recording content, a race Citrix lost reliably. The restore 
 background thread after 50 ms plus your configured delay. It is skipped when you ask Handy to
 keep the transcription, and an ownership check leaves a newer take or anything you copy during
 the delay alone. Restore failures are retried, then written to the log at warn level.
-**Where.** `Advanced › Transcription › Transcribe › Clipboard restore delay = 1 s`, with a
+**Where.** `More › Output › Transcribe › Clipboard restore delay = 1 s`, with a
 separate value at
-`Advanced › Transcription › Transcribe & Submit › Clipboard restore delay`.
+`More › Output › Transcribe & Submit › Clipboard restore delay`.
 **Since.** 0.29.0; clipboard ownership checks and restore retries since 1.0.5.
 
 ### The paste is swallowed right after a jump
@@ -974,7 +1037,7 @@ pasted into it.
 **What Handy does.** A window that was activated a heartbeat ago is still completing activation
 and eats the keystroke. A settle is inserted after the foreground changes and before the paste.
 It applies only on a real jump; when you are already in the target, pasting stays instant.
-**Where.** `Advanced › Transcription › Transcribe › Paste delay after jump (Windows)`
+**Where.** `More › Output › Transcribe › Paste delay after jump (Windows)`
 _{Windows only}_.
 **Since.** 0.55.0.
 
@@ -985,8 +1048,8 @@ _{Windows only}_.
 nothing. Before this you had to slow down every jump to make the remote one work.
 **What Handy does.** The post-jump paste delay and the submit delay are each split into a Local
 and a Remote value, shown side by side. Handy picks the column based on what the target is.
-**Where.** `Advanced › Transcription › Transcribe & Submit › Paste delay after jump (Windows)`
-and `Advanced › Transcription › Transcribe & Submit › Submit delay before Enter (Windows)`
+**Where.** `More › Output › Transcribe › Paste delay after jump (Windows)`
+and `More › Output › Transcribe & Submit › Submit delay before Enter (Windows)`
 _{Windows only}_.
 **Since.** 0.56.0.
 
@@ -1018,7 +1081,7 @@ already carried the warning, under [Ctrl+V doesn't work in that
 app](#ctrl-v-doesnt-work-in-that-app), that keystroke delivery "can drop characters in RDP, Citrix
 and VM consoles"; the 1.2.0 entry contradicted it.
 **What replaced it.** Nothing automatic. Keystroke delivery is still available as a deliberate,
-global choice - `Advanced › Transcription › Transcribe › Paste method = Direct` - with the same
+global choice - `More › Output › Transcribe › Paste method = Direct` - with the same
 caveats it always had. Remote targets otherwise use your configured paste method, which means the
 transcript does reach the remote machine's clipboard and its history; see
 [Privacy and data flow](privacy.md) for what that exposes. 1.3.0 also fixed the
@@ -1043,7 +1106,7 @@ stays snappy while a remote one gets the time it needs. It is unset by default a
 until you choose a value; 1 s is a sensible starting point. The honest cost is stated in the
 setting itself: a longer restore leaves the transcript on your clipboard for longer, which widens
 the window in which clipboard history and clipboard managers can capture it.
-**Where.** `Advanced › Transcription › Transcribe › Clipboard restore delay for remote desktops`
+**Where.** `More › Output › Transcribe › Clipboard restore delay for remote desktops`
 _{Windows only}_.
 **Applies to.** Deliveries whose target matches `Jumper › Remote desktop detection › Remote match
 strings`.
@@ -1072,7 +1135,7 @@ pastes into a password field or a foreign window. Local jumps are unchanged.
 its paste after a jump.
 **What Handy does.** Ordinary dictation jumps and pastes as well, so the paste-delay control is
 offered for that flow too, using the same setting.
-**Where.** `Advanced › Transcription › Transcribe › Paste delay after jump (Windows)`
+**Where.** `More › Output › Transcribe › Paste delay after jump (Windows)`
 _{Windows only}_.
 **Since.** 0.56.0.
 
@@ -1116,7 +1179,7 @@ silence, with the in-progress chunk under a temporary name. On the next launch a
 temporary chunk is repaired — the torn trailing page is dropped — glued to its siblings and
 added to History marked as recovered. Opus is page-based, so a half-written file is readable
 without any repair tool.
-**Where.** `Advanced › History › Crash-Safe Recording = On`.
+**Where.** `History › Crash-Safe Recording = On`.
 **Since.** 0.10.0 as WAV; the chunked Opus design in 0.11.0.
 
 ### Recordings that don't eat your disk
@@ -1138,7 +1201,7 @@ automatic cleanup is about to run.
 **What Handy does.** Every delete, rename and retention sweep is restricted to files Handy
 created and named itself. Anything else in that folder is invisible to cleanup. Deleting one
 recording also removes its chunk siblings, and nothing else.
-**Where.** `Advanced › History › Recordings Folder`.
+**Where.** `History › Open Recordings Folder`.
 **Since.** 0.10.0, extended to Opus in 0.11.0.
 
 ### What did I dictate last Tuesday?
@@ -1172,7 +1235,7 @@ tracking.
 **What Handy does.** At startup, older rows are backfilled by reading each audio file's own
 header, so historical totals become real rather than being written off. A button re-runs the
 pass on demand.
-**Where.** `Advanced › Transcription › Transcription cost report`.
+**Where.** `More › Providers › OpenRouter Transcription › Transcription cost report`.
 **Since.** 0.22.0.
 
 ### Hear what it heard
@@ -1193,8 +1256,8 @@ sitting on a work laptop.
 **What Handy does.** Retention is a choice: keep nothing beyond the newest few entries, keep for
 three days, two weeks or three months, or keep everything. Cleanup runs after a new entry is
 saved and when you change the setting; it never touches entries you have marked as saved.
-**Where.** `Advanced › History › Auto-Delete Recordings = After 3 days` and
-`Advanced › History › History Limit`.
+**Where.** `History › Auto-Delete Recordings = After 3 days` and
+`History › History Limit`.
 **Since.** Present since the fork's early releases.
 
 ### Keep the ones that matter
@@ -1244,8 +1307,8 @@ you said it. Sometimes you want that verbatim, and sometimes you want it tidied.
 **What Handy does.** A separate shortcut runs the take through a language model you configure,
 with a prompt you control, before delivering it. Raw and processed dictation are one keystroke
 apart, and the raw transcription is always kept in History alongside the processed version.
-**Where.** `Advanced › Post-processing › Post Processing = On` to reveal the page, then
-`Post Process › Hotkey › Post-Processing Hotkey` — `ctrl+shift+f12` by default
+**Where.** `More › Post-processing › Post Processing = On` to reveal the page, then
+`More › Post-processing › Hotkey › Post-Processing Hotkey` — `ctrl+shift+f12` by default
 _{requires: Post-processing enabled}_.
 **Since.** Present since the fork's early releases.
 
@@ -1257,7 +1320,7 @@ _{requires: Post-processing enabled}_.
 content suggests, and **preserves your wording**. Where the transcription was probably a
 mishearing it flags the guess inline for you to confirm rather than inventing a correction. If
 your dictation opens with an instruction, it follows the instruction instead of formatting it.
-**Where.** `Post Process › Prompt › Selected Prompt` _{requires: Post-processing enabled}_.
+**Where.** `More › Post-processing › Prompt › Selected Prompt` _{requires: Post-processing enabled}_.
 **Since.** 0.15.0.
 
 ### Your own post-processing prompts
@@ -1266,7 +1329,7 @@ your dictation opens with an instruction, it follows the instruction instead of 
 **The situation.** You want commit messages formatted one way and meeting notes another.
 **What Handy does.** A prompt library you edit in the app: create, name, update and delete
 prompts, and switch the active one without touching anything else.
-**Where.** `Post Process › Prompt › Selected Prompt` _{requires: Post-processing enabled}_.
+**Where.** `More › Post-processing › Prompt › Selected Prompt` _{requires: Post-processing enabled}_.
 **Since.** Present since the fork's early releases.
 
 ### Your dictated words can't hijack the model
@@ -1288,8 +1351,8 @@ you wanted a rewrite.
 **What Handy does.** A temperature slider for post-processing, plus a switch that suppresses
 reasoning output for models that emit it — sent in the dialect each vendor actually accepts,
 rather than one shape that returns an error on half of them.
-**Where.** `Post Process › API (OpenAI Compatible) › Temperature` and
-`Post Process › API (OpenAI Compatible) › Disable Thinking` _{requires: Post-processing enabled}_.
+**Where.** `More › Post-processing › API (OpenAI Compatible) › Temperature` and
+`More › Post-processing › API (OpenAI Compatible) › Disable Thinking` _{requires: Post-processing enabled}_.
 **Since.** 0.15.0; per-vendor thinking dialects in 0.18.0.
 
 ### Configure a provider once, use it everywhere
@@ -1300,7 +1363,7 @@ and a third mental note about which key went where.
 **What Handy does.** One registry of providers — name, base URL, key, model, cost per million
 tokens in and out — powers post-processing, token counting and model testing at once. Edit a
 provider in one place and everything that references it follows.
-**Where.** `Advanced › Providers › Registered LLM Providers › Base URL`.
+**Where.** `More › Providers › Registered LLM Providers › Base URL`.
 **Since.** 0.15.0.
 
 ### Several slots, one local loader
@@ -1312,7 +1375,7 @@ its single model loader, so everything is slow and half of it fails.
 within it. Slots in the same family take turns; everything else runs in parallel. This is what
 makes a mixed run of local and cloud models finish in the time of the slowest one instead of the
 sum of all of them.
-**Where.** `Advanced › Providers › Registered LLM Providers › Concurrency`.
+**Where.** `More › Providers › Registered LLM Providers › Concurrency`.
 **Since.** 0.15.0.
 
 ### Point it at any OpenAI-compatible speech endpoint
@@ -1325,7 +1388,7 @@ server — Groq, OpenAI, faster-whisper-server, your own — configured with a U
 model name. It always sends one request at the end of the recording rather than uploading
 repeatedly during it. When the language is set to automatic it sends English explicitly, because
 these endpoints need to be told.
-**Where.** `Advanced › Providers › API Transcription (OpenAI-compatible) › API URL`.
+**Where.** `More › Providers › API Transcription (OpenAI-compatible) › API URL`.
 **Since.** 0.8.2.
 
 ### One OpenRouter key, many speech models
@@ -1336,7 +1399,7 @@ relationship for each.
 **What Handy does.** A dedicated OpenRouter engine that sends audio in the shape OpenRouter
 actually accepts — JSON with base64 audio, not the usual multipart upload — with its own URL,
 key and model fields separate from the LLM provider registry.
-**Where.** `Advanced › Providers › OpenRouter Transcription › API Key`.
+**Where.** `More › Providers › OpenRouter Transcription › API Key`.
 **Since.** 0.16.0; dedicated fields in 0.54.0.
 
 ### Whisper-style, or an audio-capable chat model
@@ -1347,7 +1410,7 @@ that happens to accept audio.
 **What Handy does.** Two routes. The transcription route talks to the dedicated speech endpoint
 for Whisper-style models. The chat route sends the audio as part of a chat message, which is how
 audio-capable models such as Gemini and GPT-4o-audio expect to receive it.
-**Where.** `Advanced › Providers › OpenRouter Transcription › Endpoint = Chat model (Gemini / GPT-4o-audio)`.
+**Where.** `More › Providers › OpenRouter Transcription › Endpoint = Chat model (Gemini / GPT-4o-audio)`.
 **Since.** 0.16.0.
 
 ### Ten times less audio over the wire
@@ -1357,7 +1420,7 @@ audio-capable models such as Gemini and GPT-4o-audio expect to receive it.
 **What Handy does.** Sends Opus by default, roughly ten times smaller than WAV, reusing the
 encoder Handy already uses for its own recordings. WAV stays available for models that will not
 take anything else.
-**Where.** `Advanced › Providers › OpenRouter Transcription › Audio format = Opus — smaller (recommended)`.
+**Where.** `More › Providers › OpenRouter Transcription › Audio format = Opus — smaller (recommended)`.
 **Since.** 0.16.0.
 
 ### A network blip can't shred your take
@@ -1379,7 +1442,7 @@ fields only appeared once the engine was already working.
 **What Handy does.** Both custom transcription engines have permanent, named cards on the
 Providers tab, visible whether or not you are using them. Existing setups migrate automatically
 on first launch, and the old provider entry is left intact for post-processing and model testing.
-**Where.** `Advanced › Providers › API Transcription (OpenAI-compatible) › Model`.
+**Where.** `More › Providers › API Transcription (OpenAI-compatible) › Model`.
 **Since.** 0.54.0.
 
 ### Selecting a remote engine no longer reverts
@@ -1400,7 +1463,7 @@ none.
 **What Handy does.** OpenRouter leaves speech models out of its normal catalogue, so Handy asks
 for transcription-capable models specifically, with a built-in fallback list if the query fails.
 A blank model defaults to a sensible Whisper model, and no request is ever sent without a key.
-**Where.** `Advanced › Providers › OpenRouter Transcription › Transcription model`.
+**Where.** `More › Providers › OpenRouter Transcription › Transcription model`.
 **Since.** 0.23.0.
 
 ### Find a model among hundreds
@@ -1409,7 +1472,7 @@ A blank model defaults to a sensible Whisper model, and no request is ever sent 
 **The situation.** The provider offers four hundred models and the field is a plain text box.
 **What Handy does.** The model field fetches the live list, filters as you type, and still
 accepts any identifier you type by hand for models the endpoint does not advertise.
-**Where.** `Advanced › Providers › Registered LLM Providers › Model`.
+**Where.** `More › Providers › Registered LLM Providers › Model`.
 **Since.** 0.17.0.
 
 ### Know what your dictation costs
@@ -1421,7 +1484,7 @@ cents or tens of euros a month.
 alongside the recording length. A report breaks it down by the last 7 days, the last 4 weeks, the
 last 12 months and by year, with an all-time total, and exports every recording plus the
 summaries as CSV.
-**Where.** `Advanced › Transcription › Transcription cost report`.
+**Where.** `More › Providers › OpenRouter Transcription › Transcription cost report`.
 **Since.** 0.21.0 and 0.22.0.
 
 ### Prices filled in for providers that don't publish them
@@ -1433,7 +1496,7 @@ through their API, so you would be typing numbers from a web page.
 tolerantly across dash, dot and date-suffix differences where not — and fills in the cost fields.
 A per-provider lock freezes a price you entered yourself so an automatic lookup cannot overwrite
 it, and the catalogue is cached for a day so lookups work offline.
-**Where.** `Advanced › Providers › Registered LLM Providers › Cost / 1M`.
+**Where.** `More › Providers › Registered LLM Providers › Cost / 1M`.
 **Since.** 0.18.0.
 
 ### A hung provider can't stall the app
@@ -1721,7 +1784,7 @@ formed on your work.
 answers side by side, with tokens, cost, and wall-clock round-trip for each. Concurrency respects
 provider families, so local slots sharing one loader take turns while cloud models run at once,
 and the reported time is to the last finisher rather than the sum.
-**Where.** `Model Testing › Prompt for all models` then `Model Testing › Run test`.
+**Where.** `More › Model Testing › Prompt for all models` then `More › Model Testing › Run test`.
 **Since.** 0.15.0.
 
 ### Let a panel score the answers
@@ -1733,7 +1796,7 @@ were trying to automate.
 original input and every candidate answer, and return their assessments. Judges are picked
 independently of the models being tested, and they get their own temperature and thinking
 settings, both recorded in the report.
-**Where.** `Model Testing › Judge / arbiter prompt (optional)`.
+**Where.** `More › Model Testing › Judge / arbiter prompt (optional)`.
 **Since.** 0.15.0; separate judge parameters in 0.20.0.
 
 ### Local models can judge too
@@ -1756,7 +1819,7 @@ retype it from memory each time.
 one of each under a name. Selecting a preset fills both pickers with the prompts it is made of,
 so you can see and adjust each half rather than getting an opaque bundle. Saved prompts keep
 their attached image.
-**Where.** `Model Testing › Preset`.
+**Where.** `More › Model Testing › Preset`.
 **Since.** 0.17.0; visible preset parts in 0.19.0.
 
 ### Test vision models with a real image
@@ -1767,7 +1830,7 @@ nothing about it.
 **What Handy does.** Attach an image by button or drag and drop, and send prompt plus image,
 prompt only, or image only. Each provider receives it in its own native multimodal shape. An
 image that cannot be read fails loudly instead of quietly sending a text-only request.
-**Where.** `Model Testing › Image (optional, for vision models)`.
+**Where.** `More › Model Testing › Image (optional, for vision models)`.
 **Since.** 0.18.0.
 
 ### Thinking on or off, per model
@@ -1778,7 +1841,7 @@ reasoning while the other half do not.
 **What Handy does.** Automatic, on, or off, for the tested models and for the judges separately —
 translated into each vendor's own parameter, including the modern adaptive form for current
 models rather than a deprecated shape that returns an error.
-**Where.** `Model Testing › Thinking = Off`.
+**Where.** `More › Model Testing › Thinking = Off`.
 **Since.** 0.18.0.
 
 ### See what's happening between dispatch and verdict
@@ -1788,7 +1851,7 @@ models rather than a deprecated shape that returns an error.
 which one is holding things up.
 **What Handy does.** A live activity feed logs each model and judge as it finishes, with a
 success or failure mark and its timing, plus markers for each phase of the run.
-**Where.** `Model Testing › Run test`.
+**Where.** `More › Model Testing › Run test`.
 **Since.** 0.17.0.
 
 ### One Markdown artifact you can keep
@@ -1799,7 +1862,7 @@ or a decision log.
 **What Handy does.** Every run produces one Markdown document — input, a summary table with
 tokens, cost and time, the judge panel, then each model's full answer. Copy it, or save it with
 a sensible default filename and re-save to the same path with one click afterwards.
-**Where.** `Model Testing › Copy Markdown` and `Model Testing › Save as…`.
+**Where.** `More › Model Testing › Copy Markdown` and `More › Model Testing › Save as…`.
 **Since.** 0.15.0; save-as in 0.18.0.
 
 ### Unconfigured seats stay out of the run
@@ -1809,7 +1872,7 @@ a sensible default filename and re-save to the same path with one click afterwar
 every run list to be unticked again.
 **What Handy does.** Only enabled, configured providers appear in the run and judge lists, and
 the scheduler skips the rest.
-**Where.** `Advanced › Providers › Registered LLM Providers › Enable this provider`.
+**Where.** `More › Providers › Registered LLM Providers › Enable this provider`.
 **Since.** 0.17.0.
 
 ---
@@ -1826,7 +1889,7 @@ what that means before you do it.
 **What Handy does.** Paste or load text and count it with a tokenizer, or against a real
 provider's own counting endpoint. Chips across the top cover the built-in tokenizers and every
 configured provider; click one to count with it.
-**Where.** `Token Count › Paste text here to count tokens...`.
+**Where.** `More › Token Count › Paste text here to count tokens...`.
 **Since.** 0.12.0.
 
 ### Token counts you can trust from a local server
@@ -1838,7 +1901,7 @@ wrapping — measured at plus seventeen on one popular local server and plus thi
 Counting now uses the raw completions endpoint and calibrates that fixed overhead away with a
 known one-token probe, which is exact against both servers, with a fallback for endpoints that
 have no completions route.
-**Where.** `Token Count › Count with all`.
+**Where.** `More › Token Count › Count with all`.
 **Since.** 0.13.0.
 
 ### Counts without a network call
@@ -1849,7 +1912,7 @@ machine at all.
 **What Handy does.** Three built-in counters run entirely locally — two exact tokenizers and a
 rough estimate — and they are the first rows of every comparison. The estimate is excluded from
 the difference baseline so it cannot skew a comparison between exact tokenizers.
-**Where.** `Token Count › cl100k (GPT-4)` and `Token Count › o200k (GPT-4o)`.
+**Where.** `More › Token Count › cl100k (GPT-4)` and `More › Token Count › o200k (GPT-4o)`.
 **Since.** 0.12.0 and 0.13.0.
 
 ### One click, every provider, one table
@@ -1860,7 +1923,7 @@ the difference baseline so it cannot skew a comparison between exact tokenizers.
 difference against the smallest, and time — rows appearing as they finish. Two modes: serialized,
 which is correct when several slots share one local service, and parallel, which takes as long
 as the slowest provider instead of the sum.
-**Where.** `Token Count › Count with all (parallel)`.
+**Where.** `More › Token Count › Count with all (parallel)`.
 **Since.** 0.12.0; parallel mode in 0.13.1.
 
 ### Count a file instead of pasting it
@@ -1869,7 +1932,7 @@ as the slowest provider instead of the sum.
 **The situation.** The thing you want to count is a 3 MB transcript, and pasting it into a text
 box is not a good plan.
 **What Handy does.** Opens a text file up to 10 MB and counts it directly.
-**Where.** `Token Count › Open file...`.
+**Where.** `More › Token Count › Open file...`.
 **Since.** 0.12.0.
 
 ---
@@ -1888,7 +1951,7 @@ transcribing them one at a time by hand is the whole afternoon.
 **What Handy does.** Watches folders you choose and transcribes new audio files into a `.txt`
 file next to the source, using your engines and your settings. It runs in the background while
 you keep using the app normally.
-**Where.** `Translator › Watch folders = On` then `Translator › Add a folder`.
+**Where.** `More › Translator › Watch folders = On` then `More › Translator › Add a folder`.
 **Since.** The 0.3x series.
 
 ### Your existing files are left alone
@@ -1899,7 +1962,7 @@ grinding through all of them.
 **What Handy does.** Only files that appear _after_ watching starts are queued. The existing
 contents are snapshotted and deliberately ignored. Handy's own recorder-internal files — chunk
 parts, temporary files, partial downloads — are never picked up.
-**Where.** `Translator › Watched folders`.
+**Where.** `More › Translator › Watched folders`.
 **Since.** The 0.3x series.
 
 ### A file is never transcribed twice
@@ -1909,7 +1972,7 @@ parts, temporary files, partial downloads — are never picked up.
 **What Handy does.** The `.txt` sidecar is the record that a file is done, so it stays done across
 restarts forever. The pending queue is persisted as well, so unfinished work resumes rather than
 restarting. A file recreated under the same name is detected as new by its modification time.
-**Where.** `Translator › Status`.
+**Where.** `More › Translator › Status`.
 **Since.** The 0.3x series.
 
 ### Never reads a file that is still being written
@@ -1931,7 +1994,7 @@ dictation feeling instant. Folder-first keeps the batch running and queues live 
 it, though the batch always yields while a take is finishing. First-come-first-served finishes
 the current file's segments before the next job. Batch work is cut into roughly forty-second
 segments so pausing never discards progress.
-**Where.** `Translator › Priority = Live dictation first`.
+**Where.** `More › Translator › Priority = Live dictation first`.
 **Since.** The 0.3x series.
 
 ### Batch on one accelerator, dictation on another
@@ -1943,7 +2006,7 @@ is constantly being unloaded and reloaded.
 it resident in parallel — dictation on the NPU while the batch grinds a Whisper model on the
 integrated GPU. Shared hardware serializes gracefully rather than racing, and the batch model has
 its own idle-unload setting so it can be released independently.
-**Where.** `Translator › Batch model` and `Translator › Unload batch model after`.
+**Where.** `More › Translator › Batch model` and `More › Translator › Unload batch model after`.
 **Since.** 0.48.0.
 
 ### You can see what it is working on
@@ -1953,7 +2016,7 @@ its own idle-unload setting so it can be released independently.
 log.
 **What Handy does.** A status row that reads off, watching with nothing to do, a count of queued
 files, or the current file and which segment of it is being transcribed.
-**Where.** `Translator › Status`.
+**Where.** `More › Translator › Status`.
 **Since.** The 0.3x series.
 
 ---
@@ -1974,7 +2037,7 @@ guarded by a bearer token. It speaks HTTP for the Claude app and stdio through a
 Claude Code, and exposes Handy's own tools: token counting, typing text into the focused window,
 listing and reading history, listing and setting providers, saving model-test prompts and
 running a model test.
-**Where.** `Advanced › MCP & CLI › Enable MCP & CLI server = On`.
+**Where.** `More › MCP & CLI › Enable MCP & CLI server = On`.
 **Since.** 0.20.0.
 
 ### A handy command on your PATH
@@ -1986,7 +2049,7 @@ from an agent.
 local server: model tests, token counts, typing, history listing, provider configuration, plus
 the stdio bridge. It finds the running instance by itself through a small discovery file, so you
 never pass a port or a token on the command line.
-**Where.** `Advanced › MCP & CLI › Command-line companion`, then `CLI › handy install-cli`.
+**Where.** `More › MCP & CLI › Command-line companion`, then `CLI › handy install-cli`.
 **Since.** 0.20.0.
 
 ### An agent can set a key but never read one
@@ -2011,7 +2074,7 @@ isolate Handy from other processes running as you: the token is stored in plain 
 settings file and in a small discovery file, so any local process running as your user can read
 it and then read your history, change provider URLs or run a model test. Traffic is plain HTTP
 over loopback, not TLS. Leave the server off unless you want it.
-**Where.** `Advanced › MCP & CLI › Token` and `Advanced › MCP & CLI › Port`.
+**Where.** `More › MCP & CLI › Token` and `More › MCP & CLI › Port`.
 **Since.** 0.20.0.
 
 ### Scriptable model tests that produce the same artifact as the interface
@@ -2065,8 +2128,8 @@ prompt library by hand is an afternoon you do not have.
 **What Handy does.** Exports a single `.tar.gz`. The configuration profile carries settings and
 the history database — timestamps, text, cost, duration. The full profile adds your compressed
 recordings.
-**Where.** `Backup › Configuration + history › Export config + history` and
-`Backup › Full data (with compressed audio) › Export full backup`.
+**Where.** `More › Backup › Configuration + history › Export config + history` and
+`More › Backup › Full data (with compressed audio) › Export full backup`.
 **Since.** 0.22.0.
 
 ### Move machines, or undo a bad week
@@ -2077,8 +2140,8 @@ but not a settings file from three weeks ago.
 **What Handy does.** Restore picks an archive and lets you choose what comes back —
 configuration and history, recordings, or both — and reports per-item errors instead of failing
 the whole operation on one bad entry.
-**Where.** `Backup › Restore from backup › Configuration & history (settings, history DB)` and
-`Backup › Restore from backup › Restore from backup…`.
+**Where.** `More › Backup › Restore from backup › Configuration & history (settings, history DB)` and
+`More › Backup › Restore from backup › Restore from backup…`.
 **Since.** 0.25.0.
 
 ### A crafted archive can't write outside the app
@@ -2098,7 +2161,7 @@ regular files, refuses any path traversal, and caps decompressed size.
 next write.
 **What Handy does.** The running app holds settings in memory, so a settings or history restore
 is followed by an explicit restart button rather than a silent inconsistency.
-**Where.** `Backup › Restore from backup › Restore from backup…`.
+**Where.** `More › Backup › Restore from backup › Restore from backup…`.
 **Since.** 0.25.0.
 
 ### What a backup deliberately leaves out
@@ -2111,7 +2174,7 @@ Even a full backup excludes uncompressed WAV and FLAC audio and in-progress temp
 recordings made with crash-safe recording switched off are **not** in the archive, although their
 history rows are. And the honest one: a settings backup contains your API keys and the server
 token in plain text, so treat the file as a secret.
-**Where.** `Backup › Full data (with compressed audio) › Export full backup`.
+**Where.** `More › Backup › Full data (with compressed audio) › Export full backup`.
 **Since.** 0.22.0.
 
 ### Run it from a USB stick and leave no trace
@@ -2165,7 +2228,7 @@ stopped, because you were looking at something else.
 to know the state. Volume, output device and the sound set are all configurable, including
 supplying your own two files.
 **Where.** `General › Sound › Audio Feedback = On`, `General › Sound › Volume`, and
-`Debug › Sound Theme = Custom` _{requires: Debug mode}_.
+`More › Debug › Sound Theme = Custom` _{requires: Debug mode}_.
 **Since.** 0.1.5.
 
 ### The microphone light is off when you're not dictating
@@ -2184,7 +2247,7 @@ open — which removes the wake-up wait — at the cost of a permanently active 
 an explicit choice, not the default. A middle way keeps it open only for 1, 5 or 15 minutes
 after each take, so a burst of takes starts instantly and the indicator goes out afterwards.
 **Where.** `General › Sound › Keep microphone ready` and
-`Debug › Always-On Microphone = On` _{requires: Debug mode}_.
+`More › Debug › Always-On Microphone = On` _{requires: Debug mode}_.
 **Since.** 0.2.0. Keep microphone ready since 1.9.0.
 
 ### Change microphone without restarting
@@ -2213,7 +2276,7 @@ used to be to talk and hope.
 **What Handy does.** A small overlay shows live audio levels while recording, at the top or the
 bottom of the screen, or not at all. The tray icon carries the same state — idle, recording,
 transcribing — in light, dark and color variants so it stays legible on any theme.
-**Where.** `Advanced › App › Overlay Position = Bottom`.
+**Where.** `More › App › Overlay Position = Bottom`.
 **Since.** Present since the fork's early releases.
 
 ### Canceling can't freeze the app
@@ -2256,7 +2319,7 @@ the whole Jumper family is built on Win32 focus APIs, and portable mode is Windo
 other direction, some code exists only for platforms that do not ship yet — on-device Apple
 Intelligence post-processing and closed-lid microphone switching on macOS, and the native text
 injection backends on Linux — and none of it is reachable today.
-**Where.** `About › Version`.
+**Where.** `More › About › Version`.
 **Since.** 1.0.0 is the first public release.
 
 ### The app makes no calls you didn't ask for
@@ -2302,7 +2365,7 @@ it keeps and where.
 in a JSON file, transcripts in a SQLite database, audio in a recordings folder, downloaded models
 and rotated logs. Nothing is encrypted by Handy — file-system permissions are the protection —
 and there is a button in the app for both the data folder and the log folder.
-**Where.** `About › App Data Directory` and `About › Log Directory`.
+**Where.** `More › About › App Data Directory` and `More › About › Log Directory`.
 **Since.** Present since the fork's early releases.
 
 ### Your dictation is not written into logs at the normal level
@@ -2315,7 +2378,7 @@ released build writes its file log at **info**, so ordinary logging does not rec
 dictated. The honest counterpart: raise the level to `Debug` yourself and transcript fragments,
 complete API responses and prompt previews **can** appear in the log file. Put it back to `Info`
 when you are finished diagnosing.
-**Where.** `Debug › Log Level = Info` _{requires: Debug mode}_.
+**Where.** `More › Debug › Log Level = Info` _{requires: Debug mode}_.
 **Since.** 0.38.0.
 
 ### The logs still exist when you finally need them
@@ -2326,7 +2389,7 @@ followed the problem has already rotated it away.
 **What Handy does.** Logs rotate at 10 MB instead of 500 KB and rotated files are kept rather
 than being overwritten by the next session. Engine start failures are written to the log at error
 level rather than existing only as a toast you already dismissed.
-**Where.** `About › Log Directory`.
+**Where.** `More › About › Log Directory`.
 **Since.** 0.53.0.
 
 ### The honest limits of clipboard safety
@@ -2343,7 +2406,7 @@ the transcript stays there. Handy leaves a newer user copy alone, retries failed
 then warns in the log. A failed delivery writes the transcript only when its clipboard policy
 permits it; otherwise the clipboard stays untouched and History plus Paste Last Transcription
 provide recovery.
-**Where.** `Advanced › Transcription › Transcribe › Clipboard Handling`.
+**Where.** `More › Output › Transcribe › Clipboard Handling`.
 **Since.** Documented behavior of the current release; ownership checks, restore retries and
 history-only failure recovery since 1.0.5.
 
@@ -2359,7 +2422,7 @@ unloads the model, cancels a take and quits (on macOS the menu opens on a plain 
 menu-bar items do there). Its labels are generated
 at build time from the same translation files the interface uses, so they cannot drift out of
 sync.
-**Where.** `Tray › Copy Last Transcript` and `Advanced › App › Show Tray Icon = On`.
+**Where.** `Tray › Copy Last Transcript` and `More › App › Show Tray Icon = On`.
 **Since.** Present since the fork's early releases.
 
 ### Starts with your session and stays out of the way
@@ -2371,7 +2434,7 @@ arrives, and only tolerable if it is not in your face.
 tray-only existence. Note one consequence: with the tray icon switched off, closing the window
 quits the application. The one launch that always shows the window is the one right after you
 run setup yourself, so you can look at what changed; silent automatic updates stay hidden.
-**Where.** `Advanced › App › Launch on Startup = On` and `Advanced › App › Start Hidden = On`.
+**Where.** `More › App › Launch on Startup = On` and `More › App › Start Hidden = On`.
 **Since.** 0.1.0.
 
 ### Light, dark, or follow the system
@@ -2382,7 +2445,7 @@ permanently bright at midnight.
 **What Handy does.** One appearance setting applied consistently across the main window, the
 recording overlay and the floating transcription window, following the system by default and
 tracking it live.
-**Where.** `Advanced › App › Appearance = Dark`.
+**Where.** `More › App › Appearance = Dark`.
 **Since.** 0.41.0.
 
 ### It looks and behaves like a Windows app
@@ -2393,7 +2456,7 @@ wrong font, wrong scrollbars, native widgets stuck in light mode.
 **What Handy does.** The system font stack, styled scrollbars, native widgets that follow dark
 mode, a maximisable window that respects snap layouts, and a sidebar you can drag to fit long
 provider names, remembered between launches.
-**Where.** `Advanced › App › Appearance`.
+**Where.** `More › App › Appearance`.
 **Since.** 0.24.0; resizable sidebar in 0.17.0.
 
 ### Usable with the keyboard, and readable
@@ -2440,7 +2503,7 @@ tool claimed it first.
 **What Handy does.** Registration failures are recorded and surfaced when the app starts rather
 than failing quietly. If the operating system's shortcut interface is the problem rather than the
 combination, an alternative key backend can be selected.
-**Where.** `Advanced › App › Keyboard Implementation = Handy Keys`.
+**Where.** `More › App › Keyboard Implementation = Handy Keys`.
 **Since.** 0.30.0.
 
 ### Use it in your language
@@ -2450,7 +2513,7 @@ combination, an alternative key backend can be selected.
 **What Handy does.** Seventeen interface languages with right-to-left support. Tray menu strings
 are generated at build time from the same translation files as the interface, so they cannot fall
 out of step.
-**Where.** `About › Application Language`.
+**Where.** `More › About › Application Language`.
 **Since.** Present since the fork's early releases.
 
 ### Diagnose without guessing

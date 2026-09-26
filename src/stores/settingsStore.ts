@@ -61,6 +61,14 @@ const settingUpdaters: {
     commands.updateMicrophoneMode(value as boolean),
   mic_keep_warm_minutes: (value) =>
     commands.changeMicKeepWarmSetting(value as number),
+  pause_button_enabled: (value) =>
+    commands.changePauseButtonSetting(value as boolean),
+  undo_word_enabled: (value) =>
+    commands.changeUndoWordSetting(value as boolean),
+  live_text_box_enabled: (value) =>
+    commands.changeLiveTextBoxSetting(value as boolean),
+  live_text_mode: (value) =>
+    commands.changeLiveTextModeSetting(value as "last_words" | "full_text"),
   audio_feedback: (value) =>
     commands.changeAudioFeedbackSetting(value as boolean),
   audio_feedback_volume: (value) =>

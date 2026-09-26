@@ -25,7 +25,7 @@ Use ordinary transcription when you want the words in the field under your curso
 ## Settings that matter
 
 - [General settings](../reference/settings/general.md)
-- [Advanced settings](../reference/settings/advanced.md)
+- [More settings](../reference/settings/advanced.md)
 - [Models settings](../reference/settings/models.md)
 
 ## When it goes wrong
@@ -41,5 +41,5 @@ Use ordinary transcription when you want the words in the field under your curso
 1. Bind the toggle you will use for longer thoughts at `General › Transcribe Shortcut = ctrl+space`.
 2. Bind the hold-to-talk option for short thoughts at `General › Push-to-Talk Shortcut = ctrl+shift+space`.
 3. Leave the shipped `General › Transcription › Transcription Mode = Post-Recording` in place while you learn the flow.
-4. Choose the delivery chord expected by most Windows applications at `Advanced › Transcription › Transcribe › Paste Method = Clipboard (Ctrl+V)`.
+4. Choose the delivery chord expected by most Windows applications at `More › Output › Transcribe › Paste Method = Clipboard (Ctrl+V)`.
 5. Put the cursor in a disposable text field, press the Transcribe shortcut, speak, and press it again. Review the result before building the rest of your workflow around it.

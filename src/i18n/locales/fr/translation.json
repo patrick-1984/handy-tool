@@ -10,8 +10,6 @@
     "general": "Général",
     "shortcuts": "Raccourcis",
     "models": "Modèles",
-    "advanced": "Avancé",
-    "postProcessing": "Post-traitement",
     "history": "Historique",
     "debug": "Débogage",
     "about": "À propos",
@@ -21,9 +19,10 @@
     "keyboardTyper": "Frappe clavier",
     "jumper": "Jumper",
     "translator": "Traducteur",
+    "more": "Plus",
     "groups": {
-      "tools": "Outils",
-      "config": "Configuration"
+      "settings": "Paramètres",
+      "tools": "Outils"
     },
     "modelTesting": "Test de modèles",
     "resize": "Faire glisser pour redimensionner",
@@ -228,6 +227,14 @@
             "name": "Raccourci d'Annulation",
             "description": "Annule la prise en cours. Par défaut : escape. Ce que l'annulation fait réellement est décidé par le Comportement de l'annulation sur la page Général — Terminer, enregistrer uniquement dans l'historique transcrit et conserve toujours le texte mais ne livre rien à votre fenêtre, tandis qu'Abandonner l'enregistrement jette l'audio — et l'élément Annuler de la barre système suit le même réglage."
           },
+          "pause": {
+            "name": "Pause / Reprendre",
+            "description": "Met en pause la prise en cours ou la reprend. Actif seulement pendant une prise quand le bouton pause est activé. Par défaut : aucun."
+          },
+          "undo_word": {
+            "name": "Annuler le dernier mot",
+            "description": "Retire le dernier mot d'une prise en direct. Actif seulement pendant une prise en direct. Par défaut : Ctrl+Retour arrière."
+          },
           "transcribe_with_post_process": {
             "name": "Raccourci de post-traitement",
             "description": "Facultatif : Un raccourci dédié qui applique toujours le post-traitement IA à votre transcription."
@@ -298,6 +305,24 @@
           "reset": "Échec de la réinitialisation du raccourci à sa valeur d'origine",
           "registrationFailed": "Certains raccourcis n'ont pas pu être enregistrés et sont inactifs : {{bindings}}. Une autre application les utilise peut-être déjà — choisissez une autre combinaison dans les paramètres."
         }
+      },
+      "pauseButton": {
+        "label": "Bouton pause",
+        "description": "Ajoute un bouton pause à la superposition d'enregistrement : pendant la pause rien n'est enregistré, et la reprise continue la même prise. Par défaut : désactivé. Après 10 minutes de pause, le micro est libéré jusqu'à la reprise."
+      },
+      "undoWord": {
+        "label": "Annuler le dernier mot",
+        "description": "Chaque appui sur son raccourci (Ctrl+Retour arrière par défaut) retire le dernier mot d'une prise en direct et coupe l'audio au début de ce mot, qui ne revient donc pas dans le texte final. Nécessite une prise en direct et un modèle Parakeet. Par défaut : désactivé."
+      },
+      "liveTextBox": {
+        "label": "Zone de texte en direct",
+        "description": "Affiche ce que vous dites dans une petite zone à côté de la superposition d'enregistrement, mise à jour environ toutes les 1,5 s. Tant qu'elle est active, toutes les prises passent en mode direct. Par défaut : désactivée ; le bouton T la bascule aussi."
+      },
+      "liveTextMode": {
+        "title": "Le texte en direct affiche",
+        "description": "Une ligne avec les mots les plus récents, ou tout le texte dans une zone de trois lignes. La taille ne change pas pendant que vous parlez. Par défaut : derniers mots.",
+        "lastWords": "Derniers mots",
+        "fullText": "Texte entier"
       },
       "language": {
         "title": "Langue",
@@ -610,11 +635,6 @@
         "label": "Enregistrement résistant aux plantages",
         "description": "Encode votre voix dans des fichiers Opus compacts sur le disque au fur et à mesure que vous parlez, au lieu de tout garder en mémoire, si bien qu'un plantage, une mise à jour forcée ou une batterie à plat laisse tout de même un enregistrement — il est réparé et ajouté à l'Historique au prochain lancement. Activé par défaut. Le désactiver enregistre de l'audio non compressé, que les sauvegardes « Données complètes (avec audio compressé) » excluent volontairement."
       },
-      "openRecordingsFolder": {
-        "label": "Dossier des enregistrements",
-        "description": "Ouvre le dossier qui contient vos enregistrements et tout audio récupéré après un plantage (%APPDATA%\\pr.handy\\recordings). Suppression automatique des enregistrements y fait le ménage, mais ne touche jamais qu'aux fichiers créés par Handy lui-même — vos propres notes ou exports dans ce dossier ne sont jamais renommés ni supprimés.",
-        "button": "Ouvrir le dossier"
-      },
       "appearance": {
         "title": "Apparence",
         "description": "Définit le thème de couleur pour toutes les fenêtres de Handy Tool, y compris la fenêtre d'enregistrement et la fenêtre de transcription flottante. Par défaut : Système, qui suit le réglage clair/sombre de Windows et continue à le suivre ; Clair et Sombre figent une palette et ignorent les changements ultérieurs du système.",
@@ -688,11 +708,9 @@
       "tabs": {
         "app": "Application",
         "output": "Sortie",
-        "transcription": "Transcription",
         "typer": "Frappe",
         "providers": "Fournisseurs",
         "mcp": "MCP et CLI",
-        "history": "Historique",
         "postProcessing": "Post-traitement"
       },
       "mcp": {
@@ -1037,17 +1055,6 @@
           "description": "L'application open source de reconnaissance vocale originale sur laquelle ce projet est basé",
           "details": "Handy Tool est un fork de Handy, créé par CJ Pais (github.com/cjpais/Handy, handy.computer). Il a été repris à partir de la version amont v0.8.1 (mars 2026) et a été développé indépendamment depuis par Patrick R. Un grand merci à CJ et aux contributeurs de Handy pour les bases sur lesquelles ce projet s'appuie."
         }
-      },
-      "updates": {
-        "title": "Mises à jour",
-        "description": "Recherchez une version plus récente dans l'application ou ouvrez directement la page des versions dans le navigateur.",
-        "button": "Voir les versions",
-        "checkWeb": "Vérifier sur le Web",
-        "checkApp": "Rechercher des mises à jour",
-        "checkFailed": "Impossible de rechercher des mises à jour : {{reason}}.",
-        "useWebHint": "Utilisez « Vérifier sur le Web » si la vérification intégrée est bloquée.",
-        "latestVersion": "Vous utilisez la dernière version ({{version}}).",
-        "availableVersion": "La version {{version}} est disponible."
       }
     },
     "jumper": {
@@ -1262,7 +1269,11 @@
     "startingMic": "Démarrage du micro...",
     "noMicrophone": "Aucun micro",
     "microphoneBlocked": "Micro bloqué",
-    "microphoneError": "Erreur du micro"
+    "microphoneError": "Erreur du micro",
+    "paused": "En pause",
+    "pause": "Pause",
+    "resume": "Reprendre",
+    "liveTextBox": "Zone de texte en direct"
   },
   "floating": {
     "waiting": "En attente de la transcription…",

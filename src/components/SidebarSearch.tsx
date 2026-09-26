@@ -5,7 +5,6 @@ import { useSettings } from "../hooks/useSettings";
 import { useOsType } from "../hooks/useOsType";
 import { useNavStore } from "../stores/navStore";
 import type { SidebarSection } from "./Sidebar";
-import type { TabId as AdvancedTabId } from "./settings/advanced/AdvancedSettings";
 import {
   buildSearchIndex,
   highlightSetting,
@@ -17,13 +16,13 @@ interface SidebarSearchProps {
   query: string;
   onQueryChange: (query: string) => void;
   /** Sections currently shown in the sidebar; results only point at these. */
-  sections: { id: SidebarSection; labelKey: string }[];
+  sections: { id: SidebarSection; labelKey: string; more: boolean }[];
 }
 
 /**
  * Search box at the top of the sidebar. While it holds a query the sidebar
  * shows the matching settings and shortcuts instead of the page list; picking
- * one opens its page (and Advanced tab) and outlines the control.
+ * one opens its page and outlines the control.
  */
 export const SidebarSearch: React.FC<SidebarSearchProps> = ({
   query,
@@ -44,6 +43,10 @@ export const SidebarSearch: React.FC<SidebarSearchProps> = ({
         osType,
         settings?.bindings ?? {},
         settings?.post_process_enabled ?? false,
+        [
+          ...(settings?.pause_button_enabled ? ["pause"] : []),
+          ...(settings?.undo_word_enabled ? ["undo_word"] : []),
+        ],
       ),
     // i18n.language: rebuild the translated titles when the language changes
     [t, i18n.language, sections, osType, settings],
@@ -51,10 +54,7 @@ export const SidebarSearch: React.FC<SidebarSearchProps> = ({
   const results = useMemo(() => searchSettings(index, query), [index, query]);
 
   const pick = (entry: SearchEntry) => {
-    navigateTo(
-      entry.section as SidebarSection,
-      entry.advancedTab as AdvancedTabId | undefined,
-    );
+    navigateTo(entry.section as SidebarSection);
     onQueryChange("");
     highlightSetting(entry.title);
   };
@@ -109,7 +109,7 @@ export const SidebarSearch: React.FC<SidebarSearchProps> = ({
           ) : (
             results.map((entry, i) => (
               <button
-                key={`${entry.section}-${entry.advancedTab ?? ""}-${entry.title}-${i}`}
+                key={`${entry.section}-${entry.title}-${i}`}
                 type="button"
                 onClick={() => pick(entry)}
                 onMouseEnter={() => setActive(i)}

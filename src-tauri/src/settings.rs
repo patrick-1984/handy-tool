@@ -566,6 +566,17 @@ pub enum TranscriptionMode {
     PostRecording,
 }
 
+/// What the live text box above the recording overlay shows.
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum LiveTextMode {
+    /// One line: the newest words.
+    #[default]
+    LastWords,
+    /// The whole take so far, in a fixed-height box (older lines scroll away).
+    FullText,
+}
+
 /// UI appearance mode. `System` follows the OS `prefers-color-scheme` (and
 /// keeps tracking it live); `Light` and `Dark` force one of Handy's two
 /// palettes regardless of subsequent OS theme changes. Defaults to `System`
@@ -916,6 +927,18 @@ pub struct AppSettings {
     /// one starts without an idle device's wake-up delay. 0 (default) = close at once.
     #[serde(default)]
     pub mic_keep_warm_minutes: u32,
+    /// Pause/resume button on the recording overlay, plus the Pause shortcut.
+    #[serde(default)]
+    pub pause_button_enabled: bool,
+    /// Undo-last-word shortcut, active during live takes.
+    #[serde(default)]
+    pub undo_word_enabled: bool,
+    /// Live text box above the recording overlay; while on, every take is live.
+    #[serde(default)]
+    pub live_text_box_enabled: bool,
+    /// What the live text box shows.
+    #[serde(default)]
+    pub live_text_mode: LiveTextMode,
     #[serde(default)]
     pub selected_microphone: Option<String>,
     #[serde(default)]
@@ -2310,6 +2333,28 @@ pub fn get_default_settings() -> AppSettings {
             current_binding: "escape".to_string(),
         },
     );
+    // Take-only bindings (see shortcut::is_take_binding). Pause has no default
+    // chord ("None"); Undo word takes Ctrl+Backspace only during a live take.
+    bindings.insert(
+        "pause".to_string(),
+        ShortcutBinding {
+            id: "pause".to_string(),
+            name: "Pause / Resume".to_string(),
+            description: "Pauses the recording in progress, or resumes it.".to_string(),
+            default_binding: String::new(),
+            current_binding: String::new(),
+        },
+    );
+    bindings.insert(
+        "undo_word".to_string(),
+        ShortcutBinding {
+            id: "undo_word".to_string(),
+            name: "Undo Last Word".to_string(),
+            description: "Removes the last word of a live take.".to_string(),
+            default_binding: "ctrl+backspace".to_string(),
+            current_binding: "ctrl+backspace".to_string(),
+        },
+    );
 
     let default_type_text_shortcut = "ctrl+shift+f11";
 
@@ -2455,6 +2500,10 @@ pub fn get_default_settings() -> AppSettings {
         transcribe_gpu_device: default_transcribe_gpu_device(),
         always_on_microphone: false,
         mic_keep_warm_minutes: 0,
+        pause_button_enabled: false,
+        undo_word_enabled: false,
+        live_text_box_enabled: false,
+        live_text_mode: LiveTextMode::LastWords,
         selected_microphone: None,
         clamshell_microphone: None,
         selected_output_device: None,

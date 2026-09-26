@@ -1,5 +1,56 @@
 # Changelog
 
+## [1.10.0] - 2026-09-26 17:18
+
+### Added
+
+- **Live text box** (General › Transcription): a small box next to the recording overlay shows
+  what you are saying, updated about every 1.5 seconds. It shows either one line with the
+  newest words ("Last words") or the take so far in a three-line box ("Whole text"); neither
+  changes size while you talk. The box never takes focus and lets clicks through. Only the last
+  ~5 seconds are re-transcribed each time - words before a pause are frozen - so the cost stays
+  flat however long the take. While it is on, every take runs in Live mode; the delivered text
+  is still one full pass on stop. The overlay's T button now switches this setting. Default
+  Off. The older Live Transcription window stays on the Current Audio page.
+- **Undo last word** (General): each press of its shortcut (default `ctrl+backspace`, active
+  only during a live take) removes the newest word and cuts the recording back to where that
+  word started, so it stays out of the final text too. Uses Parakeet's word timings; with other
+  engines the shortcut does nothing. Default Off. The Opus audio saved to History still holds
+  the removed words (chunks are append-only).
+- **Pause button** (General): adds pause/resume to the recording overlay, plus an optional
+  Pause / Resume shortcut (no default). While paused nothing is recorded and the overlay says
+  "Paused"; resuming continues the same take. The microphone stays open for an instant resume
+  but is released after 10 minutes paused, and reopened on resume. Default Off.
+- Take-only shortcuts (Cancel, Pause / Resume, Undo Last Word) are registered only while a take
+  runs, so `ctrl+backspace` keeps working normally in other apps between takes.
+
+### Changed
+
+- **Sidebar: six pages and More.** The sidebar now holds General, Shortcuts, Models, History,
+  Jumper and Keyboard Typer, then **More**. More has two rows of tabs - Settings (App, Output,
+  Providers, Post-processing, MCP & CLI, Backup, Debug, About) and Tools (Translator, Token
+  Count, Model Testing, Current Audio) - and reopens the tab used last. The Advanced page and
+  its tab bar are gone: its tabs are More tabs, "Transcription" is renamed **Output**, and its
+  History tab moved to the bottom of the History page.
+- **Duplicates merged.** Settings that were shown in two places now have one home: the
+  post-processing hotkey, provider and prompt appear under the Post-processing switch (no
+  separate Post Process page); the transcription cost report moved to Providers › OpenRouter
+  Transcription; and the second copies of Translate to English (General keeps it), the
+  recordings-folder button (History keeps it), the update check on About (General › Updates
+  keeps it), the Cancel shortcut on Debug (Shortcuts keeps it) and the Transcribe & Submit
+  paste delay were removed.
+- **Search** follows the new layout: results on More read "More › Output › …", and
+  post-processing's own controls are left out while it is off. The pause, undo-word and
+  live-text-box settings are searchable.
+
+### Fixed
+
+- **The sidebar widens while you search** (to at least 320 px), so result names and their
+  locations are no longer cut off, and narrows back once you pick a result or clear the box.
+- **Warning icons respond to the whole icon.** The hover tooltip of the shortcut warnings
+  (AltGr, single key, duplicate) only opened over the triangle's strokes; the hover area is now
+  the full 24 px square.
+
 ## [1.9.0] - 2026-09-26 15:42
 
 ### Added

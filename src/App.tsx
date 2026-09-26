@@ -15,7 +15,9 @@ import {
   Sidebar,
   type SidebarSection,
   SECTIONS_CONFIG,
+  isMoreSection,
 } from "./components/Sidebar";
+import { MorePage } from "./components/settings/more/MorePage";
 import { useSettings } from "./hooks/useSettings";
 import { useNavStore } from "./stores/navStore";
 import { useSettingsStore } from "./stores/settingsStore";
@@ -26,6 +28,9 @@ import { isFlmBlockedByWindowsApplicationControl } from "@/lib/flm";
 type OnboardingStep = "accessibility" | "model" | "done";
 
 const renderSettingsContent = (section: SidebarSection) => {
+  if (SECTIONS_CONFIG[section] && isMoreSection(section)) {
+    return <MorePage section={section} />;
+  }
   const ActiveComponent =
     SECTIONS_CONFIG[section]?.component || SECTIONS_CONFIG.general.component;
   return <ActiveComponent />;

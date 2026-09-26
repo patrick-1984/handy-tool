@@ -1,0 +1,75 @@
+/* Live text box. Same dark HUD look as the recording pill, in both themes. */
+:root {
+  --live-text-bg: rgba(10, 9, 11, 0.8);
+  --live-text-color: #ffffff;
+  --live-text-font:
+    "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+html,
+body {
+  background: transparent;
+}
+
+.live-text-frame {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Sit on the edge next to the pill. */
+  justify-content: flex-end;
+  box-sizing: border-box;
+}
+
+.live-text-frame.below {
+  justify-content: flex-start;
+}
+
+.live-text {
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: 4px 12px;
+  overflow: hidden;
+  background: var(--live-text-bg);
+  color: var(--live-text-color);
+  font-family: var(--live-text-font);
+  font-size: 13px;
+  line-height: 18px;
+  border-radius: 12px;
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+}
+
+.live-text.shown {
+  opacity: 1;
+}
+
+/* Last words: one line; the newest words stay at the right and older ones
+   slide off the left, fading out. */
+.live-text.one-line {
+  width: fit-content;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  white-space: nowrap;
+  mask-image: linear-gradient(to right, transparent 0, black 28px);
+}
+
+/* Whole text: a fixed three-line box anchored at the bottom; older lines slide
+   out of the top, so the box never changes size. */
+.live-text.full {
+  width: 100%;
+  height: 62px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  mask-image: linear-gradient(to bottom, transparent 0, black 14px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-text {
+    transition-duration: 0.01ms;
+  }
+}

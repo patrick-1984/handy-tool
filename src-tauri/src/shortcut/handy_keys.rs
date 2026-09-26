@@ -436,7 +436,7 @@ pub fn init_shortcuts(app: &AppHandle) -> Result<(), String> {
 
     // Register all bindings except cancel (which is dynamic)
     for (id, default_binding) in default_bindings {
-        if id == "cancel" {
+        if super::is_take_binding(&id) {
             continue;
         }
         // The Jumper is Windows-only — don't claim its hotkeys elsewhere.
@@ -469,8 +469,8 @@ pub fn init_shortcuts(app: &AppHandle) -> Result<(), String> {
     Ok(())
 }
 
-/// Register the cancel shortcut (called when recording starts)
-pub fn register_cancel_shortcut(app: &AppHandle) {
+/// Register a take-only binding (Cancel, Pause, Undo word) when a take starts.
+pub fn register_dynamic_shortcut(app: &AppHandle, id: &'static str) {
     // Disabled on Linux due to instability
     #[cfg(target_os = "linux")]
     {
@@ -482,10 +482,10 @@ pub fn register_cancel_shortcut(app: &AppHandle) {
     {
         let app_clone = app.clone();
         tauri::async_runtime::spawn(async move {
-            if let Some(cancel_binding) = get_settings(&app_clone).bindings.get("cancel").cloned() {
+            if let Some(take_binding) = get_settings(&app_clone).bindings.get(id).cloned() {
                 if let Some(state) = app_clone.try_state::<HandyKeysState>() {
-                    if let Err(e) = state.register(&cancel_binding) {
-                        error!("Failed to register cancel shortcut: {}", e);
+                    if let Err(e) = state.register(&take_binding) {
+                        error!("Failed to register {} shortcut: {}", id, e);
                     }
                 }
             }
@@ -493,8 +493,8 @@ pub fn register_cancel_shortcut(app: &AppHandle) {
     }
 }
 
-/// Unregister the cancel shortcut (called when recording stops)
-pub fn unregister_cancel_shortcut(app: &AppHandle) {
+/// Unregister a take-only binding when the take ends.
+pub fn unregister_dynamic_shortcut(app: &AppHandle, id: &'static str) {
     #[cfg(target_os = "linux")]
     {
         let _ = app;
@@ -505,9 +505,9 @@ pub fn unregister_cancel_shortcut(app: &AppHandle) {
     {
         let app_clone = app.clone();
         tauri::async_runtime::spawn(async move {
-            if let Some(cancel_binding) = get_settings(&app_clone).bindings.get("cancel").cloned() {
+            if let Some(take_binding) = get_settings(&app_clone).bindings.get(id).cloned() {
                 if let Some(state) = app_clone.try_state::<HandyKeysState>() {
-                    let _ = state.unregister(&cancel_binding);
+                    let _ = state.unregister(&take_binding);
                 }
             }
         });

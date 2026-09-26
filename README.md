@@ -70,6 +70,7 @@ Then, whichever route you took: complete the first-run onboarding, grant microph
 - [Which model is actually better at my task?](docs/features.md#which-model-is-actually-better-at-my-task)
 - [A folder of recordings, transcribed while you sleep](docs/features.md#a-folder-of-recordings-transcribed-while-you-sleep)
 - [Let an agent drive the app](docs/features.md#let-an-agent-drive-the-app)
+- [See your words next to the overlay while you talk](docs/features.md#live-text-box)
 
 ## Built for your left hand
 

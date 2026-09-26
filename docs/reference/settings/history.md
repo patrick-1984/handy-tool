@@ -1,6 +1,6 @@
 # History settings
 
-Open `History`. Row actions repeat for every history entry; the search bar appears once entries exist.
+Open `History`. Row actions repeat for every history entry; the search bar appears once entries exist. The History settings group at the bottom of the page holds the recording and retention settings.
 
 ### Open Recordings Folder
 
@@ -41,3 +41,29 @@ Catalog: [Keep the ones that matter](../../features.md#keep-the-ones-that-matter
 Deletes the selected history row and its Handy-owned audio files. **Default:** not applicable; this is a per-row action.
 
 Catalog: [Copy or delete a single entry](../../features.md#copy-or-delete-a-single-entry).
+
+## History settings
+
+### Crash-Safe Recording
+
+`History › Crash-Safe Recording`
+
+Writes incremental Opus chunks that can be recovered after interruption. Turning it off produces uncompressed recording files that full backup does not include. **Default:** On.
+
+Catalog: [A crash mid-dictation costs you nothing](../../features.md#a-crash-mid-dictation-costs-you-nothing).
+
+### History Limit
+
+`History › History Limit`
+
+Sets how many newest unsaved history entries are retained; zero is allowed. [Auto-Delete Recordings](#auto-delete-recordings) can tie audio retention to it. **Default:** `5` entries.
+
+Catalog: [Don't keep audio forever](../../features.md#dont-keep-audio-forever).
+
+### Auto-Delete Recordings
+
+`History › Auto-Delete Recordings`
+
+Chooses the retention rule for unsaved recordings. The preserve-limit label includes the current [History Limit](#history-limit). **Default:** `Keep latest 5`.
+
+Catalog: [Don't keep audio forever](../../features.md#dont-keep-audio-forever).
