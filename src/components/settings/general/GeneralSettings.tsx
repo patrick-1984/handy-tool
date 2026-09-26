@@ -1,4 +1,5 @@
 import React from "react";
+import { SlidersHorizontal, Captions, Volume2, RefreshCw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { MicrophoneSelector } from "../MicrophoneSelector";
 import { MicKeepWarm } from "../MicKeepWarm";
@@ -30,7 +31,10 @@ export const GeneralSettings: React.FC = () => {
   const { audioFeedbackEnabled } = useSettings();
   return (
     <div className="w-full space-y-6">
-      <SettingsGroup title={t("settings.general.title")}>
+      <SettingsGroup
+        icon={SlidersHorizontal}
+        title={t("settings.general.title")}
+      >
         <ShortcutInput shortcutId="transcribe" grouped={true} />
         <ShortcutInput shortcutId="transcribe_ptt" grouped={true} />
         {/* Both of these used to be reachable only from a feature-specific
@@ -41,19 +45,22 @@ export const GeneralSettings: React.FC = () => {
         <ShortcutInput shortcutId="paste_last" grouped={true} />
         <CancelBehaviorSetting descriptionMode="tooltip" grouped={true} />
         <PauseButtonSetting descriptionMode="tooltip" grouped={true} />
-        <UndoWordSetting descriptionMode="tooltip" grouped={true} />
       </SettingsGroup>
       <ShortcutRegistrationFailures />
       <ModelSettingsCard />
-      <SettingsGroup title={t("settings.advanced.groups.transcription")}>
+      <SettingsGroup
+        icon={Captions}
+        title={t("settings.advanced.groups.transcription")}
+      >
         <TranscriptionModeSetting descriptionMode="tooltip" grouped={true} />
         <TranscriptionModePttSetting descriptionMode="tooltip" grouped={true} />
         <LiveTextBoxSetting descriptionMode="tooltip" grouped={true} />
+        <UndoWordSetting descriptionMode="tooltip" grouped={true} />
         <GpuDeviceSelector descriptionMode="tooltip" grouped={true} />
         <CustomWords descriptionMode="tooltip" grouped />
         <AppendTrailingSpace descriptionMode="tooltip" grouped={true} />
       </SettingsGroup>
-      <SettingsGroup title={t("settings.sound.title")}>
+      <SettingsGroup icon={Volume2} title={t("settings.sound.title")}>
         <CaptureSourceSettings descriptionMode="tooltip" grouped={true} />
         <MicrophoneSelector descriptionMode="tooltip" grouped={true} />
         <MicKeepWarm descriptionMode="tooltip" grouped={true} />
@@ -66,7 +73,10 @@ export const GeneralSettings: React.FC = () => {
         />
         <VolumeSlider disabled={!audioFeedbackEnabled} />
       </SettingsGroup>
-      <SettingsGroup title={t("settings.general.updates.title")}>
+      <SettingsGroup
+        icon={RefreshCw}
+        title={t("settings.general.updates.title")}
+      >
         <UpdateSettings />
       </SettingsGroup>
     </div>

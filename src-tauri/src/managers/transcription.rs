@@ -1592,6 +1592,7 @@ impl TranscriptionManager {
                 && audio_secs >= MIN_SPEED_SAMPLE_SECS
             {
                 let measured = job_started.elapsed().as_secs_f64() / audio_secs;
+                crate::speed::record(&self.app_handle, &speed_key, audio_secs, measured);
                 if let Ok(mut speeds) = MODEL_SPEED.lock() {
                     let speed = speeds.entry(speed_key).or_insert(measured);
                     *speed = *speed * 0.7 + measured * 0.3;

@@ -10,7 +10,7 @@ changing a shortcut in either place changes both. For the default chords, see
 
 Transcribe, Push-to-Talk, Transcribe & Submit, Paste Last Transcription and Cancel. The
 Post-Processing Hotkey is listed while post-processing is on, and Pause / Resume and Undo Last
-Word while their options on General are on. Cancel is not listed on Linux, where
+Word while their options on General are on. Live Text Box On/Off is always listed. Cancel is not listed on Linux, where
 it is never registered.
 
 Catalog: [Every shortcut on one page](../../features.md#every-shortcut-on-one-page).
@@ -26,6 +26,14 @@ The Type Text shortcut.
 `Shortcuts › Jumper`
 
 The four anchor shortcuts and the eighteen slot shortcuts. _{Windows only}_
+
+### Warn about AltGr shortcuts
+
+`Shortcuts › Warnings › Warn about AltGr shortcuts`
+
+Shows the amber warning next to any shortcut that AltGr can also type. The warning's tooltip has a `Turn off this warning` button that jumps here. **Default:** On.
+
+Catalog: [Your shortcuts don't eat the accented letters you type](../../features.md#shortcuts-dont-eat-accented-letters).
 
 ### Set to None
 

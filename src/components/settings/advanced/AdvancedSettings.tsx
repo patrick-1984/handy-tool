@@ -1,4 +1,13 @@
 import React from "react";
+import {
+  AppWindow,
+  TextCursorInput,
+  Cloud,
+  Route,
+  BrainCircuit,
+  Terminal,
+  Sparkles,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { ShowOverlay } from "../ShowOverlay";
 import { AppearanceSetting } from "../AppearanceSetting";
@@ -38,7 +47,7 @@ export const AppSection: React.FC = () => {
   const { t } = useTranslation();
   return (
     <div className="w-full space-y-4">
-      <SettingsGroup title={t("settings.advanced.groups.app")}>
+      <SettingsGroup icon={AppWindow} title={t("settings.advanced.groups.app")}>
         <AppearanceSetting descriptionMode="tooltip" grouped={true} />
         <StartHidden descriptionMode="tooltip" grouped={true} />
         <AutostartToggle descriptionMode="tooltip" grouped={true} />
@@ -58,7 +67,10 @@ export const OutputSection: React.FC = () => {
   const { t } = useTranslation();
   return (
     <div className="w-full space-y-4">
-      <SettingsGroup title={t("settings.general.transcribeGroup.title")}>
+      <SettingsGroup
+        icon={TextCursorInput}
+        title={t("settings.general.transcribeGroup.title")}
+      >
         <PasteMethodSetting descriptionMode="tooltip" grouped={true} />
         <PasteMethodPttSetting descriptionMode="tooltip" grouped={true} />
         <TypingToolSetting descriptionMode="tooltip" grouped={true} />
@@ -99,10 +111,14 @@ export const ProvidersSection: React.FC = () => {
   const { t } = useTranslation();
   return (
     <div className="w-full space-y-4">
-      <SettingsGroup title={t("settings.advanced.apiTranscription.cardTitle")}>
+      <SettingsGroup
+        icon={Cloud}
+        title={t("settings.advanced.apiTranscription.cardTitle")}
+      >
         <ApiTranscriptionSettings descriptionMode="tooltip" grouped={true} />
       </SettingsGroup>
       <SettingsGroup
+        icon={Route}
         title={t("settings.advanced.openRouterTranscription.cardTitle")}
       >
         <OpenRouterTranscriptionSettings
@@ -111,7 +127,10 @@ export const ProvidersSection: React.FC = () => {
         />
         <TranscriptionCostReport />
       </SettingsGroup>
-      <SettingsGroup title={t("settings.advanced.groups.llmProviders")}>
+      <SettingsGroup
+        icon={BrainCircuit}
+        title={t("settings.advanced.groups.llmProviders")}
+      >
         <RegisteredLlmProviders />
       </SettingsGroup>
     </div>
@@ -123,7 +142,7 @@ export const McpSection: React.FC = () => {
   const { t } = useTranslation();
   return (
     <div className="w-full space-y-4">
-      <SettingsGroup title={t("settings.advanced.groups.mcp")}>
+      <SettingsGroup icon={Terminal} title={t("settings.advanced.groups.mcp")}>
         <McpSettings />
       </SettingsGroup>
     </div>
@@ -139,10 +158,18 @@ export const PostProcessingSection: React.FC = () => {
   const { getSetting } = useSettings();
   return (
     <div className="w-full space-y-4">
-      <SettingsGroup title={t("settings.advanced.groups.postProcessing")}>
+      <SettingsGroup
+        icon={Sparkles}
+        title={t("settings.advanced.groups.postProcessing")}
+      >
         <PostProcessingToggle descriptionMode="tooltip" grouped={true} />
       </SettingsGroup>
-      {getSetting("post_process_enabled") && <PostProcessingSettings />}
+      {/* Indented under the switch: these belong to it. */}
+      {getSetting("post_process_enabled") && (
+        <div className="ms-6 ps-4 border-s-2 border-logo-primary/50">
+          <PostProcessingSettings />
+        </div>
+      )}
     </div>
   );
 };

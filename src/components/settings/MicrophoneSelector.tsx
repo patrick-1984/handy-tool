@@ -1,4 +1,5 @@
 import React from "react";
+import { Mic } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Dropdown } from "../ui/Dropdown";
 import { SettingContainer } from "../ui/SettingContainer";
@@ -43,6 +44,7 @@ export const MicrophoneSelector: React.FC<MicrophoneSelectorProps> = React.memo(
 
     return (
       <SettingContainer
+        icon={Mic}
         title={t("settings.sound.microphone.title")}
         description={t("settings.sound.microphone.description")}
         descriptionMode={descriptionMode}

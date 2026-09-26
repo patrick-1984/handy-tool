@@ -235,6 +235,10 @@
             "name": "Cofnij ostatnie słowo",
             "description": "Usuwa ostatnie słowo nagrania na żywo. Działa tylko podczas nagrania na żywo. Domyślnie: Ctrl+Backspace."
           },
+          "toggle_live_text_box": {
+            "name": "Okienko tekstu na żywo wł./wył.",
+            "description": "Włącza lub wyłącza okienko tekstu na żywo, tak jak przycisk T na pasku nagrywania. Domyślnie: brak."
+          },
           "transcribe_with_post_process": {
             "name": "Skrót postprocessingu",
             "description": "Opcjonalnie: Dedykowany skrót klawiszowy, który zawsze stosuje postprocessing AI do transkrypcji."
@@ -316,13 +320,22 @@
       },
       "liveTextBox": {
         "label": "Pole tekstu na żywo",
-        "description": "Pokazuje to, co mówisz, w małym polu obok nakładki nagrywania, odświeżanym mniej więcej co 1,5 s. Gdy jest włączone, każde nagranie działa w trybie na żywo. Domyślnie: wyłączone; przełącza je też przycisk T."
+        "description": "Pokazuje to, co mówisz, w małym okienku obok paska nagrywania, odświeżane mniej więcej co 1,5 s. Gdy jest włączone, każde nagranie działa w trybie na żywo, a tekst w okienku jest twoją transkrypcją: po zatrzymaniu dochodzi tylko ostatnia sekunda lub dwie, więc jest gotowy od razu — nagranie nie jest transkrybowane drugi raz. Wymaga modelu działającego na tym komputerze. Domyślnie: wyłączone; przełącza je też przycisk T na pasku.",
+        "remoteModel": {
+          "title": "Okienko tekstu na żywo nie działa z modelem {{model}}",
+          "worksWith": "Potrzebny jest model działający na tym komputerze, bo zdalne usługi dostają dźwięk dopiero po zatrzymaniu. Działa z: {{models}}.",
+          "noLocal": "Potrzebny jest model działający na tym komputerze, bo zdalne usługi dostają dźwięk dopiero po zatrzymaniu. Pobierz któryś na stronie Modele."
+        }
       },
       "liveTextMode": {
         "title": "Tekst na żywo pokazuje",
         "description": "Jedną linię z najnowszymi słowami albo cały tekst w polu na trzy linie. Rozmiar nie zmienia się w trakcie mówienia. Domyślnie: ostatnie słowa.",
         "lastWords": "Ostatnie słowa",
         "fullText": "Cały tekst"
+      },
+      "liveTextFade": {
+        "label": "Znikaj, gdy przestajesz mówić",
+        "description": "Tekst na żywo znika kilka sekund po tym, jak przestajesz mówić, więc skończone słowa nie zostają na ekranie. Kolejne słowa przywracają go. Domyślnie: wyłączone."
       },
       "language": {
         "title": "Język",
@@ -468,11 +481,17 @@
     },
     "shortcuts": {
       "groups": {
-        "dictation": "Dyktowanie"
+        "dictation": "Dyktowanie",
+        "warnings": "Ostrzeżenia"
       },
       "conflicts": {
         "title": "Niektóre skróty używają tych samych klawiszy",
         "description": "Kombinacji klawiszy może używać tylko jedna akcja, więc z każdej pary działa tylko jeden skrót. Zmień lub wyczyść jeden ze skrótów oznaczonych czerwonym ostrzeżeniem."
+      },
+      "altGrWarning": {
+        "label": "Ostrzegaj przed skrótami z AltGr",
+        "description": "Pokazuje ostrzeżenie obok skrótów, które można też wpisać klawiszem AltGr. Windows zgłasza AltGr jako Ctrl+Alt, więc skrót taki jak Ctrl+Alt+O uruchamia się, gdy wpisujesz ó przez AltGr, a znak nigdy się nie pojawia. Domyślnie: włączone. Wyłącz, jeśli nie wpisujesz znaków przez AltGr.",
+        "turnOff": "Wyłącz to ostrzeżenie"
       }
     },
     "sound": {
@@ -662,7 +681,7 @@
       },
       "transcriptionMode": {
         "title": "Tryb transkrypcji",
-        "description": "Na żywo pokazuje narastający tekst, gdy wciąż mówisz; Po nagraniu nagrywa bez podglądu i transkrybuje w tle. Domyślnie: Po nagraniu. W obu przypadkach całe audio przechodzi jeden ostateczny przebieg po zatrzymaniu, więc dostarczony tekst jest zawsze tym dokładnym, a tekst na żywo to tylko podgląd — dotyczy to wyłącznie Skrótu transkrypcji, a modele transkrypcji API zawsze zachowują się jak Po nagraniu.",
+        "description": "Na żywo pokazuje tekst już podczas mówienia; Po nagraniu nagrywa po cichu i transkrybuje w tle. W obu trybach większość pracy dzieje się, gdy mówisz, więc tekst jest gotowy chwilę po zatrzymaniu. W trybie na żywo dostajesz dokładnie ten tekst, który widziałeś. Domyślnie: Po nagraniu. Dotyczy tylko skrótu transkrypcji; modele API zawsze działają jak Po nagraniu.",
         "options": {
           "live": "Na żywo",
           "postRecording": "Po nagraniu"
@@ -942,6 +961,16 @@
     },
     "history": {
       "title": "Historia",
+      "tabs": {
+        "recordings": "Nagrania",
+        "statistics": "Statystyki",
+        "settings": "Ustawienia"
+      },
+      "stats": {
+        "title": "Statystyki nagrań",
+        "description": "Ile nagrań zrobiłeś i jak długo trwały — według dni, tygodni, miesięcy i lat. Wiersz „cały czas” liczy też nagrania, które Historia już usunęła przy porządkowaniu. Całą listę można pobrać jako CSV.",
+        "totalLine": "{{count}} nagrań · {{duration}}"
+      },
       "openFolder": "Otwórz folder nagrań",
       "loading": "Wczytywanie historii...",
       "empty": "Brak transkrypcji. Rozpocznij nagrywanie, aby zbudować historię!",
@@ -1273,7 +1302,8 @@
     "paused": "Wstrzymano",
     "pause": "Wstrzymaj",
     "resume": "Wznów",
-    "liveTextBox": "Pole tekstu na żywo"
+    "liveTextBox": "Pole tekstu na żywo",
+    "slowPc": "Transkrypcja na {{percent}}% zwykłej prędkości tego komputera"
   },
   "tokenCount": {
     "configureProviders": "Skonfiguruj dostawców",

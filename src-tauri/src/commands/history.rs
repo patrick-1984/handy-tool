@@ -1,4 +1,4 @@
-use crate::managers::history::{HistoryEntry, HistoryManager};
+use crate::managers::history::{HistoryEntry, HistoryManager, PurgedTotals};
 use std::sync::Arc;
 use tauri::{AppHandle, State};
 
@@ -11,6 +11,18 @@ pub async fn get_history_entries(
     history_manager
         .get_history_entries()
         .await
+        .map_err(|e| e.to_string())
+}
+
+/// Totals of the recordings that History's automatic clean-up has deleted, so
+/// the History statistics can count every take since the first one.
+#[tauri::command]
+#[specta::specta]
+pub fn get_purged_history_totals(
+    history_manager: State<'_, Arc<HistoryManager>>,
+) -> Result<PurgedTotals, String> {
+    history_manager
+        .get_purged_totals()
         .map_err(|e| e.to_string())
 }
 

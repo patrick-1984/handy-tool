@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Info, Heart } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { getVersion } from "@tauri-apps/api/app";
 import { openUrl } from "@tauri-apps/plugin-opener";
@@ -29,7 +30,7 @@ export const AboutSettings: React.FC = () => {
 
   return (
     <div className="w-full space-y-6">
-      <SettingsGroup title={t("settings.about.title")}>
+      <SettingsGroup icon={Info} title={t("settings.about.title")}>
         <AppLanguageSelector descriptionMode="tooltip" grouped={true} />
         <SettingContainer
           title={t("settings.about.version.title")}
@@ -60,7 +61,10 @@ export const AboutSettings: React.FC = () => {
         <LogDirectory grouped={true} />
       </SettingsGroup>
 
-      <SettingsGroup title={t("settings.about.acknowledgments.title")}>
+      <SettingsGroup
+        icon={Heart}
+        title={t("settings.about.acknowledgments.title")}
+      >
         <SettingContainer
           title={t("settings.about.acknowledgments.handy.title")}
           description={t("settings.about.acknowledgments.handy.description")}

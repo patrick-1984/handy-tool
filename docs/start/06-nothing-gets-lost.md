@@ -12,7 +12,7 @@
 2. Confirm `General › Cancel behavior = Finish, save to history only`.
 3. Press `ctrl+space` and speak for at least thirty seconds. Include a distinctive phrase such as “orange lighthouse recovery test.”
 4. Press Escape on purpose. Nothing should be delivered into Notepad.
-5. Open `History`, find the entry containing your distinctive phrase, and use `History › Copy transcription to clipboard`.
+5. Open `History`, find the entry containing your distinctive phrase, and use `History › Recordings › Copy transcription to clipboard`.
 6. Return to Notepad and paste. You have recovered the take you deliberately cancelled.
 
 [Escape stops the delivery, not your words](../features.md#escape-stops-the-delivery-not-your-words) is the immediate safety net. [A crash mid-dictation costs you nothing](../features.md#a-crash-mid-dictation-costs-you-nothing) and [Recordings that don't eat your disk](../features.md#recordings-that-dont-eat-your-disk) cover the longer failure story.

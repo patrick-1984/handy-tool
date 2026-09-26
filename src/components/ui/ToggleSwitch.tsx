@@ -1,5 +1,5 @@
 import React from "react";
-import { SettingContainer } from "./SettingContainer";
+import { SettingContainer, type SettingIcon } from "./SettingContainer";
 
 interface ToggleSwitchProps {
   checked: boolean;
@@ -11,6 +11,7 @@ interface ToggleSwitchProps {
   descriptionMode?: "inline" | "tooltip";
   grouped?: boolean;
   tooltipPosition?: "top" | "bottom";
+  icon?: SettingIcon;
 }
 
 export const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
@@ -23,6 +24,7 @@ export const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
   descriptionMode = "tooltip",
   grouped = false,
   tooltipPosition = "top",
+  icon,
 }) => {
   return (
     <SettingContainer
@@ -32,6 +34,7 @@ export const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
       grouped={grouped}
       disabled={disabled}
       tooltipPosition={tooltipPosition}
+      icon={icon}
     >
       <label
         className={`inline-flex items-center ${disabled || isUpdating ? "cursor-not-allowed" : "cursor-pointer"}`}

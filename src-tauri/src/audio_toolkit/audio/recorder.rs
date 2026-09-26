@@ -67,8 +67,11 @@ enum Cmd {
     /// Stop taking in audio but keep the take open; `Resume` continues it.
     Pause,
     Resume,
-    /// Cut the take's kept audio back to this many samples (undo last word).
-    Truncate(usize),
+    /// Cut the take's kept audio back to this many samples (undo last word),
+    /// then reply, so the caller knows every later live-preview snapshot is cut.
+    Truncate(usize, mpsc::Sender<()>),
+    /// Reply with a copy of the take's kept audio so far (undo last word).
+    Snapshot(mpsc::Sender<Vec<f32>>),
     Shutdown,
 }
 
@@ -623,9 +626,19 @@ impl AudioRecorder {
         self.send(Cmd::Resume)
     }
 
-    /// Cut the take's kept audio back to `len` samples.
+    /// Cut the take's kept audio back to `len` samples; returns once it is cut.
     pub fn truncate(&self, len: usize) -> Result<(), Box<dyn std::error::Error>> {
-        self.send(Cmd::Truncate(len))
+        let (tx, rx) = mpsc::channel();
+        self.send(Cmd::Truncate(len, tx))?;
+        rx.recv_timeout(Duration::from_secs(1))?;
+        Ok(())
+    }
+
+    /// A copy of the take's kept audio so far.
+    pub fn snapshot(&self) -> Result<Vec<f32>, Box<dyn std::error::Error>> {
+        let (tx, rx) = mpsc::channel();
+        self.send(Cmd::Snapshot(tx))?;
+        Ok(rx.recv_timeout(Duration::from_secs(1))?)
     }
 
     /// True when the CPAL error callback has reported a fault on the current
@@ -1452,11 +1465,15 @@ fn run_consumer(
                         }
                     }
                 }
-                Cmd::Truncate(len) => {
+                Cmd::Truncate(len, done) => {
                     if len < processed_samples.len() {
                         processed_samples.truncate(len);
                         segment_start_idx = segment_start_idx.min(len);
                     }
+                    let _ = done.send(());
+                }
+                Cmd::Snapshot(reply) => {
+                    let _ = reply.send(processed_samples.clone());
                 }
                 Cmd::Shutdown => return,
             }

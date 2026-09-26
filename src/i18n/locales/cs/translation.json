@@ -235,6 +235,10 @@
             "name": "Vrátit poslední slovo",
             "description": "Odstraní poslední slovo živé nahrávky. Aktivní jen během živé nahrávky. Výchozí: Ctrl+Backspace."
           },
+          "toggle_live_text_box": {
+            "name": "Okénko živého textu zap./vyp.",
+            "description": "Zapne nebo vypne okénko živého textu, stejně jako tlačítko T na nahrávacím panelu. Výchozí: Žádná."
+          },
           "transcribe_with_post_process": {
             "name": "Klávesa pro následné zpracování",
             "description": "Volitelné: Vyhrazená klávesová zkratka, která vždy použije AI následné zpracování na váš přepis."
@@ -316,13 +320,22 @@
       },
       "liveTextBox": {
         "label": "Živý text",
-        "description": "Zobrazuje, co říkáte, v malém okně vedle panelu nahrávání, aktualizované zhruba každých 1,5 s. Když je zapnuto, všechny nahrávky běží v živém režimu. Výchozí: Vypnuto; přepíná ho i tlačítko T."
+        "description": "Ukazuje, co říkáte, v malém okénku u nahrávacího panelu, aktualizováno asi každých 1,5 s. Když je zapnuté, každé nahrávání běží v živém režimu a text v okénku je váš přepis: po zastavení se doplní jen poslední sekunda či dvě, takže je hned hotový — nahrávka se nepřepisuje podruhé. Vyžaduje model běžící na tomto počítači. Výchozí: Vypnuto; přepíná ho i tlačítko T na panelu.",
+        "remoteModel": {
+          "title": "Okénko živého textu nefunguje s modelem {{model}}",
+          "worksWith": "Potřebuje model běžící na tomto počítači, protože vzdálené služby dostanou zvuk až po zastavení. Funguje s: {{models}}.",
+          "noLocal": "Potřebuje model běžící na tomto počítači, protože vzdálené služby dostanou zvuk až po zastavení. Stáhněte si nějaký na stránce Modely."
+        }
       },
       "liveTextMode": {
         "title": "Živý text zobrazuje",
         "description": "Jeden řádek s nejnovějšími slovy, nebo celý text v okně o třech řádcích. Velikost se během mluvení nemění. Výchozí: Poslední slova.",
         "lastWords": "Poslední slova",
         "fullText": "Celý text"
+      },
+      "liveTextFade": {
+        "label": "Zmizet, když přestanete mluvit",
+        "description": "Živý text po několika sekundách ticha zmizí, takže dořečená slova nezůstávají na obrazovce. Další slova ho vrátí. Výchozí: Vypnuto."
       },
       "language": {
         "title": "Jazyk",
@@ -468,11 +481,17 @@
     },
     "shortcuts": {
       "groups": {
-        "dictation": "Diktování"
+        "dictation": "Diktování",
+        "warnings": "Upozornění"
       },
       "conflicts": {
         "title": "Některé zkratky používají stejné klávesy",
         "description": "Kombinaci kláves může používat jen jedna akce, takže z každé dvojice funguje jen jedna. Změňte nebo zrušte jednu ze zkratek označených červeným varováním."
+      },
+      "altGrWarning": {
+        "label": "Upozorňovat na zkratky s AltGr",
+        "description": "Zobrazí upozornění u zkratek, které lze napsat i klávesou AltGr. Windows hlásí AltGr jako Ctrl+Alt, takže zkratka jako Ctrl+Alt+O se spustí při psaní znaku přes AltGr a znak se nenapíše. Výchozí: Zapnuto. Vypněte, pokud znaky přes AltGr nepíšete.",
+        "turnOff": "Vypnout toto upozornění"
       }
     },
     "sound": {
@@ -662,7 +681,7 @@
       },
       "transcriptionMode": {
         "title": "Režim přepisu",
-        "description": "Živý zobrazuje text, jak vzniká, ještě během mluvení; Po nahrání nahrává tiše a přepisuje na pozadí. Výchozí: Po nahrání. V obou případech proběhne po zastavení jeden finální průchod celým zvukem, takže doručený text je vždy ten přesný a živý text je jen náhled — platí pouze pro Zkratku přepisu, modely API přepisu se vždy chovají jako Po nahrání.",
+        "description": "Živý režim ukazuje text už během mluvení; Po nahrávání nahrává potichu a přepisuje na pozadí. V obou případech se většina práce udělá během mluvení, takže text je hotový chvíli po zastavení. V živém režimu dostanete přesně text, který jste viděli. Výchozí: Po nahrávání. Platí jen pro zkratku přepisu; modely API se vždy chovají jako Po nahrávání.",
         "options": {
           "live": "Živý",
           "postRecording": "Po nahrání"
@@ -942,6 +961,16 @@
     },
     "history": {
       "title": "Historie",
+      "tabs": {
+        "recordings": "Nahrávky",
+        "statistics": "Statistiky",
+        "settings": "Nastavení"
+      },
+      "stats": {
+        "title": "Statistiky nahrávání",
+        "description": "Kolik nahrávek jste pořídili a jak byly dlouhé, po dnech, týdnech, měsících a letech. Řádek za celou dobu počítá i nahrávky, které Historie mezitím smazala. Celý seznam lze stáhnout jako CSV.",
+        "totalLine": "{{count}} nahrávek · {{duration}}"
+      },
       "openFolder": "Otevřít složku nahrávek",
       "loading": "Načítám historii...",
       "empty": "Zatím žádné přepisy. Začněte nahrávat a vytvořte si historii!",
@@ -1273,7 +1302,8 @@
     "paused": "Pozastaveno",
     "pause": "Pozastavit",
     "resume": "Pokračovat",
-    "liveTextBox": "Živý text"
+    "liveTextBox": "Živý text",
+    "slowPc": "Přepis běží na {{percent}} % běžné rychlosti tohoto počítače"
   },
   "brand": {
     "name": "Handy",

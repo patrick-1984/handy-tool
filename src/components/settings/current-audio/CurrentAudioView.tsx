@@ -5,7 +5,7 @@ import { SettingsGroup } from "@/components/ui/SettingsGroup";
 import { commands } from "@/bindings";
 import { useNavStore } from "@/stores/navStore";
 import { writeText } from "@tauri-apps/plugin-clipboard-manager";
-import { ExternalLink, Copy, Check } from "lucide-react";
+import { ExternalLink, Copy, Check, AudioLines } from "lucide-react";
 
 interface LiveTranscriptionChunk {
   index: number;
@@ -88,7 +88,7 @@ export const CurrentAudioView: React.FC = () => {
 
   return (
     <div className="w-full space-y-6">
-      <SettingsGroup title={t("settings.currentAudio.title")}>
+      <SettingsGroup icon={AudioLines} title={t("settings.currentAudio.title")}>
         <div className="p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">

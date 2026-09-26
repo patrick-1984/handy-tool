@@ -37,8 +37,8 @@ Treat History as part of dictation, not as an archive you visit months later. It
 ## Set it up
 
 1. Keep cancellation recoverable at `General › Cancel behavior = Finish, save to history only`.
-2. Keep incremental recovery enabled at `History › Crash-Safe Recording = On`.
-3. Choose the amount of unsaved history you need at `History › History Limit`.
-4. Match audio cleanup to that choice at `History › Auto-Delete Recordings`.
-5. Open the storage location from `History › Open Recordings Folder`.
+2. Keep incremental recovery enabled at `History › Settings › Crash-Safe Recording = On`.
+3. Choose the amount of unsaved history you need at `History › Settings › History Limit`.
+4. Match audio cleanup to that choice at `History › Settings › Auto-Delete Recordings`.
+5. Open the storage location from `History › Recordings › Open Recordings Folder`.
 6. Make a short disposable take, press Escape, and find the result on the History page before trusting the setup with a long discussion.

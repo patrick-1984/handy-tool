@@ -1,5 +1,69 @@
 # Changelog
 
+## [1.11.0] - 2026-09-26 20:13
+
+### Added
+
+- **History has three tabs: Recordings, Statistics and Settings.** It opens on Recordings, so
+  the settings no longer sit below a long list; a search result for a History setting opens the
+  Settings tab.
+- **Recording statistics** (History › Statistics): recordings and their length per day, week,
+  month and year, with CSV export - the Providers cost report without the cost (which stays in
+  Providers). The all-time line also counts recordings History Limit / Auto-Delete Recordings
+  have since removed, from totals the database already kept (`purged_totals`) but nothing showed.
+- **Live Text Box On/Off shortcut** (no default key): does what the overlay's T button does.
+  Listed on the Shortcuts page, and under the Live text box switch while it is on.
+- **The live text box needs a model that runs on this PC**, and now says so: switching it on
+  with API transcription or OpenRouter selected (they get the audio only after stop) shows a
+  warning listing your downloaded models that work, instead of a box that never shows text. The
+  overlay's T button refuses the same way.
+
+- **Slow-PC warning on the recording pill.** Every transcription is timed against this PC's own
+  normal for that model (the median of its last 20, saved in `transcription_speed.json` in the
+  app data folder; short live-preview clips and long chunks are compared separately). While the
+  PC runs below 70% of its normal speed, the pill shows a PC icon with the figure - amber, red
+  under 50%; at normal speed nothing is shown. It needs 5 measurements per model and clip
+  length before it says anything.
+- **Fade when you stop talking** (General › Transcription, under Live text box, default Off):
+  the live text fades away 3 seconds after it stops changing; the next words bring it back.
+- **Warn about AltGr shortcuts** (Shortcuts › Warnings, default On): the AltGr warning can be
+  switched off. The warning's tooltip has a "Turn off this warning" button that opens the
+  Shortcuts page and highlights the switch.
+
+### Changed
+
+- **A live take's transcript is its live text.** At stop, only the audio since the last fixed
+  word (your last second or two) is transcribed and added, so the text is ready at once; Custom
+  Words and the filler filter are applied as usual. Until now the whole take was transcribed a
+  second time at stop, which on a long take could hold "Transcribing 99%" for minutes. The full
+  pass remains only as a fallback when the live preview produced no text.
+- **Live text is typed in.** New words appear letter by letter (finishing within about a
+  second) instead of all at once, so the eye can follow them; removed words go at once.
+- **Undo last word moved** to General › Transcription, next to the live text box.
+- **Sub-settings are indented under their switch** with a connecting line (pause and undo
+  shortcuts, live text options, text before/after, Track last output location's slot, the
+  system-audio options, and post-processing's settings), so they read as part of it.
+- **The tab rows stay in view:** More's Settings/Tools rows and History's tabs stick to the top
+  while the page scrolls.
+- **Icons on six settings** that are worth spotting at a glance: Appearance, Overlay Position,
+  Show Tray Icon, Microphone, Pause button and Live text box.
+- **Section titles are clearer:** full text colour instead of grey, a size up, and a line icon
+  each.
+- **The window opens wider** (1040 × 760 instead of 907 × 760), so More's Settings row fits
+  without scrolling. In a narrower window, or with the Debug tab showing, the tabs wrap onto a
+  second line instead of scrolling.
+
+### Fixed
+
+- **The last words before a pause went missing from the live text box.** A preview update that
+  arrived while the previous one was still being transcribed was dropped - including the one
+  sent when you stop speaking, after which silence brings no more updates. Updates now queue
+  and are worked through in order.
+- **Undo last word removed the wrong word.** It removed the last word _shown_, which runs a
+  second or two behind your speech, and cut the audio there - taking newer, not yet shown words
+  with it. A press now first brings the live text up to date, then removes the newest word, so
+  you see exactly what disappears. Each undo is logged.
+
 ## [1.10.0] - 2026-09-26 17:18
 
 ### Added

@@ -174,7 +174,7 @@ dropdown away as `Discard recording`.
 Audio is written to `File › %APPDATA%\pr.handy\recordings` as 16 kHz mono Ogg/Opus while you
 speak, transcripts to `File › %APPDATA%\pr.handy\history.db`, settings to
 `File › %APPDATA%\pr.handy\settings_store.json`. History keeps the 5 most recent entries and
-`History › Auto-Delete Recordings` keeps audio for exactly those entries — an entry
+`History › Settings › Auto-Delete Recordings` keeps audio for exactly those entries — an entry
 you mark as saved is never cleaned up. Handy only ever deletes files it created; your own files
 in that folder are not touched.
 
@@ -240,9 +240,11 @@ paste method, so it can behave differently from the toggle.
 found out at the end whether the microphone was even working.
 **What Handy does.** Live mode transcribes progressively while you speak and shows the text
 within seconds. Post-Recording records silently and transcribes in the background as you go.
-Either way, the complete audio gets one final pass when you stop, so the delivered text is the
-accurate one and the live text is only a preview. The two shortcuts are configured separately —
-the toggle defaults to Post-Recording, push-to-talk to Live.
+Either way most of the work is done while you talk, so the text is ready moments after you stop.
+In Live mode the text you saw is the text you get: only your last second or two is added at
+stop. Post-Recording's segments are longer, which can be slightly more accurate. The two
+shortcuts are configured separately — the toggle defaults to Post-Recording, push-to-talk to
+Live.
 **Where.** `General › Transcription › Transcription Mode = Live` and
 `General › Transcription › Transcription Mode (PTT) = Live`.
 **Since.** 0.8.2.
@@ -267,12 +269,14 @@ from the recording's length and this machine's measured speed for the others.
 <a id="live-mode-stopped-eating-the-end-of-your-sentence"></a>
 **The situation.** In live mode the pasted text was missing the last few words — whatever you
 said after the final on-screen update.
-**What Handy does.** The delivered text no longer comes from the accumulated live preview. On
-stop, the complete audio is transcribed once more — the cost of roughly one extra live update —
-and that result is what you get. The live text is kept only as a fallback if the final pass
-cannot run.
+**What Handy does.** On stop, the audio since the last fixed word — your last second or two —
+is transcribed and added to the live text, and that is what you get, ready at once. Nothing you
+said after the last on-screen update is lost, and the whole take is not transcribed a second
+time. Only when the live preview produced no text at all is the complete audio transcribed
+instead.
 **Where.** No control — this is always active.
-**Since.** 0.25.0.
+**Since.** 0.25.0. From 0.25.0 to 1.10.0 the complete audio was transcribed again at stop,
+which on a long take could take minutes; since 1.11.0 the live text is the transcript.
 
 ### See your words next to the overlay while you talk
 
@@ -283,28 +287,37 @@ to a window to look — and re-reading a whole long take every few seconds would
 updated about every 1.5 seconds. Only the last few seconds are re-read each time; words before a
 pause are fixed and never re-transcribed, so the cost stays the same however long you talk. It
 shows either one line with the newest words or the whole take so far, and neither changes size
-while you speak. The box ignores the mouse and never takes focus. While it is on, every take
-runs in Live mode; the delivered text still comes from one full pass when you stop. The overlay's
-**T** button switches it for the next take. The preview shows raw words, before Custom Words
-corrections.
-**Where.** `General › Transcription › Live text box = On` and
-`General › Transcription › Live text shows = Whole text`.
-**Since.** 1.10.0.
+while you speak. New words are typed in letter by letter rather than appearing all at once, so
+your eye can follow them; removed words go at once. Optionally the text fades away a few seconds
+after you stop talking. The box ignores the mouse and never takes focus. While it is on, every take
+runs in Live mode and the text in the box is your transcript: at stop only your last second or
+two is added, so it is ready at once. The box shows the raw words; Custom Words corrections are
+applied to the delivered text. The overlay's **T** button — or the Live Text Box On/Off
+shortcut, which has no default key — switches it. It
+needs a model that runs on this PC — remote engines get the audio only after you stop — so
+switching it on with one selected explains that and lists your models that work.
+**Where.** `General › Transcription › Live text box = On`,
+`General › Transcription › Live text shows = Whole text` and
+`General › Transcription › Fade when you stop talking = On`.
+**Since.** 1.10.0. Typed-in words, fading and the live text as the transcript since 1.11.0;
+before 1.11.0 the last words before a pause could stay missing from the box until you spoke
+again.
 
 ### Take back the last word without starting over
 
 <a id="undo-last-word"></a>
 **The situation.** Mid-sentence you say the wrong word, or the live text shows a word the model
 misheard, and the only fix used to be cancelling the whole take.
-**What Handy does.** Each press of the Undo Last Word shortcut removes the newest word of a live
-take and cuts the recording back to where that word started, so it stays out of the final text
-too — keep talking and the new words take its place. It needs word positions, which only
+**What Handy does.** Each press of the Undo Last Word shortcut first brings the live text up to
+date with what you said, then removes the newest word — you see it disappear from the live text
+box — and cuts the recording back to where that word started, so it stays out of the final text
+too. Keep talking and the new words take its place. It needs word positions, which only
 Parakeet models report; with other engines the shortcut does nothing. The audio kept in History
 still contains the removed words.
-**Where.** `General › Undo last word = On`; the shortcut is
+**Where.** `General › Transcription › Undo last word = On`; the shortcut is
 `Shortcuts › Dictation › Undo Last Word` — `ctrl+backspace` by default, active only during a
 live take.
-**Since.** 1.10.0.
+**Since.** 1.10.0. Up-to-date removal since 1.11.0.
 
 ### Pause a take without ending it
 
@@ -566,16 +579,19 @@ character never arrives, and nothing in the interface says why.
 trigger shortcuts sit on Ctrl+Space, Ctrl+Shift+Space and the Ctrl+Shift function keys, all of
 which are identical on every layout; a test over the whole default set fails the build if one
 regresses. When _you_ pick a colliding chord by hand, an amber warning appears beside it naming
-the conflict, because the app cannot safely change a chord you chose. The one deliberate
+the conflict, because the app cannot safely change a chord you chose. If you never type with
+AltGr, the warning's tooltip offers to turn it off and takes you to the switch. The one deliberate
 exception is the Jumper's eighteen slot chords, which stay on `ctrl+alt+<digit>` and
 `ctrl+alt+shift+<digit>`: no common European layout puts a character on AltGr+digit, and no other
 free chord space of that size exists.
-**Where.** Every shortcut control; the warning appears next to the chord itself.
+**Where.** Every shortcut control; the warning appears next to the chord itself. Switch it off
+at `Shortcuts › Warnings › Warn about AltGr shortcuts = Off`.
 **Applies to.** All platforms; AltGr is a Windows keyboard concept, so the collision itself is
 Windows-only.
 **Since.** 1.4.0. Push-to-Talk, Transcribe & Submit, Type Text, Paste Last and the four anchor
 keys moved off `ctrl+alt+<letter>` chords across earlier releases; 1.4.0 finished the job by
-moving Transcribe & Submit off `ctrl+alt+space` and adding the test and the warning.
+moving Transcribe & Submit off `ctrl+alt+space` and adding the test and the warning. The
+switch since 1.11.0.
 
 ### Turn off a shortcut you don't want
 
@@ -1179,7 +1195,7 @@ silence, with the in-progress chunk under a temporary name. On the next launch a
 temporary chunk is repaired — the torn trailing page is dropped — glued to its siblings and
 added to History marked as recovered. Opus is page-based, so a half-written file is readable
 without any repair tool.
-**Where.** `History › Crash-Safe Recording = On`.
+**Where.** `History › Settings › Crash-Safe Recording = On`.
 **Since.** 0.10.0 as WAV; the chunked Opus design in 0.11.0.
 
 ### Recordings that don't eat your disk
@@ -1201,7 +1217,7 @@ automatic cleanup is about to run.
 **What Handy does.** Every delete, rename and retention sweep is restricted to files Handy
 created and named itself. Anything else in that folder is invisible to cleanup. Deleting one
 recording also removes its chunk siblings, and nothing else.
-**Where.** `History › Open Recordings Folder`.
+**Where.** `History › Recordings › Open Recordings Folder`.
 **Since.** 0.10.0, extended to Opus in 0.11.0.
 
 ### What did I dictate last Tuesday?
@@ -1213,7 +1229,7 @@ transcript, the post-processed text and the title. A query containing regular-ex
 characters becomes a live regular expression, marked with a badge, falling back to a literal
 search if the pattern is invalid. Matches are highlighted, long transcripts show a snippet
 centered on the first hit, and a counter tells you where you are.
-**Where.** `History › Search history (text or regex)...`.
+**Where.** `History › Recordings › Search history (text or regex)...`.
 **Since.** 0.12.0.
 
 ### How long it was, which engine ran it, what it cost
@@ -1256,8 +1272,8 @@ sitting on a work laptop.
 **What Handy does.** Retention is a choice: keep nothing beyond the newest few entries, keep for
 three days, two weeks or three months, or keep everything. Cleanup runs after a new entry is
 saved and when you change the setting; it never touches entries you have marked as saved.
-**Where.** `History › Auto-Delete Recordings = After 3 days` and
-`History › History Limit`.
+**Where.** `History › Settings › Auto-Delete Recordings = After 3 days` and
+`History › Settings › History Limit`.
 **Since.** Present since the fork's early releases.
 
 ### Keep the ones that matter
@@ -1267,7 +1283,7 @@ saved and when you change the setting; it never touches entries you have marked 
 is about to delete it.
 **What Handy does.** Marking an entry as saved excludes it from every automatic cleanup — the
 row and its audio stay until you delete them yourself.
-**Where.** `History › Save transcription`.
+**Where.** `History › Recordings › Save transcription`.
 **Since.** Present since the fork's early releases.
 
 ### Copy or delete a single entry
@@ -1277,8 +1293,21 @@ row and its audio stay until you delete them yourself.
 right now.
 **What Handy does.** Per-row buttons copy the transcription to the clipboard or delete the entry
 together with its audio and any chunk siblings.
-**Where.** `History › Copy transcription to clipboard` and `History › Delete entry`.
+**Where.** `History › Recordings › Copy transcription to clipboard` and `History › Recordings › Delete entry`.
 **Since.** Present since the fork's early releases.
+
+### How much have I dictated?
+
+<a id="how-much-have-i-dictated"></a>
+**The situation.** You want to know how much you actually talk to the app — this week, this
+month, since you started — without the cost figures meant for paid engines.
+**What Handy does.** History's Statistics tab counts your recordings and their total length per
+day, week, month and year, and can export the list as a CSV. It is the same report as the
+Providers cost report, minus the money. The all-time line keeps counting recordings that History
+Limit or Auto-Delete Recordings have since removed, so it never shrinks; entries you delete
+yourself are not counted.
+**Where.** `History › Statistics`.
+**Since.** 1.11.0.
 
 ### Open the folder the audio actually lives in
 
@@ -1287,7 +1316,7 @@ together with its audio and any chunk siblings.
 folder.
 **What Handy does.** Opens the recordings directory in the file manager. The files are ordinary
 `.opus` files with predictable names; nothing stops you using them elsewhere.
-**Where.** `History › Open Recordings Folder`.
+**Where.** `History › Recordings › Open Recordings Folder`.
 **Since.** 0.10.0.
 
 ---
@@ -2194,6 +2223,21 @@ falls back to the normal per-user location rather than failing.
 <a id="section-audio"></a>
 
 ## Audio and feedback
+
+### Know when your PC is the reason it is slow
+
+<a id="slow-pc-warning"></a>
+**The situation.** Some days transcription crawls because other programs are eating the PC, and
+you cannot tell whether to wait, close something, or blame the app.
+**What Handy does.** Every transcription is timed against this PC's own normal for that model —
+the median of its last twenty — kept on disk so it survives restarts. Short live-preview clips
+and long chunks are compared separately. While the PC is clearly slower than usual, below 70% of
+its normal speed, the recording pill shows a PC icon with the figure: amber, or red under 50%.
+At normal speed nothing is shown. It needs a few takes with a model before it has a normal to
+compare against, and it updates as often as the app transcribes — every 1.5 seconds with the
+live text box on, but only every 20 to 45 seconds in Post-Recording mode.
+**Where.** No control — the recording pill, while you record.
+**Since.** 1.11.0.
 
 ### It records what you say, not the silence
 

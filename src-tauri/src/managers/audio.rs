@@ -651,6 +651,21 @@ impl AudioRecordingManager {
         }
     }
 
+    /// The take in progress's kept audio so far (undo last word).
+    pub fn snapshot_recording(&self) -> Option<Vec<f32>> {
+        if !self.is_recording() {
+            return None;
+        }
+        let rec = self.recorder.lock().unwrap();
+        match rec.as_ref()?.snapshot() {
+            Ok(samples) => Some(samples),
+            Err(e) => {
+                error!("Failed to read the recording so far: {e}");
+                None
+            }
+        }
+    }
+
     /// Set a callback that fires when VAD detects a speech→silence boundary during recording.
     /// Used for progressive/live transcription.
     pub fn set_on_segment_callback<F>(&self, cb: F)

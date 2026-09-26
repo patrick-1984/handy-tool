@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SettingContainer } from "../ui/SettingContainer";
+import { SubSettings } from "../ui/SettingsGroup";
 import { Dropdown } from "../ui/Dropdown";
 import { useSettings } from "../../hooks/useSettings";
 import { useOsType } from "../../hooks/useOsType";
@@ -118,26 +119,24 @@ export const CaptureSourceSettings: React.FC<CaptureSourceSettingsProps> =
           />
         </SettingContainer>
 
+        {/* The system-audio options belong to the capture source above. */}
         {usesSystemAudio && (
-          <SettingContainer
-            title={t("settings.advanced.systemAudioDevice.title")}
-            description={t("settings.advanced.systemAudioDevice.description")}
-            descriptionMode={descriptionMode}
-            grouped={grouped}
-          >
-            <Dropdown
-              options={deviceOptions}
-              selectedValue={savedDevice ?? "default"}
-              onSelect={(v) =>
-                updateSetting("system_audio_device", v as string)
-              }
-              disabled={isUpdating("system_audio_device")}
-            />
-          </SettingContainer>
-        )}
-
-        {usesSystemAudio && (
-          <>
+          <SubSettings>
+            <SettingContainer
+              title={t("settings.advanced.systemAudioDevice.title")}
+              description={t("settings.advanced.systemAudioDevice.description")}
+              descriptionMode={descriptionMode}
+              grouped={grouped}
+            >
+              <Dropdown
+                options={deviceOptions}
+                selectedValue={savedDevice ?? "default"}
+                onSelect={(v) =>
+                  updateSetting("system_audio_device", v as string)
+                }
+                disabled={isUpdating("system_audio_device")}
+              />
+            </SettingContainer>
             <SettingContainer
               title={t("settings.advanced.systemAudioDelay.title")}
               description={t("settings.advanced.systemAudioDelay.description")}
@@ -174,7 +173,7 @@ export const CaptureSourceSettings: React.FC<CaptureSourceSettingsProps> =
                 disabled={isUpdating("system_audio_gain")}
               />
             </SettingContainer>
-          </>
+          </SubSettings>
         )}
       </>
     );

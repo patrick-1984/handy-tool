@@ -1,4 +1,5 @@
 import React from "react";
+import { SunMoon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useSettings } from "../../hooks/useSettings";
 import type { Theme } from "@/bindings";
@@ -50,6 +51,7 @@ export const AppearanceSetting: React.FC<AppearanceSettingProps> = ({
 
   return (
     <SettingContainer
+      icon={SunMoon}
       title={t("settings.advanced.appearance.title")}
       description={t("settings.advanced.appearance.description")}
       descriptionMode={descriptionMode}

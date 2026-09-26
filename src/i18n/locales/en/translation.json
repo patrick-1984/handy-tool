@@ -229,6 +229,10 @@
             "name": "Undo Last Word",
             "description": "Removes the last word of a live take. Active only during a live take while Undo last word is on. Default: Ctrl+Backspace."
           },
+          "toggle_live_text_box": {
+            "name": "Live Text Box On/Off",
+            "description": "Switches the live text box on or off, like the T button on the recording overlay. Default: None."
+          },
           "transcribe_ptt": {
             "name": "Push-to-Talk Shortcut",
             "description": "**Hold this shortcut to record, release it to stop.** The microphone goes cold on release, so anything you say afterwards cannot leak into the text.\n\n**Default:** Ctrl+Shift+Space.\n\nIt has its own Transcription Mode (PTT) and its own Paste Method (PTT), so push-to-talk can behave differently from Transcribe Shortcut."
@@ -310,13 +314,22 @@
       },
       "liveTextBox": {
         "label": "Live text box",
-        "description": "**Shows what you are saying in a small box next to the recording overlay**, updated about every 1.5 seconds.\n\n**Default:** Off. The T button on the overlay switches it too.\n\nWhile it is on, every take runs in Live mode. Text before a pause is fixed and only the last few seconds are re-read, so it stays quick on a busy PC. The final text is still one full pass when you stop."
+        "description": "**Shows what you are saying in a small box next to the recording overlay**, updated about every 1.5 seconds.\n\n**Default:** Off. The T button on the overlay switches it too.\n\nWhile it is on, every take runs in Live mode and the text in the box is your transcript: when you stop, only your last second or two is added, so it is ready at once — the take is not transcribed a second time. Text before a pause is fixed and only the last few seconds are re-read, so it stays quick on a busy PC. Needs a model that runs on this PC.",
+        "remoteModel": {
+          "title": "The live text box doesn't work with {{model}}",
+          "worksWith": "It needs a model that runs on this PC, because remote engines only get the audio after you stop. It works with: {{models}}.",
+          "noLocal": "It needs a model that runs on this PC, because remote engines only get the audio after you stop. Download one on the Models page."
+        }
       },
       "liveTextMode": {
         "title": "Live text shows",
         "description": "**One line with the newest words, or the whole take so far** in a three-line box whose older lines slide away. Neither changes size while you talk.\n\n**Default:** Last words.",
         "lastWords": "Last words",
         "fullText": "Whole text"
+      },
+      "liveTextFade": {
+        "label": "Fade when you stop talking",
+        "description": "**The live text fades away a few seconds after you stop talking**, so words you are done with don't stay on screen. Your next words bring it back.\n\n**Default:** Off."
       },
       "anchor": {
         "title": "Anchor & Deliver",
@@ -462,11 +475,17 @@
     },
     "shortcuts": {
       "groups": {
-        "dictation": "Dictation"
+        "dictation": "Dictation",
+        "warnings": "Warnings"
       },
       "conflicts": {
         "title": "Some shortcuts share the same keys",
         "description": "Only one action can use a key combination, so only one of each pair works. Change or clear one of the shortcuts marked with a red warning."
+      },
+      "altGrWarning": {
+        "label": "Warn about AltGr shortcuts",
+        "description": "**Shows an amber warning next to shortcuts that AltGr can also type.** Windows reports AltGr as Ctrl+Alt, so a shortcut like Ctrl+Alt+O fires when you type ó with AltGr, and the character never arrives.\n\n**Default:** On. Switch it off if you never type characters with AltGr.",
+        "turnOff": "Turn off this warning"
       }
     },
     "models": {
@@ -792,7 +811,7 @@
       },
       "transcriptionMode": {
         "title": "Transcription Mode",
-        "description": "**Live shows the text building up while you speak; Post-Recording records quietly and transcribes in the background.**\n\n**Default:** Post-Recording.\n\nEither way the full audio gets one final pass when you stop, so the delivered text is always the accurate one — the live text is only a preview. This governs Transcribe Shortcut only, and API transcription models always behave as Post-Recording.",
+        "description": "**Live shows the text building up while you speak; Post-Recording records quietly and transcribes in the background.**\n\n**Default:** Post-Recording.\n\nEither way most of the work is done while you talk, so the text is ready moments after you stop. In Live mode the text you saw is the text you get. This governs Transcribe Shortcut only, and API transcription models always behave as Post-Recording.",
         "options": {
           "live": "Live",
           "postRecording": "Post-Recording"
@@ -1092,6 +1111,16 @@
     },
     "history": {
       "title": "History",
+      "tabs": {
+        "recordings": "Recordings",
+        "statistics": "Statistics",
+        "settings": "Settings"
+      },
+      "stats": {
+        "title": "Recording statistics",
+        "description": "How many recordings you made and how long they were, by day, week, month and year. The all-time line also counts the recordings History has since cleaned up. Download the full list as a CSV.",
+        "totalLine": "{{count}} recordings · {{duration}}"
+      },
       "loadError": "Failed to load history: {{error}}",
       "openFolder": "Open Recordings Folder",
       "search": {
@@ -1285,7 +1314,8 @@
     "paused": "Paused",
     "pause": "Pause",
     "resume": "Resume",
-    "liveTextBox": "Live text box"
+    "liveTextBox": "Live text box",
+    "slowPc": "Transcribing at {{percent}}% of this PC's normal speed"
   },
   "flm": {
     "windowsApplicationControlBlocked": "Windows Application Control blocked flm.exe because it is not signed. The NPU engine is unavailable. Choose a different transcription model.",

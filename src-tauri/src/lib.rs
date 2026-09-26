@@ -20,6 +20,7 @@ mod portable;
 mod settings;
 mod shortcut;
 mod signal_handle;
+mod speed;
 mod token_count;
 mod transcription_coordinator;
 mod tray;
@@ -405,6 +406,7 @@ pub fn run(cli_args: CliArgs) {
         shortcut::change_binding,
         shortcut::reset_binding,
         shortcut::change_ptt_setting,
+        shortcut::change_altgr_warning_setting,
         shortcut::change_audio_feedback_setting,
         shortcut::change_audio_feedback_volume_setting,
         shortcut::change_sound_theme_setting,
@@ -577,6 +579,7 @@ pub fn run(cli_args: CliArgs) {
         commands::audio::change_live_text_box_setting,
         commands::audio::toggle_live_text_box,
         commands::audio::change_live_text_mode_setting,
+        commands::audio::change_live_text_fade_setting,
         commands::audio::toggle_pause_recording,
         commands::audio::get_microphone_mode,
         commands::audio::get_available_microphones,
@@ -596,6 +599,7 @@ pub fn run(cli_args: CliArgs) {
         commands::transcription::unload_model_manually,
         commands::history::get_history_entries,
         commands::history::backfill_history_durations,
+        commands::history::get_purged_history_totals,
         commands::history::toggle_history_entry_saved,
         commands::history::get_audio_file_path,
         commands::history::delete_history_entry,

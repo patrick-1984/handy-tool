@@ -1,6 +1,8 @@
 import React from "react";
+import { Mic, Keyboard, Crosshair, AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { SettingsGroup } from "../../ui/SettingsGroup";
+import { ToggleSwitch } from "../../ui/ToggleSwitch";
 import { ShortcutInput } from "../ShortcutInput";
 import { ShortcutRegistrationFailures } from "../ShortcutRegistrationFailures";
 import { useShortcutConflicts } from "../ShortcutConflictWarning";
@@ -16,7 +18,7 @@ const JUMPER_SLOTS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
  */
 export const ShortcutsSettings: React.FC = () => {
   const { t } = useTranslation();
-  const { getSetting } = useSettings();
+  const { getSetting, updateSetting, isUpdating } = useSettings();
   const osType = useOsType();
   const conflicts = useShortcutConflicts();
   const postProcessEnabled = getSetting("post_process_enabled") ?? false;
@@ -36,7 +38,10 @@ export const ShortcutsSettings: React.FC = () => {
         </section>
       )}
       <ShortcutRegistrationFailures />
-      <SettingsGroup title={t("settings.shortcuts.groups.dictation")}>
+      <SettingsGroup
+        icon={Mic}
+        title={t("settings.shortcuts.groups.dictation")}
+      >
         <ShortcutInput shortcutId="transcribe" grouped={true} />
         <ShortcutInput shortcutId="transcribe_ptt" grouped={true} />
         <ShortcutInput shortcutId="transcribe_and_submit" grouped={true} />
@@ -56,13 +61,14 @@ export const ShortcutsSettings: React.FC = () => {
         {undoWordEnabled && (
           <ShortcutInput shortcutId="undo_word" grouped={true} />
         )}
+        <ShortcutInput shortcutId="toggle_live_text_box" grouped={true} />
       </SettingsGroup>
-      <SettingsGroup title={t("sidebar.keyboardTyper")}>
+      <SettingsGroup icon={Keyboard} title={t("sidebar.keyboardTyper")}>
         <ShortcutInput shortcutId="type_text" grouped={true} />
       </SettingsGroup>
       {/* The Jumper is Windows-only; its hotkeys are not registered elsewhere. */}
       {osType === "windows" && (
-        <SettingsGroup title={t("sidebar.jumper")}>
+        <SettingsGroup icon={Crosshair} title={t("sidebar.jumper")}>
           <ShortcutInput shortcutId="anchor_set" grouped={true} />
           <ShortcutInput shortcutId="anchor_jump" grouped={true} />
           <ShortcutInput shortcutId="anchor_set_2" grouped={true} />
@@ -75,6 +81,20 @@ export const ShortcutsSettings: React.FC = () => {
           ))}
         </SettingsGroup>
       )}
+      <SettingsGroup
+        icon={AlertTriangle}
+        title={t("settings.shortcuts.groups.warnings")}
+      >
+        <ToggleSwitch
+          checked={getSetting("altgr_warning_enabled") ?? true}
+          onChange={(value) => updateSetting("altgr_warning_enabled", value)}
+          isUpdating={isUpdating("altgr_warning_enabled")}
+          label={t("settings.shortcuts.altGrWarning.label")}
+          description={t("settings.shortcuts.altGrWarning.description")}
+          descriptionMode="tooltip"
+          grouped={true}
+        />
+      </SettingsGroup>
     </div>
   );
 };

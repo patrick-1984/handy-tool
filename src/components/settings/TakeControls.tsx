@@ -1,11 +1,21 @@
 import React, { useEffect } from "react";
+import { Pause, TextQuote } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { listen } from "@tauri-apps/api/event";
 import { ToggleSwitch } from "../ui/ToggleSwitch";
 import { Dropdown } from "../ui/Dropdown";
 import { SettingContainer } from "../ui/SettingContainer";
+import { SubSettings } from "../ui/SettingsGroup";
 import { ShortcutInput } from "./ShortcutInput";
 import { useSettings } from "../../hooks/useSettings";
+import { useModelStore } from "../../stores/modelStore";
+import { toast } from "sonner";
+import type { ModelInfo } from "@/bindings";
+
+/** Remote engines get the audio only after stop, so their takes are never live. */
+const isRemote = (model?: ModelInfo) =>
+  model?.engine_type === "ApiWhisper" ||
+  model?.engine_type === "OpenRouterWhisper";
 
 interface Props {
   descriptionMode?: "inline" | "tooltip";
@@ -25,13 +35,18 @@ export const PauseButtonSetting: React.FC<Props> = ({
       <ToggleSwitch
         checked={enabled}
         onChange={(value) => updateSetting("pause_button_enabled", value)}
+        icon={Pause}
         isUpdating={isUpdating("pause_button_enabled")}
         label={t("settings.general.pauseButton.label")}
         description={t("settings.general.pauseButton.description")}
         descriptionMode={descriptionMode}
         grouped={grouped}
       />
-      {enabled && <ShortcutInput shortcutId="pause" grouped={grouped} />}
+      {enabled && (
+        <SubSettings>
+          <ShortcutInput shortcutId="pause" grouped={grouped} />
+        </SubSettings>
+      )}
     </>
   );
 };
@@ -55,14 +70,19 @@ export const UndoWordSetting: React.FC<Props> = ({
         descriptionMode={descriptionMode}
         grouped={grouped}
       />
-      {enabled && <ShortcutInput shortcutId="undo_word" grouped={grouped} />}
+      {enabled && (
+        <SubSettings>
+          <ShortcutInput shortcutId="undo_word" grouped={grouped} />
+        </SubSettings>
+      )}
     </>
   );
 };
 
 /**
- * Live text box next to the recording pill, and what it shows. The overlay's T
- * button flips the same setting, so follow its change event.
+ * Live text box next to the recording pill, what it shows, and whether it fades
+ * when you stop talking. The overlay's T button flips the same setting, so
+ * follow its change event.
  */
 export const LiveTextBoxSetting: React.FC<Props> = ({
   descriptionMode = "tooltip",
@@ -73,6 +93,34 @@ export const LiveTextBoxSetting: React.FC<Props> = ({
     useSettings();
   const enabled = getSetting("live_text_box_enabled") ?? false;
   const mode = getSetting("live_text_mode") ?? "last_words";
+  const fade = getSetting("live_text_fade") ?? false;
+  const models = useModelStore((state) => state.models);
+  const current = models.find((m) => m.id === getSetting("selected_model"));
+  const remote = isRemote(current);
+
+  const toggle = (value: boolean) => {
+    if (value && remote) {
+      // It cannot work with this model: say so, and which models it works with.
+      const local = models
+        .filter((m) => m.is_downloaded && !isRemote(m))
+        .map((m) => m.name);
+      toast.warning(
+        t("settings.general.liveTextBox.remoteModel.title", {
+          model: current?.name,
+        }),
+        {
+          description: local.length
+            ? t("settings.general.liveTextBox.remoteModel.worksWith", {
+                models: local.join(", "),
+              })
+            : t("settings.general.liveTextBox.remoteModel.noLocal"),
+          duration: 10000,
+        },
+      );
+      return;
+    }
+    void updateSetting("live_text_box_enabled", value);
+  };
 
   useEffect(() => {
     const unlisten = listen("live-text-box-changed", () => {
@@ -87,7 +135,8 @@ export const LiveTextBoxSetting: React.FC<Props> = ({
     <>
       <ToggleSwitch
         checked={enabled}
-        onChange={(value) => updateSetting("live_text_box_enabled", value)}
+        onChange={toggle}
+        icon={TextQuote}
         isUpdating={isUpdating("live_text_box_enabled")}
         label={t("settings.general.liveTextBox.label")}
         description={t("settings.general.liveTextBox.description")}
@@ -95,33 +144,52 @@ export const LiveTextBoxSetting: React.FC<Props> = ({
         grouped={grouped}
       />
       {enabled && (
-        <SettingContainer
-          title={t("settings.general.liveTextMode.title")}
-          description={t("settings.general.liveTextMode.description")}
-          descriptionMode={descriptionMode}
-          grouped={grouped}
-        >
-          <Dropdown
-            options={[
-              {
-                value: "last_words",
-                label: t("settings.general.liveTextMode.lastWords"),
-              },
-              {
-                value: "full_text",
-                label: t("settings.general.liveTextMode.fullText"),
-              },
-            ]}
-            selectedValue={mode}
-            onSelect={(value) =>
-              updateSetting(
-                "live_text_mode",
-                value as "last_words" | "full_text",
-              )
-            }
-            disabled={isUpdating("live_text_mode")}
+        <SubSettings>
+          {remote && (
+            <p className="px-4 py-2 text-xs text-amber-500">
+              {t("settings.general.liveTextBox.remoteModel.title", {
+                model: current?.name,
+              })}
+            </p>
+          )}
+          <SettingContainer
+            title={t("settings.general.liveTextMode.title")}
+            description={t("settings.general.liveTextMode.description")}
+            descriptionMode={descriptionMode}
+            grouped={grouped}
+          >
+            <Dropdown
+              options={[
+                {
+                  value: "last_words",
+                  label: t("settings.general.liveTextMode.lastWords"),
+                },
+                {
+                  value: "full_text",
+                  label: t("settings.general.liveTextMode.fullText"),
+                },
+              ]}
+              selectedValue={mode}
+              onSelect={(value) =>
+                updateSetting(
+                  "live_text_mode",
+                  value as "last_words" | "full_text",
+                )
+              }
+              disabled={isUpdating("live_text_mode")}
+            />
+          </SettingContainer>
+          <ShortcutInput shortcutId="toggle_live_text_box" grouped={grouped} />
+          <ToggleSwitch
+            checked={fade}
+            onChange={(value) => updateSetting("live_text_fade", value)}
+            isUpdating={isUpdating("live_text_fade")}
+            label={t("settings.general.liveTextFade.label")}
+            description={t("settings.general.liveTextFade.description")}
+            descriptionMode={descriptionMode}
+            grouped={grouped}
           />
-        </SettingContainer>
+        </SubSettings>
       )}
     </>
   );

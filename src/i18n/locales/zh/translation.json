@@ -235,6 +235,10 @@
             "name": "撤销最后一个词",
             "description": "删除实时录音的最后一个词。仅在实时录音期间有效。默认：Ctrl+Backspace。"
           },
+          "toggle_live_text_box": {
+            "name": "实时文字框开/关",
+            "description": "像录音浮层上的 T 按钮一样开启或关闭实时文字框。默认：无。"
+          },
           "transcribe_with_post_process": {
             "name": "后处理快捷键",
             "description": "可选：一个专用快捷键，始终对您的转录应用 AI 后处理。"
@@ -316,13 +320,22 @@
       },
       "liveTextBox": {
         "label": "实时文本框",
-        "description": "在录音浮层旁的小框中显示你说的话，大约每 1.5 秒更新一次。开启期间所有录音都以实时模式进行。默认：关闭；浮层上的 T 按钮也可切换。"
+        "description": "在录音浮层旁的小框中显示你说的话，大约每 1.5 秒更新一次。开启期间所有录音都以实时模式进行，框中的文字就是你的转写结果：停止时只补上最后一两秒，因此立即就绪——不会再把整段录音转写一遍。需要在本机运行的模型。默认：关闭；浮层上的 T 按钮也可切换。",
+        "remoteModel": {
+          "title": "实时文字框不支持 {{model}}",
+          "worksWith": "它需要在本机运行的模型，因为远程服务要等你停止后才收到音频。可用的模型：{{models}}。",
+          "noLocal": "它需要在本机运行的模型，因为远程服务要等你停止后才收到音频。请在“模型”页面下载一个。"
+        }
       },
       "liveTextMode": {
         "title": "实时文本显示",
         "description": "一行最新的词，或在三行框中显示全文。说话时大小不会变化。默认：最后几个词。",
         "lastWords": "最后几个词",
         "fullText": "全文"
+      },
+      "liveTextFade": {
+        "label": "停止说话后淡出",
+        "description": "停止说话几秒后，实时文字会淡出，说完的字不会一直留在屏幕上。再次说话即会重新显示。默认：关闭。"
       },
       "language": {
         "title": "语言",
@@ -468,11 +481,17 @@
     },
     "shortcuts": {
       "groups": {
-        "dictation": "听写"
+        "dictation": "听写",
+        "warnings": "警告"
       },
       "conflicts": {
         "title": "部分快捷键使用了相同的按键",
         "description": "一个按键组合只能用于一个操作，因此每对中只有一个有效。请修改或清除带红色警告的其中一个快捷键。"
+      },
+      "altGrWarning": {
+        "label": "提醒 AltGr 快捷键",
+        "description": "在 AltGr 也能输入的快捷键旁显示警告。Windows 将 AltGr 视为 Ctrl+Alt，因此像 Ctrl+Alt+O 这样的快捷键会在你用 AltGr 输入字符时触发，而字符无法输入。默认：开启。如果你从不用 AltGr 输入字符，可以关闭。",
+        "turnOff": "关闭此警告"
       }
     },
     "sound": {
@@ -662,7 +681,7 @@
       },
       "transcriptionMode": {
         "title": "转录模式",
-        "description": "“实时”会在你说话时逐步显示正在生成的文本；“录音后”则静默录音，在后台转录。默认：录音后。无论哪种方式，停止时都会对整段音频进行一次最终处理，因此投递的文本始终是准确版本，实时文本只是预览——此设置仅作用于“转录”快捷键，API 转录模型始终表现为“录音后”。",
+        "description": "实时模式在你说话时显示文字；录音后模式静默录音并在后台转写。两种方式都在你说话时完成大部分工作，所以停止后文字很快就绪。实时模式下，你看到的文字就是得到的文字。默认：录音后。仅适用于转写快捷键；API 模型始终按录音后方式工作。",
         "options": {
           "live": "实时",
           "postRecording": "录制后"
@@ -942,6 +961,16 @@
     },
     "history": {
       "title": "历史记录",
+      "tabs": {
+        "recordings": "录音",
+        "statistics": "统计",
+        "settings": "设置"
+      },
+      "stats": {
+        "title": "录音统计",
+        "description": "你录了多少段、各有多长，按日、周、月、年汇总。累计一行也会计入历史记录后来清理掉的录音。可将完整列表下载为 CSV。",
+        "totalLine": "{{count}} 段录音 · {{duration}}"
+      },
       "openFolder": "打开录音文件夹",
       "loading": "加载历史记录中...",
       "empty": "还没有转录记录。开始录制以建立您的历史记录！",
@@ -1273,7 +1302,8 @@
     "paused": "已暂停",
     "pause": "暂停",
     "resume": "继续",
-    "liveTextBox": "实时文本框"
+    "liveTextBox": "实时文本框",
+    "slowPc": "正以本机正常速度的 {{percent}}% 转写"
   },
   "brand": {
     "name": "Handy",

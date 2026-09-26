@@ -1,4 +1,5 @@
 import React from "react";
+import { SendHorizontal } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { SettingsGroup } from "../ui/SettingsGroup";
 import { SettingContainer } from "../ui/SettingContainer";
@@ -85,7 +86,10 @@ export const TranscribeAndSubmitSettings: React.FC = React.memo(() => {
   ];
 
   return (
-    <SettingsGroup title={t("settings.general.transcribeAndSubmit.title")}>
+    <SettingsGroup
+      icon={SendHorizontal}
+      title={t("settings.general.transcribeAndSubmit.title")}
+    >
       <SettingContainer
         title={t("settings.general.transcribeAndSubmit.pasteMethod.title")}
         description={t(

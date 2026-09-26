@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { save } from "@tauri-apps/plugin-dialog";
 import { downloadDir, join } from "@tauri-apps/api/path";
 import { Download, RefreshCw } from "lucide-react";
-import { commands, type HistoryEntry } from "@/bindings";
+import { commands, type HistoryEntry, type PurgedTotals } from "@/bindings";
 
 // A recording contributes its duration always; cost only when the engine
 // reported one (OpenRouter). Aggregations bucket by ISO-ish week (Monday),
@@ -80,9 +80,18 @@ const csvCell = (v: string | number): string => {
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
 
-export const TranscriptionCostReport: React.FC = () => {
+/**
+ * The recordings summarized by day, week, month and year. "cost" (Providers) adds
+ * what each cost; "stats" (History) leaves money out, and its all-time line also
+ * counts the recordings History's clean-up has since deleted.
+ */
+export const TranscriptionCostReport: React.FC<{
+  variant?: "cost" | "stats";
+}> = ({ variant = "cost" }) => {
   const { t } = useTranslation();
+  const showCost = variant === "cost";
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
+  const [purged, setPurged] = useState<PurgedTotals | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -91,10 +100,17 @@ export const TranscriptionCostReport: React.FC = () => {
       const res = await commands.getHistoryEntries();
       if (res.status === "ok") setEntries(res.data);
       else setError(res.error);
+      if (!showCost) {
+        const totals = await commands.getPurgedHistoryTotals();
+        if (totals.status === "ok") setPurged(totals.data);
+      }
     } catch (e) {
       setError(String(e));
     }
   };
+  const title = showCost
+    ? t("settings.advanced.costReport.title")
+    : t("settings.history.stats.title");
 
   useEffect(() => {
     load();
@@ -130,46 +146,63 @@ export const TranscriptionCostReport: React.FC = () => {
     };
     return { days, weeks, months, years, total };
   }, [entries, t]);
+  const lifetime = {
+    count: total.count + (purged?.takes ?? 0),
+    duration: total.duration + (purged?.seconds ?? 0),
+  };
 
   const buildCsv = (): string => {
     const lines: string[] = [];
     const push = (cells: (string | number)[]) =>
       lines.push(cells.map(csvCell).join(","));
 
-    push([
-      t("settings.advanced.costReport.title"),
-      fmtTimestamp(Date.now() / 1000),
-    ]);
+    push([title, fmtTimestamp(Date.now() / 1000)]);
     lines.push("");
 
     // Per-recording rows (oldest→newest for a natural ledger).
     push([t("settings.advanced.costReport.recordings")]);
-    push([
-      t("settings.advanced.costReport.colTimestamp"),
-      t("settings.advanced.costReport.colDuration"),
-      t("settings.advanced.costReport.colCost"),
-    ]);
+    const withCost = (cells: (string | number)[], cost: string) =>
+      showCost ? [...cells, cost] : cells;
+    push(
+      withCost(
+        [
+          t("settings.advanced.costReport.colTimestamp"),
+          t("settings.advanced.costReport.colDuration"),
+        ],
+        t("settings.advanced.costReport.colCost"),
+      ),
+    );
     [...entries]
       .sort((a, b) => a.timestamp - b.timestamp)
       .forEach((e) =>
-        push([
-          fmtTimestamp(e.timestamp),
-          fmtDuration(e.duration_seconds ?? 0),
-          (e.cost_usd ?? 0).toFixed(6),
-        ]),
+        push(
+          withCost(
+            [fmtTimestamp(e.timestamp), fmtDuration(e.duration_seconds ?? 0)],
+            (e.cost_usd ?? 0).toFixed(6),
+          ),
+        ),
       );
     lines.push("");
 
     const section = (title: string, buckets: Bucket[]) => {
       push([title]);
-      push([
-        t("settings.advanced.costReport.colPeriod"),
-        t("settings.advanced.costReport.colCount"),
-        t("settings.advanced.costReport.colDuration"),
-        t("settings.advanced.costReport.colCost"),
-      ]);
+      push(
+        withCost(
+          [
+            t("settings.advanced.costReport.colPeriod"),
+            t("settings.advanced.costReport.colCount"),
+            t("settings.advanced.costReport.colDuration"),
+          ],
+          t("settings.advanced.costReport.colCost"),
+        ),
+      );
       buckets.forEach((b) =>
-        push([b.label, b.count, fmtDuration(b.duration), b.cost.toFixed(6)]),
+        push(
+          withCost(
+            [b.label, b.count, fmtDuration(b.duration)],
+            b.cost.toFixed(6),
+          ),
+        ),
       );
       lines.push("");
     };
@@ -177,19 +210,23 @@ export const TranscriptionCostReport: React.FC = () => {
     section(t("settings.advanced.costReport.weekly"), weeks);
     section(t("settings.advanced.costReport.monthly"), months);
     section(t("settings.advanced.costReport.yearly"), years);
-    push([
-      t("settings.advanced.costReport.total"),
-      total.count,
-      fmtDuration(total.duration),
-      total.cost.toFixed(6),
-    ]);
+    push(
+      withCost(
+        [
+          t("settings.advanced.costReport.total"),
+          lifetime.count,
+          fmtDuration(lifetime.duration),
+        ],
+        total.cost.toFixed(6),
+      ),
+    );
     return lines.join("\n");
   };
 
   const handleDownload = async () => {
     setError(null);
     try {
-      const name = `transcription cost report-${timestampSlug()}.csv`;
+      const name = `${title.toLowerCase()}-${timestampSlug()}.csv`;
       let def = name;
       try {
         def = await join(await downloadDir(), name);
@@ -245,9 +282,11 @@ export const TranscriptionCostReport: React.FC = () => {
                 <th className="px-2 py-1 text-right">
                   {t("settings.advanced.costReport.colDuration")}
                 </th>
-                <th className="px-2 py-1 text-right">
-                  {t("settings.advanced.costReport.colCost")}
-                </th>
+                {showCost && (
+                  <th className="px-2 py-1 text-right">
+                    {t("settings.advanced.costReport.colCost")}
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -260,9 +299,11 @@ export const TranscriptionCostReport: React.FC = () => {
                   <td className="px-2 py-1 text-right tabular-nums">
                     {fmtDuration(b.duration)}
                   </td>
-                  <td className="px-2 py-1 text-right tabular-nums">
-                    {fmtCost(b.cost)}
-                  </td>
+                  {showCost && (
+                    <td className="px-2 py-1 text-right tabular-nums">
+                      {fmtCost(b.cost)}
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -275,9 +316,7 @@ export const TranscriptionCostReport: React.FC = () => {
   return (
     <div className="space-y-3 pt-2">
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-sm font-semibold flex-1">
-          {t("settings.advanced.costReport.title")}
-        </span>
+        <span className="text-sm font-semibold flex-1">{title}</span>
         <button
           type="button"
           onClick={handleRecalc}
@@ -297,7 +336,9 @@ export const TranscriptionCostReport: React.FC = () => {
         </button>
       </div>
       <p className="text-xs text-text/50">
-        {t("settings.advanced.costReport.description")}
+        {showCost
+          ? t("settings.advanced.costReport.description")
+          : t("settings.history.stats.description")}
       </p>
 
       <div className="grid grid-cols-1 gap-3">
@@ -312,11 +353,16 @@ export const TranscriptionCostReport: React.FC = () => {
           {t("settings.advanced.costReport.total")}
         </span>
         <span className="text-text/70 tabular-nums">
-          {t("settings.advanced.costReport.totalLine", {
-            count: total.count,
-            duration: fmtDuration(total.duration),
-            cost: fmtCost(total.cost),
-          })}
+          {showCost
+            ? t("settings.advanced.costReport.totalLine", {
+                count: total.count,
+                duration: fmtDuration(total.duration),
+                cost: fmtCost(total.cost),
+              })
+            : t("settings.history.stats.totalLine", {
+                count: lifetime.count,
+                duration: fmtDuration(lifetime.duration),
+              })}
         </span>
       </div>
 

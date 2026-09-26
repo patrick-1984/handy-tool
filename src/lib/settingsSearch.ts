@@ -2,6 +2,7 @@ import type { TFunction } from "i18next";
 import navMap from "../../scripts/nav-map.json";
 import type { ShortcutBinding } from "@/bindings";
 import type { OSType } from "@/lib/utils/keyboard";
+import type { HistoryTab } from "@/stores/navStore";
 
 /**
  * One searchable control. `title` is the translated title the control renders
@@ -9,6 +10,8 @@ import type { OSType } from "@/lib/utils/keyboard";
  */
 export interface SearchEntry {
   section: string;
+  /** For History: the tab the control is on. */
+  historyTab?: HistoryTab;
   title: string;
   /** Where it lives, e.g. "More › Output › Paste last transcription". */
   where: string;
@@ -70,11 +73,22 @@ export const buildSearchIndex = (
     const tab = e.tabKey ? t(e.tabKey) : null;
     const group = e.groupKey ? t(e.groupKey, e.group ?? "") : e.group;
     const description = e.descKey ? plain(t(e.descKey)) : "";
-    const where = [section.more ? more : null, t(e.pageKey), tab, group]
+    const page = t(e.pageKey);
+    // A group titled like its page adds nothing to the path.
+    const where = [
+      section.more ? more : null,
+      page,
+      tab,
+      group !== page ? group : null,
+    ]
       .filter(Boolean)
       .join(" › ");
     entries.push({
       section: section.id,
+      historyTab:
+        e.pageKey === "sidebar.history" && e.tabKey
+          ? (e.tabKey.split(".").pop() as HistoryTab)
+          : undefined,
       title,
       where,
       haystack: [title, where, description, ...e.options]

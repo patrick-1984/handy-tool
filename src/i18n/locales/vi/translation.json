@@ -235,6 +235,10 @@
             "name": "Hoàn tác từ cuối",
             "description": "Xóa từ cuối của bản ghi trực tiếp. Chỉ hoạt động trong bản ghi trực tiếp. Mặc định: Ctrl+Backspace."
           },
+          "toggle_live_text_box": {
+            "name": "Bật/tắt ô văn bản trực tiếp",
+            "description": "Bật hoặc tắt ô văn bản trực tiếp, giống nút T trên thanh ghi âm. Mặc định: Không có."
+          },
           "transcribe_with_post_process": {
             "name": "Phím tắt xử lý sau",
             "description": "Tùy chọn: Phím tắt chuyên dụng luôn áp dụng xử lý sau bằng AI cho bản phiên âm của bạn."
@@ -316,13 +320,22 @@
       },
       "liveTextBox": {
         "label": "Hộp văn bản trực tiếp",
-        "description": "Hiển thị những gì bạn nói trong một hộp nhỏ cạnh lớp phủ ghi âm, cập nhật khoảng mỗi 1,5 giây. Khi bật, mọi bản ghi đều chạy ở chế độ trực tiếp. Mặc định: Tắt; nút T trên lớp phủ cũng bật/tắt được."
+        "description": "Hiển thị những gì bạn nói trong một ô nhỏ cạnh thanh ghi âm, cập nhật khoảng mỗi 1,5 giây. Khi bật, mọi lần ghi đều chạy ở chế độ trực tiếp và văn bản trong ô chính là bản phiên âm của bạn: khi dừng chỉ thêm một hai giây cuối, nên có ngay — bản ghi không bị phiên âm lại lần hai. Cần mô hình chạy trên máy này. Mặc định: Tắt; nút T trên thanh cũng bật/tắt được.",
+        "remoteModel": {
+          "title": "Ô văn bản trực tiếp không hoạt động với {{model}}",
+          "worksWith": "Cần mô hình chạy trên máy này, vì dịch vụ từ xa chỉ nhận âm thanh sau khi bạn dừng. Hoạt động với: {{models}}.",
+          "noLocal": "Cần mô hình chạy trên máy này, vì dịch vụ từ xa chỉ nhận âm thanh sau khi bạn dừng. Hãy tải một mô hình ở trang Mô hình."
+        }
       },
       "liveTextMode": {
         "title": "Văn bản trực tiếp hiển thị",
         "description": "Một dòng với các từ mới nhất, hoặc toàn bộ văn bản trong hộp ba dòng. Kích thước không đổi khi bạn nói. Mặc định: Các từ cuối.",
         "lastWords": "Các từ cuối",
         "fullText": "Toàn bộ văn bản"
+      },
+      "liveTextFade": {
+        "label": "Mờ dần khi bạn ngừng nói",
+        "description": "Văn bản trực tiếp mờ dần vài giây sau khi bạn ngừng nói, để những từ đã xong không đọng lại trên màn hình. Lời nói tiếp theo sẽ đưa nó trở lại. Mặc định: Tắt."
       },
       "language": {
         "title": "Ngôn ngữ",
@@ -468,11 +481,17 @@
     },
     "shortcuts": {
       "groups": {
-        "dictation": "Đọc chính tả"
+        "dictation": "Đọc chính tả",
+        "warnings": "Cảnh báo"
       },
       "conflicts": {
         "title": "Một số phím tắt dùng chung tổ hợp phím",
         "description": "Mỗi tổ hợp phím chỉ dùng được cho một thao tác, nên mỗi cặp chỉ có một phím tắt hoạt động. Hãy đổi hoặc xóa một trong các phím tắt có cảnh báo màu đỏ."
+      },
+      "altGrWarning": {
+        "label": "Cảnh báo phím tắt AltGr",
+        "description": "Hiển thị cảnh báo cạnh các phím tắt mà AltGr cũng gõ được. Windows coi AltGr là Ctrl+Alt, nên phím tắt như Ctrl+Alt+O sẽ kích hoạt khi bạn gõ ký tự bằng AltGr và ký tự không bao giờ xuất hiện. Mặc định: Bật. Hãy tắt nếu bạn không bao giờ gõ ký tự bằng AltGr.",
+        "turnOff": "Tắt cảnh báo này"
       }
     },
     "sound": {
@@ -662,7 +681,7 @@
       },
       "transcriptionMode": {
         "title": "Chế độ phiên âm",
-        "description": "Live hiện văn bản đang hình thành khi bạn còn đang nói; Post-Recording ghi âm lặng lẽ và phiên âm ở nền. Mặc định: Post-Recording. Dù chọn cách nào, toàn bộ âm thanh vẫn được xử lý một lượt cuối khi bạn dừng, nên văn bản được gửi luôn là bản chính xác nhất và văn bản trực tiếp chỉ là bản xem trước — điều này chỉ chi phối Transcribe Shortcut, và các model phiên âm qua API luôn hoạt động như Post-Recording.",
+        "description": "Trực tiếp hiển thị văn bản khi bạn nói; Sau khi ghi thì ghi âm lặng lẽ và phiên âm ở nền. Cả hai đều làm phần lớn công việc trong lúc bạn nói, nên văn bản sẵn sàng ngay sau khi dừng. Ở chế độ trực tiếp, bạn nhận đúng văn bản đã thấy. Mặc định: Sau khi ghi. Chỉ áp dụng cho phím tắt phiên âm; mô hình API luôn hoạt động như Sau khi ghi.",
         "options": {
           "live": "Trực tiếp",
           "postRecording": "Sau khi ghi"
@@ -942,6 +961,16 @@
     },
     "history": {
       "title": "Lịch sử",
+      "tabs": {
+        "recordings": "Bản ghi",
+        "statistics": "Thống kê",
+        "settings": "Cài đặt"
+      },
+      "stats": {
+        "title": "Thống kê ghi âm",
+        "description": "Bạn đã ghi bao nhiêu lần và dài bao lâu, theo ngày, tuần, tháng và năm. Dòng tổng cũng tính các bản ghi mà Lịch sử đã dọn đi. Tải toàn bộ danh sách dưới dạng CSV.",
+        "totalLine": "{{count}} bản ghi · {{duration}}"
+      },
       "openFolder": "Mở thư mục ghi âm",
       "loading": "Đang tải lịch sử...",
       "empty": "Chưa có bản phiên âm nào. Bắt đầu ghi âm để xây dựng lịch sử của bạn!",
@@ -1273,7 +1302,8 @@
     "paused": "Đã tạm dừng",
     "pause": "Tạm dừng",
     "resume": "Tiếp tục",
-    "liveTextBox": "Hộp văn bản trực tiếp"
+    "liveTextBox": "Hộp văn bản trực tiếp",
+    "slowPc": "Đang phiên âm ở {{percent}}% tốc độ bình thường của máy này"
   },
   "floating": {
     "waiting": "Đang chờ phiên âm…",

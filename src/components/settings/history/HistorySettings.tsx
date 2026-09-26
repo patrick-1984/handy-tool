@@ -2,13 +2,29 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { AudioPlayer } from "../../ui/AudioPlayer";
 import { Button } from "../../ui/Button";
-import { Copy, Star, Check, Trash2, FolderOpen, Search, X } from "lucide-react";
+import {
+  Copy,
+  Star,
+  Check,
+  Trash2,
+  FolderOpen,
+  Search,
+  X,
+  HardDrive,
+  History as HistoryIcon,
+  AudioLines,
+  BarChart3,
+  Settings2,
+} from "lucide-react";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { readFile } from "@tauri-apps/plugin-fs";
 import { commands, type HistoryEntry } from "@/bindings";
 import { formatDateTime } from "@/utils/dateFormat";
-import { SettingsGroup } from "../../ui/SettingsGroup";
+import { SectionTitle, SettingsGroup } from "../../ui/SettingsGroup";
+import { STICKY_TABS, TabBar } from "../../ui/TabBar";
+import { TranscriptionCostReport } from "../advanced/TranscriptionCostReport";
+import { useNavStore, type HistoryTab } from "@/stores/navStore";
 import { CrashResilientRecording } from "../CrashResilientRecording";
 import { PreserveTranscriptions } from "../PreserveTranscriptions";
 import { HistoryLimit } from "../HistoryLimit";
@@ -64,6 +80,8 @@ const OpenRecordingsButton: React.FC<OpenRecordingsButtonProps> = ({
 
 export const HistorySettings: React.FC = () => {
   const { t } = useTranslation();
+  const tab = useNavStore((state) => state.historyTab);
+  const setTab = useNavStore((state) => state.setHistoryTab);
   const osType = useOsType();
   const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -241,72 +259,107 @@ export const HistorySettings: React.FC = () => {
   }
 
   return (
-    <div className="w-full space-y-6">
-      <div className="space-y-2">
-        <div className="px-4 flex items-center justify-between">
-          <div>
-            <h2 className="text-xs font-medium text-mid-gray uppercase tracking-wide">
-              {t("settings.history.title")}
-            </h2>
+    <div className="w-full space-y-4">
+      <div className={STICKY_TABS}>
+        <TabBar<HistoryTab>
+          tabs={[
+            {
+              id: "recordings",
+              label: t("settings.history.tabs.recordings"),
+              icon: AudioLines,
+            },
+            {
+              id: "statistics",
+              label: t("settings.history.tabs.statistics"),
+              icon: BarChart3,
+            },
+            {
+              id: "settings",
+              label: t("settings.history.tabs.settings"),
+              icon: Settings2,
+            },
+          ]}
+          active={tab}
+          onSelect={setTab}
+        />
+      </div>
+      {tab === "recordings" && (
+        <div className="space-y-2">
+          <div className="px-4 flex items-center justify-between">
+            <SectionTitle
+              title={t("settings.history.title")}
+              icon={HistoryIcon}
+            />
+            <OpenRecordingsButton
+              onClick={openRecordingsFolder}
+              label={t("settings.history.openFolder")}
+            />
           </div>
-          <OpenRecordingsButton
-            onClick={openRecordingsFolder}
-            label={t("settings.history.openFolder")}
-          />
-        </div>
-        {showSearchBar && (
-          <div className="px-4 flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text/40 pointer-events-none" />
-              <input
-                type="text"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                placeholder={t("settings.history.search.placeholder")}
-                className="w-full rounded-md border border-mid-gray/30 bg-background pl-8 pr-8 py-1.5 text-sm focus:border-logo-primary focus:outline-none"
-              />
-              {searchInput && (
-                <button
-                  onClick={() => setSearchInput("")}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-text/40 hover:text-text cursor-pointer"
-                  title={t("settings.history.search.clear")}
-                >
-                  <X className="w-4 h-4" />
-                </button>
+          {showSearchBar && (
+            <div className="px-4 flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text/40 pointer-events-none" />
+                <input
+                  type="text"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  placeholder={t("settings.history.search.placeholder")}
+                  className="w-full rounded-md border border-mid-gray/30 bg-background pl-8 pr-8 py-1.5 text-sm focus:border-logo-primary focus:outline-none"
+                />
+                {searchInput && (
+                  <button
+                    onClick={() => setSearchInput("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-text/40 hover:text-text cursor-pointer"
+                    title={t("settings.history.search.clear")}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              {matcher && (
+                <span className="text-xs text-text/60 whitespace-nowrap">
+                  {t("settings.history.search.matches", {
+                    matched: filteredEntries.length,
+                    total: historyEntries.length,
+                  })}
+                  {matcher.isRegex && (
+                    <span
+                      className="ml-1.5 px-1 py-0.5 rounded bg-logo-primary/15 text-logo-primary font-mono"
+                      title={t("settings.history.search.regexActive")}
+                    >
+                      {t("settings.history.search.regexBadge")}
+                    </span>
+                  )}
+                </span>
               )}
             </div>
-            {matcher && (
-              <span className="text-xs text-text/60 whitespace-nowrap">
-                {t("settings.history.search.matches", {
-                  matched: filteredEntries.length,
-                  total: historyEntries.length,
-                })}
-                {matcher.isRegex && (
-                  <span
-                    className="ml-1.5 px-1 py-0.5 rounded bg-logo-primary/15 text-logo-primary font-mono"
-                    title={t("settings.history.search.regexActive")}
-                  >
-                    {t("settings.history.search.regexBadge")}
-                  </span>
-                )}
-              </span>
-            )}
+          )}
+          <div className="bg-background border border-mid-gray/20 rounded-lg overflow-visible">
+            {body}
           </div>
-        )}
-        <div className="bg-background border border-mid-gray/20 rounded-lg overflow-visible">
-          {body}
         </div>
-      </div>
+      )}
+      {/* The same figures as Providers' cost report, without the money. */}
+      {tab === "statistics" && (
+        <div className="bg-background border border-mid-gray/20 rounded-lg px-4 pb-3">
+          <TranscriptionCostReport variant="stats" />
+        </div>
+      )}
       {/* What History keeps and for how long (formerly Advanced › History). */}
-      <SettingsGroup title={t("settings.advanced.groups.history")}>
-        <CrashResilientRecording descriptionMode="tooltip" grouped={true} />
-        <PreserveTranscriptions descriptionMode="tooltip" grouped={true} />
-        <HistoryLimit descriptionMode="tooltip" grouped={true} />
-        <RecordingRetentionPeriodSelector
-          descriptionMode="tooltip"
-          grouped={true}
-        />
-      </SettingsGroup>
+      {tab === "settings" && (
+        <SettingsGroup
+          icon={HardDrive}
+          title={t("settings.advanced.groups.history")}
+        >
+          <CrashResilientRecording descriptionMode="tooltip" grouped={true} />
+          <PreserveTranscriptions descriptionMode="tooltip" grouped={true} />
+          <HistoryLimit descriptionMode="tooltip" grouped={true} />
+          <RecordingRetentionPeriodSelector
+            descriptionMode="tooltip"
+            grouped={true}
+          />
+        </SettingsGroup>
+      )}
     </div>
   );
 };

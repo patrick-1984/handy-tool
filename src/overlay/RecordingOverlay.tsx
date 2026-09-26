@@ -1,7 +1,7 @@
 import { listen } from "@tauri-apps/api/event";
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pause, Play } from "lucide-react";
+import { Monitor, Pause, Play } from "lucide-react";
 import {
   MicrophoneIcon,
   TranscriptionIcon,
@@ -44,6 +44,10 @@ const RecordingOverlay: React.FC = () => {
   // Pause button (optional) and the live text box switch (the T button).
   const [pauseEnabled, setPauseEnabled] = useState(false);
   const [liveTextBox, setLiveTextBox] = useState(false);
+  // How fast the PC transcribes against its own normal (percent), only while it
+  // is clearly slower than usual; null otherwise. Starts empty on every take.
+  const [speed, setSpeed] = useState<number | null>(null);
+  const stateRef = useRef<OverlayState | null>(null);
   const [levels, setLevels] = useState<number[]>(Array(16).fill(0));
   const smoothedLevelsRef = useRef<number[]>(Array(16).fill(0));
   const direction = getLanguageDirection(i18n.language);
@@ -55,6 +59,15 @@ const RecordingOverlay: React.FC = () => {
         // Sync language from settings each time overlay is shown
         await syncLanguageFromSettings();
         const overlayState = event.payload as OverlayState;
+        // A new take (not a resume from pause) starts without a speed verdict.
+        if (
+          overlayState === "recording" &&
+          stateRef.current !== "recording" &&
+          stateRef.current !== "paused"
+        ) {
+          setSpeed(null);
+        }
+        stateRef.current = overlayState;
         setState(overlayState);
         setMicLive(false);
         setProgress(null);
@@ -77,8 +90,14 @@ const RecordingOverlay: React.FC = () => {
         (event) => setProgress(event.payload),
       );
 
+      const unlistenSpeed = await listen<number | null>(
+        "transcription-speed",
+        (event) => setSpeed(event.payload),
+      );
+
       // Listen for hide-overlay event from Rust
       const unlistenHide = await listen("hide-overlay", () => {
+        stateRef.current = null;
         setIsVisible(false);
       });
 
@@ -102,6 +121,7 @@ const RecordingOverlay: React.FC = () => {
         unlistenShow();
         unlistenHide();
         unlistenProgress();
+        unlistenSpeed();
         unlistenLiveTextBox();
         unlistenLevel();
       };
@@ -145,6 +165,15 @@ const RecordingOverlay: React.FC = () => {
       <div className="overlay-left">{getIcon()}</div>
 
       <div className="overlay-middle">
+        {speed !== null && (state === "recording" || state === "paused") && (
+          <div
+            className={`speed-warning ${speed < 50 ? "very-slow" : ""}`}
+            title={t("overlay.slowPc", { percent: speed })}
+          >
+            <Monitor size={12} aria-hidden />
+            <span>{speed}%</span>
+          </div>
+        )}
         {state === "recording" && !micLive && (
           <div className="transcribing-text overlay-message">
             {t("overlay.startingMic")}

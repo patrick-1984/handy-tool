@@ -217,6 +217,10 @@
             "name": "復原最後一個字詞",
             "description": "刪除即時錄音的最後一個字詞。僅在即時錄音期間有效。預設：Ctrl+Backspace。"
           },
+          "toggle_live_text_box": {
+            "name": "即時文字框開/關",
+            "description": "像錄音浮層上的 T 按鈕一樣開啟或關閉即時文字框。預設：無。"
+          },
           "transcribe_with_post_process": {
             "name": "後處理快捷鍵",
             "description": "可選：專用快捷鍵，使用時一律對轉錄結果套用 AI 後處理"
@@ -298,13 +302,22 @@
       },
       "liveTextBox": {
         "label": "即時文字框",
-        "description": "在錄音浮層旁的小框中顯示你說的話，大約每 1.5 秒更新一次。開啟期間所有錄音都以即時模式進行。預設：關閉；浮層上的 T 按鈕也可切換。"
+        "description": "在錄音浮層旁的小框中顯示你說的話，大約每 1.5 秒更新一次。開啟期間所有錄音都以即時模式進行，框中的文字就是你的轉寫結果：停止時只補上最後一兩秒，因此立即就緒——不會再把整段錄音轉寫一遍。需要在本機執行的模型。預設：關閉；浮層上的 T 按鈕也可切換。",
+        "remoteModel": {
+          "title": "即時文字框不支援 {{model}}",
+          "worksWith": "它需要在本機執行的模型，因為遠端服務要等你停止後才收到音訊。可用的模型：{{models}}。",
+          "noLocal": "它需要在本機執行的模型，因為遠端服務要等你停止後才收到音訊。請在「模型」頁面下載一個。"
+        }
       },
       "liveTextMode": {
         "title": "即時文字顯示",
         "description": "一行最新的字詞，或在三行框中顯示全文。說話時大小不會變化。預設：最後幾個字詞。",
         "lastWords": "最後幾個字詞",
         "fullText": "全文"
+      },
+      "liveTextFade": {
+        "label": "停止說話後淡出",
+        "description": "停止說話幾秒後，即時文字會淡出，說完的字不會一直留在畫面上。再次說話即會重新顯示。預設：關閉。"
       },
       "language": {
         "title": "語言",
@@ -450,11 +463,17 @@
     },
     "shortcuts": {
       "groups": {
-        "dictation": "聽寫"
+        "dictation": "聽寫",
+        "warnings": "警告"
       },
       "conflicts": {
         "title": "部分快捷鍵使用了相同的按鍵",
         "description": "一個按鍵組合只能用於一個操作，因此每組中只有一個有效。請修改或清除帶紅色警告的其中一個快捷鍵。"
+      },
+      "altGrWarning": {
+        "label": "提醒 AltGr 快捷鍵",
+        "description": "在 AltGr 也能輸入的快捷鍵旁顯示警告。Windows 將 AltGr 視為 Ctrl+Alt，因此像 Ctrl+Alt+O 這樣的快捷鍵會在你用 AltGr 輸入字元時觸發，而字元無法輸入。預設：開啟。如果你從不用 AltGr 輸入字元，可以關閉。",
+        "turnOff": "關閉此警告"
       }
     },
     "models": {
@@ -662,7 +681,7 @@
       },
       "transcriptionMode": {
         "title": "轉錄模式",
-        "description": "「即時」會在你說話時同步顯示逐漸成形的文字；「錄音後」則安靜錄音，並在背景進行轉錄。預設：錄音後。無論哪種模式，停止時都會對整段音訊進行一次最終轉錄，因此傳遞的文字始終是準確版本，即時文字僅供預覽——此設定僅套用於轉錄快速鍵，API 轉錄模型一律以「錄音後」方式運作。",
+        "description": "即時模式在你說話時顯示文字；錄音後模式靜默錄音並在背景轉寫。兩種方式都在你說話時完成大部分工作，所以停止後文字很快就緒。即時模式下，你看到的文字就是得到的文字。預設：錄音後。僅適用於轉寫快捷鍵；API 模型一律按錄音後方式運作。",
         "options": {
           "live": "即時",
           "postRecording": "錄製後"
@@ -942,6 +961,16 @@
     },
     "history": {
       "title": "歷史紀錄",
+      "tabs": {
+        "recordings": "錄音",
+        "statistics": "統計",
+        "settings": "設定"
+      },
+      "stats": {
+        "title": "錄音統計",
+        "description": "你錄了多少段、各有多長，按日、週、月、年彙總。累計一行也會計入歷史記錄後來清理掉的錄音。可將完整清單下載為 CSV。",
+        "totalLine": "{{count}} 段錄音 · {{duration}}"
+      },
       "openFolder": "開啟錄音資料夾",
       "loading": "載入歷史紀錄中...",
       "empty": "還沒有轉錄紀錄。開始錄製以建立您的歷史紀錄！",
@@ -1273,7 +1302,8 @@
     "paused": "已暫停",
     "pause": "暫停",
     "resume": "繼續",
-    "liveTextBox": "即時文字框"
+    "liveTextBox": "即時文字框",
+    "slowPc": "正以本機正常速度的 {{percent}}% 轉寫"
   },
   "brand": {
     "name": "Handy",

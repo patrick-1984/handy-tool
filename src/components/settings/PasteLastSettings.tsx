@@ -1,4 +1,5 @@
 import React from "react";
+import { ClipboardPaste } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { SettingsGroup } from "../ui/SettingsGroup";
 import { SettingContainer } from "../ui/SettingContainer";
@@ -38,7 +39,10 @@ export const PasteLastSettings: React.FC = React.memo(() => {
   ];
 
   return (
-    <SettingsGroup title={t("settings.general.pasteLast.title")}>
+    <SettingsGroup
+      icon={ClipboardPaste}
+      title={t("settings.general.pasteLast.title")}
+    >
       <SettingContainer
         title={t("settings.general.pasteLast.pasteMethod.title")}
         description={t("settings.general.pasteLast.pasteMethod.description")}

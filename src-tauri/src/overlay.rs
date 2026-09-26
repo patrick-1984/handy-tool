@@ -414,6 +414,8 @@ const LIVE_TEXT_GAP: f64 = 6.0;
 #[derive(Clone, serde::Serialize)]
 struct LiveTextShow {
     mode: crate::settings::LiveTextMode,
+    /// Fade out a few seconds after the text stops changing.
+    fade: bool,
     /// The box sits below the pill (pill at the top of the screen) instead of above.
     below_pill: bool,
 }
@@ -494,6 +496,7 @@ pub fn show_live_text_window(app_handle: &AppHandle) {
             "live-text-show",
             LiveTextShow {
                 mode: settings.live_text_mode,
+                fade: settings.live_text_fade,
                 below_pill,
             },
         );

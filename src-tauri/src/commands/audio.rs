@@ -88,6 +88,16 @@ pub fn change_undo_word_setting(app: AppHandle, enabled: bool) -> Result<(), Str
 #[specta::specta]
 pub fn change_live_text_box_setting(app: AppHandle, enabled: bool) -> Result<bool, String> {
     let mut settings = get_settings(&app);
+    // Remote engines get the audio only after stop, so a take with them is never
+    // live; the settings page explains this and lists the models that work.
+    if enabled
+        && matches!(
+            settings.selected_model.as_str(),
+            "api-whisper" | "openrouter-transcription"
+        )
+    {
+        return Err("The live text box needs a model that runs on this PC".to_string());
+    }
     settings.live_text_box_enabled = enabled;
     write_settings(&app, settings);
     crate::overlay::refresh_live_text_window(&app);
@@ -109,6 +119,17 @@ pub fn toggle_live_text_box(app: AppHandle) -> Result<bool, String> {
 pub fn change_live_text_mode_setting(app: AppHandle, mode: LiveTextMode) -> Result<(), String> {
     let mut settings = get_settings(&app);
     settings.live_text_mode = mode;
+    write_settings(&app, settings);
+    crate::overlay::refresh_live_text_window(&app);
+    Ok(())
+}
+
+/// Whether the live text box fades out after you stop talking.
+#[tauri::command]
+#[specta::specta]
+pub fn change_live_text_fade_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
+    let mut settings = get_settings(&app);
+    settings.live_text_fade = enabled;
     write_settings(&app, settings);
     crate::overlay::refresh_live_text_window(&app);
     Ok(())

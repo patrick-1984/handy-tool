@@ -939,6 +939,13 @@ pub struct AppSettings {
     /// What the live text box shows.
     #[serde(default)]
     pub live_text_mode: LiveTextMode,
+    /// The live text box fades out a few seconds after you stop talking.
+    #[serde(default)]
+    pub live_text_fade: bool,
+    /// Warn next to shortcuts that AltGr can also type (Windows reports AltGr
+    /// as Ctrl+Alt).
+    #[serde(default = "default_true")]
+    pub altgr_warning_enabled: bool,
     #[serde(default)]
     pub selected_microphone: Option<String>,
     #[serde(default)]
@@ -2355,6 +2362,18 @@ pub fn get_default_settings() -> AppSettings {
             current_binding: "ctrl+backspace".to_string(),
         },
     );
+    bindings.insert(
+        "toggle_live_text_box".to_string(),
+        ShortcutBinding {
+            id: "toggle_live_text_box".to_string(),
+            name: "Live Text Box On/Off".to_string(),
+            description:
+                "Switches the live text box on or off, like the T button on the recording overlay."
+                    .to_string(),
+            default_binding: String::new(),
+            current_binding: String::new(),
+        },
+    );
 
     let default_type_text_shortcut = "ctrl+shift+f11";
 
@@ -2504,6 +2523,8 @@ pub fn get_default_settings() -> AppSettings {
         undo_word_enabled: false,
         live_text_box_enabled: false,
         live_text_mode: LiveTextMode::LastWords,
+        live_text_fade: false,
+        altgr_warning_enabled: true,
         selected_microphone: None,
         clamshell_microphone: None,
         selected_output_device: None,
@@ -3164,6 +3185,10 @@ mod tests {
         // obvious cause. Cheap to guard, painful to diagnose.
         let mut seen: HashMap<String, String> = HashMap::new();
         for (id, binding) in get_default_settings().bindings {
+            // "None" (no key, e.g. Pause) is not a chord: any number may share it.
+            if binding.current_binding.is_empty() {
+                continue;
+            }
             if let Some(other) = seen.insert(binding.current_binding.clone(), id.clone()) {
                 panic!(
                     "default bindings '{}' and '{}' both claim '{}'",

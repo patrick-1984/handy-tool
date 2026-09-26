@@ -235,6 +235,10 @@
             "name": "Annulla l'ultima parola",
             "description": "Rimuove l'ultima parola di una registrazione dal vivo. Attiva solo durante una registrazione dal vivo. Predefinito: Ctrl+Backspace."
           },
+          "toggle_live_text_box": {
+            "name": "Testo dal vivo on/off",
+            "description": "Attiva o disattiva il riquadro del testo dal vivo, come il pulsante T della barra di registrazione. Predefinito: nessuna."
+          },
           "transcribe_with_post_process": {
             "name": "Tasto di post-elaborazione",
             "description": "Facoltativo: Un tasto di scelta rapida dedicato che applica sempre la post-elaborazione IA alla trascrizione."
@@ -316,13 +320,22 @@
       },
       "liveTextBox": {
         "label": "Riquadro testo dal vivo",
-        "description": "Mostra ciò che dici in un piccolo riquadro accanto all'overlay di registrazione, aggiornato circa ogni 1,5 s. Quando è attivo, tutte le registrazioni vanno in modalità dal vivo. Predefinito: Disattivato; anche il pulsante T lo attiva."
+        "description": "Mostra ciò che dici in un piccolo riquadro accanto alla barra di registrazione, aggiornato circa ogni 1,5 s. Quando è attivo, ogni registrazione è in modalità dal vivo e il testo nel riquadro è la tua trascrizione: all'arresto si aggiunge solo l'ultimo secondo o due, quindi è pronto subito — la registrazione non viene trascritta una seconda volta. Richiede un modello che gira su questo PC. Predefinito: disattivato; anche il pulsante T della barra lo cambia.",
+        "remoteModel": {
+          "title": "Il riquadro del testo dal vivo non funziona con {{model}}",
+          "worksWith": "Serve un modello che gira su questo PC, perché i servizi remoti ricevono l'audio solo dopo l'arresto. Funziona con: {{models}}.",
+          "noLocal": "Serve un modello che gira su questo PC, perché i servizi remoti ricevono l'audio solo dopo l'arresto. Scaricane uno nella pagina Modelli."
+        }
       },
       "liveTextMode": {
         "title": "Il testo dal vivo mostra",
         "description": "Una riga con le parole più recenti, oppure tutto il testo in un riquadro di tre righe. Non cambia dimensione mentre parli. Predefinito: Ultime parole.",
         "lastWords": "Ultime parole",
         "fullText": "Testo completo"
+      },
+      "liveTextFade": {
+        "label": "Dissolvi quando smetti di parlare",
+        "description": "Il testo in diretta svanisce qualche secondo dopo che smetti di parlare, così le parole concluse non restano sullo schermo. Le parole successive lo riportano. Predefinito: disattivato."
       },
       "language": {
         "title": "Lingua",
@@ -468,11 +481,17 @@
     },
     "shortcuts": {
       "groups": {
-        "dictation": "Dettatura"
+        "dictation": "Dettatura",
+        "warnings": "Avvisi"
       },
       "conflicts": {
         "title": "Alcune scorciatoie usano gli stessi tasti",
         "description": "Una combinazione di tasti può attivare una sola azione, quindi funziona solo una scorciatoia per coppia. Modifica o rimuovi una delle scorciatoie segnalate in rosso."
+      },
+      "altGrWarning": {
+        "label": "Avvisa delle scorciatoie con AltGr",
+        "description": "Mostra un avviso accanto alle scorciatoie che AltGr può anche digitare. Windows segnala AltGr come Ctrl+Alt, quindi una scorciatoia come Ctrl+Alt+O scatta quando digiti ó con AltGr e il carattere non arriva mai. Predefinito: attivo. Disattivalo se non digiti mai caratteri con AltGr.",
+        "turnOff": "Disattiva questo avviso"
       }
     },
     "sound": {
@@ -662,7 +681,7 @@
       },
       "transcriptionMode": {
         "title": "Modalità di Trascrizione",
-        "description": "Live mostra il testo che si forma mentre stai ancora parlando; Post-Registrazione registra silenziosamente e trascrive in background. Predefinito: Post-Registrazione. In entrambi i casi l'audio completo riceve un passaggio finale quando ti fermi, così il testo consegnato è sempre quello accurato e il testo live è solo un'anteprima — questo governa solo la Scorciatoia Trascrizione, e i modelli di trascrizione via API si comportano sempre come Post-Registrazione.",
+        "description": "Dal vivo mostra il testo mentre parli; Dopo la registrazione registra in silenzio e trascrive in background. In entrambi i casi quasi tutto il lavoro avviene mentre parli, quindi il testo è pronto pochi istanti dopo l'arresto. In modalità dal vivo ottieni esattamente il testo che hai visto. Predefinito: Dopo la registrazione. Vale solo per la scorciatoia di trascrizione; i modelli API si comportano sempre come Dopo la registrazione.",
         "options": {
           "live": "Live",
           "postRecording": "Post-Registrazione"
@@ -942,6 +961,16 @@
     },
     "history": {
       "title": "Cronologia",
+      "tabs": {
+        "recordings": "Registrazioni",
+        "statistics": "Statistiche",
+        "settings": "Impostazioni"
+      },
+      "stats": {
+        "title": "Statistiche di registrazione",
+        "description": "Quante registrazioni hai fatto e quanto sono durate, per giorno, settimana, mese e anno. La riga totale conta anche quelle che la cronologia ha poi eliminato. Scarica l'elenco completo in CSV.",
+        "totalLine": "{{count}} registrazioni · {{duration}}"
+      },
       "openFolder": "Apri la cartella delle registrazioni",
       "loading": "Caricamento cronologia...",
       "empty": "Non ci sono ancora trascrizioni. Comincia a registrare per costruire la tua cronologia!",
@@ -1273,7 +1302,8 @@
     "paused": "In pausa",
     "pause": "Pausa",
     "resume": "Riprendi",
-    "liveTextBox": "Riquadro testo dal vivo"
+    "liveTextBox": "Riquadro testo dal vivo",
+    "slowPc": "Trascrizione al {{percent}}% della velocità normale di questo PC"
   },
   "brand": {
     "name": "Handy",

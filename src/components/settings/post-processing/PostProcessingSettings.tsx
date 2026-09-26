@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Keyboard, Plug, MessageSquareText } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { commands, type LlmProvider } from "@/bindings";
 
@@ -373,7 +374,10 @@ export const PostProcessingSettings: React.FC = () => {
 
   return (
     <div className="w-full space-y-6">
-      <SettingsGroup title={t("settings.postProcessing.hotkey.title")}>
+      <SettingsGroup
+        icon={Keyboard}
+        title={t("settings.postProcessing.hotkey.title")}
+      >
         <ShortcutInput
           shortcutId="transcribe_with_post_process"
           descriptionMode="tooltip"
@@ -381,7 +385,7 @@ export const PostProcessingSettings: React.FC = () => {
         />
       </SettingsGroup>
 
-      <SettingsGroup title={t("settings.postProcessing.api.title")}>
+      <SettingsGroup icon={Plug} title={t("settings.postProcessing.api.title")}>
         <PostProcessApiSection />
         <ToggleSwitch
           label={t("settings.postProcessing.disableThinking.label")}
@@ -394,7 +398,10 @@ export const PostProcessingSettings: React.FC = () => {
         />
       </SettingsGroup>
 
-      <SettingsGroup title={t("settings.postProcessing.prompts.title")}>
+      <SettingsGroup
+        icon={MessageSquareText}
+        title={t("settings.postProcessing.prompts.title")}
+      >
         <PostProcessingSettingsPrompts />
       </SettingsGroup>
     </div>

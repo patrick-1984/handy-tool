@@ -235,6 +235,10 @@
             "name": "Letztes Wort rückgängig",
             "description": "Entfernt das letzte Wort einer Live-Aufnahme. Nur während einer Live-Aufnahme aktiv. Standard: Strg+Rücktaste."
           },
+          "toggle_live_text_box": {
+            "name": "Live-Textfeld an/aus",
+            "description": "Schaltet das Live-Textfeld an oder aus, wie die T-Taste der Aufnahmeleiste. Standard: Keine."
+          },
           "transcribe_with_post_process": {
             "name": "Nachbearbeitungs-Tastenkürzel",
             "description": "Optional: Ein dediziertes Tastenkürzel, das immer die KI-Nachbearbeitung auf Ihre Transkription anwendet."
@@ -316,13 +320,22 @@
       },
       "liveTextBox": {
         "label": "Live-Textfeld",
-        "description": "Zeigt in einem kleinen Feld neben dem Aufnahme-Overlay, was Sie sagen – etwa alle 1,5 Sekunden aktualisiert. Solange es an ist, laufen alle Aufnahmen im Live-Modus. Standard: Aus; die T-Taste im Overlay schaltet es ebenfalls."
+        "description": "Zeigt, was du sagst, in einem kleinen Feld neben der Aufnahmeleiste, etwa alle 1,5 Sekunden aktualisiert. Solange es an ist, laufen alle Aufnahmen im Live-Modus und der Text im Feld ist dein Transkript: Beim Stoppen kommen nur die letzten ein, zwei Sekunden dazu, daher ist er sofort fertig — die Aufnahme wird nicht ein zweites Mal transkribiert. Braucht ein Modell, das auf diesem PC läuft. Standard: Aus; die T-Taste der Leiste schaltet es ebenfalls.",
+        "remoteModel": {
+          "title": "Das Live-Textfeld funktioniert nicht mit {{model}}",
+          "worksWith": "Es braucht ein Modell, das auf diesem PC läuft, denn entfernte Dienste bekommen das Audio erst nach dem Stoppen. Es funktioniert mit: {{models}}.",
+          "noLocal": "Es braucht ein Modell, das auf diesem PC läuft, denn entfernte Dienste bekommen das Audio erst nach dem Stoppen. Lade eines auf der Seite Modelle herunter."
+        }
       },
       "liveTextMode": {
         "title": "Live-Text zeigt",
         "description": "Eine Zeile mit den neuesten Wörtern oder den ganzen Text in einem dreizeiligen Feld. Die Größe ändert sich beim Sprechen nicht. Standard: Letzte Wörter.",
         "lastWords": "Letzte Wörter",
         "fullText": "Ganzer Text"
+      },
+      "liveTextFade": {
+        "label": "Ausblenden, wenn du aufhörst zu sprechen",
+        "description": "Der Live-Text blendet sich einige Sekunden nach dem Sprechen aus, damit fertige Wörter nicht stehen bleiben. Deine nächsten Wörter holen ihn zurück. Standard: Aus."
       },
       "language": {
         "title": "Sprache",
@@ -468,11 +481,17 @@
     },
     "shortcuts": {
       "groups": {
-        "dictation": "Diktat"
+        "dictation": "Diktat",
+        "warnings": "Warnungen"
       },
       "conflicts": {
         "title": "Einige Tastenkürzel verwenden dieselben Tasten",
         "description": "Eine Tastenkombination kann nur eine Aktion auslösen, daher funktioniert von jedem Paar nur eine. Ändern oder entfernen Sie eines der rot markierten Tastenkürzel."
+      },
+      "altGrWarning": {
+        "label": "Vor AltGr-Tastenkürzeln warnen",
+        "description": "Zeigt eine Warnung neben Tastenkürzeln, die AltGr ebenfalls tippen kann. Windows meldet AltGr als Strg+Alt, daher löst z. B. Strg+Alt+O aus, wenn du ó mit AltGr tippst, und das Zeichen kommt nie an. Standard: An. Schalte es aus, wenn du nie Zeichen mit AltGr tippst.",
+        "turnOff": "Diese Warnung ausschalten"
       }
     },
     "sound": {
@@ -662,7 +681,7 @@
       },
       "transcriptionMode": {
         "title": "Transkriptionsmodus",
-        "description": "Live zeigt den Text schon während du sprichst; Nach der Aufnahme zeichnet leise auf und transkribiert im Hintergrund. Standard: Nach der Aufnahme. In beiden Fällen erhält das vollständige Audio beim Stoppen einen abschließenden Durchgang, der zugestellte Text ist also immer der genaue und der Live-Text nur eine Vorschau — das gilt nur für das Transkriptions-Tastenkürzel, API-Transkriptionsmodelle verhalten sich immer wie Nach der Aufnahme.",
+        "description": "Live zeigt den Text schon beim Sprechen; Nach der Aufnahme nimmt still auf und transkribiert im Hintergrund. So oder so passiert die meiste Arbeit während du sprichst, daher ist der Text kurz nach dem Stoppen fertig. Im Live-Modus bekommst du genau den Text, den du gesehen hast. Standard: Nach der Aufnahme. Gilt nur für das Transkriptions-Tastenkürzel; API-Modelle verhalten sich immer wie Nach der Aufnahme.",
         "options": {
           "live": "Live",
           "postRecording": "Nach der Aufnahme"
@@ -942,6 +961,16 @@
     },
     "history": {
       "title": "Verlauf",
+      "tabs": {
+        "recordings": "Aufnahmen",
+        "statistics": "Statistik",
+        "settings": "Einstellungen"
+      },
+      "stats": {
+        "title": "Aufnahme-Statistik",
+        "description": "Wie viele Aufnahmen du gemacht hast und wie lang sie waren, nach Tag, Woche, Monat und Jahr. Die Gesamtzeile zählt auch Aufnahmen, die der Verlauf inzwischen aufgeräumt hat. Die ganze Liste gibt es als CSV.",
+        "totalLine": "{{count}} Aufnahmen · {{duration}}"
+      },
       "openFolder": "Aufnahmeordner öffnen",
       "loading": "Verlauf wird geladen...",
       "empty": "Noch keine Transkriptionen. Starte eine Aufnahme, um deinen Verlauf aufzubauen!",
@@ -1273,7 +1302,8 @@
     "paused": "Pausiert",
     "pause": "Pause",
     "resume": "Fortsetzen",
-    "liveTextBox": "Live-Textfeld"
+    "liveTextBox": "Live-Textfeld",
+    "slowPc": "Transkription mit {{percent}} % der üblichen Geschwindigkeit dieses PCs"
   },
   "brand": {
     "name": "Handy",

@@ -54,7 +54,7 @@ export const SidebarSearch: React.FC<SidebarSearchProps> = ({
   const results = useMemo(() => searchSettings(index, query), [index, query]);
 
   const pick = (entry: SearchEntry) => {
-    navigateTo(entry.section as SidebarSection);
+    navigateTo(entry.section as SidebarSection, entry.historyTab);
     onQueryChange("");
     highlightSetting(entry.title);
   };

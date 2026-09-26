@@ -2,6 +2,8 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Dropdown } from "../ui/Dropdown";
 import { SettingContainer } from "../ui/SettingContainer";
+
+import { SubSettings } from "../ui/SettingsGroup";
 import { ToggleSwitch } from "../ui/ToggleSwitch";
 import { useSettings } from "../../hooks/useSettings";
 import { useOsType } from "../../hooks/useOsType";
@@ -64,19 +66,21 @@ export const JumperTrackToggle: React.FC<JumperTrackToggleProps> = React.memo(
           grouped={grouped}
         />
         {enabled && (
-          <SettingContainer
-            title={t("settings.jumper.track.slot.title")}
-            description={t("settings.jumper.track.slot.description")}
-            descriptionMode="tooltip"
-            grouped={grouped}
-          >
-            <Dropdown
-              options={slotOptions}
-              selectedValue={selectedSlot}
-              onSelect={(value) => updateSetting(slotKey, Number(value))}
-              disabled={isUpdating(slotKey)}
-            />
-          </SettingContainer>
+          <SubSettings>
+            <SettingContainer
+              title={t("settings.jumper.track.slot.title")}
+              description={t("settings.jumper.track.slot.description")}
+              descriptionMode="tooltip"
+              grouped={grouped}
+            >
+              <Dropdown
+                options={slotOptions}
+                selectedValue={selectedSlot}
+                onSelect={(value) => updateSetting(slotKey, Number(value))}
+                disabled={isUpdating(slotKey)}
+              />
+            </SettingContainer>
+          </SubSettings>
         )}
       </>
     );

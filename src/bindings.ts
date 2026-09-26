@@ -2250,6 +2250,34 @@ export const commands = {
     }
   },
   /**
+   * Show or hide the warning next to shortcuts that AltGr can also type.
+   */
+  async changeAltgrWarningSetting(enabled: boolean): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_altgr_warning_setting", { enabled }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * Whether the live text box fades out after you stop talking.
+   */
+  async changeLiveTextFadeSetting(enabled: boolean): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_live_text_fade_setting", { enabled }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
    * Pause the take in progress, or resume it (the overlay's pause button).
    */
   async togglePauseRecording(): Promise<void> {
@@ -2410,6 +2438,21 @@ export const commands = {
   async getHistoryEntries(): Promise<Result<HistoryEntry[], string>> {
     try {
       return { status: "ok", data: await TAURI_INVOKE("get_history_entries") };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * Totals of the recordings that History's automatic clean-up has deleted, so
+   * the History statistics can count every take since the first one.
+   */
+  async getPurgedHistoryTotals(): Promise<Result<PurgedTotals, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("get_purged_history_totals"),
+      };
     } catch (e) {
       if (e instanceof Error) throw e;
       else return { status: "error", error: e as any };
@@ -2624,6 +2667,15 @@ export type AppSettings = {
    * What the live text box shows.
    */
   live_text_mode?: LiveTextMode;
+  /**
+   * The live text box fades out a few seconds after you stop talking.
+   */
+  live_text_fade?: boolean;
+  /**
+   * Warn next to shortcuts that AltGr can also type (Windows reports AltGr
+   * as Ctrl+Alt).
+   */
+  altgr_warning_enabled?: boolean;
   selected_microphone?: string | null;
   clamshell_microphone?: string | null;
   selected_output_device?: string | null;
@@ -3072,6 +3124,16 @@ export type RestoreReport = {
   recordings_restored: number;
   restart_required: boolean;
   errors: string[];
+};
+/**
+ * Totals carried forward from history rows that retention has deleted, so
+ * lifetime statistics do not shrink when old detail is purged.
+ */
+export type PurgedTotals = {
+  takes: number;
+  seconds: number;
+  cost_usd: number;
+  chars: number;
 };
 export type ModelInfo = {
   id: string;

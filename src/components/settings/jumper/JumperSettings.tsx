@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { ScreenShare, Target, Save, Workflow, MapPin } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { listen } from "@tauri-apps/api/event";
 import { toast } from "sonner";
@@ -209,10 +210,13 @@ export const JumperSettings: React.FC = () => {
 
   return (
     <div className="w-full space-y-6">
-      <SettingsGroup title={t("settings.jumper.remoteMatch.groupTitle")}>
+      <SettingsGroup
+        icon={ScreenShare}
+        title={t("settings.jumper.remoteMatch.groupTitle")}
+      >
         <RemoteMatchStrings grouped={true} />
       </SettingsGroup>
-      <SettingsGroup title={t("settings.jumper.hot.title")}>
+      <SettingsGroup icon={Target} title={t("settings.jumper.hot.title")}>
         <ShortcutInput shortcutId="anchor_set" grouped={true} />
         <ShortcutInput shortcutId="anchor_jump" grouped={true} />
         <SettingContainer
@@ -236,7 +240,7 @@ export const JumperSettings: React.FC = () => {
           </span>
         </SettingContainer>
       </SettingsGroup>
-      <SettingsGroup title={t("settings.jumper.hot2.title")}>
+      <SettingsGroup icon={Target} title={t("settings.jumper.hot2.title")}>
         <ShortcutInput shortcutId="anchor_set_2" grouped={true} />
         <ShortcutInput shortcutId="anchor_jump_2" grouped={true} />
         <SettingContainer
@@ -250,7 +254,10 @@ export const JumperSettings: React.FC = () => {
         {saveCursorToggle(10)}
         {cursorModeDropdown(10)}
       </SettingsGroup>
-      <SettingsGroup title={t("settings.jumper.persist.groupTitle")}>
+      <SettingsGroup
+        icon={Save}
+        title={t("settings.jumper.persist.groupTitle")}
+      >
         <ToggleSwitch
           checked={getSetting("jumper_persist") ?? false}
           onChange={(enabled) => updateSetting("jumper_persist", enabled)}
@@ -261,7 +268,10 @@ export const JumperSettings: React.FC = () => {
           grouped={true}
         />
       </SettingsGroup>
-      <SettingsGroup title={t("settings.jumper.requireSameFlow.groupTitle")}>
+      <SettingsGroup
+        icon={Workflow}
+        title={t("settings.jumper.requireSameFlow.groupTitle")}
+      >
         <ToggleSwitch
           checked={requireSameFlow}
           onChange={(value) => void setRequireSameFlow(value)}
@@ -273,6 +283,7 @@ export const JumperSettings: React.FC = () => {
       </SettingsGroup>
       {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
         <SettingsGroup
+          icon={MapPin}
           key={i}
           title={t("settings.jumper.slot.title", { index: i })}
         >

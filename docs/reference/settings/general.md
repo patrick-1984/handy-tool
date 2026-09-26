@@ -36,14 +36,6 @@ Adds a pause button to the recording overlay. While paused nothing is recorded; 
 
 Catalog: [Pause a take without ending it](../../features.md#pause-a-take).
 
-### Undo last word
-
-`General › Undo last word`
-
-Each press of its shortcut removes the newest word of a live take and cuts the recording back to where that word started. Needs a Parakeet model. When on, an Undo Last Word shortcut row appears under it. **Default:** Off; the shortcut is `ctrl+backspace`, registered only during a live take.
-
-Catalog: [Take back the last word without starting over](../../features.md#undo-last-word).
-
 ### Transcribe & Submit Shortcut
 
 `General › Transcribe & Submit Shortcut`
@@ -102,7 +94,7 @@ Catalog: [Watch the text appear, or wait for the most accurate pass](../../featu
 
 `General › Transcription › Live text box`
 
-Shows the words being spoken in a small box next to the recording overlay, updated about every 1.5 seconds. While it is on, every take runs in Live mode. The overlay's T button switches the same setting. **Default:** Off.
+Shows the words being spoken in a small box next to the recording overlay, updated about every 1.5 seconds. While it is on, every take runs in Live mode and the box's text is the transcript; at stop only the last second or two is added. Needs a model that runs on this PC: with a remote engine selected, switching it on shows which of your models work instead. The overlay's T button, and the Live Text Box On/Off shortcut (shown under it while it is on; no default key), switch the same setting. **Default:** Off.
 
 Catalog: [See your words next to the overlay while you talk](../../features.md#live-text-box).
 
@@ -113,6 +105,22 @@ Catalog: [See your words next to the overlay while you talk](../../features.md#l
 Shown while [Live text box](#live-text-box) is on. `Last words` is one line of the newest words; `Whole text` is the take so far in a three-line box. **Default:** `Last words`.
 
 Catalog: [See your words next to the overlay while you talk](../../features.md#live-text-box).
+
+### Fade when you stop talking
+
+`General › Transcription › Fade when you stop talking`
+
+Shown while [Live text box](#live-text-box) is on. The live text fades away three seconds after it stops changing, and your next words bring it back. **Default:** Off.
+
+Catalog: [See your words next to the overlay while you talk](../../features.md#live-text-box).
+
+### Undo last word
+
+`General › Transcription › Undo last word`
+
+Each press of its shortcut first brings the live text up to date, then removes the newest word from it and cuts the recording back to where that word started. Needs a Parakeet model. When on, an Undo Last Word shortcut row appears under it. **Default:** Off; the shortcut is `ctrl+backspace`, registered only during a live take.
+
+Catalog: [Take back the last word without starting over](../../features.md#undo-last-word).
 
 ### GPU Device
 

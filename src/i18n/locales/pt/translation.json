@@ -217,6 +217,10 @@
             "name": "Desfazer a última palavra",
             "description": "Remove a última palavra de uma gravação ao vivo. Ativo só durante uma gravação ao vivo. Padrão: Ctrl+Backspace."
           },
+          "toggle_live_text_box": {
+            "name": "Caixa de texto ao vivo liga/desliga",
+            "description": "Liga ou desliga a caixa de texto ao vivo, como o botão T da barra de gravação. Padrão: nenhum."
+          },
           "transcribe_with_post_process": {
             "name": "Tecla de Pós-Processamento",
             "description": "Opcional: Uma tecla de atalho dedicada que sempre aplica pós-processamento com IA à sua transcrição."
@@ -298,13 +302,22 @@
       },
       "liveTextBox": {
         "label": "Caixa de texto ao vivo",
-        "description": "Mostra o que você diz numa pequena caixa ao lado da sobreposição de gravação, atualizada a cada 1,5 s aproximadamente. Enquanto ativa, todas as gravações ficam no modo ao vivo. Padrão: Desativado; o botão T também alterna."
+        "description": "Mostra o que você diz numa pequena caixa ao lado da barra de gravação, atualizada a cada 1,5 s aproximadamente. Enquanto está ativo, toda gravação corre no modo ao vivo e o texto da caixa é a sua transcrição: ao parar, só o último segundo ou dois é acrescentado, então fica pronto na hora — a gravação não é transcrita uma segunda vez. Requer um modelo que rode neste PC. Padrão: desativado; o botão T da barra também o alterna.",
+        "remoteModel": {
+          "title": "A caixa de texto ao vivo não funciona com {{model}}",
+          "worksWith": "Precisa de um modelo que rode neste PC, porque serviços remotos só recebem o áudio depois que você para. Funciona com: {{models}}.",
+          "noLocal": "Precisa de um modelo que rode neste PC, porque serviços remotos só recebem o áudio depois que você para. Baixe um na página Modelos."
+        }
       },
       "liveTextMode": {
         "title": "O texto ao vivo mostra",
         "description": "Uma linha com as palavras mais recentes, ou todo o texto numa caixa de três linhas. O tamanho não muda enquanto você fala. Padrão: Últimas palavras.",
         "lastWords": "Últimas palavras",
         "fullText": "Texto completo"
+      },
+      "liveTextFade": {
+        "label": "Esmaecer quando você para de falar",
+        "description": "O texto ao vivo esmaece alguns segundos depois que você para de falar, para que palavras concluídas não fiquem na tela. Suas próximas palavras o trazem de volta. Padrão: desativado."
       },
       "language": {
         "title": "Idioma",
@@ -450,11 +463,17 @@
     },
     "shortcuts": {
       "groups": {
-        "dictation": "Ditado"
+        "dictation": "Ditado",
+        "warnings": "Avisos"
       },
       "conflicts": {
         "title": "Alguns atalhos usam as mesmas teclas",
         "description": "Apenas uma ação pode usar uma combinação de teclas, então só um atalho de cada par funciona. Altere ou limpe um dos atalhos marcados com um aviso vermelho."
+      },
+      "altGrWarning": {
+        "label": "Avisar sobre atalhos com AltGr",
+        "description": "Mostra um aviso ao lado de atalhos que o AltGr também pode digitar. O Windows trata AltGr como Ctrl+Alt, então um atalho como Ctrl+Alt+O dispara quando você digita ó com AltGr e o caractere nunca chega. Padrão: ativado. Desative se você nunca digita caracteres com AltGr.",
+        "turnOff": "Desativar este aviso"
       }
     },
     "models": {
@@ -662,7 +681,7 @@
       },
       "transcriptionMode": {
         "title": "Modo de Transcrição",
-        "description": "Tempo real mostra o texto se formando enquanto você ainda está falando; Pós-Gravação grava silenciosamente e transcreve em segundo plano. Padrão: Pós-Gravação. De qualquer forma, o áudio completo recebe uma passagem final quando você para, então o texto entregue é sempre o preciso, e o texto em tempo real é apenas uma pré-visualização — isso governa apenas o Atalho de Transcrição, e modelos de transcrição por API sempre se comportam como Pós-Gravação.",
+        "description": "Ao vivo mostra o texto enquanto você fala; Pós-gravação grava em silêncio e transcreve em segundo plano. Em ambos, quase todo o trabalho acontece enquanto você fala, então o texto fica pronto logo depois de parar. No modo ao vivo você recebe exatamente o texto que viu. Padrão: Pós-gravação. Vale só para o atalho de transcrição; modelos de API sempre agem como Pós-gravação.",
         "options": {
           "live": "Tempo real",
           "postRecording": "Pós-Gravação"
@@ -942,6 +961,16 @@
     },
     "history": {
       "title": "Histórico",
+      "tabs": {
+        "recordings": "Gravações",
+        "statistics": "Estatísticas",
+        "settings": "Configurações"
+      },
+      "stats": {
+        "title": "Estatísticas de gravação",
+        "description": "Quantas gravações você fez e quanto duraram, por dia, semana, mês e ano. A linha total também conta as gravações que o histórico já limpou. Baixe a lista completa em CSV.",
+        "totalLine": "{{count}} gravações · {{duration}}"
+      },
       "openFolder": "Abrir Pasta de Gravações",
       "loading": "Carregando histórico...",
       "empty": "Nenhuma transcrição ainda. Comece a gravar para construir seu histórico!",
@@ -1273,7 +1302,8 @@
     "paused": "Em pausa",
     "pause": "Pausar",
     "resume": "Retomar",
-    "liveTextBox": "Caixa de texto ao vivo"
+    "liveTextBox": "Caixa de texto ao vivo",
+    "slowPc": "Transcrevendo a {{percent}}% da velocidade normal deste PC"
   },
   "brand": {
     "name": "Handy",

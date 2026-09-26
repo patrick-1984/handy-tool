@@ -235,6 +235,10 @@
             "name": "Deshacer la última palabra",
             "description": "Quita la última palabra de una toma en vivo. Solo activo durante una toma en vivo. Predeterminado: Ctrl+Retroceso."
           },
+          "toggle_live_text_box": {
+            "name": "Activar/desactivar texto en vivo",
+            "description": "Activa o desactiva el cuadro de texto en vivo, como el botón T de la barra de grabación. Predeterminado: ninguno."
+          },
           "transcribe_with_post_process": {
             "name": "Tecla de Post Procesamiento",
             "description": "Opcional: Una tecla de acceso rápido dedicada que siempre aplica post procesamiento con IA a tu transcripción."
@@ -316,13 +320,22 @@
       },
       "liveTextBox": {
         "label": "Cuadro de texto en vivo",
-        "description": "Muestra lo que dices en un pequeño cuadro junto a la superposición de grabación, actualizado cada 1,5 s aproximadamente. Mientras está activo, todas las tomas van en modo en vivo. Predeterminado: Desactivado; el botón T también lo cambia."
+        "description": "Muestra lo que dices en un pequeño cuadro junto a la barra de grabación, actualizado cada 1,5 s aproximadamente. Mientras está activo, todas las grabaciones van en modo en vivo y el texto del cuadro es tu transcripción: al detener solo se añade el último segundo o dos, así que está listo al instante — la grabación no se transcribe una segunda vez. Requiere un modelo que funcione en este PC. Predeterminado: desactivado; el botón T de la barra también lo cambia.",
+        "remoteModel": {
+          "title": "El cuadro de texto en vivo no funciona con {{model}}",
+          "worksWith": "Necesita un modelo que funcione en este PC, porque los servicios remotos solo reciben el audio al detener. Funciona con: {{models}}.",
+          "noLocal": "Necesita un modelo que funcione en este PC, porque los servicios remotos solo reciben el audio al detener. Descarga uno en la página Modelos."
+        }
       },
       "liveTextMode": {
         "title": "El texto en vivo muestra",
         "description": "Una línea con las palabras más recientes, o todo el texto en un cuadro de tres líneas. No cambia de tamaño mientras hablas. Predeterminado: Últimas palabras.",
         "lastWords": "Últimas palabras",
         "fullText": "Texto completo"
+      },
+      "liveTextFade": {
+        "label": "Desvanecer al dejar de hablar",
+        "description": "El texto en vivo se desvanece unos segundos después de que dejas de hablar, para que las palabras terminadas no se queden en pantalla. Tus siguientes palabras lo traen de vuelta. Predeterminado: desactivado."
       },
       "language": {
         "title": "Idioma",
@@ -468,11 +481,17 @@
     },
     "shortcuts": {
       "groups": {
-        "dictation": "Dictado"
+        "dictation": "Dictado",
+        "warnings": "Avisos"
       },
       "conflicts": {
         "title": "Algunos atajos usan las mismas teclas",
         "description": "Solo una acción puede usar una combinación de teclas, así que solo funciona uno de cada par. Cambia o quita uno de los atajos marcados con un aviso rojo."
+      },
+      "altGrWarning": {
+        "label": "Avisar de atajos con AltGr",
+        "description": "Muestra un aviso junto a los atajos que AltGr también puede escribir. Windows interpreta AltGr como Ctrl+Alt, así que un atajo como Ctrl+Alt+O se activa al escribir ó con AltGr y el carácter nunca llega. Predeterminado: activado. Desactívalo si nunca escribes caracteres con AltGr.",
+        "turnOff": "Desactivar este aviso"
       }
     },
     "sound": {
@@ -662,7 +681,7 @@
       },
       "transcriptionMode": {
         "title": "Modo de Transcripción",
-        "description": "En Vivo muestra el texto formándose mientras todavía estás hablando; Posgrabación graba en silencio y transcribe en segundo plano. Predeterminado: Posgrabación. De cualquier forma, el audio completo recibe una pasada final al detenerte, así que el texto entregado siempre es el preciso y el texto en vivo es solo una vista previa; esto rige solo el Atajo de Transcripción, y los modelos de transcripción por API siempre se comportan como Posgrabación.",
+        "description": "En vivo muestra el texto mientras hablas; Tras la grabación graba en silencio y transcribe en segundo plano. En ambos casos casi todo el trabajo se hace mientras hablas, así que el texto está listo momentos después de detener. En modo en vivo recibes exactamente el texto que viste. Predeterminado: Tras la grabación. Solo afecta al atajo de transcripción; los modelos de API siempre funcionan como Tras la grabación.",
         "options": {
           "live": "En vivo",
           "postRecording": "Posgrabación"
@@ -942,6 +961,16 @@
     },
     "history": {
       "title": "Historial",
+      "tabs": {
+        "recordings": "Grabaciones",
+        "statistics": "Estadísticas",
+        "settings": "Ajustes"
+      },
+      "stats": {
+        "title": "Estadísticas de grabación",
+        "description": "Cuántas grabaciones hiciste y cuánto duraron, por día, semana, mes y año. La línea total también cuenta las grabaciones que el historial ya ha limpiado. Descarga la lista completa en CSV.",
+        "totalLine": "{{count}} grabaciones · {{duration}}"
+      },
       "openFolder": "Abrir Carpeta de Grabaciones",
       "loading": "Cargando historial...",
       "empty": "Aún no hay transcripciones. ¡Comienza a grabar para crear tu historial!",
@@ -1273,7 +1302,8 @@
     "paused": "En pausa",
     "pause": "Pausa",
     "resume": "Reanudar",
-    "liveTextBox": "Cuadro de texto en vivo"
+    "liveTextBox": "Cuadro de texto en vivo",
+    "slowPc": "Transcribiendo al {{percent}} % de la velocidad normal de este PC"
   },
   "floating": {
     "waiting": "Esperando la transcripción…",

@@ -1,4 +1,5 @@
 import React from "react";
+import { PictureInPicture2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Dropdown } from "../ui/Dropdown";
 import { SettingContainer } from "../ui/SettingContainer";
@@ -26,6 +27,7 @@ export const ShowOverlay: React.FC<ShowOverlayProps> = React.memo(
 
     return (
       <SettingContainer
+        icon={PictureInPicture2}
         title={t("settings.advanced.overlay.title")}
         description={t("settings.advanced.overlay.description")}
         descriptionMode={descriptionMode}

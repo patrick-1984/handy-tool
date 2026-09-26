@@ -1,4 +1,5 @@
 import React from "react";
+import { PanelBottom } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { ToggleSwitch } from "../ui/ToggleSwitch";
 import { useSettings } from "../../hooks/useSettings";
@@ -17,6 +18,7 @@ export const ShowTrayIcon: React.FC<ShowTrayIconProps> = React.memo(
 
     return (
       <ToggleSwitch
+        icon={PanelBottom}
         checked={showTrayIcon}
         onChange={(enabled) => updateSetting("show_tray_icon", enabled)}
         isUpdating={isUpdating("show_tray_icon")}

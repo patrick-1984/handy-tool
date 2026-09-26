@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { listen } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
 import { toast } from "sonner";
-import { FolderPlus, Trash2 } from "lucide-react";
+import { FolderPlus, Trash2, Languages, FolderOpen } from "lucide-react";
 import { SettingsGroup } from "../../ui/SettingsGroup";
 import { SettingContainer } from "../../ui/SettingContainer";
 import { ToggleSwitch } from "../../ui/ToggleSwitch";
@@ -251,7 +251,7 @@ export const TranslatorSettings: React.FC = () => {
 
   return (
     <div className="w-full space-y-6">
-      <SettingsGroup title={t("settings.translator.title")}>
+      <SettingsGroup icon={Languages} title={t("settings.translator.title")}>
         <ToggleSwitch
           checked={enabled}
           onChange={(value) => updateSetting("translator_enabled", value)}
@@ -350,7 +350,10 @@ export const TranslatorSettings: React.FC = () => {
         </SettingContainer>
       </SettingsGroup>
 
-      <SettingsGroup title={t("settings.translator.folders.title")}>
+      <SettingsGroup
+        icon={FolderOpen}
+        title={t("settings.translator.folders.title")}
+      >
         {folders.length === 0 && (
           <SettingContainer
             title={t("settings.translator.folders.emptyTitle")}

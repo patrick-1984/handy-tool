@@ -45,6 +45,12 @@ body {
   opacity: 1;
 }
 
+/* Fading on, and you have stopped talking: slowly let the text go. */
+.live-text.shown.faded {
+  opacity: 0;
+  transition: opacity 1200ms ease-in;
+}
+
 /* Last words: one line; the newest words stay at the right and older ones
    slide off the left, fading out. */
 .live-text.one-line {

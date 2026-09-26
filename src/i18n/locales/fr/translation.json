@@ -235,6 +235,10 @@
             "name": "Annuler le dernier mot",
             "description": "Retire le dernier mot d'une prise en direct. Actif seulement pendant une prise en direct. Par défaut : Ctrl+Retour arrière."
           },
+          "toggle_live_text_box": {
+            "name": "Texte en direct activé/désactivé",
+            "description": "Active ou désactive le cadre de texte en direct, comme le bouton T de la barre d'enregistrement. Par défaut : aucun."
+          },
           "transcribe_with_post_process": {
             "name": "Raccourci de post-traitement",
             "description": "Facultatif : Un raccourci dédié qui applique toujours le post-traitement IA à votre transcription."
@@ -316,13 +320,22 @@
       },
       "liveTextBox": {
         "label": "Zone de texte en direct",
-        "description": "Affiche ce que vous dites dans une petite zone à côté de la superposition d'enregistrement, mise à jour environ toutes les 1,5 s. Tant qu'elle est active, toutes les prises passent en mode direct. Par défaut : désactivée ; le bouton T la bascule aussi."
+        "description": "Affiche ce que vous dites dans un petit cadre près de la barre d'enregistrement, mis à jour environ toutes les 1,5 s. Tant qu'il est activé, chaque enregistrement est en mode direct et le texte du cadre est votre transcription : à l'arrêt, seule la dernière seconde ou deux est ajoutée, il est donc prêt aussitôt — l'enregistrement n'est pas transcrit une seconde fois. Nécessite un modèle qui tourne sur ce PC. Par défaut : désactivé ; le bouton T de la barre le bascule aussi.",
+        "remoteModel": {
+          "title": "Le cadre de texte en direct ne fonctionne pas avec {{model}}",
+          "worksWith": "Il faut un modèle qui tourne sur ce PC, car les services distants ne reçoivent l'audio qu'après l'arrêt. Il fonctionne avec : {{models}}.",
+          "noLocal": "Il faut un modèle qui tourne sur ce PC, car les services distants ne reçoivent l'audio qu'après l'arrêt. Téléchargez-en un sur la page Modèles."
+        }
       },
       "liveTextMode": {
         "title": "Le texte en direct affiche",
         "description": "Une ligne avec les mots les plus récents, ou tout le texte dans une zone de trois lignes. La taille ne change pas pendant que vous parlez. Par défaut : derniers mots.",
         "lastWords": "Derniers mots",
         "fullText": "Texte entier"
+      },
+      "liveTextFade": {
+        "label": "S'estomper quand vous arrêtez de parler",
+        "description": "Le texte en direct s'estompe quelques secondes après que vous arrêtez de parler, pour que les mots terminés ne restent pas à l'écran. Vos mots suivants le font revenir. Par défaut : désactivé."
       },
       "language": {
         "title": "Langue",
@@ -468,11 +481,17 @@
     },
     "shortcuts": {
       "groups": {
-        "dictation": "Dictée"
+        "dictation": "Dictée",
+        "warnings": "Avertissements"
       },
       "conflicts": {
         "title": "Certains raccourcis utilisent les mêmes touches",
         "description": "Une combinaison de touches ne peut déclencher qu'une seule action : un seul raccourci de chaque paire fonctionne. Modifiez ou effacez l'un des raccourcis signalés en rouge."
+      },
+      "altGrWarning": {
+        "label": "Avertir des raccourcis AltGr",
+        "description": "Affiche un avertissement à côté des raccourcis qu'AltGr peut aussi taper. Windows signale AltGr comme Ctrl+Alt : un raccourci comme Ctrl+Alt+O se déclenche quand vous tapez ó avec AltGr, et le caractère n'arrive jamais. Par défaut : activé. Désactivez-le si vous ne tapez jamais de caractères avec AltGr.",
+        "turnOff": "Désactiver cet avertissement"
       }
     },
     "sound": {
@@ -662,7 +681,7 @@
       },
       "transcriptionMode": {
         "title": "Mode de transcription",
-        "description": "En direct affiche le texte se construire pendant que vous parlez encore ; Après enregistrement enregistre silencieusement et transcrit en arrière-plan. Par défaut : Après enregistrement. Dans les deux cas, l'audio complet reçoit une passe finale à l'arrêt, donc le texte livré est toujours le plus précis et le texte en direct n'est qu'un aperçu — ce réglage ne gouverne que le Raccourci de Transcription, et les modèles de transcription API se comportent toujours comme Après enregistrement.",
+        "description": "Direct affiche le texte pendant que vous parlez ; Après l'enregistrement enregistre discrètement et transcrit en arrière-plan. Dans les deux cas, l'essentiel du travail se fait pendant que vous parlez, le texte est donc prêt peu après l'arrêt. En mode direct, vous obtenez exactement le texte vu. Par défaut : Après l'enregistrement. Ne concerne que le raccourci de transcription ; les modèles API se comportent toujours comme Après l'enregistrement.",
         "options": {
           "live": "En direct",
           "postRecording": "Après enregistrement"
@@ -942,6 +961,16 @@
     },
     "history": {
       "title": "Historique",
+      "tabs": {
+        "recordings": "Enregistrements",
+        "statistics": "Statistiques",
+        "settings": "Paramètres"
+      },
+      "stats": {
+        "title": "Statistiques d'enregistrement",
+        "description": "Combien d'enregistrements vous avez faits et leur durée, par jour, semaine, mois et année. La ligne totale compte aussi ceux que l'historique a depuis nettoyés. Téléchargez la liste complète en CSV.",
+        "totalLine": "{{count}} enregistrements · {{duration}}"
+      },
       "openFolder": "Ouvrir le dossier des enregistrements",
       "loading": "Chargement de l'historique...",
       "empty": "Pas encore de transcriptions. Commencez à enregistrer pour créer votre historique !",
@@ -1273,7 +1302,8 @@
     "paused": "En pause",
     "pause": "Pause",
     "resume": "Reprendre",
-    "liveTextBox": "Zone de texte en direct"
+    "liveTextBox": "Zone de texte en direct",
+    "slowPc": "Transcription à {{percent}} % de la vitesse habituelle de ce PC"
   },
   "floating": {
     "waiting": "En attente de la transcription…",

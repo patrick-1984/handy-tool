@@ -1,4 +1,5 @@
 import React from "react";
+import { Cpu } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { SettingsGroup } from "../../ui/SettingsGroup";
 import { SettingContainer } from "../../ui/SettingContainer";
@@ -41,6 +42,7 @@ export const ModelSettingsCard: React.FC = () => {
 
   return (
     <SettingsGroup
+      icon={Cpu}
       title={t("settings.modelSettings.title", {
         model: currentModelInfo.name,
       })}

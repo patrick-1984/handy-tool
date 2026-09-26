@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SettingContainer } from "../ui/SettingContainer";
+
+import { SubSettings } from "../ui/SettingsGroup";
 import { ToggleSwitch } from "../ui/ToggleSwitch";
 import { useSettings } from "../../hooks/useSettings";
 
@@ -59,7 +61,7 @@ export const AffixSettings: React.FC<AffixSettingsProps> = React.memo(
           grouped={grouped}
         />
         {prefixEnabled && (
-          <>
+          <SubSettings>
             <SettingContainer
               title={t("settings.advanced.affix.prefix.placeholder")}
               description={t(
@@ -93,7 +95,7 @@ export const AffixSettings: React.FC<AffixSettingsProps> = React.memo(
               descriptionMode={descriptionMode}
               grouped={grouped}
             />
-          </>
+          </SubSettings>
         )}
 
         <ToggleSwitch
@@ -106,7 +108,7 @@ export const AffixSettings: React.FC<AffixSettingsProps> = React.memo(
           grouped={grouped}
         />
         {suffixEnabled && (
-          <>
+          <SubSettings>
             <SettingContainer
               title={t("settings.advanced.affix.suffix.placeholder")}
               description={t(
@@ -140,7 +142,7 @@ export const AffixSettings: React.FC<AffixSettingsProps> = React.memo(
               descriptionMode={descriptionMode}
               grouped={grouped}
             />
-          </>
+          </SubSettings>
         )}
       </>
     );

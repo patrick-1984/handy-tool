@@ -235,6 +235,10 @@
             "name": "Son kelimeyi geri al",
             "description": "Canlı kaydın son kelimesini siler. Yalnızca canlı kayıt sırasında etkindir. Varsayılan: Ctrl+Backspace."
           },
+          "toggle_live_text_box": {
+            "name": "Canlı metin kutusu aç/kapat",
+            "description": "Kayıt çubuğundaki T düğmesi gibi canlı metin kutusunu açar veya kapatır. Varsayılan: Yok."
+          },
           "transcribe_with_post_process": {
             "name": "Son İşlem Kısayolu",
             "description": "İsteğe bağlı: Transkripsiyonunuza her zaman AI son işleme uygulayan özel bir kısayol tuşu."
@@ -316,13 +320,22 @@
       },
       "liveTextBox": {
         "label": "Canlı metin kutusu",
-        "description": "Söylediklerinizi kayıt katmanının yanındaki küçük bir kutuda yaklaşık 1,5 saniyede bir gösterir. Açıkken tüm kayıtlar canlı modda çalışır. Varsayılan: Kapalı; katmandaki T düğmesi de değiştirir."
+        "description": "Söylediklerinizi kayıt çubuğunun yanındaki küçük bir kutuda gösterir, yaklaşık 1,5 saniyede bir günceller. Açıkken her kayıt canlı modda çalışır ve kutudaki metin sizin dökümünüzdür: durdurduğunuzda yalnızca son bir iki saniye eklenir, bu yüzden hemen hazırdır — kayıt ikinci kez yazıya dökülmez. Bu bilgisayarda çalışan bir model gerekir. Varsayılan: Kapalı; çubuktaki T düğmesi de değiştirir.",
+        "remoteModel": {
+          "title": "Canlı metin kutusu {{model}} ile çalışmaz",
+          "worksWith": "Bu bilgisayarda çalışan bir model gerekir, çünkü uzak hizmetler sesi ancak durdurduktan sonra alır. Şunlarla çalışır: {{models}}.",
+          "noLocal": "Bu bilgisayarda çalışan bir model gerekir, çünkü uzak hizmetler sesi ancak durdurduktan sonra alır. Modeller sayfasından bir tane indirin."
+        }
       },
       "liveTextMode": {
         "title": "Canlı metin gösterimi",
         "description": "En yeni kelimeleri tek satırda ya da tüm metni üç satırlık bir kutuda gösterir. Konuşurken boyutu değişmez. Varsayılan: Son kelimeler.",
         "lastWords": "Son kelimeler",
         "fullText": "Tüm metin"
+      },
+      "liveTextFade": {
+        "label": "Konuşmayı bırakınca soluklaş",
+        "description": "Canlı metin, konuşmayı bıraktıktan birkaç saniye sonra soluklaşır; biten sözcükler ekranda kalmaz. Sonraki sözcükleriniz onu geri getirir. Varsayılan: Kapalı."
       },
       "language": {
         "title": "Dil",
@@ -468,11 +481,17 @@
     },
     "shortcuts": {
       "groups": {
-        "dictation": "Dikte"
+        "dictation": "Dikte",
+        "warnings": "Uyarılar"
       },
       "conflicts": {
         "title": "Bazı kısayollar aynı tuşları kullanıyor",
         "description": "Bir tuş kombinasyonunu yalnızca bir eylem kullanabilir, bu yüzden her çiftten yalnızca biri çalışır. Kırmızı uyarıyla işaretlenen kısayollardan birini değiştirin veya temizleyin."
+      },
+      "altGrWarning": {
+        "label": "AltGr kısayolları için uyar",
+        "description": "AltGr ile de yazılabilen kısayolların yanında uyarı gösterir. Windows AltGr'yi Ctrl+Alt olarak bildirir; bu yüzden Ctrl+Alt+O gibi bir kısayol AltGr ile karakter yazarken tetiklenir ve karakter hiç yazılmaz. Varsayılan: Açık. AltGr ile karakter yazmıyorsanız kapatın.",
+        "turnOff": "Bu uyarıyı kapat"
       }
     },
     "sound": {
@@ -662,7 +681,7 @@
       },
       "transcriptionMode": {
         "title": "Transkripsiyon Modu",
-        "description": "Canlı, siz henüz konuşurken metnin oluşmasını gösterir; Kayıt Sonrası sessizce kaydeder ve arka planda transkribe eder. Varsayılan: Kayıt Sonrası. Her iki durumda da durduğunuzda sesin tamamı üzerinden son bir geçiş yapılır; bu nedenle teslim edilen metin her zaman doğru olandır ve canlı metin yalnızca bir önizlemedir — bu yalnızca Transkripsiyon Kısayolu'nu yönetir ve API transkripsiyon modelleri her zaman Kayıt Sonrası gibi davranır.",
+        "description": "Canlı, siz konuşurken metni gösterir; Kayıt sonrası sessizce kaydeder ve arka planda yazıya döker. Her iki durumda da işin çoğu siz konuşurken yapılır, bu yüzden metin durdurduktan hemen sonra hazırdır. Canlı modda gördüğünüz metni alırsınız. Varsayılan: Kayıt sonrası. Yalnızca yazıya dökme kısayolu için geçerlidir; API modelleri her zaman Kayıt sonrası gibi davranır.",
         "options": {
           "live": "Canlı",
           "postRecording": "Kayıt Sonrası"
@@ -942,6 +961,16 @@
     },
     "history": {
       "title": "Geçmiş",
+      "tabs": {
+        "recordings": "Kayıtlar",
+        "statistics": "İstatistikler",
+        "settings": "Ayarlar"
+      },
+      "stats": {
+        "title": "Kayıt istatistikleri",
+        "description": "Kaç kayıt yaptığınız ve ne kadar sürdükleri; güne, haftaya, aya ve yıla göre. Tüm zamanlar satırı, Geçmiş'in sonradan temizlediği kayıtları da sayar. Listenin tamamını CSV olarak indirin.",
+        "totalLine": "{{count}} kayıt · {{duration}}"
+      },
       "openFolder": "Kayıtlar Klasörünü Aç",
       "loading": "Geçmiş yükleniyor...",
       "empty": "Henüz transkripsiyon yok. Geçmişinizi oluşturmak için kayda başlayın!",
@@ -1273,7 +1302,8 @@
     "paused": "Duraklatıldı",
     "pause": "Duraklat",
     "resume": "Devam et",
-    "liveTextBox": "Canlı metin kutusu"
+    "liveTextBox": "Canlı metin kutusu",
+    "slowPc": "Bu bilgisayarın normal hızının %{{percent}} kadarıyla yazıya dökülüyor"
   },
   "brand": {
     "name": "Handy",
