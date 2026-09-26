@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { AudioPlayer } from "../../ui/AudioPlayer";
 import { Button } from "../../ui/Button";
@@ -78,6 +84,9 @@ const OpenRecordingsButton: React.FC<OpenRecordingsButtonProps> = ({
   </Button>
 );
 
+/** Entries drawn at a time on the Recordings tab. */
+const HISTORY_PAGE = 20;
+
 export const HistorySettings: React.FC = () => {
   const { t } = useTranslation();
   const tab = useNavStore((state) => state.historyTab);
@@ -109,6 +118,26 @@ export const HistorySettings: React.FC = () => {
       ]),
     );
   }, [historyEntries, matcher]);
+
+  // Drawing every entry at once (each with its own audio player) made the page
+  // lag; draw a page at a time and add the next as the list nears its end.
+  const [shownCount, setShownCount] = useState(HISTORY_PAGE);
+  useEffect(() => setShownCount(HISTORY_PAGE), [matcher]);
+  const moreRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = moreRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (seen) => {
+        if (seen.some((e) => e.isIntersecting)) {
+          setShownCount((n) => n + HISTORY_PAGE);
+        }
+      },
+      { rootMargin: "400px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [filteredEntries, shownCount, tab]);
 
   const loadHistoryEntries = useCallback(async () => {
     try {
@@ -243,7 +272,7 @@ export const HistorySettings: React.FC = () => {
   } else {
     body = (
       <div className="divide-y divide-mid-gray/20">
-        {filteredEntries.map((entry) => (
+        {filteredEntries.slice(0, shownCount).map((entry) => (
           <HistoryEntryComponent
             key={entry.id}
             entry={entry}
@@ -254,6 +283,9 @@ export const HistorySettings: React.FC = () => {
             deleteAudio={deleteAudioEntry}
           />
         ))}
+        {shownCount < filteredEntries.length && (
+          <div ref={moreRef} className="h-px" aria-hidden />
+        )}
       </div>
     );
   }

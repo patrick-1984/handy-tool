@@ -71,6 +71,10 @@ const settingUpdaters: {
     commands.changeLiveTextModeSetting(value as "last_words" | "full_text"),
   live_text_fade: (value) =>
     commands.changeLiveTextFadeSetting(value as boolean),
+  live_text_width: (value) =>
+    commands.changeLiveTextWidthSetting(value as number),
+  speed_indicator_enabled: (value) =>
+    commands.changeSpeedIndicatorSetting(value as boolean),
   altgr_warning_enabled: (value) =>
     commands.changeAltgrWarningSetting(value as boolean),
   audio_feedback: (value) =>

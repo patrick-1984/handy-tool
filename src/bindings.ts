@@ -2278,6 +2278,34 @@ export const commands = {
     }
   },
   /**
+   * How wide the live text box is (logical pixels).
+   */
+  async changeLiveTextWidthSetting(width: number): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_live_text_width_setting", { width }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * Show the speed chip on the recording pill (it widens the pill to fit).
+   */
+  async changeSpeedIndicatorSetting(enabled: boolean): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_speed_indicator_setting", { enabled }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
    * Pause the take in progress, or resume it (the overlay's pause button).
    */
   async togglePauseRecording(): Promise<void> {
@@ -2671,6 +2699,14 @@ export type AppSettings = {
    * The live text box fades out a few seconds after you stop talking.
    */
   live_text_fade?: boolean;
+  /**
+   * How wide the live text box is, in logical pixels (wider = fewer lines).
+   */
+  live_text_width?: number;
+  /**
+   * The recording pill shows how fast this PC transcribes against its normal.
+   */
+  speed_indicator_enabled?: boolean;
   /**
    * Warn next to shortcuts that AltGr can also type (Windows reports AltGr
    * as Ctrl+Alt).

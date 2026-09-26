@@ -35,6 +35,17 @@ tauri_panel! {
 }
 
 const OVERLAY_WIDTH: f64 = 204.0;
+/// Extra room on the pill for the speed chip, when it is switched on.
+const SPEED_CHIP_WIDTH: f64 = 44.0;
+
+/// The pill's width: wider while the speed chip is on.
+fn overlay_width(settings: &settings::AppSettings) -> f64 {
+    if settings.speed_indicator_enabled {
+        OVERLAY_WIDTH + SPEED_CHIP_WIDTH
+    } else {
+        OVERLAY_WIDTH
+    }
+}
 const OVERLAY_HEIGHT: f64 = 36.0;
 
 #[cfg(target_os = "macos")]
@@ -163,7 +174,7 @@ fn calculate_overlay_position(app_handle: &AppHandle) -> Option<(f64, f64)> {
 
         let settings = settings::get_settings(app_handle);
 
-        let x = work_area_x + (work_area_width - OVERLAY_WIDTH) / 2.0;
+        let x = work_area_x + (work_area_width - overlay_width(&settings)) / 2.0;
         let y = match settings.overlay_position {
             OverlayPosition::Top => work_area_y + OVERLAY_TOP_OFFSET,
             OverlayPosition::Bottom | OverlayPosition::None => {
@@ -364,6 +375,11 @@ pub fn update_overlay_position(app_handle: &AppHandle) {
             update_gtk_layer_shell_anchors(&overlay_window);
         }
 
+        let width = overlay_width(&settings::get_settings(app_handle));
+        let _ = overlay_window.set_size(tauri::Size::Logical(tauri::LogicalSize {
+            width,
+            height: OVERLAY_HEIGHT,
+        }));
         if let Some((x, y)) = calculate_overlay_position(app_handle) {
             let _ = overlay_window
                 .set_position(tauri::Position::Logical(tauri::LogicalPosition { x, y }));
@@ -406,9 +422,13 @@ pub fn hide_recording_overlay(app_handle: &AppHandle) {
 
 const LIVE_TEXT_LABEL: &str = "live_text";
 const LIVE_TEXT_WIDTH: f64 = 460.0;
-/// Room for three lines ("whole text"); "last words" uses the one line next to
-/// the pill. The size never changes, so nothing jumps while text arrives.
-const LIVE_TEXT_HEIGHT: f64 = 76.0;
+/// "Last words" is one line next to the pill.
+const LIVE_TEXT_ONE_LINE_HEIGHT: f64 = 36.0;
+/// "Whole text" grows from one line towards the screen's middle: at most this
+/// share of the work area, and never taller than LIVE_TEXT_MAX_HEIGHT. The window
+/// is click-through and transparent, so the room it keeps costs nothing.
+const LIVE_TEXT_MAX_SHARE: f64 = 0.4;
+const LIVE_TEXT_MAX_HEIGHT: f64 = 420.0;
 const LIVE_TEXT_GAP: f64 = 6.0;
 
 #[derive(Clone, serde::Serialize)]
@@ -420,13 +440,38 @@ struct LiveTextShow {
     below_pill: bool,
 }
 
-fn live_text_position(app_handle: &AppHandle, below_pill: bool) -> Option<(f64, f64)> {
+/// The box's window size for the current settings: the chosen width, and one
+/// line or room to grow into.
+fn live_text_size(app_handle: &AppHandle, settings: &settings::AppSettings) -> (f64, f64) {
+    let width = settings.live_text_width as f64;
+    if settings.live_text_mode == crate::settings::LiveTextMode::LastWords {
+        return (width, LIVE_TEXT_ONE_LINE_HEIGHT);
+    }
+    let work_area_height = app_handle
+        .primary_monitor()
+        .ok()
+        .flatten()
+        .map(|m| m.work_area().size.height as f64 / m.scale_factor())
+        .unwrap_or(1000.0);
+    (
+        width,
+        (work_area_height * LIVE_TEXT_MAX_SHARE).min(LIVE_TEXT_MAX_HEIGHT),
+    )
+}
+
+/// Centred on the pill, just above it (or below it when the pill is at the top).
+fn live_text_position(
+    app_handle: &AppHandle,
+    below_pill: bool,
+    (width, height): (f64, f64),
+) -> Option<(f64, f64)> {
     let (x, y) = calculate_overlay_position(app_handle)?;
-    let lx = x + OVERLAY_WIDTH / 2.0 - LIVE_TEXT_WIDTH / 2.0;
+    let pill_width = overlay_width(&settings::get_settings(app_handle));
+    let lx = x + pill_width / 2.0 - width / 2.0;
     let ly = if below_pill {
         y + OVERLAY_HEIGHT + LIVE_TEXT_GAP
     } else {
-        y - LIVE_TEXT_HEIGHT - LIVE_TEXT_GAP
+        y - height - LIVE_TEXT_GAP
     };
     Some((lx, ly))
 }
@@ -443,7 +488,7 @@ pub fn create_live_text_window(app_handle: &AppHandle) {
     )
     .title("Live text")
     .resizable(false)
-    .inner_size(LIVE_TEXT_WIDTH, LIVE_TEXT_HEIGHT)
+    .inner_size(LIVE_TEXT_WIDTH, LIVE_TEXT_ONE_LINE_HEIGHT)
     .shadow(false)
     .maximizable(false)
     .minimizable(false)
@@ -489,7 +534,9 @@ pub fn show_live_text_window(app_handle: &AppHandle) {
     }
     let below_pill = settings.overlay_position == OverlayPosition::Top;
     if let Some(window) = app_handle.get_webview_window(LIVE_TEXT_LABEL) {
-        if let Some((x, y)) = live_text_position(app_handle, below_pill) {
+        let (width, height) = live_text_size(app_handle, &settings);
+        let _ = window.set_size(tauri::Size::Logical(tauri::LogicalSize { width, height }));
+        if let Some((x, y)) = live_text_position(app_handle, below_pill, (width, height)) {
             let _ = window.set_position(tauri::Position::Logical(tauri::LogicalPosition { x, y }));
         }
         let _ = window.emit(

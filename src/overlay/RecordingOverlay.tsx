@@ -2,12 +2,7 @@ import { listen } from "@tauri-apps/api/event";
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Monitor, Pause, Play } from "lucide-react";
-import {
-  MicrophoneIcon,
-  TranscriptionIcon,
-  CancelIcon,
-  TextIcon,
-} from "../components/icons";
+import { TranscriptionIcon, CancelIcon, TextIcon } from "../components/icons";
 import "./RecordingOverlay.css";
 import { commands } from "@/bindings";
 import i18n, { syncLanguageFromSettings } from "@/i18n";
@@ -44,10 +39,12 @@ const RecordingOverlay: React.FC = () => {
   // Pause button (optional) and the live text box switch (the T button).
   const [pauseEnabled, setPauseEnabled] = useState(false);
   const [liveTextBox, setLiveTextBox] = useState(false);
-  // How fast the PC transcribes against its own normal (percent), only while it
-  // is clearly slower than usual; null otherwise. Starts empty on every take.
+  // The speed chip (a setting): how fast the PC transcribes against its own
+  // normal, in percent; null until there is a normal to compare with.
+  const [speedEnabled, setSpeedEnabled] = useState(false);
   const [speed, setSpeed] = useState<number | null>(null);
-  const stateRef = useRef<OverlayState | null>(null);
+  // What the button under the mouse does, shown in the middle of the pill.
+  const [hoverLabel, setHoverLabel] = useState<string | null>(null);
   const [levels, setLevels] = useState<number[]>(Array(16).fill(0));
   const smoothedLevelsRef = useRef<number[]>(Array(16).fill(0));
   const direction = getLanguageDirection(i18n.language);
@@ -59,16 +56,8 @@ const RecordingOverlay: React.FC = () => {
         // Sync language from settings each time overlay is shown
         await syncLanguageFromSettings();
         const overlayState = event.payload as OverlayState;
-        // A new take (not a resume from pause) starts without a speed verdict.
-        if (
-          overlayState === "recording" &&
-          stateRef.current !== "recording" &&
-          stateRef.current !== "paused"
-        ) {
-          setSpeed(null);
-        }
-        stateRef.current = overlayState;
         setState(overlayState);
+        setHoverLabel(null);
         setMicLive(false);
         setProgress(null);
         setIsVisible(true);
@@ -76,6 +65,7 @@ const RecordingOverlay: React.FC = () => {
         if (settings.status === "ok") {
           setPauseEnabled(settings.data.pause_button_enabled ?? false);
           setLiveTextBox(settings.data.live_text_box_enabled ?? false);
+          setSpeedEnabled(settings.data.speed_indicator_enabled ?? false);
         }
       });
 
@@ -97,7 +87,6 @@ const RecordingOverlay: React.FC = () => {
 
       // Listen for hide-overlay event from Rust
       const unlistenHide = await listen("hide-overlay", () => {
-        stateRef.current = null;
         setIsVisible(false);
       });
 
@@ -130,30 +119,54 @@ const RecordingOverlay: React.FC = () => {
     setupEventListeners();
   }, []);
 
-  const getIcon = () => {
-    if (
-      state === "recording" ||
-      state === "paused" ||
-      MICROPHONE_PROBLEMS[state]
-    ) {
-      return <MicrophoneIcon />;
-    } else {
-      return <TranscriptionIcon />;
-    }
-  };
+  // While recording the moving bars say enough; the icon only marks the
+  // transcribing states.
+  const getIcon = () =>
+    state === "transcribing" || state === "processing" ? (
+      <TranscriptionIcon />
+    ) : null;
+
+  // Hovering a button names it in the middle of the pill.
+  const hoverProps = (label: string) => ({
+    onMouseEnter: () => setHoverLabel(label),
+    onMouseLeave: () => setHoverLabel(null),
+  });
 
   return (
     <div
       dir={direction}
       className={`recording-overlay ${isVisible ? "fade-in" : ""}`}
     >
+      <div className="overlay-speed">
+        {speedEnabled && (
+          <div
+            className={`speed-chip ${
+              speed === null
+                ? ""
+                : speed < 50
+                  ? "very-slow"
+                  : speed < 70
+                    ? "slow"
+                    : ""
+            }`}
+            {...hoverProps(
+              speed === null
+                ? t("overlay.speedUnknown")
+                : t("overlay.slowPc", { percent: speed }),
+            )}
+          >
+            <Monitor size={12} aria-hidden />
+            <span>{speed === null ? "–" : `${speed}%`}</span>
+          </div>
+        )}
+      </div>
       <div className="overlay-float-btn">
         <button
           type="button"
           className={`float-button ${liveTextBox ? "active" : ""}`}
           aria-label={t("overlay.liveTextBox")}
           aria-pressed={liveTextBox}
-          title={t("overlay.liveTextBox")}
+          {...hoverProps(t("overlay.liveTextBox"))}
           onClick={async () => {
             const result = await commands.toggleLiveTextBox();
             if (result.status === "ok") setLiveTextBox(result.data);
@@ -165,21 +178,15 @@ const RecordingOverlay: React.FC = () => {
       <div className="overlay-left">{getIcon()}</div>
 
       <div className="overlay-middle">
-        {speed !== null && (state === "recording" || state === "paused") && (
-          <div
-            className={`speed-warning ${speed < 50 ? "very-slow" : ""}`}
-            title={t("overlay.slowPc", { percent: speed })}
-          >
-            <Monitor size={12} aria-hidden />
-            <span>{speed}%</span>
-          </div>
+        {hoverLabel && (
+          <div className="overlay-message hover-label">{hoverLabel}</div>
         )}
-        {state === "recording" && !micLive && (
+        {!hoverLabel && state === "recording" && !micLive && (
           <div className="transcribing-text overlay-message">
             {t("overlay.startingMic")}
           </div>
         )}
-        {state === "recording" && micLive && (
+        {!hoverLabel && state === "recording" && micLive && (
           <div className="bars-container">
             {levels.map((v, i) => (
               <div
@@ -194,7 +201,7 @@ const RecordingOverlay: React.FC = () => {
             ))}
           </div>
         )}
-        {state === "paused" && (
+        {!hoverLabel && state === "paused" && (
           <div className="overlay-message">{t("overlay.paused")}</div>
         )}
         {state === "transcribing" && (
@@ -222,7 +229,9 @@ const RecordingOverlay: React.FC = () => {
             aria-label={t(
               state === "paused" ? "overlay.resume" : "overlay.pause",
             )}
-            title={t(state === "paused" ? "overlay.resume" : "overlay.pause")}
+            {...hoverProps(
+              t(state === "paused" ? "overlay.resume" : "overlay.pause"),
+            )}
             onClick={() => commands.togglePauseRecording()}
           >
             {state === "paused" ? <Play size={14} /> : <Pause size={14} />}
@@ -233,6 +242,7 @@ const RecordingOverlay: React.FC = () => {
             type="button"
             className="cancel-button"
             aria-label={t("common.cancel")}
+            {...hoverProps(t("common.cancel"))}
             onClick={() => {
               commands.cancelOperation();
             }}

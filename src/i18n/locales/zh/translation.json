@@ -233,7 +233,7 @@
           },
           "undo_word": {
             "name": "撤销最后一个词",
-            "description": "删除实时录音的最后一个词。仅在实时录音期间有效。默认：Ctrl+Backspace。"
+            "description": "删除实时录音的最后一个字词；按住可连续删除。仅在实时录音期间有效。默认：Ctrl+Backspace。"
           },
           "toggle_live_text_box": {
             "name": "实时文字框开/关",
@@ -314,9 +314,13 @@
         "label": "暂停按钮",
         "description": "在录音浮层上添加暂停按钮：暂停期间不录任何内容，继续后接着同一段录音。默认：关闭。暂停 10 分钟后会释放麦克风，直到继续。"
       },
+      "speedIndicator": {
+        "label": "在录音浮层上显示电脑速度",
+        "description": "在录音浮层左侧显示一个电脑图标和百分比：本机相对于所用模型的平常速度转写得有多快。100% 为平常；低于 70% 显示橙色，低于 50% 显示红色。默认：关闭。需要用该模型录几次，才有可比较的平常速度。"
+      },
       "undoWord": {
         "label": "撤销最后一个词",
-        "description": "每按一次快捷键（默认 Ctrl+Backspace）会删除实时录音的最后一个词，并把音频剪回到该词开头，因此它也不会出现在最终文本中。需要实时录音和 Parakeet 模型。默认：关闭。"
+        "description": "每按一次快捷键（默认 Ctrl+Backspace）就删除实时录音的最后一个字词；按住可连续删除。你会看到字词从实时文字框中消失。需要实时录音和 Parakeet 模型。默认：关闭。"
       },
       "liveTextBox": {
         "label": "实时文本框",
@@ -329,13 +333,21 @@
       },
       "liveTextMode": {
         "title": "实时文本显示",
-        "description": "一行最新的词，或在三行框中显示全文。说话时大小不会变化。默认：最后几个词。",
+        "description": "一行最新的字词，或者到目前为止的整段录音：文字框从一行开始，随你说话变高，最多占屏幕高度的 40%；之后最早的行会滑出。默认：最后几个字词。",
         "lastWords": "最后几个词",
         "fullText": "全文"
       },
       "liveTextFade": {
         "label": "停止说话后淡出",
         "description": "停止说话几秒后，实时文字会淡出，说完的字不会一直留在屏幕上。再次说话即会重新显示。默认：关闭。"
+      },
+      "liveTextWidth": {
+        "title": "文字框宽度",
+        "description": "实时文字框的宽度。越宽，同样的文字占的行数越少。默认：中等。",
+        "narrow": "窄",
+        "medium": "中等",
+        "wide": "宽",
+        "extraWide": "特宽"
       },
       "language": {
         "title": "语言",
@@ -1303,7 +1315,8 @@
     "pause": "暂停",
     "resume": "继续",
     "liveTextBox": "实时文本框",
-    "slowPc": "正以本机正常速度的 {{percent}}% 转写"
+    "slowPc": "正以本机正常速度的 {{percent}}% 转写",
+    "speedUnknown": "电脑速度：尚未测量"
   },
   "brand": {
     "name": "Handy",

@@ -233,7 +233,7 @@
           },
           "undo_word": {
             "name": "Son kelimeyi geri al",
-            "description": "Canlı kaydın son kelimesini siler. Yalnızca canlı kayıt sırasında etkindir. Varsayılan: Ctrl+Backspace."
+            "description": "Canlı kaydın son sözcüğünü siler; silmeye devam etmek için basılı tutun. Yalnızca canlı kayıt sırasında etkin. Varsayılan: Ctrl+Backspace."
           },
           "toggle_live_text_box": {
             "name": "Canlı metin kutusu aç/kapat",
@@ -314,9 +314,13 @@
         "label": "Duraklatma düğmesi",
         "description": "Kayıt katmanına bir duraklatma düğmesi ekler: duraklatılmışken hiçbir şey kaydedilmez, devam etmek aynı kaydı sürdürür. Varsayılan: Kapalı. 10 dakika duraklatıldıktan sonra mikrofon devam edene kadar bırakılır."
       },
+      "speedIndicator": {
+        "label": "Çubukta bilgisayar hızı",
+        "description": "Kayıt çubuğunun solunda yüzdeli bir bilgisayar simgesi gösterir: bu bilgisayarın kullandığınız model için normal hızına göre ne kadar hızlı yazıya döktüğünü. %100 normaldir; %70'in altında turuncu, %50'nin altında kırmızı. Varsayılan: Kapalı. Karşılaştıracak bir normal oluşması için modelle birkaç kayıt gerekir."
+      },
       "undoWord": {
         "label": "Son kelimeyi geri al",
-        "description": "Kısayola (varsayılan Ctrl+Backspace) her basışta canlı kaydın son kelimesini siler ve sesi o kelimenin başına kadar keser; böylece son metinde de geri gelmez. Canlı kayıt ve Parakeet modeli gerekir. Varsayılan: Kapalı."
+        "description": "Kısayola her bastığınızda (varsayılan Ctrl+Backspace) canlı kaydın son sözcüğünü siler; basılı tutarsanız silmeye devam eder. Her sözcüğün canlı metin kutusundan kaybolduğunu görürsünüz. Canlı kayıt ve Parakeet modeli gerekir. Varsayılan: Kapalı."
       },
       "liveTextBox": {
         "label": "Canlı metin kutusu",
@@ -329,13 +333,21 @@
       },
       "liveTextMode": {
         "title": "Canlı metin gösterimi",
-        "description": "En yeni kelimeleri tek satırda ya da tüm metni üç satırlık bir kutuda gösterir. Konuşurken boyutu değişmez. Varsayılan: Son kelimeler.",
+        "description": "En yeni sözcüklerle tek satır ya da şimdiye kadarki kaydın tamamı; kutu tek satırla başlar ve konuştukça ekran yüksekliğinin %40'ına kadar büyür, sonra en eski satırlar kayar. Varsayılan: Son sözcükler.",
         "lastWords": "Son kelimeler",
         "fullText": "Tüm metin"
       },
       "liveTextFade": {
         "label": "Konuşmayı bırakınca soluklaş",
         "description": "Canlı metin, konuşmayı bıraktıktan birkaç saniye sonra soluklaşır; biten sözcükler ekranda kalmaz. Sonraki sözcükleriniz onu geri getirir. Varsayılan: Kapalı."
+      },
+      "liveTextWidth": {
+        "title": "Kutu genişliği",
+        "description": "Canlı metin kutusunun ne kadar geniş olduğu. Daha geniş kutu aynı metin için daha az satır gerektirir. Varsayılan: Orta.",
+        "narrow": "Dar",
+        "medium": "Orta",
+        "wide": "Geniş",
+        "extraWide": "Çok geniş"
       },
       "language": {
         "title": "Dil",
@@ -1303,7 +1315,8 @@
     "pause": "Duraklat",
     "resume": "Devam et",
     "liveTextBox": "Canlı metin kutusu",
-    "slowPc": "Bu bilgisayarın normal hızının %{{percent}} kadarıyla yazıya dökülüyor"
+    "slowPc": "Bu bilgisayarın normal hızının %{{percent}} kadarıyla yazıya dökülüyor",
+    "speedUnknown": "Bilgisayar hızı: henüz ölçülmedi"
   },
   "brand": {
     "name": "Handy",

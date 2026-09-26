@@ -233,7 +233,7 @@
           },
           "undo_word": {
             "name": "Letztes Wort rückgängig",
-            "description": "Entfernt das letzte Wort einer Live-Aufnahme. Nur während einer Live-Aufnahme aktiv. Standard: Strg+Rücktaste."
+            "description": "Entfernt das letzte Wort einer Live-Aufnahme; gedrückt halten entfernt weiter. Nur während einer Live-Aufnahme aktiv. Standard: Strg+Rücktaste."
           },
           "toggle_live_text_box": {
             "name": "Live-Textfeld an/aus",
@@ -314,9 +314,13 @@
         "label": "Pausentaste",
         "description": "Fügt dem Aufnahme-Overlay eine Pausentaste hinzu: Während der Pause wird nichts aufgenommen, Fortsetzen führt dieselbe Aufnahme weiter. Standard: Aus. Nach 10 Minuten Pause wird das Mikrofon bis zum Fortsetzen freigegeben."
       },
+      "speedIndicator": {
+        "label": "PC-Tempo auf der Leiste",
+        "description": "Zeigt links auf der Aufnahmeleiste ein PC-Symbol mit Prozentwert: wie schnell dieser PC im Vergleich zu seinem üblichen Tempo für das verwendete Modell transkribiert. 100 % ist normal; gelb unter 70 %, rot unter 50 %. Standard: Aus. Es braucht ein paar Aufnahmen mit einem Modell, bevor es einen Normalwert hat."
+      },
       "undoWord": {
         "label": "Letztes Wort rückgängig",
-        "description": "Entfernt bei jedem Druck auf das Tastenkürzel (Standard Strg+Rücktaste) das letzte Wort einer Live-Aufnahme und kürzt den Ton bis zum Anfang dieses Wortes, sodass es auch im Endtext fehlt. Benötigt eine Live-Aufnahme und ein Parakeet-Modell. Standard: Aus."
+        "description": "Entfernt bei jedem Drücken des Kürzels (Standard Strg+Rücktaste) das letzte Wort einer Live-Aufnahme; gedrückt halten entfernt weiter. Du siehst jedes Wort aus dem Live-Textfeld verschwinden. Braucht eine Live-Aufnahme und ein Parakeet-Modell. Standard: Aus."
       },
       "liveTextBox": {
         "label": "Live-Textfeld",
@@ -329,13 +333,21 @@
       },
       "liveTextMode": {
         "title": "Live-Text zeigt",
-        "description": "Eine Zeile mit den neuesten Wörtern oder den ganzen Text in einem dreizeiligen Feld. Die Größe ändert sich beim Sprechen nicht. Standard: Letzte Wörter.",
+        "description": "Eine Zeile mit den neuesten Wörtern, oder die ganze Aufnahme bisher in einem Feld, das mit einer Zeile beginnt und beim Sprechen wächst, bis zu 40 % der Bildschirmhöhe; danach gleiten die ältesten Zeilen hinaus. Standard: Letzte Wörter.",
         "lastWords": "Letzte Wörter",
         "fullText": "Ganzer Text"
       },
       "liveTextFade": {
         "label": "Ausblenden, wenn du aufhörst zu sprechen",
         "description": "Der Live-Text blendet sich einige Sekunden nach dem Sprechen aus, damit fertige Wörter nicht stehen bleiben. Deine nächsten Wörter holen ihn zurück. Standard: Aus."
+      },
+      "liveTextWidth": {
+        "title": "Feldbreite",
+        "description": "Wie breit das Live-Textfeld ist. Ein breiteres Feld braucht für denselben Text weniger Zeilen. Standard: Mittel.",
+        "narrow": "Schmal",
+        "medium": "Mittel",
+        "wide": "Breit",
+        "extraWide": "Sehr breit"
       },
       "language": {
         "title": "Sprache",
@@ -1303,7 +1315,8 @@
     "pause": "Pause",
     "resume": "Fortsetzen",
     "liveTextBox": "Live-Textfeld",
-    "slowPc": "Transkription mit {{percent}} % der üblichen Geschwindigkeit dieses PCs"
+    "slowPc": "Transkription mit {{percent}} % der üblichen Geschwindigkeit dieses PCs",
+    "speedUnknown": "PC-Tempo: noch nicht gemessen"
   },
   "brand": {
     "name": "Handy",

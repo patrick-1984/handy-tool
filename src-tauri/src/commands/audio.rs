@@ -101,6 +101,10 @@ pub fn change_live_text_box_setting(app: AppHandle, enabled: bool) -> Result<boo
     settings.live_text_box_enabled = enabled;
     write_settings(&app, settings);
     crate::overlay::refresh_live_text_window(&app);
+    // Switched on during a take that started without it: that take goes live.
+    if enabled {
+        crate::actions::make_take_live(&app);
+    }
     let _ = app.emit("live-text-box-changed", enabled);
     Ok(enabled)
 }
@@ -132,6 +136,28 @@ pub fn change_live_text_fade_setting(app: AppHandle, enabled: bool) -> Result<()
     settings.live_text_fade = enabled;
     write_settings(&app, settings);
     crate::overlay::refresh_live_text_window(&app);
+    Ok(())
+}
+
+/// How wide the live text box is (logical pixels).
+#[tauri::command]
+#[specta::specta]
+pub fn change_live_text_width_setting(app: AppHandle, width: u32) -> Result<(), String> {
+    let mut settings = get_settings(&app);
+    settings.live_text_width = width.clamp(240, 1200);
+    write_settings(&app, settings);
+    crate::overlay::refresh_live_text_window(&app);
+    Ok(())
+}
+
+/// Show the speed chip on the recording pill (it widens the pill to fit).
+#[tauri::command]
+#[specta::specta]
+pub fn change_speed_indicator_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
+    let mut settings = get_settings(&app);
+    settings.speed_indicator_enabled = enabled;
+    write_settings(&app, settings);
+    crate::overlay::update_overlay_position(&app);
     Ok(())
 }
 

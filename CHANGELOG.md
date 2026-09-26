@@ -1,5 +1,40 @@
 # Changelog
 
+## [1.12.0] - 2026-09-26 22:48
+
+### Added
+
+- **New app icon** (the designer's 1A, "wave caret"): app, installer, taskbar and Start icons
+  are all rendered from the 1024 px master drawing - none of the designer's separate small-size
+  drawings are used. The tray uses the same drawing with a small state badge (red dot while
+  recording, three dots while transcribing), so it reads on light and dark taskbars alike.
+- **Box width** for the live text box (General › Transcription, under Live text box): Narrow,
+  Medium, Wide or Extra wide (360-860 px). Default Medium, as before.
+- **PC speed on the pill** (General, default Off): when on, a PC icon with this PC's
+  transcription speed against its own normal sits left of the T for the whole take (amber below
+  70%, red below 50%); the pill widens to fit. Replaces 1.11.0's chip that appeared by itself
+  only when slow.
+- **Hover labels on the pill:** hovering the T, pause, cancel or speed chip names it in the
+  middle of the pill (Live text box, Pause / Resume, Cancel).
+- **Hold Ctrl+Backspace to keep removing words:** a tap removes one word; held, it repeats
+  after 0.45 s, about six words a second, until you let go.
+
+### Changed
+
+- **"Whole text" shows the whole text:** the box starts at one line and grows as you talk, up to
+  40% of the screen height; only past that do the oldest lines slide away (it was a fixed
+  three-line box).
+- **History draws 20 recordings at a time** and adds the next 20 as you scroll, instead of
+  drawing all of them (each with an audio player) at once, which made the page lag.
+- **The ear icon on the pill is gone** while recording; the moving bars already show it is
+  listening. (The icon component is removed.)
+
+### Fixed
+
+- **Pressing T during a take now makes that take live.** Before, switching the box on mid-take
+  only took effect from the next take. The take stops being transcribed in chunks, what you
+  said so far is transcribed once to fill the box, and stop delivers the live text.
+
 ## [1.11.0] - 2026-09-26 20:13
 
 ### Added

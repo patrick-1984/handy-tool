@@ -580,6 +580,8 @@ pub fn run(cli_args: CliArgs) {
         commands::audio::toggle_live_text_box,
         commands::audio::change_live_text_mode_setting,
         commands::audio::change_live_text_fade_setting,
+        commands::audio::change_live_text_width_setting,
+        commands::audio::change_speed_indicator_setting,
         commands::audio::toggle_pause_recording,
         commands::audio::get_microphone_mode,
         commands::audio::get_available_microphones,

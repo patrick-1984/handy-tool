@@ -21,6 +21,7 @@ import { CancelBehaviorSetting } from "../CancelBehaviorSetting";
 import {
   LiveTextBoxSetting,
   PauseButtonSetting,
+  SpeedIndicatorSetting,
   UndoWordSetting,
 } from "../TakeControls";
 import { UpdateSettings } from "./UpdateSettings";
@@ -45,6 +46,7 @@ export const GeneralSettings: React.FC = () => {
         <ShortcutInput shortcutId="paste_last" grouped={true} />
         <CancelBehaviorSetting descriptionMode="tooltip" grouped={true} />
         <PauseButtonSetting descriptionMode="tooltip" grouped={true} />
+        <SpeedIndicatorSetting descriptionMode="tooltip" grouped={true} />
       </SettingsGroup>
       <ShortcutRegistrationFailures />
       <ModelSettingsCard />

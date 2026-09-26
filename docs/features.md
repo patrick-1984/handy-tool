@@ -286,19 +286,22 @@ to a window to look — and re-reading a whole long take every few seconds would
 **What Handy does.** A small box next to the recording overlay shows what you are saying,
 updated about every 1.5 seconds. Only the last few seconds are re-read each time; words before a
 pause are fixed and never re-transcribed, so the cost stays the same however long you talk. It
-shows either one line with the newest words or the whole take so far, and neither changes size
-while you speak. New words are typed in letter by letter rather than appearing all at once, so
+shows either one line with the newest words or the whole take so far — that box starts at one
+line and grows as you talk, up to 40% of the screen height, before the oldest lines slide away —
+and its width is yours to choose. New words are typed in letter by letter rather than appearing all at once, so
 your eye can follow them; removed words go at once. Optionally the text fades away a few seconds
 after you stop talking. The box ignores the mouse and never takes focus. While it is on, every take
 runs in Live mode and the text in the box is your transcript: at stop only your last second or
 two is added, so it is ready at once. The box shows the raw words; Custom Words corrections are
 applied to the delivered text. The overlay's **T** button — or the Live Text Box On/Off
-shortcut, which has no default key — switches it. It
+shortcut, which has no default key — switches it; switched on in the middle of a take, that
+take turns live on the spot, catching up on what you have said so far. It
 needs a model that runs on this PC — remote engines get the audio only after you stop — so
 switching it on with one selected explains that and lists your models that work.
 **Where.** `General › Transcription › Live text box = On`,
 `General › Transcription › Live text shows = Whole text` and
-`General › Transcription › Fade when you stop talking = On`.
+`General › Transcription › Fade when you stop talking = On` and
+`General › Transcription › Box width = Wide`.
 **Since.** 1.10.0. Typed-in words, fading and the live text as the transcript since 1.11.0;
 before 1.11.0 the last words before a pause could stay missing from the box until you spoke
 again.
@@ -311,7 +314,8 @@ misheard, and the only fix used to be cancelling the whole take.
 **What Handy does.** Each press of the Undo Last Word shortcut first brings the live text up to
 date with what you said, then removes the newest word — you see it disappear from the live text
 box — and cuts the recording back to where that word started, so it stays out of the final text
-too. Keep talking and the new words take its place. It needs word positions, which only
+too. Hold the shortcut and it keeps removing words, like holding Backspace. Keep talking and the
+new words take its place. It needs word positions, which only
 Parakeet models report; with other engines the shortcut does nothing. The audio kept in History
 still contains the removed words.
 **Where.** `General › Transcription › Undo last word = On`; the shortcut is
@@ -2231,13 +2235,13 @@ falls back to the normal per-user location rather than failing.
 you cannot tell whether to wait, close something, or blame the app.
 **What Handy does.** Every transcription is timed against this PC's own normal for that model —
 the median of its last twenty — kept on disk so it survives restarts. Short live-preview clips
-and long chunks are compared separately. While the PC is clearly slower than usual, below 70% of
-its normal speed, the recording pill shows a PC icon with the figure: amber, or red under 50%.
-At normal speed nothing is shown. It needs a few takes with a model before it has a normal to
+and long chunks are compared separately. With the option on, the recording pill shows a PC icon
+with the figure on its left the whole time — 100% is normal, amber below 70%, red below 50% —
+and names it when you hover it. It needs a few takes with a model before it has a normal to
 compare against, and it updates as often as the app transcribes — every 1.5 seconds with the
 live text box on, but only every 20 to 45 seconds in Post-Recording mode.
-**Where.** No control — the recording pill, while you record.
-**Since.** 1.11.0.
+**Where.** `General › PC speed on the pill = On`.
+**Since.** 1.11.0, shown only while slow; an option shown all the time since 1.12.0.
 
 ### It records what you say, not the silence
 

@@ -196,6 +196,21 @@ pub fn register_take_shortcuts(app: &AppHandle, live: bool) {
     }
 }
 
+/// A take that turns live midway (the live text box switched on) gains the Undo
+/// shortcut, when that option is on.
+pub fn register_undo_word_for_live_take(app: &AppHandle) {
+    if !get_settings(app).undo_word_enabled {
+        return;
+    }
+    if let Ok(mut active) = ACTIVE_TAKE_BINDINGS.lock() {
+        if active.contains(&"undo_word") {
+            return;
+        }
+        active.push("undo_word");
+    }
+    register_dynamic(app, "undo_word");
+}
+
 /// Remove whatever take-only shortcuts the take registered.
 pub fn unregister_take_shortcuts(app: &AppHandle) {
     let ids = ACTIVE_TAKE_BINDINGS

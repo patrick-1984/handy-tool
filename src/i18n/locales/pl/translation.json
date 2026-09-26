@@ -233,7 +233,7 @@
           },
           "undo_word": {
             "name": "Cofnij ostatnie słowo",
-            "description": "Usuwa ostatnie słowo nagrania na żywo. Działa tylko podczas nagrania na żywo. Domyślnie: Ctrl+Backspace."
+            "description": "Usuwa ostatnie słowo nagrania na żywo; przytrzymaj, aby usuwać dalej. Działa tylko podczas nagrania na żywo. Domyślnie: Ctrl+Backspace."
           },
           "toggle_live_text_box": {
             "name": "Okienko tekstu na żywo wł./wył.",
@@ -314,9 +314,13 @@
         "label": "Przycisk pauzy",
         "description": "Dodaje do nakładki nagrywania przycisk pauzy: podczas pauzy nic się nie nagrywa, a wznowienie kontynuuje to samo nagranie. Domyślnie: wyłączone. Po 10 minutach pauzy mikrofon zostaje zwolniony do czasu wznowienia."
       },
+      "speedIndicator": {
+        "label": "Szybkość komputera na pasku",
+        "description": "Pokazuje po lewej stronie paska nagrywania ikonę komputera z procentem: jak szybko ten komputer transkrybuje w porównaniu z jego zwykłą szybkością dla używanego modelu. 100% to norma; pomarańczowy poniżej 70%, czerwony poniżej 50%. Domyślnie: wyłączone. Potrzebuje kilku nagrań danym modelem, zanim będzie miał punkt odniesienia."
+      },
       "undoWord": {
         "label": "Cofnij ostatnie słowo",
-        "description": "Każde naciśnięcie skrótu (domyślnie Ctrl+Backspace) usuwa ostatnie słowo nagrania na żywo i przycina dźwięk do początku tego słowa, więc nie wraca ono też w tekście końcowym. Wymaga nagrania na żywo i modelu Parakeet. Domyślnie: wyłączone."
+        "description": "Każde naciśnięcie skrótu (domyślnie Ctrl+Backspace) usuwa ostatnie słowo nagrania na żywo; przytrzymanie usuwa kolejne. Widzisz, jak każde słowo znika z okienka tekstu na żywo. Wymaga nagrania na żywo i modelu Parakeet. Domyślnie: wyłączone."
       },
       "liveTextBox": {
         "label": "Pole tekstu na żywo",
@@ -329,13 +333,21 @@
       },
       "liveTextMode": {
         "title": "Tekst na żywo pokazuje",
-        "description": "Jedną linię z najnowszymi słowami albo cały tekst w polu na trzy linie. Rozmiar nie zmienia się w trakcie mówienia. Domyślnie: ostatnie słowa.",
+        "description": "Jeden wiersz z najnowszymi słowami albo całe dotychczasowe nagranie w okienku, które zaczyna się od jednego wiersza i rośnie, gdy mówisz, do 40% wysokości ekranu; potem najstarsze wiersze odjeżdżają. Domyślnie: Ostatnie słowa.",
         "lastWords": "Ostatnie słowa",
         "fullText": "Cały tekst"
       },
       "liveTextFade": {
         "label": "Znikaj, gdy przestajesz mówić",
         "description": "Tekst na żywo znika kilka sekund po tym, jak przestajesz mówić, więc skończone słowa nie zostają na ekranie. Kolejne słowa przywracają go. Domyślnie: wyłączone."
+      },
+      "liveTextWidth": {
+        "title": "Szerokość okienka",
+        "description": "Jak szerokie jest okienko tekstu na żywo. Szersze okienko potrzebuje mniej wierszy na ten sam tekst. Domyślnie: Średnie.",
+        "narrow": "Wąskie",
+        "medium": "Średnie",
+        "wide": "Szerokie",
+        "extraWide": "Bardzo szerokie"
       },
       "language": {
         "title": "Język",
@@ -1303,7 +1315,8 @@
     "pause": "Wstrzymaj",
     "resume": "Wznów",
     "liveTextBox": "Pole tekstu na żywo",
-    "slowPc": "Transkrypcja na {{percent}}% zwykłej prędkości tego komputera"
+    "slowPc": "Transkrypcja na {{percent}}% zwykłej prędkości tego komputera",
+    "speedUnknown": "Szybkość komputera: jeszcze niezmierzona"
   },
   "tokenCount": {
     "configureProviders": "Skonfiguruj dostawców",

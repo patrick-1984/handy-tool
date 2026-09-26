@@ -66,9 +66,11 @@ pub fn handle_shortcut_event(
     }
 
     // Pause / Undo word: act on press, only during a take (they are only
-    // registered then anyway).
+    // registered then anyway). The release ends Undo's hold-to-repeat.
     if binding_id == "pause" || binding_id == "undo_word" {
-        if is_pressed && app.state::<Arc<AudioRecordingManager>>().is_recording() {
+        if !is_pressed {
+            action.stop(app, binding_id, hotkey_string);
+        } else if app.state::<Arc<AudioRecordingManager>>().is_recording() {
             action.start(app, binding_id, hotkey_string);
         }
         return;

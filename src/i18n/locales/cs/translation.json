@@ -233,7 +233,7 @@
           },
           "undo_word": {
             "name": "Vrátit poslední slovo",
-            "description": "Odstraní poslední slovo živé nahrávky. Aktivní jen během živé nahrávky. Výchozí: Ctrl+Backspace."
+            "description": "Odebere poslední slovo živého nahrávání; podržením odebírá dál. Aktivní jen během živého nahrávání. Výchozí: Ctrl+Backspace."
           },
           "toggle_live_text_box": {
             "name": "Okénko živého textu zap./vyp.",
@@ -314,9 +314,13 @@
         "label": "Tlačítko pozastavení",
         "description": "Přidá do panelu nahrávání tlačítko pozastavení: během pauzy se nic nenahrává a pokračování naváže na stejnou nahrávku. Výchozí: Vypnuto. Po 10 minutách pauzy se mikrofon uvolní až do pokračování."
       },
+      "speedIndicator": {
+        "label": "Rychlost PC na panelu",
+        "description": "Zobrazí vlevo na nahrávacím panelu ikonu počítače s procenty: jak rychle tento počítač přepisuje oproti své běžné rychlosti pro použitý model. 100 % je běžná rychlost; oranžová pod 70 %, červená pod 50 %. Výchozí: Vypnuto. Než má s čím srovnávat, potřebuje s modelem pár nahrávek."
+      },
       "undoWord": {
         "label": "Vrátit poslední slovo",
-        "description": "Každým stiskem zkratky (výchozí Ctrl+Backspace) odstraní poslední slovo živé nahrávky a zkrátí zvuk k začátku toho slova, takže se nevrátí ani do výsledného textu. Vyžaduje živou nahrávku a model Parakeet. Výchozí: Vypnuto."
+        "description": "Každým stiskem zkratky (výchozí Ctrl+Backspace) odebere poslední slovo živého nahrávání; podržením odebírá dál. Každé slovo uvidíte zmizet z okénka živého textu. Vyžaduje živé nahrávání a model Parakeet. Výchozí: Vypnuto."
       },
       "liveTextBox": {
         "label": "Živý text",
@@ -329,13 +333,21 @@
       },
       "liveTextMode": {
         "title": "Živý text zobrazuje",
-        "description": "Jeden řádek s nejnovějšími slovy, nebo celý text v okně o třech řádcích. Velikost se během mluvení nemění. Výchozí: Poslední slova.",
+        "description": "Jeden řádek s nejnovějšími slovy, nebo celé dosavadní nahrávání v okénku, které začíná jedním řádkem a roste, jak mluvíte, až do 40 % výšky obrazovky; pak nejstarší řádky odjíždějí. Výchozí: Poslední slova.",
         "lastWords": "Poslední slova",
         "fullText": "Celý text"
       },
       "liveTextFade": {
         "label": "Zmizet, když přestanete mluvit",
         "description": "Živý text po několika sekundách ticha zmizí, takže dořečená slova nezůstávají na obrazovce. Další slova ho vrátí. Výchozí: Vypnuto."
+      },
+      "liveTextWidth": {
+        "title": "Šířka okénka",
+        "description": "Jak široké je okénko živého textu. Širší okénko potřebuje pro stejný text méně řádků. Výchozí: Střední.",
+        "narrow": "Úzké",
+        "medium": "Střední",
+        "wide": "Široké",
+        "extraWide": "Velmi široké"
       },
       "language": {
         "title": "Jazyk",
@@ -1303,7 +1315,8 @@
     "pause": "Pozastavit",
     "resume": "Pokračovat",
     "liveTextBox": "Živý text",
-    "slowPc": "Přepis běží na {{percent}} % běžné rychlosti tohoto počítače"
+    "slowPc": "Přepis běží na {{percent}} % běžné rychlosti tohoto počítače",
+    "speedUnknown": "Rychlost PC: zatím neměřeno"
   },
   "brand": {
     "name": "Handy",

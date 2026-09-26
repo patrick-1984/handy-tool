@@ -233,7 +233,7 @@
           },
           "undo_word": {
             "name": "Hoàn tác từ cuối",
-            "description": "Xóa từ cuối của bản ghi trực tiếp. Chỉ hoạt động trong bản ghi trực tiếp. Mặc định: Ctrl+Backspace."
+            "description": "Xóa từ cuối của bản ghi trực tiếp; giữ để tiếp tục xóa. Chỉ hoạt động khi ghi trực tiếp. Mặc định: Ctrl+Backspace."
           },
           "toggle_live_text_box": {
             "name": "Bật/tắt ô văn bản trực tiếp",
@@ -314,9 +314,13 @@
         "label": "Nút tạm dừng",
         "description": "Thêm nút tạm dừng vào lớp phủ ghi âm: khi tạm dừng sẽ không ghi gì, tiếp tục sẽ ghi tiếp vào cùng bản ghi. Mặc định: Tắt. Sau 10 phút tạm dừng, micrô được giải phóng cho đến khi tiếp tục."
       },
+      "speedIndicator": {
+        "label": "Tốc độ máy trên thanh",
+        "description": "Hiển thị biểu tượng máy tính kèm phần trăm ở bên trái thanh ghi âm: máy này phiên âm nhanh thế nào so với tốc độ bình thường của nó với mô hình đang dùng. 100% là bình thường; màu cam dưới 70%, đỏ dưới 50%. Mặc định: Tắt. Cần vài lần ghi với một mô hình trước khi có mốc so sánh."
+      },
       "undoWord": {
         "label": "Hoàn tác từ cuối",
-        "description": "Mỗi lần nhấn phím tắt (mặc định Ctrl+Backspace) sẽ xóa từ cuối của bản ghi trực tiếp và cắt âm thanh về đầu từ đó, nên từ này cũng không quay lại trong văn bản cuối. Cần bản ghi trực tiếp và mô hình Parakeet. Mặc định: Tắt."
+        "description": "Mỗi lần nhấn phím tắt (mặc định Ctrl+Backspace) sẽ xóa từ cuối của bản ghi trực tiếp; giữ phím để tiếp tục xóa. Bạn thấy từng từ biến mất khỏi ô văn bản trực tiếp. Cần bản ghi trực tiếp và mô hình Parakeet. Mặc định: Tắt."
       },
       "liveTextBox": {
         "label": "Hộp văn bản trực tiếp",
@@ -329,13 +333,21 @@
       },
       "liveTextMode": {
         "title": "Văn bản trực tiếp hiển thị",
-        "description": "Một dòng với các từ mới nhất, hoặc toàn bộ văn bản trong hộp ba dòng. Kích thước không đổi khi bạn nói. Mặc định: Các từ cuối.",
+        "description": "Một dòng với những từ mới nhất, hoặc toàn bộ bản ghi đến giờ trong một ô bắt đầu bằng một dòng và lớn dần khi bạn nói, tới 40% chiều cao màn hình; sau đó các dòng cũ nhất trượt đi. Mặc định: Những từ cuối.",
         "lastWords": "Các từ cuối",
         "fullText": "Toàn bộ văn bản"
       },
       "liveTextFade": {
         "label": "Mờ dần khi bạn ngừng nói",
         "description": "Văn bản trực tiếp mờ dần vài giây sau khi bạn ngừng nói, để những từ đã xong không đọng lại trên màn hình. Lời nói tiếp theo sẽ đưa nó trở lại. Mặc định: Tắt."
+      },
+      "liveTextWidth": {
+        "title": "Độ rộng ô",
+        "description": "Độ rộng của ô văn bản trực tiếp. Ô rộng hơn cần ít dòng hơn cho cùng một đoạn. Mặc định: Vừa.",
+        "narrow": "Hẹp",
+        "medium": "Vừa",
+        "wide": "Rộng",
+        "extraWide": "Rất rộng"
       },
       "language": {
         "title": "Ngôn ngữ",
@@ -1303,7 +1315,8 @@
     "pause": "Tạm dừng",
     "resume": "Tiếp tục",
     "liveTextBox": "Hộp văn bản trực tiếp",
-    "slowPc": "Đang phiên âm ở {{percent}}% tốc độ bình thường của máy này"
+    "slowPc": "Đang phiên âm ở {{percent}}% tốc độ bình thường của máy này",
+    "speedUnknown": "Tốc độ máy: chưa đo"
   },
   "floating": {
     "waiting": "Đang chờ phiên âm…",

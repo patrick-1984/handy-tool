@@ -20,9 +20,10 @@
 
 .recording-overlay {
   height: 36px;
-  width: 204px;
+  /* The window's width: 204px, wider while the speed chip is on. */
+  width: 100vw;
   display: grid;
-  grid-template-columns: auto auto 1fr auto;
+  grid-template-columns: auto auto auto 1fr auto;
   align-items: center;
   padding: 6px;
   background: var(--overlay-bg);
@@ -156,20 +157,39 @@
   }
 }
 
-/* PC slower than its own normal: amber, red when under half speed. */
-.speed-warning {
+/* Speed chip (a setting), left of the T: this PC's transcription speed against
+   its own normal. Amber below 70%, red below half. */
+.overlay-speed {
+  display: flex;
+  align-items: center;
+}
+
+.speed-chip {
   display: flex;
   align-items: center;
   gap: 2px;
-  flex-shrink: 0;
-  margin-inline-end: 4px;
+  padding-inline: 4px 2px;
   font-size: 10px;
   font-weight: 600;
-  color: #f59e0b;
+  color: var(--overlay-text);
+  opacity: 0.85;
+  cursor: default;
 }
 
-.speed-warning.very-slow {
+.speed-chip.slow {
+  color: #f59e0b;
+  opacity: 1;
+}
+
+.speed-chip.very-slow {
   color: #ef4444;
+  opacity: 1;
+}
+
+/* A button's name while the mouse is over it. */
+.hover-label {
+  font-size: 11px;
+  opacity: 0.9;
 }
 
 /* The T button while the live text box is on. */

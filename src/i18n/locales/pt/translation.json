@@ -215,7 +215,7 @@
           },
           "undo_word": {
             "name": "Desfazer a última palavra",
-            "description": "Remove a última palavra de uma gravação ao vivo. Ativo só durante uma gravação ao vivo. Padrão: Ctrl+Backspace."
+            "description": "Remove a última palavra de uma gravação ao vivo; segure para continuar removendo. Ativo só durante uma gravação ao vivo. Padrão: Ctrl+Backspace."
           },
           "toggle_live_text_box": {
             "name": "Caixa de texto ao vivo liga/desliga",
@@ -296,9 +296,13 @@
         "label": "Botão de pausa",
         "description": "Adiciona um botão de pausa à sobreposição de gravação: em pausa nada é gravado e retomar continua a mesma gravação. Padrão: Desativado. Após 10 minutos em pausa, o microfone é liberado até retomar."
       },
+      "speedIndicator": {
+        "label": "Velocidade do PC na barra",
+        "description": "Mostra à esquerda da barra de gravação um ícone de PC com uma porcentagem: quão rápido este PC transcreve comparado à sua velocidade normal para o modelo em uso. 100% é o normal; âmbar abaixo de 70%, vermelho abaixo de 50%. Padrão: desativado. Precisa de algumas gravações com um modelo antes de ter uma referência."
+      },
       "undoWord": {
         "label": "Desfazer a última palavra",
-        "description": "Cada toque no atalho (Ctrl+Backspace por padrão) remove a última palavra de uma gravação ao vivo e corta o áudio até o início dessa palavra, para que ela não volte no texto final. Requer uma gravação ao vivo e um modelo Parakeet. Padrão: Desativado."
+        "description": "Remove a última palavra de uma gravação ao vivo a cada toque no atalho (Ctrl+Backspace por padrão); segure para continuar removendo. Você vê cada palavra sumir da caixa de texto ao vivo. Requer gravação ao vivo e um modelo Parakeet. Padrão: desativado."
       },
       "liveTextBox": {
         "label": "Caixa de texto ao vivo",
@@ -311,13 +315,21 @@
       },
       "liveTextMode": {
         "title": "O texto ao vivo mostra",
-        "description": "Uma linha com as palavras mais recentes, ou todo o texto numa caixa de três linhas. O tamanho não muda enquanto você fala. Padrão: Últimas palavras.",
+        "description": "Uma linha com as palavras mais recentes, ou toda a gravação até agora numa caixa que começa com uma linha e cresce enquanto você fala, até 40% da altura da tela; depois as linhas mais antigas deslizam para fora. Padrão: Últimas palavras.",
         "lastWords": "Últimas palavras",
         "fullText": "Texto completo"
       },
       "liveTextFade": {
         "label": "Esmaecer quando você para de falar",
         "description": "O texto ao vivo esmaece alguns segundos depois que você para de falar, para que palavras concluídas não fiquem na tela. Suas próximas palavras o trazem de volta. Padrão: desativado."
+      },
+      "liveTextWidth": {
+        "title": "Largura da caixa",
+        "description": "Quão larga é a caixa de texto ao vivo. Uma caixa mais larga precisa de menos linhas para o mesmo texto. Padrão: Média.",
+        "narrow": "Estreita",
+        "medium": "Média",
+        "wide": "Larga",
+        "extraWide": "Muito larga"
       },
       "language": {
         "title": "Idioma",
@@ -1303,7 +1315,8 @@
     "pause": "Pausar",
     "resume": "Retomar",
     "liveTextBox": "Caixa de texto ao vivo",
-    "slowPc": "Transcrevendo a {{percent}}% da velocidade normal deste PC"
+    "slowPc": "Transcrevendo a {{percent}}% da velocidade normal deste PC",
+    "speedUnknown": "Velocidade do PC: ainda não medida"
   },
   "brand": {
     "name": "Handy",

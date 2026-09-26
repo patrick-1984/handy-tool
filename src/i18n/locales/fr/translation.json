@@ -233,7 +233,7 @@
           },
           "undo_word": {
             "name": "Annuler le dernier mot",
-            "description": "Retire le dernier mot d'une prise en direct. Actif seulement pendant une prise en direct. Par défaut : Ctrl+Retour arrière."
+            "description": "Retire le dernier mot d'un enregistrement en direct ; maintenez pour continuer. Actif seulement pendant un enregistrement en direct. Par défaut : Ctrl+Retour arrière."
           },
           "toggle_live_text_box": {
             "name": "Texte en direct activé/désactivé",
@@ -314,9 +314,13 @@
         "label": "Bouton pause",
         "description": "Ajoute un bouton pause à la superposition d'enregistrement : pendant la pause rien n'est enregistré, et la reprise continue la même prise. Par défaut : désactivé. Après 10 minutes de pause, le micro est libéré jusqu'à la reprise."
       },
+      "speedIndicator": {
+        "label": "Vitesse du PC sur la barre",
+        "description": "Affiche à gauche de la barre d'enregistrement une icône de PC avec un pourcentage : la vitesse de transcription de ce PC par rapport à sa vitesse habituelle pour le modèle utilisé. 100 % est normal ; orange sous 70 %, rouge sous 50 %. Par défaut : désactivé. Il lui faut quelques enregistrements avec un modèle avant d'avoir une référence."
+      },
       "undoWord": {
         "label": "Annuler le dernier mot",
-        "description": "Chaque appui sur son raccourci (Ctrl+Retour arrière par défaut) retire le dernier mot d'une prise en direct et coupe l'audio au début de ce mot, qui ne revient donc pas dans le texte final. Nécessite une prise en direct et un modèle Parakeet. Par défaut : désactivé."
+        "description": "Retire le dernier mot d'un enregistrement en direct à chaque appui sur son raccourci (Ctrl+Retour arrière par défaut) ; maintenez-le pour continuer à retirer. Vous voyez chaque mot disparaître du cadre de texte en direct. Nécessite un enregistrement en direct et un modèle Parakeet. Par défaut : désactivé."
       },
       "liveTextBox": {
         "label": "Zone de texte en direct",
@@ -329,13 +333,21 @@
       },
       "liveTextMode": {
         "title": "Le texte en direct affiche",
-        "description": "Une ligne avec les mots les plus récents, ou tout le texte dans une zone de trois lignes. La taille ne change pas pendant que vous parlez. Par défaut : derniers mots.",
+        "description": "Une ligne avec les mots les plus récents, ou tout l'enregistrement jusqu'ici dans un cadre qui commence sur une ligne et grandit pendant que vous parlez, jusqu'à 40 % de la hauteur de l'écran ; ensuite les lignes les plus anciennes défilent. Par défaut : Derniers mots.",
         "lastWords": "Derniers mots",
         "fullText": "Texte entier"
       },
       "liveTextFade": {
         "label": "S'estomper quand vous arrêtez de parler",
         "description": "Le texte en direct s'estompe quelques secondes après que vous arrêtez de parler, pour que les mots terminés ne restent pas à l'écran. Vos mots suivants le font revenir. Par défaut : désactivé."
+      },
+      "liveTextWidth": {
+        "title": "Largeur du cadre",
+        "description": "La largeur du cadre de texte en direct. Un cadre plus large demande moins de lignes pour le même texte. Par défaut : Moyen.",
+        "narrow": "Étroit",
+        "medium": "Moyen",
+        "wide": "Large",
+        "extraWide": "Très large"
       },
       "language": {
         "title": "Langue",
@@ -1303,7 +1315,8 @@
     "pause": "Pause",
     "resume": "Reprendre",
     "liveTextBox": "Zone de texte en direct",
-    "slowPc": "Transcription à {{percent}} % de la vitesse habituelle de ce PC"
+    "slowPc": "Transcription à {{percent}} % de la vitesse habituelle de ce PC",
+    "speedUnknown": "Vitesse du PC : pas encore mesurée"
   },
   "floating": {
     "waiting": "En attente de la transcription…",

@@ -1,5 +1,5 @@
 import { listen } from "@tauri-apps/api/event";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import "./LiveText.css";
 
 type LiveTextMode = "last_words" | "full_text";
@@ -27,10 +27,10 @@ const reducedMotion = () =>
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /**
- * The live text box next to the recording pill. Its window never changes size
- * (so nothing jumps): "last words" is one line whose newest words stay at the
- * edge nearest the text's end, "whole text" is a three-line box anchored at the
- * bottom whose older lines slide out of the top. New words are typed in rather
+ * The live text box next to the recording pill. "Last words" is one line whose
+ * newest words stay at the edge nearest the text's end; "whole text" starts at
+ * one line and grows away from the pill with the take, until it fills its window
+ * and the oldest lines slide out. New words are typed in rather
  * than appearing at once, so the eye can follow them; removed words (undo, or
  * the preview correcting itself) go at once.
  */
@@ -44,6 +44,13 @@ const LiveText: React.FC = () => {
   const [shown, setShown] = useState("");
   const shownRef = useRef("");
   const [faded, setFaded] = useState(false);
+  // Whole text taller than its window: fade the edge the oldest lines leave by.
+  const boxRef = useRef<HTMLDivElement>(null);
+  const [overflowing, setOverflowing] = useState(false);
+  useLayoutEffect(() => {
+    const box = boxRef.current;
+    setOverflowing(!!box && box.scrollHeight > box.clientHeight + 1);
+  }, [shown, mode]);
 
   useEffect(() => {
     const unlisteners = Promise.all([
@@ -110,9 +117,10 @@ const LiveText: React.FC = () => {
   return (
     <div className={`live-text-frame ${belowPill ? "below" : "above"}`}>
       <div
+        ref={boxRef}
         className={`live-text ${mode === "last_words" ? "one-line" : "full"} ${
           visible && shown ? "shown" : ""
-        } ${faded ? "faded" : ""}`}
+        } ${faded ? "faded" : ""} ${overflowing ? "overflowing" : ""}`}
       >
         <span>{shown}</span>
       </div>

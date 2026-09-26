@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Pause, TextQuote } from "lucide-react";
+import { Gauge, Pause, TextQuote } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { listen } from "@tauri-apps/api/event";
 import { ToggleSwitch } from "../ui/ToggleSwitch";
@@ -11,6 +11,14 @@ import { useSettings } from "../../hooks/useSettings";
 import { useModelStore } from "../../stores/modelStore";
 import { toast } from "sonner";
 import type { ModelInfo } from "@/bindings";
+
+/** The live text box's widths on offer; wider means fewer lines. */
+const LIVE_TEXT_WIDTHS = [
+  { px: 360, key: "narrow" },
+  { px: 460, key: "medium" },
+  { px: 640, key: "wide" },
+  { px: 860, key: "extraWide" },
+];
 
 /** Remote engines get the audio only after stop, so their takes are never live. */
 const isRemote = (model?: ModelInfo) =>
@@ -48,6 +56,27 @@ export const PauseButtonSetting: React.FC<Props> = ({
         </SubSettings>
       )}
     </>
+  );
+};
+
+/** The speed chip on the recording pill: this PC's speed against its normal. */
+export const SpeedIndicatorSetting: React.FC<Props> = ({
+  descriptionMode = "tooltip",
+  grouped = false,
+}) => {
+  const { t } = useTranslation();
+  const { getSetting, updateSetting, isUpdating } = useSettings();
+  return (
+    <ToggleSwitch
+      icon={Gauge}
+      checked={getSetting("speed_indicator_enabled") ?? false}
+      onChange={(value) => updateSetting("speed_indicator_enabled", value)}
+      isUpdating={isUpdating("speed_indicator_enabled")}
+      label={t("settings.general.speedIndicator.label")}
+      description={t("settings.general.speedIndicator.description")}
+      descriptionMode={descriptionMode}
+      grouped={grouped}
+    />
   );
 };
 
@@ -177,6 +206,24 @@ export const LiveTextBoxSetting: React.FC<Props> = ({
                 )
               }
               disabled={isUpdating("live_text_mode")}
+            />
+          </SettingContainer>
+          <SettingContainer
+            title={t("settings.general.liveTextWidth.title")}
+            description={t("settings.general.liveTextWidth.description")}
+            descriptionMode={descriptionMode}
+            grouped={grouped}
+          >
+            <Dropdown
+              options={LIVE_TEXT_WIDTHS.map(({ px, key }) => ({
+                value: String(px),
+                label: t(`settings.general.liveTextWidth.${key}`),
+              }))}
+              selectedValue={String(getSetting("live_text_width") ?? 460)}
+              onSelect={(value) =>
+                updateSetting("live_text_width", Number(value))
+              }
+              disabled={isUpdating("live_text_width")}
             />
           </SettingContainer>
           <ShortcutInput shortcutId="toggle_live_text_box" grouped={grouped} />

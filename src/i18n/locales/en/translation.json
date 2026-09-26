@@ -227,7 +227,7 @@
           },
           "undo_word": {
             "name": "Undo Last Word",
-            "description": "Removes the last word of a live take. Active only during a live take while Undo last word is on. Default: Ctrl+Backspace."
+            "description": "Removes the last word of a live take; hold to keep removing words. Active only during a live take while Undo last word is on. Default: Ctrl+Backspace."
           },
           "toggle_live_text_box": {
             "name": "Live Text Box On/Off",
@@ -308,9 +308,13 @@
         "label": "Pause button",
         "description": "**Adds a pause button to the recording overlay**, so one take can span a break: while paused nothing is recorded, and resuming continues the same take.\n\n**Default:** Off.\n\nOnce it is on, a Pause shortcut can be set below. After 10 minutes paused the microphone is released (its indicator goes out) until you resume."
       },
+      "speedIndicator": {
+        "label": "PC speed on the pill",
+        "description": "**Shows a PC icon with a percentage on the left of the recording pill**: how fast this PC is transcribing compared with its own normal for the model you use. 100% is normal; amber below 70%, red below 50%.\n\n**Default:** Off.\n\nIt needs a few takes with a model before it has a normal to compare with, and it updates each time the app transcribes — every 1.5 seconds with the live text box on, every 20 to 45 seconds in Post-Recording mode."
+      },
       "undoWord": {
         "label": "Undo last word",
-        "description": "**Removes the last word of a live take** each time you press its shortcut, so you can take back a misheard or unwanted word and keep talking.\n\n**Default:** Off; the shortcut is Ctrl+Backspace, active only during a live take.\n\nIt cuts the recording back to where that word started, so the word stays out of the final text too. Needs a live take (Live mode or the live text box) and a Parakeet model — other engines give no word positions."
+        "description": "**Removes the last word of a live take** each time you press its shortcut; hold it to keep removing words. You see each word disappear from the live text box.\n\n**Default:** Off; the shortcut is Ctrl+Backspace, active only during a live take.\n\nIt cuts the recording back to where that word started, so the word stays out of the final text too. Needs a live take (Live mode or the live text box) and a Parakeet model — other engines give no word positions."
       },
       "liveTextBox": {
         "label": "Live text box",
@@ -323,13 +327,21 @@
       },
       "liveTextMode": {
         "title": "Live text shows",
-        "description": "**One line with the newest words, or the whole take so far** in a three-line box whose older lines slide away. Neither changes size while you talk.\n\n**Default:** Last words.",
+        "description": "**One line with the newest words, or the whole take so far** in a box that starts at one line and grows as you talk, up to 40% of the screen height; after that the oldest lines slide away.\n\n**Default:** Last words.",
         "lastWords": "Last words",
         "fullText": "Whole text"
       },
       "liveTextFade": {
         "label": "Fade when you stop talking",
         "description": "**The live text fades away a few seconds after you stop talking**, so words you are done with don't stay on screen. Your next words bring it back.\n\n**Default:** Off."
+      },
+      "liveTextWidth": {
+        "title": "Box width",
+        "description": "How wide the live text box is. A wider box needs fewer lines for the same text. **Default:** Medium.",
+        "narrow": "Narrow",
+        "medium": "Medium",
+        "wide": "Wide",
+        "extraWide": "Extra wide"
       },
       "anchor": {
         "title": "Anchor & Deliver",
@@ -1315,7 +1327,8 @@
     "pause": "Pause",
     "resume": "Resume",
     "liveTextBox": "Live text box",
-    "slowPc": "Transcribing at {{percent}}% of this PC's normal speed"
+    "slowPc": "Transcribing at {{percent}}% of this PC's normal speed",
+    "speedUnknown": "PC speed: not measured yet"
   },
   "flm": {
     "windowsApplicationControlBlocked": "Windows Application Control blocked flm.exe because it is not signed. The NPU engine is unavailable. Choose a different transcription model.",

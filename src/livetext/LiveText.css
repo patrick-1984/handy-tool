@@ -63,14 +63,18 @@ body {
   mask-image: linear-gradient(to right, transparent 0, black 28px);
 }
 
-/* Whole text: a fixed three-line box anchored at the bottom; older lines slide
-   out of the top, so the box never changes size. */
+/* Whole text: starts at one line and grows away from the pill as the take goes
+   on, up to the window (a share of the screen); past that the oldest lines slide
+   out and fade at the far edge. */
 .live-text.full {
   width: 100%;
-  height: 62px;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+}
+
+.live-text.full.overflowing {
   mask-image: linear-gradient(to bottom, transparent 0, black 14px);
 }
 

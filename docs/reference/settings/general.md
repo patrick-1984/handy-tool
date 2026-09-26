@@ -36,6 +36,14 @@ Adds a pause button to the recording overlay. While paused nothing is recorded; 
 
 Catalog: [Pause a take without ending it](../../features.md#pause-a-take).
 
+### PC speed on the pill
+
+`General › PC speed on the pill`
+
+Shows a PC icon with a percentage on the left of the recording pill: this PC's transcription speed against its own normal for the model in use (100% = normal; amber below 70%, red below 50%). The pill widens to fit it. **Default:** Off.
+
+Catalog: [Know when your PC is the reason it is slow](../../features.md#slow-pc-warning).
+
 ### Transcribe & Submit Shortcut
 
 `General › Transcribe & Submit Shortcut`
@@ -102,7 +110,7 @@ Catalog: [See your words next to the overlay while you talk](../../features.md#l
 
 `General › Transcription › Live text shows`
 
-Shown while [Live text box](#live-text-box) is on. `Last words` is one line of the newest words; `Whole text` is the take so far in a three-line box. **Default:** `Last words`.
+Shown while [Live text box](#live-text-box) is on. `Last words` is one line of the newest words; `Whole text` is the take so far in a box that starts at one line and grows, up to 40% of the screen height, after which the oldest lines slide away. **Default:** `Last words`.
 
 Catalog: [See your words next to the overlay while you talk](../../features.md#live-text-box).
 
@@ -114,11 +122,19 @@ Shown while [Live text box](#live-text-box) is on. The live text fades away thre
 
 Catalog: [See your words next to the overlay while you talk](../../features.md#live-text-box).
 
+### Box width
+
+`General › Transcription › Box width`
+
+Shown while [Live text box](#live-text-box) is on. How wide the box is: `Narrow`, `Medium`, `Wide` or `Extra wide` (360, 460, 640 or 860 px). A wider box needs fewer lines. **Default:** `Medium`.
+
+Catalog: [See your words next to the overlay while you talk](../../features.md#live-text-box).
+
 ### Undo last word
 
 `General › Transcription › Undo last word`
 
-Each press of its shortcut first brings the live text up to date, then removes the newest word from it and cuts the recording back to where that word started. Needs a Parakeet model. When on, an Undo Last Word shortcut row appears under it. **Default:** Off; the shortcut is `ctrl+backspace`, registered only during a live take.
+Each press of its shortcut first brings the live text up to date, then removes the newest word from it and cuts the recording back to where that word started; holding the shortcut keeps removing words. Needs a Parakeet model. When on, an Undo Last Word shortcut row appears under it. **Default:** Off; the shortcut is `ctrl+backspace`, registered only during a live take.
 
 Catalog: [Take back the last word without starting over](../../features.md#undo-last-word).
 

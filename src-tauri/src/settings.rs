@@ -155,6 +155,10 @@ pub struct ModelTestLibrary {
     pub presets: Vec<ModelTestPreset>,
 }
 
+fn default_live_text_width() -> u32 {
+    460
+}
+
 fn default_true() -> bool {
     true
 }
@@ -573,7 +577,8 @@ pub enum LiveTextMode {
     /// One line: the newest words.
     #[default]
     LastWords,
-    /// The whole take so far, in a fixed-height box (older lines scroll away).
+    /// The whole take so far: the box grows as text arrives (up to a limit,
+    /// past which the oldest lines scroll away).
     FullText,
 }
 
@@ -942,6 +947,12 @@ pub struct AppSettings {
     /// The live text box fades out a few seconds after you stop talking.
     #[serde(default)]
     pub live_text_fade: bool,
+    /// How wide the live text box is, in logical pixels (wider = fewer lines).
+    #[serde(default = "default_live_text_width")]
+    pub live_text_width: u32,
+    /// The recording pill shows how fast this PC transcribes against its normal.
+    #[serde(default)]
+    pub speed_indicator_enabled: bool,
     /// Warn next to shortcuts that AltGr can also type (Windows reports AltGr
     /// as Ctrl+Alt).
     #[serde(default = "default_true")]
@@ -2524,6 +2535,8 @@ pub fn get_default_settings() -> AppSettings {
         live_text_box_enabled: false,
         live_text_mode: LiveTextMode::LastWords,
         live_text_fade: false,
+        live_text_width: default_live_text_width(),
+        speed_indicator_enabled: false,
         altgr_warning_enabled: true,
         selected_microphone: None,
         clamshell_microphone: None,

@@ -1408,30 +1408,7 @@ impl ShortcutAction for TranscribeAction {
 
             if plan_live {
                 // Live mode: a preview of the take as you speak (see LiveSession)
-                tm_seg.set_live_transcribing(true);
-                let busy = Arc::new(AtomicBool::new(false));
-
-                // Store the live text handle and busy flag so stop() can access them
-                let live_text = Arc::new(Mutex::new(String::new()));
-                *LIVE_TEXT.lock().unwrap() = Some(Arc::clone(&live_text));
-                *SEGMENT_BUSY.lock().unwrap() = Some(Arc::clone(&busy));
-                let session = Arc::new(LiveSession {
-                    preview: Mutex::new(LivePreview::default()),
-                    jobs: Mutex::new(VecDeque::new()),
-                    busy,
-                    tm: Arc::clone(&tm_seg),
-                    live_text,
-                    app: app.clone(),
-                });
-                *LIVE_SESSION.lock().unwrap() = Some(Arc::clone(&session));
-
-                rm.set_on_segment_callback(move |samples, utterance_ended| {
-                    session.push(LiveJob {
-                        samples,
-                        utterance_ended,
-                        undo: 0,
-                    });
-                });
+                start_live_session(app, &rm, &tm_seg);
             } else if plan_chunked {
                 // Chunked (default Post-Recording) mode: transcribe each chunk in
                 // the background as it closes, so a long recording is mostly
@@ -2533,6 +2510,78 @@ impl LiveSession {
     }
 }
 
+/// Start the live preview for the take in progress: the session stop() reads
+/// the transcript from, fed by the recorder's segment callback.
+fn start_live_session(
+    app: &AppHandle,
+    rm: &AudioRecordingManager,
+    tm: &Arc<TranscriptionManager>,
+) -> Arc<LiveSession> {
+    tm.set_live_transcribing(true);
+    let busy = Arc::new(AtomicBool::new(false));
+    // Store the live text handle and busy flag so stop() can access them
+    let live_text = Arc::new(Mutex::new(String::new()));
+    *LIVE_TEXT.lock().unwrap() = Some(Arc::clone(&live_text));
+    *SEGMENT_BUSY.lock().unwrap() = Some(Arc::clone(&busy));
+    let session = Arc::new(LiveSession {
+        preview: Mutex::new(LivePreview::default()),
+        jobs: Mutex::new(VecDeque::new()),
+        busy,
+        tm: Arc::clone(tm),
+        live_text,
+        app: app.clone(),
+    });
+    *LIVE_SESSION.lock().unwrap() = Some(Arc::clone(&session));
+    let fed = Arc::clone(&session);
+    rm.set_on_segment_callback(move |samples, utterance_ended| {
+        fed.push(LiveJob {
+            samples,
+            utterance_ended,
+            undo: 0,
+        });
+    });
+    session
+}
+
+/// The live text box was switched on during a take that started without it:
+/// make the take live from here on, so the box fills and stop delivers the live
+/// text. It stops being transcribed in chunks, and what was said so far is
+/// transcribed once to catch the box up.
+pub fn make_take_live(app: &AppHandle) {
+    let rm = app.state::<Arc<AudioRecordingManager>>();
+    if !rm.is_recording() {
+        return;
+    }
+    {
+        let mut plan = RECORDING_PLAN.lock().unwrap_or_else(|p| p.into_inner());
+        match plan.as_mut() {
+            Some(p) if !p.live => {
+                p.live = true;
+                p.chunked = false;
+            }
+            _ => return,
+        }
+    }
+    rm.clear_on_chunk_callback();
+    if let Ok(mut g) = CHUNKED_SESSION.lock() {
+        if let Some(session) = g.as_ref() {
+            session.abandoned.store(true, Ordering::SeqCst);
+        }
+        *g = None;
+    }
+    let tm = app.state::<Arc<TranscriptionManager>>();
+    let session = start_live_session(app, &rm, &tm);
+    shortcut::register_undo_word_for_live_take(app);
+    info!("Live text box switched on mid-take: the take is live from here on");
+    if let Some(samples) = rm.snapshot_recording() {
+        session.push(LiveJob {
+            samples,
+            utterance_ended: false,
+            undo: 0,
+        });
+    }
+}
+
 /// Undo last word (live takes): once the preview has caught up with what was
 /// said, drop its newest word and cut the take's audio back to where that word
 /// started, so the final pass at stop — which re-transcribes the audio — does
@@ -2559,12 +2608,39 @@ pub fn undo_last_word(app: &AppHandle) {
 // Undo Word Action: removes the last word of a live take
 struct UndoWordAction;
 
+/// Holding the Undo shortcut keeps removing words, like holding Backspace: one
+/// at once, then after UNDO_REPEAT_AFTER one every UNDO_REPEAT_EVERY until the
+/// key is released (or the take ends, or UNDO_REPEAT_MAX words have gone).
+static UNDO_HELD: AtomicBool = AtomicBool::new(false);
+const UNDO_REPEAT_AFTER: Duration = Duration::from_millis(450);
+const UNDO_REPEAT_EVERY: Duration = Duration::from_millis(150);
+const UNDO_REPEAT_MAX: usize = 60;
+
 impl ShortcutAction for UndoWordAction {
     fn start(&self, app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {
+        // Key auto-repeat must not start a second repeater.
+        if UNDO_HELD.swap(true, Ordering::SeqCst) {
+            return;
+        }
         undo_last_word(app);
+        let app = app.clone();
+        std::thread::spawn(move || {
+            std::thread::sleep(UNDO_REPEAT_AFTER);
+            let rm = app.state::<Arc<AudioRecordingManager>>();
+            let mut repeats = 0;
+            while UNDO_HELD.load(Ordering::SeqCst) && rm.is_recording() && repeats < UNDO_REPEAT_MAX
+            {
+                undo_last_word(&app);
+                repeats += 1;
+                std::thread::sleep(UNDO_REPEAT_EVERY);
+            }
+            UNDO_HELD.store(false, Ordering::SeqCst);
+        });
     }
 
-    fn stop(&self, _app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {}
+    fn stop(&self, _app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {
+        UNDO_HELD.store(false, Ordering::SeqCst);
+    }
 }
 
 // Type Text Action: toggles the Keyboard Typer session

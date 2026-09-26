@@ -1,11 +1,10 @@
 //! How fast this PC is transcribing right now compared with its own normal, for
-//! the recording overlay's speed warning.
+//! the recording pill's speed chip (a setting).
 //!
 //! "Normal" is the median of this model's last few transcriptions on this PC,
 //! kept on disk so it survives restarts. Short clips (live previews) and long
 //! ones (chunks, final passes) are kept apart: a long clip costs less per second
-//! of audio, so mixing them would make every short one look slow. The overlay
-//! only hears about it when the PC is clearly slower than usual.
+//! of audio, so mixing them would make every short one look slow.
 
 use log::debug;
 use once_cell::sync::Lazy;
@@ -17,8 +16,6 @@ use tauri::{AppHandle, Emitter};
 const HISTORY: usize = 20;
 /// Too few measurements say nothing about normal yet.
 const MIN_HISTORY: usize = 5;
-/// Below this share of normal speed the overlay shows the warning.
-const SLOW_PERCENT: u32 = 70;
 /// Clips at least this long are "long" (chunks and final passes).
 const LONG_CLIP_SECS: f64 = 10.0;
 const FILE_NAME: &str = "transcription_speed.json";
@@ -65,8 +62,8 @@ fn percent_of_normal(history: &[f64], measured: f64) -> Option<u32> {
     Some((median(history) / measured * 100.0).round() as u32)
 }
 
-/// Record one finished transcription and tell the overlay whether the PC is
-/// running slow: `Some(percent)` below SLOW_PERCENT of normal, otherwise None.
+/// Record one finished transcription and tell the pill how this one compared
+/// with normal: `Some(percent)`, or None while there is no normal yet.
 pub fn record(app: &AppHandle, model: &str, audio_secs: f64, secs_per_audio_sec: f64) {
     let length = if audio_secs >= LONG_CLIP_SECS {
         "long"
@@ -74,7 +71,7 @@ pub fn record(app: &AppHandle, model: &str, audio_secs: f64, secs_per_audio_sec:
         "short"
     };
     let key = format!("{model}|{length}");
-    let slow = {
+    let percent = {
         let Ok(mut guard) = HISTORY_BY_KEY.lock() else {
             return;
         };
@@ -88,9 +85,9 @@ pub fn record(app: &AppHandle, model: &str, audio_secs: f64, secs_per_audio_sec:
             history.remove(0);
         }
         save(app, all);
-        percent.filter(|p| *p < SLOW_PERCENT)
+        percent
     };
-    let _ = app.emit("transcription-speed", slow);
+    let _ = app.emit("transcription-speed", percent);
 }
 
 #[cfg(test)]

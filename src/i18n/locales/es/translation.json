@@ -233,7 +233,7 @@
           },
           "undo_word": {
             "name": "Deshacer la última palabra",
-            "description": "Quita la última palabra de una toma en vivo. Solo activo durante una toma en vivo. Predeterminado: Ctrl+Retroceso."
+            "description": "Quita la última palabra de una grabación en vivo; mantén pulsado para seguir quitando. Solo activo durante una grabación en vivo. Predeterminado: Ctrl+Retroceso."
           },
           "toggle_live_text_box": {
             "name": "Activar/desactivar texto en vivo",
@@ -314,9 +314,13 @@
         "label": "Botón de pausa",
         "description": "Añade un botón de pausa a la superposición de grabación: en pausa no se graba nada y al reanudar sigue la misma toma. Predeterminado: Desactivado. Tras 10 minutos en pausa se libera el micrófono hasta reanudar."
       },
+      "speedIndicator": {
+        "label": "Velocidad del PC en la barra",
+        "description": "Muestra a la izquierda de la barra de grabación un icono de PC con un porcentaje: lo rápido que este PC transcribe comparado con su velocidad normal para el modelo que usas. 100 % es lo normal; ámbar por debajo del 70 %, rojo por debajo del 50 %. Predeterminado: desactivado. Necesita unas cuantas grabaciones con un modelo antes de tener una referencia."
+      },
       "undoWord": {
         "label": "Deshacer la última palabra",
-        "description": "Cada pulsación del atajo (Ctrl+Retroceso por defecto) quita la última palabra de una toma en vivo y recorta el audio hasta el inicio de esa palabra, para que tampoco vuelva en el texto final. Requiere una toma en vivo y un modelo Parakeet. Predeterminado: Desactivado."
+        "description": "Quita la última palabra de una grabación en vivo cada vez que pulsas su atajo (Ctrl+Retroceso por defecto); mantenlo pulsado para seguir quitando. Ves desaparecer cada palabra del cuadro de texto en vivo. Requiere una grabación en vivo y un modelo Parakeet. Predeterminado: desactivado."
       },
       "liveTextBox": {
         "label": "Cuadro de texto en vivo",
@@ -329,13 +333,21 @@
       },
       "liveTextMode": {
         "title": "El texto en vivo muestra",
-        "description": "Una línea con las palabras más recientes, o todo el texto en un cuadro de tres líneas. No cambia de tamaño mientras hablas. Predeterminado: Últimas palabras.",
+        "description": "Una línea con las palabras más recientes, o toda la grabación hasta ahora en un cuadro que empieza con una línea y crece mientras hablas, hasta el 40 % de la altura de la pantalla; después las líneas más antiguas se deslizan fuera. Predeterminado: Últimas palabras.",
         "lastWords": "Últimas palabras",
         "fullText": "Texto completo"
       },
       "liveTextFade": {
         "label": "Desvanecer al dejar de hablar",
         "description": "El texto en vivo se desvanece unos segundos después de que dejas de hablar, para que las palabras terminadas no se queden en pantalla. Tus siguientes palabras lo traen de vuelta. Predeterminado: desactivado."
+      },
+      "liveTextWidth": {
+        "title": "Ancho del cuadro",
+        "description": "Qué tan ancho es el cuadro de texto en vivo. Un cuadro más ancho necesita menos líneas para el mismo texto. Predeterminado: Medio.",
+        "narrow": "Estrecho",
+        "medium": "Medio",
+        "wide": "Ancho",
+        "extraWide": "Muy ancho"
       },
       "language": {
         "title": "Idioma",
@@ -1303,7 +1315,8 @@
     "pause": "Pausa",
     "resume": "Reanudar",
     "liveTextBox": "Cuadro de texto en vivo",
-    "slowPc": "Transcribiendo al {{percent}} % de la velocidad normal de este PC"
+    "slowPc": "Transcribiendo al {{percent}} % de la velocidad normal de este PC",
+    "speedUnknown": "Velocidad del PC: aún sin medir"
   },
   "floating": {
     "waiting": "Esperando la transcripción…",

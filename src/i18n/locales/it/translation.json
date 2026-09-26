@@ -233,7 +233,7 @@
           },
           "undo_word": {
             "name": "Annulla l'ultima parola",
-            "description": "Rimuove l'ultima parola di una registrazione dal vivo. Attiva solo durante una registrazione dal vivo. Predefinito: Ctrl+Backspace."
+            "description": "Rimuove l'ultima parola di una registrazione dal vivo; tieni premuto per continuare. Attivo solo durante una registrazione dal vivo. Predefinito: Ctrl+Backspace."
           },
           "toggle_live_text_box": {
             "name": "Testo dal vivo on/off",
@@ -314,9 +314,13 @@
         "label": "Pulsante pausa",
         "description": "Aggiunge un pulsante di pausa all'overlay di registrazione: in pausa non si registra nulla e la ripresa continua la stessa registrazione. Predefinito: Disattivato. Dopo 10 minuti di pausa il microfono viene rilasciato fino alla ripresa."
       },
+      "speedIndicator": {
+        "label": "Velocità del PC sulla barra",
+        "description": "Mostra a sinistra della barra di registrazione un'icona PC con una percentuale: quanto velocemente questo PC trascrive rispetto alla sua velocità normale per il modello usato. 100% è normale; ambra sotto il 70%, rosso sotto il 50%. Predefinito: disattivato. Servono alcune registrazioni con un modello prima di avere un riferimento."
+      },
       "undoWord": {
         "label": "Annulla l'ultima parola",
-        "description": "A ogni pressione della scorciatoia (Ctrl+Backspace di default) rimuove l'ultima parola di una registrazione dal vivo e taglia l'audio all'inizio di quella parola, così non torna nel testo finale. Richiede una registrazione dal vivo e un modello Parakeet. Predefinito: Disattivato."
+        "description": "Rimuove l'ultima parola di una registrazione dal vivo a ogni pressione della scorciatoia (Ctrl+Backspace per impostazione predefinita); tienila premuta per continuare. Vedi ogni parola sparire dal riquadro del testo dal vivo. Richiede una registrazione dal vivo e un modello Parakeet. Predefinito: disattivato."
       },
       "liveTextBox": {
         "label": "Riquadro testo dal vivo",
@@ -329,13 +333,21 @@
       },
       "liveTextMode": {
         "title": "Il testo dal vivo mostra",
-        "description": "Una riga con le parole più recenti, oppure tutto il testo in un riquadro di tre righe. Non cambia dimensione mentre parli. Predefinito: Ultime parole.",
+        "description": "Una riga con le parole più recenti, oppure tutta la registrazione finora in un riquadro che parte da una riga e cresce mentre parli, fino al 40% dell'altezza dello schermo; poi le righe più vecchie scorrono via. Predefinito: Ultime parole.",
         "lastWords": "Ultime parole",
         "fullText": "Testo completo"
       },
       "liveTextFade": {
         "label": "Dissolvi quando smetti di parlare",
         "description": "Il testo in diretta svanisce qualche secondo dopo che smetti di parlare, così le parole concluse non restano sullo schermo. Le parole successive lo riportano. Predefinito: disattivato."
+      },
+      "liveTextWidth": {
+        "title": "Larghezza del riquadro",
+        "description": "Quanto è largo il riquadro del testo dal vivo. Un riquadro più largo richiede meno righe per lo stesso testo. Predefinito: Medio.",
+        "narrow": "Stretto",
+        "medium": "Medio",
+        "wide": "Largo",
+        "extraWide": "Molto largo"
       },
       "language": {
         "title": "Lingua",
@@ -1303,7 +1315,8 @@
     "pause": "Pausa",
     "resume": "Riprendi",
     "liveTextBox": "Riquadro testo dal vivo",
-    "slowPc": "Trascrizione al {{percent}}% della velocità normale di questo PC"
+    "slowPc": "Trascrizione al {{percent}}% della velocità normale di questo PC",
+    "speedUnknown": "Velocità del PC: non ancora misurata"
   },
   "brand": {
     "name": "Handy",
