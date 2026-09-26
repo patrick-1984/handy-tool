@@ -188,3 +188,10 @@
   stroke: var(--color-logo-stroke);
   stroke-width: 1;
 }
+
+/* Settings search: briefly outline the setting a search result opened. */
+.search-highlight {
+  outline: 2px solid var(--color-logo-primary);
+  outline-offset: -2px;
+  border-radius: 0.5rem;
+}

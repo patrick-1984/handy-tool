@@ -27,6 +27,10 @@
     },
     "modelTesting": "Model Testi",
     "resize": "Boyutlandırmak için sürükleyin",
+    "search": {
+      "placeholder": "Ayarlarda ara",
+      "noResults": "Sonuç yok"
+    },
     "update": {
       "checking": "Güncellemeler denetleniyor…",
       "available": "Handy Tool {{version}} kullanılabilir",
@@ -214,6 +218,7 @@
         "clear": "Kısayolu kaldır",
         "altGrConflict": "Windows, AltGr tuşunu Ctrl+Alt olarak bildirir; bu nedenle ą veya ó gibi AltGr karakterleri yazılmak yerine bu kısayol çalışır. Ctrl+Alt içermeyen bir kombinasyon seçin.",
         "conflict": "Şunlar tarafından da kullanılıyor: {{names}}. Yalnızca biri çalışır.",
+        "singleKey": "Bu tuş tek başına kısayolu her yerde tetikler, bu yüzden artık onu yazamazsınız. Ctrl veya Alt gibi bir değiştirici tuş ekleyin.",
         "bindings": {
           "transcribe": {
             "name": "Transkripsiyon Kısayolu",
@@ -452,6 +457,12 @@
         "description": "Handy'nin kayıt yaptığı giriş cihazı. Yeniden başlatma gerekmeden bir sonraki kaydınızda etkili olur. Varsayılan: sistem varsayılan cihazı — bir kulaklık ile dahili mikrofon dizisi arasında geçiş yaparken bunu açıkça ayarlayın ve sistem seçimine dönmek için sıfırlama düğmesini kullanın.",
         "placeholder": "Mikrofon seçin...",
         "loading": "Yükleniyor..."
+      },
+      "micKeepWarm": {
+        "title": "Mikrofonu hazır tut",
+        "description": "Her kayıttan sonra mikrofonu birkaç dakika açık tutar; böylece bir sonraki kayıt, boştaki mikrofonun uyanmasını beklemeden hemen başlar. Varsayılan: Kapalı. Açık kaldığı sürece sistem mikrofon göstergesi yanar.",
+        "off": "Kapalı",
+        "minutes": "{{minutes}} dk"
       },
       "audioFeedback": {
         "label": "Sesli Geri Bildirim",

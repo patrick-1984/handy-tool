@@ -27,6 +27,10 @@
     },
     "modelTesting": "模型測試",
     "resize": "拖曳以調整大小",
+    "search": {
+      "placeholder": "搜尋設定",
+      "noResults": "無相符項目"
+    },
     "update": {
       "checking": "正在檢查更新…",
       "available": "Handy Tool {{version}} 可用",
@@ -196,6 +200,7 @@
         "clear": "設為無",
         "altGrConflict": "Windows 會將 AltGr 視為 Ctrl+Alt，因此按下時會觸發此快速鍵，而不會輸入 ą、ó 等 AltGr 字元。請選擇不含 Ctrl+Alt 的組合鍵。",
         "conflict": "也被以下項目使用：{{names}}。只有其中一個會生效。",
+        "singleKey": "僅這一個鍵就會在任何地方觸發快捷鍵，因此你將無法再輸入它。請加上 Ctrl 或 Alt 等輔助鍵。",
         "bindings": {
           "transcribe": {
             "name": "轉錄快捷鍵",
@@ -452,6 +457,12 @@
         "description": "Handy 錄音所使用的輸入裝置，於下次錄音時生效，無需重新啟動。預設：系統預設裝置——在耳機與內建麥克風陣列間切換時可明確指定，並可用重設按鈕還原為系統選擇。",
         "placeholder": "選擇麥克風...",
         "loading": "載入中..."
+      },
+      "micKeepWarm": {
+        "title": "保持麥克風就緒",
+        "description": "每次錄音後讓麥克風保持開啟幾分鐘，下一次錄音可立即開始，無須等待閒置的麥克風喚醒。預設：關閉。保持開啟期間，系統麥克風指示燈會一直亮著。",
+        "off": "關閉",
+        "minutes": "{{minutes}} 分鐘"
       },
       "audioFeedback": {
         "label": "聲音回饋",

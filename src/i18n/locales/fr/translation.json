@@ -27,6 +27,10 @@
     },
     "modelTesting": "Test de modèles",
     "resize": "Faire glisser pour redimensionner",
+    "search": {
+      "placeholder": "Rechercher un réglage",
+      "noResults": "Aucun résultat"
+    },
     "update": {
       "checking": "Recherche de mises à jour…",
       "available": "Handy Tool {{version}} est disponible",
@@ -214,6 +218,7 @@
         "clear": "Supprimer le raccourci",
         "altGrConflict": "Windows signale AltGr comme Ctrl+Alt : ce raccourci se déclenche donc au lieu de saisir des caractères AltGr comme ą ou ó. Choisissez une combinaison sans Ctrl+Alt.",
         "conflict": "Également utilisé par : {{names}}. Un seul fonctionnera.",
+        "singleKey": "Cette touche seule déclenche le raccourci partout, vous ne pourrez donc plus la taper. Ajoutez un modificateur comme Ctrl ou Alt.",
         "bindings": {
           "transcribe": {
             "name": "Raccourci de Transcription",
@@ -452,6 +457,12 @@
         "description": "Le périphérique d'entrée depuis lequel Handy enregistre. Prend effet dès votre prochaine prise, sans redémarrage. Par défaut : le périphérique par défaut du système — définissez-le explicitement quand vous alternez entre un casque et le micro intégré, et utilisez le bouton de réinitialisation pour revenir au choix du système.",
         "placeholder": "Sélectionner un microphone...",
         "loading": "Chargement..."
+      },
+      "micKeepWarm": {
+        "title": "Garder le micro prêt",
+        "description": "Garde le micro ouvert quelques minutes après chaque prise, pour que la suivante démarre aussitôt au lieu d'attendre le réveil d'un micro inactif. Par défaut : désactivé. Tant qu'il reste ouvert, l'indicateur de micro du système reste allumé.",
+        "off": "Désactivé",
+        "minutes": "{{minutes}} min"
       },
       "audioFeedback": {
         "label": "Signal sonore",

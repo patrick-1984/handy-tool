@@ -27,6 +27,10 @@
     },
     "modelTesting": "Testování modelů",
     "resize": "Táhněte pro změnu velikosti",
+    "search": {
+      "placeholder": "Hledat v nastavení",
+      "noResults": "Žádné výsledky"
+    },
     "update": {
       "checking": "Kontroluji aktualizace…",
       "available": "Je dostupný Handy Tool {{version}}",
@@ -214,6 +218,7 @@
         "clear": "Odebrat zkratku",
         "altGrConflict": "Windows hlásí AltGr jako Ctrl+Alt, takže se místo napsání znaků AltGr jako ą nebo ó spustí tato zkratka. Zvolte kombinaci bez Ctrl+Alt.",
         "conflict": "Používá také: {{names}}. Funguje jen jedna z nich.",
+        "singleKey": "Tato samotná klávesa spouští zkratku všude, takže ji už nebudete moci psát. Přidejte modifikátor, například Ctrl nebo Alt.",
         "bindings": {
           "transcribe": {
             "name": "Zkratka přepisu",
@@ -452,6 +457,12 @@
         "description": "Vstupní zařízení, ze kterého Handy nahrává. Uplatní se od dalšího nahrávání, bez restartu. Výchozí: výchozí zařízení systému — nastavte jej explicitně při přechodu mezi náhlavní soupravou a vestavěným polem mikrofonů, a tlačítkem reset se vraťte k volbě systému.",
         "placeholder": "Vyberte mikrofon...",
         "loading": "Načítání..."
+      },
+      "micKeepWarm": {
+        "title": "Mikrofon připravený",
+        "description": "Nechá mikrofon otevřený několik minut po každém nahrávání, takže další začne hned, bez čekání na probuzení nečinného mikrofonu. Výchozí: Vypnuto. Po tu dobu svítí systémový indikátor mikrofonu.",
+        "off": "Vypnuto",
+        "minutes": "{{minutes}} min"
       },
       "audioFeedback": {
         "label": "Zvuková odezva",

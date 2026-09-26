@@ -119,6 +119,19 @@ fn take_pending_main_show(flag: &AtomicBool) -> bool {
     flag.swap(false, Ordering::SeqCst)
 }
 
+/// True once after an interactive setup: consumes the marker the installer
+/// leaves next to the exe (src-tauri/nsis/installer-hooks.nsh). Silent updates
+/// leave none, and a portable copy never has one.
+fn take_show_window_marker() -> bool {
+    let Some(marker) = std::env::current_exe()
+        .ok()
+        .and_then(|exe| exe.parent().map(|dir| dir.join("show-window-once")))
+    else {
+        return false;
+    };
+    marker.exists() && std::fs::remove_file(&marker).is_ok()
+}
+
 fn show_main_window(app: &AppHandle) {
     if let Some(main_window) = app.get_webview_window("main") {
         // On macOS, restore the Regular activation policy BEFORE showing or
@@ -557,6 +570,7 @@ pub fn run(cli_args: CliArgs) {
         commands::models::has_any_models_or_downloads,
         commands::models::list_gpu_devices,
         commands::audio::update_microphone_mode,
+        commands::audio::change_mic_keep_warm_setting,
         commands::audio::get_microphone_mode,
         commands::audio::get_available_microphones,
         commands::audio::set_selected_microphone,
@@ -816,8 +830,10 @@ pub fn run(cli_args: CliArgs) {
             }
 
             // Show main window only if not starting hidden
-            // CLI --start-hidden flag overrides the setting
-            let should_hide = settings.start_hidden || cli_args.start_hidden;
+            // CLI --start-hidden flag overrides the setting — except on the first
+            // launch after an interactive setup, which always shows the window.
+            let after_setup = take_show_window_marker();
+            let should_hide = (settings.start_hidden || cli_args.start_hidden) && !after_setup;
             if !should_hide {
                 if let Some(main_window) = app_handle.get_webview_window("main") {
                     main_window.show().unwrap();

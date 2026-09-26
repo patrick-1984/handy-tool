@@ -116,6 +116,14 @@ Selects the input device for subsequent takes; reset returns to the system devic
 
 Catalog: [Change microphone without restarting](../../features.md#change-microphone-without-restarting).
 
+### Keep microphone ready
+
+`General › Sound › Keep microphone ready`
+
+Keeps the microphone open for 1, 5 or 15 minutes after each take so the next take starts without an idle microphone's wake-up delay; the system microphone indicator stays lit meanwhile. Hidden while Always-On Microphone is on. **Default:** Off (`0` stored).
+
+Catalog: [The microphone light is off when you're not dictating](../../features.md#the-microphone-light-is-off-when-youre-not-dictating).
+
 ### Mute While Recording
 
 `General › Sound › Mute While Recording`

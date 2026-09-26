@@ -27,6 +27,10 @@
     },
     "modelTesting": "모델 테스트",
     "resize": "드래그하여 크기 조정",
+    "search": {
+      "placeholder": "설정 검색",
+      "noResults": "결과 없음"
+    },
     "update": {
       "checking": "업데이트 확인 중…",
       "available": "Handy Tool {{version}}을 사용할 수 있습니다",
@@ -196,6 +200,7 @@
         "clear": "없음으로 설정",
         "altGrConflict": "Windows는 AltGr을 Ctrl+Alt로 인식하므로 ą 또는 ó 같은 AltGr 문자를 입력하는 대신 이 단축키가 실행됩니다. Ctrl+Alt가 없는 조합을 선택하세요.",
         "conflict": "{{names}}에서도 사용 중입니다. 그중 하나만 작동합니다.",
+        "singleKey": "이 키만으로 어디서나 단축키가 실행되어 더 이상 그 키를 입력할 수 없습니다. Ctrl이나 Alt 같은 보조 키를 추가하세요.",
         "bindings": {
           "transcribe": {
             "name": "음성 텍스트 변환 단축키",
@@ -434,6 +439,12 @@
         "description": "Handy가 녹음할 입력 장치입니다. 재시작 없이 다음 녹음부터 적용됩니다. 기본값: 시스템 기본 장치 — 헤드셋과 내장 마이크 배열을 번갈아 사용할 때 명시적으로 지정하고, 재설정 버튼으로 시스템 선택으로 되돌릴 수 있습니다.",
         "placeholder": "마이크 선택...",
         "loading": "로딩 중..."
+      },
+      "micKeepWarm": {
+        "title": "마이크 준비 상태 유지",
+        "description": "녹음이 끝난 뒤 마이크를 몇 분간 열어 두어, 대기 중인 마이크가 깨어나기를 기다리지 않고 다음 녹음을 바로 시작합니다. 기본값: 끔. 열려 있는 동안 시스템 마이크 표시등이 켜져 있습니다.",
+        "off": "끔",
+        "minutes": "{{minutes}}분"
       },
       "audioFeedback": {
         "label": "오디오 피드백",

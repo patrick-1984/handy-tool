@@ -2178,6 +2178,22 @@ export const commands = {
       else return { status: "error", error: e as any };
     }
   },
+  /**
+   * Minutes the microphone stays open after a take in on-demand mode (0 = off).
+   */
+  async changeMicKeepWarmSetting(
+    minutes: number,
+  ): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_mic_keep_warm_setting", { minutes }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
   async getMicrophoneMode(): Promise<Result<boolean, string>> {
     try {
       return { status: "ok", data: await TAURI_INVOKE("get_microphone_mode") };
@@ -2510,6 +2526,11 @@ export type AppSettings = {
    */
   transcribe_gpu_device?: number;
   always_on_microphone?: boolean;
+  /**
+   * On-demand mode: minutes the microphone stays open after a take so the next
+   * one starts without an idle device's wake-up delay. 0 (default) = close at once.
+   */
+  mic_keep_warm_minutes?: number;
   selected_microphone?: string | null;
   clamshell_microphone?: string | null;
   selected_output_device?: string | null;

@@ -27,6 +27,10 @@
     },
     "modelTesting": "模型测试",
     "resize": "拖动以调整大小",
+    "search": {
+      "placeholder": "搜索设置",
+      "noResults": "无匹配项"
+    },
     "update": {
       "checking": "正在检查更新…",
       "available": "Handy Tool {{version}} 可用",
@@ -214,6 +218,7 @@
         "clear": "设为无",
         "altGrConflict": "Windows 将 AltGr 识别为 Ctrl+Alt，因此按下时会触发此快捷键，而不会输入 ą、ó 等 AltGr 字符。请选择不含 Ctrl+Alt 的组合键。",
         "conflict": "也被以下项目使用：{{names}}。只有其中一个会生效。",
+        "singleKey": "仅这一个键就会在任何地方触发快捷键，因此你将无法再输入它。请添加 Ctrl 或 Alt 等修饰键。",
         "bindings": {
           "transcribe": {
             "name": "转录快捷键",
@@ -452,6 +457,12 @@
         "description": "Handy 录音使用的输入设备。修改会在下一次录音时生效，无需重启。默认：系统默认设备——在耳机和内置麦克风阵列之间切换时应显式设置，用重置按钮可恢复为系统默认选择。",
         "placeholder": "选择麦克风...",
         "loading": "加载中..."
+      },
+      "micKeepWarm": {
+        "title": "保持麦克风就绪",
+        "description": "每次录音后让麦克风保持打开几分钟，下一次录音可立即开始，无需等待闲置的麦克风唤醒。默认：关闭。保持打开期间，系统麦克风指示灯会一直亮着。",
+        "off": "关闭",
+        "minutes": "{{minutes}} 分钟"
       },
       "audioFeedback": {
         "label": "音频反馈",

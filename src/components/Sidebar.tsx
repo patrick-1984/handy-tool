@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Archive,
@@ -19,6 +19,7 @@ import {
 import HandyTextLogo from "./icons/HandyTextLogo";
 import HandyHand from "./icons/HandyHand";
 import { UpdateBanner } from "./UpdateBanner";
+import { SidebarSearch } from "./SidebarSearch";
 import { useSettings } from "../hooks/useSettings";
 import {
   GeneralSettings,
@@ -200,10 +201,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const { t } = useTranslation();
   const { settings } = useSettings();
   const [width, setWidth] = useState<number>(loadSidebarWidth);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const availableSections = Object.entries(SECTIONS_CONFIG)
     .filter(([_, config]) => config.enabled(settings))
     .map(([id, config]) => ({ id: id as SidebarSection, ...config }));
+  // Stable identity for the search index: rebuild only when the set of shown
+  // sections changes, not on every render.
+  const sectionIds = availableSections.map((s) => s.id).join(",");
+  const searchSections = useMemo(
+    () => availableSections.map(({ id, labelKey }) => ({ id, labelKey })),
+    [sectionIds],
+  );
 
   // Drag the right edge to resize; persist the width to localStorage on release.
   const startResize = (e: React.MouseEvent) => {
@@ -240,44 +249,50 @@ export const Sidebar: React.FC<SidebarProps> = ({
     >
       <HandyTextLogo width={120} className="m-4 shrink-0" />
       <div className="flex flex-col w-full gap-3 pt-2 border-t border-mid-gray/20">
-        {GROUP_ORDER.map((group) => {
-          const items = availableSections.filter((s) => s.group === group.id);
-          if (items.length === 0) return null;
+        <SidebarSearch
+          query={searchQuery}
+          onQueryChange={setSearchQuery}
+          sections={searchSections}
+        />
+        {!searchQuery.trim() &&
+          GROUP_ORDER.map((group) => {
+            const items = availableSections.filter((s) => s.group === group.id);
+            if (items.length === 0) return null;
 
-          return (
-            <div key={group.id} className="flex flex-col w-full gap-1">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-text/40 px-2 pt-1">
-                {t(group.labelKey)}
-              </p>
-              {items.map((section) => {
-                const Icon = section.icon;
-                const isActive = activeSection === section.id;
+            return (
+              <div key={group.id} className="flex flex-col w-full gap-1">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-text/40 px-2 pt-1">
+                  {t(group.labelKey)}
+                </p>
+                {items.map((section) => {
+                  const Icon = section.icon;
+                  const isActive = activeSection === section.id;
 
-                return (
-                  <React.Fragment key={section.id}>
-                    <div
-                      className={`flex gap-2 items-center p-2 w-full rounded-lg cursor-pointer transition-colors ${
-                        isActive
-                          ? "bg-logo-primary/80"
-                          : "hover:bg-mid-gray/20 hover:opacity-100 opacity-85"
-                      }`}
-                      onClick={() => onSectionChange(section.id)}
-                    >
-                      <Icon width={24} height={24} className="shrink-0" />
-                      <p
-                        className="text-sm font-medium truncate"
-                        title={t(section.labelKey)}
+                  return (
+                    <React.Fragment key={section.id}>
+                      <div
+                        className={`flex gap-2 items-center p-2 w-full rounded-lg cursor-pointer transition-colors ${
+                          isActive
+                            ? "bg-logo-primary/80"
+                            : "hover:bg-mid-gray/20 hover:opacity-100 opacity-85"
+                        }`}
+                        onClick={() => onSectionChange(section.id)}
                       >
-                        {t(section.labelKey)}
-                      </p>
-                    </div>
-                    {section.id === "about" && <UpdateBanner />}
-                  </React.Fragment>
-                );
-              })}
-            </div>
-          );
-        })}
+                        <Icon width={24} height={24} className="shrink-0" />
+                        <p
+                          className="text-sm font-medium truncate"
+                          title={t(section.labelKey)}
+                        >
+                          {t(section.labelKey)}
+                        </p>
+                      </div>
+                      {section.id === "about" && <UpdateBanner />}
+                    </React.Fragment>
+                  );
+                })}
+              </div>
+            );
+          })}
       </div>
       {/* Drag handle: resize the sidebar; width persists across launches. */}
       <div

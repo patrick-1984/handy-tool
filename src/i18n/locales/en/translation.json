@@ -39,6 +39,10 @@
     },
     "modelTesting": "Model Testing",
     "resize": "Drag to resize",
+    "search": {
+      "placeholder": "Search settings",
+      "noResults": "No matches"
+    },
     "update": {
       "checking": "Checking for updates…",
       "available": "Handy Tool {{version}} is available",
@@ -208,6 +212,7 @@
         "clear": "Set to None",
         "altGrConflict": "Windows reports AltGr as Ctrl+Alt, so this shortcut fires instead of typing AltGr characters such as ą or ó. Pick a chord without Ctrl+Alt.",
         "conflict": "Also used by: {{names}}. Only one of them will work.",
+        "singleKey": "This key alone fires the shortcut everywhere, so you can no longer type it. Add a modifier such as Ctrl or Alt.",
         "bindings": {
           "transcribe": {
             "name": "Transcribe Shortcut",
@@ -590,6 +595,12 @@
         "description": "The input device Handy records from. It takes effect on your next take, with no restart. Default: the system default device — set it explicitly when you switch between a headset and the built-in array, and use the reset button to go back to the system choice.",
         "placeholder": "Select microphone...",
         "loading": "Loading..."
+      },
+      "micKeepWarm": {
+        "title": "Keep microphone ready",
+        "description": "**Keeps the microphone open for a few minutes after each take**, so the next one starts at once instead of waiting for an idle microphone to wake up (up to about a second).\n\n**Default:** Off — the microphone closes as soon as a take ends.\n\nWhile it stays open, your system microphone indicator stays lit. Hidden when Always-On Microphone is on.",
+        "off": "Off",
+        "minutes": "{{minutes}} min"
       },
       "audioFeedback": {
         "label": "Audio Feedback",

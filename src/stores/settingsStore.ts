@@ -59,6 +59,8 @@ const settingUpdaters: {
 } = {
   always_on_microphone: (value) =>
     commands.updateMicrophoneMode(value as boolean),
+  mic_keep_warm_minutes: (value) =>
+    commands.changeMicKeepWarmSetting(value as number),
   audio_feedback: (value) =>
     commands.changeAudioFeedbackSetting(value as boolean),
   audio_feedback_volume: (value) =>

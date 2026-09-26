@@ -27,6 +27,10 @@
     },
     "modelTesting": "Test dei Modelli",
     "resize": "Trascina per ridimensionare",
+    "search": {
+      "placeholder": "Cerca impostazioni",
+      "noResults": "Nessun risultato"
+    },
     "update": {
       "checking": "Controllo aggiornamenti…",
       "available": "È disponibile Handy Tool {{version}}",
@@ -214,6 +218,7 @@
         "clear": "Rimuovi scorciatoia",
         "altGrConflict": "Windows segnala AltGr come Ctrl+Alt, quindi questa scorciatoia si attiva invece di digitare caratteri AltGr come ą o ó. Scegli una combinazione senza Ctrl+Alt.",
         "conflict": "Usata anche da: {{names}}. Ne funzionerà solo una.",
+        "singleKey": "Questo tasto da solo attiva la scorciatoia ovunque, quindi non potrai più digitarlo. Aggiungi un modificatore come Ctrl o Alt.",
         "bindings": {
           "transcribe": {
             "name": "Scorciatoia Trascrizione",
@@ -452,6 +457,12 @@
         "description": "Il dispositivo di ingresso da cui Handy registra. Ha effetto dalla prossima registrazione, senza riavvio. Predefinito: il dispositivo predefinito del sistema — impostalo esplicitamente quando passi da un headset all'array integrato, e usa il pulsante di reset per tornare alla scelta di sistema.",
         "placeholder": "Scegli microfono...",
         "loading": "Caricamento..."
+      },
+      "micKeepWarm": {
+        "title": "Tieni pronto il microfono",
+        "description": "Tiene il microfono aperto per qualche minuto dopo ogni registrazione, così la successiva parte subito invece di attendere il risveglio del microfono. Predefinito: Disattivato. Finché resta aperto, l'indicatore del microfono di sistema rimane acceso.",
+        "off": "Disattivato",
+        "minutes": "{{minutes}} min"
       },
       "audioFeedback": {
         "label": "Feedback Audio",

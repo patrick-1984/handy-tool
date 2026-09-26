@@ -62,6 +62,21 @@ pub fn update_microphone_mode(app: AppHandle, always_on: bool) -> Result<(), Str
         .map_err(|e| format!("Failed to update microphone mode: {}", e))
 }
 
+/// Minutes the microphone stays open after a take in on-demand mode (0 = off).
+#[tauri::command]
+#[specta::specta]
+pub fn change_mic_keep_warm_setting(app: AppHandle, minutes: u32) -> Result<(), String> {
+    let mut settings = get_settings(&app);
+    settings.mic_keep_warm_minutes = minutes;
+    write_settings(&app, settings);
+    if minutes == 0 {
+        // Don't leave a warm microphone open for the rest of its old window.
+        app.state::<Arc<AudioRecordingManager>>()
+            .release_warm_microphone();
+    }
+    Ok(())
+}
+
 #[tauri::command]
 #[specta::specta]
 pub fn get_microphone_mode(app: AppHandle) -> Result<bool, String> {

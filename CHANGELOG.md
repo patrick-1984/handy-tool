@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.9.0] - 2026-09-26 15:42
+
+### Added
+
+- **Search settings from the sidebar.** A search box above the page list finds settings by
+  name, description or option, and every shortcut. Pick a result (or press Enter; arrow keys
+  move) and its page opens - on the right Advanced tab - with the setting briefly outlined. The
+  index is `scripts/nav-map.json`, the control map the docs checker already uses, plus the
+  current shortcuts; hidden pages and other platforms' controls are left out.
+- **Keep microphone ready** (General › Sound): keeps the microphone open for 1, 5 or 15
+  minutes after a take, so the next one starts at once instead of waiting up to a second for an
+  idle microphone to wake. Default Off. The system microphone indicator stays lit meanwhile;
+  switching it Off closes a waiting microphone right away. Hidden while Always-On Microphone is
+  on.
+- **Warning for single-key shortcuts.** A shortcut that is one typing key with no modifier
+  (such as `f`, which is easy to set by accident) fires every time you type that key anywhere;
+  it now gets an amber warning next to it. Function keys, Escape and the like are fine alone.
+
+### Changed
+
+- **Running Handy Tool from the end of setup opens its window.** With Start Hidden on, the
+  app used to start straight into the tray after you ran setup, so nothing appeared. An
+  interactive install or update now leaves a one-time marker that makes that next launch show
+  the window; silent updates (the updater's quiet mode, including the night-time update window)
+  leave none and stay hidden. The installer hooks live in `src-tauri/nsis/installer-hooks.nsh`
+  (the older `hooks.nsh` has not been wired in since the VC++ runtime was bundled).
+
 ## [1.8.0] - 2026-09-26 14:33
 
 ### Added

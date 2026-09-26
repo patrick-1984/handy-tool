@@ -551,9 +551,21 @@ Process, Debug — so checking whether two of them collide means visiting every 
 same keys with a red warning that names the other one. A duplicate is kept rather than refused,
 but only one of the pair can work: with the default keyboard backend the second stays inactive
 and takes over by itself as soon as the first moves off the keys. The feature pages keep their
-own shortcut rows; both edit the same setting.
+own shortcut rows; both edit the same setting. A shortcut that is a single typing key with no
+modifier, such as `f`, gets an amber warning: it would fire every time you type that letter.
 **Where.** `Shortcuts`.
-**Since.** 1.7.0.
+**Since.** 1.7.0. The single-key warning since 1.9.0.
+
+### Find a setting by typing its name
+
+<a id="find-a-setting-by-typing-its-name"></a>
+**The situation.** You remember that a setting exists but not which page, tab or group it is on.
+**What Handy does.** A search box at the top of the sidebar matches setting names, their
+descriptions, their options and every shortcut. Picking a result opens its page — and the right
+tab of Advanced — and briefly outlines the setting. Hidden pages and other platforms' controls
+never show up.
+**Where.** The search box above the sidebar's page list.
+**Since.** 1.9.0.
 
 ### When delivery can't be verified, the text is still recoverable
 
@@ -2169,9 +2181,11 @@ instead of vanishing: **No microphone** when none is connected, **Microphone blo
 Windows privacy settings deny apps the microphone, and **Microphone error** when the device
 refuses to start. Optionally you can keep the microphone
 open — which removes the wake-up wait — at the cost of a permanently active indicator. That is
-an explicit choice, not the default.
-**Where.** `Debug › Always-On Microphone = On` _{requires: Debug mode}_.
-**Since.** 0.2.0.
+an explicit choice, not the default. A middle way keeps it open only for 1, 5 or 15 minutes
+after each take, so a burst of takes starts instantly and the indicator goes out afterwards.
+**Where.** `General › Sound › Keep microphone ready` and
+`Debug › Always-On Microphone = On` _{requires: Debug mode}_.
+**Since.** 0.2.0. Keep microphone ready since 1.9.0.
 
 ### Change microphone without restarting
 
@@ -2355,7 +2369,8 @@ sync.
 arrives, and only tolerable if it is not in your face.
 **What Handy does.** Optional launch at login, optional start with no window, and an optional
 tray-only existence. Note one consequence: with the tray icon switched off, closing the window
-quits the application.
+quits the application. The one launch that always shows the window is the one right after you
+run setup yourself, so you can look at what changed; silent automatic updates stay hidden.
 **Where.** `Advanced › App › Launch on Startup = On` and `Advanced › App › Start Hidden = On`.
 **Since.** 0.1.0.
 

@@ -289,3 +289,20 @@ export const normalizeChord = (chord: string): string => {
   }
   return [...modifiers.sort(), ...keys.sort()].join("+");
 };
+
+// Keys that type something (or edit text) when pressed on their own.
+const TYPING_KEYS = new Set(["space", "enter", "tab", "backspace", "delete"]);
+
+/**
+ * True when `binding` is one typing key with no modifier — a letter, digit,
+ * punctuation, Space, Enter, Tab, Backspace, Delete or a numpad key. A global
+ * shortcut like that fires every time the key is pressed anywhere, so the key
+ * can no longer be typed. Function keys, Escape, Insert, Pause and a lone
+ * modifier (handy-keys) are fine on their own.
+ */
+export const isSingleTypingKey = (binding: string): boolean => {
+  const parts = normalizeChord(binding).split("+");
+  if (parts.length !== 1 || !parts[0]) return false;
+  const key = parts[0];
+  return key.length === 1 || TYPING_KEYS.has(key) || key.startsWith("numpad");
+};

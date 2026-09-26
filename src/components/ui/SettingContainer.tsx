@@ -55,7 +55,7 @@ export const SettingContainer: React.FC<SettingContainerProps> = ({
   if (layout === "stacked") {
     if (descriptionMode === "tooltip") {
       return (
-        <div className={containerClasses}>
+        <div className={containerClasses} data-setting-title={title}>
           <div className="flex items-center gap-2 mb-2">
             <h3
               className={`text-sm font-medium ${disabled ? "opacity-50" : ""}`}
@@ -107,7 +107,7 @@ export const SettingContainer: React.FC<SettingContainerProps> = ({
     }
 
     return (
-      <div className={containerClasses}>
+      <div className={containerClasses} data-setting-title={title}>
         <div className="mb-2">
           <h3 className={`text-sm font-medium ${disabled ? "opacity-50" : ""}`}>
             {title}
@@ -129,7 +129,7 @@ export const SettingContainer: React.FC<SettingContainerProps> = ({
 
   if (descriptionMode === "tooltip") {
     return (
-      <div className={horizontalContainerClasses}>
+      <div className={horizontalContainerClasses} data-setting-title={title}>
         <div className="max-w-2/3">
           <div className="flex items-center gap-2">
             <h3
@@ -183,7 +183,7 @@ export const SettingContainer: React.FC<SettingContainerProps> = ({
   }
 
   return (
-    <div className={horizontalContainerClasses}>
+    <div className={horizontalContainerClasses} data-setting-title={title}>
       <div className="max-w-2/3">
         <h3 className={`text-sm font-medium ${disabled ? "opacity-50" : ""}`}>
           {title}

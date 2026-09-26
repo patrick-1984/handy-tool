@@ -27,6 +27,10 @@
     },
     "modelTesting": "Prueba de Modelos",
     "resize": "Arrastra para cambiar el tamaño",
+    "search": {
+      "placeholder": "Buscar ajustes",
+      "noResults": "Sin resultados"
+    },
     "update": {
       "checking": "Buscando actualizaciones…",
       "available": "Handy Tool {{version}} está disponible",
@@ -214,6 +218,7 @@
         "clear": "Quitar atajo",
         "altGrConflict": "Windows informa de AltGr como Ctrl+Alt, así que este atajo se activa en lugar de escribir caracteres AltGr como ą u ó. Elige una combinación sin Ctrl+Alt.",
         "conflict": "También lo usa: {{names}}. Solo funcionará uno de ellos.",
+        "singleKey": "Esta tecla sola activa el atajo en todas partes, así que ya no podrás escribirla. Añade un modificador como Ctrl o Alt.",
         "bindings": {
           "transcribe": {
             "name": "Atajo de Transcripción",
@@ -452,6 +457,12 @@
         "description": "El dispositivo de entrada desde el que Handy graba. Tiene efecto en tu próxima toma, sin reinicio. Predeterminado: el dispositivo predeterminado del sistema; fíjalo explícitamente cuando alternes entre unos auriculares y el arreglo integrado, y usa el botón de restablecer para volver a la elección del sistema.",
         "placeholder": "Seleccionar micrófono...",
         "loading": "Cargando..."
+      },
+      "micKeepWarm": {
+        "title": "Mantener el micrófono listo",
+        "description": "Mantiene el micrófono abierto unos minutos después de cada grabación, para que la siguiente empiece al instante en lugar de esperar a que despierte. Predeterminado: Desactivado. Mientras está abierto, el indicador de micrófono del sistema sigue encendido.",
+        "off": "Desactivado",
+        "minutes": "{{minutes}} min"
       },
       "audioFeedback": {
         "label": "Retroalimentación de Audio",

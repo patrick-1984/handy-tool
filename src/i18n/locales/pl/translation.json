@@ -27,6 +27,10 @@
     },
     "modelTesting": "Testowanie modeli",
     "resize": "Przeciągnij, aby zmienić rozmiar",
+    "search": {
+      "placeholder": "Szukaj ustawień",
+      "noResults": "Brak wyników"
+    },
     "update": {
       "checking": "Sprawdzanie aktualizacji…",
       "available": "Dostępny jest Handy Tool {{version}}",
@@ -214,6 +218,7 @@
         "clear": "Usuń skrót",
         "altGrConflict": "Windows zgłasza AltGr jako Ctrl+Alt, więc ten skrót uruchamia się zamiast wpisania znaków AltGr, takich jak ą czy ó. Wybierz kombinację bez Ctrl+Alt.",
         "conflict": "Używany także przez: {{names}}. Zadziała tylko jeden z nich.",
+        "singleKey": "Sam ten klawisz uruchamia skrót wszędzie, więc nie będzie można go już wpisać. Dodaj modyfikator, np. Ctrl lub Alt.",
         "bindings": {
           "transcribe": {
             "name": "Skrót transkrypcji",
@@ -452,6 +457,12 @@
         "description": "Urządzenie wejściowe, z którego Handy nagrywa. Zaczyna działać od następnego nagrania, bez restartu. Domyślnie: urządzenie domyślne systemu — ustaw je wyraźnie, gdy przełączasz się między słuchawkami a wbudowanym mikrofonem, a przyciskiem resetu wróć do wyboru systemowego.",
         "placeholder": "Wybierz mikrofon...",
         "loading": "Wczytywanie..."
+      },
+      "micKeepWarm": {
+        "title": "Mikrofon w gotowości",
+        "description": "Pozostawia mikrofon otwarty przez kilka minut po każdym nagraniu, więc następne zaczyna się od razu, bez czekania na wybudzenie bezczynnego mikrofonu. Domyślnie: wyłączone. Dopóki jest otwarty, systemowy wskaźnik mikrofonu świeci.",
+        "off": "Wyłączone",
+        "minutes": "{{minutes}} min"
       },
       "audioFeedback": {
         "label": "Informacja dźwiękowa",

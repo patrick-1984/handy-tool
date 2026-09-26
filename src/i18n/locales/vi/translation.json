@@ -27,6 +27,10 @@
     },
     "modelTesting": "Kiểm tra mô hình",
     "resize": "Kéo để đổi kích thước",
+    "search": {
+      "placeholder": "Tìm cài đặt",
+      "noResults": "Không có kết quả"
+    },
     "update": {
       "checking": "Đang kiểm tra bản cập nhật…",
       "available": "Đã có Handy Tool {{version}}",
@@ -214,6 +218,7 @@
         "clear": "Bỏ phím tắt",
         "altGrConflict": "Windows báo AltGr là Ctrl+Alt, nên phím tắt này sẽ kích hoạt thay vì gõ các ký tự AltGr như ą hoặc ó. Hãy chọn tổ hợp không có Ctrl+Alt.",
         "conflict": "Cũng được dùng bởi: {{names}}. Chỉ một trong số đó hoạt động.",
+        "singleKey": "Chỉ riêng phím này đã kích hoạt phím tắt ở mọi nơi, nên bạn sẽ không gõ được phím đó nữa. Hãy thêm phím bổ trợ như Ctrl hoặc Alt.",
         "bindings": {
           "transcribe": {
             "name": "Phím tắt phiên âm",
@@ -452,6 +457,12 @@
         "description": "Thiết bị đầu vào Handy ghi âm từ đó. Có hiệu lực từ lần ghi âm tiếp theo, không cần khởi động lại. Mặc định: thiết bị mặc định của hệ thống — chỉ định rõ khi bạn chuyển giữa tai nghe và mảng mic tích hợp, dùng nút reset để về lại lựa chọn hệ thống.",
         "placeholder": "Chọn micrô...",
         "loading": "Đang tải..."
+      },
+      "micKeepWarm": {
+        "title": "Giữ micrô sẵn sàng",
+        "description": "Giữ micrô mở vài phút sau mỗi lần ghi, để lần ghi tiếp theo bắt đầu ngay thay vì chờ micrô đang nghỉ khởi động. Mặc định: Tắt. Trong lúc micrô mở, đèn báo micrô của hệ thống vẫn sáng.",
+        "off": "Tắt",
+        "minutes": "{{minutes}} phút"
       },
       "audioFeedback": {
         "label": "Phản hồi âm thanh",

@@ -912,6 +912,10 @@ pub struct AppSettings {
     pub transcribe_gpu_device: i32,
     #[serde(default = "default_always_on_microphone")]
     pub always_on_microphone: bool,
+    /// On-demand mode: minutes the microphone stays open after a take so the next
+    /// one starts without an idle device's wake-up delay. 0 (default) = close at once.
+    #[serde(default)]
+    pub mic_keep_warm_minutes: u32,
     #[serde(default)]
     pub selected_microphone: Option<String>,
     #[serde(default)]
@@ -2450,6 +2454,7 @@ pub fn get_default_settings() -> AppSettings {
         selected_model: "".to_string(),
         transcribe_gpu_device: default_transcribe_gpu_device(),
         always_on_microphone: false,
+        mic_keep_warm_minutes: 0,
         selected_microphone: None,
         clamshell_microphone: None,
         selected_output_device: None,

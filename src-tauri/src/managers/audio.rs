@@ -6,6 +6,7 @@ use crate::helpers::clamshell;
 use crate::settings::{AppSettings, CaptureSource, get_settings};
 use crate::utils;
 use log::{debug, error, info, warn};
+use std::sync::atomic::{AtomicU64, Ordering as AtomicOrdering};
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
 use tauri::Manager;
@@ -185,6 +186,9 @@ pub struct AudioRecordingManager {
     is_open: Arc<Mutex<bool>>,
     is_recording: Arc<Mutex<bool>>,
     did_mute: Arc<Mutex<bool>>,
+    /// Bumped each time a take ends in on-demand mode; a pending "close the warm
+    /// microphone" timer only acts if no later take has ended since it started.
+    warm_generation: Arc<AtomicU64>,
 }
 
 impl AudioRecordingManager {
@@ -207,6 +211,7 @@ impl AudioRecordingManager {
             is_open: Arc::new(Mutex::new(false)),
             is_recording: Arc::new(Mutex::new(false)),
             did_mute: Arc::new(Mutex::new(false)),
+            warm_generation: Arc::new(AtomicU64::new(0)),
         };
 
         // Always-on?  Open immediately.
@@ -584,7 +589,7 @@ impl AudioRecordingManager {
 
                 // In on-demand mode turn the mic off again
                 if matches!(*self.mode.lock().unwrap(), MicrophoneMode::OnDemand) {
-                    self.stop_microphone_stream();
+                    self.release_microphone_after_take();
                 }
 
                 // Pad if very short
@@ -661,8 +666,46 @@ impl AudioRecordingManager {
 
             // In on-demand mode turn the mic off again
             if matches!(*self.mode.lock().unwrap(), MicrophoneMode::OnDemand) {
-                self.stop_microphone_stream();
+                self.release_microphone_after_take();
             }
+        }
+    }
+
+    /// On-demand mode closes the microphone after each take — unless the user chose
+    /// to keep it warm for a few minutes, so the next take starts without the
+    /// ~0.75 s wake-up of an idle device (the system mic indicator stays on
+    /// meanwhile). The delayed close holds the state lock, which try_start_recording
+    /// holds for its whole start, so it can never close the stream under a take.
+    fn release_microphone_after_take(&self) {
+        let minutes = get_settings(&self.app_handle).mic_keep_warm_minutes;
+        let generation = self.warm_generation.fetch_add(1, AtomicOrdering::SeqCst) + 1;
+        if minutes == 0 {
+            self.stop_microphone_stream();
+            return;
+        }
+        let manager = self.clone();
+        std::thread::spawn(move || {
+            std::thread::sleep(std::time::Duration::from_secs(u64::from(minutes) * 60));
+            let state = manager.state.lock().unwrap();
+            if manager.warm_generation.load(AtomicOrdering::SeqCst) == generation
+                && matches!(*state, RecordingState::Idle)
+                && matches!(*manager.mode.lock().unwrap(), MicrophoneMode::OnDemand)
+            {
+                manager.stop_microphone_stream();
+                debug!("Warm microphone closed after {minutes} min idle");
+            }
+        });
+    }
+
+    /// Close a microphone kept warm after a take right away (the setting was
+    /// switched off). No-op while recording or in always-on mode.
+    pub fn release_warm_microphone(&self) {
+        let state = self.state.lock().unwrap();
+        self.warm_generation.fetch_add(1, AtomicOrdering::SeqCst);
+        if matches!(*state, RecordingState::Idle)
+            && matches!(*self.mode.lock().unwrap(), MicrophoneMode::OnDemand)
+        {
+            self.stop_microphone_stream();
         }
     }
 }

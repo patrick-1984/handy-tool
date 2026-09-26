@@ -27,6 +27,10 @@
     },
     "modelTesting": "Modelltests",
     "resize": "Zum Ändern der Größe ziehen",
+    "search": {
+      "placeholder": "Einstellungen durchsuchen",
+      "noResults": "Keine Treffer"
+    },
     "update": {
       "checking": "Suche nach Aktualisierungen…",
       "available": "Handy Tool {{version}} ist verfügbar",
@@ -214,6 +218,7 @@
         "clear": "Tastenkürzel entfernen",
         "altGrConflict": "Windows meldet AltGr als Strg+Alt, daher wird dieses Kürzel ausgelöst, statt AltGr-Zeichen wie ą oder ó einzugeben. Wähle eine Kombination ohne Strg+Alt.",
         "conflict": "Auch verwendet von: {{names}}. Nur eines davon funktioniert.",
+        "singleKey": "Diese Taste allein löst das Tastenkürzel überall aus, sodass Sie sie nicht mehr tippen können. Fügen Sie eine Zusatztaste wie Strg oder Alt hinzu.",
         "bindings": {
           "transcribe": {
             "name": "Transkriptions-Tastenkürzel",
@@ -452,6 +457,12 @@
         "description": "Das Eingabegerät, von dem Handy aufnimmt. Wirkt ab der nächsten Aufnahme, ohne Neustart. Standard: das System-Standardgerät — lege es explizit fest, wenn du zwischen Headset und eingebautem Mikrofon-Array wechselst, und nutze die Zurücksetzen-Schaltfläche, um zur Systemwahl zurückzukehren.",
         "placeholder": "Mikrofon auswählen...",
         "loading": "Wird geladen..."
+      },
+      "micKeepWarm": {
+        "title": "Mikrofon bereithalten",
+        "description": "Hält das Mikrofon nach jeder Aufnahme einige Minuten offen, sodass die nächste sofort startet, statt auf ein ruhendes Mikrofon zu warten. Standard: Aus. Solange es offen ist, leuchtet die Mikrofonanzeige des Systems.",
+        "off": "Aus",
+        "minutes": "{{minutes}} Min."
       },
       "audioFeedback": {
         "label": "Audio-Feedback",

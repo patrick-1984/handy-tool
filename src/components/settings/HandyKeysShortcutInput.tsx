@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { formatKeyCombination, normalizeChord } from "../../lib/utils/keyboard";
 import { ResetButton } from "../ui/ResetButton";
 import { AltGrWarning } from "./AltGrWarning";
+import { SingleKeyWarning } from "./SingleKeyWarning";
 import { ShortcutConflictWarning } from "./ShortcutConflictWarning";
 import { SettingContainer } from "../ui/SettingContainer";
 import { useSettings } from "../../hooks/useSettings";
@@ -343,6 +344,7 @@ export const HandyKeysShortcutInput: React.FC<HandyKeysShortcutInputProps> = ({
       <div className="flex items-center space-x-1">
         <ShortcutConflictWarning shortcutId={shortcutId} />
         <AltGrWarning binding={binding.current_binding} />
+        <SingleKeyWarning binding={binding.current_binding} />
         {isRecording ? (
           <div
             ref={shortcutRef}
