@@ -15,6 +15,7 @@ This shelf mirrors the Windows 1.0.0 sidebar. Open a page below when you need th
 ## Configuration
 
 - [General](general.md) — shortcuts, model-specific choices, transcription, re-paste, and sound.
+- [Shortcuts](shortcuts.md) — every shortcut on one page, with duplicates flagged.
 - [Models](models.md) — downloads, selection, filtering, and idle unloading.
 - [Advanced](advanced.md) — App, Transcription, Providers, MCP & CLI, History, and Post-processing.
 - [Backup](backup.md) — export and selective restore.

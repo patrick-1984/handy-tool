@@ -8,6 +8,7 @@
   },
   "sidebar": {
     "general": "Ogólne",
+    "shortcuts": "Skróty",
     "models": "Modele",
     "advanced": "Zaawansowane",
     "postProcessing": "Postproces",
@@ -209,7 +210,10 @@
         "none": "Brak skonfigurowanych skrótów",
         "notFound": "Nie znaleziono skrótu",
         "pressKeys": "Naciśnij klawisze...",
+        "unset": "Brak",
+        "clear": "Usuń skrót",
         "altGrConflict": "Windows zgłasza AltGr jako Ctrl+Alt, więc ten skrót uruchamia się zamiast wpisania znaków AltGr, takich jak ą czy ó. Wybierz kombinację bez Ctrl+Alt.",
+        "conflict": "Używany także przez: {{names}}. Zadziała tylko jeden z nich.",
         "bindings": {
           "transcribe": {
             "name": "Skrót transkrypcji",
@@ -430,6 +434,15 @@
         "lastChecked": "Ostatnie sprawdzenie: {{value}}",
         "never": "Nigdy",
         "portableUnsupported": "Wersji przenośnej nie można zaktualizować w miejscu. Pobierz najnowszą wersję przenośną."
+      }
+    },
+    "shortcuts": {
+      "groups": {
+        "dictation": "Dyktowanie"
+      },
+      "conflicts": {
+        "title": "Niektóre skróty używają tych samych klawiszy",
+        "description": "Kombinacji klawiszy może używać tylko jedna akcja, więc z każdej pary działa tylko jeden skrót. Zmień lub wyczyść jeden ze skrótów oznaczonych czerwonym ostrzeżeniem."
       }
     },
     "sound": {

@@ -5,6 +5,7 @@ import {
   AudioLines,
   Bot,
   Cog,
+  Command,
   Crosshair,
   FlaskConical,
   Hash,
@@ -21,6 +22,7 @@ import { UpdateBanner } from "./UpdateBanner";
 import { useSettings } from "../hooks/useSettings";
 import {
   GeneralSettings,
+  ShortcutsSettings,
   AdvancedSettings,
   CurrentAudioView,
   HistorySettings,
@@ -62,6 +64,13 @@ export const SECTIONS_CONFIG = {
     labelKey: "sidebar.general",
     icon: HandyHand,
     component: GeneralSettings,
+    group: "config",
+    enabled: () => true,
+  },
+  shortcuts: {
+    labelKey: "sidebar.shortcuts",
+    icon: Command,
+    component: ShortcutsSettings,
     group: "config",
     enabled: () => true,
   },

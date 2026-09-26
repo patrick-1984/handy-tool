@@ -47,6 +47,76 @@ fn warn_if_altgr_risky(id: &str, chord: &str) {
     }
 }
 
+/// A binding whose chord is empty is switched off ("None" in the UI): it is kept in
+/// settings but never registered with either backend.
+pub(crate) fn is_unbound(chord: &str) -> bool {
+    chord.trim().is_empty()
+}
+
+/// Canonical form of a chord for spotting two bindings on the same keys: case,
+/// modifier spelling and order, and left/right modifier sides do not make two
+/// chords different. Mirrors `normalizeChord` in `src/lib/utils/keyboard.ts`.
+pub(crate) fn normalize_chord(chord: &str) -> String {
+    let mut modifiers = Vec::new();
+    let mut keys = Vec::new();
+    for part in chord.split('+') {
+        let part = part.trim().to_lowercase();
+        let part = part
+            .strip_suffix("_left")
+            .or_else(|| part.strip_suffix("_right"))
+            .unwrap_or(&part);
+        let part = match part {
+            "control" => "ctrl",
+            "option" => "alt",
+            "command" | "cmd" | "meta" | "win" | "windows" => "super",
+            other => other,
+        };
+        match part {
+            "" => {}
+            "ctrl" | "alt" | "shift" | "super" | "fn" => modifiers.push(part.to_string()),
+            _ => keys.push(part.to_string()),
+        }
+    }
+    modifiers.sort();
+    modifiers.dedup();
+    keys.sort();
+    modifiers.extend(keys);
+    modifiers.join("+")
+}
+
+/// The id of another binding already on `chord`, if any.
+fn binding_on_same_chord(
+    bindings: &std::collections::HashMap<String, ShortcutBinding>,
+    id: &str,
+    chord: &str,
+) -> Option<String> {
+    let wanted = normalize_chord(chord);
+    bindings
+        .iter()
+        .find(|(other_id, b)| {
+            other_id.as_str() != id
+                && !is_unbound(&b.current_binding)
+                && normalize_chord(&b.current_binding) == wanted
+        })
+        .map(|(other_id, _)| other_id.clone())
+}
+
+/// With the Tauri backend only one binding can hold a chord, so a duplicate the user
+/// chose to keep is saved inactive. After any change a chord may have been freed, so
+/// give every inactive binding another try; one still blocked simply fails again.
+/// Cancel is skipped: it is registered only while recording.
+fn activate_waiting_bindings(app: &AppHandle) {
+    let bindings = settings::get_bindings(app);
+    for failure in get_shortcut_registration_failures() {
+        if failure.id == "cancel" {
+            continue;
+        }
+        if let Some(binding) = bindings.get(&failure.id).cloned() {
+            let _ = register_shortcut(app, binding);
+        }
+    }
+}
+
 pub fn init_shortcuts(app: &AppHandle) {
     let user_settings = settings::load_or_create_app_settings(app);
 
@@ -217,6 +287,16 @@ fn synthesize_release_if_recording(app: &AppHandle, binding_id: &str) {
 /// Unregister a shortcut using the appropriate implementation
 pub fn unregister_shortcut(app: &AppHandle, binding: ShortcutBinding) -> Result<(), String> {
     synthesize_release_if_recording(app, &binding.id);
+    // A binding that failed to register holds nothing to remove. With the Tauri
+    // backend, unregistering by chord would tear down whichever binding DOES hold
+    // it - the other half of a duplicate pair.
+    let inactive = REGISTRATION_FAILURES
+        .lock()
+        .map(|f| f.iter().any(|failure| failure.id == binding.id))
+        .unwrap_or(false);
+    if inactive {
+        return Ok(());
+    }
     let settings = get_settings(app);
     match settings.keyboard_implementation {
         KeyboardImplementation::Tauri => tauri_impl::unregister_shortcut(app, binding),
@@ -242,10 +322,12 @@ pub fn change_binding(
     id: String,
     binding: String,
 ) -> Result<BindingResponse, String> {
-    // Reject empty bindings — every shortcut should have a value
-    if binding.trim().is_empty() {
-        return Err("Binding cannot be empty".to_string());
-    }
+    // An empty binding switches the shortcut off ("None"); store it as exactly "".
+    let binding = if is_unbound(&binding) {
+        String::new()
+    } else {
+        binding
+    };
 
     let mut settings = settings::get_settings(&app);
 
@@ -317,32 +399,65 @@ pub fn change_binding(
         }
     }
 
+    // While the UI is recording a chord every shortcut is already off, and
+    // resume_all_bindings registers them all (in the right order) afterwards.
+    let suspended = shortcuts_suspended();
+
     // Unregister the existing binding
-    if let Err(e) = unregister_shortcut(&app, binding_to_modify.clone()) {
-        let error_msg = format!("Failed to unregister shortcut: {}", e);
-        error!("change_binding error: {}", error_msg);
+    if !suspended {
+        if let Err(e) = unregister_shortcut(&app, binding_to_modify.clone()) {
+            let error_msg = format!("Failed to unregister shortcut: {}", e);
+            error!("change_binding error: {}", error_msg);
+        }
     }
 
     // Validate the new shortcut for the current keyboard implementation
-    if let Err(e) = validate_shortcut_for_implementation(&binding, settings.keyboard_implementation)
-    {
-        warn!("change_binding validation error: {}", e);
-        return Err(e);
+    if !is_unbound(&binding) {
+        if let Err(e) =
+            validate_shortcut_for_implementation(&binding, settings.keyboard_implementation)
+        {
+            warn!("change_binding validation error: {}", e);
+            return Err(e);
+        }
     }
+
+    // Two bindings on one chord are allowed (the UI flags the conflict). Look this
+    // up before registering, because it decides what a registration failure means.
+    let duplicate_of = if is_unbound(&binding) {
+        None
+    } else {
+        binding_on_same_chord(&settings.bindings, &id, &binding)
+    };
 
     // Create an updated binding
     let mut updated_binding = binding_to_modify;
     updated_binding.current_binding = binding;
 
     // Register the new binding
-    if let Err(e) = register_shortcut(&app, updated_binding.clone()) {
-        let error_msg = format!("Failed to register shortcut: {}", e);
-        error!("change_binding error: {}", error_msg);
-        return Ok(BindingResponse {
-            success: false,
-            binding: None,
-            error: Some(error_msg),
-        });
+    let registered = if suspended {
+        Ok(())
+    } else {
+        register_shortcut(&app, updated_binding.clone())
+    };
+    if let Err(e) = registered {
+        match &duplicate_of {
+            // The Tauri backend lets only one binding hold a chord. Keep the user's
+            // choice anyway: it stays inactive (listed as not registered) and takes
+            // over as soon as the other binding moves off the chord.
+            Some(other) => warn!(
+                "change_binding: '{}' shares its chord with '{}' and stays inactive: {}",
+                id, other, e
+            ),
+            None => {
+                let error_msg = format!("Failed to register shortcut: {}", e);
+                error!("change_binding error: {}", error_msg);
+                return Ok(BindingResponse {
+                    success: false,
+                    binding: None,
+                    error: Some(error_msg),
+                });
+            }
+        }
     }
 
     // Update the binding in the settings
@@ -350,6 +465,11 @@ pub fn change_binding(
 
     // Save the settings
     settings::write_settings(&app, settings);
+
+    // The old chord was just released; a duplicate may have been waiting for it.
+    if !suspended {
+        activate_waiting_bindings(&app);
+    }
 
     // Return the updated binding
     Ok(BindingResponse {
@@ -366,31 +486,102 @@ pub fn reset_binding(app: AppHandle, id: String) -> Result<BindingResponse, Stri
     change_binding(app, id, binding.default_binding)
 }
 
-/// Temporarily unregister a binding while the user is editing it in the UI.
-/// This avoids firing the action while keys are being recorded.
-#[tauri::command]
-#[specta::specta]
-pub fn suspend_binding(app: AppHandle, id: String) -> Result<(), String> {
-    if let Some(b) = settings::get_bindings(&app).get(&id).cloned() {
-        if let Err(e) = unregister_shortcut(&app, b) {
-            error!("suspend_binding error for id '{}': {}", id, e);
-            return Err(e);
-        }
-    }
-    Ok(())
+/// While the UI records a new chord every shortcut is off, not just the one being
+/// edited: the OS delivers a chord another binding holds to THAT binding, so pressing
+/// Ctrl+Space to put it on Paste Last started a take and never reached the recorder.
+struct Suspension {
+    /// Editors currently recording. Clicking a second shortcut while the first is
+    /// still recording starts the second before the first cancels, so the keys must
+    /// stay off until the last one finishes.
+    depth: usize,
+    /// (id, chord) of each binding that was registered when the suspension began.
+    active: Vec<(String, String)>,
 }
 
-/// Re-register the binding after the user has finished editing.
+static SUSPENSION: once_cell::sync::Lazy<std::sync::Mutex<Option<Suspension>>> =
+    once_cell::sync::Lazy::new(|| std::sync::Mutex::new(None));
+
+fn lock_suspension() -> std::sync::MutexGuard<'static, Option<Suspension>> {
+    SUSPENSION
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
+
+fn shortcuts_suspended() -> bool {
+    lock_suspension().is_some()
+}
+
+/// Every binding the backend should hold right now: the same set init registers
+/// (Cancel is registered only while recording).
+fn registrable_bindings(app: &AppHandle) -> Vec<ShortcutBinding> {
+    let settings = settings::get_settings(app);
+    settings
+        .bindings
+        .values()
+        .filter(|b| {
+            b.id != "cancel"
+                && !is_unbound(&b.current_binding)
+                && !(b.id == "transcribe_with_post_process" && !settings.post_process_enabled)
+                && !(is_jumper_binding(&b.id) && !cfg!(windows))
+        })
+        .cloned()
+        .collect()
+}
+
+/// Turn every shortcut off while the user records a new chord in the UI.
 #[tauri::command]
 #[specta::specta]
-pub fn resume_binding(app: AppHandle, id: String) -> Result<(), String> {
-    if let Some(b) = settings::get_bindings(&app).get(&id).cloned() {
-        if let Err(e) = register_shortcut(&app, b) {
-            error!("resume_binding error for id '{}': {}", id, e);
-            return Err(e);
-        }
+pub fn suspend_all_bindings(app: AppHandle) {
+    let mut suspension = lock_suspension();
+    if let Some(s) = suspension.as_mut() {
+        s.depth += 1;
+        return;
     }
-    Ok(())
+    let inactive: Vec<String> = get_shortcut_registration_failures()
+        .into_iter()
+        .map(|f| f.id)
+        .collect();
+    let mut active = Vec::new();
+    for binding in registrable_bindings(&app) {
+        if inactive.contains(&binding.id) {
+            continue;
+        }
+        if let Err(e) = unregister_shortcut(&app, binding.clone()) {
+            warn!("suspend_all_bindings: '{}': {}", binding.id, e);
+        }
+        active.push((binding.id, binding.current_binding));
+    }
+    *suspension = Some(Suspension { depth: 1, active });
+}
+
+/// Turn every shortcut back on after editing, and return what failed to register.
+/// Bindings that held their keys before editing (and still have the same keys) go
+/// first, so a newly entered duplicate never takes the keys from them.
+#[tauri::command]
+#[specta::specta]
+pub fn resume_all_bindings(app: AppHandle) -> Vec<RegistrationFailure> {
+    let previously_active = {
+        let mut suspension = lock_suspension();
+        match suspension.as_mut() {
+            Some(s) if s.depth > 1 => {
+                s.depth -= 1;
+                None
+            }
+            _ => suspension.take().map(|s| s.active),
+        }
+    };
+    let Some(previously_active) = previously_active else {
+        return get_shortcut_registration_failures();
+    };
+    let (first, rest): (Vec<_>, Vec<_>) = registrable_bindings(&app).into_iter().partition(|b| {
+        previously_active
+            .iter()
+            .any(|(id, chord)| *id == b.id && *chord == b.current_binding)
+    });
+    for binding in first.into_iter().chain(rest) {
+        let _ = register_shortcut(&app, binding);
+    }
+    get_shortcut_registration_failures()
 }
 
 // ============================================================================
@@ -585,10 +776,14 @@ fn register_all_shortcuts_for_implementation(
             .cloned()
             .unwrap_or_else(|| default_binding.clone());
 
-        // Validate the shortcut for the target implementation
-        if let Err(e) =
-            validate_shortcut_for_implementation(&binding.current_binding, implementation)
-        {
+        // Validate the shortcut for the target implementation. An unbound ("None")
+        // binding is valid everywhere and must not be reset to its default.
+        let invalid = if is_unbound(&binding.current_binding) {
+            None
+        } else {
+            validate_shortcut_for_implementation(&binding.current_binding, implementation).err()
+        };
+        if let Some(e) = invalid {
             info!(
                 "Shortcut '{}' ({}) is invalid for {:?}: {}. Resetting to default.",
                 id, binding.current_binding, implementation, e
@@ -2433,4 +2628,68 @@ pub fn change_show_tray_icon_setting(app: AppHandle, enabled: bool) -> Result<()
     tray::set_tray_visibility(&app, enabled);
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashMap;
+
+    fn binding(id: &str, chord: &str) -> ShortcutBinding {
+        ShortcutBinding {
+            id: id.to_string(),
+            name: id.to_string(),
+            description: String::new(),
+            default_binding: chord.to_string(),
+            current_binding: chord.to_string(),
+        }
+    }
+
+    #[test]
+    fn empty_or_blank_chord_is_unbound() {
+        assert!(is_unbound(""));
+        assert!(is_unbound("   "));
+        assert!(!is_unbound("escape"));
+    }
+
+    #[test]
+    fn chords_that_press_the_same_keys_normalize_equal() {
+        assert_eq!(
+            normalize_chord("shift+ctrl+space"),
+            normalize_chord("ctrl+shift+space")
+        );
+        assert_eq!(normalize_chord("Control+A"), normalize_chord("ctrl+a"));
+        assert_eq!(normalize_chord("ctrl_left+f1"), normalize_chord("ctrl+f1"));
+        assert_eq!(normalize_chord("cmd+k"), normalize_chord("super+k"));
+        assert_ne!(normalize_chord("ctrl+a"), normalize_chord("ctrl+shift+a"));
+        assert_ne!(normalize_chord("ctrl+a"), normalize_chord("alt+a"));
+    }
+
+    #[test]
+    fn same_chord_lookup_ignores_self_and_unbound_bindings() {
+        let bindings: HashMap<String, ShortcutBinding> = [
+            ("transcribe", "ctrl+space"),
+            ("paste_last", "ctrl+shift+f10"),
+            ("cancel", ""),
+        ]
+        .into_iter()
+        .map(|(id, chord)| (id.to_string(), binding(id, chord)))
+        .collect();
+
+        assert_eq!(
+            binding_on_same_chord(&bindings, "type_text", "Space+Ctrl"),
+            Some("transcribe".to_string())
+        );
+        // A binding never conflicts with itself.
+        assert_eq!(
+            binding_on_same_chord(&bindings, "transcribe", "ctrl+space"),
+            None
+        );
+        // "None" is not a chord, so two unbound bindings do not conflict.
+        assert_eq!(binding_on_same_chord(&bindings, "type_text", ""), None);
+        assert_eq!(
+            binding_on_same_chord(&bindings, "type_text", "ctrl+f12"),
+            None
+        );
+    }
 }

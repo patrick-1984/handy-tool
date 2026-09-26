@@ -1178,33 +1178,18 @@ export const commands = {
     }
   },
   /**
-   * Temporarily unregister a binding while the user is editing it in the UI.
-   * This avoids firing the action while keys are being recorded.
+   * Turn every shortcut off while the user records a new chord in the UI.
    */
-  async suspendBinding(id: string): Promise<Result<null, string>> {
-    try {
-      return {
-        status: "ok",
-        data: await TAURI_INVOKE("suspend_binding", { id }),
-      };
-    } catch (e) {
-      if (e instanceof Error) throw e;
-      else return { status: "error", error: e as any };
-    }
+  async suspendAllBindings(): Promise<void> {
+    return await TAURI_INVOKE("suspend_all_bindings");
   },
   /**
-   * Re-register the binding after the user has finished editing.
+   * Turn every shortcut back on after editing, and return what failed to register.
+   * Bindings that held their keys before editing (and still have the same keys) go
+   * first, so a newly entered duplicate never takes the keys from them.
    */
-  async resumeBinding(id: string): Promise<Result<null, string>> {
-    try {
-      return {
-        status: "ok",
-        data: await TAURI_INVOKE("resume_binding", { id }),
-      };
-    } catch (e) {
-      if (e instanceof Error) throw e;
-      else return { status: "error", error: e as any };
-    }
+  async resumeAllBindings(): Promise<RegistrationFailure[]> {
+    return await TAURI_INVOKE("resume_all_bindings");
   },
   async changeMuteWhileRecordingSetting(
     enabled: boolean,

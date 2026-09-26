@@ -8,6 +8,7 @@
   },
   "sidebar": {
     "general": "General",
+    "shortcuts": "Atajos",
     "models": "Modelos",
     "advanced": "Avanzado",
     "postProcessing": "Post Proceso",
@@ -209,7 +210,10 @@
         "none": "No hay atajos configurados",
         "notFound": "Atajo no encontrado",
         "pressKeys": "Presiona teclas...",
+        "unset": "Ninguno",
+        "clear": "Quitar atajo",
         "altGrConflict": "Windows informa de AltGr como Ctrl+Alt, así que este atajo se activa en lugar de escribir caracteres AltGr como ą u ó. Elige una combinación sin Ctrl+Alt.",
+        "conflict": "También lo usa: {{names}}. Solo funcionará uno de ellos.",
         "bindings": {
           "transcribe": {
             "name": "Atajo de Transcripción",
@@ -430,6 +434,15 @@
         "lastChecked": "Última comprobación: {{value}}",
         "never": "Nunca",
         "portableUnsupported": "Las copias portátiles no se pueden actualizar en el sitio. Descarga la última versión portátil."
+      }
+    },
+    "shortcuts": {
+      "groups": {
+        "dictation": "Dictado"
+      },
+      "conflicts": {
+        "title": "Algunos atajos usan las mismas teclas",
+        "description": "Solo una acción puede usar una combinación de teclas, así que solo funciona uno de cada par. Cambia o quita uno de los atajos marcados con un aviso rojo."
       }
     },
     "sound": {

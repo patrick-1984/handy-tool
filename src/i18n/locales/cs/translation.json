@@ -8,6 +8,7 @@
   },
   "sidebar": {
     "general": "Obecné",
+    "shortcuts": "Zkratky",
     "models": "Modely",
     "advanced": "Pokročilé",
     "postProcessing": "Následné zpracování",
@@ -209,7 +210,10 @@
         "none": "Žádné zkratky nejsou nastavené",
         "notFound": "Zkratka nenalezena",
         "pressKeys": "Stiskněte klávesy...",
+        "unset": "Žádná",
+        "clear": "Odebrat zkratku",
         "altGrConflict": "Windows hlásí AltGr jako Ctrl+Alt, takže se místo napsání znaků AltGr jako ą nebo ó spustí tato zkratka. Zvolte kombinaci bez Ctrl+Alt.",
+        "conflict": "Používá také: {{names}}. Funguje jen jedna z nich.",
         "bindings": {
           "transcribe": {
             "name": "Zkratka přepisu",
@@ -430,6 +434,15 @@
         "lastChecked": "Poslední kontrola: {{value}}",
         "never": "Nikdy",
         "portableUnsupported": "Přenosnou verzi nelze aktualizovat na místě. Stáhněte nejnovější přenosnou verzi."
+      }
+    },
+    "shortcuts": {
+      "groups": {
+        "dictation": "Diktování"
+      },
+      "conflicts": {
+        "title": "Některé zkratky používají stejné klávesy",
+        "description": "Kombinaci kláves může používat jen jedna akce, takže z každé dvojice funguje jen jedna. Změňte nebo zrušte jednu ze zkratek označených červeným varováním."
       }
     },
     "sound": {

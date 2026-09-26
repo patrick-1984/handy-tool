@@ -529,6 +529,30 @@ Windows-only.
 keys moved off `ctrl+alt+<letter>` chords across earlier releases; 1.4.0 finished the job by
 moving Transcribe & Submit off `ctrl+alt+space` and adding the test and the warning.
 
+### Turn off a shortcut you don't want
+
+<a id="turn-off-a-shortcut-you-dont-want"></a>
+**The situation.** A default shortcut sits on a key you need for something else — Escape cancels
+a take, but Escape is also what the terminal or editor you are dictating into needs.
+**What Handy does.** Every shortcut can be set to **None**. It stays in your settings but is never
+registered, so the keys belong to the other application again. Reset brings the default back.
+With Cancel switched off, the overlay's X button still cancels a take.
+**Where.** The × button beside every shortcut control, on the feature pages and on `Shortcuts`.
+**Since.** 1.7.0.
+
+### Every shortcut on one page
+
+<a id="every-shortcut-on-one-page"></a>
+**The situation.** Shortcuts sit next to their features — General, Keyboard Typer, Jumper, Post
+Process, Debug — so checking whether two of them collide means visiting every page.
+**What Handy does.** One page lists them all, grouped by feature, and marks any two actions on the
+same keys with a red warning that names the other one. A duplicate is kept rather than refused,
+but only one of the pair can work: with the default keyboard backend the second stays inactive
+and takes over by itself as soon as the first moves off the keys. The feature pages keep their
+own shortcut rows; both edit the same setting.
+**Where.** `Shortcuts`.
+**Since.** 1.7.0.
+
 ### When delivery can't be verified, the text is still recoverable
 
 <a id="when-delivery-cant-be-verified-the-text-is-parked"></a>
@@ -2311,8 +2335,10 @@ history-only failure recovery since 1.0.5.
 **The situation.** The window is closed, you pressed the key, and you want to know whether
 anything is happening.
 **What Handy does.** The tray icon changes between idle, recording and transcribing, in variants
-that stay readable on light, dark and colored taskbars, with a tooltip. Its menu opens settings,
-copies the last transcript, unloads the model, cancels a take and quits. Its labels are generated
+that stay readable on light, dark and colored taskbars, with a tooltip. Clicking the icon opens
+the window; right-clicking it opens the menu, which opens settings, copies the last transcript,
+unloads the model, cancels a take and quits (on macOS the menu opens on a plain click, as
+menu-bar items do there). Its labels are generated
 at build time from the same translation files the interface uses, so they cannot drift out of
 sync.
 **Where.** `Tray › Copy Last Transcript` and `Advanced › App › Show Tray Icon = On`.

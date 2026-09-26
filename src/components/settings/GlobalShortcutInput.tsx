@@ -4,9 +4,12 @@ import {
   getKeyName,
   formatKeyCombination,
   normalizeKey,
+  normalizeChord,
 } from "../../lib/utils/keyboard";
+import { X } from "lucide-react";
 import { ResetButton } from "../ui/ResetButton";
 import { AltGrWarning } from "./AltGrWarning";
+import { ShortcutConflictWarning } from "./ShortcutConflictWarning";
 import { SettingContainer } from "../ui/SettingContainer";
 import { useSettings } from "../../hooks/useSettings";
 import { useOsType } from "../../hooks/useOsType";
@@ -36,9 +39,33 @@ export const GlobalShortcutInput: React.FC<GlobalShortcutInputProps> = ({
   );
   const [originalBinding, setOriginalBinding] = useState<string>("");
   const shortcutRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
+  // True between suspendAllBindings and resumeAllBindings for this editor.
+  const suspendedRef = useRef(false);
   const osType = useOsType();
 
   const bindings = getSetting("bindings") || {};
+
+  // Every shortcut is off while a chord is recorded (see startRecording). Turn
+  // them back on; returns what failed to register.
+  const resumeShortcuts = async () => {
+    if (!suspendedRef.current) return [];
+    suspendedRef.current = false;
+    return commands.resumeAllBindings().catch((error) => {
+      console.error("Failed to resume shortcuts:", error);
+      return [];
+    });
+  };
+
+  // Leaving the page mid-recording must not leave every shortcut switched off.
+  useEffect(
+    () => () => {
+      if (suspendedRef.current) {
+        suspendedRef.current = false;
+        commands.resumeAllBindings().catch(console.error);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     // Only add event listeners when we're in editing mode
@@ -46,28 +73,11 @@ export const GlobalShortcutInput: React.FC<GlobalShortcutInputProps> = ({
 
     let cleanup = false;
 
-    // Keyboard event listeners
+    // Keyboard event listeners. Escape is recorded like any other key (it is
+    // the Cancel default); clicking anywhere else stops editing.
     const handleKeyDown = async (e: KeyboardEvent) => {
       if (cleanup) return;
       if (e.repeat) return; // ignore auto-repeat
-      if (e.key === "Escape") {
-        // Cancel recording and restore original binding
-        if (editingShortcutId && originalBinding) {
-          try {
-            await updateBinding(editingShortcutId, originalBinding);
-          } catch (error) {
-            console.error("Failed to restore original binding:", error);
-            toast.error(t("settings.general.shortcut.errors.restore"));
-          }
-        } else if (editingShortcutId) {
-          await commands.resumeBinding(editingShortcutId).catch(console.error);
-        }
-        setEditingShortcutId(null);
-        setKeyPressed([]);
-        setRecordedKeys([]);
-        setOriginalBinding("");
-        return;
-      }
       e.preventDefault();
 
       // Get the key with OS-specific naming and normalize it
@@ -122,8 +132,10 @@ export const GlobalShortcutInput: React.FC<GlobalShortcutInputProps> = ({
         const newShortcut = sortedKeys.join("+");
 
         if (editingShortcutId && bindings[editingShortcutId]) {
+          let saved = false;
           try {
             await updateBinding(editingShortcutId, newShortcut);
+            saved = true;
           } catch (error) {
             console.error("Failed to change binding:", error);
             toast.error(
@@ -141,6 +153,25 @@ export const GlobalShortcutInput: React.FC<GlobalShortcutInputProps> = ({
                 toast.error(t("settings.general.shortcut.errors.reset"));
               }
             }
+          }
+
+          // Registration happens when the shortcuts come back on. A chord another
+          // app holds is reported here; a chord another shortcut holds is not —
+          // duplicates are allowed and flagged by their conflict warning.
+          const failures = await resumeShortcuts();
+          const failure = failures.find((f) => f.id === editingShortcutId);
+          const sharedWithAnother = Object.entries(bindings).some(
+            ([id, b]) =>
+              id !== editingShortcutId &&
+              normalizeChord(b?.current_binding ?? "") ===
+                normalizeChord(newShortcut),
+          );
+          if (saved && failure && !sharedWithAnother) {
+            toast.error(
+              t("settings.general.shortcut.errors.set", {
+                error: failure.error,
+              }),
+            );
           }
 
           // Exit editing mode and reset states
@@ -165,9 +196,8 @@ export const GlobalShortcutInput: React.FC<GlobalShortcutInputProps> = ({
             console.error("Failed to restore original binding:", error);
             toast.error(t("settings.general.shortcut.errors.restore"));
           }
-        } else if (editingShortcutId) {
-          commands.resumeBinding(editingShortcutId).catch(console.error);
         }
+        await resumeShortcuts();
         setEditingShortcutId(null);
         setKeyPressed([]);
         setRecordedKeys([]);
@@ -199,8 +229,12 @@ export const GlobalShortcutInput: React.FC<GlobalShortcutInputProps> = ({
   const startRecording = async (id: string) => {
     if (editingShortcutId === id) return; // Already editing this shortcut
 
-    // Suspend current binding to avoid firing while recording
-    await commands.suspendBinding(id).catch(console.error);
+    // Switch every shortcut off while recording: a chord another shortcut holds
+    // would otherwise fire that shortcut instead of reaching this recorder.
+    if (!suspendedRef.current) {
+      suspendedRef.current = true;
+      await commands.suspendAllBindings().catch(console.error);
+    }
 
     // Store the original binding to restore if canceled
     setOriginalBinding(bindings[id]?.current_binding || "");
@@ -221,6 +255,17 @@ export const GlobalShortcutInput: React.FC<GlobalShortcutInputProps> = ({
   // Store references to shortcut elements
   const setShortcutRef = (id: string, ref: HTMLDivElement | null) => {
     shortcutRefs.current.set(id, ref);
+  };
+
+  // Switch the shortcut off ("None"). An empty chord is never registered.
+  const clearBinding = async () => {
+    try {
+      await updateBinding(shortcutId, "");
+    } catch (error) {
+      toast.error(
+        t("settings.general.shortcut.errors.set", { error: String(error) }),
+      );
+    }
   };
 
   // If still loading, show loading state
@@ -291,6 +336,7 @@ export const GlobalShortcutInput: React.FC<GlobalShortcutInputProps> = ({
       layout="horizontal"
     >
       <div className="flex items-center space-x-1">
+        <ShortcutConflictWarning shortcutId={shortcutId} />
         <AltGrWarning binding={binding.current_binding} />
         {editingShortcutId === shortcutId ? (
           <div
@@ -301,12 +347,25 @@ export const GlobalShortcutInput: React.FC<GlobalShortcutInputProps> = ({
           </div>
         ) : (
           <div
-            className="px-2 py-1 text-sm font-semibold bg-mid-gray/10 border border-mid-gray/80 hover:bg-logo-primary/10 rounded-md cursor-pointer hover:border-logo-primary"
+            className={`px-2 py-1 text-sm bg-mid-gray/10 border border-mid-gray/80 hover:bg-logo-primary/10 rounded-md cursor-pointer hover:border-logo-primary ${
+              binding.current_binding ? "font-semibold" : "text-mid-gray"
+            }`}
             onClick={() => startRecording(shortcutId)}
           >
-            {formatKeyCombination(binding.current_binding, osType)}
+            {binding.current_binding
+              ? formatKeyCombination(binding.current_binding, osType)
+              : t("settings.general.shortcut.unset")}
           </div>
         )}
+        <ResetButton
+          onClick={clearBinding}
+          disabled={
+            !binding.current_binding || isUpdating(`binding_${shortcutId}`)
+          }
+          ariaLabel={t("settings.general.shortcut.clear")}
+        >
+          <X className="h-4 w-4" />
+        </ResetButton>
         <ResetButton
           onClick={() => resetBinding(shortcutId)}
           disabled={isUpdating(`binding_${shortcutId}`)}

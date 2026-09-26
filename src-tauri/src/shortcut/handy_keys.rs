@@ -228,6 +228,12 @@ impl HandyKeysState {
 
     /// Register a shortcut binding
     pub fn register(&self, binding: &ShortcutBinding) -> Result<(), String> {
+        // Switched off by the user ("None"): nothing to register. Unregistering is by
+        // binding id, so it is already a no-op for a binding that was never added.
+        if super::is_unbound(&binding.current_binding) {
+            return Ok(());
+        }
+
         let (tx, rx) = mpsc::channel();
         self.command_sender
             .lock()

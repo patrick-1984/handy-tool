@@ -47,7 +47,7 @@ use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
 use tauri::image::Image;
 pub use transcription_coordinator::TranscriptionCoordinator;
 
-use tauri::tray::TrayIconBuilder;
+use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{AppHandle, Emitter, Listener, Manager};
 use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
 use tauri_plugin_log::{Builder as LogBuilder, RotationStrategy, Target, TargetKind};
@@ -279,7 +279,22 @@ fn initialize_core_logic(app_handle: &AppHandle) {
             .unwrap(),
         )
         .tooltip("Handy Tool")
-        .show_menu_on_left_click(true)
+        // Left click opens the window; the menu (Quit, Cancel, ...) is on right click.
+        // macOS keeps the menu on left click, which is what a menu-bar item does there.
+        .show_menu_on_left_click(cfg!(target_os = "macos"))
+        .on_tray_icon_event(|tray, event| {
+            if cfg!(target_os = "macos") {
+                return;
+            }
+            if let TrayIconEvent::Click {
+                button: MouseButton::Left,
+                button_state: MouseButtonState::Up,
+                ..
+            } = event
+            {
+                show_main_window(tray.app_handle());
+            }
+        })
         .icon_as_template(true)
         .on_menu_event(|app, event| match event.id.as_ref() {
             "settings" => {
@@ -460,8 +475,8 @@ pub fn run(cli_args: CliArgs) {
         shortcut::delete_post_process_prompt,
         shortcut::set_post_process_selected_prompt,
         shortcut::update_custom_words,
-        shortcut::suspend_binding,
-        shortcut::resume_binding,
+        shortcut::suspend_all_bindings,
+        shortcut::resume_all_bindings,
         shortcut::change_mute_while_recording_setting,
         shortcut::change_append_trailing_space_setting,
         shortcut::change_preserve_transcriptions_setting,

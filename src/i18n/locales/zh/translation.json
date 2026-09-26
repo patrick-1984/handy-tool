@@ -8,6 +8,7 @@
   },
   "sidebar": {
     "general": "通用",
+    "shortcuts": "快捷键",
     "models": "模型",
     "advanced": "高级",
     "postProcessing": "后处理",
@@ -209,7 +210,10 @@
         "none": "未配置快捷键",
         "notFound": "未找到快捷键",
         "pressKeys": "请按键...",
+        "unset": "无",
+        "clear": "设为无",
         "altGrConflict": "Windows 将 AltGr 识别为 Ctrl+Alt，因此按下时会触发此快捷键，而不会输入 ą、ó 等 AltGr 字符。请选择不含 Ctrl+Alt 的组合键。",
+        "conflict": "也被以下项目使用：{{names}}。只有其中一个会生效。",
         "bindings": {
           "transcribe": {
             "name": "转录快捷键",
@@ -430,6 +434,15 @@
         "lastChecked": "上次检查：{{value}}",
         "never": "从未",
         "portableUnsupported": "便携版无法原地更新。请下载最新便携版。"
+      }
+    },
+    "shortcuts": {
+      "groups": {
+        "dictation": "听写"
+      },
+      "conflicts": {
+        "title": "部分快捷键使用了相同的按键",
+        "description": "一个按键组合只能用于一个操作，因此每对中只有一个有效。请修改或清除带红色警告的其中一个快捷键。"
       }
     },
     "sound": {

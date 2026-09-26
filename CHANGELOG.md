@@ -1,5 +1,45 @@
 # Changelog
 
+## [1.7.0] - 2026-09-26 02:59
+
+### Added
+
+- **Any shortcut can be set to None.** Every shortcut control has a × button that switches the
+  shortcut off: it stays in your settings, is never registered, and its keys belong to other
+  applications again. The typical case is Cancel on Escape, which you may need in the terminal
+  or editor you are dictating into; the overlay's X button still cancels a take. Reset brings
+  the default back. Until now an empty shortcut was rejected outright, and switching keyboard
+  backend would have reset it to its default.
+- **Shortcuts page: every shortcut in one place.** A new `Shortcuts` page lists all of them
+  grouped by feature (Dictation, Keyboard Typer, Jumper), including Cancel, which was previously
+  reachable only on the hidden Debug page. The feature pages keep their own shortcut rows.
+- **Conflict warnings.** Two actions on the same keys are marked with a red warning naming the
+  other action, on every shortcut control, plus a banner on the Shortcuts page. A duplicate is
+  kept rather than refused, but only one of the pair can work: with the default keyboard backend
+  the second stays inactive (and is listed as not registered) until the first moves off the keys,
+  at which point it takes over by itself.
+
+### Changed
+
+- **Clicking the tray icon opens the window.** A left click used to open the tray menu, which is
+  rarely what you want from it. The menu (Copy Last Transcript, Cancel, Quit, ...) is now on
+  right click. macOS keeps the menu on a plain click, as menu-bar items do there.
+
+### Fixed
+
+- **A shortcut can be set to keys another shortcut already uses.** While a shortcut field was
+  waiting for keys, every other shortcut stayed active, so pressing Ctrl+Space to put it on
+  Paste Last started a recording instead and the field only saw "Ctrl". All shortcuts now switch
+  off while you enter one and come back afterwards; the one that already had the keys keeps them.
+  This applied to both keyboard backends.
+- **Escape can be entered as a shortcut.** Escape stopped the shortcut editor instead of being
+  recorded, so it could never be chosen - not even to put Cancel back on Escape without Reset.
+  It is now recorded like any other key and shown as "Escape", the same as the default (a chord
+  saved as "esc" by an earlier build is shown that way too); click anywhere else to stop editing.
+- **Editing an inactive shortcut no longer switches off the one that holds its keys.**
+  Unregistering is done by chord, so removing a binding that had failed to register tore down
+  whichever binding did hold that chord. Bindings that are not registered are now skipped.
+
 ## [1.6.3] - 2026-09-25 21:52
 
 ### Fixed

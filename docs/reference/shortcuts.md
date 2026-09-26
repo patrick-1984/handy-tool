@@ -20,6 +20,8 @@ Nothing in either table runs anywhere but Windows today. The `Survives to planne
 
 Rebind them at:
 
+- `Shortcuts` — every action in both tables on one page, with duplicates flagged. Any action can
+  be set to None there or on its own page.
 - `General › Transcribe Shortcut`
 - `General › Push-to-Talk Shortcut`
 - `General › Transcribe & Submit Shortcut`
@@ -28,7 +30,7 @@ Rebind them at:
 - `Post Process › Hotkey › Post-Processing Hotkey` _{requires: Post-processing enabled}_
 - `Debug › Cancel Shortcut` _{requires: Debug mode}_
 
-Catalog: [Press one key, speak, and the text appears where you were typing](../features.md#press-one-key-and-speak), [Push-to-talk you can trust](../features.md#push-to-talk-you-can-trust), [Dictate and send in one keystroke](../features.md#dictate-and-send-in-one-keystroke), [The paste didn't land — get the words back without re-dictating](../features.md#the-paste-didnt-land-get-the-words-back), [A second key for "clean this up with AI"](../features.md#a-second-key-for-clean-this-up), [When paste is blocked, type it instead](../features.md#when-paste-is-blocked-type-it-instead), [Your shortcuts don't eat the accented letters you type](../features.md#shortcuts-dont-eat-accented-letters), and [Transcribe the other people on a call, not just yourself](../features.md#record-system-audio).
+Catalog: [Press one key, speak, and the text appears where you were typing](../features.md#press-one-key-and-speak), [Push-to-talk you can trust](../features.md#push-to-talk-you-can-trust), [Dictate and send in one keystroke](../features.md#dictate-and-send-in-one-keystroke), [The paste didn't land — get the words back without re-dictating](../features.md#the-paste-didnt-land-get-the-words-back), [A second key for "clean this up with AI"](../features.md#a-second-key-for-clean-this-up), [When paste is blocked, type it instead](../features.md#when-paste-is-blocked-type-it-instead), [Your shortcuts don't eat the accented letters you type](../features.md#shortcuts-dont-eat-accented-letters), [Turn off a shortcut you don't want](../features.md#turn-off-a-shortcut-you-dont-want), [Every shortcut on one page](../features.md#every-shortcut-on-one-page), and [Transcribe the other people on a call, not just yourself](../features.md#record-system-audio).
 
 ## Jumper and slots
 

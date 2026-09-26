@@ -8,6 +8,7 @@
   },
   "sidebar": {
     "general": "Generale",
+    "shortcuts": "Scorciatoie",
     "models": "Modelli",
     "advanced": "Avanzate",
     "postProcessing": "Post-Elaborazione",
@@ -209,7 +210,10 @@
         "none": "Nessuna scorciatoia configurata",
         "notFound": "Scorciatoia non trovata",
         "pressKeys": "Premi i tasti...",
+        "unset": "Nessuna",
+        "clear": "Rimuovi scorciatoia",
         "altGrConflict": "Windows segnala AltGr come Ctrl+Alt, quindi questa scorciatoia si attiva invece di digitare caratteri AltGr come ą o ó. Scegli una combinazione senza Ctrl+Alt.",
+        "conflict": "Usata anche da: {{names}}. Ne funzionerà solo una.",
         "bindings": {
           "transcribe": {
             "name": "Scorciatoia Trascrizione",
@@ -430,6 +434,15 @@
         "lastChecked": "Ultimo controllo: {{value}}",
         "never": "Mai",
         "portableUnsupported": "Le copie portatili non possono essere aggiornate sul posto. Scarica l’ultima versione portatile."
+      }
+    },
+    "shortcuts": {
+      "groups": {
+        "dictation": "Dettatura"
+      },
+      "conflicts": {
+        "title": "Alcune scorciatoie usano gli stessi tasti",
+        "description": "Una combinazione di tasti può attivare una sola azione, quindi funziona solo una scorciatoia per coppia. Modifica o rimuovi una delle scorciatoie segnalate in rosso."
       }
     },
     "sound": {

@@ -8,6 +8,7 @@
   },
   "sidebar": {
     "general": "Chung",
+    "shortcuts": "Phím tắt",
     "models": "Mô hình",
     "advanced": "Nâng cao",
     "postProcessing": "Xử lý sau",
@@ -209,7 +210,10 @@
         "none": "Chưa cấu hình phím tắt",
         "notFound": "Không tìm thấy phím tắt",
         "pressKeys": "Nhấn phím...",
+        "unset": "Không có",
+        "clear": "Bỏ phím tắt",
         "altGrConflict": "Windows báo AltGr là Ctrl+Alt, nên phím tắt này sẽ kích hoạt thay vì gõ các ký tự AltGr như ą hoặc ó. Hãy chọn tổ hợp không có Ctrl+Alt.",
+        "conflict": "Cũng được dùng bởi: {{names}}. Chỉ một trong số đó hoạt động.",
         "bindings": {
           "transcribe": {
             "name": "Phím tắt phiên âm",
@@ -430,6 +434,15 @@
         "lastChecked": "Lần kiểm tra cuối: {{value}}",
         "never": "Chưa bao giờ",
         "portableUnsupported": "Bản di động không thể cập nhật tại chỗ. Hãy tải bản di động mới nhất."
+      }
+    },
+    "shortcuts": {
+      "groups": {
+        "dictation": "Đọc chính tả"
+      },
+      "conflicts": {
+        "title": "Một số phím tắt dùng chung tổ hợp phím",
+        "description": "Mỗi tổ hợp phím chỉ dùng được cho một thao tác, nên mỗi cặp chỉ có một phím tắt hoạt động. Hãy đổi hoặc xóa một trong các phím tắt có cảnh báo màu đỏ."
       }
     },
     "sound": {

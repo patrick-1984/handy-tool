@@ -8,6 +8,7 @@
   },
   "sidebar": {
     "general": "Allgemein",
+    "shortcuts": "Tastenkürzel",
     "models": "Modelle",
     "advanced": "Erweitert",
     "postProcessing": "Nachbearbeitung",
@@ -209,7 +210,10 @@
         "none": "Keine Tastenkürzel konfiguriert",
         "notFound": "Tastenkürzel nicht gefunden",
         "pressKeys": "Tasten drücken...",
+        "unset": "Keine",
+        "clear": "Tastenkürzel entfernen",
         "altGrConflict": "Windows meldet AltGr als Strg+Alt, daher wird dieses Kürzel ausgelöst, statt AltGr-Zeichen wie ą oder ó einzugeben. Wähle eine Kombination ohne Strg+Alt.",
+        "conflict": "Auch verwendet von: {{names}}. Nur eines davon funktioniert.",
         "bindings": {
           "transcribe": {
             "name": "Transkriptions-Tastenkürzel",
@@ -430,6 +434,15 @@
         "lastChecked": "Zuletzt geprüft: {{value}}",
         "never": "Nie",
         "portableUnsupported": "Portable Versionen können nicht direkt aktualisiert werden. Laden Sie die neueste portable Version herunter."
+      }
+    },
+    "shortcuts": {
+      "groups": {
+        "dictation": "Diktat"
+      },
+      "conflicts": {
+        "title": "Einige Tastenkürzel verwenden dieselben Tasten",
+        "description": "Eine Tastenkombination kann nur eine Aktion auslösen, daher funktioniert von jedem Paar nur eine. Ändern oder entfernen Sie eines der rot markierten Tastenkürzel."
       }
     },
     "sound": {

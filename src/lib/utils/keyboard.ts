@@ -72,7 +72,7 @@ export const getKeyName = (
       Space: "space",
       Backspace: "backspace",
       Delete: "delete",
-      Escape: "esc",
+      Escape: "escape",
       ArrowUp: "up",
       ArrowDown: "down",
       ArrowLeft: "left",
@@ -139,7 +139,7 @@ export const getKeyName = (
       ArrowDown: "down",
       ArrowLeft: "left",
       ArrowRight: "right",
-      Escape: "esc",
+      Escape: "escape",
       " ": "space",
     };
 
@@ -160,6 +160,8 @@ export const getKeyName = (
 const capitalizeKey = (key: string): string => {
   // fn key: keep lowercase
   if (key === "fn") return "fn";
+  // Recorded as "esc" before 1.7.0; show it as the whole word like the default.
+  if (key === "esc") return "Escape";
   // Function keys: f1 -> F1
   if (/^f\d+$/.test(key)) return key.toUpperCase();
   // Single char: a -> A
@@ -249,4 +251,41 @@ export const isAltGrRiskyChord = (binding: string): boolean => {
   if (!hasCtrl || !hasAlt) return false;
 
   return parts.some((p) => p === "space" || /^[a-z]$/.test(p));
+};
+
+const MODIFIER_ALIASES: Record<string, string> = {
+  control: "ctrl",
+  option: "alt",
+  command: "super",
+  cmd: "super",
+  meta: "super",
+  win: "super",
+  windows: "super",
+};
+const MODIFIERS = new Set(["ctrl", "alt", "shift", "super", "fn"]);
+
+/**
+ * Canonical form of a chord for spotting two shortcuts on the same keys: case,
+ * modifier spelling and order, and left/right sides do not make chords differ.
+ *
+ * Mirrors `normalize_chord` in `src-tauri/src/shortcut/mod.rs` — keep the two in
+ * step. An empty chord ("None") normalizes to "".
+ */
+export const normalizeChord = (chord: string): string => {
+  const modifiers: string[] = [];
+  const keys: string[] = [];
+  for (const raw of chord.split("+")) {
+    const stripped = raw
+      .trim()
+      .toLowerCase()
+      .replace(/_(?:left|right)$/, "");
+    const part = MODIFIER_ALIASES[stripped] ?? stripped;
+    if (!part) continue;
+    if (MODIFIERS.has(part)) {
+      if (!modifiers.includes(part)) modifiers.push(part);
+    } else {
+      keys.push(part);
+    }
+  }
+  return [...modifiers.sort(), ...keys.sort()].join("+");
 };

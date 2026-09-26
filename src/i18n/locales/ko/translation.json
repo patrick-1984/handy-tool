@@ -8,6 +8,7 @@
   },
   "sidebar": {
     "general": "일반",
+    "shortcuts": "단축키",
     "models": "모델",
     "advanced": "고급",
     "postProcessing": "후처리",
@@ -191,7 +192,10 @@
         "none": "설정된 단축키 없음",
         "notFound": "단축키를 찾을 수 없음",
         "pressKeys": "키를 눌러주세요...",
+        "unset": "없음",
+        "clear": "없음으로 설정",
         "altGrConflict": "Windows는 AltGr을 Ctrl+Alt로 인식하므로 ą 또는 ó 같은 AltGr 문자를 입력하는 대신 이 단축키가 실행됩니다. Ctrl+Alt가 없는 조합을 선택하세요.",
+        "conflict": "{{names}}에서도 사용 중입니다. 그중 하나만 작동합니다.",
         "bindings": {
           "transcribe": {
             "name": "음성 텍스트 변환 단축키",
@@ -412,6 +416,15 @@
         "lastChecked": "마지막 확인: {{value}}",
         "never": "없음",
         "portableUnsupported": "휴대용 버전은 제자리 업데이트할 수 없습니다. 최신 휴대용 버전을 다운로드하세요."
+      }
+    },
+    "shortcuts": {
+      "groups": {
+        "dictation": "받아쓰기"
+      },
+      "conflicts": {
+        "title": "같은 키를 사용하는 단축키가 있습니다",
+        "description": "하나의 키 조합은 하나의 동작에만 쓸 수 있어 각 쌍 중 하나만 작동합니다. 빨간 경고가 표시된 단축키 중 하나를 변경하거나 지우세요."
       }
     },
     "sound": {

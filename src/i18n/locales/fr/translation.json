@@ -8,6 +8,7 @@
   },
   "sidebar": {
     "general": "Général",
+    "shortcuts": "Raccourcis",
     "models": "Modèles",
     "advanced": "Avancé",
     "postProcessing": "Post-traitement",
@@ -209,7 +210,10 @@
         "none": "Aucun raccourci configuré",
         "notFound": "Raccourci non trouvé",
         "pressKeys": "Appuyez sur les touches...",
+        "unset": "Aucun",
+        "clear": "Supprimer le raccourci",
         "altGrConflict": "Windows signale AltGr comme Ctrl+Alt : ce raccourci se déclenche donc au lieu de saisir des caractères AltGr comme ą ou ó. Choisissez une combinaison sans Ctrl+Alt.",
+        "conflict": "Également utilisé par : {{names}}. Un seul fonctionnera.",
         "bindings": {
           "transcribe": {
             "name": "Raccourci de Transcription",
@@ -430,6 +434,15 @@
         "lastChecked": "Dernière vérification : {{value}}",
         "never": "Jamais",
         "portableUnsupported": "Les versions portables ne peuvent pas être mises à jour sur place. Téléchargez la dernière version portable."
+      }
+    },
+    "shortcuts": {
+      "groups": {
+        "dictation": "Dictée"
+      },
+      "conflicts": {
+        "title": "Certains raccourcis utilisent les mêmes touches",
+        "description": "Une combinaison de touches ne peut déclencher qu'une seule action : un seul raccourci de chaque paire fonctionne. Modifiez ou effacez l'un des raccourcis signalés en rouge."
       }
     },
     "sound": {

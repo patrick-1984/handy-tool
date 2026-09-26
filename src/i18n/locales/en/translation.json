@@ -20,6 +20,7 @@
   },
   "sidebar": {
     "general": "General",
+    "shortcuts": "Shortcuts",
     "models": "Models",
     "advanced": "Advanced",
     "backup": "Backup",
@@ -203,7 +204,10 @@
         "none": "No shortcuts configured",
         "notFound": "Shortcut not found",
         "pressKeys": "Press keys...",
+        "unset": "None",
+        "clear": "Set to None",
         "altGrConflict": "Windows reports AltGr as Ctrl+Alt, so this shortcut fires instead of typing AltGr characters such as ą or ó. Pick a chord without Ctrl+Alt.",
+        "conflict": "Also used by: {{names}}. Only one of them will work.",
         "bindings": {
           "transcribe": {
             "name": "Transcribe Shortcut",
@@ -424,6 +428,15 @@
         "lastChecked": "Last checked: {{value}}",
         "never": "Never",
         "portableUnsupported": "Portable copies cannot update in place. Download the latest portable release."
+      }
+    },
+    "shortcuts": {
+      "groups": {
+        "dictation": "Dictation"
+      },
+      "conflicts": {
+        "title": "Some shortcuts share the same keys",
+        "description": "Only one action can use a key combination, so only one of each pair works. Change or clear one of the shortcuts marked with a red warning."
       }
     },
     "models": {

@@ -1,5 +1,6 @@
 // Settings section components
 export { GeneralSettings } from "./general/GeneralSettings";
+export { ShortcutsSettings } from "./shortcuts/ShortcutsSettings";
 export { AdvancedSettings } from "./advanced/AdvancedSettings";
 export { DebugSettings } from "./debug/DebugSettings";
 export { CurrentAudioView } from "./current-audio/CurrentAudioView";

@@ -8,6 +8,7 @@
   },
   "sidebar": {
     "general": "Genel",
+    "shortcuts": "Kısayollar",
     "models": "Modeller",
     "advanced": "Gelişmiş",
     "postProcessing": "Son İşlem",
@@ -209,7 +210,10 @@
         "none": "Kısayol yapılandırılmadı",
         "notFound": "Kısayol bulunamadı",
         "pressKeys": "Tuşlara basın...",
+        "unset": "Yok",
+        "clear": "Kısayolu kaldır",
         "altGrConflict": "Windows, AltGr tuşunu Ctrl+Alt olarak bildirir; bu nedenle ą veya ó gibi AltGr karakterleri yazılmak yerine bu kısayol çalışır. Ctrl+Alt içermeyen bir kombinasyon seçin.",
+        "conflict": "Şunlar tarafından da kullanılıyor: {{names}}. Yalnızca biri çalışır.",
         "bindings": {
           "transcribe": {
             "name": "Transkripsiyon Kısayolu",
@@ -430,6 +434,15 @@
         "lastChecked": "Son denetim: {{value}}",
         "never": "Hiçbir zaman",
         "portableUnsupported": "Taşınabilir kopyalar yerinde güncellenemez. En yeni taşınabilir sürümü indirin."
+      }
+    },
+    "shortcuts": {
+      "groups": {
+        "dictation": "Dikte"
+      },
+      "conflicts": {
+        "title": "Bazı kısayollar aynı tuşları kullanıyor",
+        "description": "Bir tuş kombinasyonunu yalnızca bir eylem kullanabilir, bu yüzden her çiftten yalnızca biri çalışır. Kırmızı uyarıyla işaretlenen kısayollardan birini değiştirin veya temizleyin."
       }
     },
     "sound": {
