@@ -1859,6 +1859,25 @@ fn paste_inner(
     // deliveries the user cannot predict from the UI.
     let paste_method = chosen_paste_method;
 
+    // A click on the pill (pause, the live text T, its menus) can leave one of
+    // Handy's own helper windows in front. Typing there would lose the text into
+    // the pill, and switching to another window would be a guess (the window the
+    // take started in need not be the one the user was in), so fail the paste
+    // before any keystroke or submit: the caller parks the text as the clipboard
+    // setting allows and says so (report_paste_failure).
+    #[cfg(windows)]
+    if let Some(target) = unanchored_target {
+        if flow_paste
+            && paste_method != PasteMethod::None
+            && crate::overlay::is_own_helper_window(target)
+        {
+            return Err(
+                "the recording pill (a Handy window) was in front, so nothing was typed into it"
+                    .to_string(),
+            );
+        }
+    }
+
     // After a real jump, the freshly-activated target (especially an
     // RDP/Citrix session) may still be transitioning — completing activation,
     // moving focus — when the paste keystroke fires, so the Ctrl+V is

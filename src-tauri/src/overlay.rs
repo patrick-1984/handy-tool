@@ -3,6 +3,73 @@ use crate::settings::OverlayPosition;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use tauri::{AppHandle, Emitter, Manager};
 
+/// The main window's handle, noted at startup on the main thread (`hwnd()` is a
+/// UI-thread getter, so it is never read from the delivery thread). 0 until then.
+#[cfg(windows)]
+static MAIN_HWND: std::sync::atomic::AtomicIsize = std::sync::atomic::AtomicIsize::new(0);
+
+/// Note the main window's handle for [`is_own_helper_window`]. Call on the main
+/// thread once the main window exists (startup).
+pub fn note_main_window(app_handle: &AppHandle) {
+    #[cfg(windows)]
+    if let Some(window) = app_handle.get_webview_window("main") {
+        if let Ok(hwnd) = window.hwnd() {
+            MAIN_HWND.store(hwnd.0 as isize, Ordering::Relaxed);
+        }
+    }
+    #[cfg(not(windows))]
+    let _ = app_handle;
+}
+
+/// Whether `hwnd` is a window of this process other than the main window: the
+/// recording pill, the live text box, the too-quiet box, the floating
+/// transcript, or a menu or dialog of ours. The main window is a real target
+/// (the first-start setup's "Try it" types into it); the others are not.
+/// False while the main window's handle is unknown, which keeps the old
+/// behaviour rather than refusing every paste.
+#[cfg(windows)]
+pub fn is_own_helper_window(hwnd: isize) -> bool {
+    use windows::Win32::Foundation::HWND;
+    use windows::Win32::UI::WindowsAndMessaging::GetWindowThreadProcessId;
+    let mut pid = 0u32;
+    let tid =
+        unsafe { GetWindowThreadProcessId(HWND(hwnd as *mut core::ffi::c_void), Some(&mut pid)) };
+    helper_decision(
+        hwnd,
+        MAIN_HWND.load(Ordering::Relaxed),
+        tid != 0 && pid == std::process::id(),
+    )
+}
+
+/// The rule behind [`is_own_helper_window`], kept pure for testing.
+#[cfg_attr(not(windows), allow(dead_code))]
+fn helper_decision(hwnd: isize, main_hwnd: isize, same_process: bool) -> bool {
+    hwnd != 0 && main_hwnd != 0 && same_process && hwnd != main_hwnd
+}
+
+#[cfg(test)]
+mod helper_window_tests {
+    use super::helper_decision;
+
+    #[test]
+    fn only_our_other_windows_count_as_helpers() {
+        assert!(
+            helper_decision(7, 5, true),
+            "the pill, a window of ours that is not main"
+        );
+        assert!(
+            !helper_decision(5, 5, true),
+            "the main window is a real target"
+        );
+        assert!(!helper_decision(7, 5, false), "another app's window");
+        assert!(
+            !helper_decision(7, 0, true),
+            "main unknown: keep the old behaviour"
+        );
+        assert!(!helper_decision(0, 5, true), "no foreground window");
+    }
+}
+
 /// Generation counter incremented on every show, checked by delayed hide threads.
 /// If the generation changed between spawning and waking, the hide is stale and skipped.
 static OVERLAY_GENERATION: AtomicU64 = AtomicU64::new(0);

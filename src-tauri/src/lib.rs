@@ -390,6 +390,8 @@ fn initialize_core_logic(app_handle: &AppHandle) {
     overlay::create_floating_transcription_window(app_handle);
     overlay::create_live_text_window(app_handle);
     overlay::create_quiet_hint_window(app_handle);
+    // For delivery: never paste into one of our own helper windows (Windows).
+    overlay::note_main_window(app_handle);
 
     // Stamp the persisted appearance theme onto both aux windows now that
     // they exist (T-204). `settings` here was fetched above for the
