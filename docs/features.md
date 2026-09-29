@@ -266,7 +266,7 @@ than a short one; Whisper's own figure is used as a floor. Past about 70% it slo
 smoothly, so a transcription that runs longer than expected keeps creeping on rather than
 sitting at 99%.
 **Where.** No control — this is always active.
-**Since.** 0.11.2. The percentage since 1.8.0; weighed by work and length-aware since 1.13.0.
+**Since.** 0.11.2. The percentage since 1.8.0; weighed by work and length-aware since 2.0.0.
 
 ### Live mode delivers the end of your sentence
 
@@ -349,7 +349,7 @@ between last words and whole text and opens its settings, **Pause** can hide its
 can open the button's shortcut in Settings.
 **Where.** `General › Pause button = On`; the shortcut is
 `Shortcuts › Dictation › Pause / Resume`.
-**Since.** 1.10.0. The right-click menus since 1.13.0.
+**Since.** 1.10.0. The right-click menus since 2.0.0.
 
 ### A long recording that came back empty
 
@@ -670,12 +670,12 @@ rows are gone.
 **The situation.** An update brings new settings, and finding them means reading the changelog and
 then hunting through the pages.
 **What Handy does.** A **What's new** page in the sidebar lists the new and changed things of the last
-three GitHub releases (the installed one marked) - the 1.13.0 section carries everything since 1.6.2,
+three GitHub releases (the installed one marked) - the 2.0.0 section carries everything since 1.6.2,
 as 1.7-1.12 were never released on their own; **Show me** opens the page where the setting lives and outlines it, as search does (a
 setting shown only while its switch is on outlines that switch instead). A dot on the sidebar
 entry marks news you have not opened yet.
 **Where.** `What's new`.
-**Since.** 1.13.0.
+**Since.** 2.0.0.
 
 ### A guided setup for the Jumper
 
@@ -686,7 +686,7 @@ is "put my dictation in that chat box".
 then "show me the place": a countdown, you click into the field, and it is remembered — as many places
 as you like. It sets the shortcuts and, for "land there", the finish-press jump, then lets you test.
 **Where.** `Setups › Jumper`, or the setup row at the top of the `Jumper` page.
-**Since.** 1.13.0.
+**Since.** 2.0.0.
 
 ### A guided setup for the look, with previews
 
@@ -698,7 +698,7 @@ moving: the real pill with its bars, progress and glow, the live text box with w
 starts by saying what the pill's parts are for (the T switches the live text box). Pick one, and
 `Save & next` keeps it.
 **Where.** `Setups › Appearance`, or the setup row at the top of `General › App`.
-**Since.** 1.13.0.
+**Since.** 2.0.0.
 
 ### A guided setup for post-processing
 
@@ -707,7 +707,7 @@ starts by saying what the pill's parts are for (the T switches the live text box
 **What Handy does.** A setup asks what the AI should do (a ready prompt or your own), which AI (with
 its key and model filled in right there), shows the shortcut, and runs a sample sentence through it.
 **Where.** `Setups › Post-processing`.
-**Since.** 1.13.0.
+**Since.** 2.0.0.
 
 ### Help mode: what a setting does, without an icon on every row
 
@@ -719,7 +719,7 @@ mode: the cursor becomes the help cursor, and pointing anywhere on a setting out
 other settings, and hangs its full description from its name. Nothing can be changed meanwhile — the first click anywhere only leaves help
 mode, and so do the **?** button and Esc. Scrolling (wheel, keys, the scrollbar) keeps working.
 **Where.** The **?** at the top right of any page.
-**Since.** 1.13.0.
+**Since.** 2.0.0.
 
 ### When delivery can't be verified, the text is still recoverable
 
@@ -1649,7 +1649,7 @@ Leaderboard and the Moonshine v2 paper (Parakeet V2 6.1%, Parakeet V3 6.3%, Moon
 6.7%, Whisper Large V3 7.4% and the best in most other languages, down to Moonshine V2 Tiny 12.0%);
 speed follows published speed comparisons, checked on a laptop.
 **Where.** `Models`, and the setup's model step.
-**Since.** 1.13.0.
+**Since.** 2.0.0.
 
 ### Every engine keeps your last word
 
@@ -2075,7 +2075,7 @@ transcribed files; a pop-up asks whether to save it as a `.txt` in Handy's folde
 recording, and can remember the answer. A copy of the audio can be kept too. The original file is
 only ever read.
 **Where.** `Files › Transcribe a file › Choose an audio file`.
-**Since.** 1.13.0.
+**Since.** 2.0.0.
 
 ### A folder of recordings, transcribed while you sleep
 
@@ -2390,7 +2390,7 @@ after each take, so a burst of takes starts instantly and the indicator goes out
 `General › Sound › Warn when you speak too quietly` and
 `More › Debug › Always-On Microphone = On` _{requires: Debug mode}_.
 **Since.** 0.2.0. Keep microphone ready since 1.9.0; the warm-up wait and the too-quiet
-warning since 1.13.0.
+warning since 2.0.0.
 
 ### Change microphone without restarting
 
@@ -2454,10 +2454,12 @@ the watcher, at shutdown.
 
 <a id="what-runs-today-and-what-is-planned"></a>
 **The situation.** You are on a Mac or a Linux box and want a straight answer.
-**What Handy does.** Windows x64 is the only build produced, released and tested. macOS and Linux
-builds are planned and in the queue; there is no download for them today and none of this
-documentation describes something you can run on them. Some features would not follow even then:
-the whole Jumper family is built on Win32 focus APIs, and portable mode is Windows-only. In the
+**What Handy does.** Windows x64 is built, released and tested. macOS (Intel and Apple Silicon)
+and Linux (x64 and ARM64: deb, rpm, AppImage) are built by CI and attached to every release since
+1.6.2, but have not been tested on real hardware, so treat them as experimental and do not assume
+this documentation describes their behaviour. Some features do not follow at all: the whole Jumper
+family is built on Win32 focus APIs, system-audio capture uses WASAPI loopback, and portable mode is
+Windows-only. In the
 other direction, some code exists only for platforms that do not ship yet — on-device Apple
 Intelligence post-processing and closed-lid microphone switching on macOS, and the native text
 injection backends on Linux — and none of it is reachable today.
@@ -2685,7 +2687,7 @@ the Jumper) without pressing them on you: the defaults already work. On macOS, m
 "a usable model exists", so a clean install cannot skip the download step and leave you with
 nothing.
 **Where.** Shown automatically on first launch; again from `Setups › Basic setup`.
-**Since.** 0.1.6; the empty-install fix in 0.43.0; the setup guide in 1.13.0.
+**Since.** 0.1.6; the empty-install fix in 0.43.0; the setup guide in 2.0.0.
 
 ---
 
