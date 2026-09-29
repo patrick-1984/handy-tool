@@ -16,7 +16,7 @@
  * has a value in BOTH themes; rose fills stay small (identity + recording).
  */
 @theme {
-  /* Base surfaces & text (redesign 1.13.0: the designer's token set; the older
+  /* Base surfaces & text (redesign 2.0.0: the designer's token set; the older
      names below stay as aliases the components already use) */
   --color-text: #0f0f0f;
   --color-text-secondary: #5f5c58;

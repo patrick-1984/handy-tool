@@ -618,7 +618,7 @@
     "options": [],
     "gating": "windows",
     "file": "src/components/settings/setups/SetupPromo.tsx",
-    "notes": "Top of the Jumper page: opens Setups and starts the Jumper setup. Added in 1.13.0."
+    "notes": "Top of the Jumper page: opens Setups and starts the Jumper setup. Added in 2.0.0."
   },
   {
     "page": "Jumper",
@@ -1412,7 +1412,7 @@
     "options": [],
     "gating": "none",
     "file": "src/components/settings/LiveTextAfterStop.tsx",
-    "notes": "Only for takes without the live text box. Added in 1.13.0."
+    "notes": "Only for takes without the live text box. Added in 2.0.0."
   },
   {
     "page": "General",
@@ -1485,7 +1485,7 @@
     ],
     "gating": "none",
     "file": "src/components/settings/TakeControls.tsx",
-    "notes": "Shown while the live text box is on, in Whole text mode. Added in 1.13.0."
+    "notes": "Shown while the live text box is on, in Whole text mode. Added in 2.0.0."
   },
   {
     "page": "General",
@@ -1502,7 +1502,7 @@
     "options": ["Small", "Normal", "Large", "Extra large"],
     "gating": "none",
     "file": "src/components/settings/TakeControls.tsx",
-    "notes": "Shown while the live text box is on. Added in 1.13.0."
+    "notes": "Shown while the live text box is on. Added in 2.0.0."
   },
   {
     "page": "General",
@@ -1678,7 +1678,7 @@
     "options": [],
     "gating": "none",
     "file": "src/components/settings/MicWarmupWait.tsx",
-    "notes": "Hidden while Always-On Microphone is on. Added in 1.13.0."
+    "notes": "Hidden while Always-On Microphone is on. Added in 2.0.0."
   },
   {
     "page": "General",
@@ -1695,7 +1695,7 @@
     "options": [],
     "gating": "none",
     "file": "src/components/settings/TooQuietHint.tsx",
-    "notes": "Shows \"Too quiet — speak up\" (in its own box, or in the pill). Added in 1.13.0."
+    "notes": "Shows \"Too quiet — speak up\" (in its own box, or in the pill). Added in 2.0.0."
   },
   {
     "page": "General",
@@ -1712,7 +1712,7 @@
     "options": [],
     "gating": "none",
     "file": "src/components/settings/TooQuietHint.tsx",
-    "notes": "Shown while Warn when you speak too quietly is on. Added in 1.13.0."
+    "notes": "Shown while Warn when you speak too quietly is on. Added in 2.0.0."
   },
   {
     "page": "General",
@@ -1955,7 +1955,7 @@
     "options": [],
     "gating": "none",
     "file": "src/components/settings/setups/SetupPromo.tsx",
-    "notes": "Top of the App group: opens Setups and starts the Appearance setup. Added in 1.13.0."
+    "notes": "Top of the App group: opens Setups and starts the Appearance setup. Added in 2.0.0."
   },
   {
     "page": "General",
@@ -2005,7 +2005,7 @@
     "options": [],
     "gating": "none",
     "file": "src/components/settings/ReopenLastPage.tsx",
-    "notes": "Added in 1.13.0."
+    "notes": "Added in 2.0.0."
   },
   {
     "page": "General",
@@ -2071,7 +2071,7 @@
     "options": ["Normal", "Large", "Extra large"],
     "gating": "none",
     "file": "src/components/settings/OverlayLook.tsx",
-    "notes": "Scales the recording overlay and its Too quiet box. Added in 1.13.0."
+    "notes": "Scales the recording overlay and its Too quiet box. Added in 2.0.0."
   },
   {
     "page": "General",
@@ -2088,7 +2088,7 @@
     "options": [],
     "gating": "none",
     "file": "src/components/settings/OverlayLook.tsx",
-    "notes": "2.5 px bars and gaps (77.5 px, the designer's) instead of 2 px (62 px). Added in 1.13.0."
+    "notes": "2.5 px bars and gaps (77.5 px, the designer's) instead of 2 px (62 px). Added in 2.0.0."
   },
   {
     "page": "General",
@@ -2109,7 +2109,7 @@
     ],
     "gating": "none",
     "file": "src/components/settings/OverlayLook.tsx",
-    "notes": "How the overlay shows transcription progress. Added in 1.13.0."
+    "notes": "How the overlay shows transcription progress. Added in 2.0.0."
   },
   {
     "page": "General",
@@ -2126,7 +2126,7 @@
     "options": [],
     "gating": "none",
     "file": "src/components/settings/OverlayLook.tsx",
-    "notes": "A moving pill: recording and transcribing (progress 0-100% on a loop) with the look settings around it. Added in 1.13.0."
+    "notes": "A moving pill: recording and transcribing (progress 0-100% on a loop) with the look settings around it. Added in 2.0.0."
   },
   {
     "page": "General",
@@ -2143,7 +2143,7 @@
     "options": [],
     "gating": "none",
     "file": "src/components/settings/OverlayLook.tsx",
-    "notes": "Progress Style: Line - the line glows like the edge light. Added in 1.13.0."
+    "notes": "Progress Style: Line - the line glows like the edge light. Added in 2.0.0."
   },
   {
     "page": "General",
@@ -2160,7 +2160,7 @@
     "options": [],
     "gating": "none",
     "file": "src/components/settings/OverlayLook.tsx",
-    "notes": "How strong the progress glow is, 0-200%. Added in 1.13.0."
+    "notes": "How strong the progress glow is, 0-200%. Added in 2.0.0."
   },
   {
     "page": "General",
@@ -2177,7 +2177,7 @@
     "options": [],
     "gating": "none",
     "file": "src/components/settings/OverlayLook.tsx",
-    "notes": "Hue, Saturation and Lightness sliders for the progress light and its glow; stored as progress_color \"#rrggbb\", empty = default cyan. Added in 1.13.0."
+    "notes": "Hue, Saturation and Lightness sliders for the progress light and its glow; stored as progress_color \"#rrggbb\", empty = default cyan. Added in 2.0.0."
   },
   {
     "page": "General",
@@ -2211,7 +2211,7 @@
     "options": [],
     "gating": "none",
     "file": "src/components/settings/setups/SetupsPage.tsx",
-    "notes": "Runs the first-start setup again. Added in 1.13.0."
+    "notes": "Runs the first-start setup again. Added in 2.0.0."
   },
   {
     "page": "Setups",
@@ -2228,7 +2228,7 @@
     "options": [],
     "gating": "none",
     "file": "src/components/settings/setups/SetupsPage.tsx",
-    "notes": "Runs the post-processing setup on the page. Added in 1.13.0."
+    "notes": "Runs the post-processing setup on the page. Added in 2.0.0."
   },
   {
     "page": "Setups",
@@ -2245,7 +2245,7 @@
     "options": [],
     "gating": "windows",
     "file": "src/components/settings/setups/SetupsPage.tsx",
-    "notes": "Runs the Jumper setup on the page. Windows only. Added in 1.13.0."
+    "notes": "Runs the Jumper setup on the page. Windows only. Added in 2.0.0."
   },
   {
     "page": "Output",
@@ -3150,7 +3150,7 @@
     "options": [],
     "gating": "none",
     "file": "src/components/settings/setups/SetupPromo.tsx",
-    "notes": "Top of the Post-processing group: opens Setups and starts the Post-processing setup. Added in 1.13.0."
+    "notes": "Top of the Post-processing group: opens Setups and starts the Post-processing setup. Added in 2.0.0."
   },
   {
     "page": "Post-processing",

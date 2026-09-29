@@ -34,12 +34,12 @@ const LIVE_TEXT_BOX = "settings.general.liveTextBox.label";
 /**
  * The last three GitHub releases, newest first: what each brought to someone
  * updating from the one before. The coming release carries everything since
- * 1.6.2 (1.7-1.13 were only local builds). Add the next release on top and
+ * 1.6.2 (1.6.3-1.13.0 were only local builds). Add the next release on top and
  * drop the oldest.
  */
 const RELEASES: { version: string; items: Item[] }[] = [
   {
-    version: "1.13.0", // everything since 1.6.2 (1.7-1.13 were local builds)
+    version: "2.0.0", // everything since 1.6.2 (1.6.3-1.13.0 were local builds)
     items: [
       {
         key: "files",

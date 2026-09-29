@@ -1,10 +1,14 @@
 # Changelog
 
-## [1.13.0] - 2026-09-29 15:23
+## [2.0.0] - 2026-09-29
+
+The first release since 1.6.2. Versions 1.6.3 to 1.12.0 below were built locally and never
+released on their own. This one was built locally as 1.13.0 and is released as 2.0.0: the whole
+app has been redesigned and its pages rearranged.
 
 ### Changed
 
-- **What's new follows the GitHub releases:** 1.13.0 lists everything since 1.6.2 (1.7-1.12 were
+- **What's new follows the GitHub releases:** 2.0.0 lists everything since 1.6.2 (1.6.3-1.13.0 were
   never released on their own), most important first - 30 items, 17 of them new - then 1.6.2 and
   1.6.1 as they were released.
 - **The AltGr "Risky" warning only where it applies:** on Windows it now asks your installed
