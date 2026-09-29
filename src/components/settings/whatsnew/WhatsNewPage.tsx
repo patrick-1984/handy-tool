@@ -94,6 +94,8 @@ const RELEASES: { version: string; items: Item[] }[] = [
         key: "shortcutNone",
         section: "shortcuts",
         titleKeys: ["settings.general.shortcut.bindings.cancel.name"],
+        // Cancel is not offered on Linux: outline the Transcribe shortcut there.
+        fallbackKey: "settings.general.shortcut.bindings.transcribe.name",
       },
       {
         key: "historyTabs",

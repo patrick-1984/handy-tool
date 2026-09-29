@@ -2133,18 +2133,24 @@ impl ShortcutAction for TranscribeAction {
                         drop(session.cut_lock.lock().unwrap_or_else(|p| p.into_inner()));
                     }
                     if let Some(session) = live_session.as_ref().filter(|s| s.undo_used()) {
+                        // No time limit here: finishing without the worker's cuts would
+                        // deliver and save the removed words. A worker can only be busy
+                        // this long inside a transcription, which the final pass would
+                        // have to wait for anyway (CHUNK_TRANSCRIBE_LOCK).
                         let settle_start = Instant::now();
+                        let mut logged = 0u64;
                         let busy = || busy_flag.as_ref().is_some_and(|b| b.load(Ordering::SeqCst));
-                        while busy() && settle_start.elapsed() < Duration::from_secs(10) {
+                        while busy() {
+                            let waited = settle_start.elapsed().as_secs() / 60;
+                            if waited > logged {
+                                logged = waited;
+                                warn!(
+                                    "Undo: still waiting for the live preview ({waited} min) before finishing the take"
+                                );
+                            }
                             tokio::time::sleep(Duration::from_millis(10)).await;
                         }
-                        if busy() {
-                            warn!(
-                                "Undo: the live preview is still busy; pending undo presses are not carried out"
-                            );
-                        } else {
-                            session.settle_undos(&mut samples);
-                        }
+                        session.settle_undos(&mut samples);
                     }
                 }
                 // The live text as a fallback, read after the undo presses above.
