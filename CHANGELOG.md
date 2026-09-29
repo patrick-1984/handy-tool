@@ -1,5 +1,50 @@
 # Changelog
 
+## [2.0.1] - 2026-09-29
+
+A fix release for 2.0.0, with a clearer sidebar.
+
+### Changed
+
+- **Transcription has its own page** in the sidebar, just under Setups: how your text is
+  delivered (Paste Method, the clipboard, auto submit, jump slot actions, translate to English).
+  It was More's Output tab.
+- **More Tools** is its own sidebar entry, right after Jumper (Keyboard Typer, Token Count, Model
+  Testing, Current Audio), and **More is now Advanced settings**, at the bottom of the sidebar.
+  Each reopens the tab used last.
+- **Two provider pages** in Advanced settings: Transcription providers (API and OpenRouter
+  transcription) and, beside it, LLM providers (Registered LLM Providers).
+- **Linux:** the Cancel, Pause and Undo word shortcuts are no longer offered; Linux never
+  registered them. The pill's pause button still works.
+- **Linux Wayland:** no live text box or separate "Too quiet" box (the compositor would place such
+  windows anywhere); the pill shows "Too quiet" itself.
+- **Explanations corrected** in all 17 languages: the live text is the transcript only with a
+  Parakeet model (other models transcribe the whole take again at stop, and the 2.0.0 Appearance
+  setup said otherwise); Post-Recording transcribes while you talk only with Crash-Safe Recording
+  on; the Files page and watched folders read Ogg Opus (not Ogg Vorbis) and the sound of MP4
+  files.
+
+### Fixed
+
+- **Undo last word pressed just before stopping** is carried out; it used to be lost, or the
+  removed word came back in the pasted text. An undo from a take that has ended can no longer cut
+  into the next take.
+- **Clicking the recording pill during a take** (pause, the T, its menus) could leave it in front,
+  so the text was typed into the pill and lost. Handy never types into its own pill now: the text
+  is kept on the clipboard, as the clipboard setting allows, with a message.
+- The update banner's **Remind me later** is no longer forgotten when typing in the sidebar
+  search.
+- The **Appearance setup** no longer switches off a live text box that was on while an online
+  model is selected.
+- A **Files** job whose transcription could not start no longer leaves the Files page, and updates,
+  waiting for it.
+
+### Security
+
+- Release pipeline: every workflow token is read-only except the approval-gated publish job;
+  checkouts keep no credentials; the release builds and signs exactly the commit it was published
+  from and refuses to sign if the tag has moved.
+
 ## [2.0.0] - 2026-09-29
 
 The first release since 1.6.2. Versions 1.6.3 to 1.12.0 below were built locally and never
