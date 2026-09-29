@@ -2448,21 +2448,34 @@ pub fn toggle_pause(app: &AppHandle) {
     }
 }
 
+/// Queue a snapshot for the live preview. A newer snapshot replaces one still
+/// waiting (undo presses add up), unless that one ends an utterance or carries
+/// an undo the new one lacks. An utterance end is replaced only by a later
+/// utterance end without undo presses: its audio holds the earlier one's, so it
+/// settles the same words and more. Without that, a preview that falls behind
+/// queued one copy of the whole take per pause, and a long take on a slow PC
+/// could run out of memory.
+fn enqueue_live_job(jobs: &mut VecDeque<LiveJob>, mut job: LiveJob) {
+    let replace = jobs.back().is_some_and(|last| {
+        if last.utterance_ended {
+            job.utterance_ended && last.undo == 0 && job.undo == 0
+        } else {
+            last.undo == 0 || job.undo > 0
+        }
+    });
+    if replace {
+        if let Some(last) = jobs.pop_back() {
+            job.undo += last.undo;
+        }
+    }
+    jobs.push_back(job);
+}
+
 impl LiveSession {
     /// Queue a snapshot and make sure the worker thread runs.
-    fn push(self: &Arc<Self>, mut job: LiveJob) {
+    fn push(self: &Arc<Self>, job: LiveJob) {
         let mut jobs = self.jobs.lock().unwrap_or_else(|p| p.into_inner());
-        // A newer snapshot replaces one still waiting (undo presses add up),
-        // unless that one ends an utterance or carries an undo the new one lacks.
-        let replace = jobs
-            .back()
-            .is_some_and(|last| !last.utterance_ended && (last.undo == 0 || job.undo > 0));
-        if replace {
-            if let Some(last) = jobs.pop_back() {
-                job.undo += last.undo;
-            }
-        }
-        jobs.push_back(job);
+        enqueue_live_job(&mut jobs, job);
         // Checked under the queue lock, which the worker also holds when it finds
         // the queue empty and quits: a job is never left behind.
         if self.busy.swap(true, Ordering::SeqCst) {
@@ -2727,11 +2740,14 @@ impl LiveSession {
         drop(p);
 
         if let Some(at) = cut {
-            // Returns once the recorder has cut its audio; snapshots queued before
-            // that still hold the removed words, so drop them — but not the undo
-            // presses they carry, which go on with a fresh snapshot.
+            // Cut out only what this snapshot held after the removed word's start:
+            // the take kept recording while the preview caught up, and whatever was
+            // said after the press stays. Returns once the recorder has cut its
+            // audio; snapshots queued before that still hold the removed words, so
+            // drop them — but not the undo presses they carry, which go on with a
+            // fresh snapshot.
             let rm = self.app.state::<Arc<AudioRecordingManager>>();
-            rm.truncate_recording(at);
+            rm.cut_recording(at, len);
             let carried: usize = {
                 let mut jobs = self.jobs.lock().unwrap_or_else(|p| p.into_inner());
                 let undo = jobs.iter().map(|j| j.undo).sum();
@@ -2853,9 +2869,9 @@ pub fn make_take_live(app: &AppHandle) {
 }
 
 /// Undo last word (live takes): once the preview has caught up with what was
-/// said, drop its newest word and cut the take's audio back to where that word
-/// started, so the final pass at stop — which re-transcribes the audio — does
-/// not bring it back. Needs word timings (Parakeet); with other engines there
+/// said, drop its newest word and cut that word's audio out of the take (what
+/// was said after the press stays), so the final pass at stop — which
+/// re-transcribes the audio — does not bring it back. Needs word timings (Parakeet); with other engines there
 /// is nothing to cut back to.
 pub fn undo_last_word(app: &AppHandle) {
     let Some(session) = LIVE_SESSION.lock().ok().and_then(|g| g.clone()) else {
@@ -3238,6 +3254,64 @@ pub static ACTION_MAP: Lazy<HashMap<String, Arc<dyn ShortcutAction>>> = Lazy::ne
     }
     map
 });
+
+#[cfg(test)]
+mod live_queue_tests {
+    use super::{LiveJob, enqueue_live_job};
+    use std::collections::VecDeque;
+
+    fn job(len: usize, utterance_ended: bool, undo: usize) -> LiveJob {
+        LiveJob {
+            samples: vec![0.0; len],
+            utterance_ended,
+            undo,
+            last: false,
+        }
+    }
+
+    #[test]
+    fn a_preview_that_falls_behind_holds_one_utterance_end_not_one_per_pause() {
+        let mut jobs = VecDeque::new();
+        for i in 1..=100 {
+            enqueue_live_job(&mut jobs, job(i * 16_000, true, 0));
+        }
+        assert_eq!(jobs.len(), 1);
+        // The one kept is the newest: its audio holds all the others'.
+        assert_eq!(jobs[0].samples.len(), 100 * 16_000);
+        assert!(jobs[0].utterance_ended);
+    }
+
+    #[test]
+    fn an_utterance_end_is_not_replaced_by_a_snapshot_mid_speech() {
+        let mut jobs = VecDeque::new();
+        enqueue_live_job(&mut jobs, job(10, true, 0));
+        enqueue_live_job(&mut jobs, job(20, false, 0));
+        enqueue_live_job(&mut jobs, job(30, false, 0));
+        assert_eq!(jobs.len(), 2);
+        assert!(jobs[0].utterance_ended);
+        assert_eq!(jobs[1].samples.len(), 30);
+        // A later utterance end takes the mid-speech snapshot's place.
+        enqueue_live_job(&mut jobs, job(40, true, 0));
+        assert_eq!(jobs.len(), 2);
+        assert_eq!(jobs[1].samples.len(), 40);
+    }
+
+    #[test]
+    fn undo_presses_are_never_moved_onto_another_snapshot_by_an_utterance_end() {
+        let mut jobs = VecDeque::new();
+        enqueue_live_job(&mut jobs, job(10, true, 0));
+        enqueue_live_job(&mut jobs, job(12, false, 1));
+        enqueue_live_job(&mut jobs, job(14, true, 0));
+        assert_eq!(jobs.len(), 3);
+        assert_eq!(jobs[1].undo, 1);
+        // A second press adds up on the waiting undo snapshot, as before.
+        let mut jobs = VecDeque::new();
+        enqueue_live_job(&mut jobs, job(12, false, 1));
+        enqueue_live_job(&mut jobs, job(14, false, 1));
+        assert_eq!(jobs.len(), 1);
+        assert_eq!(jobs[0].undo, 2);
+    }
+}
 
 #[cfg(test)]
 mod chunk_handover_tests {

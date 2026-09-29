@@ -111,7 +111,7 @@ enum Cmd {
     Resume,
     /// Cut the take's kept audio back to this many samples (undo last word),
     /// then reply, so the caller knows every later live-preview snapshot is cut.
-    Truncate(usize, mpsc::Sender<()>),
+    Cut(usize, usize, mpsc::Sender<()>),
     /// Reply with a copy of the take's kept audio so far (undo last word).
     Snapshot(mpsc::Sender<Vec<f32>>),
     Shutdown,
@@ -702,10 +702,10 @@ impl AudioRecorder {
         self.send(Cmd::Resume)
     }
 
-    /// Cut the take's kept audio back to `len` samples; returns once it is cut.
-    pub fn truncate(&self, len: usize) -> Result<(), Box<dyn std::error::Error>> {
+    /// Remove the take's kept samples `from..to`; returns once they are cut.
+    pub fn cut(&self, from: usize, to: usize) -> Result<(), Box<dyn std::error::Error>> {
         let (tx, rx) = mpsc::channel();
-        self.send(Cmd::Truncate(len, tx))?;
+        self.send(Cmd::Cut(from, to, tx))?;
         rx.recv_timeout(Duration::from_secs(1))?;
         Ok(())
     }
@@ -1729,11 +1729,8 @@ fn run_consumer(
                         }
                     }
                 }
-                Cmd::Truncate(len, done) => {
-                    if len < processed_samples.len() {
-                        processed_samples.truncate(len);
-                        segment_start_idx = segment_start_idx.min(len);
-                    }
+                Cmd::Cut(from, to, done) => {
+                    cut_kept(&mut processed_samples, &mut segment_start_idx, from, to);
                     let _ = done.send(());
                 }
                 Cmd::Snapshot(reply) => {
@@ -1742,6 +1739,42 @@ fn run_consumer(
                 Cmd::Shutdown => return,
             }
         }
+    }
+}
+
+/// Remove `from..to` from the kept audio (undo last word): what was recorded
+/// after `to` moves up to `from`, and the next live snapshot reads from there.
+fn cut_kept(samples: &mut Vec<f32>, segment_start: &mut usize, from: usize, to: usize) {
+    let to = to.min(samples.len());
+    if from < to {
+        samples.drain(from..to);
+        *segment_start = (*segment_start).min(from);
+    }
+}
+
+#[cfg(test)]
+mod cut_tests {
+    use super::cut_kept;
+
+    #[test]
+    fn a_cut_keeps_what_was_recorded_after_it() {
+        let mut samples: Vec<f32> = (0..10).map(|i| i as f32).collect();
+        let mut segment_start = 8;
+        cut_kept(&mut samples, &mut segment_start, 3, 6);
+        assert_eq!(samples, vec![0.0, 1.0, 2.0, 6.0, 7.0, 8.0, 9.0]);
+        assert_eq!(segment_start, 3);
+    }
+
+    #[test]
+    fn a_cut_past_the_end_or_empty_is_clamped() {
+        let mut samples: Vec<f32> = (0..5).map(|i| i as f32).collect();
+        let mut segment_start = 5;
+        cut_kept(&mut samples, &mut segment_start, 3, 99);
+        assert_eq!(samples, vec![0.0, 1.0, 2.0]);
+        assert_eq!(segment_start, 3);
+        cut_kept(&mut samples, &mut segment_start, 2, 2);
+        cut_kept(&mut samples, &mut segment_start, 7, 9);
+        assert_eq!(samples, vec![0.0, 1.0, 2.0]);
     }
 }
 

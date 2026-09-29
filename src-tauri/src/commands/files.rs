@@ -71,6 +71,15 @@ static CANCEL: AtomicBool = AtomicBool::new(false);
 /// Serializes read-modify-write of the log file.
 static LOG_LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
 
+/// True while a file is being decoded or transcribed. The updater waits for it:
+/// until the file is done, its text exists only in this worker's memory.
+pub fn file_job_running() -> bool {
+    matches!(
+        *JOB.lock().unwrap_or_else(|p| p.into_inner()),
+        Some(FileJob::Decoding { .. } | FileJob::Transcribing { .. })
+    )
+}
+
 fn publish(app: &AppHandle, job: FileJob) {
     *JOB.lock().unwrap_or_else(|p| p.into_inner()) = Some(job.clone());
     let _ = app.emit("file-job", job);
@@ -115,6 +124,16 @@ fn unique_stem(folder: &Path, source: &Path, with_audio: bool) -> String {
                 && !(with_audio && folder.join(format!("{stem}.{ext}")).exists())
         })
         .expect("an unused name")
+}
+
+/// Where the audio copy goes: built exactly as `unique_stem` checked it.
+/// `set_extension()` would replace a dot inside the stem ("meeting.2026" ->
+/// "meeting.m4a") and copy over a file that was never checked.
+fn audio_copy_path(folder: &Path, stem: &str, source: &Path) -> PathBuf {
+    match source.extension() {
+        Some(ext) => folder.join(format!("{stem}.{}", ext.to_string_lossy())),
+        None => folder.join(stem),
+    }
 }
 
 /// Saves the text where `save` says and copies the audio if the setting
@@ -167,10 +186,7 @@ fn save_outputs(
     }
     let mut audio_path = None;
     if let (true, Some((folder, stem))) = (settings.file_keep_audio, &handy) {
-        let mut out = folder.join(stem);
-        if let Some(ext) = source.extension() {
-            out.set_extension(ext);
-        }
+        let out = audio_copy_path(folder, stem, source);
         match std::fs::copy(source, &out) {
             Ok(_) => audio_path = Some(out.display().to_string()),
             Err(e) => {
@@ -541,5 +557,25 @@ mod tests {
         assert_eq!(unique_stem(dir.path(), source, false), "talk (2)");
         std::fs::write(dir.path().join("talk (2).txt"), "x").unwrap();
         assert_eq!(unique_stem(dir.path(), source, false), "talk (3)");
+    }
+
+    #[test]
+    fn the_audio_copy_goes_to_the_name_that_was_checked() {
+        let dir = tempfile::TempDir::new().unwrap();
+        // An unrelated recording whose name a dot in the stem could collapse to.
+        std::fs::write(dir.path().join("meeting.m4a"), "keep me").unwrap();
+        let source = Path::new("C:/phone/meeting.2026.m4a");
+        let stem = unique_stem(dir.path(), source, true);
+        assert_eq!(stem, "meeting.2026");
+        let out = audio_copy_path(dir.path(), &stem, source);
+        assert_eq!(out, dir.path().join("meeting.2026.m4a"));
+        assert!(
+            !out.exists(),
+            "the copy must go to a name unique_stem found free"
+        );
+        assert_eq!(
+            audio_copy_path(dir.path(), "notes", Path::new("C:/x/notes")),
+            dir.path().join("notes")
+        );
     }
 }

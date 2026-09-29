@@ -382,7 +382,9 @@ impl UpdateManager {
             }
 
             let coordinator = self.inner.app.state::<crate::TranscriptionCoordinator>();
-            if coordinator.try_reserve_for_update() {
+            // A file on the Files page runs outside the dictation pipeline, so the
+            // coordinator cannot see it; installing would exit mid-file.
+            if !crate::commands::files::file_job_running() && coordinator.try_reserve_for_update() {
                 // The reservation is authoritative; this second read is the
                 // mandatory immediate pre-install belt-and-suspenders check.
                 if crate::transcription_coordinator::pipeline_stage()
@@ -415,6 +417,7 @@ impl UpdateManager {
         if crate::transcription_coordinator::pipeline_stage()
             != crate::transcription_coordinator::STAGE_IDLE
             || !crate::transcription_coordinator::update_pending()
+            || crate::commands::files::file_job_running()
         {
             self.inner
                 .app

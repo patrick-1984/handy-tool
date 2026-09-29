@@ -11,6 +11,15 @@ use crate::settings::{self, ShortcutBinding, get_settings};
 
 use super::handler::handle_shortcut_event;
 
+/// Take-only bindings (Cancel, Pause, Undo word) this backend actually
+/// registered. Unregistering goes by chord, so unregistering one whose
+/// registration failed — its chord already taken by another binding — would
+/// remove that other binding's shortcut.
+#[cfg(not(target_os = "linux"))]
+static REGISTERED_TAKE_BINDINGS: once_cell::sync::Lazy<
+    std::sync::Mutex<std::collections::HashSet<&'static str>>,
+> = once_cell::sync::Lazy::new(|| std::sync::Mutex::new(std::collections::HashSet::new()));
+
 /// Initialize shortcuts using Tauri's global-shortcut plugin
 pub fn init_shortcuts(app: &AppHandle) {
     let default_bindings = settings::get_default_settings().bindings;
@@ -183,8 +192,13 @@ pub fn register_dynamic_shortcut(app: &AppHandle, id: &'static str) {
         let app_clone = app.clone();
         tauri::async_runtime::spawn(async move {
             if let Some(take_binding) = get_settings(&app_clone).bindings.get(id).cloned() {
-                if let Err(e) = register_shortcut(&app_clone, take_binding) {
-                    error!("Failed to register {} shortcut: {}", id, e);
+                match register_shortcut(&app_clone, take_binding) {
+                    Ok(()) => {
+                        if let Ok(mut registered) = REGISTERED_TAKE_BINDINGS.lock() {
+                            registered.insert(id);
+                        }
+                    }
+                    Err(e) => error!("Failed to register {} shortcut: {}", id, e),
                 }
             }
         });
@@ -204,6 +218,13 @@ pub fn unregister_dynamic_shortcut(app: &AppHandle, id: &'static str) {
     {
         let app_clone = app.clone();
         tauri::async_runtime::spawn(async move {
+            let was_registered = REGISTERED_TAKE_BINDINGS
+                .lock()
+                .map(|mut registered| registered.remove(id))
+                .unwrap_or(false);
+            if !was_registered {
+                return;
+            }
             if let Some(take_binding) = get_settings(&app_clone).bindings.get(id).cloned() {
                 // We ignore errors here as it might already be unregistered
                 let _ = unregister_shortcut(&app_clone, take_binding);

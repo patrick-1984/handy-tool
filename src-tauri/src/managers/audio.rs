@@ -663,13 +663,14 @@ impl AudioRecordingManager {
         Some(pause)
     }
 
-    /// Cut the take in progress back to `len` kept samples (undo last word).
-    pub fn truncate_recording(&self, len: usize) {
+    /// Remove kept samples `from..to` from the take in progress (undo last
+    /// word); what was recorded after `to` stays.
+    pub fn cut_recording(&self, from: usize, to: usize) {
         if !self.is_recording() {
             return;
         }
         if let Some(rec) = self.recorder.lock().unwrap().as_ref() {
-            if let Err(e) = rec.truncate(len) {
+            if let Err(e) = rec.cut(from, to) {
                 error!("Failed to cut the recording back: {e}");
             }
         }
