@@ -8,6 +8,10 @@ app has been redesigned and its pages rearranged.
 
 ### Changed
 
+- **The live text is the transcript only with Parakeet.** Only Parakeet gives word timings, so
+  only its live text is cut between words. With Whisper, Moonshine or SenseVoice the live windows
+  are cut wherever a snapshot ends, so those takes are transcribed again in full at stop, as in
+  1.6.2, and the live text only shows what is coming.
 - **What's new follows the GitHub releases:** 2.0.0 lists everything since 1.6.2 (1.6.3-1.13.0 were
   never released on their own), most important first - 30 items, 17 of them new - then 1.6.2 and
   1.6.1 as they were released.
@@ -28,7 +32,7 @@ app has been redesigned and its pages rearranged.
 - **More's App tab is now a group on General** (Appearance, Start Hidden, Reopen Last Page, Launch
   on Startup, Show Tray Icon, the overlay's position, size and progress, Keyboard Implementation),
   above Updates: these are settings you want at hand. More opens on Output now.
-- **The designer's second round** (brief 2), in light and dark:
+- **A second design round**, in light and dark:
   - **Setups:** each setup is a row with an icon tile and a secondary **Start →** (one primary
     button per page); the Jumper's "Windows only" is a tag instead of a sentence.
   - **Setup steps:** the name, the step count and its segments (the current one longer) and
@@ -78,7 +82,7 @@ app has been redesigned and its pages rearranged.
   other (before, "Ultra-fast" and "Fast" models both showed 5/5), and the descriptions use the
   same words - Fastest, Very fast, Fast, Medium speed, Slow; top, very, fairly accurate, basic.
   Accuracy from the English error rates of the Open ASR Leaderboard and the Moonshine v2 paper;
-  speed from published comparisons, checked on a laptop (i5-1145G7).
+  speed from published comparisons, checked on a mid-range laptop.
 - **Transcribe Shortcut is now called Record/Transcribe Shortcut** (General, Shortcuts, the
   setup), in every language.
 - **Setup buttons**: each step that saves something now has **Skip** (go on without saving
@@ -105,7 +109,7 @@ app has been redesigned and its pages rearranged.
     microphone starts and while transcribing, the progress as a thin line along the pill's
     bottom, grey flat bars while paused, an icon with each microphone problem, and the pause
     button dimmed until the microphone is live. While transcribing, a thin cyan line fills along the
-    pill's bottom - or, with **More › App › Progress Style** set to "Light around the edge", a
+    pill's bottom - or, with **General › App › Progress Style** set to "Light around the edge", a
     glowing light runs round the pill from the bottom centre, centred on its border, its trail
     staying lit - and glowing evenly, no brighter at the head - up to the figure. Its aura
     stays close to the light and fades out before the edge of the pill's window (a wider one
@@ -142,7 +146,7 @@ app has been redesigned and its pages rearranged.
 
 ### Fixed
 
-- **"Transcribing N%" no longer sits at 99%.** On this PC's log, 57% of long transcriptions
+- **"Transcribing N%" no longer sits at 99%.** In logged timings, 57% of long transcriptions
   ran past the estimate and then showed 99% for 10-70% of the wait. Three causes, all fixed:
   - The estimate used one average speed, but a long stretch costs more per second of audio
     than a short one (0.14 s per second for short clips, 0.21 s at 20-35 s). It now learns
@@ -159,7 +163,7 @@ app has been redesigned and its pages rearranged.
   quick burst before the pill fades (visual only; the text is not delayed).
 
 - **Switching the live text box on mid-take shows text right away.** It used to read the
-  whole take again before showing anything - 23 s for a 60 s take on this PC, so nothing
+  whole take again before showing anything - 23 s for a 60 s take on a test PC, so nothing
   appeared before the take ended - and threw away the parts already transcribed. Now those
   parts fill the box at once and only what was said after them is read.
 - **The pill's T sits exactly in its circle.** The letter came from the font and landed up
@@ -206,7 +210,7 @@ app has been redesigned and its pages rearranged.
   **Show me** (opens the page where the setting lives and outlines it, as search does: a live
   text box setting hidden while the box is off outlines the box's switch; setups outline their
   cards, model ratings your model's card). A dot marks news you have not opened yet.
-- **Glow Strength and Glowing Line** (More › App, under Progress Style): how strongly the
+- **Glow Strength and Glowing Line** (General › App, under Progress Style): how strongly the
   progress light glows, 0-200% (100% is about as bright near the light as the first edge
   light, and the glow always fades out within the pill's window), and a switch that gives the
   line along the bottom the same glow.
@@ -242,12 +246,12 @@ app has been redesigned and its pages rearranged.
     now called Watched folders and Folders.
 - **MP3, M4A, AAC and FLAC** can be read by the watched folders too (before: WAV, OGG, Opus).
   The decoder was already inside the app, so it adds almost nothing to its size.
-- **Overlay Size** (More › App): Normal, Large (125%) or Extra large (150%); the "Too quiet"
+- **Overlay Size** (General › App): Normal, Large (125%) or Extra large (150%); the "Too quiet"
   box grows with it.
 - **Text size for the live text box** (General › Transcription › Live text box): Small,
   Normal, Large or Extra large; the one-line box grows with it. **Box height** for Whole text:
   3, 6 (default), 10 or 16 lines before the oldest slide out.
-- **Reopen Last Page** (More › App, on by default): Handy Tool opens on the page that was open
+- **Reopen Last Page** (General › App, on by default): Handy Tool opens on the page that was open
   when you closed it.
 - **Setup guide on the first start** (replaces the plain model list; every step can be skipped,
   or all of it). Pick the languages you speak — several at once — and it suggests three speech
@@ -260,8 +264,8 @@ app has been redesigned and its pages rearranged.
   "Try it": press the shortcut, say a sentence, and your words appear right there. Next
   skips any step. The new **Setups** page (in the sidebar, after General) runs it again, and
   will list the guided setups for more features as they come.
-- **"Wait for the microphone to warm up"** (General › Sound, on by default). On this PC the
-  Realtek microphone starts 15-20 dB quiet after a cold start and fades in: the pill
+- **"Wait for the microphone to warm up"** (General › Sound, on by default). Some microphones (a
+  Realtek one on a test PC) start 15-20 dB quiet after a cold start and fades in: the pill
   already showed sound bars (it switched on the first audio, however faint), and the first
   words spoken into the quiet part were dropped as noise. Now each cold start measures how
   long its microphone takes to settle (from the levels of its first 3 s), and the next cold

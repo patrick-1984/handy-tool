@@ -276,11 +276,13 @@ said after the final on-screen update.
 **What Handy does.** On stop, the audio since the last fixed word — your last second or two —
 is transcribed and added to the live text, and that is what you get, ready at once. Nothing you
 said after the last on-screen update is lost, and the whole take is not transcribed a second
-time. Only when the live preview produced no text at all is the complete audio transcribed
-instead.
+time. That needs a model that gives word timings (Parakeet): only then can the live text be cut
+between words. With other models, and whenever the live preview produced no text at all, the
+complete audio is transcribed at stop instead.
 **Where.** No control — this is always active.
 **Since.** 0.25.0. From 0.25.0 to 1.10.0 the complete audio was transcribed again at stop,
-which on a long take could take minutes; since 1.11.0 the live text is the transcript.
+which on a long take could take minutes; since 2.0.0 the live text is the transcript with
+Parakeet.
 
 ### See your words next to the overlay while you talk
 
