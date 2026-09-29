@@ -211,6 +211,9 @@ pub struct AudioRecordingManager {
     warm_generation: Arc<AtomicU64>,
     /// The take in progress is paused (see toggle_pause).
     paused: Arc<AtomicBool>,
+    /// Bumped when a take starts (under the state lock): which take an undo cut
+    /// belongs to, so a cut from an ended take never lands in a later one.
+    take_seq: Arc<AtomicU64>,
 }
 
 impl AudioRecordingManager {
@@ -235,6 +238,7 @@ impl AudioRecordingManager {
             did_mute: Arc::new(Mutex::new(false)),
             warm_generation: Arc::new(AtomicU64::new(0)),
             paused: Arc::new(AtomicBool::new(false)),
+            take_seq: Arc::new(AtomicU64::new(0)),
         };
 
         // Always-on?  Open immediately. A microphone that cannot start (blocked in
@@ -577,6 +581,7 @@ impl AudioRecordingManager {
                 if rec.start(target).is_ok() {
                     self.paused.store(false, AtomicOrdering::SeqCst);
                     *self.is_recording.lock().unwrap() = true;
+                    self.take_seq.fetch_add(1, AtomicOrdering::SeqCst);
                     *state = RecordingState::Recording {
                         binding_id: binding_id.to_string(),
                     };
@@ -676,17 +681,50 @@ impl AudioRecordingManager {
         Some(pause)
     }
 
-    /// Remove kept samples `from..to` from the take in progress (undo last
-    /// word); what was recorded after `to` stays.
-    pub fn cut_recording(&self, from: usize, to: usize) {
-        if !self.is_recording() {
-            return;
-        }
-        if let Some(rec) = self.recorder.lock().unwrap().as_ref() {
-            if let Err(e) = rec.cut(from, to) {
-                error!("Failed to cut the recording back: {e}");
+    /// The take in progress (or the last one), for [`Self::cut_recording`].
+    pub fn take_id(&self) -> u64 {
+        self.take_seq.load(AtomicOrdering::SeqCst)
+    }
+
+    /// Remove kept samples `from..to` from take `take` while it records (undo
+    /// last word); what was recorded after `to` stays. True when the cut was
+    /// queued ahead of the take's Stop, so the audio stop_recording returns has
+    /// it. False when that take has stopped (or another started): the caller
+    /// must make the cut in the stopped audio itself. The check and the queueing
+    /// happen under the state lock, which stop_recording takes to end the take,
+    /// so there is no moment in between; the reply is awaited outside the locks.
+    pub fn cut_recording(&self, from: usize, to: usize, take: u64) -> bool {
+        let reply = {
+            let state = self.state.lock().unwrap();
+            if !matches!(*state, RecordingState::Recording { .. })
+                || self.take_seq.load(AtomicOrdering::SeqCst) != take
+            {
+                return false;
             }
+            match self
+                .recorder
+                .lock()
+                .unwrap()
+                .as_ref()
+                .map(|r| r.send_cut(from, to))
+            {
+                Some(Ok(reply)) => reply,
+                Some(Err(e)) => {
+                    error!("Failed to cut the recording back: {e}");
+                    return false;
+                }
+                None => return false,
+            }
+        };
+        // Queued: it lands before the take's Stop even if this wait times out,
+        // so it is not made a second time.
+        if reply
+            .recv_timeout(std::time::Duration::from_secs(1))
+            .is_err()
+        {
+            warn!("Undo cut: no reply within 1 s (it is still made before the take ends)");
         }
+        true
     }
 
     /// The take in progress's kept audio so far (undo last word).

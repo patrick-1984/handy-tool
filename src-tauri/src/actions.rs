@@ -169,6 +169,14 @@ struct LiveSession {
     /// with the rest) or after it (and is left alone) — never taken after the
     /// cut but spliced as if taken before. Order: cut_lock, then jobs.
     cut_lock: Mutex<()>,
+    /// The recorder's take this preview belongs to (AudioRecordingManager::take_id).
+    take: u64,
+    /// Undo last word was pressed in this take: only then does stop() settle
+    /// undo presses and cuts (settle_undos).
+    undo_used: AtomicBool,
+    /// Undo cuts the recorder could no longer make (the take had stopped), in
+    /// order: stop() makes them in the stopped audio.
+    missed_cuts: Mutex<Vec<(usize, usize)>>,
     /// Set while the worker thread runs; stop() waits for it (SEGMENT_BUSY).
     busy: Arc<AtomicBool>,
     tm: Arc<TranscriptionManager>,
@@ -2106,22 +2114,44 @@ impl ShortcutAction for TranscribeAction {
                 }
             }
 
-            // Grab live text if in Live mode
-            let live_transcription = if use_live {
-                live_text_handle.and_then(|arc| {
-                    let text = arc.lock().ok()?.clone();
-                    if text.is_empty() { None } else { Some(text) }
-                })
-            } else {
-                None
-            };
-
-            if let Some(samples) = samples_taken {
+            if let Some(mut samples) = samples_taken {
                 debug!(
                     "Recording stopped and samples retrieved in {:?}, sample count: {}",
                     stop_recording_time.elapsed(),
                     samples.len()
                 );
+                // Undo pressed in this take: carry out the presses the preview had
+                // not reached and the cuts the recorder no longer could, BEFORE the
+                // audio is saved or transcribed. Only for such takes, and only once
+                // no worker runs: first a barrier for a press already queueing
+                // (undo_last_word holds cut_lock), then a wait for a worker it may
+                // have started.
+                if use_live {
+                    if let Some(session) = live_session.as_ref().filter(|s| s.undo_used()) {
+                        drop(session.cut_lock.lock().unwrap_or_else(|p| p.into_inner()));
+                        let settle_start = Instant::now();
+                        let busy = || busy_flag.as_ref().is_some_and(|b| b.load(Ordering::SeqCst));
+                        while busy() && settle_start.elapsed() < Duration::from_secs(10) {
+                            tokio::time::sleep(Duration::from_millis(10)).await;
+                        }
+                        if busy() {
+                            warn!(
+                                "Undo: the live preview is still busy; pending undo presses are not carried out"
+                            );
+                        } else {
+                            session.settle_undos(&mut samples);
+                        }
+                    }
+                }
+                // The live text as a fallback, read after the undo presses above.
+                let live_transcription = if use_live {
+                    live_text_handle.and_then(|arc| {
+                        let text = arc.lock().ok()?.clone();
+                        if text.is_empty() { None } else { Some(text) }
+                    })
+                } else {
+                    None
+                };
                 // crash_safe history rows point at handy-{ts}.opus — verify the
                 // artifact exists (finalize/glue can fail) and fall back to the
                 // in-memory samples (WAV) when it doesn't.
@@ -2469,11 +2499,27 @@ pub fn toggle_pause(app: &AppHandle) {
 fn carry_undo_past_cut(jobs: &mut VecDeque<LiveJob>, at: usize, len: usize) {
     jobs.retain(|j| j.undo > 0);
     for j in jobs.iter_mut() {
-        let end = len.min(j.samples.len());
-        if at < end {
-            j.samples.drain(at..end);
-        }
+        cut_range(&mut j.samples, at, len);
     }
+}
+
+/// Remove `at..len` from `samples` (clamped): an undo cut, as the recorder
+/// makes it (recorder.rs cut_kept).
+fn cut_range(samples: &mut Vec<f32>, at: usize, len: usize) {
+    let end = len.min(samples.len());
+    if at < end {
+        samples.drain(at..end);
+    }
+}
+
+/// The take is over (the worker found it not current): plain snapshots go, as
+/// the final catch-up reads all the audio; undo presses stay, in order, for
+/// stop() to carry out (settle_undos). `popped` is the job just taken, if any.
+fn keep_undo_presses(jobs: &mut VecDeque<LiveJob>, popped: Option<LiveJob>) {
+    if let Some(job) = popped {
+        jobs.push_front(job);
+    }
+    jobs.retain(|j| j.undo > 0);
 }
 
 /// Queue a snapshot for the live preview. A newer snapshot replaces one still
@@ -2525,8 +2571,8 @@ impl LiveSession {
                     let mut jobs = session.jobs.lock().unwrap_or_else(|p| p.into_inner());
                     match jobs.pop_front() {
                         Some(job) if session.is_current() => job,
-                        _ => {
-                            jobs.clear();
+                        popped => {
+                            keep_undo_presses(&mut jobs, popped);
                             session.busy.store(false, Ordering::SeqCst);
                             break;
                         }
@@ -2631,6 +2677,35 @@ impl LiveSession {
             p.frozen_until
         };
         total.saturating_sub(read_from) as f32 / 16_000.0
+    }
+
+    /// Undo was pressed in this take (see `undo_used`).
+    fn undo_used(&self) -> bool {
+        self.undo_used.load(Ordering::SeqCst)
+    }
+
+    /// The take has stopped; call once no worker runs. Carry out the undo presses
+    /// the preview had not reached, each on its own snapshot as the worker would
+    /// have (their cuts are recorded as missed), then make in `samples` (from
+    /// stop_recording) every cut the recorder could no longer make.
+    fn settle_undos(&self, samples: &mut Vec<f32>) {
+        loop {
+            let job = self
+                .jobs
+                .lock()
+                .unwrap_or_else(|p| p.into_inner())
+                .pop_front();
+            match job {
+                Some(job) if job.undo > 0 => self.update(job),
+                Some(_) => {}
+                None => break,
+            }
+        }
+        let missed =
+            std::mem::take(&mut *self.missed_cuts.lock().unwrap_or_else(|p| p.into_inner()));
+        for (at, len) in missed {
+            cut_range(samples, at, len);
+        }
     }
 
     /// The take is over: catch the preview up with the whole recording and
@@ -2790,7 +2865,13 @@ impl LiveSession {
             // recorder sends meanwhile lands after them, not before.
             let rm = self.app.state::<Arc<AudioRecordingManager>>();
             let _cut = self.cut_lock.lock().unwrap_or_else(|p| p.into_inner());
-            rm.cut_recording(at, len);
+            if !rm.cut_recording(at, len, self.take) {
+                // The take has stopped: the audio stop() gets lacks this cut.
+                self.missed_cuts
+                    .lock()
+                    .unwrap_or_else(|p| p.into_inner())
+                    .push((at, len));
+            }
             let mut jobs = self.jobs.lock().unwrap_or_else(|p| p.into_inner());
             carry_undo_past_cut(&mut jobs, at, len);
         }
@@ -2828,6 +2909,9 @@ fn start_live_session(
         preview: Mutex::new(LivePreview::default()),
         jobs: Mutex::new(VecDeque::new()),
         cut_lock: Mutex::new(()),
+        take: rm.take_id(),
+        undo_used: AtomicBool::new(false),
+        missed_cuts: Mutex::new(Vec::new()),
         busy,
         tm: Arc::clone(tm),
         live_text,
@@ -2913,6 +2997,7 @@ pub fn undo_last_word(app: &AppHandle) {
     else {
         return;
     };
+    session.undo_used.store(true, Ordering::SeqCst);
     session.push(LiveJob {
         samples,
         utterance_ended: false,
@@ -3367,6 +3452,29 @@ mod live_queue_tests {
         enqueue_live_job(&mut jobs, job(14, false, 1));
         assert_eq!(jobs.len(), 1);
         assert_eq!(jobs[0].undo, 2);
+    }
+
+    #[test]
+    fn a_stopped_take_keeps_only_its_undo_presses_in_order() {
+        let mut jobs = VecDeque::from([job(20, false, 0), job(30, false, 1), job(40, true, 0)]);
+        super::keep_undo_presses(&mut jobs, Some(job(10, false, 2)));
+        let kept: Vec<(usize, usize)> = jobs.iter().map(|j| (j.samples.len(), j.undo)).collect();
+        assert_eq!(kept, vec![(10, 2), (30, 1)]);
+        let mut empty = VecDeque::new();
+        super::keep_undo_presses(&mut empty, None);
+        assert!(empty.is_empty());
+    }
+
+    #[test]
+    fn missed_cuts_applied_in_order_match_the_recorder() {
+        // The recorder would have cut 2..4 and then, in the cut audio, 3..5.
+        let mut stopped: Vec<f32> = (0..8).map(|i| i as f32).collect();
+        super::cut_range(&mut stopped, 2, 4);
+        super::cut_range(&mut stopped, 3, 5);
+        assert_eq!(stopped, vec![0.0, 1.0, 4.0, 7.0]);
+        super::cut_range(&mut stopped, 3, 99);
+        super::cut_range(&mut stopped, 9, 12);
+        assert_eq!(stopped, vec![0.0, 1.0, 4.0]);
     }
 
     #[test]

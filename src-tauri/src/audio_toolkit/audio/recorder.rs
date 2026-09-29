@@ -702,12 +702,17 @@ impl AudioRecorder {
         self.send(Cmd::Resume)
     }
 
-    /// Remove the take's kept samples `from..to`; returns once they are cut.
-    pub fn cut(&self, from: usize, to: usize) -> Result<(), Box<dyn std::error::Error>> {
+    /// Queue the removal of the take's kept samples `from..to`. Commands run in
+    /// order, so once queued the cut lands before any later Stop; the receiver
+    /// gets a message when it has been made.
+    pub fn send_cut(
+        &self,
+        from: usize,
+        to: usize,
+    ) -> Result<mpsc::Receiver<()>, Box<dyn std::error::Error>> {
         let (tx, rx) = mpsc::channel();
         self.send(Cmd::Cut(from, to, tx))?;
-        rx.recv_timeout(Duration::from_secs(1))?;
-        Ok(())
+        Ok(rx)
     }
 
     /// A copy of the take's kept audio so far.
