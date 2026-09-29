@@ -134,10 +134,11 @@ export const PostProcessingSetup: React.FC<{ onClose: () => void }> = ({
     else setTryError(r.error);
   };
 
-  // Where these live in the app, in its own words ("More › Post-processing").
+  // Where these live in the app, in its own words
+  // ("Advanced settings › Post-processing", "Advanced settings › LLM providers").
   const pages = {
-    postProcessingPage: `${t("sidebar.more")} › ${t("settings.advanced.tabs.postProcessing")}`,
-    providersPage: `${t("sidebar.more")} › ${t("settings.advanced.tabs.providers")}`,
+    postProcessingPage: `${t("sidebar.advancedSettings")} › ${t("settings.advanced.tabs.postProcessing")}`,
+    providersPage: `${t("sidebar.advancedSettings")} › ${t("sidebar.llmProviders")}`,
   };
 
   const common = {

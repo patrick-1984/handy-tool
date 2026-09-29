@@ -19,6 +19,8 @@ import {
 } from "@/bindings";
 import i18n, { syncLanguageFromSettings } from "@/i18n";
 import { getLanguageDirection } from "@/lib/utils/rtl";
+import { useOsType } from "@/hooks/useOsType";
+import { takeShortcutsAvailable } from "@/lib/utils/keyboard";
 
 type OverlayState =
   | "recording"
@@ -44,6 +46,7 @@ const QUIET_BAND = 0.12;
 
 const RecordingOverlay: React.FC = () => {
   const { t } = useTranslation();
+  const osType = useOsType();
   const [isVisible, setIsVisible] = useState(false);
   const [state, setState] = useState<OverlayState>("recording");
   // The overlay appears the moment the shortcut is pressed, but a microphone that
@@ -271,7 +274,8 @@ const RecordingOverlay: React.FC = () => {
 
   const pauseMenu = () =>
     popup([
-      changeShortcut("pause"),
+      // Take-only shortcuts are never registered on Linux, so not offered there.
+      ...(takeShortcutsAvailable(osType) ? [changeShortcut("pause")] : []),
       // Not while paused: without the button a paused take could only be stopped.
       ...(state === "recording"
         ? [
@@ -307,8 +311,9 @@ const RecordingOverlay: React.FC = () => {
         "discard_recording",
         "settings.general.cancelBehavior.options.discardRecording",
       ),
-      separator(),
-      changeShortcut("cancel"),
+      ...(takeShortcutsAvailable(osType)
+        ? [separator(), changeShortcut("cancel")]
+        : []),
     ]);
   };
   const onMenu = (open: () => void) => (e: React.MouseEvent) => {

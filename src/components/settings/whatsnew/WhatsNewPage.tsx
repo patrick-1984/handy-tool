@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { takeShortcutsAvailable } from "@/lib/utils/keyboard";
 import { useTranslation } from "react-i18next";
 import { getVersion } from "@tauri-apps/api/app";
 import { ArrowRight } from "lucide-react";
@@ -26,6 +27,8 @@ interface Item {
   historyTab?: HistoryTab;
   /** Its setting exists on Windows only: no Show me elsewhere. */
   windowsOnly?: boolean;
+  /** Its setting is hidden on Linux (take-only shortcuts): no Show me there. */
+  notOnLinux?: boolean;
 }
 
 // A live text box setting is only shown while the box is on: then its switch.
@@ -107,6 +110,7 @@ const RELEASES: { version: string; items: Item[] }[] = [
         key: "holdUndo",
         section: "general",
         titleKeys: ["settings.general.undoWord.label"],
+        notOnLinux: true,
       },
       { key: "progressPercent" },
       { key: "micStatus" },
@@ -244,7 +248,8 @@ export const WhatsNewPage: React.FC = () => {
                   </p>
                 </div>
                 {item.section &&
-                  (!item.windowsOnly || osType === "windows") && (
+                  (!item.windowsOnly || osType === "windows") &&
+                  (!item.notOnLinux || takeShortcutsAvailable(osType)) && (
                     <Button
                       variant="secondary"
                       size="sm"

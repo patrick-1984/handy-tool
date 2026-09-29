@@ -2122,13 +2122,17 @@ impl ShortcutAction for TranscribeAction {
                 );
                 // Undo pressed in this take: carry out the presses the preview had
                 // not reached and the cuts the recorder no longer could, BEFORE the
-                // audio is saved or transcribed. Only for such takes, and only once
-                // no worker runs: first a barrier for a press already queueing
-                // (undo_last_word holds cut_lock), then a wait for a worker it may
-                // have started.
+                // audio is saved or transcribed. First, for every live take, a
+                // barrier: an undo press already under way (undo_last_word holds
+                // cut_lock while it snapshots, marks the take and queues) finishes
+                // before `undo_used` is read; a later one finds the take stopped.
+                // Then, only for takes with an undo, a wait for any worker the
+                // press started, and the settling.
                 if use_live {
-                    if let Some(session) = live_session.as_ref().filter(|s| s.undo_used()) {
+                    if let Some(session) = live_session.as_ref() {
                         drop(session.cut_lock.lock().unwrap_or_else(|p| p.into_inner()));
+                    }
+                    if let Some(session) = live_session.as_ref().filter(|s| s.undo_used()) {
                         let settle_start = Instant::now();
                         let busy = || busy_flag.as_ref().is_some_and(|b| b.load(Ordering::SeqCst));
                         while busy() && settle_start.elapsed() < Duration::from_secs(10) {
@@ -2186,7 +2190,15 @@ impl ShortcutAction for TranscribeAction {
                 // live text would be stitched from cut words; those takes, and any
                 // take whose preview has nothing, get the complete audio
                 // transcribed below, as before 1.13.
-                let live_final = if use_live {
+                // Only once no preview worker runs: a worker still busy after the
+                // waits above could change the preview while finish() reads it.
+                // Then the whole take is transcribed instead, which never touches
+                // the preview.
+                let worker_idle = !busy_flag.as_ref().is_some_and(|b| b.load(Ordering::SeqCst));
+                if use_live && !worker_idle {
+                    warn!("Live preview still busy at stop; transcribing the whole take instead");
+                }
+                let live_final = if use_live && worker_idle {
                     live_session
                         .as_ref()
                         .filter(|session| session.has_word_timings())
