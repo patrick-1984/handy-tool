@@ -2463,14 +2463,15 @@ pub fn toggle_pause(app: &AppHandle) {
 /// queued one copy of the whole take per pause, and a long take on a slow PC
 /// could run out of memory.
 fn enqueue_live_job(jobs: &mut VecDeque<LiveJob>, mut job: LiveJob) {
-    let replace = jobs.back().is_some_and(|last| {
+    // Repeatedly: once a mid-speech snapshot is replaced, the utterance end
+    // behind it may be replaceable too, or those would still pile up.
+    while jobs.back().is_some_and(|last| {
         if last.utterance_ended {
             job.utterance_ended && last.undo == 0 && job.undo == 0
         } else {
             last.undo == 0 || job.undo > 0
         }
-    });
-    if replace {
+    }) {
         if let Some(last) = jobs.pop_back() {
             job.undo += last.undo;
         }
@@ -2756,27 +2757,34 @@ impl LiveSession {
             // the take kept recording while the preview caught up, and whatever was
             // said after the press stays. Returns once the recorder has cut its
             // audio; snapshots queued before that still hold the removed words, so
-            // drop them — but not the undo presses they carry, which go on with a
-            // fresh snapshot.
+            // drop them — but not the undo presses they carry. Each goes on with
+            // the recording as it is now, up to where that press was made: its
+            // snapshot's length, moved back by what this cut removed. So a later
+            // press, too, cuts nothing said after it.
             let rm = self.app.state::<Arc<AudioRecordingManager>>();
             rm.cut_recording(at, len);
-            let carried: usize = {
+            let removed = len - at.min(len);
+            let carried: Vec<(usize, usize)> = {
                 let mut jobs = self.jobs.lock().unwrap_or_else(|p| p.into_inner());
-                let undo = jobs.iter().map(|j| j.undo).sum();
+                let carried = jobs
+                    .iter()
+                    .filter(|j| j.undo > 0)
+                    .map(|j| (j.undo, j.samples.len().saturating_sub(removed)))
+                    .collect();
                 jobs.clear();
-                undo
+                carried
             };
-            if carried > 0 {
+            if !carried.is_empty() {
                 if let Some(samples) = rm.snapshot_recording() {
-                    self.jobs
-                        .lock()
-                        .unwrap_or_else(|p| p.into_inner())
-                        .push_back(LiveJob {
-                            samples,
+                    let mut jobs = self.jobs.lock().unwrap_or_else(|p| p.into_inner());
+                    for (undo, upto) in carried {
+                        jobs.push_back(LiveJob {
+                            samples: samples[..upto.min(samples.len())].to_vec(),
                             utterance_ended: false,
-                            undo: carried,
+                            undo,
                             last: false,
                         });
+                    }
                 }
             }
         }
@@ -3306,6 +3314,20 @@ mod live_queue_tests {
         enqueue_live_job(&mut jobs, job(40, true, 0));
         assert_eq!(jobs.len(), 2);
         assert_eq!(jobs[1].samples.len(), 40);
+    }
+
+    #[test]
+    fn utterance_ends_between_mid_speech_snapshots_do_not_pile_up() {
+        let mut jobs = VecDeque::new();
+        for i in 1..=50 {
+            enqueue_live_job(&mut jobs, job(i * 2 * 16_000, true, 0));
+            enqueue_live_job(&mut jobs, job((i * 2 + 1) * 16_000, false, 0));
+        }
+        // At most the newest utterance end and the snapshot after it.
+        assert_eq!(jobs.len(), 2);
+        assert!(jobs[0].utterance_ended);
+        assert_eq!(jobs[0].samples.len(), 100 * 16_000);
+        assert!(!jobs[1].utterance_ended);
     }
 
     #[test]

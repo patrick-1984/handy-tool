@@ -11,13 +11,13 @@ use crate::settings::{self, ShortcutBinding, get_settings};
 
 use super::handler::handle_shortcut_event;
 
-/// Take-only bindings (Cancel, Pause, Undo word) this backend actually
-/// registered. Unregistering goes by chord, so unregistering one whose
-/// registration failed — its chord already taken by another binding — would
-/// remove that other binding's shortcut.
-#[cfg(not(target_os = "linux"))]
+/// Take-only bindings (Cancel, Pause, Undo word) this backend holds right now,
+/// kept by register_shortcut / unregister_shortcut so every path (take start and
+/// end, a chord changed mid-take) agrees. Unregistering goes by chord, so
+/// unregistering one whose registration failed — its chord taken by another
+/// binding — would remove that other binding's shortcut.
 static REGISTERED_TAKE_BINDINGS: once_cell::sync::Lazy<
-    std::sync::Mutex<std::collections::HashSet<&'static str>>,
+    std::sync::Mutex<std::collections::HashSet<String>>,
 > = once_cell::sync::Lazy::new(|| std::sync::Mutex::new(std::collections::HashSet::new()));
 
 /// Initialize shortcuts using Tauri's global-shortcut plugin
@@ -144,6 +144,11 @@ pub fn register_shortcut(app: &AppHandle, binding: ShortcutBinding) -> Result<()
             error_msg
         })?;
 
+    if super::is_take_binding(&binding.id) {
+        if let Ok(mut held) = REGISTERED_TAKE_BINDINGS.lock() {
+            held.insert(binding.id.clone());
+        }
+    }
     Ok(())
 }
 
@@ -152,6 +157,18 @@ pub fn unregister_shortcut(app: &AppHandle, binding: ShortcutBinding) -> Result<
     // Switched off by the user ("None"): it was never registered.
     if super::is_unbound(&binding.current_binding) {
         return Ok(());
+    }
+    // A take-only binding this backend does not hold (its registration failed,
+    // or no take is running) must not unregister its chord: another binding may
+    // own it.
+    if super::is_take_binding(&binding.id) {
+        let held = REGISTERED_TAKE_BINDINGS
+            .lock()
+            .map(|mut held| held.remove(&binding.id))
+            .unwrap_or(false);
+        if !held {
+            return Ok(());
+        }
     }
 
     let shortcut = match binding.current_binding.parse::<Shortcut>() {
@@ -192,13 +209,8 @@ pub fn register_dynamic_shortcut(app: &AppHandle, id: &'static str) {
         let app_clone = app.clone();
         tauri::async_runtime::spawn(async move {
             if let Some(take_binding) = get_settings(&app_clone).bindings.get(id).cloned() {
-                match register_shortcut(&app_clone, take_binding) {
-                    Ok(()) => {
-                        if let Ok(mut registered) = REGISTERED_TAKE_BINDINGS.lock() {
-                            registered.insert(id);
-                        }
-                    }
-                    Err(e) => error!("Failed to register {} shortcut: {}", id, e),
+                if let Err(e) = register_shortcut(&app_clone, take_binding) {
+                    error!("Failed to register {} shortcut: {}", id, e);
                 }
             }
         });
@@ -218,13 +230,6 @@ pub fn unregister_dynamic_shortcut(app: &AppHandle, id: &'static str) {
     {
         let app_clone = app.clone();
         tauri::async_runtime::spawn(async move {
-            let was_registered = REGISTERED_TAKE_BINDINGS
-                .lock()
-                .map(|mut registered| registered.remove(id))
-                .unwrap_or(false);
-            if !was_registered {
-                return;
-            }
             if let Some(take_binding) = get_settings(&app_clone).bindings.get(id).cloned() {
                 // We ignore errors here as it might already be unregistered
                 let _ = unregister_shortcut(&app_clone, take_binding);

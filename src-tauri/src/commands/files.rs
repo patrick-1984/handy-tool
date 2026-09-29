@@ -412,6 +412,12 @@ pub fn transcribe_file(
         ) {
             return Err("a file is already being transcribed".into());
         }
+        // Checked under the JOB lock: the updater reserves first and then reads
+        // file_job_running(), which takes this lock, so a file either starts
+        // before that read (and the update waits) or sees the reservation here.
+        if crate::transcription_coordinator::update_pending() {
+            return Err("an update is being installed; try again after the restart".into());
+        }
         *job = Some(FileJob::Decoding {
             file_name: file_name.clone(),
         });

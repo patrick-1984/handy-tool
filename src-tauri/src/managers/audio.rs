@@ -544,9 +544,15 @@ impl AudioRecordingManager {
                     .ok()
                     .and_then(|r| r.as_ref().map(|rec| rec.stream_faulted()))
                     .unwrap_or(false);
-            if on_demand || faulted {
+            // An always-on stream that never opened (no microphone, or one blocked,
+            // at startup) is opened here too; start_microphone_stream is a no-op
+            // for a stream that is open and healthy.
+            let never_opened = !on_demand && !*self.is_open.lock().unwrap();
+            if on_demand || faulted || never_opened {
                 if faulted {
                     warn!("Always-on microphone stream faulted; reopening before the take");
+                } else if never_opened {
+                    info!("Always-on microphone is not open; opening it for the take");
                 }
                 if let Err(e) = self.start_microphone_stream() {
                     error!("Failed to open microphone stream: {e}");
