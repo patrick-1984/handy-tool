@@ -25,6 +25,11 @@ interface GlobalShortcutInputProps {
   disabled?: boolean;
 }
 
+// Shortcuts that exist only while a take runs. Their default is a bare key
+// (Cancel is Escape), so a bare Escape is recorded for them; for every other
+// shortcut it cancels the recording, as it always did.
+const TAKE_ONLY = ["cancel", "pause", "undo_word"];
+
 export const GlobalShortcutInput: React.FC<GlobalShortcutInputProps> = ({
   descriptionMode = "tooltip",
   grouped = false,
@@ -75,8 +80,30 @@ export const GlobalShortcutInput: React.FC<GlobalShortcutInputProps> = ({
 
     let cleanup = false;
 
-    // Keyboard event listeners. Escape is recorded like any other key (it is
-    // the Cancel default); clicking anywhere else stops editing.
+    // Stop editing and put the original chord back: clicking anywhere else,
+    // leaving the window, or a bare Escape (outside the take-only shortcuts).
+    // Every shortcut is off while editing, so this must also run when the user
+    // switches to another app mid-recording.
+    const cancelEditing = async () => {
+      if (cleanup) return;
+      cleanup = true;
+      if (editingShortcutId && originalBinding) {
+        try {
+          await updateBinding(editingShortcutId, originalBinding);
+        } catch (error) {
+          console.error("Failed to restore original binding:", error);
+          toast.error(t("settings.general.shortcut.errors.restore"));
+        }
+      }
+      await resumeShortcuts();
+      setEditingShortcutId(null);
+      setKeyPressed([]);
+      setRecordedKeys([]);
+      setOriginalBinding("");
+    };
+
+    // Keyboard event listeners. Escape is recorded for the take-only
+    // shortcuts (it is the Cancel default); clicking anywhere else stops editing.
     const handleKeyDown = async (e: KeyboardEvent) => {
       if (cleanup) return;
       if (e.repeat) return; // ignore auto-repeat
@@ -132,6 +159,15 @@ export const GlobalShortcutInput: React.FC<GlobalShortcutInputProps> = ({
           return 0;
         });
         const newShortcut = sortedKeys.join("+");
+
+        if (
+          newShortcut === "escape" &&
+          editingShortcutId &&
+          !TAKE_ONLY.includes(editingShortcutId)
+        ) {
+          await cancelEditing();
+          return;
+        }
 
         if (editingShortcutId && bindings[editingShortcutId]) {
           let saved = false;
@@ -190,32 +226,32 @@ export const GlobalShortcutInput: React.FC<GlobalShortcutInputProps> = ({
       if (cleanup) return;
       const activeElement = shortcutRefs.current.get(editingShortcutId);
       if (activeElement && !activeElement.contains(e.target as Node)) {
-        // Cancel shortcut recording and restore original binding
-        if (editingShortcutId && originalBinding) {
-          try {
-            await updateBinding(editingShortcutId, originalBinding);
-          } catch (error) {
-            console.error("Failed to restore original binding:", error);
-            toast.error(t("settings.general.shortcut.errors.restore"));
-          }
-        }
-        await resumeShortcuts();
-        setEditingShortcutId(null);
-        setKeyPressed([]);
-        setRecordedKeys([]);
-        setOriginalBinding("");
+        await cancelEditing();
       }
+    };
+
+    // Switching to another app (or hiding the window to the tray) mid-recording
+    // would otherwise leave every shortcut off until the user came back.
+    const handleWindowBlur = () => {
+      void cancelEditing();
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") void cancelEditing();
     };
 
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
     window.addEventListener("click", handleClickOutside);
+    window.addEventListener("blur", handleWindowBlur);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       cleanup = true;
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("click", handleClickOutside);
+      window.removeEventListener("blur", handleWindowBlur);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [
     keyPressed,

@@ -93,8 +93,12 @@ fn decode_with_symphonia(path: &Path) -> Result<Vec<f32>> {
     let mut decoder = symphonia::default::get_codecs()
         .make(&track.codec_params, &DecoderOptions::default())
         .with_context(|| format!("unsupported audio codec in {}", path.display()))?;
-    // The cap in samples at this file's rate.
-    let max_mono = MAX_DECODED_SAMPLES as u64 * sample_rate as u64 / TARGET_HZ as u64;
+    // The cap in samples at this file's rate. The rate is the file's own claim
+    // (FLAC allows up to 655,350 Hz), so memory is bounded as for 48 kHz at most:
+    // a higher-rate file reaches the cap sooner instead of using more memory.
+    let max_mono =
+        MAX_DECODED_SAMPLES as u64 * u64::from(sample_rate.min(48_000)) / TARGET_HZ as u64;
+    let cap_minutes = max_mono / u64::from(sample_rate) / 60;
 
     let mut mono: Vec<f32> = Vec::new();
     let mut buffer: Option<SampleBuffer<f32>> = None;
@@ -126,18 +130,19 @@ fn decode_with_symphonia(path: &Path) -> Result<Vec<f32>> {
         }
         let buf = buffer.as_mut().expect("just set");
         buf.copy_interleaved_ref(decoded);
+        // Checked before growing, and reserved fallibly: an allocation that fails
+        // aborts the whole app, so it must become an error for this file instead.
+        let frames = buf.samples().len() / channels;
+        if mono.len() as u64 + frames as u64 > max_mono {
+            bail!("audio too long (cap {cap_minutes} min): {}", path.display());
+        }
+        mono.try_reserve(frames)
+            .with_context(|| format!("not enough memory to decode {}", path.display()))?;
         mono.extend(
             buf.samples()
                 .chunks(channels)
                 .map(|frame| frame.iter().sum::<f32>() / channels as f32),
         );
-        if mono.len() as u64 > max_mono {
-            bail!(
-                "audio too long (cap {} min): {}",
-                MAX_DECODED_SAMPLES / 16_000 / 60,
-                path.display()
-            );
-        }
     }
     if mono.is_empty() {
         bail!("no audio in {}", path.display());

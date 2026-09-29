@@ -80,7 +80,7 @@ const recordedAt = (timestamp: number, locale: string): string => {
 const detailParts = (e: HistoryEntry): string[] => {
   const parts: string[] = [];
   if (e.model_used) parts.push(e.model_used);
-  if (e.cost_usd != null) parts.push(`${e.cost_usd.toFixed(4)}`);
+  if (e.cost_usd != null) parts.push(`$${e.cost_usd.toFixed(4)}`);
   return parts;
 };
 import { useOsType } from "@/hooks/useOsType";

@@ -45,12 +45,6 @@ pub struct AudioDevice {
 #[tauri::command]
 #[specta::specta]
 pub fn update_microphone_mode(app: AppHandle, always_on: bool) -> Result<(), String> {
-    // Update settings
-    let mut settings = get_settings(&app);
-    settings.always_on_microphone = always_on;
-    write_settings(&app, settings);
-
-    // Update the audio manager mode
     let rm = app.state::<Arc<AudioRecordingManager>>();
     let new_mode = if always_on {
         MicrophoneMode::AlwaysOn
@@ -58,8 +52,14 @@ pub fn update_microphone_mode(app: AppHandle, always_on: bool) -> Result<(), Str
         MicrophoneMode::OnDemand
     };
 
+    // Switch first, save after: an always-on setting saved while the microphone
+    // cannot open would be tried again at every start.
     rm.update_mode(new_mode)
-        .map_err(|e| format!("Failed to update microphone mode: {}", e))
+        .map_err(|e| format!("Failed to update microphone mode: {}", e))?;
+    let mut settings = get_settings(&app);
+    settings.always_on_microphone = always_on;
+    write_settings(&app, settings);
+    Ok(())
 }
 
 /// Show the pause/resume button on the recording overlay (and allow the Pause shortcut).

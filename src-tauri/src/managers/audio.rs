@@ -237,9 +237,16 @@ impl AudioRecordingManager {
             paused: Arc::new(AtomicBool::new(false)),
         };
 
-        // Always-on?  Open immediately.
+        // Always-on?  Open immediately. A microphone that cannot start (blocked in
+        // Windows privacy settings, held exclusively, unplugged) must not stop the
+        // app from starting: the stream is marked faulted and the next take opens
+        // it again and shows why it can't.
         if matches!(mode, MicrophoneMode::AlwaysOn) {
-            manager.start_microphone_stream()?;
+            if let Err(e) = manager.start_microphone_stream() {
+                error!(
+                    "Always-on microphone failed to open at startup: {e}; retrying at the next take"
+                );
+            }
         }
 
         Ok(manager)

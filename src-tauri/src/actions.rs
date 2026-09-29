@@ -2143,14 +2143,21 @@ impl ShortcutAction for TranscribeAction {
                 // A live take's transcript is its live text: the words already
                 // shown, plus a catch-up on the audio since the last frozen word
                 // (the last second or two). No second pass over the whole take —
-                // on a long take that took minutes. Only when the preview has
-                // nothing (it failed, or this is not a live take) is the complete
-                // audio transcribed below.
+                // on a long take that took minutes. That holds only when the engine
+                // gives word timings (Parakeet): then windows are cut at word starts
+                // and read with context. Without timings a long window is frozen at
+                // whatever sample the snapshot ended on, usually mid-word, so the
+                // live text would be stitched from cut words; those takes, and any
+                // take whose preview has nothing, get the complete audio
+                // transcribed below, as before 1.13.
                 let live_final = if use_live {
-                    live_session.as_ref().and_then(|session| {
-                        let text = session.finish(samples.clone());
-                        (!text.trim().is_empty()).then_some(text)
-                    })
+                    live_session
+                        .as_ref()
+                        .filter(|session| session.has_word_timings())
+                        .and_then(|session| {
+                            let text = session.finish(samples.clone());
+                            (!text.trim().is_empty()).then_some(text)
+                        })
                 } else {
                     None
                 };
@@ -2577,6 +2584,11 @@ impl LiveSession {
                 is_final: false,
             },
         );
+    }
+
+    /// True once the engine has given word timings for this take (Parakeet).
+    fn has_word_timings(&self) -> bool {
+        self.preview.lock().unwrap_or_else(|p| p.into_inner()).timed
     }
 
     /// Seconds of audio the final catch-up of a `total`-sample take will read, as

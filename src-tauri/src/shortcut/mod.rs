@@ -475,7 +475,9 @@ pub fn change_binding(
 
     // While the UI is recording a chord every shortcut is already off, and
     // resume_all_bindings registers them all (in the right order) afterwards.
-    let suspended = shortcuts_suspended();
+    // Before initialize_shortcuts (the first-start setup) nothing is registered
+    // yet, and init registers the saved chord.
+    let suspended = shortcuts_suspended() || !shortcuts_initialized(&app);
 
     // Unregister the existing binding
     if !suspended {
@@ -585,6 +587,14 @@ fn shortcuts_suspended() -> bool {
     lock_suspension().is_some()
 }
 
+/// False until the frontend has run initialize_shortcuts. The first-start setup
+/// edits shortcuts before that; registering them then would make init find every
+/// chord "already in use" and report all of them as failed.
+fn shortcuts_initialized(app: &AppHandle) -> bool {
+    app.try_state::<crate::commands::ShortcutsInitialized>()
+        .is_some()
+}
+
 /// Every binding the backend should hold right now: the same set init registers
 /// (Cancel is registered only while recording).
 fn registrable_bindings(app: &AppHandle) -> Vec<ShortcutBinding> {
@@ -615,13 +625,16 @@ pub fn suspend_all_bindings(app: AppHandle) {
         .into_iter()
         .map(|f| f.id)
         .collect();
+    let live = shortcuts_initialized(&app);
     let mut active = Vec::new();
     for binding in registrable_bindings(&app) {
         if inactive.contains(&binding.id) {
             continue;
         }
-        if let Err(e) = unregister_shortcut(&app, binding.clone()) {
-            warn!("suspend_all_bindings: '{}': {}", binding.id, e);
+        if live {
+            if let Err(e) = unregister_shortcut(&app, binding.clone()) {
+                warn!("suspend_all_bindings: '{}': {}", binding.id, e);
+            }
         }
         active.push((binding.id, binding.current_binding));
     }
@@ -647,6 +660,11 @@ pub fn resume_all_bindings(app: AppHandle) -> Vec<RegistrationFailure> {
     let Some(previously_active) = previously_active else {
         return get_shortcut_registration_failures();
     };
+    // Before initialize_shortcuts nothing is registered; init registers the
+    // saved chords on a clean slate.
+    if !shortcuts_initialized(&app) {
+        return get_shortcut_registration_failures();
+    }
     let (first, rest): (Vec<_>, Vec<_>) = registrable_bindings(&app).into_iter().partition(|b| {
         previously_active
             .iter()

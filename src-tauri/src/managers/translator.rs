@@ -733,6 +733,11 @@ fn worker(app: AppHandle, shutdown: Arc<AtomicBool>, status: Arc<Mutex<Translato
                 persist_queue(&app, &queue, None);
                 continue;
             }
+            // Decoding a damaged or hostile file can abort the process (a parser
+            // allocating from counts in the file's header). Persist the queue
+            // without it first, so a restart does not decode it again and die in
+            // a loop; once decoded it is persisted as the in-flight file below.
+            persist_queue(&app, &queue, None);
             match prepare_job(path.clone()) {
                 Ok(job) => {
                     info!(
