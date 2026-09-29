@@ -163,6 +163,12 @@ struct LiveJob {
 struct LiveSession {
     preview: Mutex<LivePreview>,
     jobs: Mutex<VecDeque<LiveJob>>,
+    /// Held by the worker from an undo cut until the queue is fixed up, and by
+    /// an undo press while it takes its snapshot and queues it. So a press's
+    /// snapshot is either taken before the cut (and has the cut spliced out
+    /// with the rest) or after it (and is left alone) — never taken after the
+    /// cut but spliced as if taken before. Order: cut_lock, then jobs.
+    cut_lock: Mutex<()>,
     /// Set while the worker thread runs; stop() waits for it (SEGMENT_BUSY).
     busy: Arc<AtomicBool>,
     tm: Arc<TranscriptionManager>,
@@ -2783,6 +2789,7 @@ impl LiveSession {
             // carry_undo_past_cut). Done under one queue lock, so a snapshot the
             // recorder sends meanwhile lands after them, not before.
             let rm = self.app.state::<Arc<AudioRecordingManager>>();
+            let _cut = self.cut_lock.lock().unwrap_or_else(|p| p.into_inner());
             rm.cut_recording(at, len);
             let mut jobs = self.jobs.lock().unwrap_or_else(|p| p.into_inner());
             carry_undo_past_cut(&mut jobs, at, len);
@@ -2820,6 +2827,7 @@ fn start_live_session(
     let session = Arc::new(LiveSession {
         preview: Mutex::new(LivePreview::default()),
         jobs: Mutex::new(VecDeque::new()),
+        cut_lock: Mutex::new(()),
         busy,
         tm: Arc::clone(tm),
         live_text,
@@ -2897,6 +2905,8 @@ pub fn undo_last_word(app: &AppHandle) {
         debug!("Undo last word: no live take in progress");
         return;
     };
+    // Snapshot and queue as one step against a cut in progress (see cut_lock).
+    let _cut = session.cut_lock.lock().unwrap_or_else(|p| p.into_inner());
     let Some(samples) = app
         .state::<Arc<AudioRecordingManager>>()
         .snapshot_recording()
