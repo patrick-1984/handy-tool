@@ -197,16 +197,17 @@ export const useModelStore = create<ModelsStore>()(
 
     selectModel: async (modelId: string) => {
       try {
-        set({ error: null });
+        // A model picked by hand wins over one the first-start setup is still
+        // downloading, which would otherwise take over when it lands. Cleared
+        // before the load: loading can take long enough for that download to
+        // finish meanwhile.
+        set({ error: null, pendingSelection: null });
         const result = await commands.setActiveModel(modelId);
         if (result.status === "ok") {
           set({
             currentModel: modelId,
             isFirstRun: false,
             hasAnyModels: true,
-            // A model picked by hand wins over one the first-start setup is
-            // still downloading, which would otherwise take over when it lands.
-            pendingSelection: null,
           });
           return true;
         } else {

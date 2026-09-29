@@ -440,10 +440,13 @@ pub fn change_binding(
     // (unregistering the new chord instead of the old one).
     if is_take_binding(&id) {
         if let Some(mut b) = settings.bindings.get(&id).cloned() {
-            let recording = app
-                .try_state::<std::sync::Arc<crate::managers::audio::AudioRecordingManager>>()
-                .map(|rm| rm.is_recording())
-                .unwrap_or(false)
+            // Never on Linux: take-only bindings are not registered there at all
+            // (dynamic registration is unstable), so there is nothing to swap.
+            let recording = !cfg!(target_os = "linux")
+                && app
+                    .try_state::<std::sync::Arc<crate::managers::audio::AudioRecordingManager>>()
+                    .map(|rm| rm.is_recording())
+                    .unwrap_or(false)
                 && is_active_take_binding(&id);
             let old = b.clone();
             b.current_binding = binding;

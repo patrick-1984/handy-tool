@@ -2455,6 +2455,21 @@ pub fn toggle_pause(app: &AppHandle) {
     }
 }
 
+/// After an undo cut `at..len` from the recording: queued snapshots still hold
+/// the removed audio, so drop them — except those carrying undo presses. Each
+/// of those keeps its own snapshot with the same range spliced out, which is
+/// exactly the recording as it is now up to where that press was made, so a
+/// later press, too, cuts nothing said after it.
+fn carry_undo_past_cut(jobs: &mut VecDeque<LiveJob>, at: usize, len: usize) {
+    jobs.retain(|j| j.undo > 0);
+    for j in jobs.iter_mut() {
+        let end = len.min(j.samples.len());
+        if at < end {
+            j.samples.drain(at..end);
+        }
+    }
+}
+
 /// Queue a snapshot for the live preview. A newer snapshot replaces one still
 /// waiting (undo presses add up), unless that one ends an utterance or carries
 /// an undo the new one lacks. An utterance end is replaced only by a later
@@ -2464,17 +2479,24 @@ pub fn toggle_pause(app: &AppHandle) {
 /// could run out of memory.
 fn enqueue_live_job(jobs: &mut VecDeque<LiveJob>, mut job: LiveJob) {
     // Repeatedly: once a mid-speech snapshot is replaced, the utterance end
-    // behind it may be replaceable too, or those would still pile up.
+    // behind it may be replaceable too, or those would still pile up. Only the
+    // newest waiting job may have its undo presses added up; further back an
+    // undo keeps its own snapshot, so each press still cuts only up to where it
+    // was made.
+    let mut newest = true;
     while jobs.back().is_some_and(|last| {
         if last.utterance_ended {
             job.utterance_ended && last.undo == 0 && job.undo == 0
-        } else {
+        } else if newest {
             last.undo == 0 || job.undo > 0
+        } else {
+            last.undo == 0 && job.undo == 0
         }
     }) {
         if let Some(last) = jobs.pop_back() {
             job.undo += last.undo;
         }
+        newest = false;
     }
     jobs.push_back(job);
 }
@@ -2757,36 +2779,13 @@ impl LiveSession {
             // the take kept recording while the preview caught up, and whatever was
             // said after the press stays. Returns once the recorder has cut its
             // audio; snapshots queued before that still hold the removed words, so
-            // drop them — but not the undo presses they carry. Each goes on with
-            // the recording as it is now, up to where that press was made: its
-            // snapshot's length, moved back by what this cut removed. So a later
-            // press, too, cuts nothing said after it.
+            // drop them — but not the undo presses they carry (see
+            // carry_undo_past_cut). Done under one queue lock, so a snapshot the
+            // recorder sends meanwhile lands after them, not before.
             let rm = self.app.state::<Arc<AudioRecordingManager>>();
             rm.cut_recording(at, len);
-            let removed = len - at.min(len);
-            let carried: Vec<(usize, usize)> = {
-                let mut jobs = self.jobs.lock().unwrap_or_else(|p| p.into_inner());
-                let carried = jobs
-                    .iter()
-                    .filter(|j| j.undo > 0)
-                    .map(|j| (j.undo, j.samples.len().saturating_sub(removed)))
-                    .collect();
-                jobs.clear();
-                carried
-            };
-            if !carried.is_empty() {
-                if let Some(samples) = rm.snapshot_recording() {
-                    let mut jobs = self.jobs.lock().unwrap_or_else(|p| p.into_inner());
-                    for (undo, upto) in carried {
-                        jobs.push_back(LiveJob {
-                            samples: samples[..upto.min(samples.len())].to_vec(),
-                            utterance_ended: false,
-                            undo,
-                            last: false,
-                        });
-                    }
-                }
-            }
+            let mut jobs = self.jobs.lock().unwrap_or_else(|p| p.into_inner());
+            carry_undo_past_cut(&mut jobs, at, len);
         }
         if text.is_empty() && cut.is_none() {
             return;
@@ -3310,10 +3309,24 @@ mod live_queue_tests {
         assert_eq!(jobs.len(), 2);
         assert!(jobs[0].utterance_ended);
         assert_eq!(jobs[1].samples.len(), 30);
-        // A later utterance end takes the mid-speech snapshot's place.
+        // A later utterance end takes the place of the snapshot and of the
+        // utterance end before it: its audio holds both.
         enqueue_live_job(&mut jobs, job(40, true, 0));
+        assert_eq!(jobs.len(), 1);
+        assert_eq!(jobs[0].samples.len(), 40);
+        assert!(jobs[0].utterance_ended);
+    }
+
+    #[test]
+    fn undo_presses_with_speech_between_keep_their_own_snapshots() {
+        // Undo after C, then D spoken (a mid-speech snapshot), then E and undo.
+        let mut jobs = VecDeque::new();
+        enqueue_live_job(&mut jobs, job(30, false, 1));
+        enqueue_live_job(&mut jobs, job(40, false, 0));
+        enqueue_live_job(&mut jobs, job(50, false, 1));
         assert_eq!(jobs.len(), 2);
-        assert_eq!(jobs[1].samples.len(), 40);
+        assert_eq!((jobs[0].samples.len(), jobs[0].undo), (30, 1));
+        assert_eq!((jobs[1].samples.len(), jobs[1].undo), (50, 1));
     }
 
     #[test]
@@ -3344,6 +3357,19 @@ mod live_queue_tests {
         enqueue_live_job(&mut jobs, job(14, false, 1));
         assert_eq!(jobs.len(), 1);
         assert_eq!(jobs[0].undo, 2);
+    }
+
+    #[test]
+    fn a_carried_undo_keeps_what_was_said_after_its_press() {
+        // Recording 0..10; the first undo cut 3..5. A press queued at 8, and a
+        // plain snapshot at 9, were waiting.
+        let mut first = job(8, false, 1);
+        first.samples = (0..8).map(|i| i as f32).collect();
+        let mut jobs = VecDeque::from([first, job(9, false, 0)]);
+        super::carry_undo_past_cut(&mut jobs, 3, 5);
+        assert_eq!(jobs.len(), 1);
+        assert_eq!(jobs[0].undo, 1);
+        assert_eq!(jobs[0].samples, vec![0.0, 1.0, 2.0, 5.0, 6.0, 7.0]);
     }
 }
 
