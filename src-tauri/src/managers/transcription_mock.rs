@@ -8,9 +8,6 @@ use serde::Serialize;
 use std::sync::Arc;
 use tauri::AppHandle;
 
-/// Mirrors the real module's Vulkan-serialization helper so callers
-/// (`commands/models.rs::list_gpu_devices`) still resolve under the CI mock.
-/// No real Vulkan work happens in CI, so this just runs the closure.
 /// Mirrors the real manager's type so `commands/models.rs` compiles unchanged.
 #[derive(Debug, Clone)]
 pub struct GpuDevice {
@@ -24,8 +21,21 @@ pub fn list_gpu_devices() -> Vec<GpuDevice> {
     Vec::new()
 }
 
+/// Mirrors the real module's Vulkan-serialization helper so callers
+/// (`commands/models.rs::list_gpu_devices`) still resolve under the CI mock.
+/// No real Vulkan work happens in CI, so this just runs the closure.
 pub fn with_vulkan_op_lock<R>(f: impl FnOnce() -> R) -> R {
     f()
+}
+
+/// The mock never transcribes, so no model has a timing to estimate from.
+pub fn expected_transcription_secs(_model_id: &str, _audio_secs: f32) -> Option<f32> {
+    None
+}
+
+/// Nothing is ever running in the mock.
+pub fn running_transcription_remaining() -> Option<f32> {
+    None
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -83,6 +93,13 @@ impl TranscriptionManager {
 
     pub fn transcribe_expecting(&self, _expected_model: &str, _audio: Vec<f32>) -> Result<String> {
         Ok(String::new())
+    }
+
+    pub fn transcribe_with_words(
+        &self,
+        _audio: Vec<f32>,
+    ) -> Result<(String, Option<Vec<(f32, String)>>)> {
+        Ok((String::new(), None))
     }
 
     pub fn set_live_transcribing(&self, _active: bool) {}
