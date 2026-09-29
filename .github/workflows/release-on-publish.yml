@@ -41,8 +41,11 @@ on:
   release:
     types: [published]
 
+# Read-only by default. Only `publish` escalates (gh release upload / edit).
+# A called workflow can only LOWER its caller's permissions, and build.yml pins
+# its own job to contents: read too.
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: release-${{ github.event.release.tag_name }}
@@ -57,9 +60,13 @@ jobs:
       version: ${{ steps.check.outputs.version }}
     steps:
       # Check out the RELEASED commit, not the default branch - the two can differ.
+      # github.sha = the commit the tag pointed at when the release was PUBLISHED;
+      # the tag NAME would follow a tag moved while this run builds or waits for
+      # approval, and every job must see the same commit.
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ github.sha }}
+          persist-credentials: false
 
       - id: check
         shell: bash
@@ -116,7 +123,7 @@ jobs:
       build-args: ${{ matrix.args }}
       asset-prefix: handy-${{ matrix.target }}
       upload-artifacts: true
-      ref: ${{ github.event.release.tag_name }}
+      ref: ${{ github.sha }} # the published commit; see verify
       sign-binaries: false # no secret reaches a job that runs repository code
       release-id: "" # publishing happens below, behind the gate
     secrets: inherit
@@ -132,7 +139,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Refuse to sign if the tag moved after publishing
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.release.tag_name }}
+          PUBLISHED_SHA: ${{ github.sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          $now = & gh api "repos/$env:REPO/commits/$env:TAG" --jq .sha
+          if ($LASTEXITCODE -ne 0 -or -not $now) { throw "Could not resolve tag $env:TAG" }
+          if ($now -ne $env:PUBLISHED_SHA) {
+            throw "Tag $env:TAG now points at $now, but this run verified and built $env:PUBLISHED_SHA. Refusing to sign."
+          }
+          Write-Host "tag $env:TAG still points at $env:PUBLISHED_SHA"
 
       - uses: oven-sh/setup-bun@v2
         with:

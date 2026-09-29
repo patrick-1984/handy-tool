@@ -28,10 +28,9 @@ on:
           - linux
 
 permissions:
-  # build.yml declares contents:write for its release-capable path. This caller passes
-  # no release-id, so Tauri only uploads an Actions artifact, but GitHub still requires
-  # the inherited permission to match.
-  contents: write
+  # Read-only: build.yml's job is read-only too (it runs repository code and every
+  # dependency's scripts), and a called workflow can only lower a caller's grant.
+  contents: read
 
 concurrency:
   group: all-platforms-${{ github.workflow }}-${{ github.ref }}

@@ -52,15 +52,28 @@ jobs:
       # Unix runners still need to override the Windows-only path in .cargo/config.toml.
       CARGO_TARGET_DIR: ${{ contains(inputs.platform, 'windows') && 'C:/hb' || format('{0}/src-tauri/target', github.workspace) }}
     permissions:
-      contents: write
+      # Read-only on purpose: this job runs repository code and every dependency's
+      # install/build scripts. Publishing happens in release-on-publish.yml's gated
+      # publish job. Called workflows can only lower a caller's grant, so this holds
+      # for every caller.
+      contents: read
     runs-on: ${{ inputs.platform }}
     steps:
+      - name: Refuse the release-upload path (this job is read-only)
+        if: ${{ inputs.release-id != '' }}
+        shell: bash
+        run: |
+          echo "::error::build.yml runs with contents: read; upload release assets from a job with contents: write (see release-on-publish.yml)."
+          exit 1
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           repository: ${{ inputs.repository }}
           ref: ${{ inputs.ref }}
           fetch-depth: 0
+          # The token is not left in .git/config for later repository code.
+          persist-credentials: false
 
       - name: Get version from tauri.conf.json
         id: get-version

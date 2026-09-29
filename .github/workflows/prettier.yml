@@ -1,11 +1,17 @@
 name: "prettier"
 on: [pull_request]
 
+# Checks only: a read-only token.
+permissions:
+  contents: read
+
 jobs:
   prettier:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: oven-sh/setup-bun@v1
         with:

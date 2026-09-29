@@ -6,10 +6,9 @@ on:
 # This build uploads a workflow artifact only. It does not create a tag,
 # GitHub Release, or updater manifest.
 permissions:
-  # The reusable workflow declares contents:write for its release-capable path.
-  # This validation caller passes no release ID, so Tauri only uploads an
-  # Actions artifact, but GitHub still requires matching inherited permission.
-  contents: write
+  # Read-only: build.yml's job is read-only too (it runs repository code and every
+  # dependency's scripts), and a called workflow can only lower a caller's grant.
+  contents: read
 
 concurrency:
   group: windows-nsis-${{ github.workflow }}-${{ github.ref }}
