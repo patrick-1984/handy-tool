@@ -409,26 +409,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onQueryChange={setSearchQuery}
           sections={searchSections}
         />
-        {!searchQuery.trim() && (
-          <div className="flex flex-col w-full gap-1">
-            {sidebarSections.map((section) => (
-              <React.Fragment key={section.id}>
-                {renderItem(
-                  section.id,
-                  section.icon,
-                  t(section.labelKey),
-                  activeSection === section.id,
-                  () => onSectionChange(section.id),
-                  section.id === "whatsNew" && newsUnseen,
-                )}
-                {section.id === "jumper" && renderGroup("more-tools")}
-              </React.Fragment>
-            ))}
-            <div className="mx-2 my-1 border-t border-border" />
-            {renderGroup("more-settings")}
-            <UpdateBanner />
-          </div>
-        )}
+        {/* Hidden, not unmounted, while searching: the update banner keeps its
+            "Remind me later" (it lives in the banner's own state). */}
+        <div
+          className={`${searchQuery.trim() ? "hidden" : "flex"} flex-col w-full gap-1`}
+        >
+          {sidebarSections.map((section) => (
+            <React.Fragment key={section.id}>
+              {renderItem(
+                section.id,
+                section.icon,
+                t(section.labelKey),
+                activeSection === section.id,
+                () => onSectionChange(section.id),
+                section.id === "whatsNew" && newsUnseen,
+              )}
+              {section.id === "jumper" && renderGroup("more-tools")}
+            </React.Fragment>
+          ))}
+          <div className="mx-2 my-1 border-t border-border" />
+          {renderGroup("more-settings")}
+          <UpdateBanner />
+        </div>
       </div>
       {/* Drag handle: resize the sidebar; width persists across launches. */}
       <div

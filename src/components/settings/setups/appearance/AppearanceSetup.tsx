@@ -311,6 +311,10 @@ export const AppearanceSetup: React.FC<{ onClose: () => void }> = ({
         if (v === "custom") return;
         return updateSetting("progress_color", v === "default" ? "" : v);
       case "liveText":
+        // With an online model only Off can be picked (the box can't work with
+        // it): keep what was set, so a box switched on stays on for when a model
+        // on this PC is back.
+        if (remote) return;
         if (v === "off") return updateSetting("live_text_box_enabled", false);
         await updateSetting("live_text_mode", v as LiveTextMode);
         return updateSetting("live_text_box_enabled", true);

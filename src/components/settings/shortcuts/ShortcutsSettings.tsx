@@ -1,3 +1,4 @@
+import { takeShortcutsAvailable } from "../../../lib/utils/keyboard";
 import React from "react";
 import { Mic, Keyboard, Crosshair, AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -52,13 +53,15 @@ export const ShortcutsSettings: React.FC = () => {
           />
         )}
         <ShortcutInput shortcutId="paste_last" grouped={true} />
-        {/* Cancel is never registered on Linux (dynamic registration is unstable there) */}
-        {osType !== "linux" && (
+        {/* Take-only shortcuts: never registered on Linux (dynamic registration
+            is unstable there); Pause and Undo word also need their option on. */}
+        {takeShortcutsAvailable(osType) && (
           <ShortcutInput shortcutId="cancel" grouped={true} />
         )}
-        {/* Take-only shortcuts, shown while their option (General) is on */}
-        {pauseEnabled && <ShortcutInput shortcutId="pause" grouped={true} />}
-        {undoWordEnabled && (
+        {takeShortcutsAvailable(osType) && pauseEnabled && (
+          <ShortcutInput shortcutId="pause" grouped={true} />
+        )}
+        {takeShortcutsAvailable(osType) && undoWordEnabled && (
           <ShortcutInput shortcutId="undo_word" grouped={true} />
         )}
         <ShortcutInput shortcutId="toggle_live_text_box" grouped={true} />

@@ -1,7 +1,11 @@
 import type { TFunction } from "i18next";
 import navMap from "../../scripts/nav-map.json";
 import type { ShortcutBinding } from "@/bindings";
-import type { OSType } from "@/lib/utils/keyboard";
+import {
+  TAKE_ONLY_SHORTCUTS,
+  takeShortcutsAvailable,
+  type OSType,
+} from "@/lib/utils/keyboard";
 import type { HistoryTab } from "@/stores/navStore";
 
 /**
@@ -67,6 +71,7 @@ export const buildSearchIndex = (
     if (!section) continue;
     if (e.gating === "windows" && osType !== "windows") continue;
     if (e.gating === "linux" && osType !== "linux") continue;
+    if (e.gating === "not-linux" && osType === "linux") continue;
     if (e.gating === "post-processing" && !postProcessEnabled) continue;
 
     const title = e.titleKey ? t(e.titleKey, e.control) : e.control;
@@ -101,7 +106,8 @@ export const buildSearchIndex = (
   for (const [id, binding] of Object.entries(bindings)) {
     if (!binding) continue;
     if (isJumperBinding(id) && osType !== "windows") continue;
-    if (id === "cancel" && osType === "linux") continue;
+    if (TAKE_ONLY_SHORTCUTS.includes(id) && !takeShortcutsAvailable(osType))
+      continue;
     if (id === "transcribe_with_post_process" && !postProcessEnabled) continue;
     if (
       (id === "pause" || id === "undo_word") &&

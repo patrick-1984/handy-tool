@@ -4,6 +4,16 @@
 
 export type OSType = "macos" | "windows" | "linux" | "unknown";
 
+/** Shortcuts that exist only while a take (or a Keyboard Typer session) runs. */
+export const TAKE_ONLY_SHORTCUTS = ["cancel", "pause", "undo_word"];
+
+/**
+ * Take-only shortcuts are never registered on Linux: dynamic registration is
+ * unstable there (shortcut/tauri_impl.rs register_dynamic_shortcut), so they are
+ * not offered either.
+ */
+export const takeShortcutsAvailable = (os: OSType) => os !== "linux";
+
 /**
  * Extract a consistent key name from a KeyboardEvent
  * This function provides cross-platform keyboard event handling

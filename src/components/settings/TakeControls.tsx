@@ -8,6 +8,8 @@ import { SettingContainer } from "../ui/SettingContainer";
 import { SubSettings } from "../ui/SettingsGroup";
 import { ShortcutInput } from "./ShortcutInput";
 import { useSettings } from "../../hooks/useSettings";
+import { useOsType } from "../../hooks/useOsType";
+import { takeShortcutsAvailable } from "../../lib/utils/keyboard";
 import { useModelStore } from "../../stores/modelStore";
 import { toast } from "sonner";
 import type { ModelInfo } from "@/bindings";
@@ -53,6 +55,7 @@ export const PauseButtonSetting: React.FC<Props> = ({
 }) => {
   const { t } = useTranslation();
   const { getSetting, updateSetting, isUpdating } = useSettings();
+  const osType = useOsType();
   const enabled = getSetting("pause_button_enabled") ?? false;
   return (
     <>
@@ -67,7 +70,8 @@ export const PauseButtonSetting: React.FC<Props> = ({
         descriptionMode={descriptionMode}
         grouped={grouped}
       />
-      {enabled && (
+      {/* The pill's button works everywhere; its shortcut not on Linux. */}
+      {enabled && takeShortcutsAvailable(osType) && (
         <SubSettings>
           <ShortcutInput shortcutId="pause" grouped={grouped} />
         </SubSettings>
@@ -83,6 +87,7 @@ export const PauseButtonSetting: React.FC<Props> = ({
 export const LiveTradeoffsNotice: React.FC = () => {
   const { t } = useTranslation();
   const { getSetting } = useSettings();
+  const osType = useOsType();
   const live =
     (getSetting("live_text_box_enabled") ?? false) ||
     getSetting("transcription_mode") === "live";
@@ -102,7 +107,9 @@ export const LiveTradeoffsNotice: React.FC = () => {
           <ul className="list-disc ps-4 space-y-0.5">
             <li>{t("settings.general.liveTradeoffs.accuracy")}</li>
             <li>{t("settings.general.liveTradeoffs.cpu")}</li>
-            <li>{t("settings.general.liveTradeoffs.undo")}</li>
+            {takeShortcutsAvailable(osType) && (
+              <li>{t("settings.general.liveTradeoffs.undo")}</li>
+            )}
           </ul>
         </div>
       </div>
@@ -117,7 +124,10 @@ export const UndoWordSetting: React.FC<Props> = ({
 }) => {
   const { t } = useTranslation();
   const { getSetting, updateSetting, isUpdating } = useSettings();
+  const osType = useOsType();
   const enabled = getSetting("undo_word_enabled") ?? false;
+  // Undo works only through its shortcut, which Linux never registers.
+  if (!takeShortcutsAvailable(osType)) return null;
   return (
     <>
       <ToggleSwitch

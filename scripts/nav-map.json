@@ -1517,9 +1517,9 @@
     "descKey": "settings.general.undoWord.description",
     "type": "toggle",
     "options": [],
-    "gating": "none",
+    "gating": "not-linux",
     "file": "src/components/settings/TakeControls.tsx",
-    "notes": "When on, an Undo Last Word shortcut row (default ctrl+backspace) appears under it."
+    "notes": "When on, an Undo Last Word shortcut row (default ctrl+backspace) appears under it. Hidden on Linux: take-only shortcuts are never registered there (2.0.1)."
   },
   {
     "page": "General",

@@ -734,6 +734,9 @@ pub fn resolve_pending_update(app: &AppHandle) -> UpdateOutcome {
     }
 }
 
+// Despite the name this does NOT consume the outcome: it returns a copy, so every
+// mount of the banner (StrictMode double-mount, sidebar remounts, a webview reload)
+// sees it. The name is kept because it is the frontend binding (takeUpdateOutcome).
 #[tauri::command]
 #[specta::specta]
 pub fn take_update_outcome(app: AppHandle) -> UpdateOutcome {

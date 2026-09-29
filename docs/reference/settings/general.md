@@ -214,7 +214,7 @@ Catalog: [The microphone light is off when you're not dictating](../../features.
 
 `General › Sound › Warn when you speak too quietly › Show it in its own box`
 
-Shown while Warn when you speak too quietly is on. On: the hint appears in a small box just under the recording overlay, which keeps its sound bars; with the overlay at the bottom of the screen the box sits in the gap above the taskbar, so it never covers the live text box. Off: the overlay shows the hint instead of its sound bars, where longer translations are cut off when the pause button is on. On macOS the overlay always shows it itself. **Default:** On (`too_quiet_hint_box`).
+Shown while Warn when you speak too quietly is on. On: the hint appears in a small box just under the recording overlay, which keeps its sound bars; with the overlay at the bottom of the screen the box sits in the gap above the taskbar, so it never covers the live text box. Off: the overlay shows the hint instead of its sound bars, where longer translations are cut off when the pause button is on. On macOS and on Linux under Wayland the overlay always shows it itself. **Default:** On (`too_quiet_hint_box`).
 
 Catalog: [The microphone light is off when you're not dictating](../../features.md#the-microphone-light-is-off-when-youre-not-dictating).
 

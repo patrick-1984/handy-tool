@@ -538,6 +538,13 @@ fn live_text_position(
 /// next to the recording pill that shows the take's live text.
 #[cfg(not(target_os = "macos"))]
 pub fn create_live_text_window(app_handle: &AppHandle) {
+    // Linux Wayland: without layer shell the compositor places (and may focus) a
+    // plain window wherever it likes, so there is no live text box there.
+    #[cfg(target_os = "linux")]
+    if crate::utils::is_wayland() {
+        debug!("Wayland: no live text box window (not placeable without layer shell)");
+        return;
+    }
     let theme_js = crate::theme_init_script(crate::settings::get_settings(app_handle).app_theme);
     let mut builder = WebviewWindowBuilder::new(
         app_handle,
@@ -661,9 +668,16 @@ static QUIET_HINT_BOX: AtomicBool = AtomicBool::new(false);
 /// The box is up.
 static QUIET_HINT_SHOWN: AtomicBool = AtomicBool::new(false);
 
+/// Set once the too-quiet box exists. It never does on macOS (no such window yet)
+/// or on Linux Wayland, and not when building it failed: the pill shows the hint.
+static QUIET_HINT_READY: AtomicBool = AtomicBool::new(false);
+
 /// Per take: "Too quiet" in its own box (where that window exists) or in the pill.
 pub fn set_quiet_hint_box(on: bool) {
-    QUIET_HINT_BOX.store(on && cfg!(not(target_os = "macos")), Ordering::Relaxed);
+    QUIET_HINT_BOX.store(
+        on && QUIET_HINT_READY.load(Ordering::Relaxed),
+        Ordering::Relaxed,
+    );
 }
 
 /// Pre-creates the "Too quiet" box (hidden): a click-through, never-focused strip
@@ -671,6 +685,12 @@ pub fn set_quiet_hint_box(on: bool) {
 /// is at the bottom, so it never covers the live text box.
 #[cfg(not(target_os = "macos"))]
 pub fn create_quiet_hint_window(app_handle: &AppHandle) {
+    // Linux Wayland: as for the live text box; the pill shows the hint itself.
+    #[cfg(target_os = "linux")]
+    if crate::utils::is_wayland() {
+        debug!("Wayland: no too-quiet box window; the pill shows the hint");
+        return;
+    }
     let mut builder = WebviewWindowBuilder::new(
         app_handle,
         QUIET_HINT_LABEL,
@@ -700,6 +720,7 @@ pub fn create_quiet_hint_window(app_handle: &AppHandle) {
     match builder.build() {
         Ok(window) => {
             let _ = window.set_ignore_cursor_events(true);
+            QUIET_HINT_READY.store(true, Ordering::Relaxed);
             debug!("Too-quiet box created (hidden)");
         }
         Err(e) => debug!("Failed to create the too-quiet box: {}", e),

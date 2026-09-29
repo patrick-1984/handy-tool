@@ -3,7 +3,11 @@ import { WarningIcon } from "@/components/ui/WarningIcon";
 import { useTranslation } from "react-i18next";
 import { useSettings } from "@/hooks/useSettings";
 import { useOsType } from "@/hooks/useOsType";
-import { normalizeChord } from "@/lib/utils/keyboard";
+import {
+  normalizeChord,
+  TAKE_ONLY_SHORTCUTS,
+  takeShortcutsAvailable,
+} from "@/lib/utils/keyboard";
 
 // Mirrors `is_jumper_binding` in src-tauri/src/shortcut/mod.rs.
 const isJumperBinding = (id: string) =>
@@ -32,7 +36,8 @@ export const useShortcutConflicts = (): Map<string, string[]> => {
     if (!chord) continue;
     if (id === "transcribe_with_post_process" && !postProcessEnabled) continue;
     if (isJumperBinding(id) && osType !== "windows") continue;
-    if (id === "cancel" && osType === "linux") continue;
+    if (TAKE_ONLY_SHORTCUTS.includes(id) && !takeShortcutsAvailable(osType))
+      continue;
     if (id === "pause" && !pauseEnabled) continue;
     if (id === "undo_word" && !undoWordEnabled) continue;
     idsByChord.set(chord, [...(idsByChord.get(chord) ?? []), id]);
