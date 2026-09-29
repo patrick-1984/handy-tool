@@ -204,6 +204,9 @@ export const useModelStore = create<ModelsStore>()(
             currentModel: modelId,
             isFirstRun: false,
             hasAnyModels: true,
+            // A model picked by hand wins over one the first-start setup is
+            // still downloading, which would otherwise take over when it lands.
+            pendingSelection: null,
           });
           return true;
         } else {
