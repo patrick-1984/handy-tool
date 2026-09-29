@@ -78,15 +78,15 @@ const PostProcessApiSection: React.FC = () => {
                 Number.parseFloat(e.target.value),
               )
             }
-            className="w-48 accent-blue-600 cursor-pointer"
+            className="w-48 accent-accent cursor-pointer"
           />
-          <span className="text-sm tabular-nums w-10 text-text/70">
+          <span className="text-sm tabular-nums w-10 text-text-secondary">
             {temperature.toFixed(2)}
           </span>
         </div>
       </SettingContainer>
 
-      <p className="text-xs text-text/50 px-1">
+      <p className="text-xs text-text-secondary px-1">
         {t("settings.postProcessing.api.registryNote")}
       </p>
     </>
@@ -265,7 +265,7 @@ const PostProcessingSettingsPromptsComponent: React.FC = () => {
                 )}
               />
               <p
-                className="text-xs text-mid-gray/70"
+                className="text-xs text-text-secondary"
                 dangerouslySetInnerHTML={{
                   __html: t("settings.postProcessing.prompts.promptTip"),
                 }}
@@ -294,8 +294,8 @@ const PostProcessingSettingsPromptsComponent: React.FC = () => {
         )}
 
         {!isCreating && !selectedPrompt && (
-          <div className="p-3 bg-mid-gray/5 rounded-md border border-mid-gray/20">
-            <p className="text-sm text-mid-gray">
+          <div className="p-3 bg-surface2 rounded-md border border-border">
+            <p className="text-sm text-text-secondary">
               {hasPrompts
                 ? t("settings.postProcessing.prompts.selectToEdit")
                 : t("settings.postProcessing.prompts.createFirst")}
@@ -332,7 +332,7 @@ const PostProcessingSettingsPromptsComponent: React.FC = () => {
                 )}
               />
               <p
-                className="text-xs text-mid-gray/70"
+                className="text-xs text-text-secondary"
                 dangerouslySetInnerHTML={{
                   __html: t("settings.postProcessing.prompts.promptTip"),
                 }}

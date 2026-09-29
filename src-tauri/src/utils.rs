@@ -104,6 +104,18 @@ pub fn cancel_current_operation(app: &AppHandle) {
         }
     }
 
+    // Already transcribing (the pill's × during "Transcribing N%"): the steps
+    // above already keep the text from being pasted; the take still lands in
+    // History, and skips post-processing. Only the pill goes - the recording
+    // teardown below would break the pipeline still running.
+    if crate::transcription_coordinator::pipeline_stage()
+        == crate::transcription_coordinator::STAGE_PROCESSING
+    {
+        info!("Cancelled while transcribing: the text will not be pasted");
+        hide_recording_overlay(app);
+        return;
+    }
+
     // Cancel any ongoing recording
     let audio_manager = app.state::<Arc<AudioRecordingManager>>();
     let recording_was_active = audio_manager.is_recording();

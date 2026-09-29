@@ -28,11 +28,11 @@ export const ShortcutsSettings: React.FC = () => {
   return (
     <div className="w-full space-y-6">
       {conflicts.size > 0 && (
-        <section className="rounded-lg border border-red-500/30 bg-red-500/10 p-4">
-          <h3 className="text-sm font-semibold text-red-400">
+        <section className="rounded-lg border border-err-border bg-err-bg p-4">
+          <h3 className="text-sm font-semibold text-err-text">
             {t("settings.shortcuts.conflicts.title")}
           </h3>
-          <p className="mt-1 text-xs text-mid-gray">
+          <p className="mt-1 text-xs text-text-secondary">
             {t("settings.shortcuts.conflicts.description")}
           </p>
         </section>

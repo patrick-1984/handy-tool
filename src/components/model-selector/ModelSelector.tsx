@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { listen } from "@tauri-apps/api/event";
+import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { commands } from "@/bindings";
 import { getTranslatedModelName } from "../../lib/utils/modelTranslation";
 import { isFlmBlockedByWindowsApplicationControl } from "../../lib/flm";
@@ -299,8 +300,46 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ onError }) => {
     return modelStatus;
   };
 
+  // The model's state, at the footer's far end: "✓ Ready", loading, an error.
+  const displayStatus = getDisplayStatus();
+  const statusLine = (() => {
+    switch (displayStatus) {
+      case "ready":
+        return (
+          <>
+            <CheckCircle2 className="w-3.5 h-3.5 text-ok-text" />
+            {t("modelSelector.ready")}
+          </>
+        );
+      case "loading":
+      case "extracting":
+        return (
+          <>
+            <Loader2 className="w-3.5 h-3.5 text-accent-text animate-spin" />
+            {t("modelSelector.loadingGeneric")}
+          </>
+        );
+      case "error":
+        return (
+          <>
+            <AlertCircle className="w-3.5 h-3.5 text-err-text" />
+            {t("modelSelector.modelError")}
+          </>
+        );
+      case "unloaded":
+        return t("modelSelector.modelUnloaded");
+      default:
+        return null;
+    }
+  })();
+
   return (
     <>
+      {statusLine && (
+        <span className="order-last ms-auto flex items-center gap-1.5 text-text-secondary">
+          {statusLine}
+        </span>
+      )}
       {/* Model Status and Switcher */}
       <div className="relative" ref={dropdownRef}>
         <ModelStatusButton

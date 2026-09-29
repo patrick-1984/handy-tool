@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { RefreshCw, ChevronDown } from "lucide-react";
 import { commands } from "@/bindings";
+import { TEXT_FIELD } from "../ui/controlClasses";
 
 interface Props {
   value: string;
@@ -19,8 +20,7 @@ interface Props {
   fetchOverride?: () => Promise<string[]>;
 }
 
-const fieldClass =
-  "rounded-md border border-zinc-700 bg-zinc-800 px-2 py-1 text-sm text-zinc-100 placeholder-zinc-500 focus:border-blue-500 focus:outline-none disabled:opacity-50";
+const fieldClass = TEXT_FIELD;
 
 const MAX_VISIBLE = 60;
 
@@ -142,13 +142,13 @@ export const SearchableModelSelect: React.FC<Props> = ({
             placeholder={placeholder}
             className={`${fieldClass} w-full pr-6`}
           />
-          <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text/40" />
+          <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-secondary" />
         </div>
         <button
           type="button"
           onClick={fetchModels}
           disabled={loading || disabled || (!providerId && !fetchOverride)}
-          className="p-1.5 rounded-md border border-zinc-700 text-text/60 hover:text-text hover:border-blue-500 disabled:opacity-50 transition-colors cursor-pointer shrink-0"
+          className="p-1.5 rounded-md border border-border text-text-secondary hover:text-text hover:border-accent disabled:opacity-50 transition-colors cursor-pointer shrink-0"
           title={t("settings.modelPicker.refresh")}
         >
           <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
@@ -156,14 +156,14 @@ export const SearchableModelSelect: React.FC<Props> = ({
       </div>
 
       {open && (loading || error || models.length > 0) && (
-        <div className="absolute z-20 mt-1 w-full max-h-64 overflow-y-auto rounded-md border border-zinc-700 bg-zinc-900 shadow-lg">
+        <div className="absolute z-20 mt-1 w-full max-h-64 overflow-y-auto rounded-lg border border-border bg-surface shadow-float p-1">
           {loading && (
-            <div className="px-2 py-1.5 text-xs text-text/50">
+            <div className="px-2 py-1.5 text-xs text-text-secondary">
               {t("settings.modelPicker.loading")}
             </div>
           )}
           {error && !loading && (
-            <div className="px-2 py-1.5 text-xs text-red-400">
+            <div className="px-2 py-1.5 text-xs text-err-text">
               {t("settings.modelPicker.error")}
             </div>
           )}
@@ -178,15 +178,15 @@ export const SearchableModelSelect: React.FC<Props> = ({
                   e.preventDefault();
                   select(m);
                 }}
-                className={`block w-full text-left px-2 py-1.5 text-sm hover:bg-mid-gray/20 ${
-                  m === value ? "text-logo-primary" : "text-zinc-100"
+                className={`block w-full text-left px-2 py-1.5 text-sm hover:bg-hover ${
+                  m === value ? "text-accent-text" : "text-text"
                 }`}
               >
                 {m}
               </button>
             ))}
           {!loading && !error && fetched && filtered.length === 0 && (
-            <div className="px-2 py-1.5 text-xs text-text/50">
+            <div className="px-2 py-1.5 text-xs text-text-secondary">
               {t("settings.modelPicker.noMatches")}
             </div>
           )}

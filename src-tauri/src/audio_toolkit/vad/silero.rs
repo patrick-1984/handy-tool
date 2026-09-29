@@ -13,6 +13,7 @@ const SILERO_FRAME_SAMPLES: usize =
 pub struct SileroVad {
     engine: Vad,
     threshold: f32,
+    last_prob: Option<f32>,
 }
 
 impl SileroVad {
@@ -25,6 +26,7 @@ impl SileroVad {
             engine: Vad::new(&model_path, constants::WHISPER_SAMPLE_RATE as usize)
                 .map_err(|e| anyhow::anyhow!("Failed to create VAD: {e}"))?,
             threshold,
+            last_prob: None,
         })
     }
 }
@@ -42,11 +44,16 @@ impl VoiceActivityDetector for SileroVad {
             .engine
             .compute(frame)
             .map_err(|e| anyhow::anyhow!("Silero VAD error: {e}"))?;
+        self.last_prob = Some(result.prob);
 
         if result.prob > self.threshold {
             Ok(VadFrame::Speech(frame))
         } else {
             Ok(VadFrame::Noise)
         }
+    }
+
+    fn last_probability(&self) -> Option<f32> {
+        self.last_prob
     }
 }

@@ -76,7 +76,7 @@ export const SidebarSearch: React.FC<SidebarSearchProps> = ({
   return (
     <div className="w-full flex flex-col gap-1">
       <div className="relative flex items-center">
-        <Search className="absolute start-2 h-3.5 w-3.5 text-text/40 pointer-events-none" />
+        <Search className="absolute start-2.5 h-3.5 w-3.5 text-text-secondary pointer-events-none" />
         <input
           type="text"
           value={query}
@@ -87,14 +87,14 @@ export const SidebarSearch: React.FC<SidebarSearchProps> = ({
           onKeyDown={onKeyDown}
           placeholder={t("sidebar.search.placeholder")}
           aria-label={t("sidebar.search.placeholder")}
-          className="w-full ps-7 pe-6 py-1.5 text-sm rounded-md bg-mid-gray/10 border border-mid-gray/20 focus:border-logo-primary focus:outline-none"
+          className="w-full h-8 ps-8 pe-7 text-[13px] rounded-md bg-control border border-control-border border-b-control-bottom placeholder:text-text-secondary hover:bg-control-hover focus:outline-none focus:bg-control focus:shadow-[inset_0_-2px_0_var(--color-accent)]"
         />
         {query && (
           <button
             type="button"
             onClick={() => onQueryChange("")}
             aria-label={t("common.cancel")}
-            className="absolute end-1.5 text-text/40 hover:text-text"
+            className="absolute end-2 text-text-secondary hover:text-text cursor-pointer"
           >
             <X className="h-3.5 w-3.5" />
           </button>
@@ -103,7 +103,7 @@ export const SidebarSearch: React.FC<SidebarSearchProps> = ({
       {query.trim() && (
         <div className="flex flex-col gap-0.5">
           {results.length === 0 ? (
-            <p className="px-2 py-1 text-xs text-text/50">
+            <p className="px-2.5 py-1 text-xs text-text-secondary">
               {t("sidebar.search.noResults")}
             </p>
           ) : (
@@ -113,15 +113,18 @@ export const SidebarSearch: React.FC<SidebarSearchProps> = ({
                 type="button"
                 onClick={() => pick(entry)}
                 onMouseEnter={() => setActive(i)}
-                className={`w-full text-start px-2 py-1 rounded-md ${
-                  i === active ? "bg-logo-primary/30" : "hover:bg-mid-gray/20"
+                className={`w-full text-start px-2.5 py-1.5 rounded-md cursor-pointer ${
+                  i === active ? "bg-active" : "hover:bg-hover"
                 }`}
               >
-                <p className="text-sm truncate" title={entry.title}>
+                <p
+                  className="text-sm font-semibold truncate"
+                  title={entry.title}
+                >
                   {entry.title}
                 </p>
                 <p
-                  className="text-[11px] text-text/50 truncate"
+                  className="text-xs text-text-secondary truncate"
                   title={entry.where}
                 >
                   {entry.where}

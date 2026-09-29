@@ -25,6 +25,7 @@ export default defineConfig(async () => ({
         overlay: resolve(__dirname, "src/overlay/index.html"),
         floating: resolve(__dirname, "src/floating/index.html"),
         livetext: resolve(__dirname, "src/livetext/index.html"),
+        quiethint: resolve(__dirname, "src/quiethint/index.html"),
       },
     },
   },

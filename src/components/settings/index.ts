@@ -17,7 +17,7 @@ export { ModelsSettings } from "./models/ModelsSettings";
 export { TokenCountPage } from "./token-count/TokenCountPage";
 export { KeyboardTyperPage } from "./keyboard-typer/KeyboardTyperPage";
 export { JumperSettings } from "./jumper/JumperSettings";
-export { TranslatorSettings } from "./translator/TranslatorSettings";
+export { FilesPage } from "./files/FilesPage";
 export { ModelTestingPage } from "./model-testing/ModelTestingPage";
 
 // Individual setting components

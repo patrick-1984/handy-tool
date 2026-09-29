@@ -104,6 +104,7 @@ export const CaptureSourceSettings: React.FC<CaptureSourceSettingsProps> =
     return (
       <>
         <SettingContainer
+          lead
           title={t("settings.advanced.captureSource.title")}
           description={t("settings.advanced.captureSource.description")}
           descriptionMode={descriptionMode}

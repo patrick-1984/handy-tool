@@ -43,7 +43,7 @@ changelog; their entries say "the 0.3x series" rather than invent a number.
 | [Keyboard Typer](#section-keyboard-typer)                | Typing text into windows that refuse a paste.                          |
 | [Model Testing](#section-model-testing)                  | Comparing models on your own prompt.                                   |
 | [Token Count](#section-token-count)                      | What a prompt will cost before you send it.                            |
-| [Translator](#section-translator)                        | Transcribing a folder of recordings in the background.                 |
+| [Files](#section-files)                                  | Transcribing a file you pick, or a whole folder in the background.     |
 | [MCP and CLI](#section-mcp-and-cli)                      | Driving the app from an agent, a script or a hotkey daemon.            |
 | [Backup and portability](#section-backup)                | Moving, restoring and running without installing.                      |
 | [Audio and feedback](#section-audio)                     | The microphone, the cues and the overlay.                              |
@@ -197,7 +197,7 @@ fresh install.
 No model is selected: onboarding asks you to download one. Recording overlay at the bottom of
 the screen, cue sounds off, tray icon on, autostart off, theme follows the system, the model
 stays loaded until you quit, crash-safe recording on, post-processing off, MCP and CLI server
-off, Translator off, push-to-talk transcribes live while the plain toggle transcribes in the
+off, watched folders off, push-to-talk transcribes live while the plain toggle transcribes in the
 background and does one final accurate pass at the end.
 
 ---
@@ -218,7 +218,7 @@ were dictating about.
 transcription is delivered into the window that had focus — no window switch, no app to bring
 up. Every shortcut is remappable, and a combination another app already owns is reported at
 startup rather than silently failing.
-**Where.** `General › Transcribe Shortcut` — `ctrl+space` by default.
+**Where.** `General › Record/Transcribe Shortcut` — `ctrl+space` by default.
 **Since.** 0.1.0, inherited from upstream Handy.
 
 ### Hold a key for a one-line thought
@@ -259,10 +259,14 @@ natural silences every 20 to 45 seconds and each segment is transcribed in the b
 you keep talking, then joined in order. When you stop, only the last segment is left to do, so
 a long take finishes almost immediately. Cuts are always at silence, so no word is ever split
 across a boundary. When what is left still takes more than half a second, the overlay shows how
-far it is — **Transcribing 42%** — reported by the engine itself for Whisper models and estimated
-from the recording's length and this machine's measured speed for the others.
+far it is — **Transcribing 42%**. It counts the seconds of work left when you stopped (every
+segment still waiting, weighed by its length) and is estimated from this machine's recent
+transcriptions of a similar length, since a long segment takes more time per second of audio
+than a short one; Whisper's own figure is used as a floor. Past about 70% it slows down
+smoothly, so a transcription that runs longer than expected keeps creeping on rather than
+sitting at 99%.
 **Where.** No control — this is always active.
-**Since.** 0.11.2. The percentage since 1.8.0.
+**Since.** 0.11.2. The percentage since 1.8.0; weighed by work and length-aware since 1.13.0.
 
 ### Live mode delivers the end of your sentence
 
@@ -289,19 +293,26 @@ pause are fixed and never re-transcribed, so the cost stays the same however lon
 shows either one line with the newest words or the whole take so far — that box starts at one
 line and grows as you talk, up to 40% of the screen height, before the oldest lines slide away —
 and its width is yours to choose. New words are typed in letter by letter rather than appearing all at once, so
-your eye can follow them; removed words go at once. Optionally the text fades away a few seconds
+your eye can follow them; removed words go at once. When you stop, the final text appears whole
+and stays a moment before the box fades, so the last words are seen too. Optionally the text fades away a few seconds
 after you stop talking. The box ignores the mouse and never takes focus. While it is on, every take
 runs in Live mode and the text in the box is your transcript: at stop only your last second or
 two is added, so it is ready at once. The box shows the raw words; Custom Words corrections are
 applied to the delivered text. The overlay's **T** button — or the Live Text Box On/Off
 shortcut, which has no default key — switches it; switched on in the middle of a take, that
-take turns live on the spot, catching up on what you have said so far. It
+take turns live on the spot: the parts already transcribed fill the box at once, and only what
+you said after them is read to catch up. A take without the box can still show its text when
+it stops: the box appears and the transcript is typed in as it comes in. It
 needs a model that runs on this PC — remote engines get the audio only after you stop — so
 switching it on with one selected explains that and lists your models that work.
+While live transcription is on, a notice in the Transcription section spells out what it costs:
+slightly less accuracy on long stretches without pauses, more CPU and battery, Undo only with
+Parakeet.
 **Where.** `General › Transcription › Live text box = On`,
 `General › Transcription › Live text shows = Whole text` and
-`General › Transcription › Fade when you stop talking = On` and
-`General › Transcription › Box width = Wide`.
+`General › Transcription › Fade when you stop talking = On`,
+`General › Transcription › Box width = Wide` and
+`General › Transcription › Show the text as it's transcribed = On`.
 **Since.** 1.10.0. Typed-in words, fading and the live text as the transcript since 1.11.0;
 before 1.11.0 the last words before a pause could stay missing from the box until you spoke
 again.
@@ -332,10 +343,13 @@ dictation into two deliveries.
 overlay says so; resume and the same take continues, and one text is delivered when you stop.
 The microphone stays open so resuming is instant, but after 10 minutes paused it is released —
 its indicator goes out — until you resume. A Pause / Resume shortcut can be set as well; it has
-no default.
+no default. Each overlay button also has a right-click menu: **T** switches the live text
+between last words and whole text and opens its settings, **Pause** can hide itself, and
+**Cancel** chooses whether cancelling discards the take or keeps it in History only; each menu
+can open the button's shortcut in Settings.
 **Where.** `General › Pause button = On`; the shortcut is
 `Shortcuts › Dictation › Pause / Resume`.
-**Since.** 1.10.0.
+**Since.** 1.10.0. The right-click menus since 1.13.0.
 
 ### A long recording that came back empty
 
@@ -640,15 +654,72 @@ controls and post-processing's own controls while it is off never show up.
 **The situation.** The sidebar had grown to seventeen entries in two groups, and some settings
 were in two places at once — History settings on both History and Advanced, the Cancel shortcut
 on Debug and Shortcuts.
-**What Handy does.** The sidebar holds the six pages used most — General, Shortcuts, Models,
-History, Jumper and Keyboard Typer — and a **More** entry. More shows two rows of tabs: Settings
-(App, Output, Providers, Post-processing, MCP & CLI, Backup, Debug, About) and Tools
-(Translator, Token Count, Model Testing, Current Audio), and it reopens the tab you used last.
+**What Handy does.** The sidebar holds the pages used most — General, Setups, Shortcuts, Models,
+History, Files and Jumper — and a **More** entry. More shows two rows of tabs: Settings
+(Output, Providers, Post-processing, MCP & CLI, Backup, Debug, About) and Tools
+(Keyboard Typer, Token Count, Model Testing, Current Audio), and it reopens the tab you used last.
 Every setting now has one home: History's settings sit at the bottom of History, the
 post-processing provider and prompt appear under the Post-processing switch, and the duplicate
 rows are gone.
 **Where.** `More`.
 **Since.** 1.10.0.
+
+### What's new, one click from each setting
+
+<a id="whats-new"></a>
+**The situation.** An update brings new settings, and finding them means reading the changelog and
+then hunting through the pages.
+**What Handy does.** A **What's new** page in the sidebar lists the new and changed things of the last
+three GitHub releases (the installed one marked) - the 1.13.0 section carries everything since 1.6.2,
+as 1.7-1.12 were never released on their own; **Show me** opens the page where the setting lives and outlines it, as search does (a
+setting shown only while its switch is on outlines that switch instead). A dot on the sidebar
+entry marks news you have not opened yet.
+**Where.** `What's new`.
+**Since.** 1.13.0.
+
+### A guided setup for the Jumper
+
+<a id="a-guided-setup-for-the-jumper"></a>
+**The situation.** The Jumper has eleven slots, per-slot mouse options and flow rules, and all you want
+is "put my dictation in that chat box".
+**What Handy does.** A setup asks what the Jumper is for, whether to remember the mouse position, and
+then "show me the place": a countdown, you click into the field, and it is remembered — as many places
+as you like. It sets the shortcuts and, for "land there", the finish-press jump, then lets you test.
+**Where.** `Setups › Jumper`, or the setup row at the top of the `Jumper` page.
+**Since.** 1.13.0.
+
+### A guided setup for the look, with previews
+
+<a id="a-guided-setup-for-the-look"></a>
+**The situation.** The pill and the live text box have a dozen look settings, and the only way to see
+what one does was to record something.
+**What Handy does.** A setup goes through them one per step and shows every choice side by side,
+moving: the real pill with its bars, progress and glow, the live text box with words appearing. It
+starts by saying what the pill's parts are for (the T switches the live text box). Pick one, and
+`Save & next` keeps it.
+**Where.** `Setups › Appearance`, or the setup row at the top of `General › App`.
+**Since.** 1.13.0.
+
+### A guided setup for post-processing
+
+<a id="a-guided-setup-for-post-processing"></a>
+**The situation.** Post-processing needs a provider, a key, a model and a prompt, spread over two pages.
+**What Handy does.** A setup asks what the AI should do (a ready prompt or your own), which AI (with
+its key and model filled in right there), shows the shortcut, and runs a sample sentence through it.
+**Where.** `Setups › Post-processing`.
+**Since.** 1.13.0.
+
+### Help mode: what a setting does, without an icon on every row
+
+<a id="help-mode"></a>
+**The situation.** Every setting had a small "i" beside it; useful once, clutter the rest of the
+time.
+**What Handy does.** One **?** button at the right end of each page's title line turns on help
+mode: the cursor becomes the help cursor, and pointing anywhere on a setting outlines it, dims the
+other settings, and hangs its full description from its name. Nothing can be changed meanwhile — the first click anywhere only leaves help
+mode, and so do the **?** button and Esc. Scrolling (wheel, keys, the scrollbar) keeps working.
+**Where.** The **?** at the top right of any page.
+**Since.** 1.13.0.
 
 ### When delivery can't be verified, the text is still recoverable
 
@@ -669,7 +740,7 @@ transcript can remain on the clipboard for manual placement.
 **The situation.** You want to see the transcription as it forms without giving up the window
 you are dictating into.
 **What Handy does.** A small always-available floating window shows the current transcription,
-with a copy button in the corner. It is created hidden at startup so its web view cannot block
+with a footer that says whether it is listening and which model is in use, and a Copy button. It is created hidden at startup so its web view cannot block
 the app's first keystroke.
 **Where.** `More › Current Audio › Open floating window`.
 **Since.** 0.8.2.
@@ -1178,7 +1249,7 @@ raw canvas that has no clipboard at all.
 **What Handy does.** The Keyboard Typer sends the text as individual keystrokes with a
 configurable gap, which is what remote consoles and VM viewers actually accept. See
 [When paste is blocked, type it instead](#when-paste-is-blocked-type-it-instead).
-**Where.** `Keyboard Typer › Type Text Shortcut` — `ctrl+shift+f11` by default.
+**Where.** `More › Keyboard Typer › Type Text Shortcut` — `ctrl+shift+f11` by default.
 **Since.** 0.12.0.
 
 ---
@@ -1566,6 +1637,20 @@ at, and models are labeled by where they run.
 **Where.** `Models › Downloaded Models` and `Models › Available to Download`.
 **Since.** 0.1.6; the current registry grew through 0.36.0.
 
+### Model ratings on one scale
+
+<a id="model-ratings-on-one-scale"></a>
+**The situation.** Every model card said "fast" in some form, and "ultra-fast" and "fast" models both
+showed five out of five, because each was fast compared with its own family.
+**What Handy does.** Speed and accuracy bars (1 to 5) rank all the models against each other, and the
+descriptions use the same words: Fastest, Very fast, Fast, Medium speed, Slow; top, very accurate,
+accurate, fairly accurate, basic. Accuracy follows the English error rates of the Open ASR
+Leaderboard and the Moonshine v2 paper (Parakeet V2 6.1%, Parakeet V3 6.3%, Moonshine V2 Medium
+6.7%, Whisper Large V3 7.4% and the best in most other languages, down to Moonshine V2 Tiny 12.0%);
+speed follows published speed comparisons, checked on a laptop.
+**Where.** `Models`, and the setup's model step.
+**Since.** 1.13.0.
+
 ### Every engine keeps your last word
 
 <a id="every-engine-keeps-your-last-word"></a>
@@ -1751,8 +1836,8 @@ For the places a paste will never work.
 remote session. The password prompt must never see a clipboard at all.
 **What Handy does.** A page where you put text and a shortcut that types it into whatever window
 has focus, as individual simulated keystrokes. No clipboard is involved at any point.
-**Where.** `Keyboard Typer › Enter the text to type...` then
-`Keyboard Typer › Type Text Shortcut` — `ctrl+shift+f11` by default.
+**Where.** `More › Keyboard Typer › Enter the text to type...` then
+`More › Keyboard Typer › Type Text Shortcut` — `ctrl+shift+f11` by default.
 **Since.** 0.12.0.
 
 ### The text never touches your disk
@@ -1774,7 +1859,7 @@ the app exits, and what the destination application does with it is outside Hand
 characters, so half the string arrives.
 **What Handy does.** A per-keystroke delay, 15 ms by default — fast enough to feel instant,
 slow enough to be reliable over a remote link — with quick presets for slower targets.
-**Where.** `Keyboard Typer › Key delay`.
+**Where.** `More › Keyboard Typer › Key delay`.
 **Since.** 0.12.0.
 
 ### Ten seconds to put the cursor where it belongs
@@ -1785,7 +1870,7 @@ focus.
 **What Handy does.** A countdown before typing starts, ten seconds by default with one, three and
 five second presets. Escape cancels, as does pressing the typing shortcut again, and an in-flight
 session is canceled cleanly rather than half-typed.
-**Where.** `Keyboard Typer › Start delay` and `Keyboard Typer › Cancel`.
+**Where.** `More › Keyboard Typer › Start delay` and `More › Keyboard Typer › Cancel`.
 **Since.** 0.12.0.
 
 ### Your trigger chord doesn't become part of the text
@@ -1970,11 +2055,27 @@ box is not a good plan.
 
 ---
 
-<a id="section-translator"></a>
+<a id="section-files"></a>
 
-## Translator
+## Files
 
-Drop a folder of recordings and get text back, while you get on with something else.
+Pick a recording, or drop a folder of them, and get text back while you get on with something else.
+
+### One file, transcribed as accurately as the model can
+
+<a id="one-file-transcribed-as-accurately-as-the-model-can"></a>
+**The situation.** You have a voice note from your phone, an interview or a lecture, and you want
+its text without playing it into the microphone.
+**What Handy does.** Reads WAV, MP3, M4A, AAC, FLAC, OGG and Opus files, cuts the audio at its
+pauses into pieces of up to about forty seconds and transcribes each piece once with the model
+you pick for files (your dictation model to start with; another one loads beside it, and one not
+downloaded yet is downloaded first), so the text is final as it comes — no live preview, no second
+pass. A progress bar follows the file's length. The text is shown to copy and kept in a list of
+transcribed files; a pop-up asks whether to save it as a `.txt` in Handy's folder or next to the
+recording, and can remember the answer. A copy of the audio can be kept too. The original file is
+only ever read.
+**Where.** `Files › Transcribe a file › Choose an audio file`.
+**Since.** 1.13.0.
 
 ### A folder of recordings, transcribed while you sleep
 
@@ -1984,7 +2085,7 @@ transcribing them one at a time by hand is the whole afternoon.
 **What Handy does.** Watches folders you choose and transcribes new audio files into a `.txt`
 file next to the source, using your engines and your settings. It runs in the background while
 you keep using the app normally.
-**Where.** `More › Translator › Watch folders = On` then `More › Translator › Add a folder`.
+**Where.** `Files › Watched folders › Watch folders = On` then `Files › Folders › Add a folder`.
 **Since.** The 0.3x series.
 
 ### Your existing files are left alone
@@ -1995,7 +2096,7 @@ grinding through all of them.
 **What Handy does.** Only files that appear _after_ watching starts are queued. The existing
 contents are snapshotted and deliberately ignored. Handy's own recorder-internal files — chunk
 parts, temporary files, partial downloads — are never picked up.
-**Where.** `More › Translator › Watched folders`.
+**Where.** `Files › Folders`.
 **Since.** The 0.3x series.
 
 ### A file is never transcribed twice
@@ -2005,7 +2106,7 @@ parts, temporary files, partial downloads — are never picked up.
 **What Handy does.** The `.txt` sidecar is the record that a file is done, so it stays done across
 restarts forever. The pending queue is persisted as well, so unfinished work resumes rather than
 restarting. A file recreated under the same name is detected as new by its modification time.
-**Where.** `More › Translator › Status`.
+**Where.** `Files › Watched folders › Status`.
 **Since.** The 0.3x series.
 
 ### Never reads a file that is still being written
@@ -2027,7 +2128,7 @@ dictation feeling instant. Folder-first keeps the batch running and queues live 
 it, though the batch always yields while a take is finishing. First-come-first-served finishes
 the current file's segments before the next job. Batch work is cut into roughly forty-second
 segments so pausing never discards progress.
-**Where.** `More › Translator › Priority = Live dictation first`.
+**Where.** `Files › Watched folders › Priority = Live dictation first`.
 **Since.** The 0.3x series.
 
 ### Batch on one accelerator, dictation on another
@@ -2035,11 +2136,11 @@ segments so pausing never discards progress.
 <a id="batch-on-one-accelerator-dictation-on-another"></a>
 **The situation.** You have an NPU and a GPU, and running batch work means your dictation model
 is constantly being unloaded and reloaded.
-**What Handy does.** The Translator can use a different model from your dictation model and keep
+**What Handy does.** The watched folders can use a different model from your dictation model and keep
 it resident in parallel — dictation on the NPU while the batch grinds a Whisper model on the
 integrated GPU. Shared hardware serializes gracefully rather than racing, and the batch model has
 its own idle-unload setting so it can be released independently.
-**Where.** `More › Translator › Batch model` and `More › Translator › Unload batch model after`.
+**Where.** `Files › Watched folders › Batch model` and `Files › Watched folders › Unload batch model after`.
 **Since.** 0.48.0.
 
 ### You can see what it is working on
@@ -2049,7 +2150,7 @@ its own idle-unload setting so it can be released independently.
 log.
 **What Handy does.** A status row that reads off, watching with nothing to do, a count of queued
 files, or the current file and which segment of it is being transcribed.
-**Where.** `More › Translator › Status`.
+**Where.** `Files › Watched folders › Status`.
 **Since.** The 0.3x series.
 
 ---
@@ -2228,21 +2329,6 @@ falls back to the normal per-user location rather than failing.
 
 ## Audio and feedback
 
-### Know when your PC is the reason it is slow
-
-<a id="slow-pc-warning"></a>
-**The situation.** Some days transcription crawls because other programs are eating the PC, and
-you cannot tell whether to wait, close something, or blame the app.
-**What Handy does.** Every transcription is timed against this PC's own normal for that model —
-the median of its last twenty — kept on disk so it survives restarts. Short live-preview clips
-and long chunks are compared separately. With the option on, the recording pill shows a PC icon
-with the figure on its left the whole time — 100% is normal, amber below 70%, red below 50% —
-and names it when you hover it. It needs a few takes with a model before it has a normal to
-compare against, and it updates as often as the app transcribes — every 1.5 seconds with the
-live text box on, but only every 20 to 45 seconds in Post-Recording mode.
-**Where.** `General › PC speed on the pill = On`.
-**Since.** 1.11.0, shown only while slow; an option shown all the time since 1.12.0.
-
 ### It records what you say, not the silence
 
 <a id="it-records-what-you-say-not-the-silence"></a>
@@ -2287,16 +2373,24 @@ indicator, which is both a privacy question and a distraction.
 **What Handy does.** The microphone is opened when a take starts and released when it ends.
 A microphone that has been idle for a while can take most of a second to wake up; until it
 delivers audio the overlay reads **Starting mic...** instead of showing the sound bars, so you
-know when to start speaking. When a take cannot start, the overlay says why for a moment
+know when to start speaking. Some microphones then fade in — a Realtek input starts 15-20 dB
+quiet — and words spoken into that were dropped as noise, so after such a cold start the
+overlay keeps reading **Starting mic...** until the microphone has warmed up. The wait is
+measured on the microphone's own recent cold starts, and it can be switched off. And if you
+speak too quietly for your words to be kept, **Too quiet — speak up** appears for a moment in a
+small box just under the overlay (or, if you prefer, in the overlay instead of the sound bars). When a take cannot start, the overlay says why for a moment
 instead of vanishing: **No microphone** when none is connected, **Microphone blocked** when
 Windows privacy settings deny apps the microphone, and **Microphone error** when the device
 refuses to start. Optionally you can keep the microphone
 open — which removes the wake-up wait — at the cost of a permanently active indicator. That is
 an explicit choice, not the default. A middle way keeps it open only for 1, 5 or 15 minutes
 after each take, so a burst of takes starts instantly and the indicator goes out afterwards.
-**Where.** `General › Sound › Keep microphone ready` and
+**Where.** `General › Sound › Keep microphone ready`,
+`General › Sound › Wait for the microphone to warm up`,
+`General › Sound › Warn when you speak too quietly` and
 `More › Debug › Always-On Microphone = On` _{requires: Debug mode}_.
-**Since.** 0.2.0. Keep microphone ready since 1.9.0.
+**Since.** 0.2.0. Keep microphone ready since 1.9.0; the warm-up wait and the too-quiet
+warning since 1.13.0.
 
 ### Change microphone without restarting
 
@@ -2324,7 +2418,7 @@ used to be to talk and hope.
 **What Handy does.** A small overlay shows live audio levels while recording, at the top or the
 bottom of the screen, or not at all. The tray icon carries the same state — idle, recording,
 transcribing — in light, dark and color variants so it stays legible on any theme.
-**Where.** `More › App › Overlay Position = Bottom`.
+**Where.** `General › App › Overlay Position = Bottom`.
 **Since.** Present since the fork's early releases.
 
 ### Canceling can't freeze the app
@@ -2470,7 +2564,7 @@ unloads the model, cancels a take and quits (on macOS the menu opens on a plain 
 menu-bar items do there). Its labels are generated
 at build time from the same translation files the interface uses, so they cannot drift out of
 sync.
-**Where.** `Tray › Copy Last Transcript` and `More › App › Show Tray Icon = On`.
+**Where.** `Tray › Copy Last Transcript` and `General › App › Show Tray Icon = On`.
 **Since.** Present since the fork's early releases.
 
 ### Starts with your session and stays out of the way
@@ -2482,7 +2576,7 @@ arrives, and only tolerable if it is not in your face.
 tray-only existence. Note one consequence: with the tray icon switched off, closing the window
 quits the application. The one launch that always shows the window is the one right after you
 run setup yourself, so you can look at what changed; silent automatic updates stay hidden.
-**Where.** `More › App › Launch on Startup = On` and `More › App › Start Hidden = On`.
+**Where.** `General › App › Launch on Startup = On` and `General › App › Start Hidden = On`.
 **Since.** 0.1.0.
 
 ### Light, dark, or follow the system
@@ -2493,7 +2587,7 @@ permanently bright at midnight.
 **What Handy does.** One appearance setting applied consistently across the main window, the
 recording overlay and the floating transcription window, following the system by default and
 tracking it live.
-**Where.** `More › App › Appearance = Dark`.
+**Where.** `General › App › Appearance = Dark`.
 **Since.** 0.41.0.
 
 ### It looks and behaves like a Windows app
@@ -2504,7 +2598,7 @@ wrong font, wrong scrollbars, native widgets stuck in light mode.
 **What Handy does.** The system font stack, styled scrollbars, native widgets that follow dark
 mode, a maximisable window that respects snap layouts, and a sidebar you can drag to fit long
 provider names, remembered between launches.
-**Where.** `More › App › Appearance`.
+**Where.** `General › App › Appearance`.
 **Since.** 0.24.0; resizable sidebar in 0.17.0.
 
 ### Usable with the keyboard, and readable
@@ -2551,7 +2645,7 @@ tool claimed it first.
 **What Handy does.** Registration failures are recorded and surfaced when the app starts rather
 than failing quietly. If the operating system's shortcut interface is the problem rather than the
 combination, an alternative key backend can be selected.
-**Where.** `More › App › Keyboard Implementation = Handy Keys`.
+**Where.** `General › App › Keyboard Implementation = Handy Keys`.
 **Since.** 0.30.0.
 
 ### Use it in your language
@@ -2580,12 +2674,18 @@ touching anything else.
 <a id="not-a-black-box-on-first-launch"></a>
 **The situation.** A fresh install with no model does nothing when you press the key, and nothing
 tells you why.
-**What Handy does.** A first-run flow walks through microphone permission, choosing and
-downloading a model, and your first shortcut. An unconfigured remote engine no longer counts as
+**What Handy does.** A short setup guide on the first start (every step skippable, or all of
+it): pick the languages you speak (several at once), then choose one of three speech models
+suggested for them — the most accurate, a balanced one (selected to start with: Parakeet V3 whenever it understands
+your languages) and the
+fastest, or look through all of them — and "Download and continue" fetches it while you finish; see the basic shortcuts with their defaults and keep
+or change them; pick the microphone; then try it — press the shortcut, say a sentence, and
+the words appear in the setup. Its last screen offers the other setups (the look, post-processing,
+the Jumper) without pressing them on you: the defaults already work. On macOS, microphone permission comes first. An unconfigured remote engine no longer counts as
 "a usable model exists", so a clean install cannot skip the download step and leave you with
 nothing.
-**Where.** Shown automatically on first launch.
-**Since.** 0.1.6; the empty-install fix in 0.43.0.
+**Where.** Shown automatically on first launch; again from `Setups › Basic setup`.
+**Since.** 0.1.6; the empty-install fix in 0.43.0; the setup guide in 1.13.0.
 
 ---
 

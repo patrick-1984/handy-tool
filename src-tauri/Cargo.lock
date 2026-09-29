@@ -2537,7 +2537,7 @@ dependencies = [
 
 [[package]]
 name = "handy"
-version = "1.12.0"
+version = "1.13.0"
 dependencies = [
  "anyhow",
  "audiopus",
@@ -2571,6 +2571,7 @@ dependencies = [
  "specta",
  "specta-typescript",
  "strsim",
+ "symphonia",
  "tar",
  "tauri",
  "tauri-build",

@@ -15,6 +15,11 @@ interface TooltipProps {
   targetRef: React.RefObject<HTMLElement>;
   position?: TooltipPosition;
   children: React.ReactNode;
+  /** The mouse goes through it (help mode: on to the setting under it). */
+  passThrough?: boolean;
+  /** "start": hangs from the target's start edge (help mode: from the name). */
+  align?: "center" | "start";
+  width?: number;
 }
 
 // Wide enough that a long description reads as a few short paragraphs rather
@@ -29,6 +34,9 @@ export const Tooltip: React.FC<TooltipProps> = ({
   targetRef,
   position = "top",
   children,
+  passThrough = false,
+  align = "center",
+  width: preferredWidth = TOOLTIP_WIDTH,
 }) => {
   const [coords, setCoords] = useState<TooltipCoords | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -62,11 +70,23 @@ export const Tooltip: React.FC<TooltipProps> = ({
     }
 
     const width = Math.min(
-      TOOLTIP_WIDTH,
+      preferredWidth,
       window.innerWidth - 2 * VIEWPORT_PADDING,
     );
-    const targetCenter = targetRect.left + targetRect.width / 2;
-    let left = targetCenter - width / 2;
+    const rtl = document.documentElement.dir === "rtl";
+    // Hanging from the start: the caret sits over the start of the name.
+    const targetCenter =
+      align === "start"
+        ? rtl
+          ? targetRect.right - Math.min(targetRect.width / 2, 24)
+          : targetRect.left + Math.min(targetRect.width / 2, 24)
+        : targetRect.left + targetRect.width / 2;
+    let left =
+      align === "start"
+        ? rtl
+          ? targetRect.right + ARROW_MARGIN - width
+          : targetRect.left - ARROW_MARGIN
+        : targetCenter - width / 2;
 
     if (left < VIEWPORT_PADDING) {
       left = VIEWPORT_PADDING;
@@ -80,7 +100,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
     );
 
     setCoords({ top, left, width, arrowLeft, actualPosition });
-  }, [targetRef, position]);
+  }, [targetRef, position, align, preferredWidth]);
 
   useEffect(() => {
     updatePosition();
@@ -104,16 +124,17 @@ export const Tooltip: React.FC<TooltipProps> = ({
         position: "fixed",
         top: coords?.top ?? -9999,
         left: coords?.left ?? -9999,
-        width: coords?.width ?? TOOLTIP_WIDTH,
+        width: coords?.width ?? preferredWidth,
         zIndex: 9999,
         opacity: coords ? 1 : 0,
+        pointerEvents: passThrough ? "none" : undefined,
       }}
-      className="px-3 py-2 bg-background border border-mid-gray/80 rounded-lg shadow-lg whitespace-normal transition-opacity duration-150"
+      className="px-3 py-2.5 bg-surface text-text border border-border rounded-lg shadow-float whitespace-normal transition-opacity duration-150"
     >
       {children}
       <div
         style={{ left: coords?.arrowLeft ?? 0 }}
-        className={`absolute ${arrowClasses} transform -translate-x-1/2 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-l-transparent border-r-transparent border-t-mid-gray/80`}
+        className={`absolute ${arrowClasses} transform -translate-x-1/2 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-l-transparent border-r-transparent border-t-border`}
       />
     </div>,
     document.body,

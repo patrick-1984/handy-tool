@@ -602,6 +602,40 @@ export const commands = {
   async clearJumpSlot(slot: number): Promise<void> {
     return await TAURI_INVOKE("clear_jump_slot", { slot });
   },
+  /**
+   * The Jumper setup's "Show me the place": after `delay_ms` (time to click
+   * into the field), capture the focused field into `slot`, exactly like that
+   * slot's Set shortcut.
+   */
+  async setJumpSlotAfter(
+    slot: number,
+    delayMs: number,
+  ): Promise<Result<AnchorStatus, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("set_jump_slot_after", { slot, delayMs }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * The Post-processing setup's Try it: `text` through the chosen provider and
+   * prompt, exactly as a take would be.
+   */
+  async postProcessSample(text: string): Promise<Result<string, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("post_process_sample", { text }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
   async jumpToSlot(slot: number): Promise<Result<null, string>> {
     try {
       return {
@@ -838,6 +872,140 @@ export const commands = {
       return {
         status: "ok",
         data: await TAURI_INVOKE("translator_remove_folder", { path }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * Starts transcribing `path` with `model_id` in the background, the text
+   * going where `save` says; progress and the result arrive as `file-job`
+   * events.
+   */
+  async transcribeFile(
+    path: string,
+    modelId: string,
+    save: FileTextSave,
+  ): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("transcribe_file", { path, modelId, save }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * The file being transcribed, or how the last one ended (null before the first).
+   */
+  async getFileJob(): Promise<FileJob | null> {
+    return await TAURI_INVOKE("get_file_job");
+  },
+  /**
+   * Stops the file being transcribed after the piece in progress.
+   */
+  async cancelFileJob(): Promise<void> {
+    await TAURI_INVOKE("cancel_file_job");
+  },
+  /**
+   * Transcribed files, newest first.
+   */
+  async getFileTranscriptions(): Promise<FileTranscription[]> {
+    return await TAURI_INVOKE("get_file_transcriptions");
+  },
+  /**
+   * Removes an entry from the log (its saved .txt and audio copy stay).
+   */
+  async deleteFileTranscription(id: number): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("delete_file_transcription", { id }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * The folder the text and audio copies go to (the default one when none is chosen).
+   */
+  async getFilesFolder(): Promise<Result<string, string>> {
+    try {
+      return { status: "ok", data: await TAURI_INVOKE("get_files_folder") };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * Opens that folder.
+   */
+  async openFilesFolder(): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("open_files_folder"),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  async changeFileTextSaveSetting(
+    save: FileTextSave,
+  ): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_file_text_save_setting", { save }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * The model picked for files (remembered). Empty = the dictation model.
+   */
+  async changeFileModelSetting(
+    modelId: string,
+  ): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_file_model_setting", { modelId }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * Transcribe a file: also keep a copy of the audio.
+   */
+  async changeFileKeepAudioSetting(enabled: boolean): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_file_keep_audio_setting", { enabled }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * Where those go. Empty = back to Handy's own folder.
+   */
+  async changeFilesFolderSetting(path: string): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_files_folder_setting", { path }),
       };
     } catch (e) {
       if (e instanceof Error) throw e;
@@ -1639,6 +1807,13 @@ export const commands = {
   async cancelOperation(): Promise<void> {
     await TAURI_INVOKE("cancel_operation");
   },
+  /**
+   * Bring up the main window on `section` (a sidebar page id) with the setting
+   * whose title is the translation `title_key` scrolled to and outlined.
+   */
+  async openSettingsAt(section: string, titleKey: string): Promise<void> {
+    await TAURI_INVOKE("open_settings_at", { section, titleKey });
+  },
   async getAppDirPath(): Promise<Result<string, string>> {
     try {
       return { status: "ok", data: await TAURI_INVOKE("get_app_dir_path") };
@@ -2193,6 +2368,49 @@ export const commands = {
     }
   },
   /**
+   * After a cold start, keep "Starting mic..." on the pill until the microphone
+   * has warmed up (the wait measured on its recent cold starts).
+   */
+  async changeMicWarmupWaitSetting(enabled: boolean): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_mic_warmup_wait_setting", { enabled }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * Show "Too quiet" on the pill when speech is too quiet to be kept.
+   */
+  async changeTooQuietHintSetting(enabled: boolean): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_too_quiet_hint_setting", { enabled }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * Show "Too quiet" in a box of its own under the pill instead of inside it.
+   */
+  async changeTooQuietHintBoxSetting(enabled: boolean): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_too_quiet_hint_box_setting", { enabled }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
    * Allow the Undo-last-word shortcut during live takes.
    */
   async changeUndoWordSetting(enabled: boolean): Promise<Result<null, string>> {
@@ -2278,6 +2496,21 @@ export const commands = {
     }
   },
   /**
+   * Show the live text box at stop for a take without it, with the transcript
+   * typed in as it comes in.
+   */
+  async changeLiveTextAfterStopSetting(enabled: boolean): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_live_text_after_stop_setting", { enabled }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
    * How wide the live text box is (logical pixels).
    */
   async changeLiveTextWidthSetting(width: number): Promise<Result<null, string>> {
@@ -2292,13 +2525,133 @@ export const commands = {
     }
   },
   /**
-   * Show the speed chip on the recording pill (it widens the pill to fit).
+   * The live text box's text size, in logical pixels.
    */
-  async changeSpeedIndicatorSetting(enabled: boolean): Promise<Result<null, string>> {
+  async changeLiveTextFontSizeSetting(size: number): Promise<Result<null, string>> {
     try {
       return {
         status: "ok",
-        data: await TAURI_INVOKE("change_speed_indicator_setting", { enabled }),
+        data: await TAURI_INVOKE("change_live_text_font_size_setting", { size }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * The recording pill's size, in percent of its normal size.
+   */
+  async changePillScaleSetting(scale: number): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_pill_scale_setting", { scale }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * How the pill shows the transcription's progress.
+   */
+  async changeProgressStyleSetting(style: ProgressStyle): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_progress_style_setting", { style }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * How strong the progress glow is, in percent of its normal strength.
+   */
+  async changeProgressGlowSetting(strength: number): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_progress_glow_setting", { strength }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * The progress light's colour ("#rrggbb", or empty for the default cyan).
+   */
+  async changeProgressColorSetting(color: string): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_progress_color_setting", { color }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * The installed layouts with AltGr characters; null where this cannot be
+   * told (not Windows), so the caller falls back to warning for every Ctrl+Alt
+   * letter.
+   */
+  async getAltgrLayouts(): Promise<AltGrLayout[] | null> {
+    return await TAURI_INVOKE("get_altgr_layouts");
+  },
+  /**
+   * Wider sound bars on the pill.
+   */
+  async changeSoundBarsWideSetting(enabled: boolean): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_sound_bars_wide_setting", { enabled }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * Progress Style: line - whether the line glows too.
+   */
+  async changeProgressLineGlowSetting(enabled: boolean): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_progress_line_glow_setting", { enabled }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * "Whole text": how many lines the live text box shows.
+   */
+  async changeLiveTextLinesSetting(lines: number): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_live_text_lines_setting", { lines }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * Open the app on the page that was open when it was closed.
+   */
+  async changeReopenLastPageSetting(enabled: boolean): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_reopen_last_page_setting", { enabled }),
       };
     } catch (e) {
       if (e instanceof Error) throw e;
@@ -2680,6 +3033,55 @@ export type AppSettings = {
    */
   mic_keep_warm_minutes?: number;
   /**
+   * After a cold start, keep "Starting mic..." on the pill until the microphone
+   * has warmed up: some inputs start 15-20 dB quiet and fade in, and the first
+   * words spoken into that were dropped as noise. The wait is measured.
+   */
+  mic_warmup_wait?: boolean;
+  /**
+   * The last few measured warm-ups of this PC's microphone after a cold start,
+   * in ms, newest last.
+   */
+  mic_fade_in_measured_ms?: number[];
+  /**
+   * The pill says "Too quiet" when it hears voice-like sound too quiet for
+   * the speech detector to keep.
+   */
+  too_quiet_hint?: boolean;
+  /**
+   * ...in a small box of its own under the pill (the pill keeps its sound
+   * bars) instead of inside the pill.
+   */
+  too_quiet_hint_box?: boolean;
+  /**
+   * The recording pill's size, in percent of its normal size (100, 125, 150).
+   */
+  pill_scale?: number;
+  /**
+   * Open the app on the page that was open when it was closed.
+   */
+  reopen_last_page?: boolean;
+  /**
+   * How the pill shows the transcription's progress.
+   */
+  progress_style?: ProgressStyle;
+  /**
+   * How strong the progress glow is, in percent of its normal strength (0-200).
+   */
+  progress_glow?: number;
+  /**
+   * Progress Style: line - the line glows like the light around the edge.
+   */
+  progress_line_glow?: boolean;
+  /**
+   * Wider sound bars on the pill (2.5 px bars and gaps: 77.5 px instead of 62).
+   */
+  sound_bars_wide?: boolean;
+  /**
+   * The progress light's colour and glow as "#rrggbb"; empty = the default cyan.
+   */
+  progress_color?: string;
+  /**
    * Pause/resume button on the recording overlay, plus the Pause shortcut.
    */
   pause_button_enabled?: boolean;
@@ -2704,9 +3106,18 @@ export type AppSettings = {
    */
   live_text_width?: number;
   /**
-   * The recording pill shows how fast this PC transcribes against its normal.
+   * The live text box's text size, in logical pixels.
    */
-  speed_indicator_enabled?: boolean;
+  live_text_font_size?: number;
+  /**
+   * "Whole text": how many lines the box shows before the oldest slide out.
+   */
+  live_text_lines?: number;
+  /**
+   * A take without the live text box shows the box at stop, with its
+   * transcript typed in as it comes in (just to watch; delivery is unchanged).
+   */
+  live_text_after_stop?: boolean;
   /**
    * Warn next to shortcuts that AltGr can also type (Windows reports AltGr
    * as Ctrl+Alt).
@@ -2874,6 +3285,23 @@ export type AppSettings = {
   translator_model_unload_timeout?: ModelUnloadTimeout;
   translator_model_unload_custom_seconds?: number;
   translator_poll_secs?: number;
+  /**
+   * Transcribe a file: where the text goes (`Ask` = a pop-up each time).
+   */
+  file_text_save?: FileTextSave;
+  /**
+   * Transcribe a file: the model last picked for files. Empty = the
+   * dictation model.
+   */
+  file_model?: string;
+  /**
+   * Transcribe a file: also keep a copy of the audio in `files_folder`.
+   */
+  file_keep_audio?: boolean;
+  /**
+   * Where those go. Empty = `{app_data}/files`.
+   */
+  files_folder?: string;
   jumper_persist?: boolean;
   jumper_saved_slots?: (SavedJumpSlot | null)[];
 };
@@ -2968,6 +3396,66 @@ export type SavedCursor = {
 export type AnchorAction = "none" | "jump" | "set" | "clear";
 export type TranslatorPriority = "live_first" | "folder_first" | "fifo";
 export type TranslatorFolder = { path: string; enabled: boolean };
+/**
+ * Transcribe a file: where the text goes.
+ */
+export type FileTextSave =
+  /**
+   * A pop-up asks each time a file is picked.
+   */
+  | "ask"
+  /**
+   * In `files_folder` (Handy's own folder unless another is chosen).
+   */
+  | "handy_folder"
+  /**
+   * Next to the recording, in its own folder.
+   */
+  | "next_to_file"
+  /**
+   * Not saved; still shown to copy and kept in the list.
+   */
+  | "dont_save";
+/**
+ * One transcribed file, as kept in the log.
+ */
+export type FileTranscription = {
+  /**
+   * When it finished, in milliseconds since 1970; also its id.
+   */
+  id: number;
+  file_name: string;
+  source_path: string;
+  duration_secs: number;
+  model: string;
+  text: string;
+  /**
+   * Where the .txt was saved, when "Save the text as a file" was on.
+   */
+  text_path: string | null;
+  /**
+   * Where the audio was copied, when "Keep a copy of the audio" was on.
+   */
+  audio_path: string | null;
+  /**
+   * Why saving the text or copying the audio failed, if it did.
+   */
+  save_error: string | null;
+};
+/**
+ * The file being transcribed, or how the last one ended.
+ */
+export type FileJob =
+  | { state: "decoding"; file_name: string }
+  | {
+      state: "transcribing";
+      file_name: string;
+      done_secs: number;
+      total_secs: number;
+    }
+  | { state: "done"; entry: FileTranscription }
+  | { state: "failed"; file_name: string; error: string }
+  | { state: "cancelled"; file_name: string };
 export type TranslatorStatus = {
   enabled: boolean;
   queue: string[];
@@ -3316,6 +3804,31 @@ export type ShortcutBinding = {
   current_binding: string;
 };
 export type SoundTheme = "marimba" | "pop" | "custom";
+/**
+ * How the pill shows the transcription's progress: a line along its bottom, or
+ * a glowing light running round its edge.
+ */
+export type ProgressStyle = "line" | "ring" | "lap";
+/**
+ * A keyboard language (Windows lists keyboards under a language) with a
+ * keyboard on which AltGr types a character on some keys.
+ */
+export type AltGrLayout = {
+  /**
+   * The language the keyboard belongs to, as a BCP 47 tag, e.g. "pl-PL" (the
+   * UI names it). Several keyboards of one language are merged.
+   */
+  locale: string;
+  /**
+   * Lower-case letters AltGr types a character (or an accent) on, plus
+   * "space": AltGr is often still held for the space after such a character.
+   */
+  keys: string[];
+  /**
+   * The same for AltGr+Shift (a Ctrl+Alt+Shift chord).
+   */
+  shift_keys: string[];
+};
 /**
  * Audio container sent to remote (OpenRouter) transcription. Opus is ~10Ã—
  * smaller than WAV â€” light on bandwidth â€” but support varies by model.

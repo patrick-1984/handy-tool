@@ -2,6 +2,12 @@
 
 The Jumper is Windows-only in code. Open `Jumper`; every control on this page carries _{Windows only}_.
 
+### Jumper setup
+
+`Jumper › Jumper setup`
+
+A tinted row at the top of the page: `Start setup` opens `Setups` and starts the Jumper setup (places, their shortcuts, a test). See [Setups › Jumper](setups.md#jumper).
+
 ## Remote desktop detection
 
 <a id="remote-match-strings"></a>

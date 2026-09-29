@@ -4,11 +4,11 @@ import { type LlmProvider } from "@/bindings";
 import { useSettings } from "../../../hooks/useSettings";
 import { SearchableModelSelect } from "../SearchableModelSelect";
 import { resolveModelPrice } from "@/lib/openrouterPrices";
+import { TEXT_FIELD } from "../../ui/controlClasses";
 
-const fieldClass =
-  "rounded-md border border-zinc-700 bg-zinc-800 px-2 py-1 text-sm text-zinc-100 placeholder-zinc-500 focus:border-blue-500 focus:outline-none disabled:opacity-50";
+const fieldClass = TEXT_FIELD;
 
-const labelClass = "text-xs text-text/60 w-24 shrink-0";
+const labelClass = "text-xs text-text-secondary w-24 shrink-0";
 
 interface SlotProps {
   provider: LlmProvider;
@@ -97,10 +97,10 @@ const ProviderSlot: React.FC<SlotProps> = ({
   };
 
   return (
-    <div className="border border-mid-gray/20 rounded-lg p-3 space-y-2 bg-mid-gray/5">
+    <div className="border border-border rounded-lg p-3 space-y-2 bg-surface2">
       <div className="flex items-center gap-2">
         <span
-          className="text-xs font-mono font-semibold text-text/50 shrink-0 w-7"
+          className="text-xs font-mono font-semibold text-text-secondary shrink-0 w-7"
           title={provider.id}
         >
           #{index + 1}
@@ -109,7 +109,7 @@ const ProviderSlot: React.FC<SlotProps> = ({
           type="checkbox"
           checked={provider.enabled ?? false}
           onChange={(e) => onCommit({ ...provider, enabled: e.target.checked })}
-          className="w-4 h-4 accent-blue-600 cursor-pointer"
+          className="w-4 h-4 accent-accent cursor-pointer"
           title={t("settings.advanced.llmProviders.enable")}
         />
         <input
@@ -120,7 +120,7 @@ const ProviderSlot: React.FC<SlotProps> = ({
           className={`${fieldClass} flex-1 font-medium`}
           placeholder={t("settings.advanced.llmProviders.namePlaceholder")}
         />
-        <span className="text-[10px] text-text/40 uppercase tracking-wide shrink-0">
+        <span className="text-[10px] text-text-secondary uppercase tracking-wide shrink-0">
           {t(`settings.advanced.llmProviders.kinds.${provider.kind}`)}
         </span>
       </div>
@@ -192,7 +192,7 @@ const ProviderSlot: React.FC<SlotProps> = ({
             {t("settings.advanced.llmProviders.cost")}
           </span>
           <div className="flex items-center gap-2 flex-wrap">
-            <label className="flex items-center gap-1 text-xs text-text/50">
+            <label className="flex items-center gap-1 text-xs text-text-secondary">
               {t("settings.advanced.llmProviders.costInput")}
               <input
                 type="number"
@@ -204,7 +204,7 @@ const ProviderSlot: React.FC<SlotProps> = ({
                 className={`${fieldClass} w-20`}
               />
             </label>
-            <label className="flex items-center gap-1 text-xs text-text/50">
+            <label className="flex items-center gap-1 text-xs text-text-secondary">
               {t("settings.advanced.llmProviders.costOutput")}
               <input
                 type="number"
@@ -218,7 +218,7 @@ const ProviderSlot: React.FC<SlotProps> = ({
             </label>
             {autoPriceKind && (
               <label
-                className="flex items-center gap-1.5 text-xs text-text/50 cursor-pointer"
+                className="flex items-center gap-1.5 text-xs text-text-secondary cursor-pointer"
                 title={t("settings.advanced.llmProviders.persistPriceHint")}
               >
                 <input
@@ -227,7 +227,7 @@ const ProviderSlot: React.FC<SlotProps> = ({
                   onChange={(e) =>
                     onCommit({ ...provider, persist_price: e.target.checked })
                   }
-                  className="w-3.5 h-3.5 accent-blue-600 cursor-pointer"
+                  className="w-3.5 h-3.5 accent-accent cursor-pointer"
                 />
                 {t("settings.advanced.llmProviders.persistPrice")}
               </label>
@@ -241,18 +241,18 @@ const ProviderSlot: React.FC<SlotProps> = ({
           <span className={labelClass}>
             {t("settings.advanced.llmProviders.concurrency")}
           </span>
-          <label className="flex items-center gap-1.5 text-xs text-text/70 cursor-pointer">
+          <label className="flex items-center gap-1.5 text-xs text-text-secondary cursor-pointer">
             <input
               type="checkbox"
               checked={provider.sequential ?? false}
               onChange={(e) =>
                 onCommit({ ...provider, sequential: e.target.checked })
               }
-              className="w-3.5 h-3.5 accent-blue-600 cursor-pointer"
+              className="w-3.5 h-3.5 accent-accent cursor-pointer"
             />
             {t("settings.advanced.llmProviders.sequential")}
           </label>
-          <span className="text-xs text-text/40">
+          <span className="text-xs text-text-secondary">
             {t("settings.advanced.llmProviders.family")}
           </span>
           <input
@@ -301,7 +301,7 @@ export const RegisteredLlmProviders: React.FC = () => {
 
   return (
     <div className="space-y-2">
-      <p className="text-xs text-text/60 px-1">
+      <p className="text-xs text-text-secondary px-1">
         {t("settings.advanced.llmProviders.hint")}
       </p>
       {providers.map((provider, index) => (

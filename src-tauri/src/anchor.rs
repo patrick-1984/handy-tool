@@ -3927,6 +3927,24 @@ pub fn jump_to_slot(app: AppHandle, slot: u32) -> Result<(), String> {
     jump(&app, slot as usize)
 }
 
+/// The Jumper setup's "Show me the place": after `delay_ms` (time to click
+/// into the field), capture the focused field into `slot`, exactly like that
+/// slot's Set shortcut.
+#[tauri::command]
+#[specta::specta]
+pub async fn set_jump_slot_after(
+    app: AppHandle,
+    slot: u32,
+    delay_ms: u32,
+) -> Result<AnchorStatus, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        std::thread::sleep(std::time::Duration::from_millis(delay_ms.min(10_000) as u64));
+        set_slot(&app, slot as usize)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
 /// Legacy hot-slot clear (kept for existing UI wiring).
 #[tauri::command]
 #[specta::specta]

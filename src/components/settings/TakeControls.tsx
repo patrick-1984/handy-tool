@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Gauge, Pause, TextQuote } from "lucide-react";
+import { Info, Pause, TextQuote } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { listen } from "@tauri-apps/api/event";
 import { ToggleSwitch } from "../ui/ToggleSwitch";
@@ -20,8 +20,24 @@ const LIVE_TEXT_WIDTHS = [
   { px: 860, key: "extraWide" },
 ];
 
+/** The live text box's text sizes on offer, in px. */
+const LIVE_TEXT_SIZES = [
+  { px: 13, key: "small" },
+  { px: 15, key: "normal" },
+  { px: 18, key: "large" },
+  { px: 22, key: "extraLarge" },
+];
+
+/** "Whole text": the box heights on offer, in lines. */
+const LIVE_TEXT_HEIGHTS = [
+  { lines: 3, key: "small" },
+  { lines: 6, key: "medium" },
+  { lines: 10, key: "large" },
+  { lines: 16, key: "extraLarge" },
+];
+
 /** Remote engines get the audio only after stop, so their takes are never live. */
-const isRemote = (model?: ModelInfo) =>
+export const isRemote = (model?: ModelInfo) =>
   model?.engine_type === "ApiWhisper" ||
   model?.engine_type === "OpenRouterWhisper";
 
@@ -41,6 +57,7 @@ export const PauseButtonSetting: React.FC<Props> = ({
   return (
     <>
       <ToggleSwitch
+        lead
         checked={enabled}
         onChange={(value) => updateSetting("pause_button_enabled", value)}
         icon={Pause}
@@ -59,24 +76,37 @@ export const PauseButtonSetting: React.FC<Props> = ({
   );
 };
 
-/** The speed chip on the recording pill: this PC's speed against its normal. */
-export const SpeedIndicatorSetting: React.FC<Props> = ({
-  descriptionMode = "tooltip",
-  grouped = false,
-}) => {
+/**
+ * What live transcription costs, in plain view while it is on (the live text
+ * box, or Transcription Mode = Live): most people never open an (i) tooltip.
+ */
+export const LiveTradeoffsNotice: React.FC = () => {
   const { t } = useTranslation();
-  const { getSetting, updateSetting, isUpdating } = useSettings();
+  const { getSetting } = useSettings();
+  const live =
+    (getSetting("live_text_box_enabled") ?? false) ||
+    getSetting("transcription_mode") === "live";
+  if (!live) return null;
   return (
-    <ToggleSwitch
-      icon={Gauge}
-      checked={getSetting("speed_indicator_enabled") ?? false}
-      onChange={(value) => updateSetting("speed_indicator_enabled", value)}
-      isUpdating={isUpdating("speed_indicator_enabled")}
-      label={t("settings.general.speedIndicator.label")}
-      description={t("settings.general.speedIndicator.description")}
-      descriptionMode={descriptionMode}
-      grouped={grouped}
-    />
+    // Sits between cards: the card above closes and the next one starts below.
+    <div className="card-break mt-4">
+      <div className="flex gap-3 rounded-lg border border-info-border bg-info-bg px-4 py-3">
+        <Info
+          className="w-4 h-4 mt-0.5 shrink-0 text-accent-text"
+          aria-hidden
+        />
+        <div className="space-y-1 text-[13px] leading-[18px]">
+          <p className="font-semibold">
+            {t("settings.general.liveTradeoffs.title")}
+          </p>
+          <ul className="list-disc ps-4 space-y-0.5">
+            <li>{t("settings.general.liveTradeoffs.accuracy")}</li>
+            <li>{t("settings.general.liveTradeoffs.cpu")}</li>
+            <li>{t("settings.general.liveTradeoffs.undo")}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -91,6 +121,7 @@ export const UndoWordSetting: React.FC<Props> = ({
   return (
     <>
       <ToggleSwitch
+        lead
         checked={enabled}
         onChange={(value) => updateSetting("undo_word_enabled", value)}
         isUpdating={isUpdating("undo_word_enabled")}
@@ -163,6 +194,9 @@ export const LiveTextBoxSetting: React.FC<Props> = ({
   return (
     <>
       <ToggleSwitch
+        lead
+        // An online model cannot use it: switching it on shows nothing more.
+        noRevealHint={remote}
         checked={enabled}
         onChange={toggle}
         icon={TextQuote}
@@ -175,7 +209,7 @@ export const LiveTextBoxSetting: React.FC<Props> = ({
       {enabled && (
         <SubSettings>
           {remote && (
-            <p className="px-4 py-2 text-xs text-amber-500">
+            <p className="px-4 py-2 text-xs text-warn-text">
               {t("settings.general.liveTextBox.remoteModel.title", {
                 model: current?.name,
               })}
@@ -224,6 +258,44 @@ export const LiveTextBoxSetting: React.FC<Props> = ({
                 updateSetting("live_text_width", Number(value))
               }
               disabled={isUpdating("live_text_width")}
+            />
+          </SettingContainer>
+          {mode === "full_text" && (
+            <SettingContainer
+              title={t("settings.general.liveTextHeight.title")}
+              description={t("settings.general.liveTextHeight.description")}
+              descriptionMode={descriptionMode}
+              grouped={grouped}
+            >
+              <Dropdown
+                options={LIVE_TEXT_HEIGHTS.map(({ lines, key }) => ({
+                  value: String(lines),
+                  label: t(`settings.general.liveTextHeight.${key}`),
+                }))}
+                selectedValue={String(getSetting("live_text_lines") ?? 6)}
+                onSelect={(value) =>
+                  updateSetting("live_text_lines", Number(value))
+                }
+                disabled={isUpdating("live_text_lines")}
+              />
+            </SettingContainer>
+          )}
+          <SettingContainer
+            title={t("settings.general.liveTextSize.title")}
+            description={t("settings.general.liveTextSize.description")}
+            descriptionMode={descriptionMode}
+            grouped={grouped}
+          >
+            <Dropdown
+              options={LIVE_TEXT_SIZES.map(({ px, key }) => ({
+                value: String(px),
+                label: t(`settings.general.liveTextSize.${key}`),
+              }))}
+              selectedValue={String(getSetting("live_text_font_size") ?? 15)}
+              onSelect={(value) =>
+                updateSetting("live_text_font_size", Number(value))
+              }
+              disabled={isUpdating("live_text_font_size")}
             />
           </SettingContainer>
           <ShortcutInput shortcutId="toggle_live_text_box" grouped={grouped} />

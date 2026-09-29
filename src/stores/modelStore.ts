@@ -79,6 +79,10 @@ interface ModelsStore {
   hasAnyModels: boolean;
   isFirstRun: boolean;
   initialized: boolean;
+  // A model picked in the setup while it still downloads: selected once it
+  // lands, even after the setup has closed (App.tsx).
+  pendingSelection: string | null;
+  setPendingSelection: (modelId: string | null) => void;
 
   // Actions
   initialize: () => Promise<void>;
@@ -116,6 +120,8 @@ export const useModelStore = create<ModelsStore>()(
     hasAnyModels: false,
     isFirstRun: false,
     initialized: false,
+    pendingSelection: null,
+    setPendingSelection: (pendingSelection) => set({ pendingSelection }),
 
     // Internal setters
     setModels: (models) => set({ models }),

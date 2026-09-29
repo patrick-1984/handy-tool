@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { ScreenShare, Target, Save, Workflow, MapPin } from "lucide-react";
+import {
+  ScreenShare,
+  Target,
+  Save,
+  Workflow,
+  MapPin,
+  ListChecks,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { listen } from "@tauri-apps/api/event";
 import { toast } from "sonner";
@@ -13,6 +20,7 @@ import { useSettings } from "../../../hooks/useSettings";
 import { useOsType } from "../../../hooks/useOsType";
 import { commands, type AnchorStatus, type CursorMode } from "@/bindings";
 import { RemoteMatchStrings } from "./RemoteMatchStrings";
+import { SetupPromo } from "../setups/SetupPromo";
 
 /**
  * The Jumper (Windows-only): eleven jump slots for desktop text fields. Slots 0
@@ -55,7 +63,7 @@ export const JumperSettings: React.FC = () => {
 
   if (osType !== "windows") {
     return (
-      <div className="w-full px-4 py-6 text-sm text-mid-gray">
+      <div className="w-full px-4 py-6 text-sm text-text-secondary">
         {t("settings.jumper.windowsOnly")}
       </div>
     );
@@ -74,7 +82,7 @@ export const JumperSettings: React.FC = () => {
     const s = slots[index];
     return s ? (
       <div className="flex items-center gap-3">
-        <span className={`text-sm ${s.stale ? "text-red-400" : ""}`}>
+        <span className={`text-sm ${s.stale ? "text-err-text" : ""}`}>
           {s.stale
             ? t("settings.jumper.slot.stale", {
                 app: s.app,
@@ -87,7 +95,7 @@ export const JumperSettings: React.FC = () => {
         </span>
         {s.remote && (
           <span
-            className="text-xs px-1.5 py-0.5 rounded bg-logo-primary/20 text-logo-primary font-semibold whitespace-nowrap"
+            className="text-xs px-1.5 py-0.5 rounded bg-accent/20 text-accent-text font-semibold whitespace-nowrap"
             title={t("settings.jumper.remoteMatch.badgeTooltip")}
           >
             {t("settings.jumper.remoteMatch.badge")}
@@ -105,7 +113,7 @@ export const JumperSettings: React.FC = () => {
         </Button>
       </div>
     ) : (
-      <span className="text-sm text-mid-gray">
+      <span className="text-sm text-text-secondary">
         {t("settings.general.anchor.status.none")}
       </span>
     );
@@ -210,6 +218,12 @@ export const JumperSettings: React.FC = () => {
 
   return (
     <div className="w-full space-y-6">
+      <SetupPromo
+        setup="jumper"
+        icon={ListChecks}
+        title={t("setup.promo.jumper.title")}
+        text={t("setup.promo.jumper.text")}
+      />
       <SettingsGroup
         icon={ScreenShare}
         title={t("settings.jumper.remoteMatch.groupTitle")}
@@ -235,7 +249,7 @@ export const JumperSettings: React.FC = () => {
           descriptionMode="tooltip"
           grouped={true}
         >
-          <span className="text-sm text-mid-gray">
+          <span className="text-sm text-text-secondary">
             {t("settings.jumper.hot.optionsMoved.hint")}
           </span>
         </SettingContainer>

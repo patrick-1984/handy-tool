@@ -4,9 +4,9 @@ Open `General`. The first group repeats the page name, so its breadcrumbs omit t
 
 ## General
 
-### Transcribe Shortcut
+### Record/Transcribe Shortcut
 
-`General › Transcribe Shortcut`
+`General › Record/Transcribe Shortcut`
 
 Sets the toggle shortcut that starts or finishes ordinary dictation. **Default:** `ctrl+space`.
 
@@ -35,14 +35,6 @@ Catalog: [Escape stops the delivery, not your words](../../features.md#escape-st
 Adds a pause button to the recording overlay. While paused nothing is recorded; resuming continues the same take. After 10 minutes paused the microphone is released until you resume. When on, a Pause / Resume shortcut row appears under it. **Default:** Off; the shortcut has no default.
 
 Catalog: [Pause a take without ending it](../../features.md#pause-a-take).
-
-### PC speed on the pill
-
-`General › PC speed on the pill`
-
-Shows a PC icon with a percentage on the left of the recording pill: this PC's transcription speed against its own normal for the model in use (100% = normal; amber below 70%, red below 50%). The pill widens to fit it. **Default:** Off.
-
-Catalog: [Know when your PC is the reason it is slow](../../features.md#slow-pc-warning).
 
 ### Transcribe & Submit Shortcut
 
@@ -130,6 +122,28 @@ Shown while [Live text box](#live-text-box) is on. How wide the box is: `Narrow`
 
 Catalog: [See your words next to the overlay while you talk](../../features.md#live-text-box).
 
+### Box height
+
+`General › Transcription › Box height`
+
+Shown in Whole text mode. How many lines the live text box shows before the oldest lines slide out: `Small (3 lines)`, `Medium (6 lines)`, `Large (10 lines)` or `Extra large (16 lines)`, at most half the screen's height. **Default:** `Medium (6 lines)` (`live_text_lines` = 6).
+
+### Text size
+
+`General › Transcription › Text size`
+
+How big the text in the live text box is: `Small` (13 px), `Normal` (15 px), `Large` (18 px) or `Extra large` (22 px). The one-line box grows with it. **Default:** `Normal` (`live_text_font_size` = 15).
+
+Catalog: [See your words next to the overlay while you talk](../../features.md#live-text-box).
+
+### Show the text as it's transcribed
+
+`General › Transcription › Show the text as it's transcribed`
+
+For a take without the live text box: when it stops, the box appears and the transcript is typed into it as it comes in — the segments already transcribed during the take at once, each later one as it lands, then the final text; the box stays until the typing is done plus 1.5 s. Just to watch: delivery is unchanged. Uses the live text box's style and width. **Default:** Off.
+
+Catalog: [See your words next to the overlay while you talk](../../features.md#live-text-box).
+
 ### Undo last word
 
 `General › Transcription › Undo last word`
@@ -150,7 +164,7 @@ Catalog: [Pick which GPU transcribes](../../features.md#pick-which-gpu-transcrib
 
 `General › Transcription › Custom Words`
 
-Edits the terms used by transcript word correction. Correction aggressiveness is controlled by [Word Correction Threshold](debug.md#word-correction-threshold). **Default:** empty list.
+Edits the terms used by transcript word correction: type a word and press Enter to add it, or click the × on a word to remove it. Correction aggressiveness is controlled by [Word Correction Threshold](debug.md#word-correction-threshold). **Default:** empty list.
 
 Catalog: [Names and jargon stop coming back mangled](../../features.md#names-and-jargon-stop-coming-back-mangled).
 
@@ -177,6 +191,30 @@ Catalog: [Change microphone without restarting](../../features.md#change-microph
 `General › Sound › Keep microphone ready`
 
 Keeps the microphone open for 1, 5 or 15 minutes after each take so the next take starts without an idle microphone's wake-up delay; the system microphone indicator stays lit meanwhile. Hidden while Always-On Microphone is on. **Default:** Off (`0` stored).
+
+Catalog: [The microphone light is off when you're not dictating](../../features.md#the-microphone-light-is-off-when-youre-not-dictating).
+
+### Wait for the microphone to warm up
+
+`General › Sound › Wait for the microphone to warm up`
+
+After a cold start (the microphone took over 250 ms to deliver audio), the overlay keeps reading **Starting mic...** until the microphone has warmed up: never while it still sends digital silence (some microphones send exact zeros for a while after they start or are plugged in), and then until its fade-in has passed since its first sound. Each cold start measures its own fade-in from its first 3 s of levels (from its first sound to the moment the level settles within 6 dB of its floor); the wait is the average of the last 5 measurements plus 100 ms, at most 3 s, and 0.6 s before the first measurement. A microphone still silent 3 s after its first audio is shown as ready anyway. The description shows the measured figure. A warm start (Keep microphone ready) is never delayed. Hidden while Always-On Microphone is on. **Default:** On (`mic_warmup_wait`; measurements in `mic_fade_in_measured_ms`).
+
+Catalog: [The microphone light is off when you're not dictating](../../features.md#the-microphone-light-is-off-when-youre-not-dictating).
+
+### Warn when you speak too quietly
+
+`General › Sound › Warn when you speak too quietly`
+
+While recording, **Too quiet — speak up** shows for 2 s (see [Show it in its own box](#show-it-in-its-own-box) for where) when it hears voice-like sound that the speech detector is not keeping: for about 0.7 s within 1.5 s, frames with a speech probability from 0.08 (the detector keeps them only above 0.3) standing 8 dB or more above the room's noise floor. It then waits 4.5 s before it can say so again. It cannot tell when words were heard wrong. **Default:** On (`too_quiet_hint`).
+
+Catalog: [The microphone light is off when you're not dictating](../../features.md#the-microphone-light-is-off-when-youre-not-dictating).
+
+### Show it in its own box
+
+`General › Sound › Warn when you speak too quietly › Show it in its own box`
+
+Shown while Warn when you speak too quietly is on. On: the hint appears in a small box just under the recording overlay, which keeps its sound bars; with the overlay at the bottom of the screen the box sits in the gap above the taskbar, so it never covers the live text box. Off: the overlay shows the hint instead of its sound bars, where longer translations are cut off when the pause button is on. On macOS the overlay always shows it itself. **Default:** On (`too_quiet_hint_box`).
 
 Catalog: [The microphone light is off when you're not dictating](../../features.md#the-microphone-light-is-off-when-youre-not-dictating).
 
@@ -211,6 +249,128 @@ Catalog: [Hear when the microphone is hot](../../features.md#hear-when-the-micro
 Sets cue-sound volume from 0 to 100 percent; it is disabled while [Audio Feedback](#audio-feedback) is off. **Default:** `100%`.
 
 Catalog: [Hear when the microphone is hot](../../features.md#hear-when-the-microphone-is-hot).
+
+## App
+
+The app itself: how it looks and starts, and the recording overlay. (Until 1.13 a tab of More.)
+
+### Appearance setup
+
+`General › App › Appearance setup`
+
+A tinted row at the top of the group: `Start setup` opens `Setups` and starts the Appearance setup, which shows every look choice moving before you pick it. See [Setups › Appearance](setups.md#appearance).
+
+### Appearance
+
+`General › App › Appearance`
+
+Sets the theme for the main and auxiliary windows. **Default:** `System`.
+
+Catalog: [Light, dark, or follow the system](../../features.md#light-dark-or-follow-the-system).
+
+### Start Hidden
+
+`General › App › Start Hidden`
+
+Starts Handy Tool without opening its main window. **Default:** Off.
+
+Catalog: [Starts with your session and stays out of the way](../../features.md#starts-with-your-session-and-stays-out-of-the-way).
+
+### Reopen Last Page
+
+`General › App › Reopen Last Page`
+
+Opens Handy Tool on the page that was open when it was closed (for example History) instead of General. The page is remembered on this PC only. **Default:** On (`reopen_last_page`).
+
+### Launch on Startup
+
+`General › App › Launch on Startup`
+
+Registers Handy Tool to launch at sign-in. **Default:** Off.
+
+Catalog: [Starts with your session and stays out of the way](../../features.md#starts-with-your-session-and-stays-out-of-the-way).
+
+### Show Tray Icon
+
+`General › App › Show Tray Icon`
+
+Controls whether the tray icon is present. When off, closing the main window quits the app. **Default:** On.
+
+Catalog: [The tray tells you what it is doing](../../features.md#the-tray-tells-you-what-it-is-doing).
+
+### Overlay Position
+
+`General › App › Overlay Position`
+
+Places the recording overlay at the top or bottom, or disables it. **Default:** `Bottom`.
+
+Catalog: [See that it is listening](../../features.md#see-that-it-is-listening).
+
+### Progress Style
+
+`General › App › Progress Style`
+
+How the recording overlay shows how far a transcription is: `Line along the bottom` (a thin cyan line filling along its bottom edge), `Light around the edge` (a glowing light running round the overlay from the bottom centre, centred on its border, lit and glowing evenly behind it up to the figure) or `Light circling the edge` (a 1 px light with a fading tail circling the border, one lap every 1.6 s, no glow; the figure is in the text; with reduced motion it becomes the line). **Default:** `Line along the bottom` (`progress_style` = `line`).
+
+Catalog: [See that it is listening](../../features.md#see-that-it-is-listening).
+
+### Preview
+
+`General › App › Preview`
+
+The recording pill as the settings around it make it, moving: recording on the left (the T lit while the live text box is on, the sound bars) and transcribing on the right, its progress running from 0 to 100% over and over with the progress style, Glowing Line, Glow Strength and Progress Colour, at the Overlay Size. Nothing to set; it follows every change at once.
+
+Catalog: [See that it is listening](../../features.md#see-that-it-is-listening).
+
+### Glowing Line
+
+`General › App › Glowing Line`
+
+With `Line along the bottom`, gives the line the same glow as the light around the edge; the glow reaches past the overlay's edge. Greyed out with `Light around the edge`, which always glows. **Default:** Off (`progress_line_glow` = `false`).
+
+Catalog: [See that it is listening](../../features.md#see-that-it-is-listening).
+
+### Progress Colour
+
+`General › App › Progress Colour`
+
+The colour of the pill's glowing parts: the progress light and its glow (`Line along the bottom`, `Light around the edge`, `Light circling the edge`), set with three sliders: `Hue` (0-360°, which colour), `Saturation` (how vivid) and `Lightness` (20-85%). The Preview row shows the result on the pill; the reset button brings back the default. The light's bright centre is the same colour mixed with white. The glowing T (live text box on) and the sound bars take the colour too, quiet bars a darker shade of it. **Default:** cyan (`progress_color` empty; a chosen colour is stored as `#rrggbb`).
+
+Catalog: [See that it is listening](../../features.md#see-that-it-is-listening).
+
+### Glow Strength
+
+`General › App › Glow Strength`
+
+How strongly the progress light glows (the light around the edge, and the line while Glowing Line is on), from `0%` (no glow) to `200%`, in steps of 10. The glow always fades out within the overlay window, so a stronger glow is brighter, not wider. Greyed out while nothing glows (a plain line). **Default:** `100%` (`progress_glow` = 100).
+
+Catalog: [See that it is listening](../../features.md#see-that-it-is-listening).
+
+### Overlay Size
+
+`General › App › Overlay Size`
+
+Scales the recording overlay, and the "Too quiet" box under it: `Normal`, `Large` (125%) or `Extra large` (150%). **Default:** `Normal` (`pill_scale` = 100).
+
+Catalog: [See that it is listening](../../features.md#see-that-it-is-listening).
+
+<a id="keyboard-implementation"></a>
+
+### Wide Sound Bars
+
+`General › App › Wide Sound Bars`
+
+Wider sound bars on the recording overlay: 2.5 px bars with 2.5 px gaps (77.5 px for the 16 bars, the designer's size) instead of 2 px (62 px). **Default:** Off (`sound_bars_wide` = `false`).
+
+Catalog: [See that it is listening](../../features.md#see-that-it-is-listening).
+
+### Keyboard Implementation
+
+`General › App › Keyboard Implementation`
+
+Chooses which backend registers the global shortcuts with Windows. Switch to `Handy Keys` when a shortcut you set never fires; every binding is re-registered on the switch, and the change rolls back if that fails. **Default:** `Tauri Global Shortcut`.
+
+Catalog: [A hotkey another app already owns](../../features.md#a-hotkey-another-app-already-owns).
 
 ## Updates
 

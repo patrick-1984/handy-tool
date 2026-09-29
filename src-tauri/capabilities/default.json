@@ -6,7 +6,8 @@
     "main",
     "recording_overlay",
     "floating_transcription",
-    "live_text"
+    "live_text",
+    "quiet_hint"
   ],
   "permissions": [
     "core:default",

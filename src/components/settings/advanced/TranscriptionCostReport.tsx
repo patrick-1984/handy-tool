@@ -2,8 +2,10 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { save } from "@tauri-apps/plugin-dialog";
 import { downloadDir, join } from "@tauri-apps/api/path";
-import { Download, RefreshCw } from "lucide-react";
+import { CalendarDays, Download, RefreshCw } from "lucide-react";
 import { commands, type HistoryEntry, type PurgedTotals } from "@/bindings";
+import { Button } from "../../ui/Button";
+import { SectionTitle } from "../../ui/SettingsGroup";
 
 // A recording contributes its duration always; cost only when the engine
 // reported one (OpenRouter). Aggregations bucket by ISO-ish week (Monday),
@@ -262,28 +264,28 @@ export const TranscriptionCostReport: React.FC<{
   };
 
   const renderTable = (title: string, buckets: Bucket[]) => (
-    <div className="space-y-1">
-      <p className="text-xs font-semibold text-text/70">{title}</p>
+    <div className="space-y-2">
+      <SectionTitle title={title} icon={CalendarDays} />
       {buckets.length === 0 ? (
-        <p className="text-xs text-text/40">
+        <p className="px-0.5 text-[13px] text-text-secondary">
           {t("settings.advanced.costReport.empty")}
         </p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs border-collapse">
+        <div className="card overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
             <thead>
-              <tr className="text-left text-text/50 border-b border-mid-gray/20">
-                <th className="px-2 py-1">
+              <tr className="text-start text-xs text-text-secondary bg-surface2">
+                <th className="px-4 py-2 font-normal text-start">
                   {t("settings.advanced.costReport.colPeriod")}
                 </th>
-                <th className="px-2 py-1 text-right">
+                <th className="px-4 py-2 font-normal text-end">
                   {t("settings.advanced.costReport.colCount")}
                 </th>
-                <th className="px-2 py-1 text-right">
+                <th className="px-4 py-2 font-normal text-end">
                   {t("settings.advanced.costReport.colDuration")}
                 </th>
                 {showCost && (
-                  <th className="px-2 py-1 text-right">
+                  <th className="px-4 py-2 font-normal text-end">
                     {t("settings.advanced.costReport.colCost")}
                   </th>
                 )}
@@ -291,16 +293,16 @@ export const TranscriptionCostReport: React.FC<{
             </thead>
             <tbody>
               {buckets.map((b) => (
-                <tr key={b.key} className="border-b border-mid-gray/10">
-                  <td className="px-2 py-1">{b.label}</td>
-                  <td className="px-2 py-1 text-right tabular-nums">
+                <tr key={b.key} className="border-t border-border">
+                  <td className="px-4 py-2.5">{b.label}</td>
+                  <td className="px-4 py-2.5 text-end tabular-nums">
                     {b.count}
                   </td>
-                  <td className="px-2 py-1 text-right tabular-nums">
+                  <td className="px-4 py-2.5 text-end tabular-nums">
                     {fmtDuration(b.duration)}
                   </td>
                   {showCost && (
-                    <td className="px-2 py-1 text-right tabular-nums">
+                    <td className="px-4 py-2.5 text-end tabular-nums">
                       {fmtCost(b.cost)}
                     </td>
                   )}
@@ -314,45 +316,45 @@ export const TranscriptionCostReport: React.FC<{
   );
 
   return (
-    <div className="space-y-3 pt-2">
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-sm font-semibold flex-1">{title}</span>
-        <button
-          type="button"
+    <div className="space-y-6">
+      {/* Titled like a setting, so search and What's new can point at it. */}
+      <div
+        className="flex items-center gap-2 flex-wrap rounded-lg"
+        data-setting-title={title}
+      >
+        <span className="text-[15px] font-semibold flex-1">{title}</span>
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={handleRecalc}
           disabled={busy}
-          className="flex items-center gap-1 px-3 py-1.5 rounded-md border border-zinc-700 bg-zinc-800 text-zinc-100 text-sm hover:border-blue-500 disabled:opacity-50 transition-colors cursor-pointer"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${busy ? "animate-spin" : ""}`} />
           {t("settings.advanced.costReport.recalc")}
-        </button>
-        <button
-          type="button"
-          onClick={handleDownload}
-          className="flex items-center gap-1 px-3 py-1.5 rounded-md border border-zinc-700 bg-zinc-800 text-zinc-100 text-sm hover:border-blue-500 transition-colors cursor-pointer"
-        >
+        </Button>
+        <Button variant="secondary" size="sm" onClick={handleDownload}>
           <Download className="w-3.5 h-3.5" />
           {t("settings.advanced.costReport.download")}
-        </button>
+        </Button>
       </div>
-      <p className="text-xs text-text/50">
+      <p className="-mt-4 text-[13px] leading-[18px] text-text-secondary">
         {showCost
           ? t("settings.advanced.costReport.description")
           : t("settings.history.stats.description")}
       </p>
 
-      <div className="grid grid-cols-1 gap-3">
+      <div className="grid grid-cols-1 gap-6">
         {renderTable(t("settings.advanced.costReport.daily"), days)}
         {renderTable(t("settings.advanced.costReport.weekly"), weeks)}
         {renderTable(t("settings.advanced.costReport.monthly"), months)}
         {renderTable(t("settings.advanced.costReport.yearly"), years)}
       </div>
 
-      <div className="flex items-center gap-4 border-t border-mid-gray/20 pt-2 text-sm">
+      <div className="card flex items-center gap-4 px-4 py-3 text-sm">
         <span className="font-semibold">
           {t("settings.advanced.costReport.total")}
         </span>
-        <span className="text-text/70 tabular-nums">
+        <span className="text-text-secondary tabular-nums">
           {showCost
             ? t("settings.advanced.costReport.totalLine", {
                 count: total.count,
@@ -366,7 +368,7 @@ export const TranscriptionCostReport: React.FC<{
         </span>
       </div>
 
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-err-text">{error}</p>}
     </div>
   );
 };

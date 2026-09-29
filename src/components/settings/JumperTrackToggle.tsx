@@ -57,6 +57,7 @@ export const JumperTrackToggle: React.FC<JumperTrackToggleProps> = React.memo(
     return (
       <>
         <ToggleSwitch
+          lead
           checked={enabled}
           onChange={(value) => updateSetting(enabledKey, value)}
           isUpdating={isUpdating(enabledKey)}

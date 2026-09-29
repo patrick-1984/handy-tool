@@ -98,7 +98,7 @@ export const CurrentAudioView: React.FC = () => {
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
                 </span>
               )}
-              <span className="text-xs text-mid-gray uppercase tracking-wide">
+              <span className="text-xs text-text-secondary uppercase tracking-wide">
                 {isRecording
                   ? t("settings.currentAudio.recording")
                   : hasText
@@ -108,7 +108,7 @@ export const CurrentAudioView: React.FC = () => {
             </div>
             <button
               onClick={() => commands.openFloatingTranscription()}
-              className="flex items-center gap-1 text-xs text-mid-gray hover:text-white transition-colors cursor-pointer"
+              className="flex items-center gap-1 text-xs text-text-secondary hover:text-text transition-colors cursor-pointer"
               title={t("settings.currentAudio.openFloating")}
             >
               <ExternalLink size={14} />
@@ -119,15 +119,15 @@ export const CurrentAudioView: React.FC = () => {
           <div className="relative">
             <div
               ref={scrollRef}
-              className="min-h-[200px] max-h-[400px] overflow-y-auto rounded-lg bg-black/20 p-4"
+              className="min-h-[200px] max-h-[400px] overflow-y-auto rounded-lg bg-surface2 p-4"
             >
               {!hasText && !isRecording && (
-                <p className="text-sm text-mid-gray italic">
+                <p className="text-sm text-text-secondary italic">
                   {t("settings.currentAudio.idle")}
                 </p>
               )}
               {isRecording && !hasText && (
-                <p className="text-sm text-mid-gray italic">
+                <p className="text-sm text-text-secondary italic">
                   {t("settings.currentAudio.recording")}
                 </p>
               )}
@@ -140,7 +140,7 @@ export const CurrentAudioView: React.FC = () => {
             {hasText && (
               <button
                 onClick={handleCopy}
-                className="absolute top-2 right-2 flex items-center justify-center p-1.5 rounded-md bg-black/40 hover:bg-black/70 text-mid-gray hover:text-white transition-colors cursor-pointer"
+                className="absolute top-2 end-2 flex items-center justify-center h-7 w-7 rounded-md bg-surface border border-border text-text-secondary hover:bg-control-hover hover:text-text transition-colors cursor-pointer"
                 title={
                   copied
                     ? t("settings.currentAudio.copied")
@@ -152,13 +152,13 @@ export const CurrentAudioView: React.FC = () => {
               </button>
             )}
           </div>
-          <p className="mt-3 text-xs leading-relaxed text-mid-gray">
+          <p className="mt-3 text-xs leading-relaxed text-text-secondary">
             {t("settings.currentAudio.streamingHint")}{" "}
             {t("settings.currentAudio.finalHint")}{" "}
             <button
               type="button"
-              onClick={() => navigateTo("output")}
-              className="cursor-pointer rounded-sm underline underline-offset-2 transition-colors hover:text-white focus-visible:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/60"
+              onClick={() => navigateTo("general")}
+              className="cursor-pointer rounded-sm text-accent-text underline underline-offset-2 transition-colors hover:text-text"
             >
               {t("settings.currentAudio.advancedTranscription")}
             </button>

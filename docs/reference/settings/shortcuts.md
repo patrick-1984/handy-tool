@@ -31,7 +31,7 @@ The four anchor shortcuts and the eighteen slot shortcuts. _{Windows only}_
 
 `Shortcuts › Warnings › Warn about AltGr shortcuts`
 
-Shows the amber warning next to any shortcut that AltGr can also type. The warning's tooltip has a `Turn off this warning` button that jumps here. **Default:** On.
+Shows the amber warning next to a Ctrl+Alt shortcut that AltGr also types with (Windows reports AltGr as Ctrl+Alt). On Windows it warns only when one of your installed keyboards types a character with AltGr on that key (AltGr+Shift for a chord with Shift), and names the language Windows lists that keyboard under (e.g. "A keyboard you use for Polish (Poland) types a character with AltGr+O"); a US English keyboard has none, so no warning. A Ctrl+Alt+Space chord is flagged on any keyboard with AltGr characters, as AltGr is often still held for the space after one. Elsewhere every Ctrl+Alt letter is flagged. The warning's tooltip has a `Turn off this warning` button that jumps here. **Default:** On.
 
 Catalog: [Your shortcuts don't eat the accented letters you type](../../features.md#shortcuts-dont-eat-accented-letters).
 

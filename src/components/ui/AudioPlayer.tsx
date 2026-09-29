@@ -256,46 +256,43 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   const progressPercent = getProgressPercent();
 
   return (
-    <div className={`flex items-center gap-3 ${className}`}>
+    // A light strip: a cyan round play button, the track, "0:06 / 0:18".
+    <div
+      className={`flex items-center gap-3 rounded-md bg-surface2 px-2 py-1.5 ${className}`}
+    >
       <audio ref={audioRef} src={src ?? undefined} preload="metadata" />
 
       <button
         onClick={togglePlay}
         disabled={isLoading}
-        className="transition-colors cursor-pointer text-text hover:text-logo-primary disabled:opacity-50"
+        className="inline-flex items-center justify-center h-6 w-6 shrink-0 rounded-full bg-accent text-on-accent transition-colors cursor-pointer hover:opacity-90 disabled:bg-dis-text disabled:cursor-not-allowed"
         aria-label={isPlaying ? "Pause" : "Play"}
       >
         {isPlaying ? (
-          <Pause width={20} height={20} fill="currentColor" />
+          <Pause width={11} height={11} fill="currentColor" />
         ) : (
-          <Play width={20} height={20} fill="currentColor" />
+          <Play width={11} height={11} fill="currentColor" className="ms-px" />
         )}
       </button>
 
-      <div className="flex-1 flex items-center gap-2">
-        <span className="text-xs text-text/60 min-w-[30px] tabular-nums">
-          {formatTime(currentTime)}
-        </span>
+      <input
+        type="range"
+        min="0"
+        max={duration || 0}
+        step="0.01"
+        value={currentTime}
+        onChange={handleSeek}
+        onMouseDown={handleSliderMouseDown}
+        onTouchStart={handleSliderTouchStart}
+        className="range-slider flex-1"
+        style={{
+          background: `linear-gradient(to right, var(--color-accent) 0%, var(--color-accent) ${progressPercent}%, var(--color-control-bottom) ${progressPercent}%, var(--color-control-bottom) 100%)`,
+        }}
+      />
 
-        <input
-          type="range"
-          min="0"
-          max={duration || 0}
-          step="0.01"
-          value={currentTime}
-          onChange={handleSeek}
-          onMouseDown={handleSliderMouseDown}
-          onTouchStart={handleSliderTouchStart}
-          className={`flex-1 h-1 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-logo-primary ${progressPercent >= 99.5 ? "[&::-webkit-slider-thumb]:translate-x-0.5 [&::-moz-range-thumb]:translate-x-0.5" : ""}`}
-          style={{
-            background: `linear-gradient(to right, var(--color-logo-primary) 0%, var(--color-logo-primary) ${progressPercent}%, color-mix(in srgb, var(--color-mid-gray) 20%, transparent) ${progressPercent}%, color-mix(in srgb, var(--color-mid-gray) 20%, transparent) 100%)`,
-          }}
-        />
-
-        <span className="text-xs text-text/60 min-w-[30px] tabular-nums">
-          {formatTime(duration)}
-        </span>
-      </div>
+      <span className="text-xs text-text-secondary tabular-nums whitespace-nowrap">
+        {`${formatTime(currentTime)} / ${formatTime(duration)}`}
+      </span>
     </div>
   );
 };

@@ -11,7 +11,7 @@ Your first win should not depend on tuning a model or buying anything. Install H
 1. Open the [Handy Tool releases page](https://github.com/patrick-1984/handy-tool/releases) and download the Windows x64 installer for version 1.0.0.
 2. Run the installer, and read [The installer tells you what's missing, and the build runs on your CPU](../features.md#the-installer-tells-you-whats-missing) before you decide how to answer the warning Windows shows.
 3. Launch Handy Tool and grant microphone access when Windows asks. The first launch guides the rest: [Not a black box on first launch](../features.md#not-a-black-box-on-first-launch).
-4. In the first-run model list, choose **Moonshine V2 Tiny** for this exercise. Its 31 MB download keeps the first run short; it is English-only. If you need another language, choose the smallest model card that lists your language and allow more time.
+4. In the setup guide, pick your languages, then open **See all models** and choose **Moonshine V2 Tiny** for this exercise. Its 31 MB download keeps the first run short; it is English-only. If you need another language, pick the fastest of the three models suggested for it and allow more time.
 5. Wait until the model finishes downloading and is selected.
 
 Before continuing, read [The app makes no calls you didn't ask for](../features.md#the-app-makes-no-calls-you-didnt-ask-for).

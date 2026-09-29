@@ -5,6 +5,13 @@ import { commands } from "@/bindings";
 import { useSettings } from "@/hooks/useSettings";
 import { ShortcutInput } from "../ShortcutInput";
 import { RichText } from "../../ui/RichText";
+import { SettingsGroup } from "../../ui/SettingsGroup";
+import {
+  PRIMARY_BUTTON,
+  SECONDARY_BUTTON,
+  TEXT_AREA,
+  TEXT_FIELD,
+} from "../../ui/controlClasses";
 
 type TypingStatus =
   | { state: "countdown"; seconds_left: number }
@@ -16,12 +23,12 @@ type TypingStatus =
 const START_DELAY_PRESETS = [1, 3, 5];
 const KEY_DELAY_PRESETS = [5, 15, 50, 500];
 
-const primaryButtonClass =
-  "px-4 py-1.5 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors";
-const presetButtonClass =
-  "px-2.5 py-1.5 rounded-md border border-zinc-700 bg-zinc-800 text-zinc-100 text-sm hover:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer";
-const numberInputClass =
-  "rounded-md border border-zinc-700 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100 focus:border-blue-500 focus:outline-none";
+const primaryButtonClass = PRIMARY_BUTTON;
+const presetButtonClass = `${SECONDARY_BUTTON} !px-2.5`;
+const numberInputClass = TEXT_FIELD;
+// A row of the settings card: the label, then its controls.
+const rowClass = "flex items-center gap-2 flex-wrap px-4 py-2.5 min-h-[52px]";
+const rowLabelClass = "text-sm text-text w-28 shrink-0";
 
 export const KeyboardTyperPage: React.FC = () => {
   const { t } = useTranslation();
@@ -133,16 +140,13 @@ export const KeyboardTyperPage: React.FC = () => {
 
   return (
     <div className="w-full flex flex-col gap-4 h-full">
-      <h2 className="text-lg font-semibold text-text">
-        {t("keyboardTyper.title")}
-      </h2>
       <RichText
         text={t("keyboardTyper.description")}
-        className="text-sm text-text/60"
+        className="text-sm text-text-secondary"
       />
 
       <textarea
-        className="flex-1 min-h-[200px] w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-blue-500 focus:outline-none resize-none"
+        className={`${TEXT_AREA} flex-1 min-h-[200px] w-full resize-none`}
         placeholder={t("keyboardTyper.placeholder")}
         value={text}
         onChange={(e) => handleTextChange(e.target.value)}
@@ -151,86 +155,88 @@ export const KeyboardTyperPage: React.FC = () => {
         spellCheck={false}
       />
 
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-sm text-text/80 w-28 shrink-0">
-          {t("keyboardTyper.startDelay.label")}
-        </span>
-        <input
-          type="number"
-          min="0"
-          max="9999"
-          value={startDelay}
-          onChange={(e) => setStartDelay(e.target.value)}
-          onBlur={commitStartDelay}
-          className={`${numberInputClass} w-20`}
-          disabled={active}
-        />
-        <span className="text-sm text-text/60">
-          {t("keyboardTyper.startDelay.unit")}
-        </span>
-        <button
-          onClick={handleGo}
-          disabled={active || !text}
-          className={primaryButtonClass}
-        >
-          {t("keyboardTyper.go")}
-        </button>
-        {START_DELAY_PRESETS.map((seconds) => (
+      <SettingsGroup>
+        <div className={rowClass}>
+          <span className={rowLabelClass}>
+            {t("keyboardTyper.startDelay.label")}
+          </span>
+          <input
+            type="number"
+            min="0"
+            max="9999"
+            value={startDelay}
+            onChange={(e) => setStartDelay(e.target.value)}
+            onBlur={commitStartDelay}
+            className={`${numberInputClass} w-20`}
+            disabled={active}
+          />
+          <span className="text-sm text-text-secondary">
+            {t("keyboardTyper.startDelay.unit")}
+          </span>
           <button
-            key={seconds}
-            onClick={() => startWithDelay(seconds)}
+            onClick={handleGo}
             disabled={active || !text}
-            className={presetButtonClass}
-            title={t("keyboardTyper.startDelay.presetTitle", { seconds })}
+            className={primaryButtonClass}
           >
-            {t("keyboardTyper.startDelay.preset", { seconds })}
+            {t("keyboardTyper.go")}
           </button>
-        ))}
-      </div>
+          {START_DELAY_PRESETS.map((seconds) => (
+            <button
+              key={seconds}
+              onClick={() => startWithDelay(seconds)}
+              disabled={active || !text}
+              className={presetButtonClass}
+              title={t("keyboardTyper.startDelay.presetTitle", { seconds })}
+            >
+              {t("keyboardTyper.startDelay.preset", { seconds })}
+            </button>
+          ))}
+        </div>
 
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-sm text-text/80 w-28 shrink-0">
-          {t("keyboardTyper.keyDelay.label")}
-        </span>
-        <input
-          type="number"
-          min="0"
-          max="99999"
-          value={keyDelay}
-          onChange={(e) => setKeyDelay(e.target.value)}
-          onBlur={commitKeyDelay}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") e.currentTarget.blur();
-          }}
-          className={`${numberInputClass} w-24`}
-        />
-        <span className="text-sm text-text/60">
-          {t("keyboardTyper.keyDelay.unit")}
-        </span>
-        {KEY_DELAY_PRESETS.map((ms) => (
-          <button
-            key={ms}
-            onClick={() => {
-              setKeyDelay(String(ms));
-              if (ms !== savedKeyDelay) {
-                updateSetting("typing_key_delay_ms", ms);
-              }
+        <div className={rowClass}>
+          <span className={rowLabelClass}>
+            {t("keyboardTyper.keyDelay.label")}
+          </span>
+          <input
+            type="number"
+            min="0"
+            max="99999"
+            value={keyDelay}
+            onChange={(e) => setKeyDelay(e.target.value)}
+            onBlur={commitKeyDelay}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") e.currentTarget.blur();
             }}
-            className={`${presetButtonClass} ${
-              savedKeyDelay === ms ? "border-blue-500" : ""
-            }`}
-          >
-            {ms}
-          </button>
-        ))}
-      </div>
+            className={`${numberInputClass} w-24`}
+          />
+          <span className="text-sm text-text-secondary">
+            {t("keyboardTyper.keyDelay.unit")}
+          </span>
+          {KEY_DELAY_PRESETS.map((ms) => (
+            <button
+              key={ms}
+              onClick={() => {
+                setKeyDelay(String(ms));
+                if (ms !== savedKeyDelay) {
+                  updateSetting("typing_key_delay_ms", ms);
+                }
+              }}
+              className={`${presetButtonClass} ${
+                savedKeyDelay === ms ? "border-accent" : ""
+              }`}
+            >
+              {ms}
+            </button>
+          ))}
+        </div>
 
-      <ShortcutInput shortcutId="type_text" grouped={false} />
+        <ShortcutInput shortcutId="type_text" grouped />
+      </SettingsGroup>
 
       <div className="flex items-center gap-3 min-h-8">
         <span
           className={`text-sm ${
-            status?.state === "error" ? "text-red-400" : "text-text/80"
+            status?.state === "error" ? "text-err-text" : "text-text-secondary"
           }`}
         >
           {statusText}

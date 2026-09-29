@@ -14,5 +14,10 @@ export const SingleKeyWarning: React.FC<{ binding: string }> = ({
   if (!isSingleTypingKey(binding)) return null;
 
   const message = t("settings.general.shortcut.singleKey");
-  return <WarningIcon message={message} className="text-amber-500" />;
+  return (
+    <WarningIcon
+      message={message}
+      label={t("settings.general.shortcut.badge.risky")}
+    />
+  );
 };

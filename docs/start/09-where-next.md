@@ -15,7 +15,7 @@ The path ends here. If you want one recommendation: read [Transcription](../tool
 - [Providers](../tools/providers.md)
 - [Model Testing](../tools/model-testing.md)
 - [Token Count](../tools/token-count.md)
-- [Translator](../tools/translator.md)
+- [Files](../tools/files.md)
 - [Keyboard Typer](../tools/keyboard-typer.md)
 - [MCP and CLI](../tools/mcp-and-cli.md)
 - [Backup and portable mode](../tools/backup-and-portable.md)

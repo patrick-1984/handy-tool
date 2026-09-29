@@ -15,6 +15,9 @@ pub struct AudioVisualiser {
     buffer: Vec<f32>,
     window_size: usize,
     buckets: usize,
+    /// Per-band lift in dB for the higher bands (see `with_tilt`).
+    tilt_db: Vec<f32>,
+    bucket_centers_hz: Vec<f32>,
 }
 
 impl AudioVisualiser {
@@ -41,14 +44,18 @@ impl AudioVisualiser {
         let freq_max = freq_max.min(nyquist);
 
         let mut bucket_ranges = Vec::with_capacity(buckets);
+        let mut bucket_centers_hz = Vec::with_capacity(buckets);
 
         for b in 0..buckets {
-            // Use logarithmic spacing for better perceptual representation
-            let log_start = (b as f32 / buckets as f32).powi(2);
-            let log_end = ((b + 1) as f32 / buckets as f32).powi(2);
+            // Narrower bands at the low end, where a voice has most detail - but
+            // not so narrow that neighbouring bars read the same FFT bin and
+            // move as twins (the square law did that to the first four of 23).
+            let log_start = (b as f32 / buckets as f32).powf(1.5);
+            let log_end = ((b + 1) as f32 / buckets as f32).powf(1.5);
 
             let start_hz = freq_min + (freq_max - freq_min) * log_start;
             let end_hz = freq_min + (freq_max - freq_min) * log_end;
+            bucket_centers_hz.push((start_hz + end_hz) / 2.0);
 
             let start_bin = ((start_hz * window_size as f32) / sample_rate as f32) as usize;
             let mut end_bin = ((end_hz * window_size as f32) / sample_rate as f32) as usize;
@@ -74,7 +81,20 @@ impl AudioVisualiser {
             buffer: Vec::with_capacity(window_size * 2),
             window_size,
             buckets,
+            tilt_db: vec![0.0; buckets],
+            bucket_centers_hz,
         }
+    }
+
+    /// Lifts the bands above `pivot_hz` by `db_per_octave`: a voice has most of
+    /// its energy low, so without it the right-hand bars barely move.
+    pub fn with_tilt(mut self, db_per_octave: f32, pivot_hz: f32) -> Self {
+        self.tilt_db = self
+            .bucket_centers_hz
+            .iter()
+            .map(|&hz| db_per_octave * (hz.max(pivot_hz) / pivot_hz).log2())
+            .collect();
+        self
     }
 
     pub fn feed(&mut self, samples: &[f32]) -> Option<Vec<f32>> {
@@ -121,6 +141,7 @@ impl AudioVisualiser {
             // Convert to dB with proper scaling
             let db = if avg_power > 1e-12 {
                 20.0 * (avg_power.sqrt() / self.window_size as f32).log10()
+                    + self.tilt_db[bucket_idx]
             } else {
                 -80.0 // Very low floor for zero power
             };
@@ -152,5 +173,22 @@ impl AudioVisualiser {
         self.buffer.clear();
         // Reset noise floor to initial values
         self.noise_floor.fill(-40.0);
+    }
+}
+
+#[cfg(test)]
+mod tilt_tests {
+    use super::AudioVisualiser;
+
+    #[test]
+    fn higher_bands_are_lifted_by_octaves_above_the_pivot() {
+        let vis = AudioVisualiser::new(48_000, 512, 23, 400.0, 4000.0).with_tilt(8.0, 500.0);
+        // Bands at or below 500 Hz are left alone...
+        assert_eq!(vis.tilt_db[0], 0.0);
+        // ...and the top band (about 3.8 kHz, ~2.9 octaves up) gets about +23 dB.
+        let top = vis.tilt_db[22];
+        assert!((22.0..25.0).contains(&top), "top band lift {top}");
+        // Never less for a higher band.
+        assert!(vis.tilt_db.windows(2).all(|w| w[1] >= w[0]));
     }
 }

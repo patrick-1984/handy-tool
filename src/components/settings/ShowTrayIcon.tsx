@@ -26,7 +26,6 @@ export const ShowTrayIcon: React.FC<ShowTrayIconProps> = React.memo(
         description={t("settings.advanced.showTrayIcon.description")}
         descriptionMode={descriptionMode}
         grouped={grouped}
-        tooltipPosition="bottom"
       />
     );
   },

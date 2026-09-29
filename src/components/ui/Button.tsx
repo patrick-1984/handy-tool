@@ -11,6 +11,12 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   size?: "sm" | "md" | "lg";
 }
 
+/**
+ * Buttons of the redesign: 32 px (md), 6 px corners. Primary is the cyan
+ * button, secondary looks like the other controls (a darker bottom edge),
+ * danger is filled (confirm dialogs) and danger-ghost is its outline form for
+ * rows. Disabled ones are greyed, not faded.
+ */
 export const Button: React.FC<ButtonProps> = ({
   children,
   className = "",
@@ -21,26 +27,26 @@ export const Button: React.FC<ButtonProps> = ({
   // Keyboard focus comes from the app-wide :focus-visible outline (App.css) —
   // never re-add `focus:outline-none` here without a replacement.
   const baseClasses =
-    "inline-flex items-center justify-center gap-1.5 font-medium rounded-lg border transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer";
+    "inline-flex items-center justify-center gap-1.5 font-medium rounded-md border transition-colors duration-150 cursor-pointer disabled:cursor-not-allowed disabled:bg-dis-bg disabled:text-dis-text disabled:border-transparent";
 
   const variantClasses = {
     primary:
-      "text-white bg-accent-strong border-accent-strong hover:bg-accent-strong/85 hover:border-accent-strong/85",
+      "text-on-btn bg-btn border-btn hover:bg-btn-hover hover:border-btn-hover active:bg-btn-press active:border-btn-press",
     "primary-soft":
-      "text-text bg-logo-primary/20 border-transparent hover:bg-logo-primary/30",
+      "text-accent-text bg-accent-soft border-transparent hover:bg-accent-soft/70",
     secondary:
-      "bg-mid-gray/10 border-mid-gray/20 hover:bg-logo-primary/10 hover:border-logo-primary",
-    danger: "text-white bg-danger border-danger hover:bg-danger/90",
+      "text-text bg-control border-control-border border-b-control-bottom hover:bg-control-hover active:bg-surface2",
+    danger: "text-on-err bg-err-solid border-err-solid hover:bg-err-solid/90",
     "danger-ghost":
-      "text-danger border-transparent hover:bg-danger/10 hover:border-danger/20",
+      "text-err-text bg-transparent border-err-border hover:bg-err-bg",
     ghost:
-      "text-current border-transparent hover:bg-mid-gray/10 hover:border-mid-gray/20",
+      "text-current bg-transparent border-transparent hover:bg-hover active:bg-active",
   };
 
   const sizeClasses = {
-    sm: "min-h-[26px] px-2 py-0.5 text-xs",
-    md: "min-h-8 px-4 py-1 text-sm",
-    lg: "min-h-[38px] px-4 py-1.5 text-base",
+    sm: "h-7 px-2.5 text-[13px]",
+    md: "h-8 px-3 text-sm",
+    lg: "h-9 px-4 text-sm",
   };
 
   return (

@@ -25,10 +25,10 @@ Rebind them at:
 
 - `Shortcuts` — every action in both tables on one page, with duplicates flagged. Any action can
   be set to None there or on its own page.
-- `General › Transcribe Shortcut`
+- `General › Record/Transcribe Shortcut`
 - `General › Push-to-Talk Shortcut`
 - `General › Transcribe & Submit Shortcut`
-- `Keyboard Typer › Type Text Shortcut`
+- `More › Keyboard Typer › Type Text Shortcut`
 - `General › Paste Last Transcription`
 - `More › Post-processing › Hotkey › Post-Processing Hotkey` _{requires: Post-processing enabled}_
 - `Shortcuts › Dictation › Cancel Shortcut`

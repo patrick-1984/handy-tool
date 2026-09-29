@@ -10,7 +10,7 @@ import {
 import "./App.css";
 import AccessibilityPermissions from "./components/AccessibilityPermissions";
 import Footer from "./components/footer";
-import Onboarding, { AccessibilityOnboarding } from "./components/onboarding";
+import SetupWizard, { AccessibilityOnboarding } from "./components/onboarding";
 import {
   Sidebar,
   type SidebarSection,
@@ -19,21 +19,37 @@ import {
 } from "./components/Sidebar";
 import { MorePage } from "./components/settings/more/MorePage";
 import { useSettings } from "./hooks/useSettings";
-import { useNavStore } from "./stores/navStore";
+import { lastPage, useNavStore } from "./stores/navStore";
 import { useSettingsStore } from "./stores/settingsStore";
+import { useModelStore } from "./stores/modelStore";
+import { RUN_SETUP_EVENT } from "./lib/runSetup";
 import { commands } from "@/bindings";
 import { getLanguageDirection, initializeRTL } from "@/lib/utils/rtl";
 import { isFlmBlockedByWindowsApplicationControl } from "@/lib/flm";
+import { highlightSetting } from "@/lib/settingsSearch";
+import { PageTitle } from "./components/ui/PageTitle";
 
 type OnboardingStep = "accessibility" | "model" | "done";
+
+/** A sidebar page's title, with its sidebar icon. */
+function PageHeader({ section }: { section: SidebarSection }) {
+  const { t } = useTranslation();
+  const { icon, labelKey } = SECTIONS_CONFIG[section];
+  return <PageTitle icon={icon} label={t(labelKey)} />;
+}
 
 const renderSettingsContent = (section: SidebarSection) => {
   if (SECTIONS_CONFIG[section] && isMoreSection(section)) {
     return <MorePage section={section} />;
   }
-  const ActiveComponent =
-    SECTIONS_CONFIG[section]?.component || SECTIONS_CONFIG.general.component;
-  return <ActiveComponent />;
+  const shown = SECTIONS_CONFIG[section] ? section : "general";
+  const ActiveComponent = SECTIONS_CONFIG[shown].component;
+  return (
+    <>
+      <PageHeader section={shown} />
+      <ActiveComponent />
+    </>
+  );
 };
 
 function App() {
@@ -157,6 +173,75 @@ function App() {
     };
   }, [t, pasteLastKey]);
 
+  // The pill's right-click menus open a page here at a given setting.
+  const navigateTo = useNavStore((state) => state.navigateTo);
+
+  // Reopen Last Page: once the settings are in, go back to the page that was
+  // open when the app was closed (if it still exists and is on).
+  const reopenedRef = useRef(false);
+  useEffect(() => {
+    if (reopenedRef.current || !settings) return;
+    reopenedRef.current = true;
+    if (settings.reopen_last_page === false) return;
+    const page = lastPage();
+    if (
+      page &&
+      page in SECTIONS_CONFIG &&
+      SECTIONS_CONFIG[page as SidebarSection].enabled(settings)
+    ) {
+      navigateTo(page as SidebarSection);
+    }
+  }, [settings, navigateTo]);
+  useEffect(() => {
+    const unlisten = listen<{ section: SidebarSection; title_key: string }>(
+      "open-setting",
+      (e) => {
+        navigateTo(e.payload.section);
+        highlightSetting(t(e.payload.title_key));
+      },
+    );
+    return () => {
+      unlisten.then((f) => f());
+    };
+  }, [t, navigateTo]);
+
+  // The setup's model, picked while it still downloads: select it once it has
+  // landed (and been unpacked), whether or not the setup is still open.
+  const {
+    models,
+    downloadingModels,
+    extractingModels,
+    pendingSelection,
+    setPendingSelection,
+    selectModel,
+  } = useModelStore();
+  useEffect(() => {
+    if (!pendingSelection) return;
+    const model = models.find((m) => m.id === pendingSelection);
+    if (
+      model?.is_downloaded &&
+      !(pendingSelection in downloadingModels) &&
+      !(pendingSelection in extractingModels)
+    ) {
+      setPendingSelection(null);
+      void selectModel(pendingSelection);
+    }
+  }, [
+    pendingSelection,
+    models,
+    downloadingModels,
+    extractingModels,
+    setPendingSelection,
+    selectModel,
+  ]);
+
+  // More › App › Setup guide: run the setup again.
+  useEffect(() => {
+    const runSetup = () => setOnboardingStep("model");
+    window.addEventListener(RUN_SETUP_EVENT, runSetup);
+    return () => window.removeEventListener(RUN_SETUP_EVENT, runSetup);
+  }, []);
+
   // Initialize Enigo, shortcuts, and refresh audio devices when main app loads
   useEffect(() => {
     if (onboardingStep === "done" && !hasCompletedPostOnboardingInit.current) {
@@ -256,7 +341,7 @@ function App() {
   };
 
   const handleModelSelected = () => {
-    // Transition to main app - user has started a download
+    // The setup is finished or skipped (its model may still be downloading).
     setOnboardingStep("done");
   };
 
@@ -270,7 +355,7 @@ function App() {
   }
 
   if (onboardingStep === "model") {
-    return <Onboarding onModelSelected={handleModelSelected} />;
+    return <SetupWizard onDone={handleModelSelected} />;
   }
 
   return (
@@ -284,30 +369,32 @@ function App() {
           unstyled: true,
           classNames: {
             toast:
-              "bg-background border border-mid-gray/20 rounded-lg shadow-lg px-4 py-3 flex items-center gap-3 text-sm",
+              "bg-surface text-text border border-border rounded-lg shadow-float px-4 py-3 flex items-center gap-3 text-[13px]",
             title: "font-medium",
-            description: "text-mid-gray",
+            description: "text-text-secondary",
           },
         }}
       />
-      {/* Main content area that takes remaining space */}
+      {/* The sidebar runs the full height; the footer sits under the pages. */}
       <div className="flex-1 flex overflow-hidden">
         <Sidebar
           activeSection={currentSection}
           onSectionChange={setCurrentSection}
         />
-        {/* Scrollable content area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden bg-background">
+          {/* Scrollable content area */}
           <div className="flex-1 overflow-y-auto">
-            <div className="flex flex-col items-center p-4 gap-4">
-              <AccessibilityPermissions />
-              {renderSettingsContent(currentSection)}
+            <div className="flex flex-col items-center px-8 pt-6 pb-8">
+              {/* Wide windows: keep lines at a readable length. */}
+              <div className="w-full max-w-4xl flex flex-col items-center gap-6">
+                <AccessibilityPermissions />
+                {renderSettingsContent(currentSection)}
+              </div>
             </div>
           </div>
+          <Footer />
         </div>
       </div>
-      {/* Fixed footer at bottom */}
-      <Footer />
     </div>
   );
 }

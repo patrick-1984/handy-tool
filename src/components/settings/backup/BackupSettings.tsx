@@ -4,6 +4,7 @@ import { open, save } from "@tauri-apps/plugin-dialog";
 import { downloadDir, join } from "@tauri-apps/api/path";
 import { Archive, ArchiveRestore, Check, RotateCw } from "lucide-react";
 import { commands, type RestoreReport } from "@/bindings";
+import { SECONDARY_BUTTON } from "../../ui/controlClasses";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const timestampSlug = (): string => {
@@ -83,19 +84,20 @@ export const BackupSettings: React.FC = () => {
     }
   };
 
-  const buttonClass =
-    "flex items-center gap-2 px-3 py-2 rounded-md border border-zinc-700 bg-zinc-800 text-zinc-100 text-sm hover:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer";
+  const buttonClass = SECONDARY_BUTTON;
 
   return (
     <div className="w-full space-y-4">
-      <p className="text-sm text-text/60">{t("settings.backup.description")}</p>
+      <p className="text-sm text-text-secondary">
+        {t("settings.backup.description")}
+      </p>
 
       <div className="space-y-3">
-        <div className="border border-mid-gray/20 rounded-lg p-3 space-y-2 bg-mid-gray/5">
+        <div className="card p-4 space-y-2">
           <p className="text-sm font-semibold">
             {t("settings.backup.configTitle")}
           </p>
-          <p className="text-xs text-text/50">
+          <p className="text-[13px] leading-[18px] text-text-secondary">
             {t("settings.backup.configHint")}
           </p>
           <button
@@ -109,11 +111,11 @@ export const BackupSettings: React.FC = () => {
           </button>
         </div>
 
-        <div className="border border-mid-gray/20 rounded-lg p-3 space-y-2 bg-mid-gray/5">
+        <div className="card p-4 space-y-2">
           <p className="text-sm font-semibold">
             {t("settings.backup.fullTitle")}
           </p>
-          <p className="text-xs text-text/50">
+          <p className="text-[13px] leading-[18px] text-text-secondary">
             {t("settings.backup.fullHint")}
           </p>
           <button
@@ -127,29 +129,29 @@ export const BackupSettings: React.FC = () => {
           </button>
         </div>
 
-        <div className="border border-mid-gray/20 rounded-lg p-3 space-y-2 bg-mid-gray/5">
+        <div className="card p-4 space-y-2">
           <p className="text-sm font-semibold">
             {t("settings.backup.restoreTitle")}
           </p>
-          <p className="text-xs text-text/50">
+          <p className="text-[13px] leading-[18px] text-text-secondary">
             {t("settings.backup.restoreHint")}
           </p>
           <div className="flex items-center gap-4 flex-wrap">
-            <label className="flex items-center gap-1.5 text-xs text-text/70 cursor-pointer">
+            <label className="flex items-center gap-1.5 text-xs text-text-secondary cursor-pointer">
               <input
                 type="checkbox"
                 checked={restoreConfig}
                 onChange={(e) => setRestoreConfig(e.target.checked)}
-                className="w-3.5 h-3.5 accent-blue-600 cursor-pointer"
+                className="w-3.5 h-3.5 accent-accent cursor-pointer"
               />
               {t("settings.backup.restoreConfig")}
             </label>
-            <label className="flex items-center gap-1.5 text-xs text-text/70 cursor-pointer">
+            <label className="flex items-center gap-1.5 text-xs text-text-secondary cursor-pointer">
               <input
                 type="checkbox"
                 checked={restoreRecordings}
                 onChange={(e) => setRestoreRecordings(e.target.checked)}
-                className="w-3.5 h-3.5 accent-blue-600 cursor-pointer"
+                className="w-3.5 h-3.5 accent-accent cursor-pointer"
               />
               {t("settings.backup.restoreRecordings")}
             </label>
@@ -165,7 +167,7 @@ export const BackupSettings: React.FC = () => {
           </button>
           {restoreReport && (
             <div className="space-y-2 pt-1">
-              <p className="flex items-center gap-1 text-sm text-green-400">
+              <p className="flex items-center gap-1 text-sm text-ok-text">
                 <Check className="w-4 h-4" />
                 {t("settings.backup.restoreDone", {
                   settings: restoreReport.settings_restored ? "✓" : "—",
@@ -174,7 +176,7 @@ export const BackupSettings: React.FC = () => {
                 })}
               </p>
               {restoreReport.errors.length > 0 && (
-                <ul className="text-xs text-red-400 list-disc pl-4 space-y-0.5">
+                <ul className="text-xs text-err-text list-disc pl-4 space-y-0.5">
                   {restoreReport.errors.map((e, i) => (
                     <li key={i}>{e}</li>
                   ))}
@@ -182,7 +184,7 @@ export const BackupSettings: React.FC = () => {
               )}
               {restoreReport.restart_required && (
                 <div className="space-y-1">
-                  <p className="text-xs text-amber-400">
+                  <p className="text-xs text-warn-text">
                     {t("settings.backup.restartHint")}
                   </p>
                   <button
@@ -201,12 +203,12 @@ export const BackupSettings: React.FC = () => {
       </div>
 
       {savedPath && (
-        <p className="flex items-center gap-1 text-sm text-green-400">
+        <p className="flex items-center gap-1 text-sm text-ok-text">
           <Check className="w-4 h-4" />
           {t("settings.backup.saved", { path: savedPath })}
         </p>
       )}
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-err-text">{error}</p>}
     </div>
   );
 };

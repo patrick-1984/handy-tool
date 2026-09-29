@@ -11,14 +11,16 @@
     "shortcuts": "快捷键",
     "models": "模型",
     "history": "历史记录",
+    "files": "文件",
     "debug": "调试",
     "about": "关于",
     "backup": "备份",
     "currentAudio": "当前音频",
+    "setups": "设置向导",
     "tokenCount": "令牌计数",
     "keyboardTyper": "键盘输入器",
+    "whatsNew": "新功能",
     "jumper": "跳转器",
-    "translator": "翻译器",
     "more": "更多",
     "groups": {
       "settings": "设置",
@@ -60,10 +62,342 @@
       "installWhenIdle": "空闲时安装",
       "installRestartNow": "立即安装并重启",
       "enableAutomatic": "开启自动更新"
+    },
+    "unread": "未读"
+  },
+  "helpMode": {
+    "button": "帮助模式：将鼠标指向设置即可查看其作用",
+    "hint": "将鼠标指向设置即可查看其作用。点击任意位置或按 Esc 退出。"
+  },
+  "setup": {
+    "skipSetup": "跳过设置",
+    "back": "上一步",
+    "next": "下一步",
+    "saveNext": "保存并继续",
+    "skip": "跳过",
+    "start": "开始设置",
+    "finish": "完成",
+    "step": "第 {{current}} 步，共 {{total}} 步",
+    "welcome": {
+      "title": "欢迎使用 Handy Tool",
+      "body": "说话，文字就会输入到光标所在的位置。语音在这台电脑上转为文字。",
+      "steps": "这个简短的设置会询问你说哪些语言，为它们推荐语音模型，并展示你的快捷键和麦克风。每一步都可以跳过，之后也都能在设置中更改。"
+    },
+    "languages": {
+      "title": "你会说哪些语言？",
+      "body": "选择你使用的所有语言。推荐的语音模型会理解其中每一种。",
+      "search": "搜索语言",
+      "noMatch": "没有匹配的语言。",
+      "selected": "已选择：{{languages}}"
+    },
+    "model": {
+      "body": "适合{{languages}}的三个模型：最准确的、均衡的和最快的。选择一个，它会在你完成设置时下载；之后可以在“模型”页面更换。",
+      "bodyAny": "三个合适的模型：最准确的、均衡的和最快的。选择一个，它会在你完成设置时下载；之后可以在“模型”页面更换。",
+      "accurate": "最准确",
+      "balanced": "均衡",
+      "fast": "最快",
+      "downloadContinue": "下载并继续",
+      "seeAll": "查看所有模型",
+      "showSuggestions": "返回三个推荐",
+      "search": "搜索模型",
+      "notForLanguages": "不能理解你选择的所有语言"
+    },
+    "shortcuts": {
+      "title": "你的快捷键",
+      "body": "它们现在就能用。保留它们，或点击一个并按下你想用的按键。每个都会显示默认值，你随时可以改回去。",
+      "default": "默认：{{keys}}。",
+      "transcribe": "按一次开始，再按一次结束。",
+      "ptt": "说话时按住。",
+      "cancel": "停止录音，不输入任何内容。",
+      "more": "更多快捷键（转录并发送、暂停、撤销上一个词等）在“快捷键”页面。"
+    },
+    "microphone": {
+      "title": "使用哪个麦克风？",
+      "body": "“默认”跟随系统的默认麦克风。如果你用耳麦或 USB 麦克风说话，请选择它。"
+    },
+    "try": {
+      "title": "试一试",
+      "body": "按 {{keys}}，说一句话，再按一次。你说的话会显示在下面。",
+      "placeholder": "你说的话会显示在这里。",
+      "listening": "正在聆听… 说完后再按一次 {{keys}}。",
+      "downloading": "{{model}} 仍在下载（{{percent}}%）。准备好后再试，或点“下一步”继续。",
+      "noModel": "尚未选择语音模型，所以还无法试用。点“下一步”继续，并在“模型”页面选择一个。"
+    },
+    "done": {
+      "title": "准备就绪",
+      "howTo": "按 {{keys}}，说话，再按一次：文字会输入到光标所在的位置。",
+      "downloading": "{{model}} 正在下载（{{percent}}%）— 准备好后就会使用。",
+      "ready": "语音模型：{{model}}。",
+      "noModel": "尚未选择语音模型：请在“模型”页面选择一个。",
+      "suggested": {
+        "title": "想再细调一下吗？",
+        "body": "默认设置已经很好用，现在不需要这些也没关系。如果你想的话，这些设置向导可以带你进一步调整。"
+      }
+    },
+    "catalog": {
+      "description": "设置向导会问几个问题，然后替你完成设置。每一步都可以跳过。",
+      "basic": {
+        "title": "基本设置",
+        "description": "你的语言、为它们推荐的语音模型、基本快捷键、麦克风，以及一次快速试用——与首次启动时的向导相同。"
+      },
+      "start": "开始",
+      "jumper": {
+        "title": "Jumper",
+        "description": "让 Handy Tool 把你听写的内容粘贴到正确的位置：它会记住你输入的位置（聊天框、文档、远程会话中的输入框），无论你在哪里，都自动把文字送到那里，还能用一个键跳回去。"
+      },
+      "postProcessing": {
+        "title": "后处理",
+        "description": "让 AI 模型清理或改写你听写的内容（标点、口头禅、结构、翻译），有专用快捷键。"
+      },
+      "windowsOnly": "仅限 Windows",
+      "appearance": {
+        "title": "外观",
+        "description": "录音浮层和实时文本框的外观：浮层的位置和大小、声音条、进度显示方式，以及实时文本框——每个选项都会先动态展示再让你选择。"
+      }
+    },
+    "closeSetup": "关闭设置",
+    "jumper": {
+      "name": "Jumper 设置",
+      "place": "位置 {{n}}",
+      "goal": {
+        "title": "你想用 Jumper 做什么？",
+        "body": "在许多应用（聊天、邮件、文档、远程桌面）中，Handy Tool 都能把你听写的内容直接送到正确的文本框。Jumper 会记住这些文本框，所以即使你在别的窗口，文字也会自动送到那里，还能用一个键跳回去。选择你想要的用法；之后可在 Jumper 页面更改。",
+        "jump": {
+          "title": "用一个键跳回去",
+          "detail": "按下快捷键，记住的文本框又回到你面前，可以直接输入。"
+        },
+        "land": {
+          "title": "让听写的文字送到那里",
+          "detail": "录音结束时无论你在哪里，文字都会进入记住的文本框，所以听写时你可以看别的内容。"
+        },
+        "both": {
+          "title": "两者都要",
+          "detail": "用一个键跳过去，听写的文字也会送到那里。"
+        }
+      },
+      "mouse": {
+        "title": "也记住鼠标位置吗？",
+        "body": "在浏览器以及 Discord、Teams 等应用中，Windows 只能看到整个窗口，看不到里面的文本框。记住鼠标位置后，Handy 会准确地点回那个文本框。",
+        "no": {
+          "title": "不，只记文本框",
+          "detail": "对大多数桌面应用（Word、记事本、邮件）已足够。"
+        },
+        "yes": {
+          "title": "是，也记鼠标位置",
+          "detail": "适用于网页和聊天应用。Handy 会点击你展示位置时鼠标所在的地方。"
+        }
+      },
+      "places": {
+        "title": "告诉我位置",
+        "body": "按下按钮，然后在 {{seconds}} 秒内点击你想要的文本框。时间到时，Handy 会记住获得焦点的文本框。你可以添加更多位置。",
+        "first": "还没有位置。",
+        "another": "再加一个位置？",
+        "countdown": "现在点击文本框… {{seconds}}",
+        "show": "告诉我位置",
+        "add": "再添加一个位置",
+        "remembered": "已记住：{{app}}",
+        "failed": "无法记住：{{reason}}",
+        "again": "重新指定这个位置"
+      },
+      "shortcuts": {
+        "title": "你的快捷键",
+        "body": "“设置”记住你当前所在的文本框；“跳转”带你回去。保留默认值，或点击一个并按下你想要的按键。"
+      },
+      "test": {
+        "title": "试一试",
+        "bodyJump": "点击“跳到那里”：记住的文本框应该会出现在最前面，可以直接输入。",
+        "bodyLand": "点击“跳到那里”检查每个位置。然后在任何地方听写：录音结束时，文字会送到位置 1。",
+        "none": "没有记住任何位置。你可以在 Jumper 页面用“设置”快捷键添加位置。",
+        "jump": "跳到那里"
+      },
+      "done": {
+        "title": "Jumper 已就绪",
+        "body": "你的位置在重启后仍会保留。其他功能（更多槽位、远程会话、追踪文字最后送达的位置）都在 Jumper 页面。"
+      }
+    },
+    "postProcessing": {
+      "name": "后处理设置",
+      "prompt": {
+        "title": "AI 应该怎样处理你的话？",
+        "body": "录音后，AI 模型会按你的要求改写文字。选择指令；之后可在 {{postProcessingPage}} 中编辑。",
+        "own": "自己写",
+        "ownDetail": "你自己的指令，例如“翻译成英文”或“写成要点列表”。",
+        "ownDefaultName": "我的指令",
+        "ownPlaceholder": "告诉 AI 如何处理文字，例如：修正标点并删除口头禅，保留我的措辞。"
+      },
+      "provider": {
+        "title": "由哪个 AI 来做？",
+        "body": "在线 AI 需要其网站提供的密钥；在本机运行的 AI（LM Studio、FLM）只需要模型。同样的列表在 {{providersPage}} 中。",
+        "noModel": "尚无模型",
+        "ready": "就绪",
+        "needsKey": "需要密钥",
+        "needsModel": "需要模型",
+        "key": "API 密钥",
+        "address": "地址",
+        "model": "模型",
+        "list": "列出模型",
+        "listFailed": "无法列出模型：{{reason}}"
+      },
+      "shortcut": {
+        "title": "你的后处理快捷键",
+        "body": "想让 AI 改写文字时，用这个快捷键听写；其他快捷键保持原样。"
+      },
+      "try": {
+        "title": "试一试",
+        "body": "如有需要可修改示例，然后用你的指令让 AI 处理。",
+        "sample": "那个 嗯 我觉得我们应该 呃 周二见面 不对 等等 周三 大概三点 然后带上 那个 那个报告",
+        "run": "运行",
+        "result": "AI 的版本：",
+        "failed": "没有成功：{{reason}}"
+      },
+      "done": {
+        "title": "后处理已就绪",
+        "body": "用后处理快捷键听写，粘贴的就是 AI 的版本。指令、AI 和更多选项在 {{postProcessingPage}} 中。"
+      }
+    },
+    "appearance": {
+      "name": "外观设置",
+      "sample": "安娜你好，我周五会把草稿数据发给你，这样大家能在下周评审前先看一下。",
+      "intro": {
+        "title": "你的录音浮层",
+        "body": "听写时，这个浮层会显示 Handy Tool 正在做什么。下面是它各部分的作用。接下来的每一步都会把所有选项并排展示，方便你比较后再选择。",
+        "t": "T：实时文本框，会在你说话时显示你的话。点击 T 可随时开关文本框；开启时它会发光。",
+        "bars": "声音条：代表你的声音。麦克风听到你说话时它们会摆动。",
+        "pause": "暂停：暂时停止聆听；再按一次继续。开启“暂停按钮”后才会显示。",
+        "cancel": "×：取消本次录音。不会转录或粘贴任何内容。"
+      },
+      "theme": {
+        "title": "浅色还是深色？",
+        "body": "Handy Tool 所有窗口的配色。录音浮层在任何配色下都保持深色。",
+        "system": "跟随 Windows，随系统变化而变化。",
+        "light": "始终为浅色。",
+        "dark": "始终为深色。"
+      },
+      "position": {
+        "title": "浮层应该出现在哪里？",
+        "body": "听写时，出现在屏幕底部、顶部，或者不显示。",
+        "bottom": "居中显示，就在任务栏上方。",
+        "top": "居中显示，在屏幕顶部。",
+        "none": "不显示浮层。托盘图标仍会显示正在录音。"
+      },
+      "size": {
+        "title": "浮层应该多大？",
+        "body": "在大屏幕或高分辨率屏幕上，大一些更容易看清。"
+      },
+      "bars": {
+        "title": "声音条应该多宽？",
+        "body": "浮层中间的声音条会显示你的声音。",
+        "narrow": {
+          "title": "窄",
+          "detail": "62 px，周围留白更多。"
+        },
+        "wide": {
+          "title": "宽",
+          "detail": "77.5 px，声音条更粗。"
+        }
+      },
+      "progress": {
+        "title": "应该如何显示进度？",
+        "body": "停止后，浮层会显示转录进度。",
+        "line": "一条细线沿底部填充。",
+        "ring": "一道发光的光沿边缘运行，并一直亮到对应的数值。",
+        "lap": "一道细光持续沿边缘旋转；数值显示在文字中。"
+      },
+      "glow": {
+        "title": "光晕应该多强？",
+        "body": "进度光周围的光晕。之后可以用“光晕强度”再细调。",
+        "none": {
+          "title": "无光晕",
+          "detail": "只有线条。"
+        },
+        "soft": {
+          "title": "柔和"
+        },
+        "normal": {
+          "title": "正常"
+        },
+        "strong": {
+          "title": "强"
+        },
+        "brightest": {
+          "title": "最亮"
+        }
+      },
+      "liveText": {
+        "title": "说话时显示你的话吗？",
+        "body": "实时文本框在浮层旁边，会显示你说话时的内容；浮层上的 T 可随时开关它。开启后，文本框中的文字就是你的最终文本：录音结束时不会再整体重新转录一次，所以文字立刻就绪，但可能略欠准确。",
+        "off": {
+          "title": "关闭",
+          "detail": "只显示浮层。"
+        },
+        "last_words": {
+          "title": "最后几个字词",
+          "detail": "一行显示你最新说的话。"
+        },
+        "full_text": {
+          "title": "全文",
+          "detail": "显示目前为止的全部内容；文本框会随你说话变高。"
+        },
+        "remote": "{{model}} 在线运行，只有在你停止后才会收到音频，因此实时文本框无法配合它使用。请先在“模型”页面选择一个在本机运行的模型。"
+      },
+      "width": {
+        "title": "文本框应该多宽？",
+        "body": "文本框越宽，同样的文字需要的行数就越少。"
+      },
+      "textSize": {
+        "title": "文字应该多大？",
+        "body": "实时文本框中文字的大小。"
+      },
+      "quiet": {
+        "title": "当你说话太小声时",
+        "body": "如果你的声音太小，模型听不清楚，浮层可以提醒你。",
+        "box": {
+          "title": "在浮层下方的小框中",
+          "detail": "浮层继续显示声音条。"
+        },
+        "pill": {
+          "title": "在浮层中",
+          "detail": "暂时替代声音条。"
+        },
+        "off": {
+          "title": "不用提醒我",
+          "detail": "不显示提示。"
+        }
+      },
+      "done": {
+        "title": "外观已设置好",
+        "body": "你的浮层和实时文本框已经设置好。更多选项在设置中：浮层的大小、声音条、进度、光晕和颜色（附动态预览）在“通用 › 应用”；实时文本框的宽度、文字大小、行数和淡出在“通用 › 转录”。你也可以在“设置向导”中再次运行此设置。"
+      },
+      "color": {
+        "title": "它应该发出什么颜色的光？",
+        "body": "进度光及其光晕、发光的 T 和声音条的颜色。如需其他颜色，请前往通用 › 应用中的进度颜色。",
+        "cyan": "青色（默认）",
+        "blue": "蓝色",
+        "violet": "紫罗兰色",
+        "pink": "粉色",
+        "amber": "琥珀色",
+        "green": "绿色",
+        "custom": "你的颜色"
+      }
+    },
+    "promo": {
+      "start": "开始设置",
+      "appearance": {
+        "title": "外观设置",
+        "text": "在选择之前先看看每种外观动态展示：浮层、进度和实时文本框。"
+      },
+      "jumper": {
+        "title": "Jumper 设置",
+        "text": "让听写的内容自动粘贴到正确的位置：一步步设置你的位置和对应的快捷键，最后还有测试。"
+      },
+      "postProcessing": {
+        "title": "后处理设置",
+        "text": "让 AI 清理或改写你听写的内容：一步步选择它该做什么、用哪个 AI，最后还可以试一试。"
+      }
     }
   },
   "onboarding": {
-    "subtitle": "请选择一个转录模型以开始使用",
+    "title": "选择语音模型",
     "recommended": "推荐",
     "download": "下载",
     "downloading": "下载中...",
@@ -76,51 +410,51 @@
     "models": {
       "small": {
         "name": "Whisper Small",
-        "description": "快速且相当准确。"
+        "description": "快速且准确。99 种语言。"
       },
       "medium": {
         "name": "Whisper Medium",
-        "description": "准确度高，速度适中"
+        "description": "中等速度，准确。99 种语言。"
       },
       "turbo": {
         "name": "Whisper Turbo",
-        "description": "准确度和速度均衡。"
+        "description": "中等速度，非常准确。99 种语言。"
       },
       "large": {
         "name": "Whisper Large",
-        "description": "准确度高，但速度较慢。"
+        "description": "较慢，99 种语言中准确度最高；可翻译成英语。"
       },
       "parakeet-tdt-0.6b-v2": {
         "name": "Parakeet V2",
-        "description": "仅支持英语。英语用户的最佳模型。"
+        "description": "非常快，准确度最高。仅英语。"
       },
       "parakeet-tdt-0.6b-v3": {
         "name": "Parakeet V3",
-        "description": "快速且准确"
+        "description": "非常快，准确度最高。25 种欧洲语言。"
       },
       "moonshine-base": {
         "name": "Moonshine Base",
-        "description": "非常快速，仅支持英语。口音处理良好。"
+        "description": "非常快，较为准确。仅英语。"
       },
       "moonshine-tiny-streaming-en": {
         "name": "Moonshine V2 Tiny",
-        "description": "超快速，仅支持英语"
+        "description": "最快，基本准确。仅英语。"
       },
       "moonshine-small-streaming-en": {
         "name": "Moonshine V2 Small",
-        "description": "快速，仅支持英语。速度与准确度的良好平衡。"
+        "description": "非常快，非常准确。仅英语。"
       },
       "moonshine-medium-streaming-en": {
         "name": "Moonshine V2 Medium",
-        "description": "仅支持英语。高质量。"
+        "description": "快，准确度最高。仅英语。"
       },
       "breeze-asr": {
         "name": "Breeze ASR",
-        "description": "针对台湾国语优化。支持语码转换。"
+        "description": "较慢，非常准确。专为台湾华语打造，也支持夹杂英语。"
       },
       "sense-voice-int8": {
         "name": "SenseVoice",
-        "description": "非常快速。支持中文、英语、日语、韩语、粤语。"
+        "description": "最快，准确。最适合中文、粤语、日语和韩语；也支持英语。"
       }
     },
     "errors": {
@@ -175,7 +509,10 @@
       "languageOnly": "仅 {{language}}"
     },
     "cancel": "取消",
-    "cancelDownload": "取消下载"
+    "cancelDownload": "取消下载",
+    "ready": "就绪",
+    "useModel": "使用此模型",
+    "inUse": "用于所有听写。"
   },
   "settings": {
     "modelSettings": {
@@ -187,7 +524,6 @@
       }
     },
     "models": {
-      "title": "转录模型",
       "description": "选择用于语音输入转录的模型——不同模型在准确度、速度以及加载时占用内存方面各有差异。默认：全新安装时未选择任何模型；引导流程会下载并选择你的第一个模型。你的选择还决定“常规”页面是否提供“语言”和“翻译为英语”选项，且当“批处理模型”留在“与语音输入相同（默认）”时，翻译器也会使用这同一模型。",
       "downloaded": "已下载",
       "available": "可下载",
@@ -220,8 +556,8 @@
         "singleKey": "仅这一个键就会在任何地方触发快捷键，因此你将无法再输入它。请添加 Ctrl 或 Alt 等修饰键。",
         "bindings": {
           "transcribe": {
-            "name": "转录快捷键",
-            "description": "按一次开始录音，再按一次结束；转录内容会投递到当时拥有焦点的窗口。默认：Ctrl+Space。它遵循“转录模式”和高级页面的“粘贴方式”——如需按住录音，请使用“按键说话快捷键”。"
+            "name": "录音/转录快捷键",
+            "description": "按一次开始录音，再按一次结束；转录内容会投递到当时拥有焦点的窗口。默认：Ctrl+Space。它遵循“转录模式”和“更多 › 输出”中的“粘贴方式”——如需按住录音，请使用“按键说话快捷键”。"
           },
           "cancel": {
             "name": "取消快捷键",
@@ -257,7 +593,7 @@
           },
           "anchor_set": {
             "name": "设置锚点",
-            "description": "将当前聚焦的文本字段捕获为 Hot 1 目标。默认：ctrl+shift+F1。单独使用它不会投递任何内容——将“完成时的跳转槽位操作”设为“跳转/投递到槽位”，并把槽位设为 Hot 1（高级 → 转录），即可让你下一次转录送达那里。密码框和 Handy 自身的窗口会被拒绝。"
+            "description": "将当前聚焦的文本字段捕获为 Hot 1 目标。默认：ctrl+shift+F1。单独使用它不会投递任何内容——将“完成时的跳转槽位操作”设为“跳转/投递到槽位”，并把槽位设为 Hot 1（更多 › 输出），即可让你下一次转录送达那里。密码框和 Handy 自身的窗口会被拒绝。"
           },
           "anchor_jump": {
             "name": "跳转到锚点",
@@ -265,19 +601,19 @@
           },
           "jump_set_slot_1": {
             "name": "设置跳转槽 1",
-            "description": "将当前聚焦的字段记为静态槽位 1，替换其中原有内容。默认：ctrl+alt+shift+1。该槽位仅是书签，直到被使用——用“跳转到槽位 1”跳转过去，或在“完成时的跳转槽位操作”（高级 → 转录）中将某个流程指向槽位 1，即可让转录内容送达那里。"
+            "description": "将当前聚焦的字段记为静态槽位 1，替换其中原有内容。默认：ctrl+alt+shift+1。该槽位仅是书签，直到被使用——用“跳转到槽位 1”跳转过去，或在“完成时的跳转槽位操作”（更多 › 输出）中将某个流程指向槽位 1，即可让转录内容送达那里。"
           },
           "jump_set_slot_2": {
             "name": "设置跳转槽 2",
-            "description": "将当前聚焦的字段记为静态槽位 2，替换其中原有内容。默认：ctrl+alt+shift+2。用“跳转到槽位 2”跳回，或在“完成时的跳转槽位操作”（高级 → 转录）中将某个流程指向槽位 2，即可让转录内容送达那里。"
+            "description": "将当前聚焦的字段记为静态槽位 2，替换其中原有内容。默认：ctrl+alt+shift+2。用“跳转到槽位 2”跳回，或在“完成时的跳转槽位操作”（更多 › 输出）中将某个流程指向槽位 2，即可让转录内容送达那里。"
           },
           "jump_set_slot_3": {
             "name": "设置跳转槽 3",
-            "description": "将当前聚焦的字段记为静态槽位 3，替换其中原有内容。默认：ctrl+alt+shift+3。用“跳转到槽位 3”跳回，或在“完成时的跳转槽位操作”（高级 → 转录）中将某个流程指向槽位 3，即可让转录内容送达那里。"
+            "description": "将当前聚焦的字段记为静态槽位 3，替换其中原有内容。默认：ctrl+alt+shift+3。用“跳转到槽位 3”跳回，或在“完成时的跳转槽位操作”（更多 › 输出）中将某个流程指向槽位 3，即可让转录内容送达那里。"
           },
           "jump_set_slot_4": {
             "name": "设置跳转槽 4",
-            "description": "将当前聚焦的字段记为静态槽位 4，替换其中原有内容。默认：ctrl+alt+shift+4。用“跳转到槽位 4”跳回，或在“完成时的跳转槽位操作”（高级 → 转录）中将某个流程指向槽位 4，即可让转录内容送达那里。"
+            "description": "将当前聚焦的字段记为静态槽位 4，替换其中原有内容。默认：ctrl+alt+shift+4。用“跳转到槽位 4”跳回，或在“完成时的跳转槽位操作”（更多 › 输出）中将某个流程指向槽位 4，即可让转录内容送达那里。"
           },
           "jump_slot_1": {
             "name": "跳转到槽位 1",
@@ -308,15 +644,17 @@
           "set": "无法设置快捷键: {{error}}",
           "reset": "无法将快捷键重置为原始值",
           "registrationFailed": "以下快捷键无法注册，当前处于未激活状态：{{bindings}}。可能已被其他应用程序占用——请在设置中选择其他组合键。"
-        }
+        },
+        "badge": {
+          "conflict": "冲突",
+          "risky": "有风险"
+        },
+        "altGrConflictLayout": "你使用的{{layouts}}键盘会用 AltGr+{{key}} 输入一个字符。Windows 将 AltGr 识别为 Ctrl+Alt，因此这个快捷键会因此触发。请选择一个不含 Ctrl+Alt 的组合键。",
+        "altGrConflictSpace": "你使用的{{layouts}}键盘会用 AltGr 输入字符，而 AltGr 键往往在输入字符后仍被按住，直到打出后面的空格。Windows 将 AltGr 识别为 Ctrl+Alt，因此这个快捷键会代替那个空格触发。请选择一个不含 Ctrl+Alt 的组合键。"
       },
       "pauseButton": {
         "label": "暂停按钮",
         "description": "在录音浮层上添加暂停按钮：暂停期间不录任何内容，继续后接着同一段录音。默认：关闭。暂停 10 分钟后会释放麦克风，直到继续。"
-      },
-      "speedIndicator": {
-        "label": "在录音浮层上显示电脑速度",
-        "description": "在录音浮层左侧显示一个电脑图标和百分比：本机相对于所用模型的平常速度转写得有多快。100% 为平常；低于 70% 显示橙色，低于 50% 显示红色。默认：关闭。需要用该模型录几次，才有可比较的平常速度。"
       },
       "undoWord": {
         "label": "撤销最后一个词",
@@ -330,6 +668,16 @@
           "worksWith": "它需要在本机运行的模型，因为远程服务要等你停止后才收到音频。可用的模型：{{models}}。",
           "noLocal": "它需要在本机运行的模型，因为远程服务要等你停止后才收到音频。请在“模型”页面下载一个。"
         }
+      },
+      "liveTextAfterStop": {
+        "label": "转录时显示文字",
+        "description": "**不开实时文本框的录音停止后，文本框会出现，转录内容一边产生一边打进去**——已转录的部分立即显示，其余部分一准备好就显示。仅供观看：文字照常送出。\n\n**默认：** 关闭。\n\n使用实时文本框的样式和宽度。开启实时文本框时，每次录音都是实时的，本来就会显示文字。"
+      },
+      "liveTradeoffs": {
+        "title": "实时转写：须知",
+        "accuracy": "你看到的文字就是得到的文字，因此准确度比录音后模式略低，尤其是长时间不停顿地说话时。最准确的是录音后模式。",
+        "cpu": "说话时会占用更多 CPU 和电量。",
+        "undo": "撤销最后一个字词只适用于 Parakeet 模型。"
       },
       "liveTextMode": {
         "title": "实时文本显示",
@@ -348,6 +696,22 @@
         "medium": "中等",
         "wide": "宽",
         "extraWide": "特宽"
+      },
+      "liveTextHeight": {
+        "title": "文本框高度",
+        "description": "在“全文”模式下，实时文本框在最早的行滑出前显示多少行。**默认：**中（6 行）。",
+        "small": "小（3 行）",
+        "medium": "中（6 行）",
+        "large": "大（10 行）",
+        "extraLarge": "特大（16 行）"
+      },
+      "liveTextSize": {
+        "title": "文字大小",
+        "description": "实时文本框中文字的大小。**默认：**正常。",
+        "small": "小",
+        "normal": "正常",
+        "large": "大",
+        "extraLarge": "特大"
       },
       "language": {
         "title": "语言",
@@ -407,7 +771,7 @@
         "title": "Paste last transcription",
         "pasteMethod": {
           "title": "Paste method",
-          "description": "“重新粘贴最近转录”快捷键将文本放入聚焦窗口的方式。它与高级页面的“粘贴方式”是独立的，因此可以专门为那一个难以处理的目标进行调整。默认：剪贴板（Ctrl+V）——在终端中可尝试剪贴板（Shift+Insert），选择“直接”以逐字符键入而非粘贴，或选择“无”只将文本放到剪贴板上，供你手动粘贴。"
+          "description": "“重新粘贴最近转录”快捷键将文本放入聚焦窗口的方式。它与“更多 › 输出”中的“粘贴方式”是独立的，因此可以专门为那一个难以处理的目标进行调整。默认：剪贴板（Ctrl+V）——在终端中可尝试剪贴板（Shift+Insert），选择“直接”以逐字符键入而非粘贴，或选择“无”只将文本放到剪贴板上，供你手动粘贴。"
         },
         "clipboard": {
           "title": "Clipboard",
@@ -502,7 +866,7 @@
       },
       "altGrWarning": {
         "label": "提醒 AltGr 快捷键",
-        "description": "在 AltGr 也能输入的快捷键旁显示警告。Windows 将 AltGr 视为 Ctrl+Alt，因此像 Ctrl+Alt+O 这样的快捷键会在你用 AltGr 输入字符时触发，而字符无法输入。默认：开启。如果你从不用 AltGr 输入字符，可以关闭。",
+        "description": "**在 AltGr 也能输入字符的快捷键旁显示黄色警告。** Windows 将 AltGr 报告为 Ctrl+Alt，因此像 Ctrl+Alt+O 这样的快捷键会在你用 AltGr 输入 ó 时触发，而字符始终无法输入。在 Windows 上，只有当你某个键盘在该按键上用 AltGr（或搭配 Shift 的组合键则用 AltGr+Shift）输入字符时才会警告，并会指出该键盘所属的语言。\n\n**默认：** 开启。如果你从不用 AltGr 输入字符，可以将其关闭。",
         "turnOff": "关闭此警告"
       }
     },
@@ -520,6 +884,20 @@
         "off": "关闭",
         "minutes": "{{minutes}} 分钟"
       },
+      "micWarmup": {
+        "title": "等待麦克风预热",
+        "description": "**闲置的麦克风启动后，录音浮层会一直显示“正在启动麦克风...”，直到它真正就绪。** 有些麦克风刚启动时声音小得多，要大约一秒才渐渐变大；这段时间里说的话会被当作噪音丢掉。等待时间是这个麦克风最近几次冷启动的平均值，由应用自己测量。\n\n**默认：** 开启。\n\n只有冷启动才会等待——保持就绪的麦克风会立即开始。开启麦克风常开时隐藏。",
+        "measured": "本机实测：{{seconds}} 秒。",
+        "notMeasured": "尚未测量——下次冷启动时会自动测量。"
+      },
+      "tooQuiet": {
+        "title": "说话太小声时提醒",
+        "description": "**当你说话太小声、话语无法被保留时，录音浮层会暂时显示“声音太小，请大声点”。**它会对几乎是说话、且明显高于房间噪音的声音作出反应（约 0.7 秒）；安静、音乐和打字不会触发它。它无法知道哪些话被听错——实时文本框会显示这一点。\n\n**默认：** 开启。",
+        "box": {
+          "title": "在独立小框中显示",
+          "description": "**“声音太小，请大声点”会出现在录音浮层正下方的小框中，录音浮层则继续显示音量条。** 录音浮层位于屏幕底部时，小框会出现在任务栏上方的空隙中，因此不会遮住实时文本框。关闭时：录音浮层用它代替音量条（开启暂停按钮时，较长的翻译会被截断）。\n\n**默认：** 开启。"
+        }
+      },
       "audioFeedback": {
         "label": "音频反馈",
         "description": "录音开始时播放一段简短提示音，结束时播放另一段，让你无需看屏幕就知道麦克风正在工作。默认：关闭。开启后会启用下方的“输出设备”和“音量”；这两段提示音可通过调试页面的“提示音主题”替换为你自己的文件。"
@@ -536,7 +914,6 @@
       }
     },
     "advanced": {
-      "title": "高级",
       "groups": {
         "app": "应用",
         "output": "输出",
@@ -571,6 +948,36 @@
           "bottom": "底部",
           "top": "顶部"
         }
+      },
+      "reopenLastPage": {
+        "title": "重新打开上次的页面",
+        "description": "**打开 Handy Tool 时显示关闭时所在的页面**（例如“历史”），而不是“常规”。\n\n**默认：**开启。"
+      },
+      "overlaySize": {
+        "title": "悬浮窗大小",
+        "description": "**录音悬浮窗的大小**，以及它下方“声音太小”小框的大小。在大屏幕或高分辨率屏幕上，大一些更容易看清。\n\n**默认：**正常。",
+        "normal": "正常",
+        "large": "大",
+        "extraLarge": "特大"
+      },
+      "soundBarsWide": {
+        "title": "宽声音条",
+        "description": "**录音悬浮窗上更宽的声音条：**条和间距为 2.5 px（77.5 px），而不是 2 px（62 px）。\n\n**默认：** 关闭."
+      },
+      "progressStyle": {
+        "title": "进度样式",
+        "description": "**录音悬浮窗如何显示转录进度：**沿底部填充的细线；从底部中央绕边缘前进的光，身后一直亮到当前数值；或沿边缘旋转的细光，每 1.6 秒一圈（数值显示在文字中）。开启减少动态效果时，旋转的光会变为细线。\n\n**默认：**线条。",
+        "line": "底部线条",
+        "ring": "边缘光",
+        "lap": "沿边缘旋转的光"
+      },
+      "progressLineGlow": {
+        "title": "发光线条",
+        "description": "**进度线像边缘的光一样发光**，光晕延伸到悬浮窗边缘之外。\n\n**默认：**关闭。仅适用于进度样式：“底部线条”。"
+      },
+      "progressGlow": {
+        "title": "光晕强度",
+        "description": "**进度光的光晕强度**：“边缘光”，以及开启“发光线条”时的线条。0% 关闭光晕，200% 为两倍。\n\n**默认：**100%。"
       },
       "pasteMethod": {
         "title": "粘贴方式",
@@ -640,8 +1047,7 @@
       "customWords": {
         "title": "自定义词汇",
         "description": "一份引擎总是识别错误的人名、产品名和专业术语列表；每次转录后，Handy 会查找发音相近的词并替换为你的拼写。默认：空。遇到问题时逐个添加完整词汇；如果它开始纠正你并未说错的词，可降低调试页面的“词汇纠正阈值”。",
-        "placeholder": "添加词汇",
-        "add": "添加",
+        "placeholder": "输入单词后按 Enter",
         "remove": "删除 {{word}}",
         "duplicate": "\"{{word}}\" 已存在"
       },
@@ -737,7 +1143,6 @@
         }
       },
       "tabs": {
-        "app": "应用",
         "output": "输出",
         "typer": "输入器",
         "providers": "提供商",
@@ -899,10 +1304,21 @@
       "systemAudioGain": {
         "title": "系统声音电平",
         "description": "系统声音相对于你说话声的响度。对方太小声无法转录时调高；盖过你的声音时调低。只缩放系统声音——麦克风不会被改动。"
+      },
+      "progressColor": {
+        "title": "进度颜色",
+        "description": "**浮层发光部分的颜色：**进度光及其光晕（线条、边缘光和沿边缘旋转的光）、发光的 T 和声音条。通过三个滑块选择：色相（选择颜色）、饱和度（选择鲜艳程度）和明度。色块显示效果；重置按钮恢复默认颜色。\n\n**默认：**青色。",
+        "hue": "色相",
+        "saturation": "饱和度",
+        "lightness": "明度",
+        "reset": "恢复默认颜色"
+      },
+      "pillPreview": {
+        "title": "预览",
+        "description": "**录音浮层根据周围设置呈现的动态效果：**左侧是录音状态（开启实时文本框时 T 发光、声音条摆动），右侧是转录状态，进度按你的进度样式、光晕和颜色从 0 循环播放到 100%，大小为你设置的悬浮窗大小。"
       }
     },
     "postProcessing": {
-      "title": "后处理",
       "hotkey": {
         "title": "快捷键"
       },
@@ -943,7 +1359,7 @@
           "title": "温度",
           "description": "数值越低结果越确定、越严谨（0 表示最忠实原文）；数值越高越具创造性。"
         },
-        "registryNote": "提供商的 API 密钥、模型和基础 URL 在「高级 → 已注册的 LLM 提供商」中配置。"
+        "registryNote": "提供商的 API 密钥、模型和基础 URL 在更多 › 提供商 › 已注册的 LLM 提供商」中配置。"
       },
       "prompts": {
         "title": "提示词",
@@ -1044,7 +1460,7 @@
       },
       "postProcessingToggle": {
         "label": "后处理",
-        "description": "开启可选的 AI 清理处理，并在侧边栏添加“后处理”页面，可在其中选择提供方和提示词。默认：关闭。你常用的“转录”快捷键不受影响——清理只在单独的“后处理快捷键”上运行，历史记录会将原始转录与处理后的结果一并保留。"
+        "description": "开启可选的 AI 清理处理；其快捷键、提供方和提示词会直接显示在此开关下方。默认：关闭。你常用的“转录”快捷键不受影响——清理只在单独的“后处理快捷键”上运行，历史记录会将原始转录与处理后的结果一并保留。"
       },
       "muteWhileRecording": {
         "label": "录制时静音",
@@ -1102,7 +1518,7 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "如果交付目标的应用名、窗口类或控件类包含这些片段之一（不区分大小写），就会被视为远程桌面，因此在 Advanced → Transcription 中会使用 'Paste delay after jump (Windows)' 与 'Submit delay before Enter (Windows)' 的“远程”值而非“本地”值。它不再必须是跳转目标：自 1.3.0 起，已获得焦点的远程窗口也会被分类，这正是提交延迟得以在那里生效的原因。默认：msrdc、mstsc、Citrix。如果发往它的交付仍被吞掉，请添加你的 RDP 或 Citrix 客户端所用的进程名；空列表会把所有目标都当作本地。",
+        "description": "如果交付目标的应用名、窗口类或控件类包含这些片段之一（不区分大小写），就会被视为远程桌面，因此在 更多 › 输出 中会使用 'Paste delay after jump (Windows)' 与 'Submit delay before Enter (Windows)' 的“远程”值而非“本地”值。它不再必须是跳转目标：自 1.3.0 起，已获得焦点的远程窗口也会被分类，这正是提交延迟得以在那里生效的原因。默认：msrdc、mstsc、Citrix。如果发往它的交付仍被吞掉，请添加你的 RDP 或 Citrix 客户端所用的进程名；空列表会把所有目标都当作本地。",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
@@ -1115,8 +1531,8 @@
         "title": "快捷槽位（锚定与投递）",
         "optionsMoved": {
           "title": "投递选项",
-          "description": "这不是一个设置项——只是一个提示。跳转对某个槽位实际做什么，是在“高级 → 转录”中按每个流程单独配置的：“开始时的跳转槽位操作”“完成时的跳转槽位操作”“跟踪最近输出位置”和“投递后归还焦点”分别为“转录”和“转录并提交”各存在一份。",
-          "hint": "在「通用」页面的「转录」和「转录并提交」分组中配置。"
+          "description": "这不是一个设置项——只是一个提示。跳转对某个槽位实际做什么，是在更多 › 输出中按每个流程单独配置的：“开始时的跳转槽位操作”“完成时的跳转槽位操作”“跟踪最近输出位置”和“投递后归还焦点”分别为“转录”和“转录并提交”各存在一份。",
+          "hint": "在「更多 › 输出」的「转录」和「转录并提交」分组中配置。"
         }
       },
       "hot2": {
@@ -1171,10 +1587,10 @@
       }
     },
     "translator": {
-      "title": "翻译器",
+      "title": "监视的文件夹",
       "enabled": {
         "label": "监视文件夹",
-        "description": "开启后，会使用当前的模型、语言和“翻译为英语”设置，将监视文件夹中出现的每个新 .wav、.ogg 或 .opus 文件转录为旁边的 .txt 文件。默认：关闭。开始监视时文件夹中已存在的文件会被特意忽略，文件夹本身在“添加文件夹”中选择。"
+        "description": "开启后，会使用当前的模型、语言和“翻译为英语”设置，将监视文件夹中出现的每个新 .wav、.mp3、.m4a、.aac、.flac、.ogg 或 .opus 文件转录为旁边的 .txt 文件。默认：关闭。开始监视时文件夹中已存在的文件会被特意忽略，文件夹本身在“添加文件夹”中选择。"
       },
       "priority": {
         "title": "优先级",
@@ -1210,7 +1626,7 @@
         "counters": "本次会话完成 {{done}} 个，失败 {{failed}} 个"
       },
       "folders": {
-        "title": "监视的文件夹",
+        "title": "文件夹",
         "none": "没有文件夹",
         "emptyTitle": "没有正在监视的文件夹",
         "emptyDescription": "添加一个文件夹即可开始监视其中的新录音。",
@@ -1224,10 +1640,83 @@
         "removeAriaLabel": "停止监视文件夹 {{name}}"
       }
     },
+    "files": {
+      "model": {
+        "title": "模型",
+        "description": "**用哪个语音模型转录文件。**尚未下载的模型也会列出；选择后需先下载。\n\n**默认：**你的听写模型，选过的模型会被记住。其他模型会加载在听写模型旁边，听写随时可用，文件完成后会释放。",
+        "dictation": "{{name}}（你的听写模型）",
+        "notDownloaded": "{{name}}（未下载）",
+        "groups": {
+          "dictation": "你的听写模型",
+          "downloaded": "已下载",
+          "notDownloaded": "未下载"
+        },
+        "downloadSize": "下载 · {{size}}"
+      },
+      "transcribe": {
+        "title": "转录文件",
+        "choose": {
+          "title": "选择音频文件",
+          "description": "**转录你选择的音频文件**：WAV、MP3、M4A、AAC、FLAC、OGG 或 Opus，例如手机录音，使用上面选择的模型和你的语言设置。\n\n文件会在停顿处切成最长约 40 秒的片段，每个片段只转录一次：没有实时文字，也没有第二遍处理。原始文件只会被读取，绝不会被修改。",
+          "button": "选择文件…"
+        },
+        "audioFiles": "音频文件",
+        "decoding": "正在读取 {{file}}…",
+        "progress": "{{done}} / {{total}} · {{percent}}%",
+        "cancel": "停止",
+        "cancelled": "已停止：{{file}}",
+        "failed": "无法转录 {{file}}：{{error}}",
+        "startFailed": "无法开始：{{reason}}",
+        "done": "{{file}} 已转录",
+        "copy": "复制文字",
+        "savedTo": "文字已保存到 {{path}}",
+        "saveFailed": "无法保存：{{error}}",
+        "empty": "此文件中没有找到语音。"
+      },
+      "options": {
+        "saveText": {
+          "title": "保存文字",
+          "description": "**转录保存为 .txt 的位置**，以音频文件命名。如果名称已被占用，会加上编号；不会覆盖任何文件。\n\n**默认：**每次询问：选择文件时弹窗询问，并可记住你的选择。无论如何文字都会显示出来供复制。",
+          "options": {
+            "ask": "每次询问",
+            "handy_folder": "在 Handy 的文件夹中",
+            "next_to_file": "在录音旁边",
+            "dont_save": "不保存"
+          }
+        },
+        "keepAudio": {
+          "title": "保留音频副本",
+          "description": "**把音频文件复制到下面的文件夹**，放在其文字旁边，这样即使原文件被移动或删除也仍然保留。\n\n**默认：**关闭。原文件绝不会被移动或修改。"
+        },
+        "folder": {
+          "title": "文件夹",
+          "description": "**保存在 Handy 文件夹中的文字和音频副本的存放位置。**\n\n**默认：**Handy 数据文件夹中的“files”文件夹。",
+          "change": "更改",
+          "reset": "恢复为 Handy 的文件夹"
+        }
+      },
+      "ask": {
+        "title": "文字保存到哪里？",
+        "handyFolder": "在 Handy 的文件夹中",
+        "nextToFile": "在录音旁边",
+        "dontSave": "不保存",
+        "dontSaveHint": "文字仍会显示出来供复制，并保留在列表中。",
+        "remember": "记住我的选择",
+        "rememberHint": "之后可在“保存文字”中更改。"
+      },
+      "log": {
+        "title": "已转录的文件",
+        "empty": "还没有转录任何文件。在这里转录的每个文件都会连同文字列在这里。",
+        "showMore": "显示全部",
+        "showLess": "收起",
+        "reveal": "在文件夹中显示",
+        "delete": "从列表中移除"
+      }
+    },
     "currentAudio": {
       "streamingHint": "只有当您按下的快捷键（转录或按住说话）设为“实时”且使用本地模型时，文本才会随讲话逐步显示。",
       "finalHint": "在录制后模式下，或使用 API 转录或 OpenRouter 转录时，完整转录会在录音结束时一次性显示；请在以下位置设置各快捷键的模式：",
-      "advancedTranscription": "高级 → 转录",
+      "advancedTranscription": "通用 › 转录",
       "finalHintSuffix": "。",
       "title": "当前音频",
       "idle": "开始录制以查看实时转录",
@@ -1259,7 +1748,8 @@
       "loading": "加载模型中…",
       "error": "加载模型失败",
       "noMatches": "没有匹配的模型——输入以使用自定义 ID"
-    }
+    },
+    "revealHint": "打开它可查看更多设置。"
   },
   "common": {
     "loading": "加载中...",
@@ -1315,8 +1805,12 @@
     "pause": "暂停",
     "resume": "继续",
     "liveTextBox": "实时文本框",
-    "slowPc": "正以本机正常速度的 {{percent}}% 转写",
-    "speedUnknown": "电脑速度：尚未测量"
+    "menu": {
+      "changeShortcut": "更改快捷键…",
+      "liveTextSettings": "实时文本框设置…",
+      "hidePause": "隐藏暂停按钮"
+    },
+    "tooQuiet": "声音太小，请大声点"
   },
   "brand": {
     "name": "Handy",
@@ -1352,7 +1846,7 @@
     "fileTooLarge": "文件过大（最大 10 MB）。",
     "loadedFile": "已加载：{{name}}",
     "providerOption": "{{name}}（提供商）",
-    "chipDisabled": "尚未配置——请在高级 > 提供方 > 已注册的 LLM 提供方 中打开“启用此提供方”。",
+    "chipDisabled": "尚未配置——请在更多 › 提供商 › 提供方 > 已注册的 LLM 提供方 中打开“启用此提供方”。",
     "chips": {
       "cl100k_base": "cl100k（GPT-4）",
       "o200k_base": "o200k（GPT-4o）",
@@ -1380,7 +1874,6 @@
     }
   },
   "keyboardTyper": {
-    "title": "键盘输入器",
     "description": "将此文本以逐个模拟按键的方式发送到聚焦窗口，因此在粘贴被阻止的场合也能使用——远程控制台、虚拟机查看器、密码输入框。按“开始”会进入开始延迟倒计时（默认 10 秒），供你先点击进入目标窗口；若你已在目标窗口中，按“输入文本快捷键”则会在约一秒后开始输入。文本只保留在内存中——绝不会写入你的设置、历史记录或日志。",
     "placeholder": "输入要键入的文本...",
     "go": "开始",
@@ -1398,7 +1891,7 @@
     "shortcut": {
       "label": "快捷键：",
       "unset": "未设置",
-      "hint": "（可在高级设置中更改；再次按下可取消）"
+      "hint": "（可在“快捷键”页面中更改；再次按下可取消）"
     },
     "status": {
       "idle": "点击「开始」，然后聚焦目标窗口——或直接在目标应用中使用快捷键。",
@@ -1411,14 +1904,14 @@
   },
   "modelTesting": {
     "configureProviders": "配置提供商",
-    "description": "将同一条提示词发送给你在“运行”下勾选的每个模型，并将结果并排展示，附带 token 数、成本和往返耗时；在“评审”下勾选的模型会使用你的评审提示词对所有这些回答打分。默认：未选择任何模型，两个提示词均为空。列表来自高级 > 已注册的 LLM 提供方，因此一次运行会使用你自己的 API 密钥——你的提示词会离开这台机器，对于付费提供方还会产生实际费用。",
+    "description": "将同一条提示词发送给你在“运行”下勾选的每个模型，并将结果并排展示，附带 token 数、成本和往返耗时；在“评审”下勾选的模型会使用你的评审提示词对所有这些回答打分。默认：未选择任何模型，两个提示词均为空。列表来自更多 › 提供商 › 已注册的 LLM 提供方，因此一次运行会使用你自己的 API 密钥——你的提示词会离开这台机器，对于付费提供方还会产生实际费用。",
     "providersLabel": "模型",
     "selectAll": "全选以运行",
     "clear": "清除",
     "run": "运行",
     "judge": "评审",
     "costPerM": "输入 ${{input}} · 输出 ${{output}} /100万",
-    "noProviders": "未配置支持对话的提供商。请在「高级 → 已注册的 LLM 提供商」中添加。",
+    "noProviders": "未配置支持对话的提供商。请在更多 › 提供商 › 已注册的 LLM 提供商」中添加。",
     "mainPromptLabel": "所有模型使用的提示词",
     "mainPromptPlaceholder": "发送给每个所选模型的提示词…",
     "judgePromptLabel": "评审/裁决提示词（可选）",
@@ -1483,6 +1976,7 @@
   "floating": {
     "waiting": "等待转录…",
     "listening": "正在聆听…",
+    "listeningShort": "正在聆听",
     "copy": "复制",
     "copied": "已复制"
   },
@@ -1491,5 +1985,153 @@
       "message": "更新到 {{expected}} 未完成——仍在运行 {{actual}}。安装程序已启动但没有替换任何文件；可能被安全策略阻止。",
       "download": "手动下载"
     }
+  },
+  "whatsNew": {
+    "intro": "最近更新中的新内容和变化。点“显示”打开对应设置。",
+    "release": "版本 {{version}}",
+    "show": "显示",
+    "items": {
+      "files": {
+        "title": "转录文件",
+        "description": "新的“文件”页面可用你选择的模型转录你选择的音频文件（WAV、MP3、M4A、AAC、FLAC、OGG、Opus），并保留已转录文件的列表。监视的文件夹也移到了这里。"
+      },
+      "helpMode": {
+        "title": "帮助模式",
+        "description": "每个页面右上角的 ?：将鼠标指向设置即可阅读它的作用。取代了每一行的“i”。"
+      },
+      "setups": {
+        "title": "Jumper 和后处理设置",
+        "description": "“设置向导”页面的两个引导式设置：记住位置并跳转过去，或连接一个整理文字的 AI。"
+      },
+      "firstSetup": {
+        "title": "首次启动的设置向导",
+        "description": "语言、推荐的语音模型、快捷键、麦克风和第一次试用。可从“设置向导”页面再次运行。"
+      },
+      "modelRatings": {
+        "title": "可比较的模型评分",
+        "description": "速度和准确度条现在来自实测结果，描述也与之一致。"
+      },
+      "progressStyle": {
+        "title": "边缘的光",
+        "description": "进度样式：转录时，一道光绕着胶囊转动，代替底部的线条。"
+      },
+      "overlaySize": {
+        "title": "悬浮窗大小",
+        "description": "放大录音胶囊：125% 或 150%。"
+      },
+      "reopenLastPage": {
+        "title": "重新打开上次的页面",
+        "description": "Handy Tool 会在你上次打开的页面启动。"
+      },
+      "liveTextSize": {
+        "title": "实时文字框：大小和高度",
+        "description": "选择文字大小，以及全文框显示多少行。"
+      },
+      "micWarmup": {
+        "title": "等待麦克风预热",
+        "description": "起始音量很小的麦克风不再丢掉你的前几个字。"
+      },
+      "tooQuiet": {
+        "title": "声音太小 — 请大声些",
+        "description": "当你说话太小声、模型听不清时给出提示。"
+      },
+      "newIcon": {
+        "title": "新的应用图标",
+        "description": "应用、安装程序、任务栏和开始菜单中的新波浪图标。"
+      },
+      "holdUndo": {
+        "title": "按住以删除词语",
+        "description": "实时转录时（实时文字框打开）：Ctrl+Backspace 删除最后一个词，按住可持续删除。在“常规”中用“撤销最后一个词”开启。"
+      },
+      "liveTranscript": {
+        "title": "实时文字就是你的转录",
+        "description": "开启“实时文本框”时，框中显示的就是转录结果：停止时只补上最后一两秒，文字立刻就绪。"
+      },
+      "historyTabs": {
+        "title": "历史记录的标签页和统计",
+        "description": "历史记录有“录音”“统计”“设置”三个标签页。统计按日、周、月、年计算录音数量和时长。"
+      },
+      "liveTextFade": {
+        "title": "停止说话后淡出",
+        "description": "实时文字停止变化 3 秒后淡出，你再说话时会重新出现。"
+      },
+      "appearanceSetup": {
+        "title": "外观设置",
+        "description": "一个引导式设置，会在你选择之前先动态展示每种外观：浮层、进度和实时文本框。位于“设置向导”页面，以及“通用 › 应用”的顶部。"
+      },
+      "progressColor": {
+        "title": "自定义进度颜色",
+        "description": "用三个滑块（色相、饱和度、明度）选择进度光及其光晕、发光的 T 和声音条的颜色。"
+      },
+      "liveTextBox": {
+        "title": "实时文本框",
+        "description": "录音浮层旁的小框会实时显示你说的话：最新的一行，或整段文字。浮层上的 T 或它自己的快捷键可以切换。"
+      },
+      "newLook": {
+        "title": "全新外观",
+        "description": "整个应用重新设计，支持浅色和深色。录音浮层更小，声音条更长，托盘图标也是新的。"
+      },
+      "newLayout": {
+        "title": "带搜索的新侧边栏",
+        "description": "常用页面在侧边栏中；旧的“高级”标签页和“键盘输入器”移到了“更多”，应用设置在“通用”中。搜索框可以找到任意设置。"
+      },
+      "shortcutsPage": {
+        "title": "所有快捷键集中一处",
+        "description": "“快捷键”页面列出所有快捷键，并在两个快捷键使用相同按键，或单个按键会在打字时触发时发出警告。"
+      },
+      "shortcutNone": {
+        "title": "关闭某个快捷键",
+        "description": "快捷键旁的 × 会把它设为“无”，这样这些按键就能在其他应用中恢复原本功能，例如 Escape 用于取消。点“重置”可以恢复。"
+      },
+      "pauseButton": {
+        "title": "暂停按钮",
+        "description": "在录音浮层上暂停和继续本次录音，也可以用专属快捷键。请在“通用”中开启。"
+      },
+      "progressPercent": {
+        "title": "转录 42%",
+        "description": "浮层会显示转录的进度，运行期间点击 × 仍可取消。"
+      },
+      "micStatus": {
+        "title": "浮层会告诉你麦克风的状态",
+        "description": "在真正开始录音前显示“正在启动麦克风...”；无法启动时显示“未检测到麦克风”或“麦克风被阻止”，而不是录下一段静音。"
+      },
+      "micKeepWarm": {
+        "title": "保持麦克风就绪",
+        "description": "录音结束后让麦克风保持打开几分钟，下一次录音可以立即开始。"
+      },
+      "liveTextAfterStop": {
+        "title": "边转录边显示文字",
+        "description": "不开启实时文本框时，文本框会在你停止后出现，转录内容一边产生一边打进去。"
+      },
+      "pillMenus": {
+        "title": "右键点击浮层上的按钮",
+        "description": "浮层上的 T、暂停和 × 都有菜单：切换文本框显示内容、更改快捷键，或只把本次录音保留在“历史记录”中。"
+      },
+      "trayClick": {
+        "title": "点击托盘图标即可打开",
+        "description": "左键单击托盘图标会打开窗口；菜单则通过右键点击打开。"
+      },
+      "blockedUpdate": {
+        "title": "被阻止的更新会有提示",
+        "description": "如果更新未能安装（例如被 Windows Smart App Control 阻止），会出现一条提示横幅，并附有手动下载的链接。"
+      },
+      "macBuilds": {
+        "title": "macOS 版本",
+        "description": "Handy Tool 现在也提供 Intel 和 Apple Silicon Mac 版本，暂未签名。"
+      },
+      "soundSource": {
+        "title": "声音来源已移动",
+        "description": "“声音来源”现在位于“通用 › 声音”中，紧挨麦克风选择器上方。仅限 Windows。"
+      },
+      "systemAudioControls": {
+        "title": "系统声音延迟和电平",
+        "description": "录制系统声音时，可设置它相对于麦克风的延迟时间，以及它与麦克风相比的响度。"
+      },
+      "linuxBuilds": {
+        "title": "Linux 安装包",
+        "description": "面向 x86_64 和 ARM64 的 .deb、.rpm 和 .AppImage 安装包，尚未经过测试。"
+      }
+    },
+    "installed": "已安装"
   }
 }

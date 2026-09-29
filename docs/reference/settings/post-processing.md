@@ -2,6 +2,12 @@
 
 Open `More › Post-processing` and set `More › Post-processing › Post Processing = On`; the controls below then appear under the switch on the same tab. Every breadcrumb below is gated by that switch.
 
+### Post-processing setup
+
+`More › Post-processing › Post-processing setup`
+
+A tinted row at the top: `Start setup` opens `Setups` and starts the Post-processing setup (what the AI should do, which AI, the shortcut, a try). See [Setups › Post-processing](setups.md#post-processing). While the Post-processing switch is off, a line under it says that switching it on shows more settings.
+
 ## Hotkey
 
 ### Post-Processing Hotkey

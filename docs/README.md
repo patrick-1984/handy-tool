@@ -27,7 +27,7 @@ Nine numbered rungs, in order. Each one is short, and each one ends at a point w
 - [Keyboard Typer](tools/keyboard-typer.md) — prepare text for keystroke delivery.
 - [Model Testing](tools/model-testing.md) — run one prompt across providers and read the report.
 - [Token Count](tools/token-count.md) — count a prompt before you spend it.
-- [Translator](tools/translator.md) — watch a folder and transcribe it in batches.
+- [Files](tools/files.md) — transcribe a file you pick, or watch a folder and transcribe it in batches.
 - [MCP and CLI](tools/mcp-and-cli.md) — enable the loopback server and install the `handy` command.
 - [Backup and portable mode](tools/backup-and-portable.md) — export, restore, or carry a setup on a stick.
 

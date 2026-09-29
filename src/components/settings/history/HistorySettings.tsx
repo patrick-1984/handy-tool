@@ -17,17 +17,13 @@ import {
   Search,
   X,
   HardDrive,
-  History as HistoryIcon,
-  AudioLines,
-  BarChart3,
-  Settings2,
+  Clock,
 } from "lucide-react";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { readFile } from "@tauri-apps/plugin-fs";
 import { commands, type HistoryEntry } from "@/bindings";
-import { formatDateTime } from "@/utils/dateFormat";
-import { SectionTitle, SettingsGroup } from "../../ui/SettingsGroup";
+import { SettingsGroup } from "../../ui/SettingsGroup";
 import { STICKY_TABS, TabBar } from "../../ui/TabBar";
 import { TranscriptionCostReport } from "../advanced/TranscriptionCostReport";
 import { useNavStore, type HistoryTab } from "@/stores/navStore";
@@ -37,22 +33,55 @@ import { HistoryLimit } from "../HistoryLimit";
 import { RecordingRetentionPeriodSelector } from "../RecordingRetentionPeriod";
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
+/** A take's length as a clock reads it: "0:18", "12:05", "1:02:07". */
 const fmtDuration = (s: number) => {
   // Round once so the components can't disagree across a 60s boundary.
   const t = Math.max(0, Math.round(s));
-  return `${pad2(Math.floor(t / 3600))}:${pad2(Math.floor((t % 3600) / 60))}:${pad2(
-    t % 60,
-  )}`;
+  const h = Math.floor(t / 3600);
+  const m = Math.floor((t % 3600) / 60);
+  return h > 0 ? `${h}:${pad2(m)}:${pad2(t % 60)}` : `${m}:${pad2(t % 60)}`;
 };
 
-// "(HH:MM:SS · <model> · $cost)" — duration first, then which model produced it
-// (local or OpenRouter, already labeled), then the real cost when known.
-const detailBracket = (e: HistoryEntry): string | null => {
+/**
+ * When a take was recorded: "Today, 14:32" / "Yesterday, 17:48" (the words in
+ * the app's language, from the browser), otherwise a short date and time.
+ */
+const recordedAt = (timestamp: number, locale: string): string => {
+  const date = new Date(timestamp * 1000);
+  if (isNaN(date.getTime())) return String(timestamp);
+  const time = new Intl.DateTimeFormat(locale, {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+  const startOfDay = (d: Date) =>
+    new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const daysAgo = Math.round(
+    (startOfDay(new Date()) - startOfDay(date)) / 86_400_000,
+  );
+  if (daysAgo === 0 || daysAgo === 1) {
+    const day = new Intl.RelativeTimeFormat(locale, { numeric: "auto" }).format(
+      -daysAgo,
+      "day",
+    );
+    return `${day.charAt(0).toLocaleUpperCase(locale)}${day.slice(1)}, ${time}`;
+  }
+  return new Intl.DateTimeFormat(locale, {
+    year:
+      date.getFullYear() === new Date().getFullYear() ? undefined : "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+};
+
+// "<model> · $cost" after the length: which model produced it (local or
+// OpenRouter, already labeled), then the real cost when known.
+const detailParts = (e: HistoryEntry): string[] => {
   const parts: string[] = [];
-  if (e.duration_seconds != null) parts.push(fmtDuration(e.duration_seconds));
   if (e.model_used) parts.push(e.model_used);
-  if (e.cost_usd != null) parts.push(`$${e.cost_usd.toFixed(4)}`);
-  return parts.length ? `(${parts.join(" · ")})` : null;
+  if (e.cost_usd != null) parts.push(`${e.cost_usd.toFixed(4)}`);
+  return parts;
 };
 import { useOsType } from "@/hooks/useOsType";
 import {
@@ -83,6 +112,10 @@ const OpenRecordingsButton: React.FC<OpenRecordingsButtonProps> = ({
     <span>{label}</span>
   </Button>
 );
+
+/** Copy, star and delete on a recording: icon buttons without a frame. */
+const ICON_BUTTON =
+  "inline-flex items-center justify-center h-7 w-7 rounded-md text-text-secondary hover:bg-hover hover:text-text transition-colors cursor-pointer";
 
 /** Entries drawn at a time on the Recordings tab. */
 const HISTORY_PAGE = 20;
@@ -247,31 +280,31 @@ export const HistorySettings: React.FC = () => {
   let body: React.ReactNode;
   if (loading) {
     body = (
-      <div className="px-4 py-3 text-center text-text/60">
+      <div className="card px-4 py-8 text-center text-[13px] text-text-secondary">
         {t("settings.history.loading")}
       </div>
     );
   } else if (loadError) {
     body = (
-      <div className="px-4 py-3 text-center text-danger">
+      <div className="card px-4 py-8 text-center text-[13px] text-err-text">
         {t("settings.history.loadError", { error: loadError })}
       </div>
     );
   } else if (historyEntries.length === 0) {
     body = (
-      <div className="px-4 py-3 text-center text-text/60">
+      <div className="card px-4 py-8 text-center text-[13px] text-text-secondary">
         {t("settings.history.empty")}
       </div>
     );
   } else if (filteredEntries.length === 0) {
     body = (
-      <div className="px-4 py-3 text-center text-text/60">
+      <div className="card px-4 py-8 text-center text-[13px] text-text-secondary">
         {t("settings.history.search.noMatches")}
       </div>
     );
   } else {
     body = (
-      <div className="divide-y divide-mid-gray/20">
+      <div className="flex flex-col gap-3">
         {filteredEntries.slice(0, shownCount).map((entry) => (
           <HistoryEntryComponent
             key={entry.id}
@@ -298,17 +331,14 @@ export const HistorySettings: React.FC = () => {
             {
               id: "recordings",
               label: t("settings.history.tabs.recordings"),
-              icon: AudioLines,
             },
             {
               id: "statistics",
               label: t("settings.history.tabs.statistics"),
-              icon: BarChart3,
             },
             {
               id: "settings",
               label: t("settings.history.tabs.settings"),
-              icon: Settings2,
             },
           ]}
           active={tab}
@@ -317,31 +347,27 @@ export const HistorySettings: React.FC = () => {
       </div>
       {tab === "recordings" && (
         <div className="space-y-2">
-          <div className="px-4 flex items-center justify-between">
-            <SectionTitle
-              title={t("settings.history.title")}
-              icon={HistoryIcon}
-            />
+          <div className="flex items-center justify-end">
             <OpenRecordingsButton
               onClick={openRecordingsFolder}
               label={t("settings.history.openFolder")}
             />
           </div>
           {showSearchBar && (
-            <div className="px-4 flex items-center gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text/40 pointer-events-none" />
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute start-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-secondary pointer-events-none" />
                 <input
                   type="text"
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   placeholder={t("settings.history.search.placeholder")}
-                  className="w-full rounded-md border border-mid-gray/30 bg-background pl-8 pr-8 py-1.5 text-sm focus:border-logo-primary focus:outline-none"
+                  className="w-full h-8 rounded-md border border-control-border border-b-control-bottom bg-control ps-8 pe-8 text-sm placeholder:text-text-secondary hover:bg-control-hover focus:outline-none focus:bg-control focus:shadow-[inset_0_-2px_0_var(--color-accent)]"
                 />
                 {searchInput && (
                   <button
                     onClick={() => setSearchInput("")}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-text/40 hover:text-text cursor-pointer"
+                    className="absolute end-2 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text cursor-pointer"
                     title={t("settings.history.search.clear")}
                   >
                     <X className="w-4 h-4" />
@@ -349,14 +375,14 @@ export const HistorySettings: React.FC = () => {
                 )}
               </div>
               {matcher && (
-                <span className="text-xs text-text/60 whitespace-nowrap">
+                <span className="text-xs text-text-secondary whitespace-nowrap">
                   {t("settings.history.search.matches", {
                     matched: filteredEntries.length,
                     total: historyEntries.length,
                   })}
                   {matcher.isRegex && (
                     <span
-                      className="ml-1.5 px-1 py-0.5 rounded bg-logo-primary/15 text-logo-primary font-mono"
+                      className="ms-1.5 px-1 py-0.5 rounded-sm bg-accent-soft text-accent-text font-mono"
                       title={t("settings.history.search.regexActive")}
                     >
                       {t("settings.history.search.regexBadge")}
@@ -366,17 +392,11 @@ export const HistorySettings: React.FC = () => {
               )}
             </div>
           )}
-          <div className="bg-background border border-mid-gray/20 rounded-lg overflow-visible">
-            {body}
-          </div>
+          {body}
         </div>
       )}
       {/* The same figures as Providers' cost report, without the money. */}
-      {tab === "statistics" && (
-        <div className="bg-background border border-mid-gray/20 rounded-lg px-4 pb-3">
-          <TranscriptionCostReport variant="stats" />
-        </div>
-      )}
+      {tab === "statistics" && <TranscriptionCostReport variant="stats" />}
       {/* What History keeps and for how long (formerly Advanced › History). */}
       {tab === "settings" && (
         <SettingsGroup
@@ -419,7 +439,7 @@ const HighlightedText: React.FC<{
         segment.isMatch ? (
           <mark
             key={i}
-            className="bg-logo-primary/30 text-inherit rounded-sm px-0.5"
+            className="bg-accent-soft text-inherit rounded-sm px-0.5"
           >
             {segment.text}
           </mark>
@@ -463,24 +483,33 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
     }
   };
 
-  const formattedDate = formatDateTime(String(entry.timestamp), i18n.language);
+  const formattedDate = recordedAt(Number(entry.timestamp), i18n.language);
 
   return (
-    <div className="px-4 py-2 pb-5 flex flex-col gap-3">
+    <div className="card px-4 py-3 flex flex-col gap-2.5">
       <div className="flex justify-between items-center">
-        <p className="text-sm font-medium">
-          {formattedDate}
-          {detailBracket(entry) && (
-            <span className="text-text/50 font-normal">
-              {" "}
-              {detailBracket(entry)}
-            </span>
+        <p className="flex flex-wrap items-center gap-x-1.5 text-[13px] text-text-secondary">
+          <span className="font-semibold text-text">{formattedDate}</span>
+          {entry.duration_seconds != null && (
+            <>
+              <span aria-hidden>·</span>
+              <Clock className="w-3 h-3" aria-hidden />
+              <span className="tabular-nums">
+                {fmtDuration(entry.duration_seconds)}
+              </span>
+            </>
           )}
+          {detailParts(entry).map((part) => (
+            <React.Fragment key={part}>
+              <span aria-hidden>·</span>
+              <span>{part}</span>
+            </React.Fragment>
+          ))}
         </p>
         <div className="flex items-center gap-1">
           <button
             onClick={handleCopyText}
-            className="text-text/50 hover:text-logo-primary  hover:border-logo-primary transition-colors cursor-pointer"
+            className={ICON_BUTTON}
             title={t("settings.history.copyToClipboard")}
           >
             {showCopied ? (
@@ -491,11 +520,7 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
           </button>
           <button
             onClick={onToggleSaved}
-            className={`p-2 rounded-md transition-colors cursor-pointer ${
-              entry.saved
-                ? "text-logo-primary hover:text-logo-primary/80"
-                : "text-text/50 hover:text-logo-primary"
-            }`}
+            className={`${ICON_BUTTON} ${entry.saved ? "!text-accent" : ""}`}
             title={
               entry.saved
                 ? t("settings.history.unsave")
@@ -510,14 +535,14 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
           </button>
           <button
             onClick={handleDeleteEntry}
-            className="text-text/50 hover:text-logo-primary transition-colors cursor-pointer"
+            className={`${ICON_BUTTON} hover:!bg-err-bg hover:!text-err-text`}
             title={t("settings.history.delete")}
           >
             <Trash2 width={16} height={16} />
           </button>
         </div>
       </div>
-      <p className="italic text-text/90 text-sm pb-2 select-text cursor-text">
+      <p className="text-sm select-text cursor-text">
         <HighlightedText text={entry.transcription_text} matcher={matcher} />
       </p>
       <AudioPlayer onLoadRequest={handleLoadAudio} className="w-full" />

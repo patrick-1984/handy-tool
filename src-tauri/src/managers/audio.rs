@@ -166,12 +166,32 @@ fn create_audio_recorder(
         .with_vad(Box::new(smoothed_vad))
         .with_level_callback({
             let app_handle = app_handle.clone();
-            move |levels| {
-                utils::emit_levels(&app_handle, &levels);
+            move |levels, state| {
+                utils::emit_levels(&app_handle, &levels, state.live, state.too_quiet);
             }
+        })
+        .with_warmup_callback({
+            let app_handle = app_handle.clone();
+            move |ms| record_mic_warmup(&app_handle, ms)
         });
 
     Ok(recorder)
+}
+
+/// Keep a cold start's measured warm-up; the next cold starts wait for the
+/// average (see `AppSettings::applied_mic_warmup_ms`). Off the audio thread.
+fn record_mic_warmup(app_handle: &tauri::AppHandle, ms: u32) {
+    let app_handle = app_handle.clone();
+    std::thread::spawn(move || {
+        let mut settings = get_settings(&app_handle);
+        let measured = &mut settings.mic_fade_in_measured_ms;
+        measured.push(ms.min(crate::settings::MIC_WARMUP_MAX_MS));
+        let excess = measured
+            .len()
+            .saturating_sub(crate::settings::MIC_WARMUP_KEPT);
+        measured.drain(..excess);
+        crate::settings::write_settings(&app_handle, settings);
+    });
 }
 
 /* ──────────────────────────────────────────────────────────────── */
@@ -341,6 +361,7 @@ impl AudioRecordingManager {
         let source = settings.effective_capture_source();
 
         if let Some(rec) = recorder_opt.as_mut() {
+            rec.set_warmup_ms(settings.applied_mic_warmup_ms());
             rec.set_system_audio_gain(settings.system_audio_gain);
             rec.set_system_audio_delay_ms(settings.system_audio_delay_ms);
             // Mixed: arm the SLAVE first. The consumer thread captures the ring at
@@ -536,7 +557,10 @@ impl AudioRecordingManager {
             );
 
             let target = self.chunk_target_for_new_recording(ts);
+            let settings = get_settings(&self.app_handle);
+            crate::overlay::set_quiet_hint_box(settings.too_quiet_hint_box);
             if let Some(rec) = self.recorder.lock().unwrap().as_ref() {
+                rec.set_quiet_hint(settings.too_quiet_hint);
                 if rec.start(target).is_ok() {
                     self.paused.store(false, AtomicOrdering::SeqCst);
                     *self.is_recording.lock().unwrap() = true;

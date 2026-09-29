@@ -4,6 +4,10 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   variant?: "default" | "compact";
 }
 
+/**
+ * A text field of the redesign: 32 px like every control, with a darker
+ * bottom edge that turns into a 2 px cyan line while focused.
+ */
 export const Input: React.FC<InputProps> = ({
   className = "",
   variant = "default",
@@ -11,15 +15,15 @@ export const Input: React.FC<InputProps> = ({
   ...props
 }) => {
   const baseClasses =
-    "px-2 py-1 text-sm font-semibold bg-mid-gray/10 border border-mid-gray/80 rounded-md text-start transition-all duration-150";
+    "text-sm text-text bg-control border border-control-border border-b-control-bottom rounded-md text-start transition-colors duration-150 placeholder:text-text-secondary";
 
   const interactiveClasses = disabled
-    ? "opacity-60 cursor-not-allowed bg-mid-gray/10 border-mid-gray/40"
-    : "hover:bg-logo-primary/10 hover:border-logo-primary focus:outline-none focus:bg-logo-primary/20 focus:border-logo-primary";
+    ? "cursor-not-allowed bg-dis-bg text-dis-text border-transparent"
+    : "hover:bg-control-hover focus:outline-none focus:bg-control focus:shadow-[inset_0_-2px_0_var(--color-accent)]";
 
   const variantClasses = {
-    default: "px-3 py-2",
-    compact: "px-2 py-1",
+    default: "h-8 px-2.5",
+    compact: "h-7 px-2",
   } as const;
 
   return (

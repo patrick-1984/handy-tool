@@ -19,15 +19,17 @@ import { useNavStore } from "@/stores/navStore";
 import { useSettings } from "../../../hooks/useSettings";
 import { SavePromptButton } from "./SavePromptButton";
 import { RichText } from "../../ui/RichText";
+import {
+  PRIMARY_BUTTON,
+  SECONDARY_BUTTON,
+  TEXT_AREA,
+} from "../../ui/controlClasses";
 
-const actionButtonClass =
-  "px-4 py-1.5 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer";
-const secondaryButtonClass =
-  "px-3 py-1.5 rounded-md border border-zinc-700 bg-zinc-800 text-zinc-100 text-sm hover:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer";
-const textareaClass =
-  "w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-blue-500 focus:outline-none font-mono";
+const actionButtonClass = PRIMARY_BUTTON;
+const secondaryButtonClass = SECONDARY_BUTTON;
+const textareaClass = `w-full font-mono ${TEXT_AREA}`;
 const providerLinkClass =
-  "text-xs text-logo-primary/85 hover:text-logo-primary hover:underline transition-colors cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-logo-primary";
+  "text-xs text-accent-text/85 hover:text-accent-text hover:underline transition-colors cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent";
 
 // Attached images are persisted (base64) into the prompt library, which lives in
 // the single monolithic settings blob re-serialized on every settings change.
@@ -620,7 +622,7 @@ export const ModelTestingPage: React.FC = () => {
       <div className="overflow-x-auto">
         <table className="w-full text-sm border-collapse">
           <thead>
-            <tr className="text-left text-text/50 border-b border-mid-gray/20">
+            <tr className="text-left text-text-secondary border-b border-border">
               <th className="px-2 py-1.5">{t("modelTesting.colModel")}</th>
               <th className="px-2 py-1.5 text-right">
                 {t("modelTesting.colInput")}
@@ -640,8 +642,8 @@ export const ModelTestingPage: React.FC = () => {
             {run.outcomes.map((o) => (
               <tr
                 key={o.provider_id}
-                className={`border-b border-mid-gray/10 ${
-                  o.ok ? "" : "text-red-400"
+                className={`border-b border-border ${
+                  o.ok ? "" : "text-err-text"
                 }`}
               >
                 <td className="px-2 py-1.5">
@@ -664,7 +666,7 @@ export const ModelTestingPage: React.FC = () => {
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-text/60">
+      <p className="text-xs text-text-secondary">
         {`${t("modelTesting.roundTrip")}: ${fmtTime(run.round_trip_ms)} · ${t(
           "modelTesting.totalCost",
         )}: $${totalCost(run).toFixed(4)}`}
@@ -677,17 +679,17 @@ export const ModelTestingPage: React.FC = () => {
       {run.outcomes.map((o) => (
         <div
           key={o.provider_id}
-          className="border border-mid-gray/20 rounded-lg p-3 space-y-1 bg-mid-gray/5"
+          className="border border-border rounded-lg p-3 space-y-1 bg-surface2"
         >
           <p className="text-sm font-semibold">
             {o.provider_name} ({o.model})
           </p>
           {o.ok ? (
-            <pre className="whitespace-pre-wrap break-words text-sm text-text/90 font-sans">
+            <pre className="whitespace-pre-wrap break-words text-sm text-text font-sans">
               {o.content}
             </pre>
           ) : (
-            <p className="text-sm text-red-400">
+            <p className="text-sm text-err-text">
               {t("modelTesting.errorPrefix")}: {o.error}
             </p>
           )}
@@ -700,7 +702,7 @@ export const ModelTestingPage: React.FC = () => {
     <div className="w-full space-y-4">
       <RichText
         text={t("modelTesting.description")}
-        className="text-sm text-text/60"
+        className="text-sm text-text-secondary"
       />
 
       {/* Provider selection */}
@@ -737,7 +739,7 @@ export const ModelTestingPage: React.FC = () => {
           </div>
         </div>
         {indexed.length === 0 ? (
-          <div className="flex items-center gap-2 text-sm text-text/50">
+          <div className="flex items-center gap-2 text-sm text-text-secondary">
             <span>{t("modelTesting.noProviders")}</span>
             <button
               type="button"
@@ -752,27 +754,27 @@ export const ModelTestingPage: React.FC = () => {
             {indexed.map(({ p }) => (
               <div
                 key={p.id}
-                className="flex items-center gap-2 border border-mid-gray/20 rounded-md px-3 py-1.5 bg-mid-gray/5"
+                className="flex items-center gap-2 border border-border rounded-md px-3 py-1.5 bg-surface2"
               >
                 <span className="text-sm truncate flex-1">
                   {labelFor(p.id)}
                 </span>
                 {costLabel(p) && (
-                  <span className="text-[11px] text-text/40 tabular-nums shrink-0">
+                  <span className="text-[11px] text-text-secondary tabular-nums shrink-0">
                     {costLabel(p)}
                   </span>
                 )}
                 <div className="flex gap-3 shrink-0">
-                  <label className="flex items-center gap-1.5 text-xs text-text/70 cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-xs text-text-secondary cursor-pointer">
                     <input
                       type="checkbox"
                       checked={runIds.includes(p.id)}
                       onChange={() => toggle(runIds, setRunIds, p.id)}
-                      className="w-3.5 h-3.5 accent-blue-600 cursor-pointer"
+                      className="w-3.5 h-3.5 accent-accent cursor-pointer"
                     />
                     {t("modelTesting.run")}
                   </label>
-                  <label className="flex items-center gap-1.5 text-xs text-text/70 cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-xs text-text-secondary cursor-pointer">
                     <input
                       type="checkbox"
                       checked={judgeIds.includes(p.id)}
@@ -790,7 +792,7 @@ export const ModelTestingPage: React.FC = () => {
 
       {/* Preset: a saved model-prompt + judge-prompt pair */}
       <div className="flex items-center gap-1.5 flex-wrap">
-        <span className="text-xs text-text/50">
+        <span className="text-xs text-text-secondary">
           {t("modelTesting.library.preset")}
         </span>
         <Dropdown
@@ -805,7 +807,7 @@ export const ModelTestingPage: React.FC = () => {
             type="button"
             title={t("modelTesting.library.delete")}
             onClick={() => deletePreset(selectedPresetId)}
-            className="p-1 rounded-md border border-zinc-700 text-text/50 hover:text-red-400 hover:border-red-400 transition-colors cursor-pointer"
+            className="p-1 rounded-md border border-border text-text-secondary hover:text-err-text hover:border-red-400 transition-colors cursor-pointer"
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
@@ -837,7 +839,7 @@ export const ModelTestingPage: React.FC = () => {
               type="button"
               title={t("modelTesting.library.delete")}
               onClick={() => deleteModelPrompt(selectedModelPromptId)}
-              className="p-1 rounded-md border border-zinc-700 text-text/50 hover:text-red-400 hover:border-red-400 transition-colors cursor-pointer"
+              className="p-1 rounded-md border border-border text-text-secondary hover:text-err-text hover:border-red-400 transition-colors cursor-pointer"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -861,7 +863,7 @@ export const ModelTestingPage: React.FC = () => {
 
       {/* Image attachment for runners (vision-capable models) */}
       <div className="space-y-1">
-        <span className="text-xs text-text/50">
+        <span className="text-xs text-text-secondary">
           {t("modelTesting.image.label")}
         </span>
         <input
@@ -876,13 +878,13 @@ export const ModelTestingPage: React.FC = () => {
           }}
         />
         {imageDataUrl ? (
-          <div className="flex items-center gap-2 rounded-md border border-zinc-700 bg-zinc-800/60 p-2">
+          <div className="flex items-center gap-2 rounded-md border border-border bg-surface2 p-2">
             <img
               src={imageDataUrl}
               alt={imageName ?? ""}
               className="h-12 w-12 rounded object-cover"
             />
-            <span className="text-sm flex-1 truncate text-text/80">
+            <span className="text-sm flex-1 truncate text-text-secondary">
               {imageName}
             </span>
             <button
@@ -892,7 +894,7 @@ export const ModelTestingPage: React.FC = () => {
                 setImageName(null);
                 markModelCustom();
               }}
-              className="flex items-center gap-1 text-xs text-text/50 hover:text-red-400 cursor-pointer"
+              className="flex items-center gap-1 text-xs text-text-secondary hover:text-err-text cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
               {t("modelTesting.image.remove")}
@@ -914,8 +916,8 @@ export const ModelTestingPage: React.FC = () => {
             }}
             className={`flex items-center justify-center gap-2 rounded-md border border-dashed px-3 py-3 text-sm cursor-pointer transition-colors ${
               dragOver
-                ? "border-blue-500 bg-blue-600/10 text-text"
-                : "border-zinc-700 text-text/50 hover:border-blue-500"
+                ? "border-accent bg-accent/10 text-text"
+                : "border-border text-text-secondary hover:border-accent"
             }`}
           >
             <ImagePlus className="w-4 h-4" />
@@ -942,7 +944,7 @@ export const ModelTestingPage: React.FC = () => {
               type="button"
               title={t("modelTesting.library.delete")}
               onClick={() => deleteJudgePrompt(selectedJudgePromptId)}
-              className="p-1 rounded-md border border-zinc-700 text-text/50 hover:text-red-400 hover:border-red-400 transition-colors cursor-pointer"
+              className="p-1 rounded-md border border-border text-text-secondary hover:text-err-text hover:border-red-400 transition-colors cursor-pointer"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -964,7 +966,7 @@ export const ModelTestingPage: React.FC = () => {
         />
         {/* Judge temperature + thinking (independent of the models') */}
         <div className="flex items-center gap-3 flex-wrap pt-1">
-          <span className="text-xs text-text/50 w-16">
+          <span className="text-xs text-text-secondary w-16">
             {t("modelTesting.judgeParams")}
           </span>
           <input
@@ -978,7 +980,7 @@ export const ModelTestingPage: React.FC = () => {
             }
             className="w-36 accent-purple-600 cursor-pointer"
           />
-          <span className="text-sm tabular-nums w-10 text-text/70">
+          <span className="text-sm tabular-nums w-10 text-text-secondary">
             {judgeTemperature.toFixed(2)}
           </span>
           <Dropdown
@@ -1008,9 +1010,9 @@ export const ModelTestingPage: React.FC = () => {
           step="0.05"
           value={temperature}
           onChange={(e) => setTemperature(Number.parseFloat(e.target.value))}
-          className="w-40 accent-blue-600 cursor-pointer"
+          className="w-40 accent-accent cursor-pointer"
         />
-        <span className="text-sm tabular-nums w-10 text-text/70">
+        <span className="text-sm tabular-nums w-10 text-text-secondary">
           {temperature.toFixed(2)}
         </span>
         <span className="text-sm font-semibold">
@@ -1042,10 +1044,10 @@ export const ModelTestingPage: React.FC = () => {
       </div>
 
       {(running || statusLog.length > 0) && (
-        <div className="rounded-md border border-mid-gray/20 bg-mid-gray/5 p-2 space-y-1 max-h-40 overflow-y-auto">
-          <div className="flex items-center gap-2 text-sm text-text/70">
+        <div className="rounded-md border border-border bg-surface2 p-2 space-y-1 max-h-40 overflow-y-auto">
+          <div className="flex items-center gap-2 text-sm text-text-secondary">
             {running && (
-              <span className="inline-block w-3 h-3 rounded-full border-2 border-logo-primary border-t-transparent animate-spin" />
+              <span className="inline-block w-3 h-3 rounded-full border-2 border-accent border-t-transparent animate-spin" />
             )}
             <span>
               {running
@@ -1056,7 +1058,7 @@ export const ModelTestingPage: React.FC = () => {
             </span>
           </div>
           {statusLog.length > 0 && (
-            <div className="font-mono text-xs text-text/60 space-y-0.5">
+            <div className="font-mono text-xs text-text-secondary space-y-0.5">
               {statusLog.map((line, i) => (
                 <div key={i}>{line}</div>
               ))}
@@ -1065,11 +1067,11 @@ export const ModelTestingPage: React.FC = () => {
         </div>
       )}
 
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-err-text">{error}</p>}
 
       {/* Results */}
       {mainRun && (
-        <div className="space-y-3 pt-2 border-t border-mid-gray/20">
+        <div className="space-y-3 pt-2 border-t border-border">
           <h2 className="text-base font-semibold">
             {t("modelTesting.summaryTitle")}
           </h2>
@@ -1091,14 +1093,14 @@ export const ModelTestingPage: React.FC = () => {
           {renderAnswers(mainRun)}
 
           {/* Artifact */}
-          <div className="space-y-2 pt-2 border-t border-mid-gray/20">
+          <div className="space-y-2 pt-2 border-t border-border">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm font-semibold">
                 {t("modelTesting.artifactLabel")}
               </span>
               {savePath && (
                 <span
-                  className="text-xs text-text/40 truncate max-w-[260px]"
+                  className="text-xs text-text-secondary truncate max-w-[260px]"
                   title={savePath}
                 >
                   {savePath}

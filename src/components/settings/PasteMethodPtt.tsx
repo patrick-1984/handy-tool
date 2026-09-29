@@ -77,7 +77,6 @@ export const PasteMethodPttSetting: React.FC<PasteMethodPttProps> = React.memo(
         description={t("settings.advanced.pasteMethodPtt.description")}
         descriptionMode={descriptionMode}
         grouped={grouped}
-        tooltipPosition="bottom"
       >
         <Dropdown
           options={pasteMethodOptions}

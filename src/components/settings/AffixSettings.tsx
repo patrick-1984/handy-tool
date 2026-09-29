@@ -5,6 +5,7 @@ import { SettingContainer } from "../ui/SettingContainer";
 import { SubSettings } from "../ui/SettingsGroup";
 import { ToggleSwitch } from "../ui/ToggleSwitch";
 import { useSettings } from "../../hooks/useSettings";
+import { TEXT_FIELD } from "../ui/controlClasses";
 
 type Flow = "output" | "submit";
 
@@ -46,12 +47,12 @@ export const AffixSettings: React.FC<AffixSettingsProps> = React.memo(
     const suffixEnabled =
       (getSetting(`${flow}_suffix_enabled`) as boolean) ?? false;
 
-    const inputClass =
-      "w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-blue-500 focus:outline-none";
+    const inputClass = `w-full ${TEXT_FIELD}`;
 
     return (
       <>
         <ToggleSwitch
+          lead
           checked={prefixEnabled}
           onChange={(v) => updateSetting(`${flow}_prefix_enabled`, v)}
           isUpdating={isUpdating(`${flow}_prefix_enabled`)}
@@ -99,6 +100,7 @@ export const AffixSettings: React.FC<AffixSettingsProps> = React.memo(
         )}
 
         <ToggleSwitch
+          lead
           checked={suffixEnabled}
           onChange={(v) => updateSetting(`${flow}_suffix_enabled`, v)}
           isUpdating={isUpdating(`${flow}_suffix_enabled`)}

@@ -1,27 +1,35 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { getVersion } from "@tauri-apps/api/app";
 import { useTranslation } from "react-i18next";
 import {
   Archive,
   AudioLines,
   Bot,
   ClipboardPaste,
-  Cog,
-  Command,
-  Crosshair,
   Ellipsis,
+  FileAudio,
+  Gift,
   FlaskConical,
   Hash,
   History,
   Info,
   Keyboard,
-  Languages,
+  ListChecks,
+  MoveUpRight,
   Plug,
+  SlidersHorizontal,
   Sparkles,
   Terminal,
+  Type,
   Cpu,
 } from "lucide-react";
-import HandyTextLogo from "./icons/HandyTextLogo";
-import HandyHand from "./icons/HandyHand";
+import AppIcon from "./icons/AppIcon";
+import { SetupsPage } from "./settings/setups/SetupsPage";
+import {
+  WhatsNewPage,
+  WHATS_NEW_SEEN_EVENT,
+  WHATS_NEW_SEEN_KEY,
+} from "./settings/whatsnew/WhatsNewPage";
 import { UpdateBanner } from "./UpdateBanner";
 import { SidebarSearch } from "./SidebarSearch";
 import { useSettings } from "../hooks/useSettings";
@@ -29,7 +37,6 @@ import { useNavStore } from "../stores/navStore";
 import {
   GeneralSettings,
   ShortcutsSettings,
-  AppSection,
   OutputSection,
   ProvidersSection,
   McpSection,
@@ -44,7 +51,7 @@ import {
   KeyboardTyperPage,
   ModelTestingPage,
   JumperSettings,
-  TranslatorSettings,
+  FilesPage,
 } from "./settings";
 
 export type SidebarSection = keyof typeof SECTIONS_CONFIG;
@@ -72,14 +79,21 @@ export const SECTIONS_CONFIG = {
   // --- Sidebar ---
   general: {
     labelKey: "sidebar.general",
-    icon: HandyHand,
+    icon: SlidersHorizontal,
     component: GeneralSettings,
+    placement: "sidebar",
+    enabled: () => true,
+  },
+  setups: {
+    labelKey: "sidebar.setups",
+    icon: ListChecks,
+    component: SetupsPage,
     placement: "sidebar",
     enabled: () => true,
   },
   shortcuts: {
     labelKey: "sidebar.shortcuts",
-    icon: Command,
+    icon: Keyboard,
     component: ShortcutsSettings,
     placement: "sidebar",
     enabled: () => true,
@@ -98,28 +112,28 @@ export const SECTIONS_CONFIG = {
     placement: "sidebar",
     enabled: () => true,
   },
+  files: {
+    labelKey: "sidebar.files",
+    icon: FileAudio,
+    component: FilesPage,
+    placement: "sidebar",
+    enabled: () => true,
+  },
   jumper: {
     labelKey: "sidebar.jumper",
-    icon: Crosshair,
+    icon: MoveUpRight,
     component: JumperSettings,
     placement: "sidebar",
     enabled: () => true,
   },
-  keyboardTyper: {
-    labelKey: "sidebar.keyboardTyper",
-    icon: Keyboard,
-    component: KeyboardTyperPage,
+  whatsNew: {
+    labelKey: "sidebar.whatsNew",
+    icon: Gift,
+    component: WhatsNewPage,
     placement: "sidebar",
     enabled: () => true,
   },
   // --- More › Settings ---
-  app: {
-    labelKey: "settings.advanced.tabs.app",
-    icon: Cog,
-    component: AppSection,
-    placement: "more-settings",
-    enabled: () => true,
-  },
   output: {
     labelKey: "settings.advanced.tabs.output",
     icon: ClipboardPaste,
@@ -170,10 +184,10 @@ export const SECTIONS_CONFIG = {
     enabled: () => true,
   },
   // --- More › Tools ---
-  translator: {
-    labelKey: "sidebar.translator",
-    icon: Languages,
-    component: TranslatorSettings,
+  keyboardTyper: {
+    labelKey: "sidebar.keyboardTyper",
+    icon: Type,
+    component: KeyboardTyperPage,
     placement: "more-tools",
     enabled: () => true,
   },
@@ -234,6 +248,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const lastMoreSection = useNavStore((state) => state.lastMoreSection);
   const [width, setWidth] = useState<number>(loadSidebarWidth);
   const [searchQuery, setSearchQuery] = useState("");
+  // What's new carries a dot until this version's news were opened.
+  const [newsUnseen, setNewsUnseen] = useState(false);
+  useEffect(() => {
+    const check = () =>
+      getVersion().then((version) => {
+        let seen: string | null = null;
+        try {
+          seen = localStorage.getItem(WHATS_NEW_SEEN_KEY);
+        } catch {
+          // No storage: no dot.
+          seen = version;
+        }
+        setNewsUnseen(seen !== version);
+      });
+    void check();
+    window.addEventListener(WHATS_NEW_SEEN_EVENT, check);
+    return () => window.removeEventListener(WHATS_NEW_SEEN_EVENT, check);
+  }, []);
 
   const availableSections = Object.entries(SECTIONS_CONFIG)
     .filter(([_, config]) => config.enabled(settings))
@@ -256,7 +288,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   // More reopens the tab last used there, unless it has been hidden since.
   const moreTarget = availableSections.some((s) => s.id === lastMoreSection)
     ? lastMoreSection
-    : "app";
+    : "output";
 
   // Drag the right edge to resize; persist the width to localStorage on release.
   const startResize = (e: React.MouseEvent) => {
@@ -292,34 +324,50 @@ export const Sidebar: React.FC<SidebarProps> = ({
     label: string,
     isActive: boolean,
     onClick: () => void,
+    dot = false,
   ) => (
     <div
       key={key}
-      className={`flex gap-2 items-center p-2 w-full rounded-lg cursor-pointer transition-colors ${
+      className={`relative flex gap-3 items-center h-8 px-2.5 w-full rounded-md cursor-pointer transition-colors duration-150 ${
         isActive
-          ? "bg-logo-primary/80"
-          : "hover:bg-mid-gray/20 hover:opacity-100 opacity-85"
+          ? "bg-active font-semibold before:content-[''] before:absolute before:start-0 before:top-2 before:bottom-2 before:w-[3px] before:rounded-full before:bg-accent"
+          : "hover:bg-hover"
       }`}
       onClick={onClick}
     >
-      <Icon width={24} height={24} className="shrink-0" />
-      <p className="text-sm font-medium truncate" title={label}>
+      <Icon width={16} height={16} className="shrink-0" />
+      <p className="text-sm truncate" title={label}>
         {label}
       </p>
+      {dot && (
+        <>
+          <span
+            className="ms-auto h-2 w-2 shrink-0 rounded-full bg-accent"
+            aria-hidden
+          />
+          {/* Read out as "What's new, unread". */}
+          <span className="sr-only">{t("sidebar.unread")}</span>
+        </>
+      )}
     </div>
   );
 
   return (
     <div
-      className="relative flex flex-col h-full shrink-0 border-e border-mid-gray/20 items-center px-2 overflow-y-auto"
+      className="relative flex flex-col h-full shrink-0 bg-sidebar border-e border-border items-center px-2 overflow-y-auto overflow-x-hidden"
       style={{
         width: searchQuery.trim()
           ? Math.max(width, SEARCH_SIDEBAR_WIDTH)
           : width,
       }}
     >
-      <HandyTextLogo width={120} className="m-4 shrink-0" />
-      <div className="flex flex-col w-full gap-3 pt-2 border-t border-mid-gray/20">
+      <div className="flex items-center gap-2 w-full px-2 pt-4 pb-3 shrink-0">
+        <AppIcon className="w-5 h-5 shrink-0" />
+        {/* The product name is not translated. */}
+        {/* eslint-disable-next-line i18next/no-literal-string */}
+        <span className="text-sm font-semibold truncate">Handy Tool</span>
+      </div>
+      <div className="flex flex-col w-full gap-3">
         <SidebarSearch
           query={searchQuery}
           onQueryChange={setSearchQuery}
@@ -334,8 +382,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 t(section.labelKey),
                 activeSection === section.id,
                 () => onSectionChange(section.id),
+                section.id === "whatsNew" && newsUnseen,
               ),
             )}
+            <div className="mx-2 my-1 border-t border-border" />
             {renderItem(
               "more",
               Ellipsis,
@@ -351,7 +401,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div
         onMouseDown={startResize}
         title={t("sidebar.resize")}
-        className="absolute top-0 right-0 h-full w-1.5 cursor-col-resize hover:bg-logo-primary/40 active:bg-logo-primary/60 transition-colors"
+        className="absolute top-0 end-0 h-full w-1.5 cursor-col-resize hover:bg-accent/40 active:bg-accent/60 transition-colors"
       />
     </div>
   );

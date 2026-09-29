@@ -121,7 +121,7 @@ export const UpdateSettings: React.FC = () => {
           disabled={!checks || !silent || portable}
           onChange={(event) => setTime(event.target.value)}
           onBlur={commitTime}
-          className="rounded-md border border-mid-gray/30 bg-background-ui px-2 py-1 text-sm disabled:opacity-50"
+          className="h-8 rounded-md border border-control-border border-b-control-bottom bg-control px-2.5 text-sm hover:bg-control-hover focus:outline-none focus:shadow-[inset_0_-2px_0_var(--color-accent)] disabled:bg-dis-bg disabled:text-dis-text disabled:border-transparent"
         />
       </SettingContainer>
       <SettingContainer
@@ -140,9 +140,9 @@ export const UpdateSettings: React.FC = () => {
             disabled={!checks || !silent || portable}
             onChange={(event) => setJitterInput(event.target.value)}
             onBlur={commitJitter}
-            className="w-20 rounded-md border border-mid-gray/30 bg-background-ui px-2 py-1 text-sm disabled:opacity-50"
+            className="w-20 h-8 rounded-md border border-control-border border-b-control-bottom bg-control px-2.5 text-sm hover:bg-control-hover focus:outline-none focus:shadow-[inset_0_-2px_0_var(--color-accent)] disabled:bg-dis-bg disabled:text-dis-text disabled:border-transparent"
           />
-          <span className="text-xs text-mid-gray">
+          <span className="text-xs text-text-secondary">
             {t("settings.general.updates.jitter.minutes")}
           </span>
         </div>
@@ -159,7 +159,7 @@ export const UpdateSettings: React.FC = () => {
           type="button"
           onClick={() => void checkNow()}
           disabled={status?.state === "checking"}
-          className="rounded-md bg-logo-primary/80 px-3 py-1.5 text-sm font-medium hover:bg-logo-primary disabled:cursor-wait disabled:opacity-50"
+          className="h-8 rounded-md border border-control-border border-b-control-bottom bg-control px-3 text-sm font-medium hover:bg-control-hover cursor-pointer disabled:cursor-wait disabled:bg-dis-bg disabled:text-dis-text"
         >
           {status?.state === "checking"
             ? t("settings.general.updates.checking")
@@ -167,12 +167,12 @@ export const UpdateSettings: React.FC = () => {
         </button>
       </SettingContainer>
       {status?.state === "unsupported" && (
-        <p className="px-4 py-2 text-xs text-amber-500">
+        <p className="px-4 py-2 text-xs text-warn-text">
           {t("settings.general.updates.portableUnsupported")}
         </p>
       )}
       {status?.state === "idle" && status.last_checked_at && (
-        <p className="px-4 py-2 text-xs text-mid-gray">
+        <p className="px-4 py-2 text-xs text-text-secondary">
           {t("settings.general.updates.upToDate")}
         </p>
       )}

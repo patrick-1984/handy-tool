@@ -34,9 +34,7 @@ const HandyTextLogo = ({
       }}
     >
       <span className="text-text">{t("brand.name")}</span>
-      <span style={{ color: "var(--color-logo-primary)" }}>
-        {t("brand.suffix")}
-      </span>
+      <span style={{ color: "var(--color-accent)" }}>{t("brand.suffix")}</span>
     </span>
   );
 };

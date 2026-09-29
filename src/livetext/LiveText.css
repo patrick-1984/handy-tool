@@ -1,7 +1,9 @@
 /* Live text box. Same dark HUD look as the recording pill, in both themes. */
 :root {
-  --live-text-bg: rgba(10, 9, 11, 0.8);
-  --live-text-color: #ffffff;
+  --live-text-bg: rgba(10, 9, 11, 0.88);
+  --live-text-border: rgba(255, 255, 255, 0.1);
+  --live-text-color: #fbfbfb;
+  --live-text-caret: #22d3ee;
   --live-text-font:
     "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
 }
@@ -29,13 +31,14 @@ body {
 .live-text {
   box-sizing: border-box;
   max-width: 100%;
-  padding: 4px 12px;
+  padding: 12px 16px;
   overflow: hidden;
   background: var(--live-text-bg);
+  border: 1px solid var(--live-text-border);
   color: var(--live-text-color);
   font-family: var(--live-text-font);
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--lt-size, 15px);
+  line-height: 1.55;
   border-radius: 12px;
   opacity: 0;
   transition: opacity 200ms ease-out;
@@ -55,12 +58,33 @@ body {
    slide off the left, fading out. */
 .live-text.one-line {
   width: fit-content;
-  height: 26px;
+  /* 40px at the normal 15px text; the window is sized the same way. */
+  height: calc(var(--lt-size, 15px) * 8 / 3);
+  padding: 0 14px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   white-space: nowrap;
-  mask-image: linear-gradient(to right, transparent 0, black 28px);
+}
+
+.live-text.one-line.overflowing {
+  mask-image: linear-gradient(to right, transparent 0, black 48px);
+}
+
+/* Where the next words will appear. */
+.live-text-caret {
+  display: inline-block;
+  width: 2px;
+  height: calc(var(--lt-size, 15px) * 1.07);
+  margin-inline-start: 3px;
+  vertical-align: -2px;
+  background: var(--live-text-caret);
+}
+
+.live-text.one-line .live-text-caret {
+  height: calc(var(--lt-size, 15px) * 1.2);
+  vertical-align: -3px;
 }
 
 /* Whole text: starts at one line and grows away from the pill as the take goes

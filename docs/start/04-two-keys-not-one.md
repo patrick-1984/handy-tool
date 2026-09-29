@@ -9,7 +9,7 @@ Sometimes you want the text so you can inspect it. Sometimes you already trust w
 ## Rehearse both intents
 
 1. Open a blank Notepad document.
-2. Press `ctrl+space`, the chord set at `General › Transcribe Shortcut`. Say a sentence, press it again, inspect the text, and decide what to do with it.
+2. Press `ctrl+space`, the chord set at `General › Record/Transcribe Shortcut`. Say a sentence, press it again, inspect the text, and decide what to do with it.
 3. Open a disposable chat or prompt field where **Enter really means send**.
 4. Press `ctrl+shift+f9`, the chord set at `General › Transcribe & Submit Shortcut`. Say a harmless test message and press it again.
 

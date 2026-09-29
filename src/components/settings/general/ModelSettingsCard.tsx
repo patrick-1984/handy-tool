@@ -63,7 +63,7 @@ export const ModelSettingsCard: React.FC = () => {
           descriptionMode="tooltip"
           grouped={true}
         >
-          <span className="px-2 py-1 text-sm font-semibold text-mid-gray">
+          <span className="px-2 py-1 text-sm font-semibold text-text-secondary">
             {t("settings.modelSettings.autoDetectLanguage.value")}
           </span>
         </SettingContainer>

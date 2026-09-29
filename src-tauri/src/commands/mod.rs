@@ -1,4 +1,5 @@
 pub mod audio;
+pub mod files;
 pub mod history;
 pub mod models;
 pub mod transcription;
@@ -13,6 +14,27 @@ use tauri_plugin_opener::OpenerExt;
 #[specta::specta]
 pub fn cancel_operation(app: AppHandle) {
     cancel_current_operation(&app);
+}
+
+/// Where the pill's right-click menus send you: a page and the setting on it.
+#[derive(Clone, serde::Serialize)]
+struct OpenSetting {
+    section: String,
+    title_key: String,
+}
+
+/// Bring up the main window on `section` (a sidebar page id) with the setting
+/// whose title is the translation `title_key` scrolled to and outlined.
+#[tauri::command]
+#[specta::specta]
+pub fn open_settings_at(app: AppHandle, section: String, title_key: String) {
+    crate::show_main_window(&app);
+    let _ = tauri::Emitter::emit_to(
+        &app,
+        "main",
+        "open-setting",
+        OpenSetting { section, title_key },
+    );
 }
 
 #[tauri::command]

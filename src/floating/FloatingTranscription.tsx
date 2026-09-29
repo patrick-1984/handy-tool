@@ -2,6 +2,7 @@ import { listen } from "@tauri-apps/api/event";
 import { writeText } from "@tauri-apps/plugin-clipboard-manager";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { commands } from "@/bindings";
 import "./FloatingTranscription.css";
 
 interface LiveTranscriptionChunk {
@@ -15,6 +16,8 @@ const FloatingTranscription: React.FC = () => {
   const [chunks, setChunks] = useState<string[]>([]);
   const [isRecording, setIsRecording] = useState(false);
   const [copied, setCopied] = useState(false);
+  // The speech model in use, for the footer.
+  const [modelName, setModelName] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = useCallback(() => {
@@ -36,11 +39,25 @@ const FloatingTranscription: React.FC = () => {
     scrollToBottom();
   }, [chunks, scrollToBottom]);
 
+  const loadModelName = useCallback(async () => {
+    const [current, models] = await Promise.all([
+      commands.getCurrentModel(),
+      commands.getAvailableModels(),
+    ]);
+    if (current.status !== "ok" || models.status !== "ok") return;
+    setModelName(models.data.find((m) => m.id === current.data)?.name ?? "");
+  }, []);
+
+  useEffect(() => {
+    void loadModelName();
+  }, [loadModelName]);
+
   useEffect(() => {
     const setupListeners = async () => {
       const unlistenReset = await listen("live-transcription-reset", () => {
         setChunks([]);
         setIsRecording(true);
+        void loadModelName();
       });
 
       const unlistenChunk = await listen<LiveTranscriptionChunk>(
@@ -71,31 +88,42 @@ const FloatingTranscription: React.FC = () => {
     return () => {
       cleanup?.();
     };
-  }, []);
+  }, [loadModelName]);
 
   const hasText = chunks.length > 0;
 
   return (
-    <div className="floating-root" ref={scrollRef}>
-      {!hasText && !isRecording && (
-        <p className="floating-idle">{t("floating.waiting")}</p>
-      )}
-      {isRecording && !hasText && (
-        <p className="floating-listening">
-          <span className="recording-dot" />
-          {t("floating.listening")}
-        </p>
-      )}
-      {hasText && <p className="floating-text">{chunks.join(" ")}</p>}
-      {hasText && (
-        <button
-          type="button"
-          className="floating-copy-button"
-          onClick={handleCopy}
-        >
-          {copied ? t("floating.copied") : t("floating.copy")}
-        </button>
-      )}
+    <div className="floating-root">
+      <div className="floating-body" ref={scrollRef}>
+        {!hasText && !isRecording ? (
+          <p className="floating-idle">{t("floating.waiting")}</p>
+        ) : (
+          <p className="floating-text">
+            {chunks.join(" ")}
+            {isRecording && <span className="floating-caret" aria-hidden />}
+          </p>
+        )}
+      </div>
+      <div className="floating-footer">
+        <span
+          className={`recording-dot ${isRecording ? "live" : ""}`}
+          aria-hidden
+        />
+        <span className="floating-status">
+          {[isRecording && t("floating.listeningShort"), modelName]
+            .filter(Boolean)
+            .join(" · ")}
+        </span>
+        {hasText && (
+          <button
+            type="button"
+            className="floating-copy-button"
+            onClick={handleCopy}
+          >
+            {copied ? t("floating.copied") : t("floating.copy")}
+          </button>
+        )}
+      </div>
     </div>
   );
 };

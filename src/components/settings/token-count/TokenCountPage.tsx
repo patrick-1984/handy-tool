@@ -9,17 +9,20 @@ import {
 } from "@/bindings";
 import { useSettings } from "../../../hooks/useSettings";
 import { useNavStore } from "@/stores/navStore";
+import {
+  PRIMARY_BUTTON,
+  SECONDARY_BUTTON,
+  TEXT_AREA,
+} from "../../ui/controlClasses";
 
 const PROVIDER_PREFIX = "provider:";
 
 const LOCAL_TOKENIZERS = ["cl100k_base", "o200k_base", "estimate"];
 
-const actionButtonClass =
-  "px-4 py-1.5 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors";
-const secondaryButtonClass =
-  "px-3 py-1.5 rounded-md border border-zinc-700 bg-zinc-800 text-zinc-100 text-sm hover:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer";
+const actionButtonClass = PRIMARY_BUTTON;
+const secondaryButtonClass = SECONDARY_BUTTON;
 const providerLinkClass =
-  "text-xs text-logo-primary/85 hover:text-logo-primary hover:underline transition-colors cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-logo-primary";
+  "text-xs text-accent-text/85 hover:text-accent-text hover:underline transition-colors cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent";
 
 export const TokenCountPage: React.FC = () => {
   const { t } = useTranslation();
@@ -171,14 +174,14 @@ export const TokenCountPage: React.FC = () => {
     const base =
       "px-3 py-1.5 rounded-full border text-sm transition-colors whitespace-nowrap";
     if (!enabled) {
-      return `${base} border-zinc-800 text-zinc-600 cursor-not-allowed`;
+      return `${base} border-border text-text-secondary cursor-not-allowed`;
     }
     const selected = activeOption === option;
     const working = countingOption === option;
     return `${base} cursor-pointer ${
       selected
-        ? "border-blue-500 bg-blue-600/20 text-zinc-100"
-        : "border-zinc-700 bg-zinc-800 text-zinc-300 hover:border-blue-500"
+        ? "border-accent bg-accent/20 text-text"
+        : "border-border bg-surface text-text-secondary hover:border-accent"
     } ${working ? "animate-pulse" : ""}`;
   };
 
@@ -189,7 +192,7 @@ export const TokenCountPage: React.FC = () => {
       </h2>
 
       <textarea
-        className="flex-1 min-h-[320px] w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-blue-500 focus:outline-none resize-none"
+        className={`${TEXT_AREA} flex-1 min-h-[320px] w-full resize-none`}
         placeholder={t("tokenCount.placeholder")}
         value={text}
         onChange={(e) => {
@@ -239,7 +242,7 @@ export const TokenCountPage: React.FC = () => {
       </div>
 
       {providers.length === 0 && (
-        <div className="flex items-center gap-2 text-sm text-text/50">
+        <div className="flex items-center gap-2 text-sm text-text-secondary">
           <span>{t("tokenCount.noProviders")}</span>
           <button
             type="button"
@@ -288,7 +291,7 @@ export const TokenCountPage: React.FC = () => {
         </button>
       </div>
 
-      <div className="text-xs text-text/50">
+      <div className="text-xs text-text-secondary">
         {selectedProvider
           ? t("tokenCount.activeProvider", {
               name: selectedProvider.name,
@@ -305,19 +308,19 @@ export const TokenCountPage: React.FC = () => {
         )}
       </div>
 
-      {error && <div className="text-sm text-red-400">{error}</div>}
+      {error && <div className="text-sm text-err-text">{error}</div>}
 
       {result && (
-        <div className="flex items-center gap-4 text-sm text-zinc-300">
+        <div className="flex items-center gap-4 text-sm text-text-secondary">
           <span>
             <strong>{result.tokens.toLocaleString()}</strong>{" "}
             {t("tokenCount.tokens")}
           </span>
-          <span className="text-zinc-500">|</span>
+          <span className="text-text-secondary">|</span>
           <span>
             {result.characters.toLocaleString()} {t("tokenCount.characters")}
           </span>
-          <span className="text-zinc-500">|</span>
+          <span className="text-text-secondary">|</span>
           <span>
             {result.words.toLocaleString()} {t("tokenCount.words")}
           </span>
@@ -326,14 +329,14 @@ export const TokenCountPage: React.FC = () => {
 
       {(sweepResults.length > 0 || sweeping) && (
         <div className="space-y-2 pb-4">
-          <div className="text-sm text-zinc-300">
+          <div className="text-sm text-text-secondary">
             {characters.toLocaleString()} {t("tokenCount.characters")}
-            <span className="text-zinc-500 mx-2">|</span>
+            <span className="text-text-secondary mx-2">|</span>
             {words.toLocaleString()} {t("tokenCount.words")}
           </div>
-          <table className="w-full text-sm border border-mid-gray/20 rounded-lg overflow-hidden">
+          <table className="w-full text-sm border border-border rounded-lg overflow-hidden">
             <thead>
-              <tr className="text-left text-xs text-text/60 uppercase tracking-wide bg-zinc-800/50">
+              <tr className="text-left text-xs text-text-secondary uppercase tracking-wide bg-surface2">
                 <th className="px-3 py-2">{t("tokenCount.table.provider")}</th>
                 <th className="px-3 py-2">{t("tokenCount.table.model")}</th>
                 <th className="px-3 py-2 text-right">
@@ -347,18 +350,18 @@ export const TokenCountPage: React.FC = () => {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-mid-gray/20">
+            <tbody className="divide-y divide-border">
               {okResults.map((r) => (
                 <tr key={r.provider_id}>
                   <td className="px-3 py-1.5">{r.provider_name}</td>
-                  <td className="px-3 py-1.5 text-text/70">{r.model}</td>
+                  <td className="px-3 py-1.5 text-text-secondary">{r.model}</td>
                   <td className="px-3 py-1.5 text-right font-medium">
                     {r.tokens.toLocaleString()}
                   </td>
-                  <td className="px-3 py-1.5 text-right text-text/70">
+                  <td className="px-3 py-1.5 text-right text-text-secondary">
                     {formatDelta(r.tokens)}
                   </td>
-                  <td className="px-3 py-1.5 text-right text-text/50">
+                  <td className="px-3 py-1.5 text-right text-text-secondary">
                     {formatElapsed(r.elapsed_ms)}
                   </td>
                 </tr>
@@ -366,7 +369,7 @@ export const TokenCountPage: React.FC = () => {
             </tbody>
           </table>
           {sweepDone && (
-            <div className="text-xs text-text/50">
+            <div className="text-xs text-text-secondary">
               {t("tokenCount.sweepSummary", {
                 ok: okResults.length,
                 total: sweepResults.length,
@@ -386,7 +389,7 @@ export const TokenCountPage: React.FC = () => {
             </div>
           )}
           {showFailed && failedResults.length > 0 && (
-            <ul className="text-xs text-text/50 space-y-0.5">
+            <ul className="text-xs text-text-secondary space-y-0.5">
               {failedResults.map((r) => (
                 <li key={r.provider_id}>
                   {r.provider_name} ({r.model}): {r.error}

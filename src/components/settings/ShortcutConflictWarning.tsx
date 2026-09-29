@@ -74,5 +74,11 @@ export const ShortcutConflictWarning: React.FC<{ shortcutId: string }> = ({
     )
     .join(", ");
   const message = t("settings.general.shortcut.conflict", { names });
-  return <WarningIcon message={message} className="text-red-500" />;
+  return (
+    <WarningIcon
+      message={message}
+      label={t("settings.general.shortcut.badge.conflict")}
+      tone="error"
+    />
+  );
 };

@@ -244,7 +244,7 @@ fn seed_default_folder(app: &AppHandle) {
 /// hard-capped at ~40 s (cut at the quietest window past the ~25 s mark).
 /// Long silence is skipped entirely — the decoder never sees it, which both
 /// speeds batch work up and starves Whisper's silence-hallucination loops.
-fn split_speech_segments(samples: &[f32]) -> Vec<std::ops::Range<usize>> {
+pub(crate) fn split_speech_segments(samples: &[f32]) -> Vec<std::ops::Range<usize>> {
     if samples.is_empty() {
         return Vec::new();
     }
@@ -1193,7 +1193,9 @@ mod tests {
         assert!(is_candidate(Path::new("C:/x/a.wav")));
         assert!(is_candidate(Path::new("C:/x/a.OPUS")));
         assert!(is_candidate(Path::new("C:/x/a.ogg")));
-        assert!(!is_candidate(Path::new("C:/x/a.mp3")));
+        assert!(is_candidate(Path::new("C:/x/a.mp3")));
+        assert!(is_candidate(Path::new("C:/x/a.M4A")));
+        assert!(is_candidate(Path::new("C:/x/a.flac")));
         assert!(!is_candidate(Path::new("C:/x/a.txt")));
         assert!(!is_candidate(Path::new("C:/x/.hidden.wav")));
     }

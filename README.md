@@ -56,7 +56,7 @@ Download **`Handy-Tool-<version>-macos-x86_64.zip`** from the [latest release](h
 
 This build is new and lightly tested; see [Platform status](#platform-status) before relying on it. Intel only for now.
 
-Then, whichever route you took: complete the first-run onboarding, grant microphone access, and choose a transcription model. A fresh install has no model — the download starts only once you pick one, and models range from a few hundred megabytes to several gigabytes.
+Then, whichever route you took: grant microphone access and go through the short first-start setup: your languages, one of three speech models suggested for them, your shortcuts and your microphone. A fresh install has no model — the download starts only once you pick one, and models range from a few hundred megabytes to several gigabytes.
 
 ## At a glance
 
@@ -68,9 +68,14 @@ Then, whichever route you took: complete the first-run onboarding, grant microph
 - [Pick the engine that fits the machine](docs/features.md#pick-the-engine-that-fits-the-machine)
 - [When paste is blocked, type it instead](docs/features.md#when-paste-is-blocked-type-it-instead)
 - [Which model is actually better at my task?](docs/features.md#which-model-is-actually-better-at-my-task)
+- [One file, transcribed as accurately as the model can](docs/features.md#one-file-transcribed-as-accurately-as-the-model-can)
 - [A folder of recordings, transcribed while you sleep](docs/features.md#a-folder-of-recordings-transcribed-while-you-sleep)
 - [Let an agent drive the app](docs/features.md#let-an-agent-drive-the-app)
 - [See your words next to the overlay while you talk](docs/features.md#live-text-box)
+- [A guided setup for the Jumper](docs/features.md#a-guided-setup-for-the-jumper) and [for post-processing](docs/features.md#a-guided-setup-for-post-processing)
+- [A guided setup for the look, with moving previews](docs/features.md#a-guided-setup-for-the-look)
+- [Help mode: what a setting does](docs/features.md#help-mode)
+- [What's new, one click from each setting](docs/features.md#whats-new)
 
 ## Built for your left hand
 

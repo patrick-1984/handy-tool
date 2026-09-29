@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { listen } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
 import { toast } from "sonner";
-import { FolderPlus, Trash2, Languages, FolderOpen } from "lucide-react";
+import { FolderPlus, Trash2, FolderSync, FolderOpen } from "lucide-react";
 import { SettingsGroup } from "../../ui/SettingsGroup";
 import { SettingContainer } from "../../ui/SettingContainer";
 import { ToggleSwitch } from "../../ui/ToggleSwitch";
@@ -251,7 +251,7 @@ export const TranslatorSettings: React.FC = () => {
 
   return (
     <div className="w-full space-y-6">
-      <SettingsGroup icon={Languages} title={t("settings.translator.title")}>
+      <SettingsGroup icon={FolderSync} title={t("settings.translator.title")}>
         <ToggleSwitch
           checked={enabled}
           onChange={(value) => updateSetting("translator_enabled", value)}
@@ -339,7 +339,7 @@ export const TranslatorSettings: React.FC = () => {
           <div className="flex flex-col items-end gap-1 text-sm">
             <span>{statusLine()}</span>
             {status && (status.done_count > 0 || status.failed_count > 0) && (
-              <span className="text-xs text-text/50">
+              <span className="text-xs text-text-secondary">
                 {t("settings.translator.status.counters", {
                   done: status.done_count,
                   failed: status.failed_count,
@@ -361,7 +361,7 @@ export const TranslatorSettings: React.FC = () => {
             descriptionMode="tooltip"
             grouped={true}
           >
-            <span className="text-sm text-text/50">
+            <span className="text-sm text-text-secondary">
               {t("settings.translator.folders.none")}
             </span>
           </SettingContainer>
@@ -394,7 +394,7 @@ export const TranslatorSettings: React.FC = () => {
                       setFolderEnabled(folder.path, e.target.checked)
                     }
                   />
-                  <div className="relative w-11 h-6 bg-mid-gray/20 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-logo-primary rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-background-ui peer-disabled:opacity-50"></div>
+                  <div className="relative w-10 h-5 shrink-0 rounded-full border transition-colors duration-150 border-text-secondary peer-checked:border-accent peer-checked:bg-accent peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-focus-ring peer-disabled:border-dis-text after:content-[''] after:absolute after:top-1/2 after:-translate-y-1/2 after:start-[3px] after:h-3 after:w-3 after:rounded-full after:bg-text-secondary after:transition-all after:duration-150 peer-checked:after:start-[23px] peer-checked:after:bg-on-accent peer-disabled:after:bg-dis-text"></div>
                 </label>
                 <Button
                   variant="ghost"
@@ -405,7 +405,7 @@ export const TranslatorSettings: React.FC = () => {
                   aria-label={t("settings.translator.folders.removeAriaLabel", {
                     name: folderName,
                   })}
-                  className="text-logo-primary/85 hover:text-logo-primary hover:bg-logo-primary/10"
+                  className="text-accent-text/85 hover:text-accent-text hover:bg-accent/10"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </Button>

@@ -24,7 +24,6 @@ export const StartHidden: React.FC<StartHiddenProps> = React.memo(
         description={t("settings.advanced.startHidden.description")}
         descriptionMode={descriptionMode}
         grouped={grouped}
-        tooltipPosition="bottom"
       />
     );
   },

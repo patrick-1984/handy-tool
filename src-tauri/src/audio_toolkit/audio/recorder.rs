@@ -1,9 +1,10 @@
 use std::{
+    collections::VecDeque,
     io::Error,
     path::PathBuf,
     sync::{
         Arc, Mutex,
-        atomic::{AtomicBool, AtomicU64, Ordering},
+        atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering},
         mpsc,
     },
     time::{Duration, Instant},
@@ -27,6 +28,47 @@ use crate::audio_toolkit::{
 /// Live preview callback: all kept audio of the take so far, and whether this
 /// update ends an utterance (speech stopped, or the take was paused).
 type SegmentCb = Arc<Mutex<Option<Arc<dyn Fn(Vec<f32>, bool) + Send + Sync + 'static>>>>;
+
+/// What the overlay shows besides the spectrum levels.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct MicState {
+    /// The microphone is live (a cold one is not until it has warmed up).
+    pub live: bool,
+    /// Voice-like sound too quiet to be kept was heard just now.
+    pub too_quiet: bool,
+}
+
+/// Spectrum levels for the overlay, and the microphone's state.
+type LevelCb = Arc<dyn Fn(Vec<f32>, MicState) + Send + Sync + 'static>;
+/// Reports a cold-started microphone's measured warm-up, in ms.
+type WarmupCb = Arc<dyn Fn(u32) + Send + Sync + 'static>;
+
+/// A microphone that takes longer than this from open to its first audio was
+/// idle ("cold") - the only kind that fades in.
+const COLD_START_MIN: Duration = Duration::from_millis(250);
+/// 50 ms levels measured after a cold start (3 s) to find its warm-up.
+const WARMUP_MEASURE_WINDOWS: usize = 60;
+/// Below this a cold microphone is still sending digital silence (~ -100 dBFS):
+/// a working one always has some noise. This PC's Realtek input sent 0.5 s of
+/// exact zeros after a replug, then faded in.
+const SILENT_SAMPLE: f32 = 1e-5;
+const SILENT_DB: f32 = -100.0;
+/// A cold microphone still silent this long after its first audio is shown as
+/// live anyway (a muted one would otherwise say "Starting mic..." forever).
+const SILENT_GIVE_UP: Duration = Duration::from_secs(3);
+
+/// "Too quiet": a frame (30 ms) sounds a little like a voice at this speech
+/// probability or more - the detector itself keeps frames only above 0.3.
+const QUIET_PROB_MIN: f32 = 0.08;
+/// ...and stands this far above the room's noise floor.
+const QUIET_ABOVE_FLOOR_DB: f32 = 8.0;
+/// Frames looked back over (1.5 s), and how many must be such near-speech (0.7 s).
+const QUIET_WINDOW_FRAMES: usize = 50;
+const QUIET_NEEDED_FRAMES: usize = 23;
+/// After a hint, frames before the next one may come (4.5 s).
+const QUIET_COOLDOWN_FRAMES: usize = 150;
+/// How long the pill shows the hint.
+const QUIET_HINT_SHOWN: Duration = Duration::from_secs(2);
 
 /// How much new speech triggers a live preview update between pauses.
 const LIVE_PREVIEW_INTERVAL_SECS: f32 = 1.5;
@@ -112,7 +154,12 @@ pub struct AudioRecorder {
     sys_delay_ms: i32,
     worker_handle: Option<std::thread::JoinHandle<()>>,
     vad: Option<Arc<Mutex<Box<dyn vad::VoiceActivityDetector>>>>,
-    level_cb: Option<Arc<dyn Fn(Vec<f32>) + Send + Sync + 'static>>,
+    level_cb: Option<LevelCb>,
+    warmup_cb: Option<WarmupCb>,
+    /// How long after its first audio a cold-started microphone counts as live.
+    warmup_ms: Arc<AtomicU32>,
+    /// Watch for speech too quiet to be kept (the "Too quiet" hint).
+    quiet_hint: Arc<AtomicBool>,
     segment_cb: SegmentCb,
     closed_chunk_cb: ClosedChunkCb,
 }
@@ -133,6 +180,9 @@ impl AudioRecorder {
             worker_handle: None,
             vad: None,
             level_cb: None,
+            warmup_cb: None,
+            warmup_ms: Arc::new(AtomicU32::new(0)),
+            quiet_hint: Arc::new(AtomicBool::new(false)),
             segment_cb: Arc::new(Mutex::new(None)),
             closed_chunk_cb: Arc::new(Mutex::new(None)),
         })
@@ -145,10 +195,30 @@ impl AudioRecorder {
 
     pub fn with_level_callback<F>(mut self, cb: F) -> Self
     where
-        F: Fn(Vec<f32>) + Send + Sync + 'static,
+        F: Fn(Vec<f32>, MicState) + Send + Sync + 'static,
     {
         self.level_cb = Some(Arc::new(cb));
         self
+    }
+
+    /// Called once per cold microphone start with its measured warm-up (ms).
+    pub fn with_warmup_callback<F>(mut self, cb: F) -> Self
+    where
+        F: Fn(u32) + Send + Sync + 'static,
+    {
+        self.warmup_cb = Some(Arc::new(cb));
+        self
+    }
+
+    /// How long a cold start's first audio must age before the levels report
+    /// the microphone as live (0 = at once). Set before `open()`.
+    pub fn set_warmup_ms(&self, ms: u32) {
+        self.warmup_ms.store(ms, Ordering::Relaxed);
+    }
+
+    /// Whether takes watch for speech too quiet to be kept. Read per frame.
+    pub fn set_quiet_hint(&self, on: bool) {
+        self.quiet_hint.store(on, Ordering::Relaxed);
     }
 
     /// Set the live preview callback: it fires every ~1.5 s of new speech and at
@@ -354,6 +424,9 @@ impl AudioRecorder {
         let vad = self.vad.clone();
         // Move the optional level callback into the worker thread
         let level_cb = self.level_cb.clone();
+        let warmup_cb = self.warmup_cb.clone();
+        let warmup_ms = Arc::clone(&self.warmup_ms);
+        let quiet_hint = Arc::clone(&self.quiet_hint);
         let segment_cb = self.segment_cb.clone();
         let closed_chunk_cb = self.closed_chunk_cb.clone();
 
@@ -526,6 +599,9 @@ impl AudioRecorder {
                 sample_rx,
                 cmd_rx,
                 level_cb,
+                warmup_cb,
+                warmup_ms,
+                quiet_hint,
                 segment_cb,
                 closed_chunk_cb,
                 first_buffer_seen,
@@ -999,6 +1075,125 @@ fn apply_system_mix(
     mix_into(frame, scratch, sys_gain);
 }
 
+/// The level of `samples` in dBFS (-120 for silence).
+fn level_dbfs(samples: &[f32]) -> f32 {
+    if samples.is_empty() {
+        return -120.0;
+    }
+    let mean_sq = samples.iter().map(|s| s * s).sum::<f32>() / samples.len() as f32;
+    10.0 * mean_sq.max(1e-12).log10()
+}
+
+/// Notices someone speaking too quietly to be heard: frames that sound a
+/// little like a voice (speech probability from QUIET_PROB_MIN, below the
+/// detector's own threshold) and stand out from the room's noise floor, but are
+/// not kept - for about 0.7 s within 1.5 s. Silence and steady noise sit at the
+/// floor; music and typing score far lower as speech.
+#[derive(Default)]
+struct QuietDetector {
+    /// Tracks the quiet frames: follows the level down at once, rises slowly.
+    floor_db: f32,
+    started: bool,
+    recent: VecDeque<bool>,
+    near: usize,
+    cooldown: usize,
+}
+
+impl QuietDetector {
+    /// Takes one frame; true when the hint should show now.
+    fn observe(&mut self, level_db: f32, kept: bool, prob: f32) -> bool {
+        if !self.started || level_db < self.floor_db {
+            self.floor_db = level_db;
+            self.started = true;
+        } else {
+            self.floor_db += 0.02; // ~0.7 dB per second
+        }
+        let near =
+            !kept && prob >= QUIET_PROB_MIN && level_db >= self.floor_db + QUIET_ABOVE_FLOOR_DB;
+        self.recent.push_back(near);
+        self.near += near as usize;
+        if self.recent.len() > QUIET_WINDOW_FRAMES {
+            self.near -= self.recent.pop_front().unwrap_or(false) as usize;
+        }
+        if self.cooldown > 0 {
+            self.cooldown -= 1;
+            return false;
+        }
+        if self.near >= QUIET_NEEDED_FRAMES {
+            self.cooldown = QUIET_COOLDOWN_FRAMES;
+            self.recent.clear();
+            self.near = 0;
+            return true;
+        }
+        false
+    }
+}
+
+/// The level (dBFS) of each 50 ms of a cold start's first 3 s.
+struct WarmupMeter {
+    window: usize,
+    sum_sq: f64,
+    count: usize,
+    levels: Vec<f32>,
+}
+
+impl WarmupMeter {
+    fn new(sample_rate: u32) -> Self {
+        Self {
+            window: (sample_rate as usize / 20).max(1),
+            sum_sq: 0.0,
+            count: 0,
+            levels: Vec::with_capacity(WARMUP_MEASURE_WINDOWS),
+        }
+    }
+
+    /// Takes in audio; returns the levels once, when the 3 s are complete.
+    fn push(&mut self, samples: &[f32]) -> Option<Vec<f32>> {
+        if self.levels.len() >= WARMUP_MEASURE_WINDOWS {
+            return None;
+        }
+        for &s in samples {
+            self.sum_sq += s as f64 * s as f64;
+            self.count += 1;
+            if self.count == self.window {
+                let rms = (self.sum_sq / self.count as f64).sqrt();
+                self.levels.push((20.0 * rms.max(1e-6).log10()) as f32);
+                self.sum_sq = 0.0;
+                self.count = 0;
+                if self.levels.len() == WARMUP_MEASURE_WINDOWS {
+                    return Some(self.levels.clone());
+                }
+            }
+        }
+        None
+    }
+}
+
+/// How long a cold-started microphone took to reach its normal level, in ms,
+/// from the level of each 50 ms since its first audio: from its first sound
+/// (digital silence before it is not counted - the pill waits for sound anyway)
+/// to the start of the first half-second that stays within 6 dB of the floor it
+/// settles at (the quietest fifth of the later half - speech only adds level, so
+/// it cannot hide a fade-in). A Realtek input was seen starting 15-20 dB quiet
+/// and fading in; the first words spoken into that were dropped as noise.
+fn warmup_from_levels(levels: &[f32]) -> u32 {
+    let Some(sound) = levels.iter().position(|&l| l > SILENT_DB) else {
+        return 0;
+    };
+    let levels = &levels[sound..];
+    let mut later = levels[levels.len() / 2..].to_vec();
+    later.sort_by(f32::total_cmp);
+    let floor = later[later.len() / 5];
+    let settled = (0..levels.len())
+        .find(|&i| {
+            levels[i..(i + 10).min(levels.len())]
+                .iter()
+                .all(|&l| l >= floor - 6.0)
+        })
+        .unwrap_or(levels.len());
+    settled as u32 * 50
+}
+
 #[allow(clippy::too_many_arguments)]
 fn process_frame(
     samples: &[f32],
@@ -1104,7 +1299,10 @@ fn run_consumer(
     vad: Option<Arc<Mutex<Box<dyn vad::VoiceActivityDetector>>>>,
     sample_rx: mpsc::Receiver<Vec<f32>>,
     cmd_rx: mpsc::Receiver<Cmd>,
-    level_cb: Option<Arc<dyn Fn(Vec<f32>) + Send + Sync + 'static>>,
+    level_cb: Option<LevelCb>,
+    warmup_cb: Option<WarmupCb>,
+    warmup_ms: Arc<AtomicU32>,
+    quiet_hint: Arc<AtomicBool>,
     segment_cb: SegmentCb,
     closed_chunk_cb: ClosedChunkCb,
     // T-113 (finding 9): the audio callback (`build_stream`'s `stream_cb`)
@@ -1145,6 +1343,7 @@ fn run_consumer(
     let mut chunk_state: Option<ChunkState> = None;
 
     // ---------- spectrum visualisation setup ---------------------------- //
+    // The pill's sound bars, low to high pitch (16 in the middle of the pill).
     const BUCKETS: usize = 16;
     const WINDOW_SIZE: usize = 512;
     let mut visualizer = AudioVisualiser::new(
@@ -1153,7 +1352,12 @@ fn run_consumer(
         BUCKETS,
         400.0,  // vocal_min_hz
         4000.0, // vocal_max_hz
-    );
+    )
+    // A voice has most of its energy low: measured over 12 of this PC's takes,
+    // the right half of the bars averaged 0.01-0.03 against 0.23-0.28 on the left.
+    // +8 dB per octave above 500 Hz evens that out (0.12-0.29 everywhere), and
+    // the quiet moments between words still show nothing.
+    .with_tilt(8.0, 500.0);
     // Last time the level callback fired while idle (see LEVEL_IDLE_INTERVAL).
     let mut last_level_emit: Option<Instant> = None;
     // T-113 (finding 9): one-shot — only the FIRST loop iteration after the
@@ -1161,6 +1365,18 @@ fn run_consumer(
     // first-buffer latency; every later iteration is steady-state and not
     // interesting for start-latency.
     let mut first_buffer_logged = false;
+    // Known at the first audio: whether this was a cold start (COLD_START_MIN).
+    // Only a cold start is measured for its warm-up, and only its levels say
+    // "not live yet": while it still sends digital silence, and then until its
+    // expected fade-in has passed since its first sound.
+    let mut cold_start: Option<bool> = None;
+    let mut first_audio_at: Option<Instant> = None;
+    let mut first_sound_at: Option<Instant> = None;
+    let mut warmup_meter = WarmupMeter::new(in_sample_rate);
+    // The "Too quiet" hint: near-speech the detector drops, and until when the
+    // pill says so.
+    let mut quiet = QuietDetector::default();
+    let mut quiet_until: Option<Instant> = None;
 
     loop {
         // Acquire pairs with the callback's Release publish (finding 9): this
@@ -1191,6 +1407,34 @@ fn run_consumer(
         };
 
         if let Some(raw) = raw {
+            // ---------- cold-start warm-up ------------------------------- //
+            let first_at = *first_audio_at.get_or_insert_with(Instant::now);
+            let cold = *cold_start.get_or_insert_with(|| {
+                let to_first = Duration::from_nanos(first_buffer_nanos.load(Ordering::Acquire));
+                stream_playing_in + to_first >= COLD_START_MIN
+            });
+            if cold {
+                if let Some(levels) = warmup_meter.push(&raw) {
+                    let warmup = warmup_from_levels(&levels);
+                    let shown: Vec<String> = levels.iter().map(|l| format!("{l:.0}")).collect();
+                    log::info!(
+                        "Microphone warm-up after a cold start: {warmup} ms (dBFS per 50 ms: {})",
+                        shown.join(" ")
+                    );
+                    if let Some(cb) = &warmup_cb {
+                        cb(warmup);
+                    }
+                }
+            }
+            if first_sound_at.is_none() && raw.iter().any(|s| s.abs() > SILENT_SAMPLE) {
+                first_sound_at = Some(Instant::now());
+            }
+            let live = !cold
+                || first_sound_at.is_some_and(|at| {
+                    at.elapsed() >= Duration::from_millis(warmup_ms.load(Ordering::Relaxed) as u64)
+                })
+                || first_at.elapsed() >= SILENT_GIVE_UP;
+
             // ---------- spectrum processing ------------------------------ //
             if let Some(buckets) = visualizer.feed(&raw) {
                 if let Some(cb) = &level_cb {
@@ -1202,16 +1446,19 @@ fn run_consumer(
                             .map_or(true, |t| now.duration_since(t) >= LEVEL_IDLE_INTERVAL)
                     {
                         last_level_emit = Some(now);
-                        cb(buckets);
+                        let too_quiet = quiet_until.is_some_and(|until| now < until);
+                        cb(buckets, MicState { live, too_quiet });
                     }
                 }
             }
 
             // ---------- pipeline ----------------------------------------- //
+            let watch_quiet = recording && !paused && quiet_hint.load(Ordering::Relaxed);
             frame_resampler.push(&raw, &mut |frame: &[f32]| {
                 mix_buf.clear();
                 mix_buf.extend_from_slice(frame);
                 apply_system_mix(&mut mix_buf, &sys_ring, sys_gain, &mut mix_scratch);
+                let kept_before = processed_samples.len();
                 process_frame(
                     &mix_buf,
                     recording && !paused,
@@ -1221,7 +1468,22 @@ fn run_consumer(
                     &mut segment_start_idx,
                     &segment_cb,
                     &closed_chunk_cb,
-                )
+                );
+                if watch_quiet {
+                    let kept = processed_samples.len() > kept_before;
+                    let prob = vad
+                        .as_ref()
+                        .and_then(|v| v.lock().ok().and_then(|d| d.last_probability()));
+                    if let Some(prob) = prob {
+                        if quiet.observe(level_dbfs(&mix_buf), kept, prob) {
+                            quiet_until = Some(Instant::now() + QUIET_HINT_SHOWN);
+                            log::info!(
+                                "Too quiet: voice-like sound the speech detector is not keeping (floor {:.0} dBFS)",
+                                quiet.floor_db
+                            );
+                        }
+                    }
+                }
             });
         }
 
@@ -1258,6 +1520,8 @@ fn run_consumer(
                     recording = true;
                     paused = false;
                     paused_since = None;
+                    quiet = QuietDetector::default();
+                    quiet_until = None;
                     if mic_released {
                         let _ = stream.play();
                         mic_released = false;
@@ -1478,6 +1742,102 @@ fn run_consumer(
                 Cmd::Shutdown => return,
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod quiet_tests {
+    use super::{QUIET_COOLDOWN_FRAMES, QuietDetector};
+
+    /// Feeds `n` frames; returns on which frame (1-based) the hint fired.
+    fn feed(d: &mut QuietDetector, n: usize, level: f32, kept: bool, prob: f32) -> Option<usize> {
+        (1..=n).find(|_| d.observe(level, kept, prob))
+    }
+
+    #[test]
+    fn quiet_speech_above_the_room_noise_is_noticed() {
+        let mut d = QuietDetector::default();
+        assert_eq!(feed(&mut d, 30, -62.0, false, 0.02), None); // room noise
+        assert_eq!(feed(&mut d, 40, -45.0, false, 0.15), Some(23)); // ~0.7 s of near-speech
+    }
+
+    #[test]
+    fn noise_speech_that_is_kept_and_unvoiced_sound_are_not() {
+        let mut d = QuietDetector::default();
+        assert_eq!(feed(&mut d, 30, -62.0, false, 0.02), None);
+        assert_eq!(feed(&mut d, 100, -25.0, true, 0.9), None); // normal speech, kept
+        assert_eq!(feed(&mut d, 100, -40.0, false, 0.01), None); // typing / music
+        assert_eq!(feed(&mut d, 100, -61.0, false, 0.2), None); // at the noise floor
+    }
+
+    #[test]
+    fn it_waits_before_saying_it_again() {
+        let mut d = QuietDetector::default();
+        feed(&mut d, 30, -62.0, false, 0.02);
+        assert!(feed(&mut d, 40, -45.0, false, 0.15).is_some());
+        assert_eq!(
+            feed(&mut d, QUIET_COOLDOWN_FRAMES, -45.0, false, 0.15),
+            None
+        );
+        assert!(feed(&mut d, 40, -45.0, false, 0.15).is_some());
+    }
+}
+
+#[cfg(test)]
+mod warmup_tests {
+    use super::{WARMUP_MEASURE_WINDOWS, WarmupMeter, warmup_from_levels};
+
+    #[test]
+    fn a_steady_microphone_needs_no_warm_up() {
+        assert_eq!(warmup_from_levels(&[-60.0; 60]), 0);
+    }
+
+    #[test]
+    fn a_fade_in_is_measured_until_the_level_settles() {
+        // 0.5 s near-silent, then rising, settled from 0.7 s (like a cold Realtek start).
+        let mut levels = vec![-77.0; 10];
+        levels.extend([-70.0, -68.0, -63.0, -61.0]);
+        levels.extend(vec![-60.0; 46]);
+        assert_eq!(warmup_from_levels(&levels), 600);
+    }
+
+    #[test]
+    fn speech_after_the_fade_in_does_not_hide_it() {
+        let mut levels = vec![-78.0; 16];
+        for i in 0..44 {
+            levels.push(if i % 4 < 2 { -20.0 } else { -60.0 });
+        }
+        assert_eq!(warmup_from_levels(&levels), 800);
+    }
+
+    #[test]
+    fn digital_silence_before_the_first_sound_is_not_counted() {
+        // This PC's Realtek input after a replug (log, 2026-09-27): 0.5 s of exact
+        // zeros, 0.5 s at -74 dBFS, then the room at about -62, then speech.
+        let mut levels = vec![-120.0; 10];
+        levels.extend(vec![-74.0; 10]);
+        levels.extend(vec![-62.0; 30]);
+        levels.extend([
+            -13.0, -17.0, -38.0, -21.0, -14.0, -16.0, -21.0, -26.0, -41.0, -30.0,
+        ]);
+        assert_eq!(warmup_from_levels(&levels), 500);
+    }
+
+    #[test]
+    fn a_microphone_that_stays_silent_is_not_measured() {
+        assert_eq!(warmup_from_levels(&[-120.0; 60]), 0);
+    }
+
+    #[test]
+    fn the_meter_reports_once_after_three_seconds() {
+        let mut meter = WarmupMeter::new(16_000);
+        let second = vec![0.001f32; 16_000];
+        assert!(meter.push(&second).is_none());
+        assert!(meter.push(&second).is_none());
+        let levels = meter.push(&second).expect("3 s measured");
+        assert_eq!(levels.len(), WARMUP_MEASURE_WINDOWS);
+        assert!((levels[0] + 60.0).abs() < 0.1);
+        assert!(meter.push(&second).is_none());
     }
 }
 

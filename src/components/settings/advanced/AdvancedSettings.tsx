@@ -7,12 +7,25 @@ import {
   BrainCircuit,
   Terminal,
   Sparkles,
+  Palette,
+  ListChecks,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { ShowOverlay } from "../ShowOverlay";
+import {
+  OverlaySizeSetting,
+  PillLookPreview,
+  ProgressGlowSetting,
+  ProgressLineGlowSetting,
+  ProgressColorSetting,
+  ProgressStyleSetting,
+  SoundBarsWideSetting,
+} from "../OverlayLook";
 import { AppearanceSetting } from "../AppearanceSetting";
-import { SettingsGroup } from "../../ui/SettingsGroup";
+import { SetupPromo } from "../setups/SetupPromo";
+import { SettingsGroup, SubSections } from "../../ui/SettingsGroup";
 import { StartHidden } from "../StartHidden";
+import { ReopenLastPage } from "../ReopenLastPage";
 import { AutostartToggle } from "../AutostartToggle";
 import { ShowTrayIcon } from "../ShowTrayIcon";
 import { PostProcessingToggle } from "../PostProcessingToggle";
@@ -42,17 +55,31 @@ import { useSettings } from "../../../hooks/useSettings";
 // The former Advanced page's tabs, now tabs of their own on the More page. The
 // History tab moved to the History page; Translate to English lives on General.
 
-/** More › Settings › App */
+/** General › App (was a tab of More until 1.13). */
 export const AppSection: React.FC = () => {
   const { t } = useTranslation();
   return (
     <div className="w-full space-y-4">
       <SettingsGroup icon={AppWindow} title={t("settings.advanced.groups.app")}>
+        <SetupPromo
+          setup="appearance"
+          icon={Palette}
+          title={t("setup.promo.appearance.title")}
+          text={t("setup.promo.appearance.text")}
+        />
         <AppearanceSetting descriptionMode="tooltip" grouped={true} />
         <StartHidden descriptionMode="tooltip" grouped={true} />
+        <ReopenLastPage descriptionMode="tooltip" grouped={true} />
         <AutostartToggle descriptionMode="tooltip" grouped={true} />
         <ShowTrayIcon descriptionMode="tooltip" grouped={true} />
         <ShowOverlay descriptionMode="tooltip" grouped={true} />
+        <OverlaySizeSetting descriptionMode="tooltip" grouped={true} />
+        <SoundBarsWideSetting descriptionMode="tooltip" grouped={true} />
+        <ProgressStyleSetting descriptionMode="tooltip" grouped={true} />
+        <PillLookPreview descriptionMode="tooltip" grouped={true} />
+        <ProgressLineGlowSetting descriptionMode="tooltip" grouped={true} />
+        <ProgressGlowSetting descriptionMode="tooltip" grouped={true} />
+        <ProgressColorSetting descriptionMode="tooltip" grouped={true} />
         <KeyboardImplementationSelector
           descriptionMode="tooltip"
           grouped={true}
@@ -125,7 +152,10 @@ export const ProvidersSection: React.FC = () => {
           descriptionMode="tooltip"
           grouped={true}
         />
-        <TranscriptionCostReport />
+        {/* Its own tables below the group's card, not a row inside it. */}
+        <div className="card-break mt-6">
+          <TranscriptionCostReport />
+        </div>
       </SettingsGroup>
       <SettingsGroup
         icon={BrainCircuit}
@@ -142,7 +172,11 @@ export const McpSection: React.FC = () => {
   const { t } = useTranslation();
   return (
     <div className="w-full space-y-4">
-      <SettingsGroup icon={Terminal} title={t("settings.advanced.groups.mcp")}>
+      <SettingsGroup
+        icon={Terminal}
+        title={t("settings.advanced.groups.mcp")}
+        description={t("settings.advanced.mcp.description")}
+      >
         <McpSettings />
       </SettingsGroup>
     </div>
@@ -162,13 +196,19 @@ export const PostProcessingSection: React.FC = () => {
         icon={Sparkles}
         title={t("settings.advanced.groups.postProcessing")}
       >
+        <SetupPromo
+          setup="postProcessing"
+          icon={ListChecks}
+          title={t("setup.promo.postProcessing.title")}
+          text={t("setup.promo.postProcessing.text")}
+        />
         <PostProcessingToggle descriptionMode="tooltip" grouped={true} />
       </SettingsGroup>
-      {/* Indented under the switch: these belong to it. */}
+      {/* On the rail under the switch: these belong to it. */}
       {getSetting("post_process_enabled") && (
-        <div className="ms-6 ps-4 border-s-2 border-logo-primary/50">
+        <SubSections>
           <PostProcessingSettings />
-        </div>
+        </SubSections>
       )}
     </div>
   );

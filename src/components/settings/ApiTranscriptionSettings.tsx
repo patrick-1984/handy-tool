@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSettings } from "../../hooks/useSettings";
 import { SettingContainer } from "../ui/SettingContainer";
+import { TEXT_FIELD } from "../ui/controlClasses";
 
 interface ApiTranscriptionSettingsProps {
   descriptionMode?: "tooltip" | "inline";
@@ -44,7 +45,7 @@ export const ApiTranscriptionSettings: React.FC<ApiTranscriptionSettingsProps> =
             placeholder={t(
               "settings.advanced.apiTranscription.url.placeholder",
             )}
-            className="w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-blue-500 focus:outline-none"
+            className={`w-full ${TEXT_FIELD}`}
           />
         </SettingContainer>
 
@@ -67,7 +68,7 @@ export const ApiTranscriptionSettings: React.FC<ApiTranscriptionSettingsProps> =
             placeholder={t(
               "settings.advanced.apiTranscription.apiKey.placeholder",
             )}
-            className="w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-blue-500 focus:outline-none"
+            className={`w-full ${TEXT_FIELD}`}
           />
         </SettingContainer>
 
@@ -90,7 +91,7 @@ export const ApiTranscriptionSettings: React.FC<ApiTranscriptionSettingsProps> =
             placeholder={t(
               "settings.advanced.apiTranscription.model.placeholder",
             )}
-            className="w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-blue-500 focus:outline-none"
+            className={`w-full ${TEXT_FIELD}`}
           />
         </SettingContainer>
       </>

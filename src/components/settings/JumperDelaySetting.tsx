@@ -76,7 +76,7 @@ export const JumperDelaySetting: React.FC<JumperDelaySettingProps> = React.memo(
       >
         <div className="flex items-end gap-4">
           <div className="flex flex-col items-start gap-1">
-            <span className="text-xs text-mid-gray">
+            <span className="text-xs text-text-secondary">
               {t("settings.general.transcribeAndSubmit.jumperDelay.local")}
             </span>
             <Dropdown
@@ -92,7 +92,7 @@ export const JumperDelaySetting: React.FC<JumperDelaySettingProps> = React.memo(
             />
           </div>
           <div className="flex flex-col items-start gap-1">
-            <span className="text-xs text-mid-gray">
+            <span className="text-xs text-text-secondary">
               {t("settings.general.transcribeAndSubmit.jumperDelay.remote")}
             </span>
             <Dropdown

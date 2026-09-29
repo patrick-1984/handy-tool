@@ -66,13 +66,13 @@ export const ShortcutRegistrationFailures = () => {
   }
 
   return (
-    <section className="rounded-lg border border-red-500/30 bg-red-500/10 p-4">
+    <section className="rounded-lg border border-err-border bg-err-bg p-4">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h3 className="text-sm font-semibold text-red-400">
+          <h3 className="text-sm font-semibold text-err-text">
             {t("settings.general.shortcut.failurePanel.title")}
           </h3>
-          <p className="mt-1 text-xs text-mid-gray">
+          <p className="mt-1 text-xs text-text-secondary">
             {t("settings.general.shortcut.failurePanel.description")}
           </p>
         </div>
@@ -103,15 +103,15 @@ export const ShortcutRegistrationFailures = () => {
           return (
             <li
               key={failure.id}
-              className="rounded-md border border-red-500/20 bg-background/60 px-3 py-2"
+              className="rounded-md border border-err-border bg-surface px-3 py-2"
             >
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-medium">{bindingName}</span>
-                <kbd className="rounded border border-mid-gray/30 bg-mid-gray/10 px-1.5 py-0.5 text-xs font-semibold">
+                <kbd className="rounded border border-border bg-surface2 px-1.5 py-0.5 text-xs font-semibold">
                   {formatKeyCombination(failure.binding, osType)}
                 </kbd>
               </div>
-              <p className="mt-1 break-words text-xs text-red-400">
+              <p className="mt-1 break-words text-xs text-err-text">
                 {failure.error}
               </p>
             </li>

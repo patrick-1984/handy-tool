@@ -1,58 +1,6 @@
 # More settings
 
-Open `More`, the last entry in the sidebar. Its Settings row has these tabs in this order: App, Output, Providers, Post-processing, MCP & CLI, Backup, Debug, About. This page covers the first five; [Backup](backup.md), [Debug](debug.md) and [About](about.md) have their own pages, as do the Tools row's [Translator](translator.md), [Token Count](token-count.md), [Model Testing](model-testing.md) and [Current Audio](current-audio.md). More reopens the tab you used last.
-
-## App
-
-### Appearance
-
-`More › App › Appearance`
-
-Sets the theme for the main and auxiliary windows. **Default:** `System`.
-
-Catalog: [Light, dark, or follow the system](../../features.md#light-dark-or-follow-the-system).
-
-### Start Hidden
-
-`More › App › Start Hidden`
-
-Starts Handy Tool without opening its main window. **Default:** Off.
-
-Catalog: [Starts with your session and stays out of the way](../../features.md#starts-with-your-session-and-stays-out-of-the-way).
-
-### Launch on Startup
-
-`More › App › Launch on Startup`
-
-Registers Handy Tool to launch at sign-in. **Default:** Off.
-
-Catalog: [Starts with your session and stays out of the way](../../features.md#starts-with-your-session-and-stays-out-of-the-way).
-
-### Show Tray Icon
-
-`More › App › Show Tray Icon`
-
-Controls whether the tray icon is present. When off, closing the main window quits the app. **Default:** On.
-
-Catalog: [The tray tells you what it is doing](../../features.md#the-tray-tells-you-what-it-is-doing).
-
-### Overlay Position
-
-`More › App › Overlay Position`
-
-Places the recording overlay at the top or bottom, or disables it. **Default:** `Bottom`.
-
-Catalog: [See that it is listening](../../features.md#see-that-it-is-listening).
-
-<a id="keyboard-implementation"></a>
-
-### Keyboard Implementation
-
-`More › App › Keyboard Implementation`
-
-Chooses which backend registers the global shortcuts with Windows. Switch to `Handy Keys` when a shortcut you set never fires; every binding is re-registered on the switch, and the change rolls back if that fails. **Default:** `Tauri Global Shortcut`.
-
-Catalog: [A hotkey another app already owns](../../features.md#a-hotkey-another-app-already-owns).
+Open `More`, the last entry in the sidebar. Its Settings row has these tabs in this order: App, Output, Providers, Post-processing, MCP & CLI, Backup, Debug, About. This page covers the first five; [Backup](backup.md), [Debug](debug.md) and [About](about.md) have their own pages, as do the Tools row's [Token Count](token-count.md), [Model Testing](model-testing.md) and [Current Audio](current-audio.md). More reopens the tab you used last.
 
 ## Output
 

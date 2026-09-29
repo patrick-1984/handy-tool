@@ -1,7 +1,7 @@
-//! Batch audio-file decoding for the Translator: WAV (via hound) and Ogg/Opus
-//! (std-only page walk + audiopus) into 16 kHz mono f32 — the engine's input
-//! format. Only the formats Handy itself produces are supported; anything else
-//! is a clean error the caller surfaces as a skipped file.
+//! Batch audio-file decoding for Transcribe a file and the watched folders: WAV
+//! (via hound), Ogg/Opus (std-only page walk + audiopus), and MP3, M4A (AAC) and
+//! FLAC (via symphonia) into 16 kHz mono f32 — the engine's input format.
+//! Anything else is a clean error the caller surfaces as a skipped file.
 //!
 //! The Ogg reader mirrors the writer in [`super::opus_chunk`]: it understands
 //! chained streams (glued chunks carry one logical stream per serial) and
@@ -36,12 +36,114 @@ pub fn decode_audio_file(path: &Path) -> Result<Vec<f32>> {
     match ext.as_str() {
         "wav" => decode_wav(path),
         "ogg" | "opus" => decode_ogg_opus(path),
-        other => bail!("unsupported audio format '.{other}' (supported: .wav, .ogg, .opus)"),
+        "mp3" | "m4a" | "mp4" | "aac" | "flac" => decode_with_symphonia(path),
+        other => bail!(
+            "unsupported audio format '.{other}' (supported: .wav, .ogg, .opus, .mp3, .m4a, .mp4, .aac, .flac)"
+        ),
     }
 }
 
 /// File extensions [`decode_audio_file`] accepts (lowercase, no dot).
-pub const SUPPORTED_EXTENSIONS: [&str; 3] = ["wav", "ogg", "opus"];
+pub const SUPPORTED_EXTENSIONS: [&str; 8] =
+    ["wav", "ogg", "opus", "mp3", "m4a", "mp4", "aac", "flac"];
+
+// ---------------------------------------------------------------------------
+// MP3, M4A (AAC), FLAC - via symphonia
+// ---------------------------------------------------------------------------
+
+/// Decodes the first audio track: every packet, mixed down to mono, then
+/// resampled to 16 kHz. A packet that fails to decode is skipped (a damaged
+/// frame should not lose the whole recording); the length cap applies as it
+/// decodes.
+fn decode_with_symphonia(path: &Path) -> Result<Vec<f32>> {
+    use symphonia::core::audio::SampleBuffer;
+    use symphonia::core::codecs::{CODEC_TYPE_NULL, DecoderOptions};
+    use symphonia::core::errors::Error as SymphoniaError;
+    use symphonia::core::formats::FormatOptions;
+    use symphonia::core::io::MediaSourceStream;
+    use symphonia::core::meta::MetadataOptions;
+    use symphonia::core::probe::Hint;
+
+    let file = std::fs::File::open(path).with_context(|| format!("open {}", path.display()))?;
+    let stream = MediaSourceStream::new(Box::new(file), Default::default());
+    let mut hint = Hint::new();
+    if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
+        hint.with_extension(ext);
+    }
+    let probed = symphonia::default::get_probe()
+        .format(
+            &hint,
+            stream,
+            &FormatOptions::default(),
+            &MetadataOptions::default(),
+        )
+        .with_context(|| format!("not a readable audio file: {}", path.display()))?;
+    let mut format = probed.format;
+    let track = format
+        .tracks()
+        .iter()
+        .find(|t| t.codec_params.codec != CODEC_TYPE_NULL)
+        .with_context(|| format!("no audio track in {}", path.display()))?;
+    let track_id = track.id;
+    let sample_rate = track
+        .codec_params
+        .sample_rate
+        .filter(|&hz| hz > 0)
+        .with_context(|| format!("unknown sample rate: {}", path.display()))?;
+    let mut decoder = symphonia::default::get_codecs()
+        .make(&track.codec_params, &DecoderOptions::default())
+        .with_context(|| format!("unsupported audio codec in {}", path.display()))?;
+    // The cap in samples at this file's rate.
+    let max_mono = MAX_DECODED_SAMPLES as u64 * sample_rate as u64 / TARGET_HZ as u64;
+
+    let mut mono: Vec<f32> = Vec::new();
+    let mut buffer: Option<SampleBuffer<f32>> = None;
+    loop {
+        let packet = match format.next_packet() {
+            Ok(packet) => packet,
+            Err(SymphoniaError::IoError(e)) if e.kind() == std::io::ErrorKind::UnexpectedEof => {
+                break;
+            }
+            Err(SymphoniaError::ResetRequired) => break,
+            Err(e) => return Err(e).with_context(|| format!("read {}", path.display())),
+        };
+        if packet.track_id() != track_id {
+            continue;
+        }
+        let decoded = match decoder.decode(&packet) {
+            Ok(decoded) => decoded,
+            Err(SymphoniaError::DecodeError(_)) => continue,
+            Err(e) => return Err(e).with_context(|| format!("decode {}", path.display())),
+        };
+        let spec = *decoded.spec();
+        let channels = spec.channels.count().max(1);
+        let needed = decoded.capacity() as u64;
+        if buffer
+            .as_ref()
+            .is_none_or(|b| (b.capacity() as u64) < needed)
+        {
+            buffer = Some(SampleBuffer::new(needed, spec));
+        }
+        let buf = buffer.as_mut().expect("just set");
+        buf.copy_interleaved_ref(decoded);
+        mono.extend(
+            buf.samples()
+                .chunks(channels)
+                .map(|frame| frame.iter().sum::<f32>() / channels as f32),
+        );
+        if mono.len() as u64 > max_mono {
+            bail!(
+                "audio too long (cap {} min): {}",
+                MAX_DECODED_SAMPLES / 16_000 / 60,
+                path.display()
+            );
+        }
+    }
+    if mono.is_empty() {
+        bail!("no audio in {}", path.display());
+    }
+    Ok(resample_to_16k(mono, sample_rate))
+}
 
 // ---------------------------------------------------------------------------
 // WAV
@@ -310,6 +412,39 @@ mod tests {
     }
 
     #[test]
+    fn symphonia_decodes_downmixes_and_resamples() {
+        // A stereo 44.1 kHz WAV through the symphonia path (the same code that
+        // reads MP3, M4A and FLAC): 1 s in, about 1 s of 16 kHz mono out.
+        let dir = std::env::temp_dir().join("handy-decode-test");
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("symphonia.wav");
+        let spec = hound::WavSpec {
+            channels: 2,
+            sample_rate: 44_100,
+            bits_per_sample: 16,
+            sample_format: hound::SampleFormat::Int,
+        };
+        let mut writer = hound::WavWriter::create(&path, spec).unwrap();
+        for i in 0..44_100 {
+            let v = ((i as f32 * 440.0 * 2.0 * std::f32::consts::PI / 44_100.0).sin() * 16_000.0)
+                as i16;
+            writer.write_sample(v).unwrap();
+            writer.write_sample(v).unwrap();
+        }
+        writer.finalize().unwrap();
+
+        let decoded = decode_with_symphonia(&path).unwrap();
+        let _ = std::fs::remove_file(&path);
+        assert!(
+            (15_500..17_000).contains(&decoded.len()),
+            "decoded length {}",
+            decoded.len()
+        );
+        let rms = (decoded.iter().map(|s| s * s).sum::<f32>() / decoded.len() as f32).sqrt();
+        assert!(rms > 0.2, "decoded audio has no energy (rms {rms})");
+    }
+
+    #[test]
     fn ogg_opus_round_trip_preserves_length_and_energy() {
         let dir = std::env::temp_dir().join("handy-decode-test");
         std::fs::create_dir_all(&dir).unwrap();
@@ -402,7 +537,7 @@ mod tests {
 
     #[test]
     fn unsupported_extension_is_rejected() {
-        let err = decode_audio_file(Path::new("x.mp3")).unwrap_err();
+        let err = decode_audio_file(Path::new("x.wma")).unwrap_err();
         assert!(err.to_string().contains("unsupported audio format"));
     }
 }

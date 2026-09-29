@@ -11,14 +11,16 @@
     "shortcuts": "Kısayollar",
     "models": "Modeller",
     "history": "Geçmiş",
+    "files": "Dosyalar",
     "debug": "Hata Ayıklama",
     "about": "Hakkında",
     "backup": "Yedekleme",
     "currentAudio": "Mevcut Ses",
+    "setups": "Kurulumlar",
     "tokenCount": "Token Sayımı",
     "keyboardTyper": "Klavye Yazıcısı",
+    "whatsNew": "Yenilikler",
     "jumper": "Atlayıcı",
-    "translator": "Çevirmen",
     "more": "Daha fazla",
     "groups": {
       "settings": "Ayarlar",
@@ -60,10 +62,342 @@
       "installWhenIdle": "Boştayken kur",
       "installRestartNow": "Şimdi kur ve yeniden başlat",
       "enableAutomatic": "Otomatik güncellemeleri aç"
+    },
+    "unread": "okunmadı"
+  },
+  "helpMode": {
+    "button": "Yardım modu: ne yaptığını görmek için bir ayarın üzerine gelin",
+    "hint": "Ne yaptığını görmek için bir ayarın üzerine gelin. Çıkmak için herhangi bir yere tıklayın veya Esc tuşuna basın."
+  },
+  "setup": {
+    "skipSetup": "Kurulumu atla",
+    "back": "Geri",
+    "next": "İleri",
+    "saveNext": "Kaydet ve devam et",
+    "skip": "Atla",
+    "start": "Kuruluma başla",
+    "finish": "Bitir",
+    "step": "Adım {{current}} / {{total}}",
+    "welcome": {
+      "title": "Handy Tool'a hoş geldiniz",
+      "body": "Konuşun, sözleriniz imlecin olduğu yere yazılsın. Konuşmanız bu bilgisayarda metne dönüştürülür.",
+      "steps": "Bu kısa kurulum hangi dilleri konuştuğunuzu sorar, bunlar için bir konuşma modeli önerir ve kısayollarınızı ve mikrofonunuzu gösterir. Her adım atlanabilir ve her şey daha sonra ayarlardan değiştirilebilir."
+    },
+    "languages": {
+      "title": "Hangi dilleri konuşacaksınız?",
+      "body": "Kullandığınız tüm dilleri seçin. Önerilen konuşma modelleri hepsini anlar.",
+      "search": "Dil ara",
+      "noMatch": "Eşleşen dil yok.",
+      "selected": "Seçilenler: {{languages}}"
+    },
+    "model": {
+      "body": "{{languages}} için üç iyi seçenek: en doğru, dengeli ve en hızlı. Birini seçin; siz kurulumu bitirirken indirilir. Daha sonra Modeller sayfasından değiştirebilirsiniz.",
+      "bodyAny": "Üç iyi seçenek: en doğru, dengeli ve en hızlı. Birini seçin; siz kurulumu bitirirken indirilir. Daha sonra Modeller sayfasından değiştirebilirsiniz.",
+      "accurate": "En doğru",
+      "balanced": "Dengeli",
+      "fast": "En hızlı",
+      "downloadContinue": "İndir ve devam et",
+      "seeAll": "Tüm modelleri gör",
+      "showSuggestions": "Üç öneriye dön",
+      "search": "Model ara",
+      "notForLanguages": "Tüm dillerinizi anlamıyor"
+    },
+    "shortcuts": {
+      "title": "Kısayollarınız",
+      "body": "Hemen çalışırlar. Olduğu gibi bırakın ya da birine tıklayıp istediğiniz tuşlara basın. Her birinde varsayılanı görünür, böylece istediğiniz zaman ona dönebilirsiniz.",
+      "default": "Varsayılan: {{keys}}.",
+      "transcribe": "Başlamak için bir kez, bitirmek için tekrar basın.",
+      "ptt": "Konuşurken basılı tutun.",
+      "cancel": "Hiçbir şey yazmadan kaydı durdurur.",
+      "more": "Diğer kısayollar (Yazıya dök ve gönder, duraklat, son kelimeyi geri al, …) Kısayollar sayfasında."
+    },
+    "microphone": {
+      "title": "Hangi mikrofon?",
+      "body": "Varsayılan, sistemin varsayılan mikrofonunu izler. Kulaklıklı mikrofon veya USB mikrofon kullanıyorsanız başka birini seçin."
+    },
+    "try": {
+      "title": "Deneyin",
+      "body": "{{keys}} tuşlarına basın, bir cümle söyleyin ve tekrar basın. Sözleriniz aşağıda görünür.",
+      "placeholder": "Sözleriniz burada görünecek.",
+      "listening": "Dinleniyor… bitirince {{keys}} tuşlarına tekrar basın.",
+      "downloading": "{{model}} hâlâ indiriliyor (%{{percent}}). Hazır olunca deneyin ya da İleri ile devam edin.",
+      "noModel": "Henüz konuşma modeli seçilmedi, bu yüzden denenecek bir şey yok. İleri ile devam edin ve Modeller sayfasından birini seçin."
+    },
+    "done": {
+      "title": "Hazırsınız",
+      "howTo": "{{keys}} tuşlarına basın, konuşun ve tekrar basın: metin imlecin olduğu yere yazılır.",
+      "downloading": "{{model}} indiriliyor (%{{percent}}) — hazır olur olmaz kullanılacak.",
+      "ready": "Konuşma modeli: {{model}}.",
+      "noModel": "Henüz konuşma modeli seçilmedi: Modeller sayfasından birini seçin.",
+      "suggested": {
+        "title": "Daha fazla ince ayar mı istiyorsunuz?",
+        "body": "Her şey zaten iyi varsayılanlarla çalışıyor, bu yüzden şimdi bunlara ihtiyacınız yok. İsterseniz bu kurulumlardan biri size daha fazlasını adım adım gösterir."
+      }
+    },
+    "catalog": {
+      "description": "Rehberli kurulumlar birkaç soru sorar ve her şeyi sizin için ayarlar. Her adım atlanabilir.",
+      "basic": {
+        "title": "Temel kurulum",
+        "description": "Dilleriniz, bunlar için önerilen konuşma modeli, temel kısayollar, mikrofonunuz ve kısa bir deneme — ilk açılıştaki rehberin aynısı."
+      },
+      "start": "Başlat",
+      "jumper": {
+        "title": "Jumper",
+        "description": "Handy Tool diktenizi sizin için doğru alana yapıştırsın: yazdığınız yerleri (bir sohbet kutusu, bir belge, uzak oturumdaki bir alan) hatırlar, nerede olursanız olun metni oraya otomatik olarak koyar ve bir tuşla oraya geri döner."
+      },
+      "postProcessing": {
+        "title": "Son işleme",
+        "description": "Bir yapay zekâ modeli dikte ettiğinizi temizlesin veya yeniden biçimlendirsin (noktalama, dolgu kelimeleri, bir yapı, bir çeviri); kendi kısayoluyla."
+      },
+      "windowsOnly": "Yalnızca Windows",
+      "appearance": {
+        "title": "Görünüm",
+        "description": "Kayıt hapının ve canlı metin kutusunun nasıl göründüğü: hapın yeri ve boyutu, ses çubukları, ilerlemeyi nasıl gösterdiği ve canlı metin kutusu; her seçenek siz seçmeden önce hareket hâlinde gösterilir."
+      }
+    },
+    "closeSetup": "Kurulumu kapat",
+    "jumper": {
+      "name": "Jumper kurulumu",
+      "place": "Yer {{n}}",
+      "goal": {
+        "title": "Jumper ne için olsun?",
+        "body": "Birçok uygulamada (bir sohbet, bir e-posta, bir belge, uzak bir masaüstü) Handy Tool diktenizi doğrudan doğru metin alanına koyabilir. Jumper bu alanları hatırlar, böylece başka bir pencerede olsanız bile metin oraya otomatik olarak gider ve bir tuş sizi yeniden oraya götürür. Ne istediğinizi seçin; daha sonra Jumper sayfasında değiştirebilirsiniz.",
+        "jump": {
+          "title": "Bir tuşla geri dön",
+          "detail": "Bir kısayola basın, hatırlanan alan yeniden önünüzde, yazmaya hazır."
+        },
+        "land": {
+          "title": "Diktem oraya gitsin",
+          "detail": "Kayıt bittiğinde nerede olursanız olun metin hatırlanan alana gider; dikte ederken başka bir şey okuyabilirsiniz."
+        },
+        "both": {
+          "title": "İkisi de",
+          "detail": "Bir tuşla oraya gidin, dikte de oraya gitsin."
+        }
+      },
+      "mouse": {
+        "title": "Fare konumu da hatırlansın mı?",
+        "body": "Tarayıcılarda ve Discord ya da Teams gibi uygulamalarda Windows yalnızca tüm pencereyi görür, içindeki metin kutusunu görmez. Fare konumu hatırlanırsa Handy tam o kutuya yeniden tıklar.",
+        "no": {
+          "title": "Hayır, yalnızca alan",
+          "detail": "Çoğu masaüstü uygulaması için yeterli (Word, Not Defteri, e-posta)."
+        },
+        "yes": {
+          "title": "Evet, fare konumu da",
+          "detail": "Web sayfaları ve sohbet uygulamaları için. Handy, yeri gösterdiğinizde farenin olduğu yere tıklar."
+        }
+      },
+      "places": {
+        "title": "Bana yeri göster",
+        "body": "Düğmeye basın, sonra {{seconds}} saniye içinde istediğiniz metin alanına tıklayın. Süre dolduğunda odakta olan alanı Handy hatırlar. Başka yerler de ekleyebilirsiniz.",
+        "first": "Henüz yer yok.",
+        "another": "Başka bir yer?",
+        "countdown": "Şimdi alana tıklayın… {{seconds}}",
+        "show": "Bana yeri göster",
+        "add": "Başka bir yer ekle",
+        "remembered": "Hatırlandı: {{app}}",
+        "failed": "Hatırlanamadı: {{reason}}",
+        "again": "Bu yeri yeniden göster"
+      },
+      "shortcuts": {
+        "title": "Kısayollarınız",
+        "body": "Ayarla şu an bulunduğunuz alanı hatırlar; Git sizi oraya geri götürür. Varsayılanları tutun ya da birine tıklayıp istediğiniz tuşlara basın."
+      },
+      "test": {
+        "title": "Deneyin",
+        "bodyJump": "Oraya git'e tıklayın: hatırlanan alan öne gelmeli, yazmaya hazır.",
+        "bodyLand": "Her yeri denetlemek için Oraya git'e tıklayın. Sonra herhangi bir yerde dikte edin: kayıt bitince metin Yer 1'e gider.",
+        "none": "Hiç yer hatırlanmadı. Yerleri Jumper sayfasında Ayarla kısayollarıyla ekleyebilirsiniz.",
+        "jump": "Oraya git"
+      },
+      "done": {
+        "title": "Jumper hazır",
+        "body": "Yerleriniz yeniden başlatmadan sonra da kalır. Geri kalan her şey (daha fazla yuva, uzak oturumlar, metnin en son nereye gittiğini izleme) Jumper sayfasındadır."
+      }
+    },
+    "postProcessing": {
+      "name": "Son işleme kurulumu",
+      "prompt": {
+        "title": "Yapay zekâ sözlerinizle ne yapsın?",
+        "body": "Kayıttan sonra bir yapay zekâ modeli metni istediğiniz gibi yeniden yazar. Talimatı seçin; daha sonra {{postProcessingPage}} altında düzenleyebilirsiniz.",
+        "own": "Kendim yazayım",
+        "ownDetail": "Kendi talimatlarınız, örneğin \"İngilizceye çevir\" veya \"Madde işaretli liste olarak yaz\".",
+        "ownDefaultName": "Talimatım",
+        "ownPlaceholder": "Yapay zekâya metinle ne yapacağını söyleyin, ör. Noktalamayı düzelt ve dolgu kelimelerini çıkar. Sözlerimi koru."
+      },
+      "provider": {
+        "title": "Bunu hangi yapay zekâ yapsın?",
+        "body": "Çevrimiçi olanın kendi sitesinden bir anahtara ihtiyacı var; bu bilgisayarda çalışanın (LM Studio, FLM) yalnızca modeline. Aynı liste {{providersPage}} altında.",
+        "noModel": "Henüz model yok",
+        "ready": "Hazır",
+        "needsKey": "Anahtar gerekli",
+        "needsModel": "Model gerekli",
+        "key": "API anahtarı",
+        "address": "Adres",
+        "model": "Model",
+        "list": "Modelleri listele",
+        "listFailed": "Modeller listelenemedi: {{reason}}"
+      },
+      "shortcut": {
+        "title": "Son işleme kısayolunuz",
+        "body": "Yapay zekânın metni yeniden işlemesini istediğinizde bu kısayolla dikte edin; diğer kısayollarınız sade kalır."
+      },
+      "try": {
+        "title": "Deneyin",
+        "body": "İsterseniz örneği düzenleyin ve talimatınızla yapay zekâdan geçirin.",
+        "sample": "yani ıı bence salı günü şey buluşmalıyız hayır dur çarşamba üç gibi ve şu şu raporu getirmeliyiz",
+        "run": "Çalıştır",
+        "result": "Yapay zekânın sürümü:",
+        "failed": "Olmadı: {{reason}}"
+      },
+      "done": {
+        "title": "Son işleme hazır",
+        "body": "Son işleme kısayoluyla dikte edin, yapay zekânın sürümü yapıştırılır. Talimat, yapay zekâ ve diğer seçenekler {{postProcessingPage}} altında."
+      }
+    },
+    "appearance": {
+      "name": "Görünüm kurulumu",
+      "sample": "Selam Ayşe, taslak rakamları cuma günü göndereceğim, böylece herkes gelecek haftaki incelemeden önce yorum yapabilir.",
+      "intro": {
+        "title": "Kayıt hapınız",
+        "body": "Dikte ederken bu hap, Handy Tool'un ne yaptığını gösterir. Parçalarının ne işe yaradığı aşağıda. Sonraki adımlar her seçeneği yan yana hareket hâlinde gösterir, böylece seçmeden önce karşılaştırabilirsiniz.",
+        "t": "T: konuşurken sözlerinizi gösteren canlı metin kutusu. Kutuyu istediğiniz zaman açıp kapatmak için T'ye tıklayın; kutu açıkken parlar.",
+        "bars": "Ses çubukları: sesiniz. Mikrofon sizi duyarken hareket ederler.",
+        "pause": "Duraklat: dinlemeyi bir süreliğine durdurur; devam etmek için tekrar basın. Duraklatma düğmesi açıkken gösterilir.",
+        "cancel": "×: kaydı iptal eder. Hiçbir şey yazıya dökülmez veya yapıştırılmaz."
+      },
+      "theme": {
+        "title": "Açık mı, koyu mu?",
+        "body": "Her Handy Tool penceresinin renkleri. Kayıt hapı hepsinde koyu kalır.",
+        "system": "Windows'u izler ve Windows değiştiğinde değişir.",
+        "light": "Her zaman açık.",
+        "dark": "Her zaman koyu."
+      },
+      "position": {
+        "title": "Hap nerede görünmeli?",
+        "body": "Dikte ederken ekranın altında, üstünde ya da hiçbir yerde.",
+        "bottom": "Ortada, görev çubuğunun hemen üstünde.",
+        "top": "Ortada, ekranın üstünde.",
+        "none": "Hap yok. Tepsi simgesi kayıt yaptığını yine de gösterir."
+      },
+      "size": {
+        "title": "Hap ne kadar büyük olmalı?",
+        "body": "Büyük veya yüksek çözünürlüklü bir ekranda daha büyüğü görmek daha kolaydır."
+      },
+      "bars": {
+        "title": "Ses çubukları ne kadar geniş olmalı?",
+        "body": "Hapın ortasındaki çubuklar sesinizi gösterir.",
+        "narrow": {
+          "title": "Dar",
+          "detail": "62 px, çevrelerinde daha fazla boşlukla."
+        },
+        "wide": {
+          "title": "Geniş",
+          "detail": "77,5 px, daha kalın çubuklar."
+        }
+      },
+      "progress": {
+        "title": "İlerlemeyi nasıl göstermeli?",
+        "body": "Durduktan sonra hap, transkripsiyonun ne kadar ilerlediğini gösterir.",
+        "line": "Altta ince bir çizgi dolar.",
+        "ring": "Kenarda parlayan bir ışık döner ve değere kadar yanık kalır.",
+        "lap": "Kenarda ince bir ışık dönmeye devam eder; değer metindedir."
+      },
+      "glow": {
+        "title": "Ne kadar güçlü parlamalı?",
+        "body": "İlerleme ışığının çevresindeki parlama. Daha sonra Parlama gücü ile ince ayar yapabilirsiniz.",
+        "none": {
+          "title": "Parlama yok",
+          "detail": "Sadece çizgi."
+        },
+        "soft": {
+          "title": "Yumuşak"
+        },
+        "normal": {
+          "title": "Normal"
+        },
+        "strong": {
+          "title": "Güçlü"
+        },
+        "brightest": {
+          "title": "En parlak"
+        }
+      },
+      "liveText": {
+        "title": "Konuşurken sözleriniz gösterilsin mi?",
+        "body": "Canlı metin kutusu hapın yanında durur ve konuştukça söylediklerinizi gösterir; haptaki T onu istediğiniz zaman açıp kapatır. Açıkken kutudaki sözcükler dökümünüz olur: kayıt sonunda yeniden bir bütün olarak yazıya dökülmez, bu yüzden metin hemen hazır olur ama biraz daha az doğru olabilir.",
+        "off": {
+          "title": "Kapalı",
+          "detail": "Yalnızca hap."
+        },
+        "last_words": {
+          "title": "Son sözler",
+          "detail": "En yeni sözlerinizi içeren tek bir satır."
+        },
+        "full_text": {
+          "title": "Tüm metin",
+          "detail": "Şimdiye kadarki her şey; konuştukça kutu büyür."
+        },
+        "remote": "{{model}} çevrimiçi çalışır ve sesi yalnızca siz durduktan sonra alır, bu yüzden canlı metin kutusu onunla çalışamaz. Önce Modeller sayfasından bu bilgisayarda çalışan bir model seçin."
+      },
+      "width": {
+        "title": "Kutu ne kadar geniş olmalı?",
+        "body": "Daha geniş bir kutu, aynı metin için daha az satır gerektirir."
+      },
+      "textSize": {
+        "title": "Metin ne kadar büyük olmalı?",
+        "body": "Canlı metin kutusundaki sözcüklerin boyutu."
+      },
+      "quiet": {
+        "title": "Çok sessiz konuştuğunuzda",
+        "body": "Sesiniz modelin iyi duyamayacağı kadar sessizse hap size bunu söyleyebilir.",
+        "box": {
+          "title": "Hapın altındaki bir kutuda",
+          "detail": "Hap ses çubuklarını korur."
+        },
+        "pill": {
+          "title": "Hapın içinde",
+          "detail": "Ses çubuklarının yerine, bir anlığına."
+        },
+        "off": {
+          "title": "Söylemeyin",
+          "detail": "İpucu yok."
+        }
+      },
+      "done": {
+        "title": "Görünümünüz ayarlandı",
+        "body": "Hapınız ve canlı metin kutunuz ayarlandı. Gerisi ayarlarda: hap için Genel › Uygulama (boyut, ses çubukları, ilerleme, parlama ve renk, hareketli bir önizlemeyle), canlı metin kutusu için Genel › Transkripsiyon (genişlik, metin boyutu, satırlar, soluklaşma). Bu kurulumu Kurulumlar'dan yeniden de çalıştırabilirsiniz."
+      },
+      "color": {
+        "title": "Hangi renkte parlamalı?",
+        "body": "İlerleme ışığının ve parlamasının, parlayan T'nin ve ses çubuklarının rengi. Başka bir renk için Genel › Uygulama altındaki İlerleme rengi'ni kullanın.",
+        "cyan": "Camgöbeği (varsayılan)",
+        "blue": "Mavi",
+        "violet": "Mor",
+        "pink": "Pembe",
+        "amber": "Kehribar",
+        "green": "Yeşil",
+        "custom": "Kendi renginiz"
+      }
+    },
+    "promo": {
+      "start": "Kuruluma başla",
+      "appearance": {
+        "title": "Görünüm kurulumu",
+        "text": "Seçmeden önce her görünümü hareket hâlinde görün: hap, ilerlemesi ve canlı metin kutusu."
+      },
+      "jumper": {
+        "title": "Jumper kurulumu",
+        "text": "Diktenizin doğru alana otomatik olarak yapıştırılmasını sağlayın: yerlerinizi ve kısayollarını adım adım ayarlayın, sonunda bir denemeyle."
+      },
+      "postProcessing": {
+        "title": "Son işleme kurulumu",
+        "text": "Bir yapay zekâ dikte ettiğinizi temizlesin veya yeniden biçimlendirsin: ne yapacağını ve hangi yapay zekâyı kullanacağını adım adım seçin, sonunda bir denemeyle."
+      }
     }
   },
   "onboarding": {
-    "subtitle": "Başlamak için bir transkripsiyon modeli seçin",
+    "title": "Bir konuşma modeli seçin",
     "recommended": "Önerilen",
     "download": "İndir",
     "downloading": "İndiriliyor...",
@@ -76,51 +410,51 @@
     "models": {
       "small": {
         "name": "Whisper Small",
-        "description": "Hızlı ve oldukça doğru."
+        "description": "Hızlı ve doğru. 99 dil."
       },
       "medium": {
         "name": "Whisper Medium",
-        "description": "İyi doğruluk, orta hız."
+        "description": "Orta hız, doğru. 99 dil."
       },
       "turbo": {
         "name": "Whisper Turbo",
-        "description": "Dengeli doğruluk ve hız."
+        "description": "Orta hız, çok doğru. 99 dil."
       },
       "large": {
         "name": "Whisper Large",
-        "description": "İyi doğruluk, ancak yavaş."
+        "description": "Yavaş, 99 dilde en yüksek doğruluk; İngilizceye çevirir."
       },
       "parakeet-tdt-0.6b-v2": {
         "name": "Parakeet V2",
-        "description": "Yalnızca İngilizce. İngilizce konuşanlar için en iyi model."
+        "description": "Çok hızlı, en yüksek doğruluk. Yalnızca İngilizce."
       },
       "parakeet-tdt-0.6b-v3": {
         "name": "Parakeet V3",
-        "description": "Hızlı ve doğru."
+        "description": "Çok hızlı, en yüksek doğruluk. 25 Avrupa dili."
       },
       "moonshine-base": {
         "name": "Moonshine Base",
-        "description": "Çok hızlı, yalnızca İngilizce. Aksanları iyi işler."
+        "description": "Çok hızlı, oldukça doğru. Yalnızca İngilizce."
       },
       "moonshine-tiny-streaming-en": {
         "name": "Moonshine V2 Tiny",
-        "description": "Ultra hızlı, yalnızca İngilizce"
+        "description": "En hızlı, temel doğruluk. Yalnızca İngilizce."
       },
       "moonshine-small-streaming-en": {
         "name": "Moonshine V2 Small",
-        "description": "Hızlı, yalnızca İngilizce. Hız ve doğruluk arasında iyi denge."
+        "description": "Çok hızlı, çok doğru. Yalnızca İngilizce."
       },
       "moonshine-medium-streaming-en": {
         "name": "Moonshine V2 Medium",
-        "description": "Yalnızca İngilizce. Yüksek kalite."
+        "description": "Hızlı, en yüksek doğruluk. Yalnızca İngilizce."
       },
       "breeze-asr": {
         "name": "Breeze ASR",
-        "description": "Tayvan Mandarin Çincesi için optimize edilmiş. Dil değiştirme desteği."
+        "description": "Yavaş, çok doğru. Tayvan Mandarincesi için, İngilizceyle karışık da."
       },
       "sense-voice-int8": {
         "name": "SenseVoice",
-        "description": "Çok hızlı. Çince, İngilizce, Japonca, Korece, Kantonca."
+        "description": "En hızlı, doğru. Çince, Kantonca, Japonca ve Korece için en iyisi; İngilizce de."
       }
     },
     "errors": {
@@ -175,7 +509,10 @@
       "languageOnly": "Yalnızca {{language}}"
     },
     "cancel": "İptal",
-    "cancelDownload": "İndirmeyi iptal et"
+    "cancelDownload": "İndirmeyi iptal et",
+    "ready": "Hazır",
+    "useModel": "Bu modeli kullan",
+    "inUse": "Tüm dikteler için kullanılıyor."
   },
   "settings": {
     "modelSettings": {
@@ -187,7 +524,6 @@
       }
     },
     "models": {
-      "title": "Transkripsiyon Modelleri",
       "description": "Diktenizi hangi konuşma modelinin transkribe edeceğini seçin — modeller doğruluk, hız ve yüklüyken tuttukları bellek miktarı açısından farklılık gösterir. Varsayılan: temiz bir kurulumda hiçbir şey seçili değildir; onboarding ilk modelinizi indirip seçer. Seçiminiz, Genel sayfasında Dil ve İngilizceye Çevir'in sunulup sunulmayacağını da belirler ve Çevirmen, Toplu iş modeli 'Dikte ile aynı (varsayılan)' olarak bırakıldığında bu aynı modeli kullanır.",
       "downloaded": "İndirildi",
       "available": "İndirilebilir",
@@ -220,8 +556,8 @@
         "singleKey": "Bu tuş tek başına kısayolu her yerde tetikler, bu yüzden artık onu yazamazsınız. Ctrl veya Alt gibi bir değiştirici tuş ekleyin.",
         "bindings": {
           "transcribe": {
-            "name": "Transkripsiyon Kısayolu",
-            "description": "Kaydı başlatmak için bir kez, sonlandırmak için tekrar basın; transkripsiyon odaktaki pencereye teslim edilir. Varsayılan: Ctrl+Space. Transkripsiyon Modu'nu ve Gelişmiş sayfasının Yapıştırma Yöntemi'ni izler — basılı tutarak kaydetmek için bunun yerine Bas Konuş Kısayolu'nu kullanın."
+            "name": "Kayıt/Transkripsiyon Kısayolu",
+            "description": "Kaydı başlatmak için bir kez, sonlandırmak için tekrar basın; transkripsiyon odaktaki pencereye teslim edilir. Varsayılan: Ctrl+Space. Transkripsiyon Modu'nu ve Daha fazla › Çıktı altındaki Yapıştırma Yöntemi'ni izler — basılı tutarak kaydetmek için bunun yerine Bas Konuş Kısayolu'nu kullanın."
           },
           "cancel": {
             "name": "İptal Kısayolu",
@@ -245,7 +581,7 @@
           },
           "transcribe_ptt": {
             "name": "Bas Konuş Kısayolu",
-            "description": "Kaydetmek için bu kısayolu basılı tutun, durdurmak için bırakın; bırakıldığında mikrofon soğur, bu nedenle sonrasında söylediğiniz hiçbir şey metne sızamaz. Varsayılan: Ctrl+Shift+Space. Kendi Transkripsiyon Modu (PTT) ve kendi Yapıştırma Yöntemi (PTT) ayarlarına sahiptir; bu nedenle bas-konuş, Transkripsiyon Kısayolu'ndan farklı davranabilir."
+            "description": "Kaydetmek için bu kısayolu basılı tutun, durdurmak için bırakın; bırakıldığında mikrofon soğur, bu nedenle sonrasında söylediğiniz hiçbir şey metne sızamaz. Varsayılan: Ctrl+Shift+Space. Kendi Transkripsiyon Modu (PTT) ve kendi Yapıştırma Yöntemi (PTT) ayarlarına sahiptir; bu nedenle bas-konuş, Kayıt/Transkripsiyon Kısayolu'ndan farklı davranabilir."
           },
           "type_text": {
             "name": "Metin Yazma Kısayolu",
@@ -257,7 +593,7 @@
           },
           "anchor_set": {
             "name": "Sabit Nokta Belirle",
-            "description": "Şu anda odaklanılan metin alanını Sıcak 1 hedefi olarak yakalar. Varsayılan: ctrl+shift+F1. Kendi başına hiçbir şey teslim etmez — sonraki transkripsiyonunuzun oraya inmesi için 'Bitişte yuva eylemi'ni, yuva Sıcak 1'e ayarlanmış 'Yuvaya atla / teslim et' olarak ayarlayın (Gelişmiş → Transkripsiyon). Parola kutuları ve Handy'nin kendi pencereleri kabul edilmez."
+            "description": "Şu anda odaklanılan metin alanını Sıcak 1 hedefi olarak yakalar. Varsayılan: ctrl+shift+F1. Kendi başına hiçbir şey teslim etmez — sonraki transkripsiyonunuzun oraya inmesi için 'Bitişte yuva eylemi'ni, yuva Sıcak 1'e ayarlanmış 'Yuvaya atla / teslim et' olarak ayarlayın (Daha fazla › Çıktı). Parola kutuları ve Handy'nin kendi pencereleri kabul edilmez."
           },
           "anchor_jump": {
             "name": "Sabit Noktaya Atla",
@@ -265,19 +601,19 @@
           },
           "jump_set_slot_1": {
             "name": "Atlama Yuvası 1'i Belirle",
-            "description": "Şu anda odaklanılan alanı, önceki içeriğinin üzerine yazarak statik yuva 1 olarak kaydeder. Varsayılan: ctrl+alt+shift+1. Bir şey onu kullanana kadar yuva sadece bir yer imidir — 'Yuva 1'e Atla' ile geri dönün veya bir akışın 'Bitişte yuva eylemi'ni (Gelişmiş → Transkripsiyon) Yuva 1'e ayarlayarak transkripsiyonların oraya teslim edilmesini sağlayın."
+            "description": "Şu anda odaklanılan alanı, önceki içeriğinin üzerine yazarak statik yuva 1 olarak kaydeder. Varsayılan: ctrl+alt+shift+1. Bir şey onu kullanana kadar yuva sadece bir yer imidir — 'Yuva 1'e Atla' ile geri dönün veya bir akışın 'Bitişte yuva eylemi'ni (Daha fazla › Çıktı) Yuva 1'e ayarlayarak transkripsiyonların oraya teslim edilmesini sağlayın."
           },
           "jump_set_slot_2": {
             "name": "Atlama Yuvası 2'yi Belirle",
-            "description": "Şu anda odaklanılan alanı, önceki içeriğinin üzerine yazarak statik yuva 2 olarak kaydeder. Varsayılan: ctrl+alt+shift+2. 'Yuva 2'ye Atla' ile geri dönün veya bir akışın 'Bitişte yuva eylemi'ni (Gelişmiş → Transkripsiyon) Yuva 2'ye ayarlayarak transkripsiyonların oraya teslim edilmesini sağlayın."
+            "description": "Şu anda odaklanılan alanı, önceki içeriğinin üzerine yazarak statik yuva 2 olarak kaydeder. Varsayılan: ctrl+alt+shift+2. 'Yuva 2'ye Atla' ile geri dönün veya bir akışın 'Bitişte yuva eylemi'ni (Daha fazla › Çıktı) Yuva 2'ye ayarlayarak transkripsiyonların oraya teslim edilmesini sağlayın."
           },
           "jump_set_slot_3": {
             "name": "Atlama Yuvası 3'ü Belirle",
-            "description": "Şu anda odaklanılan alanı, önceki içeriğinin üzerine yazarak statik yuva 3 olarak kaydeder. Varsayılan: ctrl+alt+shift+3. 'Yuva 3'e Atla' ile geri dönün veya bir akışın 'Bitişte yuva eylemi'ni (Gelişmiş → Transkripsiyon) Yuva 3'e ayarlayarak transkripsiyonların oraya teslim edilmesini sağlayın."
+            "description": "Şu anda odaklanılan alanı, önceki içeriğinin üzerine yazarak statik yuva 3 olarak kaydeder. Varsayılan: ctrl+alt+shift+3. 'Yuva 3'e Atla' ile geri dönün veya bir akışın 'Bitişte yuva eylemi'ni (Daha fazla › Çıktı) Yuva 3'e ayarlayarak transkripsiyonların oraya teslim edilmesini sağlayın."
           },
           "jump_set_slot_4": {
             "name": "Atlama Yuvası 4'ü Belirle",
-            "description": "Şu anda odaklanılan alanı, önceki içeriğinin üzerine yazarak statik yuva 4 olarak kaydeder. Varsayılan: ctrl+alt+shift+4. 'Yuva 4'e Atla' ile geri dönün veya bir akışın 'Bitişte yuva eylemi'ni (Gelişmiş → Transkripsiyon) Yuva 4'e ayarlayarak transkripsiyonların oraya teslim edilmesini sağlayın."
+            "description": "Şu anda odaklanılan alanı, önceki içeriğinin üzerine yazarak statik yuva 4 olarak kaydeder. Varsayılan: ctrl+alt+shift+4. 'Yuva 4'e Atla' ile geri dönün veya bir akışın 'Bitişte yuva eylemi'ni (Daha fazla › Çıktı) Yuva 4'e ayarlayarak transkripsiyonların oraya teslim edilmesini sağlayın."
           },
           "jump_slot_1": {
             "name": "Yuva 1'e Atla",
@@ -308,15 +644,17 @@
           "set": "Kısayol ayarlanamadı: {{error}}",
           "reset": "Kısayol orijinal değerine sıfırlanamadı",
           "registrationFailed": "Bazı kısayollar kaydedilemedi ve devre dışı: {{bindings}}. Başka bir uygulama bunları zaten kullanıyor olabilir — Ayarlar'dan farklı bir kombinasyon seçin."
-        }
+        },
+        "badge": {
+          "conflict": "Çakışma",
+          "risky": "Riskli"
+        },
+        "altGrConflictLayout": "{{layouts}} için kullandığınız bir klavye, AltGr+{{key}} ile bir karakter yazar. Windows AltGr'yi Ctrl+Alt olarak bildirir; bu yüzden bu kısayol onun yerine tetiklenir. Ctrl+Alt içermeyen bir kombinasyon seçin.",
+        "altGrConflictSpace": "{{layouts}} için kullandığınız bir klavye, karakterleri AltGr ile yazar ve AltGr genellikle bir karakterden sonraki boşluk için de basılı tutulur. Windows AltGr'yi Ctrl+Alt olarak bildirir; bu yüzden bu kısayol o boşluk yerine tetiklenir. Ctrl+Alt içermeyen bir kombinasyon seçin."
       },
       "pauseButton": {
         "label": "Duraklatma düğmesi",
         "description": "Kayıt katmanına bir duraklatma düğmesi ekler: duraklatılmışken hiçbir şey kaydedilmez, devam etmek aynı kaydı sürdürür. Varsayılan: Kapalı. 10 dakika duraklatıldıktan sonra mikrofon devam edene kadar bırakılır."
-      },
-      "speedIndicator": {
-        "label": "Çubukta bilgisayar hızı",
-        "description": "Kayıt çubuğunun solunda yüzdeli bir bilgisayar simgesi gösterir: bu bilgisayarın kullandığınız model için normal hızına göre ne kadar hızlı yazıya döktüğünü. %100 normaldir; %70'in altında turuncu, %50'nin altında kırmızı. Varsayılan: Kapalı. Karşılaştıracak bir normal oluşması için modelle birkaç kayıt gerekir."
       },
       "undoWord": {
         "label": "Son kelimeyi geri al",
@@ -330,6 +668,16 @@
           "worksWith": "Bu bilgisayarda çalışan bir model gerekir, çünkü uzak hizmetler sesi ancak durdurduktan sonra alır. Şunlarla çalışır: {{models}}.",
           "noLocal": "Bu bilgisayarda çalışan bir model gerekir, çünkü uzak hizmetler sesi ancak durdurduktan sonra alır. Modeller sayfasından bir tane indirin."
         }
+      },
+      "liveTextAfterStop": {
+        "label": "Metni yazıya dökülürken göster",
+        "description": "**Canlı metin kutusu olmadan yapılan bir kayıt durduğunda kutu belirir ve transkripsiyon geldikçe içine yazılır** — zaten dökülmüş kısımlar hemen, gerisi hazır olur olmaz. Yalnızca izlemek için: metin her zamanki gibi teslim edilir.\n\n**Varsayılan:** Kapalı.\n\nCanlı metin kutusunun stilini ve genişliğini kullanır. Canlı metin kutusu açıkken her kayıt canlıdır ve metnini zaten gösterir."
+      },
+      "liveTradeoffs": {
+        "title": "Canlı döküm: bilmekte fayda var",
+        "accuracy": "Gördüğünüz metin aldığınız metindir; bu yüzden özellikle duraksamadan uzun konuşmalarda Kayıt sonrasından biraz daha az doğrudur. En doğru metni Kayıt sonrası verir.",
+        "cpu": "Konuşurken daha fazla işlemci ve pil kullanır.",
+        "undo": "Son sözcüğü geri alma yalnızca Parakeet modelleriyle çalışır."
       },
       "liveTextMode": {
         "title": "Canlı metin gösterimi",
@@ -348,6 +696,22 @@
         "medium": "Orta",
         "wide": "Geniş",
         "extraWide": "Çok geniş"
+      },
+      "liveTextHeight": {
+        "title": "Kutu yüksekliği",
+        "description": "Canlı metin kutusunun Tüm metin modunda en eski satırlar kaymadan önce kaç satır gösterdiği. **Varsayılan:** Orta (6 satır).",
+        "small": "Küçük (3 satır)",
+        "medium": "Orta (6 satır)",
+        "large": "Büyük (10 satır)",
+        "extraLarge": "Çok büyük (16 satır)"
+      },
+      "liveTextSize": {
+        "title": "Metin boyutu",
+        "description": "Canlı metin kutusundaki metnin ne kadar büyük olduğu. **Varsayılan:** Normal.",
+        "small": "Küçük",
+        "normal": "Normal",
+        "large": "Büyük",
+        "extraLarge": "Çok büyük"
       },
       "language": {
         "title": "Dil",
@@ -392,7 +756,7 @@
         },
         "idleBehavior": {
           "title": "Etkin bir kayıt yokken",
-          "description": "Hiçbir şey kaydedilmiyorken Transkribe Et ve Gönder Kısayolu'na bastığınızda ne olacağı. Varsayılan: Kayıt başlat; böylece bir basış başlatır, sonraki basış yapıştırır ve gönderir. Bu tuşu saf bir sonlandırıcı yapmak için Hiçbir şey yapma'yı seçin: kayıtları Transkripsiyon Kısayolu ile başlatır, sonucu yapıştırıp göndermek istediğinizde yalnızca bu tuşa basarsınız.",
+          "description": "Hiçbir şey kaydedilmiyorken Transkribe Et ve Gönder Kısayolu'na bastığınızda ne olacağı. Varsayılan: Kayıt başlat; böylece bir basış başlatır, sonraki basış yapıştırır ve gönderir. Bu tuşu saf bir sonlandırıcı yapmak için Hiçbir şey yapma'yı seçin: kayıtları Kayıt/Transkripsiyon Kısayolu ile başlatır, sonucu yapıştırıp göndermek istediğinizde yalnızca bu tuşa basarsınız.",
           "options": {
             "startNormal": "Kayıt başlat",
             "doNothing": "Hiçbir şey yapma"
@@ -407,7 +771,7 @@
         "title": "Paste last transcription",
         "pasteMethod": {
           "title": "Paste method",
-          "description": "Son Transkripsiyonu Yapıştır kısayolunun metni odaklanılan pencereye nasıl koyacağı. Bu, Gelişmiş sayfasındaki Yapıştırma Yöntemi'nden ayrıdır; böylece onu tek bir zorlu hedef için ayarlayabilirsiniz. Varsayılan: Pano (Ctrl+V) — bir terminalde Pano (Shift+Insert)'i, karakterleri yapıştırmak yerine yazmak için Doğrudan'ı veya metni yalnızca panoya koyup elle yapıştırmak için Yok'u deneyin."
+          "description": "Son Transkripsiyonu Yapıştır kısayolunun metni odaklanılan pencereye nasıl koyacağı. Bu, Daha fazla › Çıktı altındaki Yapıştırma Yöntemi'nden ayrıdır; böylece onu tek bir zorlu hedef için ayarlayabilirsiniz. Varsayılan: Pano (Ctrl+V) — bir terminalde Pano (Shift+Insert)'i, karakterleri yapıştırmak yerine yazmak için Doğrudan'ı veya metni yalnızca panoya koyup elle yapıştırmak için Yok'u deneyin."
         },
         "clipboard": {
           "title": "Clipboard",
@@ -502,7 +866,7 @@
       },
       "altGrWarning": {
         "label": "AltGr kısayolları için uyar",
-        "description": "AltGr ile de yazılabilen kısayolların yanında uyarı gösterir. Windows AltGr'yi Ctrl+Alt olarak bildirir; bu yüzden Ctrl+Alt+O gibi bir kısayol AltGr ile karakter yazarken tetiklenir ve karakter hiç yazılmaz. Varsayılan: Açık. AltGr ile karakter yazmıyorsanız kapatın.",
+        "description": "**AltGr ile de yazılabilen kısayolların yanında kehribar rengi bir uyarı gösterir.** Windows AltGr'yi Ctrl+Alt olarak bildirir; bu yüzden Ctrl+Alt+O gibi bir kısayol AltGr ile ó yazarken tetiklenir ve karakter hiç gelmez. Windows'ta yalnızca klavyelerinizden biri o tuşta (Shift'li bir kombinasyon için AltGr+Shift ile) AltGr ile bir şey yazıyorsa uyarır ve klavyenin ait olduğu dili adlandırır.\n\n**Varsayılan:** Açık. AltGr ile karakter yazmıyorsanız kapatın.",
         "turnOff": "Bu uyarıyı kapat"
       }
     },
@@ -520,6 +884,20 @@
         "off": "Kapalı",
         "minutes": "{{minutes}} dk"
       },
+      "micWarmup": {
+        "title": "Mikrofonun ısınmasını bekle",
+        "description": "**Boşta duran bir mikrofon açıldıktan sonra, gerçekten hazır olana kadar kayıt çubuğunda \"Mikrofon açılıyor...\" gösterilmeye devam eder.** Bazı mikrofonlar çok daha sessiz başlar ve yaklaşık bir saniyede sesi yükselir; bu sırada söylenen kelimeler gürültü olarak atılıyordu. Bekleme, bu mikrofonun son birkaç soğuk başlangıcının uygulamanın kendisinin ölçtüğü ortalamasıdır.\n\n**Varsayılan:** Açık.\n\nYalnızca soğuk başlangıç bekler — hazır tutulan mikrofon hemen başlar. Mikrofon Her Zaman Açık etkinken gizlenir.",
+        "measured": "Bu bilgisayarda ölçülen: {{seconds}} sn.",
+        "notMeasured": "Henüz ölçülmedi — bir sonraki soğuk başlangıçta kendini ölçer."
+      },
+      "tooQuiet": {
+        "title": "Çok sessiz konuşunca uyar",
+        "description": "**Sözlerinizin tutulamayacağı kadar sessiz konuştuğunuzda kayıt çubuğu kısa bir süre \"Çok sessiz — sesli konuş\" gösterir.** Neredeyse konuşma olan ve oda gürültüsünün belirgin biçimde üzerindeki bir sese yaklaşık 0,7 sn tepki verir; sessizlik, müzik ve klavye sesi onu tetiklemez. Yanlış duyulan kelimeleri anlayamaz — bunu canlı metin kutusu gösterir.\n\n**Varsayılan:** Açık.",
+        "box": {
+          "title": "Ayrı bir kutuda göster",
+          "description": "**\"Çok sessiz — sesli konuş\" kayıt çubuğunun hemen altında küçük bir kutuda görünür; çubuk ses çubuklarını göstermeye devam eder.** Çubuk ekranın altındayken kutu görev çubuğunun üstündeki boşlukta durur, bu yüzden canlı metin kutusunu asla kapatmaz. Kapalı: çubuk bunu ses çubuklarının yerine gösterir (duraklatma düğmesi açıkken uzun çeviriler orada kesilir).\n\n**Varsayılan:** Açık."
+        }
+      },
       "audioFeedback": {
         "label": "Sesli Geri Bildirim",
         "description": "Kayıt başladığında kısa bir ses, durduğunda farklı bir ses çalar; böylece ekrana bakmadan mikrofonun açık olduğunu bilirsiniz. Varsayılan: Kapalı. Açmak, aşağıdaki Çıkış Cihazı ve Ses Seviyesi'ni etkinleştirir; iki uyarı sesi, Hata Ayıklama sayfasındaki Ses Teması aracılığıyla kendi dosyalarınızla değiştirilebilir."
@@ -536,7 +914,6 @@
       }
     },
     "advanced": {
-      "title": "Gelişmiş",
       "groups": {
         "app": "Uygulama",
         "output": "Çıktı",
@@ -571,6 +948,36 @@
           "bottom": "Alt",
           "top": "Üst"
         }
+      },
+      "reopenLastPage": {
+        "title": "Son Sayfayı Yeniden Aç",
+        "description": "**Handy Tool'u kapattığınızda açık olan sayfada açar** (örneğin Geçmiş), Genel yerine.\n\n**Varsayılan:** Açık."
+      },
+      "overlaySize": {
+        "title": "Overlay Boyutu",
+        "description": "**Kayıt overlay'inin ne kadar büyük olduğu**, altındaki \"Çok sessiz\" kutusuyla birlikte. Büyük veya yüksek çözünürlüklü ekranlarda daha büyüğü daha kolay görülür.\n\n**Varsayılan:** Normal.",
+        "normal": "Normal",
+        "large": "Büyük",
+        "extraLarge": "Çok büyük"
+      },
+      "soundBarsWide": {
+        "title": "Geniş ses çubukları",
+        "description": "**Kayıt katmanında daha geniş ses çubukları:** 2 px (62 px) yerine 2,5 px çubuklar ve boşluklar (77,5 px).\n\n**Varsayılan:** Kapalı."
+      },
+      "progressStyle": {
+        "title": "İlerleme Stili",
+        "description": "**Kayıt katmanı yazıya dökmenin ne kadar ilerlediğini nasıl gösterir:** altta dolan ince bir çizgi; alt ortadan başlayıp kenarda dolaşan, arkası değere kadar yanık kalan parlak bir ışık; ya da kenarda dönen ince bir ışık, her 1,6 saniyede bir tur (değer metindedir). Hareket azaltıldığında dönen ışık çizgiye dönüşür.\n\n**Varsayılan:** Çizgi.",
+        "line": "Altta çizgi",
+        "ring": "Kenarda ışık",
+        "lap": "Kenarda dönen ışık"
+      },
+      "progressLineGlow": {
+        "title": "Parlayan çizgi",
+        "description": "**İlerleme çizgisi kenardaki ışık gibi parlar**, halesi overlay'in kenarını aşar.\n\n**Varsayılan:** Kapalı. Yalnızca İlerleme Stili: Altta çizgi ile."
+      },
+      "progressGlow": {
+        "title": "Parlama gücü",
+        "description": "**İlerleme ışığının ne kadar parladığı**: \"Kenarda ışık\" ve \"Parlayan çizgi\" açıkken çizgi. %0 parlamayı kapatır, %200 iki katına çıkarır.\n\n**Varsayılan:** %100."
       },
       "pasteMethod": {
         "title": "Yapıştırma Yöntemi",
@@ -640,8 +1047,7 @@
       "customWords": {
         "title": "Özel Kelimeler",
         "description": "Motorun sürekli yanlış duyduğu isimler, ürünler ve jargonun listesi; her transkripsiyondan sonra Handy benzer sesli kelimeleri bulup onların yerine sizin yazımınızı kullanır. Varsayılan: boş. Karşılaştıkça tüm kelimeleri ekleyin ve kastetmediğiniz şeyleri düzeltmeye başlarsa Hata Ayıklama sayfasındaki Kelime Düzeltme Eşiği'ni azaltın.",
-        "placeholder": "Kelime ekle",
-        "add": "Ekle",
+        "placeholder": "Bir kelime ekleyin, ardından Enter’a basın",
         "remove": "{{word}} Kaldır",
         "duplicate": "\"{{word}}\" zaten mevcut"
       },
@@ -737,7 +1143,6 @@
         }
       },
       "tabs": {
-        "app": "Uygulama",
         "output": "Çıktı",
         "typer": "Yazıcı",
         "providers": "Sağlayıcılar",
@@ -899,10 +1304,21 @@
       "systemAudioGain": {
         "title": "Sistem sesi düzeyi",
         "description": "Sistem sesinin kendi sesinize göre ne kadar yüksek olduğu. Karşı taraf yazıya dökülemeyecek kadar kısıksa artırın, sizi bastırıyorsa azaltın. Yalnızca sistem sesi ölçeklenir — mikrofonunuza dokunulmaz."
+      },
+      "progressColor": {
+        "title": "İlerleme rengi",
+        "description": "**Hapın parlayan kısımlarının rengi:** ilerleme ışığı ve parlaması (çizgi, kenardaki ışık ve dönen ışık), parlayan T ve ses çubukları. Üç kaydırıcıyla seçilir: Ton (hangi renk), Doygunluk (ne kadar canlı) ve Açıklık. Örnek kare sonucu gösterir; sıfırlama düğmesi varsayılana döner.\n\n**Varsayılan:** camgöbeği.",
+        "hue": "Ton",
+        "saturation": "Doygunluk",
+        "lightness": "Açıklık",
+        "reset": "Varsayılan renge dön"
+      },
+      "pillPreview": {
+        "title": "Önizleme",
+        "description": "**Çevresindeki ayarların şekillendirdiği hareketli kayıt hapı:** solda kayıt (canlı metin kutusu açıkken yanan T, ses çubukları), sağda ise transkripsiyon, ilerleme stilinize, parlamanıza ve renginize göre Overlay Boyutunuzda 0'dan %100'e tekrar tekrar ilerler."
       }
     },
     "postProcessing": {
-      "title": "Son İşlem",
       "hotkey": {
         "title": "Kısayol Tuşu"
       },
@@ -943,7 +1359,7 @@
           "title": "Sıcaklık",
           "description": "Daha düşük değer daha kararlı ve tutarlıdır (0 = en birebir); daha yüksek değer daha yaratıcıdır."
         },
-        "registryNote": "Sağlayıcının API anahtarı, modeli ve temel URL'si Gelişmiş → Kayıtlı LLM Sağlayıcıları'nda yapılandırılır."
+        "registryNote": "Sağlayıcının API anahtarı, modeli ve temel URL'si Daha fazla › Sağlayıcılar › Kayıtlı LLM Sağlayıcıları'nda yapılandırılır."
       },
       "prompts": {
         "title": "Prompt",
@@ -1044,7 +1460,7 @@
       },
       "postProcessingToggle": {
         "label": "Son İşlem",
-        "description": "İsteğe bağlı yapay zekâ temizleme geçişini açar ve kenar çubuğuna, sağlayıcıyı ve promptu seçtiğiniz bir Son İşlem sayfası ekler. Varsayılan: Kapalı. Normal Transkripsiyon Kısayolunuz etkilenmez — temizleme yalnızca ayrı Son İşlem Kısayolu üzerinde çalışır ve Geçmiş, ham transkripsiyonu işlenmiş olanın yanında tutar."
+        "description": "İsteğe bağlı yapay zekâ temizleme geçişini açar; kısayolu, sağlayıcısı ve promptu bu anahtarın hemen altında görünür. Varsayılan: Kapalı. Normal Kayıt/Transkripsiyon Kısayolunuz etkilenmez — temizleme yalnızca ayrı Son İşlem Kısayolu üzerinde çalışır ve Geçmiş, ham transkripsiyonu işlenmiş olanın yanında tutar."
       },
       "muteWhileRecording": {
         "label": "Kayıt Sırasında Sessize Al",
@@ -1102,7 +1518,7 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "Uygulaması, pencere sınıfı veya denetim sınıfı bu parçalardan birini içeren bir teslim hedefi (büyük/küçük harf duyarsız) uzak masaüstü sayılır ve Advanced → Transcription altındaki 'Paste delay after jump (Windows)' ile 'Submit delay before Enter (Windows)' için Yerel yerine Uzak değeri kullanır. Artık bir atlama hedefi olması gerekmiyor: 1.3.0'dan bu yana hâlihazırda odakta olan uzak pencere de sınıflandırılır ve gönderme gecikmesi orada bu sayede uygulanır. Varsayılan: msrdc, mstsc, Citrix. Oraya yapılan teslimler yutulmaya devam ediyorsa RDP veya Citrix istemcinizin süreç adını ekleyin; boş liste her hedefi yerel sayar.",
+        "description": "Uygulaması, pencere sınıfı veya denetim sınıfı bu parçalardan birini içeren bir teslim hedefi (büyük/küçük harf duyarsız) uzak masaüstü sayılır ve Daha fazla › Çıktı altındaki 'Paste delay after jump (Windows)' ile 'Submit delay before Enter (Windows)' için Yerel yerine Uzak değeri kullanır. Artık bir atlama hedefi olması gerekmiyor: 1.3.0'dan bu yana hâlihazırda odakta olan uzak pencere de sınıflandırılır ve gönderme gecikmesi orada bu sayede uygulanır. Varsayılan: msrdc, mstsc, Citrix. Oraya yapılan teslimler yutulmaya devam ediyorsa RDP veya Citrix istemcinizin süreç adını ekleyin; boş liste her hedefi yerel sayar.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
@@ -1115,8 +1531,8 @@
         "title": "Sıcak yuva (Sabitleme ve Teslimat)",
         "optionsMoved": {
           "title": "Teslimat seçenekleri",
-          "description": "Bir ayar değil — bir yol işareti. Bir atlamanın bir yuvayla gerçekte ne yapacağı, Gelişmiş → Transkripsiyon'da akış başına yapılandırılır: 'Başlangıçta yuva eylemi', 'Bitişte yuva eylemi', 'Son çıktı konumunu izle' ve 'Teslimattan sonra odağı geri döndür' — her biri Transkribe Et için bir kez ve Transkribe Et ve Gönder için bir kez bulunur.",
-          "hint": "Genel sayfasındaki Transkribe Et ve Transkribe Et ve Gönder gruplarında yapılandırılır."
+          "description": "Bir ayar değil — bir yol işareti. Bir atlamanın bir yuvayla gerçekte ne yapacağı, Daha fazla › Çıktıda akış başına yapılandırılır: 'Başlangıçta yuva eylemi', 'Bitişte yuva eylemi', 'Son çıktı konumunu izle' ve 'Teslimattan sonra odağı geri döndür' — her biri Transkribe Et için bir kez ve Transkribe Et ve Gönder için bir kez bulunur.",
+          "hint": "Daha fazla › Çıktı altındaki Transkribe Et ve Transkribe Et ve Gönder gruplarında yapılandırılır."
         }
       },
       "hot2": {
@@ -1171,10 +1587,10 @@
       }
     },
     "translator": {
-      "title": "Çevirmen",
+      "title": "İzlenen klasörler",
       "enabled": {
         "label": "Klasörleri izle",
-        "description": "İzlenen bir klasöre gelen her yeni .wav, .ogg veya .opus dosyasını, geçerli model, Dil ve İngilizceye Çevir ayarlarınızı kullanarak yanına bir .txt dosyası olarak transkribe etmek için açın. Varsayılan: kapalı. İzleme başladığında klasörde zaten bulunan dosyalara kasıtlı olarak dokunulmaz ve klasörlerin kendisi Klasör ekle altında seçilir."
+        "description": "İzlenen bir klasöre gelen her yeni .wav, .mp3, .m4a, .aac, .flac, .ogg veya .opus dosyasını, geçerli model, Dil ve İngilizceye Çevir ayarlarınızı kullanarak yanına bir .txt dosyası olarak transkribe etmek için açın. Varsayılan: kapalı. İzleme başladığında klasörde zaten bulunan dosyalara kasıtlı olarak dokunulmaz ve klasörlerin kendisi Klasör ekle altında seçilir."
       },
       "priority": {
         "title": "Öncelik",
@@ -1210,7 +1626,7 @@
         "counters": "bu oturumda {{done}} tamamlandı, {{failed}} başarısız oldu"
       },
       "folders": {
-        "title": "İzlenen klasörler",
+        "title": "Klasörler",
         "none": "Klasör yok",
         "emptyTitle": "İzlenen klasör yok",
         "emptyDescription": "Yeni kayıtlar için izlemeye başlamak üzere bir klasör ekleyin.",
@@ -1224,10 +1640,83 @@
         "removeAriaLabel": "{{name}} klasörünü izlemeyi durdur"
       }
     },
+    "files": {
+      "model": {
+        "title": "Model",
+        "description": "**Dosyayı hangi konuşma modelinin yazıya dökeceği.** Henüz indirilmemiş modeller de listelenir; birini seçip önce indirin.\n\n**Varsayılan:** dikte modeliniz; seçtiğiniz model hatırlanır. Başka bir model dikte modelinizin yanında yüklenir, böylece dikte hazır kalır, ve dosya bitince bellekten kaldırılır.",
+        "dictation": "{{name}} (dikte modeliniz)",
+        "notDownloaded": "{{name}} (indirilmedi)",
+        "groups": {
+          "dictation": "Dikte modeliniz",
+          "downloaded": "İndirilenler",
+          "notDownloaded": "İndirilmeyenler"
+        },
+        "downloadSize": "İndir · {{size}}"
+      },
+      "transcribe": {
+        "title": "Dosya yazıya dök",
+        "choose": {
+          "title": "Ses dosyası seç",
+          "description": "**Seçtiğiniz ses dosyasını yazıya döker**: WAV, MP3, M4A, AAC, FLAC, OGG veya Opus, örneğin bir telefon kaydı; yukarıda seçilen modeli ve dil ayarlarınızı kullanır.\n\nDosya duraklamalarından en fazla yaklaşık 40 saniyelik parçalara bölünür ve her parça bir kez yazıya dökülür: canlı metin yok, ikinci geçiş yok. Orijinal dosya yalnızca okunur, asla değiştirilmez.",
+          "button": "Dosya seç…"
+        },
+        "audioFiles": "Ses dosyaları",
+        "decoding": "{{file}} okunuyor…",
+        "progress": "{{done}} / {{total}} · %{{percent}}",
+        "cancel": "Durdur",
+        "cancelled": "Durduruldu: {{file}}",
+        "failed": "{{file}} yazıya dökülemedi: {{error}}",
+        "startFailed": "Başlatılamadı: {{reason}}",
+        "done": "{{file}} yazıya döküldü",
+        "copy": "Metni kopyala",
+        "savedTo": "Metin kaydedildi: {{path}}",
+        "saveFailed": "Kaydedilemedi: {{error}}",
+        "empty": "Bu dosyada konuşma bulunamadı."
+      },
+      "options": {
+        "saveText": {
+          "title": "Metni kaydet",
+          "description": "**Dökümün .txt olarak nereye kaydedileceği**, ses dosyasının adıyla. Ad alınmışsa bir numara eklenir; hiçbir şeyin üzerine yazılmaz.\n\n**Varsayılan:** Her seferinde sor: dosya seçtiğinizde bir pencere sorar ve seçiminizi hatırlayabilir. Metin her durumda kopyalamak için gösterilir.",
+          "options": {
+            "ask": "Her seferinde sor",
+            "handy_folder": "Handy klasörüne",
+            "next_to_file": "Kaydın yanına",
+            "dont_save": "Kaydetme"
+          }
+        },
+        "keepAudio": {
+          "title": "Sesin bir kopyasını sakla",
+          "description": "**Ses dosyasını aşağıdaki klasöre**, metninin yanına kopyalar; böylece orijinal taşınsa veya silinse bile elinizde kalır.\n\n**Varsayılan:** kapalı. Orijinal asla taşınmaz veya değiştirilmez."
+        },
+        "folder": {
+          "title": "Klasör",
+          "description": "**Handy klasörüne kaydedilen metnin ve ses kopyalarının gittiği yer.**\n\n**Varsayılan:** Handy'nin kendi veri klasöründeki \"files\" klasörü.",
+          "change": "Değiştir",
+          "reset": "Handy'nin klasörüne dön"
+        }
+      },
+      "ask": {
+        "title": "Metin nereye kaydedilsin?",
+        "handyFolder": "Handy klasörüne",
+        "nextToFile": "Kaydın yanına",
+        "dontSave": "Kaydetme",
+        "dontSaveHint": "Metin yine de kopyalamak için gösterilir ve listede kalır.",
+        "remember": "Seçimimi hatırla",
+        "rememberHint": "Daha sonra Metni kaydet altından değiştirebilirsiniz."
+      },
+      "log": {
+        "title": "Yazıya dökülen dosyalar",
+        "empty": "Henüz hiçbir şey yazıya dökülmedi. Burada yazıya döktüğünüz her dosya metniyle birlikte listelenir.",
+        "showMore": "Tümünü göster",
+        "showLess": "Daha az göster",
+        "reveal": "Klasörde göster",
+        "delete": "Listeden kaldır"
+      }
+    },
     "currentAudio": {
       "streamingHint": "Metin, siz konuşurken yalnızca bastığınız kısayol — Transkripsiyon veya Bas-Konuş — Canlı olarak ayarlanmışsa ve yerel bir model kullanıyorsanız aşamalı olarak görünür.",
       "finalHint": "Kayıt Sonrası modunda veya API Transkripsiyonu ya da OpenRouter Transkripsiyonu kullanılırken tam transkript kayıt bittiğinde tek seferde görünür; her kısayolun modunu şurada ayarlayın:",
-      "advancedTranscription": "Gelişmiş → Transkripsiyon",
+      "advancedTranscription": "Genel › Transkripsiyon",
       "finalHintSuffix": ".",
       "title": "Mevcut Ses",
       "idle": "Canlı transkripsiyonu görmek için kayda başlayın",
@@ -1259,7 +1748,8 @@
       "loading": "Modeller yükleniyor…",
       "error": "Modeller yüklenemedi",
       "noMatches": "Eşleşen model yok — özel bir kimlik kullanmak için yazın"
-    }
+    },
+    "revealHint": "Daha fazla ayar görmek için açın."
   },
   "common": {
     "loading": "Yükleniyor...",
@@ -1303,8 +1793,8 @@
     "description": "Tepsi menüsü dahil tüm arayüzü, birlikte gelen 17 dilden birine değiştirir. Varsayılan: Windows görüntüleme dilinizdir; bu dil mevcut değilse İngilizceye döner. Bu yalnızca arayüz dilidir — konuştuğunuz dille hiçbir ilgisi yoktur, o Genel sayfasındaki Dil ile ayarlanır."
   },
   "overlay": {
-    "transcribing": "Transkribe ediliyor...",
-    "transcribingProgress": "Transkribe ediliyor {{percent}}%",
+    "transcribing": "İşleniyor...",
+    "transcribingProgress": "İşleniyor %{{percent}}",
     "processing": "İşleniyor...",
     "openFloatingWindow": "Transkripsiyon penceresini aç",
     "startingMic": "Mikrofon açılıyor...",
@@ -1315,8 +1805,12 @@
     "pause": "Duraklat",
     "resume": "Devam et",
     "liveTextBox": "Canlı metin kutusu",
-    "slowPc": "Bu bilgisayarın normal hızının %{{percent}} kadarıyla yazıya dökülüyor",
-    "speedUnknown": "Bilgisayar hızı: henüz ölçülmedi"
+    "menu": {
+      "changeShortcut": "Kısayolu değiştir…",
+      "liveTextSettings": "Canlı metin kutusu ayarları…",
+      "hidePause": "Duraklatma düğmesini gizle"
+    },
+    "tooQuiet": "Çok sessiz — sesli konuş"
   },
   "brand": {
     "name": "Handy",
@@ -1352,7 +1846,7 @@
     "fileTooLarge": "Dosya çok büyük (maks. 10 MB).",
     "loadedFile": "Yüklendi: {{name}}",
     "providerOption": "{{name}} (sağlayıcı)",
-    "chipDisabled": "Yapılandırılmadı — Gelişmiş > Sağlayıcılar > Kayıtlı LLM Sağlayıcıları altında 'Bu sağlayıcıyı etkinleştir' ile açın.",
+    "chipDisabled": "Yapılandırılmadı — Daha fazla › Sağlayıcılar › Kayıtlı LLM Sağlayıcıları altında 'Bu sağlayıcıyı etkinleştir' ile açın.",
     "chips": {
       "cl100k_base": "cl100k (GPT-4)",
       "o200k_base": "o200k (GPT-4o)",
@@ -1380,7 +1874,6 @@
     }
   },
   "keyboardTyper": {
-    "title": "Klavye Yazıcısı",
     "description": "Bu metni, yapıştırmanın engellendiği yerlerde de çalışacak şekilde — uzak konsollar, VM görüntüleyicileri, parola istemleri — tek tek simüle edilmiş tuş vuruşları olarak odaklanılan pencereye gönderir. Başlat'a basarsanız önce hedef pencereye tıklamanız için Başlangıç gecikmesi geri sayımını (varsayılan 10 sn) alırsınız; zaten hedefteyken Metin Yazma Kısayolu'na basarsanız yazma yaklaşık bir saniye sonra başlar. Metin yalnızca bellekte tutulur — ayarlarınıza, Geçmiş'e veya loglara asla yazılmaz.",
     "placeholder": "Yazılacak metni girin...",
     "go": "Başlat",
@@ -1398,7 +1891,7 @@
     "shortcut": {
       "label": "Kısayol:",
       "unset": "ayarlanmadı",
-      "hint": "(Gelişmiş ayarlardan değiştirin; iptal etmek için tekrar basın)"
+      "hint": "(Kısayollar sayfasından değiştirin; iptal etmek için tekrar basın)"
     },
     "status": {
       "idle": "Başlat'a tıklayın, ardından hedef pencereyi odaklayın — veya kısayolu doğrudan hedef uygulamada kullanın.",
@@ -1411,14 +1904,14 @@
   },
   "modelTesting": {
     "configureProviders": "Sağlayıcıları yapılandır",
-    "description": "Çalıştır altında işaretlediğiniz her modele bir prompt gönderir ve yanıtları token sayıları, maliyet ve gidiş-dönüş süresiyle yan yana dizer; Jüri altında işaretlenen modeller ardından tüm bu yanıtları jüri promptunuzu kullanarak puanlar. Varsayılan: hiçbir şey seçilmemiş ve her iki prompt da boş. Liste Gelişmiş > Kayıtlı LLM Sağlayıcıları'ndan gelir; bu nedenle bir çalıştırma kendi API anahtarlarınızı kullanır — promptunuz bu makineden çıkar ve ücretli sağlayıcılar için gerçek para maliyeti oluşturur.",
+    "description": "Çalıştır altında işaretlediğiniz her modele bir prompt gönderir ve yanıtları token sayıları, maliyet ve gidiş-dönüş süresiyle yan yana dizer; Jüri altında işaretlenen modeller ardından tüm bu yanıtları jüri promptunuzu kullanarak puanlar. Varsayılan: hiçbir şey seçilmemiş ve her iki prompt da boş. Liste Daha fazla › Sağlayıcılar › Kayıtlı LLM Sağlayıcıları'ndan gelir; bu nedenle bir çalıştırma kendi API anahtarlarınızı kullanır — promptunuz bu makineden çıkar ve ücretli sağlayıcılar için gerçek para maliyeti oluşturur.",
     "providersLabel": "Modeller",
     "selectAll": "Çalıştırmak için tümünü seç",
     "clear": "Temizle",
     "run": "Çalıştır",
     "judge": "Jüri",
     "costPerM": "giriş ${{input}} · çıkış ${{output}} /1M",
-    "noProviders": "Chat destekli hiçbir sağlayıcı yapılandırılmadı. Gelişmiş → Kayıtlı LLM Sağlayıcıları'ndan bir tane ekleyin.",
+    "noProviders": "Chat destekli hiçbir sağlayıcı yapılandırılmadı. Daha fazla › Sağlayıcılar › Kayıtlı LLM Sağlayıcıları'ndan bir tane ekleyin.",
     "mainPromptLabel": "Tüm modeller için prompt",
     "mainPromptPlaceholder": "Seçili her modele gönderilen prompt…",
     "judgePromptLabel": "Jüri / hakem promptu (isteğe bağlı)",
@@ -1483,6 +1976,7 @@
   "floating": {
     "waiting": "Transkripsiyon bekleniyor…",
     "listening": "Dinleniyor…",
+    "listeningShort": "Dinleniyor",
     "copy": "Kopyala",
     "copied": "Kopyalandı"
   },
@@ -1491,5 +1985,153 @@
       "message": "{{expected}} sürümüne güncelleme tamamlanmadı — hâlâ {{actual}} çalışıyor. Yükleyici başlatıldı ancak hiçbir şey değiştirilmedi; bir güvenlik ilkesi engellemiş olabilir.",
       "download": "Elle indir"
     }
+  },
+  "whatsNew": {
+    "intro": "Son güncellemelerdeki yenilikler ve değişiklikler. Göster ayarı açar.",
+    "release": "Sürüm {{version}}",
+    "show": "Göster",
+    "items": {
+      "files": {
+        "title": "Dosya yazıya dök",
+        "description": "Yeni Dosyalar sayfası seçtiğiniz ses dosyasını (WAV, MP3, M4A, AAC, FLAC, OGG, Opus) seçtiğiniz modelle yazıya döker ve yazıya dökülen dosyaların listesini tutar. İzlenen klasörler de oraya taşındı."
+      },
+      "helpMode": {
+        "title": "Yardım modu",
+        "description": "Her sayfanın sağ üstündeki ?: bir ayarın ne yaptığını okumak için üzerine gelin. Her satırdaki \"i\"nin yerini alır."
+      },
+      "setups": {
+        "title": "Jumper ve son işleme kurulumları",
+        "description": "Kurulumlar sayfasında iki rehberli kurulum: yerleri hatırlayıp onlara atlayın ya da metninizi düzelten bir yapay zekâ bağlayın."
+      },
+      "firstSetup": {
+        "title": "İlk açılışta kurulum rehberi",
+        "description": "Diller, önerilen bir konuşma modeli, kısayollar, mikrofon ve ilk deneme. Kurulumlar sayfasından yeniden çalıştırın."
+      },
+      "modelRatings": {
+        "title": "Karşılaştırılabilir model puanları",
+        "description": "Hız ve doğruluk çubukları artık ölçümlerden geliyor ve açıklamalar bunlarla uyuşuyor."
+      },
+      "progressStyle": {
+        "title": "Kenarda ışık",
+        "description": "İlerleme stili: yazıya dökerken alttaki çizgi yerine hapın çevresinde parlayan bir ışık döner."
+      },
+      "overlaySize": {
+        "title": "Kaplama boyutu",
+        "description": "Kayıt hapını büyütün: %125 veya %150."
+      },
+      "reopenLastPage": {
+        "title": "Son sayfayı yeniden aç",
+        "description": "Handy Tool açık olan sayfada açılır."
+      },
+      "liveTextSize": {
+        "title": "Canlı metin kutusu: boyut ve yükseklik",
+        "description": "Metin boyutunu ve tüm metin kutusunun kaç satır göstereceğini seçin."
+      },
+      "micWarmup": {
+        "title": "Mikrofonun ısınmasını bekle",
+        "description": "Sessiz başlayan bir mikrofon artık ilk sözcüklerinizi kaybetmez."
+      },
+      "tooQuiet": {
+        "title": "Çok sessiz — daha yüksek sesle",
+        "description": "Modelin sizi iyi duyamayacağı kadar sessiz konuştuğunuzda bir uyarı."
+      },
+      "newIcon": {
+        "title": "Yeni uygulama simgesi",
+        "description": "Uygulamada, yükleyicide, görev çubuğunda ve Başlat'ta yeni dalga simgesi."
+      },
+      "holdUndo": {
+        "title": "Sözcük silmek için basılı tutun",
+        "description": "Canlı yazıya dökmede (canlı metin kutusu açıkken): Ctrl+Geri tuşu son sözcüğü siler, basılı tutunca silmeye devam eder. Genel'deki Son kelimeyi geri al ile açın."
+      },
+      "liveTranscript": {
+        "title": "Canlı metin, dökümünüzün kendisi",
+        "description": "\"Canlı metin kutusu\" açıkken kutunun gösterdiği metin dökümdür: durdurunca yalnızca son bir iki saniyeniz eklenir, metin hemen hazır olur."
+      },
+      "historyTabs": {
+        "title": "Geçmiş sekmeleri ve istatistikler",
+        "description": "Geçmiş'te Kayıtlar, İstatistikler ve Ayarlar sekmeleri var. İstatistikler kayıtlarınızı ve sürelerini gün, hafta, ay ve yıla göre sayar."
+      },
+      "liveTextFade": {
+        "title": "Konuşmayı bırakınca soluklaş",
+        "description": "Canlı metin değişmeyi bıraktıktan 3 saniye sonra soluklaşır; sonraki sözcükleriniz onu geri getirir."
+      },
+      "appearanceSetup": {
+        "title": "Görünüm kurulumu",
+        "description": "Seçmeden önce her görünümü hareket hâlinde gösteren rehberli bir kurulum: hap, ilerlemesi ve canlı metin kutusu. Kurulumlar sayfasında ve Genel › Uygulama'nın üstünde."
+      },
+      "progressColor": {
+        "title": "Kendi ilerleme renginiz",
+        "description": "İlerleme ışığının ve parlamasının, parlayan T'nin ve ses çubuklarının rengini üç kaydırıcıyla seçin: ton, doygunluk ve açıklık."
+      },
+      "liveTextBox": {
+        "title": "Canlı metin kutusu",
+        "description": "Kayıt hapının yanındaki küçük bir kutu, konuştukça sözlerinizi gösterir: en yeni satır ya da metnin tamamı. Haptaki T ya da kendi kısayolu bunu değiştirir."
+      },
+      "newLook": {
+        "title": "Yeni bir görünüm",
+        "description": "Tüm uygulama, açık ve koyu temada yeniden tasarlandı. Kayıt hapı küçüldü, ses çubukları uzadı ve tepsi simgesi yenilendi."
+      },
+      "newLayout": {
+        "title": "Aramalı yeni kenar çubuğu",
+        "description": "En çok kullandığınız sayfalar kenar çubuğunda; eski Gelişmiş sekmeleri ve Klavye Yazıcısı Daha fazla altında, Uygulama ayarları ise Genel'de. Arama kutusu her ayarı bulur."
+      },
+      "shortcutsPage": {
+        "title": "Her kısayol tek yerde",
+        "description": "Kısayollar sayfası tüm kısayolları listeler ve iki kısayol aynı tuşları paylaştığında veya tek bir tuş yazarken tetikleneceğinde uyarır."
+      },
+      "shortcutNone": {
+        "title": "Bir kısayolu kapatın",
+        "description": "Bir kısayolun yanındaki ×, onu Yok'a ayarlar; böylece o tuşlar diğer uygulamalarda tekrar çalışır, örneğin İptal için Escape. Sıfırla eski haline döndürür."
+      },
+      "pauseButton": {
+        "title": "Duraklatma düğmesi",
+        "description": "Kayıt hapından ya da kendi kısayoluyla bir alımı duraklatın ve devam ettirin. Genel'den açın."
+      },
+      "progressPercent": {
+        "title": "Transkribe ediliyor %42",
+        "description": "Hap, transkripsiyonun ne kadar ilerlediğini gösterir; çalışırken × hâlâ iptal eder."
+      },
+      "micStatus": {
+        "title": "Hap mikrofon hakkında bilgi verir",
+        "description": "Gerçekten kaydetmeye başlayana kadar \"Mikrofon açılıyor...\", başlayamadığında ise sessizlik kaydetmek yerine \"Mikrofon yok\" veya \"Mikrofon engellendi\" gösterir."
+      },
+      "micKeepWarm": {
+        "title": "Mikrofonu hazır tut",
+        "description": "Bir alımdan sonra mikrofonu birkaç dakika açık tutar; böylece bir sonraki alım hemen başlar."
+      },
+      "liveTextAfterStop": {
+        "title": "Metni yazıya dökülürken göster",
+        "description": "Canlı metin kutusu olmadan, durduğunuzda kutu belirir ve metniniz geldikçe içine yazılır."
+      },
+      "pillMenus": {
+        "title": "Hapın düğmelerine sağ tıklayın",
+        "description": "Haptaki T, duraklatma ve × düğmelerinin menüleri var: kutunun ne gösterdiğini değiştirin, bir kısayolu ayarlayın veya bir alımı yalnızca Geçmiş'te tutun."
+      },
+      "trayClick": {
+        "title": "Açmak için tepsi simgesine tıklayın",
+        "description": "Tepsi simgesine sol tıklama pencereyi açar; menü sağ tıklamadadır."
+      },
+      "blockedUpdate": {
+        "title": "Engellenen güncellemeler bildirilir",
+        "description": "Bir güncelleme kurulamadıysa (örneğin Windows Smart App Control onu engellediyse), bunu belirten bir bant gösterilir ve kendiniz indirmeniz için bir bağlantı verilir."
+      },
+      "macBuilds": {
+        "title": "macOS sürümleri",
+        "description": "Handy Tool artık Intel ve Apple Silicon Mac'ler için de geliyor. Henüz imzalanmadılar."
+      },
+      "soundSource": {
+        "title": "Ses kaynağı taşındı",
+        "description": "Ses kaynağı artık Genel › Ses'te, mikrofon seçicinin hemen üstünde. Yalnızca Windows."
+      },
+      "systemAudioControls": {
+        "title": "Sistem sesi gecikmesi ve düzeyi",
+        "description": "Sistem sesi kaydedildiğinde, mikrofonunuzun ne kadar gerisinde kaldığını ve yanında ne kadar yüksek olduğunu ayarlayın."
+      },
+      "linuxBuilds": {
+        "title": "Linux paketleri",
+        "description": "x86_64 ve ARM64 için .deb, .rpm ve .AppImage paketleri. Henüz test edilmediler."
+      }
+    },
+    "installed": "Yüklü"
   }
 }

@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { X } from "lucide-react";
 import { useSettings } from "../../hooks/useSettings";
-import { Input } from "../ui/Input";
-import { Button } from "../ui/Button";
 import { SettingContainer } from "../ui/SettingContainer";
 
 interface CustomWordsProps {
@@ -53,73 +52,47 @@ export const CustomWords: React.FC<CustomWordsProps> = React.memo(
       }
     };
 
+    const busy = isUpdating("custom_words");
+
+    // One field holding the words as chips; a new word is added with Enter.
     return (
-      <>
-        <SettingContainer
-          title={t("settings.advanced.customWords.title")}
-          description={t("settings.advanced.customWords.description")}
-          descriptionMode={descriptionMode}
-          grouped={grouped}
-        >
-          <div className="flex items-center gap-2">
-            <Input
-              type="text"
-              className="max-w-40"
-              value={newWord}
-              onChange={(e) => setNewWord(e.target.value)}
-              onKeyDown={handleKeyPress}
-              placeholder={t("settings.advanced.customWords.placeholder")}
-              variant="compact"
-              disabled={isUpdating("custom_words")}
-            />
-            <Button
-              onClick={handleAddWord}
-              disabled={
-                !newWord.trim() ||
-                newWord.includes(" ") ||
-                newWord.trim().length > 50 ||
-                isUpdating("custom_words")
-              }
-              variant="primary"
-              size="md"
+      <SettingContainer
+        title={t("settings.advanced.customWords.title")}
+        description={t("settings.advanced.customWords.description")}
+        descriptionMode={descriptionMode}
+        grouped={grouped}
+        layout="stacked"
+      >
+        <div className="flex flex-wrap items-center gap-1.5 p-1.5 rounded-md border border-control-border border-b-control-bottom bg-control focus-within:shadow-[inset_0_-2px_0_var(--color-accent)]">
+          {customWords.map((word) => (
+            <span
+              key={word}
+              className="inline-flex items-center gap-0.5 h-[26px] ps-2.5 pe-0.5 rounded-sm border border-border bg-surface2 text-[13px] text-text"
             >
-              {t("settings.advanced.customWords.add")}
-            </Button>
-          </div>
-        </SettingContainer>
-        {customWords.length > 0 && (
-          <div
-            className={`px-4 p-2 ${grouped ? "" : "rounded-lg border border-mid-gray/20"} flex flex-wrap gap-1`}
-          >
-            {customWords.map((word) => (
-              <Button
-                key={word}
+              {word}
+              <button
+                type="button"
                 onClick={() => handleRemoveWord(word)}
-                disabled={isUpdating("custom_words")}
-                variant="secondary"
-                size="sm"
-                className="inline-flex items-center gap-1 cursor-pointer"
+                disabled={busy}
                 aria-label={t("settings.advanced.customWords.remove", { word })}
+                className="inline-flex items-center justify-center w-5 h-5 rounded-[3px] text-text-secondary hover:bg-hover hover:text-text transition-colors cursor-pointer disabled:cursor-not-allowed"
               >
-                <span>{word}</span>
-                <svg
-                  className="w-3 h-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </Button>
-            ))}
-          </div>
-        )}
-      </>
+                <X className="w-3 h-3" aria-hidden />
+              </button>
+            </span>
+          ))}
+          <input
+            type="text"
+            value={newWord}
+            onChange={(e) => setNewWord(e.target.value)}
+            onKeyDown={handleKeyPress}
+            placeholder={t("settings.advanced.customWords.placeholder")}
+            aria-label={t("settings.advanced.customWords.placeholder")}
+            disabled={busy}
+            className="flex-1 min-w-40 h-[26px] px-1.5 bg-transparent text-[13px] text-text placeholder:text-text-secondary focus:outline-none"
+          />
+        </div>
+      </SettingContainer>
     );
   },
 );

@@ -138,6 +138,10 @@ impl VoiceActivityDetector for SmoothedVad {
             Some(pending)
         }
     }
+
+    fn last_probability(&self) -> Option<f32> {
+        self.inner_vad.last_probability()
+    }
 }
 
 #[cfg(test)]

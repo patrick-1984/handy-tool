@@ -52,7 +52,7 @@ A VAD-bounded portion of speech, and the unit the transcription pipeline works o
 
 ## Sidecar
 
-The plain-text file the Translator writes next to each transcribed audio file. The MCP discovery file is not called a sidecar in these pages; it is named `handy-mcp.json`. See [A folder of recordings, transcribed while you sleep](../features.md#a-folder-of-recordings-transcribed-while-you-sleep).
+The plain-text file the watched folders write next to each transcribed audio file. The MCP discovery file is not called a sidecar in these pages; it is named `handy-mcp.json`. See [A folder of recordings, transcribed while you sleep](../features.md#a-folder-of-recordings-transcribed-while-you-sleep).
 
 ## Take
 

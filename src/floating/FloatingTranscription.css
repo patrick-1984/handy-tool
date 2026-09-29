@@ -10,13 +10,13 @@
 
 :root {
   color-scheme: light;
-  --fl-bg: #ffffff;
+  --fl-bg: #fbfbfb;
   --fl-text: #0f0f0f;
   --fl-secondary: #5f5c58;
-  --fl-border: rgba(15, 15, 15, 0.14);
+  --fl-border: #e6e3df;
   --fl-hover: rgba(15, 15, 15, 0.06);
-  --fl-dot: #e5484d;
-  --fl-focus: #b83d75;
+  --fl-accent: #0891b2;
+  --fl-focus: #0e7490;
   --fl-font:
     "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
 }
@@ -24,12 +24,13 @@
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
-    --fl-bg: #343230;
+    --fl-bg: #2c2b29;
     --fl-text: #fbfbfb;
-    --fl-secondary: #a8a49e;
-    --fl-border: rgba(251, 251, 251, 0.18);
+    --fl-secondary: #aeaaa4;
+    --fl-border: #45423e;
     --fl-hover: rgba(251, 251, 251, 0.08);
-    --fl-focus: #f28cbb;
+    --fl-accent: #22d3ee;
+    --fl-focus: #67e8f9;
   }
 }
 
@@ -42,33 +43,61 @@
    `:root` inside the media query regardless of source order. */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --fl-bg: #343230;
+  --fl-bg: #2c2b29;
   --fl-text: #fbfbfb;
-  --fl-secondary: #a8a49e;
-  --fl-border: rgba(251, 251, 251, 0.18);
+  --fl-secondary: #aeaaa4;
+  --fl-border: #45423e;
   --fl-hover: rgba(251, 251, 251, 0.08);
-  --fl-focus: #f28cbb;
+  --fl-accent: #22d3ee;
+  --fl-focus: #67e8f9;
 }
 
 :root[data-theme="light"] {
   color-scheme: light;
-  --fl-bg: #ffffff;
+  --fl-bg: #fbfbfb;
   --fl-text: #0f0f0f;
   --fl-secondary: #5f5c58;
-  --fl-border: rgba(15, 15, 15, 0.14);
+  --fl-border: #e6e3df;
   --fl-hover: rgba(15, 15, 15, 0.06);
-  --fl-focus: #b83d75;
+  --fl-accent: #0891b2;
+  --fl-focus: #0e7490;
 }
 
+/* The text, and a footer with the status and the model in use. */
 .floating-root {
-  position: relative;
   width: 100%;
-  height: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: var(--fl-bg);
   color: var(--fl-text);
-  padding: 16px;
-  overflow-y: auto;
   font-family: var(--fl-font);
+}
+
+.floating-body {
+  flex: 1;
+  min-height: 0;
+  padding: 16px 20px;
+  overflow-y: auto;
+}
+
+.floating-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 37px;
+  padding: 4px 8px 4px 16px;
+  border-top: 1px solid var(--fl-border);
+  font-size: 12px;
+  color: var(--fl-secondary);
+}
+
+.floating-status {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .floating-idle {
@@ -77,20 +106,17 @@
   font-style: italic;
 }
 
-.floating-listening {
-  font-size: 14px;
-  color: var(--fl-secondary);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
+/* Cyan and pulsing while a take is on, grey otherwise. */
 .recording-dot {
-  display: inline-block;
+  flex-shrink: 0;
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--fl-dot);
+  background: var(--fl-secondary);
+}
+
+.recording-dot.live {
+  background: var(--fl-accent);
   animation: pulse-dot 1.5s infinite ease-in-out;
 }
 
@@ -105,16 +131,24 @@
 }
 
 .floating-text {
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.6;
   white-space: pre-wrap;
   word-wrap: break-word;
 }
 
+/* Where the next words will appear. */
+.floating-caret {
+  display: inline-block;
+  width: 2px;
+  height: 18px;
+  margin-inline-start: 3px;
+  vertical-align: -3px;
+  background: var(--fl-accent);
+}
+
 .floating-copy-button {
-  position: fixed;
-  top: 8px;
-  right: 8px;
+  flex-shrink: 0;
   padding: 4px 10px;
   font-size: 12px;
   font-family: inherit;
@@ -123,22 +157,16 @@
   border: 1px solid var(--fl-border);
   border-radius: 6px;
   cursor: pointer;
-  transition:
-    background 0.15s,
-    opacity 0.15s;
-  opacity: 0.75;
-  z-index: 10;
+  transition: background 0.15s;
 }
 
 .floating-copy-button:hover {
   background: var(--fl-border);
-  opacity: 1;
 }
 
 .floating-copy-button:focus-visible {
   outline: 2px solid var(--fl-focus);
-  outline-offset: 1px;
-  opacity: 1;
+  outline-offset: 2px;
 }
 
 ::-webkit-scrollbar {

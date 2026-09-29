@@ -37,6 +37,12 @@ pub trait VoiceActivityDetector: Send + Sync {
     fn flush(&mut self) -> Option<Vec<f32>> {
         None
     }
+
+    /// How likely the last frame was speech (0-1), when the detector scores
+    /// frames. Lets the recorder notice speech too quiet to be kept.
+    fn last_probability(&self) -> Option<f32> {
+        None
+    }
 }
 
 mod silero;

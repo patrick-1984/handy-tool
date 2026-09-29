@@ -8,40 +8,80 @@
    onto this window's document root for consistency with the other windows;
    this stylesheet just has no rule that reads it. */
 :root {
-  --overlay-bg: rgba(10, 9, 11, 0.8);
-  --overlay-text: #ffffff;
-  --overlay-accent: #faa2ca;
-  --overlay-bar: #ffe5ee;
-  --overlay-hover: rgba(250, 162, 202, 0.2);
-  --overlay-focus: #faa2ca;
+  /* Redesign: solid (no blur) at 88%, a hairline border, one high-contrast look
+     that reads on light and dark desktops alike. */
+  --overlay-bg: rgba(10, 9, 11, 0.88);
+  --overlay-border: rgba(255, 255, 255, 0.1);
+  --overlay-text: #fbfbfb;
+  --overlay-muted: #8f8a84;
+  --overlay-error: #ff9b8f;
+  --overlay-warn: #f5c563;
+  --overlay-accent: #22d3ee;
+  --overlay-bar: #22d3ee;
+  /* Bars quieter than a whisper: a darker cyan, so the level reads without motion. */
+  --overlay-bar-low: #1f7a8c;
+  --overlay-hover: rgba(255, 255, 255, 0.14);
+  --overlay-focus: #22d3ee;
   --overlay-font:
     "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
 }
 
+/* The pill in its window: 10px of transparent room on every side (the edge
+   light runs centred on the pill's border, half of it outside). */
+.pill-frame {
+  position: relative;
+  width: 188px;
+  height: 36px;
+  margin: 10px;
+  opacity: 0;
+  transition: opacity 300ms ease-out;
+  /* The progress glow (edge light, and the line when it glows): a tight glow
+     and a softer one, following the lit part only. A drop-shadow's length is
+     the blur's standard deviation, and the shadows stack (each blurs the ones
+     before): together (about 3.6px) they fade out within the window's 10px of
+     room - a wider aura was cut off in a straight line at the window's edge.
+     --glow is Glow Strength (1 = normal, set from the setting), scaling every
+     layer's opacity. Progress Colour sets --progress-color (and a lighter
+     --progress-core, the light's bright centre); the default is cyan. */
+  --glow: 1;
+  --progress-color: #22d3ee;
+  --progress-core: #a5f3fc;
+  --progress-glow: drop-shadow(
+      0 0 1px rgb(from var(--progress-core) r g b / calc(0.63 * var(--glow)))
+    )
+    drop-shadow(
+      0 0 2px rgb(from var(--progress-color) r g b / calc(0.6 * var(--glow)))
+    )
+    drop-shadow(
+      0 0 2.8px rgb(from var(--progress-color) r g b / calc(0.42 * var(--glow)))
+    );
+}
+
+.pill-frame.fade-in {
+  opacity: 1;
+}
+
 .recording-overlay {
   height: 36px;
-  /* The window's width: 204px, wider while the speed chip is on. */
-  width: 100vw;
-  display: grid;
-  grid-template-columns: auto auto auto 1fr auto;
+  width: 188px;
+  display: flex;
   align-items: center;
-  padding: 6px;
+  gap: 2px;
+  padding: 0 3px;
+  position: relative;
+  overflow: hidden;
   background: var(--overlay-bg);
+  border: 1px solid var(--overlay-border);
+  /* Within the window's 10px of room (a larger shadow was cut off straight). */
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.28);
   color: var(--overlay-text);
   font-family: var(--overlay-font);
   border-radius: 18px;
-  opacity: 0;
-  transition: opacity 300ms ease-out;
   box-sizing: border-box;
 }
 
-.overlay-left {
-  display: flex;
-  align-items: center;
-  color: var(--overlay-accent);
-}
-
 .overlay-middle {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -57,31 +97,200 @@
 .bars-container {
   min-width: 0;
   display: flex;
-  align-items: end;
+  align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 2px;
   padding-bottom: 0px;
   height: 24px;
   overflow: hidden;
 }
 
+/* Wide sound bars: 2.5px bars and gaps (77.5px for 16). */
+.bars-container.wide {
+  gap: 2.5px;
+}
+.bars-container.wide .bar {
+  width: 2.5px;
+}
+
 .bar {
-  width: 6px;
+  width: 2px;
   background: var(--overlay-bar);
   max-height: 20px;
-  border-radius: 2px;
+  border-radius: 999px;
   transition: height 80ms linear;
   min-height: 4px;
 }
 
-.recording-overlay.fade-in {
-  opacity: 1;
-}
-
 .transcribing-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
   color: var(--overlay-text);
   font-size: 12px;
-  animation: transcribing-pulse 1.5s infinite ease-in-out;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* A translation too long for the pill ends in an ellipsis, never mid-letter. */
+.transcribing-text > .text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* A small cyan spinner before "Starting mic..." and "Transcribing". */
+.overlay-spinner {
+  width: 12px;
+  height: 12px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid var(--progress-color);
+  border-right-color: transparent;
+  animation: overlay-spin 0.8s linear infinite;
+}
+
+@keyframes overlay-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Progress Style: line - a thin cyan line along the pill's bottom, clipped to
+   the pill's inside (within its 1px border). It lies over the pill rather than
+   in it, so its glow (Glow on the line) reaches past the pill's edge. */
+.progress-line {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.progress-line.glow {
+  filter: var(--progress-glow);
+}
+
+.progress-line-clip {
+  position: absolute;
+  inset: 1px;
+  border-radius: 17px;
+  overflow: hidden;
+}
+
+.overlay-progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--progress-color);
+  transition: width 150ms linear;
+}
+
+/* Progress Style: ring - the light running round the pill (clockwise from the
+   bottom centre), its trail kept lit up to the figure in one even colour, so the
+   glow is the same all along it. A 2.5px ring masked out
+   of a conic gradient, centred on the pill's 1px border (like a car straddling
+   the lane line); the wrapper adds the glow (a filter on the masked element
+   itself would be masked away). */
+@property --ring-p {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+.progress-ring {
+  position: absolute;
+  inset: -0.75px;
+  border-radius: 18.75px;
+  pointer-events: none;
+  filter: var(--progress-glow);
+}
+
+.progress-ring-light {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2.5px;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  background: conic-gradient(
+    from 180deg,
+    var(--progress-core) calc(var(--ring-p) * 1%),
+    transparent calc(var(--ring-p) * 1% + 0.3%)
+  );
+  transition: --ring-p 150ms linear;
+}
+
+/* Progress Style: lap - a 1px light circling the pill's edge (on its border),
+   cyan fading back into a tail, one lap every 1.6 s. No glow. */
+@property --lap-a {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.progress-lap {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  padding: 1px;
+  pointer-events: none;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  background: conic-gradient(
+    from var(--lap-a),
+    transparent 0 62%,
+    rgb(from var(--progress-color) r g b / 0.35) 80%,
+    var(--progress-color) 96%,
+    var(--progress-core) 100%
+  );
+  animation: lap-spin 1.6s linear infinite;
+}
+
+@keyframes lap-spin {
+  to {
+    --lap-a: 360deg;
+  }
+}
+
+/* No microphone, blocked, error: the whole pill, one short line with an amber
+   icon (never colour alone). */
+.overlay-message.problem {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--overlay-text);
+  font-weight: 600;
+}
+.overlay-message.problem svg {
+  flex: none;
+  color: var(--overlay-warn);
+}
+
+/* Paused: four grey dots where the sound bars were. */
+.paused-message {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--overlay-text);
+  font-weight: 600;
+}
+.paused-message::before {
+  content: "";
+  width: 16px;
+  height: 4px;
+  background: radial-gradient(
+      circle,
+      var(--overlay-muted) 1.2px,
+      transparent 1.6px
+    )
+    0 0 / 4px 4px repeat-x;
 }
 
 /* One line in the 36px pill whatever the language; overflow ellipsizes. */
@@ -93,24 +302,19 @@
   text-overflow: ellipsis;
 }
 
-@keyframes transcribing-pulse {
-  0%,
-  100% {
-    opacity: 0.6;
-  }
-  50% {
-    opacity: 1;
-  }
+/* "Too quiet — speak up": a hint, in the warning amber (the pill is always dark). */
+.overlay-message.too-quiet {
+  color: var(--overlay-warn);
 }
 
 .cancel-button,
 .float-button {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   border: none;
   padding: 0;
-  color: var(--overlay-accent);
+  color: var(--overlay-text);
   background: transparent;
   display: flex;
   align-items: center;
@@ -122,7 +326,7 @@
   flex-shrink: 0;
 }
 
-.cancel-button:hover,
+.cancel-button:not(:disabled):hover,
 .float-button:hover {
   background: var(--overlay-hover);
   transform: scale(1.05);
@@ -145,54 +349,38 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .recording-overlay,
+  .progress-ring-light,
+  .overlay-progress {
+    transition: none;
+  }
+  .pill-frame,
   .bar,
   .cancel-button,
   .float-button {
     transition-duration: 0.01ms;
   }
-  .transcribing-text {
+  .overlay-spinner {
     animation: none;
-    opacity: 1;
   }
-}
-
-/* Speed chip (a setting), left of the T: this PC's transcription speed against
-   its own normal. Amber below 70%, red below half. */
-.overlay-speed {
-  display: flex;
-  align-items: center;
-}
-
-.speed-chip {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  padding-inline: 4px 2px;
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--overlay-text);
-  opacity: 0.85;
-  cursor: default;
-}
-
-.speed-chip.slow {
-  color: #f59e0b;
-  opacity: 1;
-}
-
-.speed-chip.very-slow {
-  color: #ef4444;
-  opacity: 1;
 }
 
 /* A button's name while the mouse is over it. */
 .hover-label {
-  font-size: 11px;
-  opacity: 0.9;
+  font-weight: 600;
 }
 
-/* The T button while the live text box is on. */
+/* The T button while the live text box is on: no circle, the letter itself
+   turns light cyan with a two-step cyan glow (3px + 8px) - visible at a glance,
+   softer than a filled circle. */
 .float-button.active {
+  color: var(--progress-core);
+}
+.float-button.active svg {
+  filter: drop-shadow(0 0 3px var(--progress-color))
+    drop-shadow(0 0 8px rgb(from var(--progress-color) r g b / 0.7));
+}
+
+/* Resume while paused: the play button in a light circle. */
+.cancel-button.resume {
   background: var(--overlay-hover);
 }

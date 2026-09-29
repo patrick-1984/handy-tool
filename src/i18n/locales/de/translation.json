@@ -11,14 +11,16 @@
     "shortcuts": "Tastenkürzel",
     "models": "Modelle",
     "history": "Verlauf",
+    "files": "Dateien",
     "debug": "Debug",
     "about": "Info",
     "backup": "Backup",
     "currentAudio": "Aktuelles Audio",
+    "setups": "Einrichtungen",
     "tokenCount": "Token-Anzahl",
     "keyboardTyper": "Tastatur-Eingabe",
+    "whatsNew": "Neuigkeiten",
     "jumper": "Jumper",
-    "translator": "Übersetzer",
     "more": "Mehr",
     "groups": {
       "settings": "Einstellungen",
@@ -60,10 +62,342 @@
       "installWhenIdle": "Bei Inaktivität installieren",
       "installRestartNow": "Jetzt installieren und neu starten",
       "enableAutomatic": "Automatische Updates einschalten"
+    },
+    "unread": "ungelesen"
+  },
+  "helpMode": {
+    "button": "Hilfemodus: auf eine Einstellung zeigen, um zu sehen, was sie tut",
+    "hint": "Zeige auf eine Einstellung, um zu sehen, was sie tut. Irgendwo klicken oder Esc zum Beenden."
+  },
+  "setup": {
+    "skipSetup": "Einrichtung überspringen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "saveNext": "Speichern & weiter",
+    "skip": "Überspringen",
+    "start": "Einrichtung starten",
+    "finish": "Fertig",
+    "step": "Schritt {{current}} von {{total}}",
+    "welcome": {
+      "title": "Willkommen bei Handy Tool",
+      "body": "Sprich, und deine Worte werden dort getippt, wo der Cursor steht. Deine Sprache wird auf diesem PC in Text umgewandelt.",
+      "steps": "Diese kurze Einrichtung fragt, welche Sprachen du sprichst, schlägt dafür ein Sprachmodell vor und zeigt deine Tastenkürzel und dein Mikrofon. Jeder Schritt lässt sich überspringen, und alles kann später in den Einstellungen geändert werden."
+    },
+    "languages": {
+      "title": "Welche Sprachen wirst du sprechen?",
+      "body": "Wähle alle Sprachen, die du nutzt. Die vorgeschlagenen Sprachmodelle verstehen dann jede davon.",
+      "search": "Sprachen suchen",
+      "noMatch": "Keine Sprache passt.",
+      "selected": "Ausgewählt: {{languages}}"
+    },
+    "model": {
+      "body": "Drei gute Modelle für {{languages}}: das genaueste, ein ausgewogenes und das schnellste. Wähle eines, es lädt herunter, während du die Einrichtung abschließt; wechseln kannst du später auf der Seite Modelle.",
+      "bodyAny": "Drei gute Modelle: das genaueste, ein ausgewogenes und das schnellste. Wähle eines, es lädt herunter, während du die Einrichtung abschließt; wechseln kannst du später auf der Seite Modelle.",
+      "accurate": "Am genauesten",
+      "balanced": "Ausgewogen",
+      "fast": "Am schnellsten",
+      "downloadContinue": "Herunterladen und weiter",
+      "seeAll": "Alle Modelle ansehen",
+      "showSuggestions": "Zurück zu den drei Vorschlägen",
+      "search": "Modelle suchen",
+      "notForLanguages": "Versteht nicht alle deine Sprachen"
+    },
+    "shortcuts": {
+      "title": "Deine Tastenkürzel",
+      "body": "Sie funktionieren sofort. Behalte sie, oder klicke auf eines und drücke stattdessen die gewünschten Tasten. Bei jedem steht die Voreinstellung, du kannst also jederzeit zurück.",
+      "default": "Standard: {{keys}}.",
+      "transcribe": "Einmal drücken zum Starten, noch einmal zum Beenden.",
+      "ptt": "Gedrückt halten, während du sprichst.",
+      "cancel": "Beendet eine Aufnahme, ohne etwas zu tippen.",
+      "more": "Weitere Tastenkürzel (Transkribieren & Senden, Pause, letztes Wort rückgängig, …) findest du auf der Seite Tastenkürzel."
+    },
+    "microphone": {
+      "title": "Welches Mikrofon?",
+      "body": "Standard folgt dem Standardmikrofon deines Systems. Wähle ein anderes, wenn du in ein Headset oder ein USB-Mikrofon sprichst."
+    },
+    "try": {
+      "title": "Ausprobieren",
+      "body": "Drücke {{keys}}, sprich einen Satz und drücke noch einmal. Deine Worte erscheinen unten.",
+      "placeholder": "Hier erscheinen deine Worte.",
+      "listening": "Hört zu … drücke {{keys}} noch einmal, wenn du fertig bist.",
+      "downloading": "{{model}} wird noch heruntergeladen ({{percent}} %). Probiere es aus, sobald es bereit ist — oder mach mit Weiter weiter.",
+      "noModel": "Noch kein Sprachmodell gewählt, daher gibt es nichts auszuprobieren. Mach mit Weiter weiter und wähle eines auf der Seite Modelle."
+    },
+    "done": {
+      "title": "Alles bereit",
+      "howTo": "Drücke {{keys}}, sprich und drücke noch einmal: Der Text wird dort getippt, wo der Cursor steht.",
+      "downloading": "{{model}} wird heruntergeladen ({{percent}} %) — es wird verwendet, sobald es bereit ist.",
+      "ready": "Sprachmodell: {{model}}.",
+      "noModel": "Noch kein Sprachmodell gewählt: Wähle eines auf der Seite Modelle.",
+      "suggested": {
+        "title": "Noch mehr feinabstimmen?",
+        "body": "Alles funktioniert schon mit guten Standardwerten, du brauchst diese also jetzt nicht. Wenn du willst, führt dich eine dieser Einrichtungen weiter."
+      }
+    },
+    "catalog": {
+      "description": "Geführte Einrichtungen stellen ein paar Fragen und stellen alles für dich ein. Jeder Schritt lässt sich überspringen.",
+      "basic": {
+        "title": "Grundeinrichtung",
+        "description": "Deine Sprachen, ein dafür vorgeschlagenes Sprachmodell, die wichtigsten Tastenkürzel, dein Mikrofon und ein kurzer Test — derselbe Assistent wie beim ersten Start."
+      },
+      "start": "Starten",
+      "jumper": {
+        "title": "Jumper",
+        "description": "Lass Handy Tool dein Diktat automatisch in das richtige Feld einfügen: Es merkt sich die Stellen, an denen du schreibst (ein Chatfeld, ein Dokument, ein Feld in einer Remotesitzung), fügt den Text dort automatisch ein, wo auch immer du bist, und springt per Taste dorthin zurück."
+      },
+      "postProcessing": {
+        "title": "Nachbearbeitung",
+        "description": "Lass ein KI-Modell dein Diktat aufräumen oder umformen (Satzzeichen, Füllwörter, eine Struktur, eine Übersetzung), mit eigenem Tastenkürzel."
+      },
+      "windowsOnly": "Nur Windows",
+      "appearance": {
+        "title": "Aussehen",
+        "description": "Wie die Aufnahme-Pille und das Live-Textfeld aussehen: Ort und Größe der Pille, ihre Pegelbalken, wie sie den Fortschritt zeigt, und das Live-Textfeld — jede Wahl in Bewegung gezeigt, bevor du sie triffst."
+      }
+    },
+    "closeSetup": "Einrichtung schließen",
+    "jumper": {
+      "name": "Jumper einrichten",
+      "place": "Stelle {{n}}",
+      "goal": {
+        "title": "Wofür soll der Jumper sein?",
+        "body": "In vielen Apps (einem Chat, einer E-Mail, einem Dokument, einer Remotesitzung) kann Handy Tool dein Diktat automatisch direkt in das richtige Textfeld einfügen. Der Jumper merkt sich diese Felder, sodass der Text dort automatisch landet, auch wenn du in einem anderen Fenster bist, und ein Tastenkürzel bringt dich dorthin zurück. Wähle, was du davon willst; später änderst du es auf der Jumper-Seite.",
+        "jump": {
+          "title": "Per Taste zurückspringen",
+          "detail": "Drück ein Tastenkürzel, und das gemerkte Feld ist wieder vor dir, bereit zum Tippen."
+        },
+        "land": {
+          "title": "Mein Diktat soll dort landen",
+          "detail": "Wo du auch bist, wenn eine Aufnahme endet: Der Text kommt in das gemerkte Feld, du kannst also beim Diktieren etwas anderes lesen."
+        },
+        "both": {
+          "title": "Beides",
+          "detail": "Per Taste dorthin springen, und das Diktat landet auch dort."
+        }
+      },
+      "mouse": {
+        "title": "Auch die Mausposition merken?",
+        "body": "In Browsern und Apps wie Discord oder Teams sieht Windows nur das ganze Fenster, nicht das Textfeld darin. Mit gemerkter Mausposition klickt Handy genau in dieses Feld zurück.",
+        "no": {
+          "title": "Nein, nur das Feld",
+          "detail": "Reicht für die meisten Desktop-Apps (Word, Editor, E-Mail)."
+        },
+        "yes": {
+          "title": "Ja, auch die Mausposition",
+          "detail": "Für Webseiten und Chat-Apps. Handy klickt dorthin, wo die Maus war, als du die Stelle gezeigt hast."
+        }
+      },
+      "places": {
+        "title": "Zeig mir die Stelle",
+        "body": "Drück den Knopf und klicke dann innerhalb von {{seconds}} Sekunden in das gewünschte Textfeld. Handy merkt sich das Feld, das am Ende den Fokus hat. Du kannst weitere Stellen hinzufügen.",
+        "first": "Noch keine Stelle.",
+        "another": "Noch eine Stelle?",
+        "countdown": "Klicke jetzt in das Feld… {{seconds}}",
+        "show": "Zeig mir die Stelle",
+        "add": "Weitere Stelle hinzufügen",
+        "remembered": "Gemerkt: {{app}}",
+        "failed": "Konnte es nicht merken: {{reason}}",
+        "again": "Diesen Ort erneut zeigen"
+      },
+      "shortcuts": {
+        "title": "Deine Tastenkürzel",
+        "body": "Setzen merkt sich das Feld, in dem du gerade bist; Springen bringt dich zurück. Behalte die Standards oder klicke eins an und drück deine Tasten."
+      },
+      "test": {
+        "title": "Ausprobieren",
+        "bodyJump": "Klicke Dorthin springen: Das gemerkte Feld sollte nach vorne kommen, bereit zum Tippen.",
+        "bodyLand": "Klicke Dorthin springen, um jede Stelle zu prüfen. Dann diktiere irgendwo: Wenn die Aufnahme endet, landet der Text in Stelle 1.",
+        "none": "Keine Stelle gemerkt. Stellen fügst du auf der Jumper-Seite mit ihren Setzen-Kürzeln hinzu.",
+        "jump": "Dorthin springen"
+      },
+      "done": {
+        "title": "Der Jumper ist bereit",
+        "body": "Deine Stellen bleiben nach einem Neustart erhalten. Alles Weitere (mehr Plätze, Remotesitzungen, Verfolgen, wo Text zuletzt landete) ist auf der Jumper-Seite."
+      }
+    },
+    "postProcessing": {
+      "name": "Nachbearbeitung einrichten",
+      "prompt": {
+        "title": "Was soll die KI mit deinen Worten tun?",
+        "body": "Nach einer Aufnahme schreibt ein KI-Modell den Text so um, wie du es willst. Wähle die Anweisung; später änderst du sie unter {{postProcessingPage}}.",
+        "own": "Eigene schreiben",
+        "ownDetail": "Deine eigene Anweisung, zum Beispiel \"Ins Englische übersetzen\" oder \"Als Stichpunktliste schreiben\".",
+        "ownDefaultName": "Meine Anweisung",
+        "ownPlaceholder": "Sag der KI, was sie mit dem Text tun soll, z. B. Korrigiere die Satzzeichen und entferne Füllwörter. Behalte meine Formulierungen."
+      },
+      "provider": {
+        "title": "Welche KI soll es machen?",
+        "body": "Eine Online-KI braucht einen Schlüssel von ihrer Website; eine auf diesem PC (LM Studio, FLM) nur ihr Modell. Dieselbe Liste steht unter {{providersPage}}.",
+        "noModel": "Noch kein Modell",
+        "ready": "Bereit",
+        "needsKey": "Braucht einen Schlüssel",
+        "needsModel": "Braucht ein Modell",
+        "key": "API-Schlüssel",
+        "address": "Adresse",
+        "model": "Modell",
+        "list": "Modelle anzeigen",
+        "listFailed": "Modelle konnten nicht geladen werden: {{reason}}"
+      },
+      "shortcut": {
+        "title": "Dein Nachbearbeitungs-Tastenkürzel",
+        "body": "Diktiere mit diesem Kürzel, wenn die KI den Text überarbeiten soll; deine anderen Kürzel bleiben unverändert."
+      },
+      "try": {
+        "title": "Ausprobieren",
+        "body": "Ändere das Beispiel, wenn du willst, und schick es mit deiner Anweisung durch die KI.",
+        "sample": "also äh ich denke wir sollten uns ähm am Dienstag nein warte Mittwoch so gegen drei treffen und den den Bericht mitbringen",
+        "run": "Ausführen",
+        "result": "Die Version der KI:",
+        "failed": "Hat nicht geklappt: {{reason}}"
+      },
+      "done": {
+        "title": "Die Nachbearbeitung ist bereit",
+        "body": "Diktiere mit dem Nachbearbeitungs-Kürzel, und die Version der KI wird eingefügt. Anweisung, KI und weitere Optionen findest du unter {{postProcessingPage}}."
+      }
+    },
+    "appearance": {
+      "name": "Aussehen einrichten",
+      "sample": "Hallo Anna, ich schicke dir die Entwurfszahlen am Freitag, damit alle vor dem Review nächste Woche kommentieren können.",
+      "intro": {
+        "title": "Deine Aufnahme-Pille",
+        "body": "Während du diktierst, zeigt diese Pille, was Handy Tool gerade tut. Hier siehst du, wofür ihre Teile da sind. Die nächsten Schritte zeigen jede Wahl nebeneinander in Bewegung, damit du sie vor der Entscheidung vergleichen kannst.",
+        "t": "T: das Live-Textfeld, das deine Worte zeigt, während du sprichst. Klicke auf das T, um das Feld jederzeit ein- oder auszuschalten; es leuchtet, solange das Feld an ist.",
+        "bars": "Pegelbalken: deine Stimme. Sie bewegen sich, während das Mikrofon dich hört.",
+        "pause": "Pause: hört für einen Moment auf zuzuhören; drücke erneut, um weiterzumachen. Wird angezeigt, wenn die Pausentaste eingeschaltet ist.",
+        "cancel": "×: bricht die Aufnahme ab. Nichts wird transkribiert oder eingefügt."
+      },
+      "theme": {
+        "title": "Hell oder dunkel?",
+        "body": "Die Farben aller Handy Tool-Fenster. Die Aufnahme-Pille bleibt in allen dunkel.",
+        "system": "Folgt Windows und ändert sich, wenn Windows sich ändert.",
+        "light": "Immer hell.",
+        "dark": "Immer dunkel."
+      },
+      "position": {
+        "title": "Wo soll die Pille erscheinen?",
+        "body": "Während du diktierst, unten oder oben am Bildschirm, oder gar nicht.",
+        "bottom": "In der Mitte, direkt über der Taskleiste.",
+        "top": "In der Mitte, oben am Bildschirm.",
+        "none": "Keine Pille. Das Taskleistensymbol zeigt trotzdem, dass aufgenommen wird."
+      },
+      "size": {
+        "title": "Wie groß soll die Pille sein?",
+        "body": "Größer ist auf einem großen oder hochauflösenden Bildschirm leichter zu sehen."
+      },
+      "bars": {
+        "title": "Wie breit sollen die Pegelbalken sein?",
+        "body": "Die Balken in der Mitte der Pille zeigen deine Stimme.",
+        "narrow": {
+          "title": "Schmal",
+          "detail": "62 px, mit mehr Platz drumherum."
+        },
+        "wide": {
+          "title": "Breit",
+          "detail": "77,5 px, kräftigere Balken."
+        }
+      },
+      "progress": {
+        "title": "Wie soll der Fortschritt angezeigt werden?",
+        "body": "Nachdem du stoppst, zeigt die Pille, wie weit die Transkription ist.",
+        "line": "Eine dünne Linie füllt sich unten.",
+        "ring": "Ein leuchtendes Licht läuft um den Rand und bleibt bis zur Zahl an.",
+        "lap": "Ein dünnes Licht kreist weiter um den Rand; die Zahl steht im Text."
+      },
+      "glow": {
+        "title": "Wie stark soll es leuchten?",
+        "body": "Das Leuchten um das Fortschrittslicht. Du kannst es später mit Leuchtstärke feiner einstellen.",
+        "none": {
+          "title": "Kein Leuchten",
+          "detail": "Nur die Linie."
+        },
+        "soft": {
+          "title": "Sanft"
+        },
+        "normal": {
+          "title": "Normal"
+        },
+        "strong": {
+          "title": "Stark"
+        },
+        "brightest": {
+          "title": "Am hellsten"
+        }
+      },
+      "liveText": {
+        "title": "Deine Worte zeigen, während du sprichst?",
+        "body": "Das Live-Textfeld sitzt neben der Pille und zeigt, was du sagst, während du sprichst; das T auf der Pille schaltet es jederzeit ein oder aus. Ist es an, werden die Worte im Feld zu deinem Text: Die Aufnahme wird am Ende nicht noch einmal als Ganzes transkribiert, daher ist der Text sofort fertig, kann aber etwas weniger genau sein.",
+        "off": {
+          "title": "Aus",
+          "detail": "Nur die Pille."
+        },
+        "last_words": {
+          "title": "Letzte Worte",
+          "detail": "Eine Zeile mit deinen neuesten Worten."
+        },
+        "full_text": {
+          "title": "Gesamttext",
+          "detail": "Alles bisher; das Feld wächst, während du sprichst."
+        },
+        "remote": "{{model}} läuft online und bekommt das Audio erst, nachdem du stoppst, daher kann das Live-Textfeld damit nicht funktionieren. Wähle zuerst auf der Seite Modelle ein Modell, das auf diesem PC läuft."
+      },
+      "width": {
+        "title": "Wie breit soll das Feld sein?",
+        "body": "Ein breiteres Feld braucht für denselben Text weniger Zeilen."
+      },
+      "textSize": {
+        "title": "Wie groß soll der Text sein?",
+        "body": "Die Größe der Worte im Live-Textfeld."
+      },
+      "quiet": {
+        "title": "Wenn du zu leise sprichst",
+        "body": "Wenn deine Stimme für das Modell zu leise zum guten Hören ist, kann die Pille dir Bescheid geben.",
+        "box": {
+          "title": "In einem Feld unter der Pille",
+          "detail": "Die Pille behält ihre Pegelbalken."
+        },
+        "pill": {
+          "title": "In der Pille",
+          "detail": "Für einen Moment anstelle der Pegelbalken."
+        },
+        "off": {
+          "title": "Nicht sagen",
+          "detail": "Kein Hinweis."
+        }
+      },
+      "done": {
+        "title": "Dein Aussehen ist eingestellt",
+        "body": "Deine Leiste und dein Live-Textfeld sind eingerichtet. Alles Weitere ist in den Einstellungen: Allgemein › App für die Leiste (Größe, Pegelbalken, Fortschritt, Leuchten und Farbe, mit bewegter Vorschau), und Allgemein › Transkription für das Live-Textfeld (Breite, Textgröße, Zeilen, Ausblenden). Du kannst diese Einrichtung auch erneut über Einrichtungen starten."
+      },
+      "color": {
+        "title": "In welcher Farbe soll es leuchten?",
+        "body": "Die Farbe des Fortschrittslichts und seines Leuchtens, des leuchtenden T und der Pegelbalken. Für jede andere Farbe nutze Fortschrittsfarbe unter Allgemein › App.",
+        "cyan": "Cyan (Standard)",
+        "blue": "Blau",
+        "violet": "Violett",
+        "pink": "Pink",
+        "amber": "Amber",
+        "green": "Grün",
+        "custom": "Deine Farbe"
+      }
+    },
+    "promo": {
+      "start": "Starten",
+      "appearance": {
+        "title": "Aussehen einrichten",
+        "text": "Sieh jedes Aussehen in Bewegung, bevor du es wählst: die Pille, ihren Fortschritt und das Live-Textfeld."
+      },
+      "jumper": {
+        "title": "Jumper einrichten",
+        "text": "Lass dein Diktat automatisch in das richtige Feld einfügen: Richte deine Stellen und ihre Tastenkürzel Schritt für Schritt ein, mit einem Test am Ende."
+      },
+      "postProcessing": {
+        "title": "Nachbearbeitung einrichten",
+        "text": "Lass eine KI dein Diktat aufräumen oder umformen: Wähle Schritt für Schritt, was sie tun soll und welche KI, mit einem Versuch am Ende."
+      }
     }
   },
   "onboarding": {
-    "subtitle": "Wähle ein Transkriptionsmodell, um loszulegen",
+    "title": "Wähle ein Sprachmodell",
     "recommended": "Empfohlen",
     "download": "Herunterladen",
     "downloading": "Wird heruntergeladen...",
@@ -76,51 +410,51 @@
     "models": {
       "small": {
         "name": "Whisper Small",
-        "description": "Schnell und recht genau."
+        "description": "Schnell und genau. 99 Sprachen."
       },
       "medium": {
         "name": "Whisper Medium",
-        "description": "Gute Genauigkeit, mittlere Geschwindigkeit"
+        "description": "Mittlere Geschwindigkeit, genau. 99 Sprachen."
       },
       "turbo": {
         "name": "Whisper Turbo",
-        "description": "Ausgewogene Genauigkeit und Geschwindigkeit."
+        "description": "Mittlere Geschwindigkeit, sehr genau. 99 Sprachen."
       },
       "large": {
         "name": "Whisper Large",
-        "description": "Gute Genauigkeit, aber langsam."
+        "description": "Langsam, höchste Genauigkeit in 99 Sprachen; übersetzt ins Englische."
       },
       "parakeet-tdt-0.6b-v2": {
         "name": "Parakeet V2",
-        "description": "Nur Englisch. Das beste Modell für englischsprachige Nutzer."
+        "description": "Sehr schnell, höchste Genauigkeit. Nur Englisch."
       },
       "parakeet-tdt-0.6b-v3": {
         "name": "Parakeet V3",
-        "description": "Schnell und genau"
+        "description": "Sehr schnell, höchste Genauigkeit. 25 europäische Sprachen."
       },
       "moonshine-base": {
         "name": "Moonshine Base",
-        "description": "Sehr schnell, nur Englisch. Verarbeitet Akzente gut."
+        "description": "Sehr schnell, recht genau. Nur Englisch."
       },
       "moonshine-tiny-streaming-en": {
         "name": "Moonshine V2 Tiny",
-        "description": "Ultraschnell, nur Englisch"
+        "description": "Am schnellsten, einfache Genauigkeit. Nur Englisch."
       },
       "moonshine-small-streaming-en": {
         "name": "Moonshine V2 Small",
-        "description": "Schnell, nur Englisch. Gute Balance zwischen Geschwindigkeit und Genauigkeit."
+        "description": "Sehr schnell, sehr genau. Nur Englisch."
       },
       "moonshine-medium-streaming-en": {
         "name": "Moonshine V2 Medium",
-        "description": "Nur Englisch. Hohe Qualität."
+        "description": "Schnell, höchste Genauigkeit. Nur Englisch."
       },
       "breeze-asr": {
         "name": "Breeze ASR",
-        "description": "Optimiert für taiwanesisches Mandarin. Unterstützung für Code-Switching."
+        "description": "Langsam, sehr genau. Für taiwanisches Mandarin, auch mit Englisch gemischt."
       },
       "sense-voice-int8": {
         "name": "SenseVoice",
-        "description": "Sehr schnell. Chinesisch, Englisch, Japanisch, Koreanisch, Kantonesisch."
+        "description": "Am schnellsten, genau. Am besten für Chinesisch, Kantonesisch, Japanisch und Koreanisch; auch Englisch."
       }
     },
     "errors": {
@@ -175,7 +509,10 @@
       "languageOnly": "Nur {{language}}"
     },
     "cancel": "Abbrechen",
-    "cancelDownload": "Download abbrechen"
+    "cancelDownload": "Download abbrechen",
+    "ready": "Bereit",
+    "useModel": "Dieses Modell verwenden",
+    "inUse": "Wird für alles Diktieren verwendet."
   },
   "settings": {
     "modelSettings": {
@@ -187,7 +524,6 @@
       }
     },
     "models": {
-      "title": "Transkriptionsmodelle",
       "description": "Wähle, welches Sprachmodell dein Diktat transkribiert — Modelle unterscheiden sich in Genauigkeit, Geschwindigkeit und dem Speicher, den sie im geladenen Zustand belegen. Standard: bei einer frischen Installation nichts ausgewählt; das Onboarding lädt dein erstes Modell herunter und wählt es aus. Deine Wahl entscheidet auch, ob Sprache und Ins Englische übersetzen auf der Seite Allgemein angeboten werden, und der Übersetzer nutzt dasselbe Modell, solange sein Stapel-Modell auf „Wie beim Diktat (Standard)“ steht.",
       "downloaded": "Heruntergeladen",
       "available": "Zum Download verfügbar",
@@ -220,8 +556,8 @@
         "singleKey": "Diese Taste allein löst das Tastenkürzel überall aus, sodass Sie sie nicht mehr tippen können. Fügen Sie eine Zusatztaste wie Strg oder Alt hinzu.",
         "bindings": {
           "transcribe": {
-            "name": "Transkriptions-Tastenkürzel",
-            "description": "Einmal drücken, um die Aufnahme zu starten, erneut drücken, um sie zu beenden; die Transkription wird in das zuvor fokussierte Fenster zugestellt. Standard: Strg+Leertaste. Es folgt Transkriptionsmodus und der Einfügemethode auf der Seite Erweitert — für Aufnahme durch Halten nutze stattdessen das Push-to-Talk-Tastenkürzel."
+            "name": "Aufnahme-/Transkriptions-Tastenkürzel",
+            "description": "Einmal drücken, um die Aufnahme zu starten, erneut drücken, um sie zu beenden; die Transkription wird in das zuvor fokussierte Fenster zugestellt. Standard: Strg+Leertaste. Es folgt Transkriptionsmodus und der Einfügemethode unter Mehr › Ausgabe — für Aufnahme durch Halten nutze stattdessen das Push-to-Talk-Tastenkürzel."
           },
           "cancel": {
             "name": "Abbrechen-Tastenkürzel",
@@ -245,7 +581,7 @@
           },
           "transcribe_ptt": {
             "name": "Push-to-Talk-Tastenkürzel",
-            "description": "Halte dieses Tastenkürzel zum Aufnehmen und lasse es zum Stoppen los; das Mikrofon wird beim Loslassen sofort taub, sodass danach Gesagtes nicht in den Text durchsickern kann. Standard: Strg+Alt+Leertaste. Es hat seinen eigenen Transkriptionsmodus (PTT) und seine eigene Einfügemethode (PTT), sodass sich Push-to-Talk anders verhalten kann als das Transkriptions-Tastenkürzel."
+            "description": "Halte dieses Tastenkürzel zum Aufnehmen und lasse es zum Stoppen los; das Mikrofon wird beim Loslassen sofort taub, sodass danach Gesagtes nicht in den Text durchsickern kann. Standard: Strg+Alt+Leertaste. Es hat seinen eigenen Transkriptionsmodus (PTT) und seine eigene Einfügemethode (PTT), sodass sich Push-to-Talk anders verhalten kann als das Aufnahme-/Transkriptions-Tastenkürzel."
           },
           "type_text": {
             "name": "Text-Eingabe-Tastenkürzel",
@@ -257,7 +593,7 @@
           },
           "anchor_set": {
             "name": "Anker setzen",
-            "description": "Erfasst das aktuell fokussierte Textfeld als Hot-1-Ziel. Standard: ctrl+shift+F1. Für sich allein stellt es nichts zu — stelle die „Slot-Aktion beim Beenden“ auf „Springen / an Slot zustellen“ mit dem Slot Hot 1 (Erweitert → Transkription), damit deine nächste Transkription dort landet. Passwortfelder und Handys eigene Fenster werden abgelehnt."
+            "description": "Erfasst das aktuell fokussierte Textfeld als Hot-1-Ziel. Standard: ctrl+shift+F1. Für sich allein stellt es nichts zu — stelle die „Slot-Aktion beim Beenden“ auf „Springen / an Slot zustellen“ mit dem Slot Hot 1 (Mehr › Ausgabe), damit deine nächste Transkription dort landet. Passwortfelder und Handys eigene Fenster werden abgelehnt."
           },
           "anchor_jump": {
             "name": "Zu Anker springen",
@@ -265,19 +601,19 @@
           },
           "jump_set_slot_1": {
             "name": "Slot 1 setzen",
-            "description": "Merkt sich das aktuell fokussierte Feld als statischen Slot 1 und ersetzt dabei, was dort vorher gespeichert war. Standard: ctrl+alt+shift+1. Der Slot ist nur ein Lesezeichen, bis ihn etwas nutzt — springe mit „Zu Slot 1 springen“ dorthin, oder stelle die „Slot-Aktion beim Beenden“ eines Ablaufs (Erweitert → Transkription) auf Slot 1, damit Transkriptionen dort zugestellt werden."
+            "description": "Merkt sich das aktuell fokussierte Feld als statischen Slot 1 und ersetzt dabei, was dort vorher gespeichert war. Standard: ctrl+alt+shift+1. Der Slot ist nur ein Lesezeichen, bis ihn etwas nutzt — springe mit „Zu Slot 1 springen“ dorthin, oder stelle die „Slot-Aktion beim Beenden“ eines Ablaufs (Mehr › Ausgabe) auf Slot 1, damit Transkriptionen dort zugestellt werden."
           },
           "jump_set_slot_2": {
             "name": "Slot 2 setzen",
-            "description": "Merkt sich das aktuell fokussierte Feld als statischen Slot 2 und ersetzt dabei, was dort vorher gespeichert war. Standard: ctrl+alt+shift+2. Springe mit „Zu Slot 2 springen“ zurück, oder stelle die „Slot-Aktion beim Beenden“ eines Ablaufs (Erweitert → Transkription) auf Slot 2, damit Transkriptionen dort zugestellt werden."
+            "description": "Merkt sich das aktuell fokussierte Feld als statischen Slot 2 und ersetzt dabei, was dort vorher gespeichert war. Standard: ctrl+alt+shift+2. Springe mit „Zu Slot 2 springen“ zurück, oder stelle die „Slot-Aktion beim Beenden“ eines Ablaufs (Mehr › Ausgabe) auf Slot 2, damit Transkriptionen dort zugestellt werden."
           },
           "jump_set_slot_3": {
             "name": "Slot 3 setzen",
-            "description": "Merkt sich das aktuell fokussierte Feld als statischen Slot 3 und ersetzt dabei, was dort vorher gespeichert war. Standard: ctrl+alt+shift+3. Springe mit „Zu Slot 3 springen“ zurück, oder stelle die „Slot-Aktion beim Beenden“ eines Ablaufs (Erweitert → Transkription) auf Slot 3, damit Transkriptionen dort zugestellt werden."
+            "description": "Merkt sich das aktuell fokussierte Feld als statischen Slot 3 und ersetzt dabei, was dort vorher gespeichert war. Standard: ctrl+alt+shift+3. Springe mit „Zu Slot 3 springen“ zurück, oder stelle die „Slot-Aktion beim Beenden“ eines Ablaufs (Mehr › Ausgabe) auf Slot 3, damit Transkriptionen dort zugestellt werden."
           },
           "jump_set_slot_4": {
             "name": "Slot 4 setzen",
-            "description": "Merkt sich das aktuell fokussierte Feld als statischen Slot 4 und ersetzt dabei, was dort vorher gespeichert war. Standard: ctrl+alt+shift+4. Springe mit „Zu Slot 4 springen“ zurück, oder stelle die „Slot-Aktion beim Beenden“ eines Ablaufs (Erweitert → Transkription) auf Slot 4, damit Transkriptionen dort zugestellt werden."
+            "description": "Merkt sich das aktuell fokussierte Feld als statischen Slot 4 und ersetzt dabei, was dort vorher gespeichert war. Standard: ctrl+alt+shift+4. Springe mit „Zu Slot 4 springen“ zurück, oder stelle die „Slot-Aktion beim Beenden“ eines Ablaufs (Mehr › Ausgabe) auf Slot 4, damit Transkriptionen dort zugestellt werden."
           },
           "jump_slot_1": {
             "name": "Zu Slot 1 springen",
@@ -308,15 +644,17 @@
           "set": "Tastenkürzel konnte nicht gesetzt werden: {{error}}",
           "reset": "Tastenkürzel konnte nicht auf Originalwert zurückgesetzt werden",
           "registrationFailed": "Einige Tastenkürzel konnten nicht registriert werden und sind inaktiv: {{bindings}}. Eine andere App verwendet sie möglicherweise bereits — wähle eine andere Kombination in den Einstellungen."
-        }
+        },
+        "badge": {
+          "conflict": "Konflikt",
+          "risky": "Riskant"
+        },
+        "altGrConflictLayout": "Eine Tastatur, die du für {{layouts}} nutzt, tippt mit AltGr+{{key}} ein Zeichen. Windows meldet AltGr als Strg+Alt, daher würde stattdessen dieses Tastenkürzel auslösen. Wähle eine Tastenkombination ohne Strg+Alt.",
+        "altGrConflictSpace": "Eine Tastatur, die du für {{layouts}} nutzt, tippt Zeichen mit AltGr, und AltGr wird danach oft noch für die folgende Leertaste gehalten. Windows meldet AltGr als Strg+Alt, daher würde dieses Tastenkürzel statt der Leertaste auslösen. Wähle eine Tastenkombination ohne Strg+Alt."
       },
       "pauseButton": {
         "label": "Pausentaste",
         "description": "Fügt dem Aufnahme-Overlay eine Pausentaste hinzu: Während der Pause wird nichts aufgenommen, Fortsetzen führt dieselbe Aufnahme weiter. Standard: Aus. Nach 10 Minuten Pause wird das Mikrofon bis zum Fortsetzen freigegeben."
-      },
-      "speedIndicator": {
-        "label": "PC-Tempo auf der Leiste",
-        "description": "Zeigt links auf der Aufnahmeleiste ein PC-Symbol mit Prozentwert: wie schnell dieser PC im Vergleich zu seinem üblichen Tempo für das verwendete Modell transkribiert. 100 % ist normal; gelb unter 70 %, rot unter 50 %. Standard: Aus. Es braucht ein paar Aufnahmen mit einem Modell, bevor es einen Normalwert hat."
       },
       "undoWord": {
         "label": "Letztes Wort rückgängig",
@@ -330,6 +668,16 @@
           "worksWith": "Es braucht ein Modell, das auf diesem PC läuft, denn entfernte Dienste bekommen das Audio erst nach dem Stoppen. Es funktioniert mit: {{models}}.",
           "noLocal": "Es braucht ein Modell, das auf diesem PC läuft, denn entfernte Dienste bekommen das Audio erst nach dem Stoppen. Lade eines auf der Seite Modelle herunter."
         }
+      },
+      "liveTextAfterStop": {
+        "label": "Text beim Transkribieren zeigen",
+        "description": "**Endet eine Aufnahme ohne Live-Textfeld, erscheint das Feld und die Transkription wird hineingetippt, während sie entsteht** — schon Transkribiertes sofort, der Rest, sobald er fertig ist. Nur zum Zuschauen: Der Text wird wie gewohnt geliefert.\n\n**Standard:** Aus.\n\nEs nutzt Stil und Breite des Live-Textfelds. Mit eingeschaltetem Live-Textfeld ist jede Aufnahme live und zeigt ihren Text ohnehin."
+      },
+      "liveTradeoffs": {
+        "title": "Live-Transkription: gut zu wissen",
+        "accuracy": "Der Text, den du siehst, ist der Text, den du bekommst – daher etwas ungenauer als Nach der Aufnahme, vor allem bei langen Passagen ohne Pause. Nach der Aufnahme liefert den genauesten Text.",
+        "cpu": "Sie braucht beim Sprechen mehr CPU und Akku.",
+        "undo": "Letztes Wort rückgängig funktioniert nur mit Parakeet-Modellen."
       },
       "liveTextMode": {
         "title": "Live-Text zeigt",
@@ -348,6 +696,22 @@
         "medium": "Mittel",
         "wide": "Breit",
         "extraWide": "Sehr breit"
+      },
+      "liveTextHeight": {
+        "title": "Feldhöhe",
+        "description": "Wie viele Zeilen das Live-Textfeld im Modus Ganzer Text zeigt, bevor die ältesten hinausgleiten. **Standard:** Mittel (6 Zeilen).",
+        "small": "Klein (3 Zeilen)",
+        "medium": "Mittel (6 Zeilen)",
+        "large": "Groß (10 Zeilen)",
+        "extraLarge": "Sehr groß (16 Zeilen)"
+      },
+      "liveTextSize": {
+        "title": "Textgröße",
+        "description": "Wie groß der Text im Live-Textfeld ist. **Standard:** Normal.",
+        "small": "Klein",
+        "normal": "Normal",
+        "large": "Groß",
+        "extraLarge": "Sehr groß"
       },
       "language": {
         "title": "Sprache",
@@ -392,7 +756,7 @@
         },
         "idleBehavior": {
           "title": "Wenn keine Aufnahme aktiv ist",
-          "description": "Was passiert, wenn du das Transkribieren & Absenden-Tastenkürzel drückst, während gerade nichts aufgenommen wird. Standard: Eine Aufnahme starten — ein Druck startet, der nächste fügt ein und sendet ab. Wähle Nichts tun, um diese Taste zu einem reinen Abschluss zu machen: Du startest Aufnahmen mit dem Transkriptions-Tastenkürzel und drückst diese Taste nur, wenn das Ergebnis eingefügt und gesendet werden soll.",
+          "description": "Was passiert, wenn du das Transkribieren & Absenden-Tastenkürzel drückst, während gerade nichts aufgenommen wird. Standard: Eine Aufnahme starten — ein Druck startet, der nächste fügt ein und sendet ab. Wähle Nichts tun, um diese Taste zu einem reinen Abschluss zu machen: Du startest Aufnahmen mit dem Aufnahme-/Transkriptions-Tastenkürzel und drückst diese Taste nur, wenn das Ergebnis eingefügt und gesendet werden soll.",
           "options": {
             "startNormal": "Eine Aufnahme starten",
             "doNothing": "Nichts tun"
@@ -407,7 +771,7 @@
         "title": "Paste last transcription",
         "pasteMethod": {
           "title": "Paste method",
-          "description": "Wie das Tastenkürzel zum erneuten Einfügen der letzten Transkription den Text in das fokussierte Fenster bringt. Das ist unabhängig von der Einfügemethode auf der Seite Erweitert, sodass du es gezielt für das eine störrische Ziel anpassen kannst. Standard: Zwischenablage (Strg+V) — probiere Zwischenablage (Umschalt+Einfg) in einem Terminal, Direkt, um die Zeichen zu tippen statt einzufügen, oder Keine, um den Text nur in der Zwischenablage abzulegen und ihn selbst einzufügen."
+          "description": "Wie das Tastenkürzel zum erneuten Einfügen der letzten Transkription den Text in das fokussierte Fenster bringt. Das ist unabhängig von der Einfügemethode unter Mehr › Ausgabe, sodass du es gezielt für das eine störrische Ziel anpassen kannst. Standard: Zwischenablage (Strg+V) — probiere Zwischenablage (Umschalt+Einfg) in einem Terminal, Direkt, um die Zeichen zu tippen statt einzufügen, oder Keine, um den Text nur in der Zwischenablage abzulegen und ihn selbst einzufügen."
         },
         "clipboard": {
           "title": "Clipboard",
@@ -502,7 +866,7 @@
       },
       "altGrWarning": {
         "label": "Vor AltGr-Tastenkürzeln warnen",
-        "description": "Zeigt eine Warnung neben Tastenkürzeln, die AltGr ebenfalls tippen kann. Windows meldet AltGr als Strg+Alt, daher löst z. B. Strg+Alt+O aus, wenn du ó mit AltGr tippst, und das Zeichen kommt nie an. Standard: An. Schalte es aus, wenn du nie Zeichen mit AltGr tippst.",
+        "description": "**Zeigt eine Amber-Warnung neben Tastenkürzeln, die AltGr ebenfalls tippt.** Windows meldet AltGr als Strg+Alt, daher löst z. B. Strg+Alt+O aus, wenn du ó mit AltGr tippst, und das Zeichen kommt nie an. Unter Windows warnt sie nur, wenn eine deiner Tastaturen auf dieser Taste mit AltGr etwas tippt (oder AltGr+Umschalt, bei einer Kombination mit Umschalt), und nennt die Sprache, zu der die Tastatur gehört.\n\n**Standard:** An. Schalte sie aus, wenn du nie Zeichen mit AltGr tippst.",
         "turnOff": "Diese Warnung ausschalten"
       }
     },
@@ -520,6 +884,20 @@
         "off": "Aus",
         "minutes": "{{minutes}} Min."
       },
+      "micWarmup": {
+        "title": "Warten, bis das Mikrofon warm ist",
+        "description": "**Nach dem Start eines ruhenden Mikrofons zeigt die Aufnahmeleiste „Mikrofon startet...\" so lange, bis es wirklich bereit ist.** Manche Mikrofone starten viel leiser und blenden etwa eine Sekunde lang ein; Worte in dieser Zeit wurden als Rauschen verworfen. Die Wartezeit ist der Durchschnitt der letzten Kaltstarts dieses Mikrofons, von der App selbst gemessen.\n\n**Standard:** An.\n\nNur ein Kaltstart wartet — ein bereitgehaltenes Mikrofon startet sofort. Ausgeblendet, wenn Mikrofon immer aktiv eingeschaltet ist.",
+        "measured": "Auf diesem PC gemessen: {{seconds}} s.",
+        "notMeasured": "Noch nicht gemessen — das geschieht beim nächsten Kaltstart von selbst."
+      },
+      "tooQuiet": {
+        "title": "Warnen, wenn du zu leise sprichst",
+        "description": "**Sprichst du so leise, dass deine Worte nicht behalten werden, zeigt die Aufnahmeleiste kurz „Zu leise – lauter bitte\"**. Es reagiert auf Klang, der fast Sprache ist und deutlich über dem Raumrauschen liegt, etwa 0,7 s lang; Stille, Musik und Tippen lösen es nicht aus. Falsch verstandene Worte erkennt es nicht — dafür gibt es das Live-Textfeld.\n\n**Standard:** An.",
+        "box": {
+          "title": "In eigenem Kästchen anzeigen",
+          "description": "**„Zu leise – lauter bitte“ erscheint in einem kleinen Kästchen direkt unter der Aufnahmeleiste, und die Leiste zeigt weiter ihre Pegelbalken.** Steht die Leiste unten am Bildschirm, sitzt das Kästchen in der Lücke über der Taskleiste und verdeckt nie das Live-Textfeld. Aus: Die Leiste zeigt es statt der Pegelbalken (mit Pause-Taste werden längere Übersetzungen dort abgeschnitten).\n\n**Standard:** An."
+        }
+      },
       "audioFeedback": {
         "label": "Audio-Feedback",
         "description": "Spielt beim Start der Aufnahme einen kurzen Ton und beim Stoppen einen anderen, damit du auch ohne Blick auf den Bildschirm weißt, dass das Mikrofon aktiv ist. Standard: Aus. Das Aktivieren schaltet Ausgabegerät und Lautstärke unten frei; die beiden Signaltöne lassen sich über Sound-Thema auf der Debug-Seite durch eigene Dateien ersetzen."
@@ -536,7 +914,6 @@
       }
     },
     "advanced": {
-      "title": "Erweitert",
       "groups": {
         "app": "App",
         "output": "Ausgabe",
@@ -571,6 +948,36 @@
           "bottom": "Unten",
           "top": "Oben"
         }
+      },
+      "reopenLastPage": {
+        "title": "Letzte Seite wieder öffnen",
+        "description": "**Öffnet Handy Tool auf der Seite, die beim Schließen offen war** (zum Beispiel Verlauf) statt auf Allgemein.\n\n**Standard:** An."
+      },
+      "overlaySize": {
+        "title": "Overlay-Größe",
+        "description": "**Wie groß das Aufnahme-Overlay ist**, samt dem „Zu leise“-Kästchen darunter. Größer ist auf großen oder hochauflösenden Bildschirmen leichter zu sehen.\n\n**Standard:** Normal.",
+        "normal": "Normal",
+        "large": "Groß",
+        "extraLarge": "Sehr groß"
+      },
+      "soundBarsWide": {
+        "title": "Breite Pegelbalken",
+        "description": "**Breitere Pegelbalken auf dem Aufnahme-Overlay:** Balken und Abstände von 2,5 px (77,5 px) statt 2 px (62 px).\n\n**Standard:** Aus."
+      },
+      "progressStyle": {
+        "title": "Fortschrittsanzeige",
+        "description": "**Wie das Aufnahme-Overlay zeigt, wie weit eine Transkription ist:** eine dünne Linie, die sich unten füllt; ein leuchtendes Licht, das von unten Mitte um den Rand läuft und hinter sich bis zum Wert leuchtet; oder ein dünnes Licht, das um den Rand kreist, eine Runde alle 1,6 Sekunden (der Wert steht im Text). Bei reduzierter Bewegung wird das kreisende Licht zur Linie.\n\n**Standard:** Linie.",
+        "line": "Linie unten",
+        "ring": "Licht am Rand",
+        "lap": "Um den Rand kreisendes Licht"
+      },
+      "progressLineGlow": {
+        "title": "Leuchtende Linie",
+        "description": "**Die Fortschrittslinie leuchtet wie das Licht am Rand**, ihr Schein reicht über den Rand des Overlays hinaus.\n\n**Standard:** Aus. Nur wenn die Fortschrittsanzeige „Linie unten“ ist."
+      },
+      "progressGlow": {
+        "title": "Leuchtstärke",
+        "description": "**Wie stark das Fortschrittslicht leuchtet**: „Licht am Rand“ und die Linie, wenn „Leuchtende Linie“ an ist. 0 % schaltet das Leuchten aus, 200 % verdoppelt es.\n\n**Standard:** 100 %."
       },
       "pasteMethod": {
         "title": "Einfügemethode",
@@ -640,8 +1047,7 @@
       "customWords": {
         "title": "Benutzerdefinierte Wörter",
         "description": "Eine Liste von Namen, Produkten und Fachbegriffen, die die Engine immer wieder falsch versteht; nach jeder Transkription sucht Handy ähnlich klingende Wörter und ersetzt sie durch deine Schreibweise. Standard: leer. Füge ganze Wörter hinzu, sobald sie dir auffallen, und senke Wortkorrektur-Schwelle auf der Debug-Seite, wenn Dinge korrigiert werden, die du nicht gemeint hast.",
-        "placeholder": "Wort hinzufügen",
-        "add": "Hinzufügen",
+        "placeholder": "Wort eingeben, dann Enter drücken",
         "remove": "{{word}} entfernen",
         "duplicate": "\"{{word}}\" existiert bereits"
       },
@@ -693,7 +1099,7 @@
       },
       "transcriptionMode": {
         "title": "Transkriptionsmodus",
-        "description": "Live zeigt den Text schon beim Sprechen; Nach der Aufnahme nimmt still auf und transkribiert im Hintergrund. So oder so passiert die meiste Arbeit während du sprichst, daher ist der Text kurz nach dem Stoppen fertig. Im Live-Modus bekommst du genau den Text, den du gesehen hast. Standard: Nach der Aufnahme. Gilt nur für das Transkriptions-Tastenkürzel; API-Modelle verhalten sich immer wie Nach der Aufnahme.",
+        "description": "Live zeigt den Text schon beim Sprechen; Nach der Aufnahme nimmt still auf und transkribiert im Hintergrund. So oder so passiert die meiste Arbeit während du sprichst, daher ist der Text kurz nach dem Stoppen fertig. Im Live-Modus bekommst du genau den Text, den du gesehen hast. Standard: Nach der Aufnahme. Gilt nur für das Aufnahme-/Transkriptions-Tastenkürzel; API-Modelle verhalten sich immer wie Nach der Aufnahme.",
         "options": {
           "live": "Live",
           "postRecording": "Nach der Aufnahme"
@@ -737,7 +1143,6 @@
         }
       },
       "tabs": {
-        "app": "App",
         "output": "Ausgabe",
         "typer": "Tastatureingabe",
         "providers": "Anbieter",
@@ -899,10 +1304,21 @@
       "systemAudioGain": {
         "title": "Pegel des Systemtons",
         "description": "Wie laut der Systemton im Verhältnis zu deiner Stimme ist. Erhöhe ihn, wenn das Gegenüber zu leise für die Transkription ist; senke ihn, wenn es dich übertönt. Nur der Systemton wird skaliert — dein Mikrofon bleibt unangetastet."
+      },
+      "progressColor": {
+        "title": "Fortschrittsfarbe",
+        "description": "**Die Farbe der leuchtenden Teile der Pille:** das Fortschrittslicht und sein Leuchten (die Linie, das Licht am Rand und das um den Rand kreisende Licht), das leuchtende T und die Pegelbalken. Eingestellt mit drei Schiebereglern: Farbton (welche Farbe), Sättigung (wie kräftig) und Helligkeit. Die Farbfläche zeigt das Ergebnis; die Zurücksetzen-Schaltfläche stellt die Standardfarbe wieder her.\n\n**Standard:** Cyan.",
+        "hue": "Farbton",
+        "saturation": "Sättigung",
+        "lightness": "Helligkeit",
+        "reset": "Zurück zur Standardfarbe"
+      },
+      "pillPreview": {
+        "title": "Vorschau",
+        "description": "**Die Aufnahmeleiste, wie die Einstellungen ringsum sie machen, in Bewegung:** Aufnahme links (das T leuchtet, solange das Live-Textfeld an ist, dazu die Pegelbalken) und Transkription rechts, ihr Fortschritt läuft immer wieder von 0 auf 100 % mit deinem Fortschrittsstil, Leuchten und deiner Farbe, in deiner Overlay-Größe."
       }
     },
     "postProcessing": {
-      "title": "Nachbearbeitung",
       "hotkey": {
         "title": "Tastenkürzel"
       },
@@ -943,7 +1359,7 @@
           "title": "Temperatur",
           "description": "Niedriger ist deterministischer und strenger (0 = am wörtlichsten); höher ist kreativer."
         },
-        "registryNote": "API-Schlüssel, Modell und Basis-URL des Anbieters werden unter Erweitert → Registrierte LLM-Anbieter konfiguriert."
+        "registryNote": "API-Schlüssel, Modell und Basis-URL des Anbieters werden unter Mehr › Anbieter › Registrierte LLM-Anbieter konfiguriert."
       },
       "prompts": {
         "title": "Prompt",
@@ -1044,7 +1460,7 @@
       },
       "postProcessingToggle": {
         "label": "Nachbearbeitung",
-        "description": "Aktiviert den optionalen KI-Nachbearbeitungsschritt und fügt der Seitenleiste die Seite Nachbearbeitung hinzu, auf der du Anbieter und Prompt wählst. Standard: Aus. Dein normales Transkriptions-Tastenkürzel bleibt unberührt — die Nachbearbeitung läuft nur über das separate Nachbearbeitungs-Tastenkürzel, und der Verlauf bewahrt die Rohtranskription neben der bearbeiteten Version."
+        "description": "Aktiviert den optionalen KI-Nachbearbeitungsschritt; Tastenkürzel, Anbieter und Prompt dafür erscheinen direkt unter diesem Schalter. Standard: Aus. Dein normales Aufnahme-/Transkriptions-Tastenkürzel bleibt unberührt — die Nachbearbeitung läuft nur über das separate Nachbearbeitungs-Tastenkürzel, und der Verlauf bewahrt die Rohtranskription neben der bearbeiteten Version."
       },
       "muteWhileRecording": {
         "label": "Während Aufnahme stummschalten",
@@ -1102,7 +1518,7 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "Ein Zustellungsziel, dessen App, Fensterklasse oder Steuerelementklasse einen dieser Bestandteile enthält (ohne Groß-/Kleinschreibung), gilt als Remotedesktop und verwendet daher den Remote-Wert von 'Paste delay after jump (Windows)' und 'Submit delay before Enter (Windows)' unter Advanced → Transcription statt des lokalen. Es muss kein Sprungziel mehr sein: seit 1.3.0 wird auch ein bereits fokussiertes Remote-Fenster klassifiziert, und genau dadurch greift dort die Senden-Verzögerung. Standard: msrdc, mstsc, Citrix. Fügen Sie den Prozessnamen Ihres RDP- oder Citrix-Clients hinzu, wenn Zustellungen dorthin weiterhin verschluckt werden; eine leere Liste behandelt jedes Ziel als lokal.",
+        "description": "Ein Zustellungsziel, dessen App, Fensterklasse oder Steuerelementklasse einen dieser Bestandteile enthält (ohne Groß-/Kleinschreibung), gilt als Remotedesktop und verwendet daher den Remote-Wert von 'Paste delay after jump (Windows)' und 'Submit delay before Enter (Windows)' unter Mehr › Ausgabe statt des lokalen. Es muss kein Sprungziel mehr sein: seit 1.3.0 wird auch ein bereits fokussiertes Remote-Fenster klassifiziert, und genau dadurch greift dort die Senden-Verzögerung. Standard: msrdc, mstsc, Citrix. Fügen Sie den Prozessnamen Ihres RDP- oder Citrix-Clients hinzu, wenn Zustellungen dorthin weiterhin verschluckt werden; eine leere Liste behandelt jedes Ziel als lokal.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
@@ -1115,8 +1531,8 @@
         "title": "Hot-Slot (Anker & Zustellung)",
         "optionsMoved": {
           "title": "Zustelloptionen",
-          "description": "Keine Einstellung — nur ein Hinweis. Was ein Sprung mit einem Slot tatsächlich macht, wird pro Ablauf unter Erweitert → Transkription konfiguriert: „Slot-Aktion beim Start“, „Slot-Aktion beim Beenden“, „Letzten Ausgabeort verfolgen“ und „Fokus nach Zustellung zurückgeben“ existieren jeweils einmal für Transkribieren und einmal für Transkribieren & Absenden.",
-          "hint": "Konfiguriert in den Gruppen Transkribieren und Transkribieren & Absenden auf der Seite Allgemein."
+          "description": "Keine Einstellung — nur ein Hinweis. Was ein Sprung mit einem Slot tatsächlich macht, wird pro Ablauf unter Mehr › Ausgabe konfiguriert: „Slot-Aktion beim Start“, „Slot-Aktion beim Beenden“, „Letzten Ausgabeort verfolgen“ und „Fokus nach Zustellung zurückgeben“ existieren jeweils einmal für Transkribieren und einmal für Transkribieren & Absenden.",
+          "hint": "Konfiguriert in den Gruppen Transkribieren und Transkribieren & Absenden unter Mehr › Ausgabe."
         }
       },
       "hot2": {
@@ -1171,10 +1587,10 @@
       }
     },
     "translator": {
-      "title": "Übersetzer",
+      "title": "Überwachte Ordner",
       "enabled": {
         "label": "Ordner überwachen",
-        "description": "Aktivieren, um jede neue .wav-, .ogg- oder .opus-Datei, die in einem überwachten Ordner erscheint, mit deinem aktuellen Modell sowie den Einstellungen Sprache und Ins Englische übersetzen in eine .txt-Datei daneben zu transkribieren. Standard: aus. Dateien, die beim Start der Überwachung schon im Ordner liegen, werden bewusst nicht angerührt; die Ordner selbst wählst du unter Ordner hinzufügen."
+        "description": "Aktivieren, um jede neue .wav-, .mp3-, .m4a-, .aac-, .flac-, .ogg- oder .opus-Datei, die in einem überwachten Ordner erscheint, mit deinem aktuellen Modell sowie den Einstellungen Sprache und Ins Englische übersetzen in eine .txt-Datei daneben zu transkribieren. Standard: aus. Dateien, die beim Start der Überwachung schon im Ordner liegen, werden bewusst nicht angerührt; die Ordner selbst wählst du unter Ordner hinzufügen."
       },
       "priority": {
         "title": "Priorität",
@@ -1210,7 +1626,7 @@
         "counters": "{{done}} erledigt, {{failed}} fehlgeschlagen in dieser Sitzung"
       },
       "folders": {
-        "title": "Überwachte Ordner",
+        "title": "Ordner",
         "none": "Keine Ordner",
         "emptyTitle": "Keine überwachten Ordner",
         "emptyDescription": "Füge einen Ordner hinzu, um ihn auf neue Aufnahmen zu überwachen.",
@@ -1224,10 +1640,83 @@
         "removeAriaLabel": "Überwachung von Ordner {{name}} beenden"
       }
     },
+    "files": {
+      "model": {
+        "title": "Modell",
+        "description": "**Welches Sprachmodell die Datei transkribiert.** Noch nicht heruntergeladene Modelle stehen auch in der Liste; wähle eins und lade es zuerst herunter.\n\n**Standard:** dein Diktiermodell, und das gewählte wird gemerkt. Ein anderes Modell lädt neben deinem Diktiermodell, damit das Diktieren bereit bleibt, und wird nach der Datei wieder entladen.",
+        "dictation": "{{name}} (dein Diktiermodell)",
+        "notDownloaded": "{{name}} (nicht heruntergeladen)",
+        "groups": {
+          "dictation": "Dein Diktiermodell",
+          "downloaded": "Heruntergeladen",
+          "notDownloaded": "Nicht heruntergeladen"
+        },
+        "downloadSize": "Herunterladen · {{size}}"
+      },
+      "transcribe": {
+        "title": "Datei transkribieren",
+        "choose": {
+          "title": "Audiodatei wählen",
+          "description": "**Transkribiert eine Audiodatei deiner Wahl**: WAV, MP3, M4A, AAC, FLAC, OGG oder Opus, etwa eine Handyaufnahme, mit dem oben gewählten Modell und deinen Spracheinstellungen.\n\nDie Datei wird an ihren Pausen in Stücke von bis zu etwa 40 Sekunden geteilt, und jedes Stück wird einmal transkribiert: kein Live-Text, kein zweiter Durchgang. Die Originaldatei wird nur gelesen, nie verändert.",
+          "button": "Datei wählen…"
+        },
+        "audioFiles": "Audiodateien",
+        "decoding": "{{file}} wird gelesen…",
+        "progress": "{{done}} von {{total}} · {{percent}} %",
+        "cancel": "Stoppen",
+        "cancelled": "Gestoppt: {{file}}",
+        "failed": "{{file}} konnte nicht transkribiert werden: {{error}}",
+        "startFailed": "Konnte nicht starten: {{reason}}",
+        "done": "{{file}} ist transkribiert",
+        "copy": "Text kopieren",
+        "savedTo": "Text gespeichert unter {{path}}",
+        "saveFailed": "Speichern fehlgeschlagen: {{error}}",
+        "empty": "In dieser Datei wurde keine Sprache gefunden."
+      },
+      "options": {
+        "saveText": {
+          "title": "Text speichern",
+          "description": "**Wo das Transkript als .txt gespeichert wird**, benannt nach der Audiodatei. Ist der Name vergeben, wird eine Nummer angehängt; nichts wird überschrieben.\n\n**Standard:** Jedes Mal fragen: Ein Fenster fragt, wenn du eine Datei wählst, und kann sich deine Wahl merken. Der Text wird so oder so zum Kopieren angezeigt.",
+          "options": {
+            "ask": "Jedes Mal fragen",
+            "handy_folder": "Im Handy-Ordner",
+            "next_to_file": "Neben der Aufnahme",
+            "dont_save": "Nicht speichern"
+          }
+        },
+        "keepAudio": {
+          "title": "Kopie der Audiodatei behalten",
+          "description": "**Kopiert die Audiodatei in den Ordner unten**, neben ihren Text, damit du sie noch hast, wenn das Original verschoben oder gelöscht wird.\n\n**Standard:** aus. Das Original wird nie verschoben oder verändert."
+        },
+        "folder": {
+          "title": "Ordner",
+          "description": "**Wohin der Text kommt, wenn er im Handy-Ordner gespeichert wird, und wohin die Audiokopien kommen.**\n\n**Standard:** ein Ordner „files“ im Datenordner von Handy.",
+          "change": "Ändern",
+          "reset": "Zurück zum Handy-Ordner"
+        }
+      },
+      "ask": {
+        "title": "Wo soll der Text gespeichert werden?",
+        "handyFolder": "Im Handy-Ordner",
+        "nextToFile": "Neben der Aufnahme",
+        "dontSave": "Nicht speichern",
+        "dontSaveHint": "Der Text wird trotzdem zum Kopieren angezeigt und bleibt in der Liste.",
+        "remember": "Meine Wahl merken",
+        "rememberHint": "Du kannst es später unter Text speichern ändern."
+      },
+      "log": {
+        "title": "Transkribierte Dateien",
+        "empty": "Noch nichts transkribiert. Jede Datei, die du hier transkribierst, erscheint mit ihrem Text in der Liste.",
+        "showMore": "Alles zeigen",
+        "showLess": "Weniger zeigen",
+        "reveal": "Im Ordner zeigen",
+        "delete": "Aus der Liste entfernen"
+      }
+    },
     "currentAudio": {
       "streamingHint": "Text wird während des Sprechens nur dann fortlaufend angezeigt, wenn das verwendete Tastenkürzel — Transkribieren oder Push-to-Talk — auf Live eingestellt ist und du ein lokales Modell verwendest.",
       "finalHint": "Im Modus Nach der Aufnahme oder bei API- bzw. OpenRouter-Transkription wird das vollständige Transkript nach Aufnahmeende auf einmal angezeigt; den Modus jedes Tastenkürzels legst du fest unter",
-      "advancedTranscription": "Erweitert → Transkription",
+      "advancedTranscription": "Allgemein › Transkription",
       "finalHintSuffix": ".",
       "title": "Aktuelles Audio",
       "idle": "Starte eine Aufnahme, um die Live-Transkription zu sehen",
@@ -1259,7 +1748,8 @@
       "loading": "Modelle werden geladen…",
       "error": "Modelle konnten nicht geladen werden",
       "noMatches": "Keine passenden Modelle — tippe, um eine benutzerdefinierte ID zu verwenden"
-    }
+    },
+    "revealHint": "Schalte es ein, um mehr Einstellungen zu sehen."
   },
   "common": {
     "loading": "Wird geladen...",
@@ -1315,8 +1805,12 @@
     "pause": "Pause",
     "resume": "Fortsetzen",
     "liveTextBox": "Live-Textfeld",
-    "slowPc": "Transkription mit {{percent}} % der üblichen Geschwindigkeit dieses PCs",
-    "speedUnknown": "PC-Tempo: noch nicht gemessen"
+    "menu": {
+      "changeShortcut": "Tastenkürzel ändern…",
+      "liveTextSettings": "Einstellungen des Live-Textfelds…",
+      "hidePause": "Pause-Taste ausblenden"
+    },
+    "tooQuiet": "Zu leise – lauter bitte"
   },
   "brand": {
     "name": "Handy",
@@ -1352,7 +1846,7 @@
     "fileTooLarge": "Datei ist zu groß (max. 10 MB).",
     "loadedFile": "Geladen: {{name}}",
     "providerOption": "{{name}} (Anbieter)",
-    "chipDisabled": "Nicht konfiguriert — aktiviere es mit Diesen Anbieter aktivieren unter Erweitert > Anbieter > Registrierte LLM-Anbieter.",
+    "chipDisabled": "Nicht konfiguriert — aktiviere es mit Diesen Anbieter aktivieren unter Mehr › Anbieter › Registrierte LLM-Anbieter.",
     "chips": {
       "cl100k_base": "cl100k (GPT-4)",
       "o200k_base": "o200k (GPT-4o)",
@@ -1380,7 +1874,6 @@
     }
   },
   "keyboardTyper": {
-    "title": "Tastatur-Eingabe",
     "description": "Sendet diesen Text als einzelne simulierte Tastendrücke an das fokussierte Fenster, sodass es dort funktioniert, wo Einfügen blockiert ist — Remote-Konsolen, VM-Viewer, Passwortabfragen. Drücke Los, um den Countdown der Startverzögerung (Standard 10 s) zu erhalten und zuerst ins Zielfenster zu klicken; drückst du stattdessen das Text-Eingabe-Tastenkürzel, während du bereits im Ziel bist, beginnt die Eingabe nach etwa einer Sekunde. Der Text lebt nur im Speicher — er wird nie in deine Einstellungen, den Verlauf oder die Logs geschrieben.",
     "placeholder": "Gib den einzugebenden Text ein...",
     "go": "Los",
@@ -1398,7 +1891,7 @@
     "shortcut": {
       "label": "Tastenkürzel:",
       "unset": "nicht festgelegt",
-      "hint": "(in den erweiterten Einstellungen ändern; erneut drücken, um abzubrechen)"
+      "hint": "(auf der Seite Tastenkürzel ändern; erneut drücken, um abzubrechen)"
     },
     "status": {
       "idle": "Klicke auf Los und fokussiere dann das Zielfenster — oder verwende das Tastenkürzel direkt in der Ziel-App.",
@@ -1411,14 +1904,14 @@
   },
   "modelTesting": {
     "configureProviders": "Anbieter konfigurieren",
-    "description": "Sendet einen Prompt an jedes unter Ausführen angehakte Modell und stellt die Antworten mit Token-Anzahl, Kosten und Umlaufzeit nebeneinander dar; unter Jury angehakte Modelle bewerten anschließend alle diese Antworten mit deinem Jury-Prompt. Standard: nichts ausgewählt, beide Prompts leer. Die Liste stammt aus Erweitert > Registrierte LLM-Anbieter, ein Durchlauf nutzt also deine eigenen API-Schlüssel — dein Prompt verlässt diesen Rechner und kostet bei kostenpflichtigen Anbietern echtes Geld.",
+    "description": "Sendet einen Prompt an jedes unter Ausführen angehakte Modell und stellt die Antworten mit Token-Anzahl, Kosten und Umlaufzeit nebeneinander dar; unter Jury angehakte Modelle bewerten anschließend alle diese Antworten mit deinem Jury-Prompt. Standard: nichts ausgewählt, beide Prompts leer. Die Liste stammt aus Mehr › Anbieter › Registrierte LLM-Anbieter, ein Durchlauf nutzt also deine eigenen API-Schlüssel — dein Prompt verlässt diesen Rechner und kostet bei kostenpflichtigen Anbietern echtes Geld.",
     "providersLabel": "Modelle",
     "selectAll": "Alle zur Ausführung auswählen",
     "clear": "Leeren",
     "run": "Ausführen",
     "judge": "Jury",
     "costPerM": "Eingabe ${{input}} · Ausgabe ${{output}} /1M",
-    "noProviders": "Keine chatfähigen Anbieter konfiguriert. Füge einen unter Erweitert → Registrierte LLM-Anbieter hinzu.",
+    "noProviders": "Keine chatfähigen Anbieter konfiguriert. Füge einen unter Mehr › Anbieter › Registrierte LLM-Anbieter hinzu.",
     "mainPromptLabel": "Prompt für alle Modelle",
     "mainPromptPlaceholder": "Der Prompt, der an jedes ausgewählte Modell gesendet wird…",
     "judgePromptLabel": "Jury-/Schiedsrichter-Prompt (optional)",
@@ -1483,6 +1976,7 @@
   "floating": {
     "waiting": "Warte auf Transkription…",
     "listening": "Höre zu…",
+    "listeningShort": "Höre zu",
     "copy": "Kopieren",
     "copied": "Kopiert"
   },
@@ -1491,5 +1985,153 @@
       "message": "Update auf {{expected}} wurde nicht abgeschlossen — es läuft weiterhin {{actual}}. Das Installationsprogramm wurde gestartet, aber nichts ersetzt; möglicherweise hat eine Sicherheitsrichtlinie es blockiert.",
       "download": "Manuell herunterladen"
     }
+  },
+  "whatsNew": {
+    "intro": "Das Neue und Geänderte der letzten Updates. Zeigen öffnet die Einstellung.",
+    "release": "Version {{version}}",
+    "show": "Zeigen",
+    "items": {
+      "files": {
+        "title": "Datei transkribieren",
+        "description": "Die neue Seite Dateien transkribiert eine Audiodatei deiner Wahl (WAV, MP3, M4A, AAC, FLAC, OGG, Opus) mit dem Modell deiner Wahl und führt eine Liste transkribierter Dateien. Auch die überwachten Ordner sind dorthin umgezogen."
+      },
+      "helpMode": {
+        "title": "Hilfemodus",
+        "description": "Das ? oben rechts auf jeder Seite: Zeig auf eine Einstellung, um zu lesen, was sie tut. Es ersetzt das \"i\" in jeder Zeile."
+      },
+      "setups": {
+        "title": "Einrichtung für Jumper und Nachbearbeitung",
+        "description": "Zwei geführte Einrichtungen auf der Seite Einrichtungen: Stellen merken und dorthin springen oder eine KI anbinden, die deinen Text aufräumt."
+      },
+      "firstSetup": {
+        "title": "Einrichtungshilfe beim ersten Start",
+        "description": "Sprachen, ein vorgeschlagenes Sprachmodell, Tastenkürzel, das Mikrofon und ein erster Versuch. Erneut starten auf der Seite Einrichtungen."
+      },
+      "modelRatings": {
+        "title": "Vergleichbare Modellbewertungen",
+        "description": "Die Balken für Geschwindigkeit und Genauigkeit beruhen jetzt auf Messungen, und die Beschreibungen passen dazu."
+      },
+      "progressStyle": {
+        "title": "Licht am Rand",
+        "description": "Fortschrittsstil: Beim Transkribieren läuft ein leuchtendes Licht um die Pille statt der Linie am unteren Rand."
+      },
+      "overlaySize": {
+        "title": "Overlay-Größe",
+        "description": "Mach die Aufnahme-Pille größer: 125 % oder 150 %."
+      },
+      "reopenLastPage": {
+        "title": "Letzte Seite wieder öffnen",
+        "description": "Handy Tool öffnet sich auf der Seite, die zuletzt offen war."
+      },
+      "liveTextSize": {
+        "title": "Live-Textfeld: Größe und Höhe",
+        "description": "Wähle die Textgröße und wie viele Zeilen das Gesamttext-Feld zeigt."
+      },
+      "micWarmup": {
+        "title": "Warten, bis das Mikrofon warm ist",
+        "description": "Ein Mikrofon, das leise startet, verliert deine ersten Wörter nicht mehr."
+      },
+      "tooQuiet": {
+        "title": "Zu leise — sprich lauter",
+        "description": "Ein Hinweis, wenn du zu leise sprichst, als dass das Modell dich gut hört."
+      },
+      "newIcon": {
+        "title": "Neues App-Symbol",
+        "description": "Das neue Wellen-Symbol in der App, im Installer, in der Taskleiste und im Start."
+      },
+      "holdUndo": {
+        "title": "Halten, um Wörter zu löschen",
+        "description": "Bei der Live-Transkription (Live-Textfeld an): Strg+Rücktaste löscht das letzte Wort, gehalten löscht sie weiter. Einschalten mit Letztes Wort rückgängig unter Allgemein."
+      },
+      "liveTranscript": {
+        "title": "Der Live-Text ist dein Transkript",
+        "description": "Ist „Live-Textfeld“ an, ist der Text im Feld das Transkript: Beim Stoppen kommt nur die letzte Sekunde oder zwei hinzu, der Text ist also sofort fertig."
+      },
+      "historyTabs": {
+        "title": "Verlauf-Tabs und Statistik",
+        "description": "Der Verlauf hat die Tabs Aufnahmen, Statistik und Einstellungen. Die Statistik zählt Aufnahmen und ihre Länge pro Tag, Woche, Monat und Jahr."
+      },
+      "liveTextFade": {
+        "title": "Ausblenden, wenn du aufhörst zu sprechen",
+        "description": "Der Live-Text blendet sich 3 Sekunden nach der letzten Änderung aus; deine nächsten Wörter holen ihn zurück."
+      },
+      "appearanceSetup": {
+        "title": "Aussehen einrichten",
+        "description": "Eine geführte Einrichtung, die jedes Aussehen in Bewegung zeigt, bevor du es wählst: die Pille, ihren Fortschritt und das Live-Textfeld. Auf der Seite Einrichtungen und oben in Allgemein › App."
+      },
+      "progressColor": {
+        "title": "Deine eigene Fortschrittsfarbe",
+        "description": "Wähle die Farbe des Fortschrittslichts und seines Leuchtens, des leuchtenden T und der Pegelbalken mit drei Schiebereglern: Farbton, Sättigung und Helligkeit."
+      },
+      "liveTextBox": {
+        "title": "Live-Textfeld",
+        "description": "Ein kleines Feld neben der Aufnahmeleiste zeigt deine Worte, während du sprichst: die neueste Zeile oder den ganzen Text. Das T auf der Leiste oder sein eigenes Tastenkürzel schaltet es um."
+      },
+      "newLook": {
+        "title": "Ein neuer Look",
+        "description": "Die ganze App wurde neu gestaltet, in Hell und Dunkel. Die Aufnahmeleiste ist kleiner, mit längeren Pegelbalken, und das Taskleistensymbol ist neu."
+      },
+      "newLayout": {
+        "title": "Eine neue Seitenleiste mit Suche",
+        "description": "Die Seiten, die du am meisten nutzt, stehen in der Seitenleiste; die alten Erweitert-Tabs und die Tastatur-Eingabe sind unter Mehr, die App-Einstellungen unter Allgemein. Das Suchfeld findet jede Einstellung."
+      },
+      "shortcutsPage": {
+        "title": "Alle Tastenkürzel an einem Ort",
+        "description": "Die Seite Tastenkürzel listet alle Tastenkürzel und warnt, wenn zwei dieselben Tasten teilen oder ein einzelner Buchstabe schon beim Tippen auslösen würde."
+      },
+      "shortcutNone": {
+        "title": "Ein Tastenkürzel ausschalten",
+        "description": "Das × bei einem Tastenkürzel setzt es auf Kein, sodass seine Tasten wieder in anderen Apps funktionieren, zum Beispiel Escape für Abbrechen. Zurücksetzen bringt es zurück."
+      },
+      "pauseButton": {
+        "title": "Pausentaste",
+        "description": "Pausiere und setze eine Aufnahme über die Aufnahmeleiste fort, oder mit ihrem eigenen Tastenkürzel. Schalte sie in Allgemein ein."
+      },
+      "progressPercent": {
+        "title": "Transkribiere 42 %",
+        "description": "Die Leiste zeigt, wie weit die Transkription ist, und ihr × bricht sie währenddessen weiterhin ab."
+      },
+      "micStatus": {
+        "title": "Die Leiste informiert über das Mikrofon",
+        "description": "„Mikrofon startet...“, bis wirklich aufgenommen wird, und „Kein Mikrofon“ oder „Mikrofon blockiert“, wenn es nicht starten kann, statt Stille aufzuzeichnen."
+      },
+      "micKeepWarm": {
+        "title": "Mikrofon bereithalten",
+        "description": "Hält das Mikrofon nach einer Aufnahme einige Minuten offen, sodass die nächste sofort startet."
+      },
+      "liveTextAfterStop": {
+        "title": "Den Text beim Transkribieren zeigen",
+        "description": "Ohne Live-Textfeld erscheint das Feld beim Stoppen, und dein Text wird hineingetippt, während er entsteht."
+      },
+      "pillMenus": {
+        "title": "Rechtsklick auf die Schaltflächen der Leiste",
+        "description": "T, Pause und × auf der Leiste haben Menüs: umschalten, was das Feld zeigt, ein Tastenkürzel ändern oder eine Aufnahme nur im Verlauf behalten."
+      },
+      "trayClick": {
+        "title": "Klick auf das Taskleistensymbol öffnet",
+        "description": "Ein Linksklick auf das Taskleistensymbol öffnet das Fenster; das Menü liegt auf dem Rechtsklick."
+      },
+      "blockedUpdate": {
+        "title": "Blockierte Aktualisierungen werden gemeldet",
+        "description": "Wenn eine Aktualisierung nicht installiert wurde (zum Beispiel weil Windows Smart App Control sie blockiert hat), meldet ein Banner das, mit einem Link zum eigenständigen Herunterladen."
+      },
+      "macBuilds": {
+        "title": "macOS-Versionen",
+        "description": "Handy Tool gibt es jetzt auch für Intel- und Apple-Silicon-Macs. Sie sind noch nicht signiert."
+      },
+      "soundSource": {
+        "title": "Tonquelle umgezogen",
+        "description": "Die Tonquelle steht jetzt unter Allgemein › Sound, direkt über der Mikrofonauswahl. Nur Windows."
+      },
+      "systemAudioControls": {
+        "title": "Verzögerung und Pegel des Systemtons",
+        "description": "Wird Systemton aufgenommen, stelle ein, wie weit er deinem Mikrofon hinterherhinkt und wie laut er daneben ist."
+      },
+      "linuxBuilds": {
+        "title": "Linux-Pakete",
+        "description": ".deb-, .rpm- und .AppImage-Pakete für x86_64 und ARM64. Sie wurden noch nicht getestet."
+      }
+    },
+    "installed": "Installiert"
   }
 }

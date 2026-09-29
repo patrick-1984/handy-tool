@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Save } from "lucide-react";
+import { TEXT_FIELD } from "../../ui/controlClasses";
 
 interface Props {
   onSave: (name: string) => void;
@@ -28,7 +29,7 @@ export const SavePromptButton: React.FC<Props> = ({ onSave, disabled }) => {
         disabled={disabled}
         onClick={() => setEditing(true)}
         title={t("modelTesting.library.save")}
-        className="flex items-center gap-1 text-xs px-2 py-1 rounded-md border border-zinc-700 text-text/60 hover:text-text hover:border-blue-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+        className="flex items-center gap-1 text-xs px-2 py-1 rounded-md border border-border text-text-secondary hover:text-text hover:border-accent disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
       >
         <Save className="w-3.5 h-3.5" />
         {t("modelTesting.library.save")}
@@ -50,12 +51,12 @@ export const SavePromptButton: React.FC<Props> = ({ onSave, disabled }) => {
           }
         }}
         placeholder={t("modelTesting.library.namePlaceholder")}
-        className="rounded-md border border-zinc-700 bg-zinc-800 px-2 py-1 text-xs text-zinc-100 placeholder-zinc-500 w-32 focus:border-blue-500 focus:outline-none"
+        className={`${TEXT_FIELD} w-32`}
       />
       <button
         type="button"
         onClick={confirm}
-        className="text-xs px-2 py-1 rounded-md bg-blue-600 text-white hover:bg-blue-500 cursor-pointer"
+        className="h-7 text-xs px-2.5 rounded-md bg-btn text-on-btn font-medium hover:bg-btn-hover cursor-pointer"
       >
         {t("modelTesting.library.confirm")}
       </button>
@@ -65,7 +66,7 @@ export const SavePromptButton: React.FC<Props> = ({ onSave, disabled }) => {
           setEditing(false);
           setName("");
         }}
-        className="text-xs px-2 py-1 rounded-md border border-zinc-700 text-text/60 hover:text-text cursor-pointer"
+        className="text-xs px-2 py-1 rounded-md border border-border text-text-secondary hover:text-text cursor-pointer"
       >
         {t("modelTesting.library.cancel")}
       </button>

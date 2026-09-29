@@ -24,13 +24,15 @@
     "models": "Models",
     "backup": "Backup",
     "currentAudio": "Current Audio",
+    "setups": "Setups",
     "history": "History",
+    "files": "Files",
     "debug": "Debug",
     "about": "About",
     "tokenCount": "Token Count",
     "keyboardTyper": "Keyboard Typer",
+    "whatsNew": "What's new",
     "jumper": "Jumper",
-    "translator": "Translator",
     "more": "More",
     "groups": {
       "settings": "Settings",
@@ -72,10 +74,342 @@
       "installWhenIdle": "Install when idle",
       "installRestartNow": "Install and restart now",
       "enableAutomatic": "Turn on automatic updates"
+    },
+    "unread": "unread"
+  },
+  "helpMode": {
+    "button": "Help mode: point at a setting to see what it does",
+    "hint": "Point at a setting to see what it does. Click anywhere or press Esc to leave."
+  },
+  "setup": {
+    "skipSetup": "Skip setup",
+    "back": "Back",
+    "next": "Next",
+    "saveNext": "Save & next",
+    "skip": "Skip",
+    "start": "Start setup",
+    "finish": "Finish",
+    "step": "Step {{current}} of {{total}}",
+    "welcome": {
+      "title": "Welcome to Handy Tool",
+      "body": "Speak, and your words are typed wherever your cursor is. Your speech is turned into text on this PC.",
+      "steps": "This short setup asks which languages you speak, suggests a speech model for them, and shows your shortcuts and microphone. Every step can be skipped, and everything can be changed later in the settings."
+    },
+    "languages": {
+      "title": "Which languages will you speak?",
+      "body": "Pick every language you use. The suggested speech models then understand all of them.",
+      "search": "Search languages",
+      "noMatch": "No language matches.",
+      "selected": "Selected: {{languages}}"
+    },
+    "model": {
+      "body": "Three good fits for {{languages}}: the most accurate, a balance of both, and the fastest. Pick one and it downloads while you finish the setup; you can switch later on the Models page.",
+      "bodyAny": "Three good fits: the most accurate, a balance of both, and the fastest. Pick one and it downloads while you finish the setup; you can switch later on the Models page.",
+      "accurate": "Most accurate",
+      "balanced": "Balanced",
+      "fast": "Fastest",
+      "downloadContinue": "Download and continue",
+      "seeAll": "See all models",
+      "showSuggestions": "Back to the three suggestions",
+      "search": "Search models",
+      "notForLanguages": "Doesn't understand all your languages"
+    },
+    "shortcuts": {
+      "title": "Your shortcuts",
+      "body": "These work right away. Keep them, or click one and press the keys you want instead. Each shows its default, so you can always go back to it.",
+      "default": "Default: {{keys}}.",
+      "transcribe": "Press once to start, again to stop.",
+      "ptt": "Hold while you speak.",
+      "cancel": "Stops a recording without typing anything.",
+      "more": "More shortcuts (Transcribe & Submit, pause, undo last word, …) are on the Shortcuts page."
+    },
+    "microphone": {
+      "title": "Which microphone?",
+      "body": "Default follows your system's default microphone. Pick another one if you speak into a headset or a USB microphone."
+    },
+    "try": {
+      "title": "Try it",
+      "body": "Press {{keys}}, say a sentence, then press it again. Your words appear below.",
+      "placeholder": "Your words will appear here.",
+      "listening": "Listening… press {{keys}} again when you're done.",
+      "downloading": "{{model}} is still downloading ({{percent}}%). Try it once it's ready — or go on with Next.",
+      "noModel": "No speech model chosen yet, so there's nothing to try. Go on with Next and pick one on the Models page."
+    },
+    "done": {
+      "title": "You're ready",
+      "howTo": "Press {{keys}}, speak, and press it again: the text is typed where your cursor is.",
+      "downloading": "{{model}} is downloading ({{percent}}%) — it is used as soon as it's ready.",
+      "ready": "Speech model: {{model}}.",
+      "noModel": "No speech model chosen yet: pick one on the Models page.",
+      "suggested": {
+        "title": "Want to fine-tune more?",
+        "body": "Everything already works with good defaults, so you don't need these now. If you like, one of these setups walks you through more."
+      }
+    },
+    "catalog": {
+      "description": "Guided setups ask a few questions and set things up for you. Every step can be skipped.",
+      "basic": {
+        "title": "Basic setup",
+        "description": "Your languages, a speech model suggested for them, the basic shortcuts, your microphone, and a quick try — the same guide as on the first start."
+      },
+      "start": "Start",
+      "jumper": {
+        "title": "Jumper",
+        "description": "Let Handy Tool paste your dictation into the right field for you: it remembers the places you type in (a chat box, a document, a field in a remote session), puts the text there automatically wherever you are, and jumps back to them with a key."
+      },
+      "postProcessing": {
+        "title": "Post-processing",
+        "description": "Let an AI model clean up or reshape what you dictate (punctuation, filler words, a structure, a translation), with its own shortcut."
+      },
+      "windowsOnly": "Windows only",
+      "appearance": {
+        "title": "Appearance",
+        "description": "How the recording pill and the live text box look: the pill's place and size, its sound bars, how it shows progress, and the live text box, with every choice shown moving before you pick it."
+      }
+    },
+    "closeSetup": "Close setup",
+    "jumper": {
+      "name": "Jumper setup",
+      "place": "Place {{n}}",
+      "goal": {
+        "title": "What is the Jumper for?",
+        "body": "In many apps (a chat, an email, a document, a remote desktop) Handy Tool can put your dictation straight into the right text field for you. The Jumper remembers those fields, so the text lands there automatically, even when you are in another window, and a key takes you back to them. Pick what you want from it; you can change it later on the Jumper page.",
+        "jump": {
+          "title": "Jump back with a key",
+          "detail": "Press a shortcut and the remembered field is in front of you again, ready to type."
+        },
+        "land": {
+          "title": "Have my dictation land there",
+          "detail": "Wherever you are when a take ends, the text goes into the remembered field, so you can read something else while you dictate."
+        },
+        "both": {
+          "title": "Both",
+          "detail": "Jump there with a key, and dictation lands there too."
+        }
+      },
+      "mouse": {
+        "title": "Remember the mouse position too?",
+        "body": "In browsers and apps like Discord or Teams, Windows sees only the whole window, not the text box inside it. With the mouse position remembered, Handy clicks back into the exact box.",
+        "no": {
+          "title": "No, just the field",
+          "detail": "Enough for most desktop apps (Word, Notepad, email)."
+        },
+        "yes": {
+          "title": "Yes, the mouse position too",
+          "detail": "For web pages and chat apps. Handy clicks where the mouse was when you showed the place."
+        }
+      },
+      "places": {
+        "title": "Show me the place",
+        "body": "Press the button, then click into the text field you want within {{seconds}} seconds. Handy remembers the field that has the focus when the time is up. You can add more places.",
+        "first": "No place yet.",
+        "another": "Another place?",
+        "countdown": "Click into the field now… {{seconds}}",
+        "show": "Show me the place",
+        "add": "Add another place",
+        "remembered": "Remembered: {{app}}",
+        "failed": "Could not remember it: {{reason}}",
+        "again": "Show this place again"
+      },
+      "shortcuts": {
+        "title": "Your shortcuts",
+        "body": "Set remembers the field you are in right now; Jump takes you back to it. Keep the defaults, or click one and press the keys you want."
+      },
+      "test": {
+        "title": "Try it",
+        "bodyJump": "Click Jump there: the remembered field should come to the front, ready to type.",
+        "bodyLand": "Click Jump there to check each place. Then dictate anywhere: when the take ends, the text lands in Place 1.",
+        "none": "No place was remembered. You can add places on the Jumper page with their Set shortcuts.",
+        "jump": "Jump there"
+      },
+      "done": {
+        "title": "The Jumper is ready",
+        "body": "Your places are kept after a restart. Everything else (more slots, remote sessions, tracking where text last landed) is on the Jumper page."
+      }
+    },
+    "postProcessing": {
+      "name": "Post-processing setup",
+      "prompt": {
+        "title": "What should the AI do with your words?",
+        "body": "After a take, an AI model rewrites the text the way you ask. Pick what it is told; you can edit it later under {{postProcessingPage}}.",
+        "own": "Write my own",
+        "ownDetail": "Your own instructions, for example \"Translate to English\" or \"Write it as a bullet list\".",
+        "ownDefaultName": "My prompt",
+        "ownPlaceholder": "Tell the AI what to do with the text, e.g. Fix the punctuation and remove filler words. Keep my wording."
+      },
+      "provider": {
+        "title": "Which AI should do it?",
+        "body": "An online one needs a key from its website; one running on this PC (LM Studio, FLM) needs only its model. The same list is under {{providersPage}}.",
+        "noModel": "No model yet",
+        "ready": "Ready",
+        "needsKey": "Needs a key",
+        "needsModel": "Needs a model",
+        "key": "API key",
+        "address": "Address",
+        "model": "Model",
+        "list": "List models",
+        "listFailed": "Could not list the models: {{reason}}"
+      },
+      "shortcut": {
+        "title": "Your post-processing shortcut",
+        "body": "Dictate with this shortcut when you want the AI to rework the text; your other shortcuts stay plain."
+      },
+      "try": {
+        "title": "Try it",
+        "body": "Edit the sample if you like and run it through the AI with your prompt.",
+        "sample": "so um I think we should uh meet on tuesday no wait wednesday at like three and bring the the report",
+        "run": "Run it",
+        "result": "The AI's version:",
+        "failed": "It did not work: {{reason}}"
+      },
+      "done": {
+        "title": "Post-processing is ready",
+        "body": "Dictate with the post-processing shortcut and the AI's version is pasted. The prompt, the AI and more options are under {{postProcessingPage}}."
+      }
+    },
+    "appearance": {
+      "name": "Appearance setup",
+      "sample": "Hi Anna, I will send the draft numbers on Friday so everyone can comment before the review next week.",
+      "intro": {
+        "title": "Your recording pill",
+        "body": "While you dictate, this pill shows what Handy Tool is doing. Here is what its parts are for. The next steps show every choice moving side by side, so you can compare them before you pick.",
+        "t": "T: the live text box, which shows your words while you speak. Click the T to switch the box on or off at any time; it glows while the box is on.",
+        "bars": "Sound bars: your voice. They move while the microphone hears you.",
+        "pause": "Pause: stops listening for a moment; press it again to go on. Shown when the Pause button is switched on.",
+        "cancel": "×: cancels the take. Nothing is transcribed or pasted."
+      },
+      "theme": {
+        "title": "Light or dark?",
+        "body": "The colours of every Handy Tool window. The recording pill stays dark in all of them.",
+        "system": "Follows Windows, and changes when Windows does.",
+        "light": "Always light.",
+        "dark": "Always dark."
+      },
+      "position": {
+        "title": "Where should the pill appear?",
+        "body": "While you dictate, at the bottom or the top of the screen, or not at all.",
+        "bottom": "In the middle, just above the taskbar.",
+        "top": "In the middle, at the top of the screen.",
+        "none": "No pill. The tray icon still shows that it is recording."
+      },
+      "size": {
+        "title": "How big should the pill be?",
+        "body": "Bigger is easier to see on a large or high-resolution screen."
+      },
+      "bars": {
+        "title": "How wide should the sound bars be?",
+        "body": "The bars in the middle of the pill show your voice.",
+        "narrow": {
+          "title": "Narrow",
+          "detail": "62 px, with more room around them."
+        },
+        "wide": {
+          "title": "Wide",
+          "detail": "77.5 px, bolder bars."
+        }
+      },
+      "progress": {
+        "title": "How should it show the progress?",
+        "body": "After you stop, the pill shows how far the transcription is.",
+        "line": "A thin line fills along the bottom.",
+        "ring": "A glowing light runs round the edge and stays lit up to the figure.",
+        "lap": "A thin light keeps circling the edge; the figure is in the text."
+      },
+      "glow": {
+        "title": "How strongly should it glow?",
+        "body": "The glow around the progress light. You can fine-tune it later with Glow Strength.",
+        "none": {
+          "title": "No glow",
+          "detail": "Just the line."
+        },
+        "soft": {
+          "title": "Soft"
+        },
+        "normal": {
+          "title": "Normal"
+        },
+        "strong": {
+          "title": "Strong"
+        },
+        "brightest": {
+          "title": "Brightest"
+        }
+      },
+      "liveText": {
+        "title": "Show your words while you speak?",
+        "body": "The live text box sits next to the pill and shows what you say as you talk; the T on the pill switches it on and off at any time. With it on, the words in the box become your text: the take is not transcribed again as a whole at the end, so the text is ready at once but can be a little less accurate.",
+        "off": {
+          "title": "Off",
+          "detail": "Only the pill."
+        },
+        "last_words": {
+          "title": "Last words",
+          "detail": "One line with your newest words."
+        },
+        "full_text": {
+          "title": "Whole text",
+          "detail": "Everything so far; the box grows as you talk."
+        },
+        "remote": "{{model}} runs online and gets the audio only after you stop, so the live text box can't work with it. Pick a model that runs on this PC on the Models page first."
+      },
+      "width": {
+        "title": "How wide should the box be?",
+        "body": "A wider box needs fewer lines for the same text."
+      },
+      "textSize": {
+        "title": "How big should the text be?",
+        "body": "The size of the words in the live text box."
+      },
+      "quiet": {
+        "title": "When you speak too quietly",
+        "body": "If your voice is too quiet for the model to hear well, the pill can tell you.",
+        "box": {
+          "title": "In a box under the pill",
+          "detail": "The pill keeps its sound bars."
+        },
+        "pill": {
+          "title": "In the pill",
+          "detail": "In place of the sound bars, for a moment."
+        },
+        "off": {
+          "title": "Don't tell me",
+          "detail": "No hint."
+        }
+      },
+      "done": {
+        "title": "Your look is set",
+        "body": "Your pill and live text box are set. More is in the settings: General › App for the pill (size, sound bars, progress, glow and colour, with a moving preview), and General › Transcription for the live text box (width, text size, lines, fade). You can also run this setup again from Setups."
+      },
+      "color": {
+        "title": "Which colour should it glow in?",
+        "body": "The colour of the progress light and its glow, the glowing T and the sound bars. For any other colour, use Progress Colour in General › App.",
+        "cyan": "Cyan (default)",
+        "blue": "Blue",
+        "violet": "Violet",
+        "pink": "Pink",
+        "amber": "Amber",
+        "green": "Green",
+        "custom": "Your colour"
+      }
+    },
+    "promo": {
+      "start": "Start setup",
+      "appearance": {
+        "title": "Appearance setup",
+        "text": "See every look moving before you pick it: the pill, its progress and the live text box."
+      },
+      "jumper": {
+        "title": "Jumper setup",
+        "text": "Have your dictation pasted into the right field automatically: set up your places and their shortcuts step by step, with a test at the end."
+      },
+      "postProcessing": {
+        "title": "Post-processing setup",
+        "text": "Let an AI clean up or reshape what you dictate: pick what it should do and which AI, step by step, with a try at the end."
+      }
     }
   },
   "onboarding": {
-    "subtitle": "To get started, choose a transcription model",
+    "title": "Choose a speech model",
     "recommended": "Recommended",
     "download": "Download",
     "downloading": "Downloading...",
@@ -88,51 +422,51 @@
     "models": {
       "small": {
         "name": "Whisper Small",
-        "description": "Fast and fairly accurate. GPU via whisper.cpp (Vulkan / Metal)."
+        "description": "Fast and accurate. 99 languages. GPU via whisper.cpp (Vulkan / Metal)."
       },
       "medium": {
         "name": "Whisper Medium",
-        "description": "Good accuracy, medium speed. GPU via whisper.cpp (Vulkan / Metal)."
+        "description": "Medium speed, accurate. 99 languages. GPU via whisper.cpp (Vulkan / Metal)."
       },
       "turbo": {
         "name": "Whisper Large V3 Turbo",
-        "description": "Balanced accuracy and speed (large-v3-turbo). GPU via whisper.cpp (Vulkan / Metal)."
+        "description": "Medium speed, very accurate. 99 languages. GPU via whisper.cpp (Vulkan / Metal)."
       },
       "large": {
         "name": "Whisper Large V3",
-        "description": "Full large-v3 (q5 quant). Best accuracy, slower; supports translation. GPU via whisper.cpp (Vulkan / Metal)."
+        "description": "Slow, top accuracy in 99 languages; can translate to English. GPU via whisper.cpp (Vulkan / Metal)."
       },
       "parakeet-tdt-0.6b-v2": {
         "name": "Parakeet V2",
-        "description": "English only. The best model for English speakers. CPU (ONNX runtime)."
+        "description": "Very fast, top accuracy. English only. CPU (ONNX runtime)."
       },
       "parakeet-tdt-0.6b-v3": {
         "name": "Parakeet V3",
-        "description": "Fast and accurate. CPU (ONNX runtime)."
+        "description": "Very fast, top accuracy. 25 European languages. CPU (ONNX runtime)."
       },
       "moonshine-base": {
         "name": "Moonshine Base",
-        "description": "Very fast, English only. Handles accents well. CPU (ONNX runtime)."
+        "description": "Very fast, fairly accurate. English only. CPU (ONNX runtime)."
       },
       "moonshine-tiny-streaming-en": {
         "name": "Moonshine V2 Tiny",
-        "description": "Ultra-fast, English only. CPU (ONNX runtime)."
+        "description": "Fastest, basic accuracy. English only. CPU (ONNX runtime)."
       },
       "moonshine-small-streaming-en": {
         "name": "Moonshine V2 Small",
-        "description": "Fast, English only. Good balance of speed and accuracy. CPU (ONNX runtime)."
+        "description": "Very fast, very accurate. English only. CPU (ONNX runtime)."
       },
       "moonshine-medium-streaming-en": {
         "name": "Moonshine V2 Medium",
-        "description": "English only. High quality. CPU (ONNX runtime)."
+        "description": "Fast, top accuracy. English only. CPU (ONNX runtime)."
       },
       "breeze-asr": {
         "name": "Breeze ASR",
-        "description": "Optimized for Taiwanese Mandarin. Code-switching support. GPU via whisper.cpp (Vulkan / Metal)."
+        "description": "Slow, very accurate. Made for Taiwanese Mandarin, also mixed with English. GPU via whisper.cpp (Vulkan / Metal)."
       },
       "sense-voice-int8": {
         "name": "SenseVoice",
-        "description": "Very fast. Chinese, English, Japanese, Korean, Cantonese. CPU (ONNX runtime)."
+        "description": "Fastest, accurate. Best for Chinese, Cantonese, Japanese and Korean; also English. CPU (ONNX runtime)."
       }
     },
     "errors": {
@@ -187,7 +521,10 @@
       "languageOnly": "{{language}} Only",
       "translation": "Can translate to English",
       "translate": "Translate to English"
-    }
+    },
+    "ready": "Ready",
+    "useModel": "Use this model",
+    "inUse": "Used for all dictation."
   },
   "settings": {
     "modelSettings": {
@@ -214,8 +551,8 @@
         "singleKey": "This key alone fires the shortcut everywhere, so you can no longer type it. Add a modifier such as Ctrl or Alt.",
         "bindings": {
           "transcribe": {
-            "name": "Transcribe Shortcut",
-            "description": "Press once to start recording and again to finish; the transcription is delivered into the window that had focus. Default: Ctrl+Space. It follows Transcription Mode and the Advanced page's Paste Method — for hold-to-record instead, use Push-to-Talk Shortcut."
+            "name": "Record/Transcribe Shortcut",
+            "description": "Press once to start recording and again to finish; the transcription is delivered into the window that had focus. Default: Ctrl+Space. It follows Transcription Mode and the Paste Method on More › Output — for hold-to-record instead, use Push-to-Talk Shortcut."
           },
           "cancel": {
             "name": "Cancel Shortcut",
@@ -235,7 +572,7 @@
           },
           "transcribe_ptt": {
             "name": "Push-to-Talk Shortcut",
-            "description": "**Hold this shortcut to record, release it to stop.** The microphone goes cold on release, so anything you say afterwards cannot leak into the text.\n\n**Default:** Ctrl+Shift+Space.\n\nIt has its own Transcription Mode (PTT) and its own Paste Method (PTT), so push-to-talk can behave differently from Transcribe Shortcut."
+            "description": "**Hold this shortcut to record, release it to stop.** The microphone goes cold on release, so anything you say afterwards cannot leak into the text.\n\n**Default:** Ctrl+Shift+Space.\n\nIt has its own Transcription Mode (PTT) and its own Paste Method (PTT), so push-to-talk can behave differently from Record/Transcribe Shortcut."
           },
           "transcribe_with_post_process": {
             "name": "Post-Processing Hotkey",
@@ -251,7 +588,7 @@
           },
           "anchor_set": {
             "name": "Set Anchor",
-            "description": "**Captures the text field you currently have focused as the Hot 1 destination.**\n\n**Default:** ctrl+shift+F1.\n\nOn its own it delivers nothing: set 'Jump slot action on finish' to 'Jump / deliver to slot' with the slot set to Hot 1 (Advanced → Transcription) to make your next transcription land there. Password boxes and Handy's own windows are refused."
+            "description": "**Captures the text field you currently have focused as the Hot 1 destination.**\n\n**Default:** ctrl+shift+F1.\n\nOn its own it delivers nothing: set 'Jump slot action on finish' to 'Jump / deliver to slot' with the slot set to Hot 1 (More › Output) to make your next transcription land there. Password boxes and Handy's own windows are refused."
           },
           "anchor_jump": {
             "name": "Jump to Anchor",
@@ -259,19 +596,19 @@
           },
           "jump_set_slot_1": {
             "name": "Set Jump Slot 1",
-            "description": "**Memorizes the field you currently have focused as static slot 1**, replacing whatever it held.\n\n**Default:** ctrl+alt+shift+1.\n\nThe slot is only a bookmark until something uses it: jump to it with 'Jump to Slot 1', or point a flow's 'Jump slot action on finish' (Advanced → Transcription) at Slot 1 to have transcriptions delivered there."
+            "description": "**Memorizes the field you currently have focused as static slot 1**, replacing whatever it held.\n\n**Default:** ctrl+alt+shift+1.\n\nThe slot is only a bookmark until something uses it: jump to it with 'Jump to Slot 1', or point a flow's 'Jump slot action on finish' (More › Output) at Slot 1 to have transcriptions delivered there."
           },
           "jump_set_slot_2": {
             "name": "Set Jump Slot 2",
-            "description": "Memorizes the field you currently have focused as static slot 2, replacing whatever it held. Default: ctrl+alt+shift+2. Jump back with 'Jump to Slot 2', or point a flow's 'Jump slot action on finish' (Advanced → Transcription) at Slot 2 to have transcriptions delivered there."
+            "description": "Memorizes the field you currently have focused as static slot 2, replacing whatever it held. Default: ctrl+alt+shift+2. Jump back with 'Jump to Slot 2', or point a flow's 'Jump slot action on finish' (More › Output) at Slot 2 to have transcriptions delivered there."
           },
           "jump_set_slot_3": {
             "name": "Set Jump Slot 3",
-            "description": "Memorizes the field you currently have focused as static slot 3, replacing whatever it held. Default: ctrl+alt+shift+3. Jump back with 'Jump to Slot 3', or point a flow's 'Jump slot action on finish' (Advanced → Transcription) at Slot 3 to have transcriptions delivered there."
+            "description": "Memorizes the field you currently have focused as static slot 3, replacing whatever it held. Default: ctrl+alt+shift+3. Jump back with 'Jump to Slot 3', or point a flow's 'Jump slot action on finish' (More › Output) at Slot 3 to have transcriptions delivered there."
           },
           "jump_set_slot_4": {
             "name": "Set Jump Slot 4",
-            "description": "Memorizes the field you currently have focused as static slot 4, replacing whatever it held. Default: ctrl+alt+shift+4. Jump back with 'Jump to Slot 4', or point a flow's 'Jump slot action on finish' (Advanced → Transcription) at Slot 4 to have transcriptions delivered there."
+            "description": "Memorizes the field you currently have focused as static slot 4, replacing whatever it held. Default: ctrl+alt+shift+4. Jump back with 'Jump to Slot 4', or point a flow's 'Jump slot action on finish' (More › Output) at Slot 4 to have transcriptions delivered there."
           },
           "jump_slot_1": {
             "name": "Jump to Slot 1",
@@ -302,15 +639,17 @@
           "set": "Failed to set shortcut: {{error}}",
           "reset": "Failed to reset shortcut to original value",
           "registrationFailed": "Some shortcuts could not be registered and are inactive: {{bindings}}. Another app may already be using them — pick a different combination in Settings."
-        }
+        },
+        "badge": {
+          "conflict": "Conflict",
+          "risky": "Risky"
+        },
+        "altGrConflictLayout": "A keyboard you use for {{layouts}} types a character with AltGr+{{key}}. Windows reports AltGr as Ctrl+Alt, so this shortcut would fire instead. Pick a chord without Ctrl+Alt.",
+        "altGrConflictSpace": "A keyboard you use for {{layouts}} types characters with AltGr, and AltGr is often still held for the space after one. Windows reports AltGr as Ctrl+Alt, so this shortcut would fire instead of that space. Pick a chord without Ctrl+Alt."
       },
       "pauseButton": {
         "label": "Pause button",
         "description": "**Adds a pause button to the recording overlay**, so one take can span a break: while paused nothing is recorded, and resuming continues the same take.\n\n**Default:** Off.\n\nOnce it is on, a Pause shortcut can be set below. After 10 minutes paused the microphone is released (its indicator goes out) until you resume."
-      },
-      "speedIndicator": {
-        "label": "PC speed on the pill",
-        "description": "**Shows a PC icon with a percentage on the left of the recording pill**: how fast this PC is transcribing compared with its own normal for the model you use. 100% is normal; amber below 70%, red below 50%.\n\n**Default:** Off.\n\nIt needs a few takes with a model before it has a normal to compare with, and it updates each time the app transcribes — every 1.5 seconds with the live text box on, every 20 to 45 seconds in Post-Recording mode."
       },
       "undoWord": {
         "label": "Undo last word",
@@ -324,6 +663,16 @@
           "worksWith": "It needs a model that runs on this PC, because remote engines only get the audio after you stop. It works with: {{models}}.",
           "noLocal": "It needs a model that runs on this PC, because remote engines only get the audio after you stop. Download one on the Models page."
         }
+      },
+      "liveTextAfterStop": {
+        "label": "Show the text as it's transcribed",
+        "description": "**When a take without the live text box stops, the box appears and the transcript is typed into it as it comes in** — the parts already transcribed at once, the rest as soon as it is ready. Just to watch: the text is delivered as usual.\n\n**Default:** Off.\n\nIt uses the live text box's style and width. With the live text box on, every take is live and shows its text anyway."
+      },
+      "liveTradeoffs": {
+        "title": "Live transcription: good to know",
+        "accuracy": "The text you see is the text you get, so it is a little less accurate than Post-Recording, most of all on long stretches without pauses. Post-Recording gives the most accurate text.",
+        "cpu": "It uses more CPU and battery while you talk.",
+        "undo": "Undo last word works only with Parakeet models."
       },
       "liveTextMode": {
         "title": "Live text shows",
@@ -342,6 +691,22 @@
         "medium": "Medium",
         "wide": "Wide",
         "extraWide": "Extra wide"
+      },
+      "liveTextHeight": {
+        "title": "Box height",
+        "description": "How many lines the live text box shows in Whole text mode before the oldest lines slide out. **Default:** Medium (6 lines).",
+        "small": "Small (3 lines)",
+        "medium": "Medium (6 lines)",
+        "large": "Large (10 lines)",
+        "extraLarge": "Extra large (16 lines)"
+      },
+      "liveTextSize": {
+        "title": "Text size",
+        "description": "How big the text in the live text box is. **Default:** Normal.",
+        "small": "Small",
+        "normal": "Normal",
+        "large": "Large",
+        "extraLarge": "Extra large"
       },
       "anchor": {
         "title": "Anchor & Deliver",
@@ -394,7 +759,7 @@
         },
         "idleBehavior": {
           "title": "When no recording is active",
-          "description": "**What happens when you press the Transcribe & Submit Shortcut while nothing is being recorded.**\n\n**Default:** Start a recording — one press starts, the next pastes and submits.\n\nChoose Do nothing to make this key a pure finisher: you start takes with the Transcribe Shortcut and press this one only when you want that result pasted and sent.",
+          "description": "**What happens when you press the Transcribe & Submit Shortcut while nothing is being recorded.**\n\n**Default:** Start a recording — one press starts, the next pastes and submits.\n\nChoose Do nothing to make this key a pure finisher: you start takes with the Record/Transcribe Shortcut and press this one only when you want that result pasted and sent.",
           "options": {
             "startNormal": "Start a recording",
             "doNothing": "Do nothing"
@@ -440,7 +805,7 @@
         "title": "Paste last transcription",
         "pasteMethod": {
           "title": "Paste method",
-          "description": "**How the Paste Last Transcription shortcut puts the text into the focused window** — separate from the Advanced page's Paste Method, so you can tune it for the one stubborn target.\n\n**Default:** Clipboard (Ctrl+V).\n\n- Clipboard (Shift+Insert): try it in a terminal.\n- Direct: types the characters instead of pasting.\n- None: only places the text on the clipboard so you can paste it by hand."
+          "description": "**How the Paste Last Transcription shortcut puts the text into the focused window** — separate from the Paste Method on More › Output, so you can tune it for the one stubborn target.\n\n**Default:** Clipboard (Ctrl+V).\n\n- Clipboard (Shift+Insert): try it in a terminal.\n- Direct: types the characters instead of pasting.\n- None: only places the text on the clipboard so you can paste it by hand."
         },
         "clipboard": {
           "title": "Clipboard",
@@ -496,12 +861,11 @@
       },
       "altGrWarning": {
         "label": "Warn about AltGr shortcuts",
-        "description": "**Shows an amber warning next to shortcuts that AltGr can also type.** Windows reports AltGr as Ctrl+Alt, so a shortcut like Ctrl+Alt+O fires when you type ó with AltGr, and the character never arrives.\n\n**Default:** On. Switch it off if you never type characters with AltGr.",
+        "description": "**Shows an amber warning next to shortcuts that AltGr also types with.** Windows reports AltGr as Ctrl+Alt, so a shortcut like Ctrl+Alt+O fires when you type ó with AltGr, and the character never arrives. On Windows it warns only when one of your keyboards types something with AltGr on that key (or AltGr+Shift, for a chord with Shift), and names the language the keyboard belongs to.\n\n**Default:** On. Switch it off if you never type characters with AltGr.",
         "turnOff": "Turn off this warning"
       }
     },
     "models": {
-      "title": "Transcription Models",
       "description": "**Choose which speech model transcribes your dictation** — models differ in accuracy, speed and how much memory they hold while loaded.\n\n**Default:** nothing selected on a fresh install; onboarding downloads and selects your first model.\n\nYour choice also decides whether Language and Translate to English are offered on the General page, and the Translator uses this same model whenever its Batch model is left on \"Same as dictation (default)\".",
       "yourModels": "Downloaded Models",
       "availableModels": "Available to Download",
@@ -523,7 +887,7 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "**Marks remote desktop windows by name.** A delivery target whose app, window class or control class contains one of these fragments (case-insensitive) is treated as a remote desktop.\n\nRemote targets use the Remote value of 'Paste delay after jump (Windows)' and 'Submit delay before Enter (Windows)' on Advanced → Transcription instead of the Local one. Since 1.3.0 an already-focused remote window is classified too, not only a jump target — which is what makes the submit delay apply there.\n\n**Default:** msrdc, mstsc, Citrix.\n\nAdd the process name your RDP or Citrix client uses if deliveries into it keep getting swallowed. An empty list treats every target as local.",
+        "description": "**Marks remote desktop windows by name.** A delivery target whose app, window class or control class contains one of these fragments (case-insensitive) is treated as a remote desktop.\n\nRemote targets use the Remote value of 'Paste delay after jump (Windows)' and 'Submit delay before Enter (Windows)' on More › Output instead of the Local one. Since 1.3.0 an already-focused remote window is classified too, not only a jump target — which is what makes the submit delay apply there.\n\n**Default:** msrdc, mstsc, Citrix.\n\nAdd the process name your RDP or Citrix client uses if deliveries into it keep getting swallowed. An empty list treats every target as local.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
@@ -535,8 +899,8 @@
         "title": "Hot slot (Anchor & Deliver)",
         "optionsMoved": {
           "title": "Delivery options",
-          "description": "**Not a setting — a signpost.** What a jump actually does with a slot is configured per flow on Advanced → Transcription:\n\n- 'Jump slot action on start'\n- 'Jump slot action on finish'\n- 'Track last output location'\n- 'Return focus after delivery'\n\nEach exists once for Transcribe and once for Transcribe & Submit.",
-          "hint": "Configured in the Transcribe and Transcribe & Submit groups on the General page."
+          "description": "**Not a setting — a signpost.** What a jump actually does with a slot is configured per flow on More › Output:\n\n- 'Jump slot action on start'\n- 'Jump slot action on finish'\n- 'Track last output location'\n- 'Return focus after delivery'\n\nEach exists once for Transcribe and once for Transcribe & Submit.",
+          "hint": "Configured in the Transcribe and Transcribe & Submit groups on More › Output."
         }
       },
       "hot2": {
@@ -591,10 +955,10 @@
       }
     },
     "translator": {
-      "title": "Translator",
+      "title": "Watched folders",
       "enabled": {
         "label": "Watch folders",
-        "description": "**Transcribes every new .wav, .ogg or .opus file that lands in a watched folder** into a .txt file next to it, using your current model, Language and Translate to English settings.\n\n**Default:** off.\n\nFiles already sitting in a folder when watching starts are deliberately left alone. The folders themselves are chosen under Add a folder."
+        "description": "**Transcribes every new .wav, .mp3, .m4a, .aac, .flac, .ogg or .opus file that lands in a watched folder** into a .txt file next to it, using your current model, Language and Translate to English settings.\n\n**Default:** off.\n\nFiles already sitting in a folder when watching starts are deliberately left alone. The folders themselves are chosen under Add a folder."
       },
       "priority": {
         "title": "Priority",
@@ -630,7 +994,7 @@
         "counters": "{{done}} done, {{failed}} failed this session"
       },
       "folders": {
-        "title": "Watched folders",
+        "title": "Folders",
         "none": "No folders",
         "emptyTitle": "No watched folders",
         "emptyDescription": "Add a folder to start watching it for new recordings.",
@@ -642,6 +1006,79 @@
         "operationFailed": "Could not update folder: {{reason}}",
         "toggleAriaLabel": "Watch folder {{name}}",
         "removeAriaLabel": "Stop watching folder {{name}}"
+      }
+    },
+    "files": {
+      "model": {
+        "title": "Model",
+        "description": "**Which speech model transcribes the file.** Models that aren't downloaded yet are listed too; pick one and download it first.\n\n**Default:** your dictation model, and the one you pick is remembered. Another model loads beside your dictation model, so dictation stays ready, and unloads again when the file is done.",
+        "dictation": "{{name}} (your dictation model)",
+        "notDownloaded": "{{name}} (not downloaded)",
+        "groups": {
+          "dictation": "Your dictation model",
+          "downloaded": "Downloaded",
+          "notDownloaded": "Not downloaded"
+        },
+        "downloadSize": "Download · {{size}}"
+      },
+      "transcribe": {
+        "title": "Transcribe a file",
+        "choose": {
+          "title": "Choose an audio file",
+          "description": "**Transcribes an audio file you pick**: WAV, MP3, M4A, AAC, FLAC, OGG or Opus, such as a phone recording, with the model chosen above and your language settings.\n\nThe file is cut at its pauses into pieces of up to about 40 seconds, and each piece is transcribed once: no live text, no second pass. The original file is only read, never changed.",
+          "button": "Choose file…"
+        },
+        "audioFiles": "Audio files",
+        "decoding": "Reading {{file}}…",
+        "progress": "{{done}} of {{total}} · {{percent}}%",
+        "cancel": "Stop",
+        "cancelled": "Stopped: {{file}}",
+        "failed": "Could not transcribe {{file}}: {{error}}",
+        "startFailed": "Could not start: {{reason}}",
+        "done": "{{file}} is transcribed",
+        "copy": "Copy text",
+        "savedTo": "Text saved to {{path}}",
+        "saveFailed": "Could not save: {{error}}",
+        "empty": "No speech was found in this file."
+      },
+      "options": {
+        "saveText": {
+          "title": "Save the text",
+          "description": "**Where the transcript is saved as a .txt**, named after the audio file. If the name is taken, a number is added; nothing is overwritten.\n\n**Default:** Ask every time: a pop-up asks when you pick a file, and can remember your choice. The text is shown to copy either way.",
+          "options": {
+            "ask": "Ask every time",
+            "handy_folder": "In Handy's folder",
+            "next_to_file": "Next to the recording",
+            "dont_save": "Don't save"
+          }
+        },
+        "keepAudio": {
+          "title": "Keep a copy of the audio",
+          "description": "**Copies the audio file into the folder below**, next to its text, so you still have it if the original is moved or deleted.\n\n**Default:** off. The original is never moved or changed."
+        },
+        "folder": {
+          "title": "Folder",
+          "description": "**Where the text goes when it is saved in Handy's folder, and where audio copies go.**\n\n**Default:** a \"files\" folder inside Handy's own data folder.",
+          "change": "Change",
+          "reset": "Back to Handy's folder"
+        }
+      },
+      "ask": {
+        "title": "Where should the text be saved?",
+        "handyFolder": "In Handy's folder",
+        "nextToFile": "Next to the recording",
+        "dontSave": "Don't save",
+        "dontSaveHint": "The text is still shown to copy and kept in the list.",
+        "remember": "Remember my choice",
+        "rememberHint": "You can change it later under Save the text."
+      },
+      "log": {
+        "title": "Transcribed files",
+        "empty": "Nothing transcribed yet. Every file you transcribe here is listed with its text.",
+        "showMore": "Show all",
+        "showLess": "Show less",
+        "reveal": "Show in folder",
+        "delete": "Remove from the list"
       }
     },
     "sound": {
@@ -657,6 +1094,20 @@
         "description": "**Keeps the microphone open for a few minutes after each take**, so the next one starts at once instead of waiting for an idle microphone to wake up (up to about a second).\n\n**Default:** Off — the microphone closes as soon as a take ends.\n\nWhile it stays open, your system microphone indicator stays lit. Hidden when Always-On Microphone is on.",
         "off": "Off",
         "minutes": "{{minutes}} min"
+      },
+      "micWarmup": {
+        "title": "Wait for the microphone to warm up",
+        "description": "**After an idle microphone starts, the recording overlay keeps showing \"Starting mic...\" until it has really warmed up.** Some microphones start much quieter and fade in over a second or so; words spoken into that were dropped as noise. The wait is the average of this microphone's last few cold starts, measured by the app itself.\n\n**Default:** On.\n\nOnly a cold start waits — a microphone kept ready starts at once. Hidden when Always-On Microphone is on.",
+        "measured": "Measured on this PC: {{seconds}} s.",
+        "notMeasured": "Not measured yet — it measures itself on the next cold start."
+      },
+      "tooQuiet": {
+        "title": "Warn when you speak too quietly",
+        "description": "**When you speak too quietly for your words to be kept, the recording overlay says \"Too quiet — speak up\" for a moment**. It reacts to sound that is almost speech and clearly above the room's noise for about 0.7 s; silence, music and typing don't set it off. It can't tell when words were heard wrong — the live text box shows that.\n\n**Default:** On.",
+        "box": {
+          "title": "Show it in its own box",
+          "description": "**\"Too quiet — speak up\" appears in a small box just under the recording overlay, and the overlay keeps its sound bars.** With the overlay at the bottom of the screen, the box sits in the gap above the taskbar, so it never covers the live text box. Off: the overlay shows it in place of its sound bars (with the pause button on, longer translations get cut off there).\n\n**Default:** On."
+        }
       },
       "audioFeedback": {
         "label": "Audio Feedback",
@@ -674,7 +1125,6 @@
       }
     },
     "advanced": {
-      "title": "Advanced",
       "groups": {
         "app": "App",
         "output": "Output",
@@ -739,6 +1189,36 @@
           "bottom": "Bottom",
           "top": "Top"
         }
+      },
+      "reopenLastPage": {
+        "title": "Reopen Last Page",
+        "description": "**Opens Handy Tool on the page you had open when you closed it** (for example History) instead of General.\n\n**Default:** On."
+      },
+      "overlaySize": {
+        "title": "Overlay Size",
+        "description": "**How big the recording overlay is**, and the \"Too quiet\" box under it. Larger is easier to see on a big or high-resolution screen.\n\n**Default:** Normal.",
+        "normal": "Normal",
+        "large": "Large",
+        "extraLarge": "Extra large"
+      },
+      "soundBarsWide": {
+        "title": "Wide Sound Bars",
+        "description": "**Wider sound bars on the recording overlay:** 2.5 px bars and gaps (77.5 px) instead of 2 px (62 px).\n\n**Default:** Off."
+      },
+      "progressStyle": {
+        "title": "Progress Style",
+        "description": "**How the recording overlay shows how far a transcription is:** a thin line filling along its bottom; a glowing light running round its edge from the bottom centre, lit behind it up to the figure; or a thin light circling the edge, one lap every 1.6 seconds (the figure is in the text). With reduced motion the circling light becomes the line.\n\n**Default:** Line.",
+        "line": "Line along the bottom",
+        "ring": "Light around the edge",
+        "lap": "Light circling the edge"
+      },
+      "progressLineGlow": {
+        "title": "Glowing Line",
+        "description": "**The progress line glows like the light around the edge**, its aura reaching past the overlay's edge.\n\n**Default:** Off. Only with Progress Style: Line along the bottom."
+      },
+      "progressGlow": {
+        "title": "Glow Strength",
+        "description": "**How strongly the progress light glows**: \"Light around the edge\", and the line while \"Glowing Line\" is on. 0% turns the glow off, 200% doubles it.\n\n**Default:** 100%."
       },
       "pasteMethodPtt": {
         "title": "Paste Method (PTT)",
@@ -823,7 +1303,7 @@
       },
       "transcriptionMode": {
         "title": "Transcription Mode",
-        "description": "**Live shows the text building up while you speak; Post-Recording records quietly and transcribes in the background.**\n\n**Default:** Post-Recording.\n\nEither way most of the work is done while you talk, so the text is ready moments after you stop. In Live mode the text you saw is the text you get. This governs Transcribe Shortcut only, and API transcription models always behave as Post-Recording.",
+        "description": "**Live shows the text building up while you speak; Post-Recording records quietly and transcribes in the background.**\n\n**Default:** Post-Recording.\n\nEither way most of the work is done while you talk, so the text is ready moments after you stop. In Live mode the text you saw is the text you get. This governs Record/Transcribe Shortcut only, and API transcription models always behave as Post-Recording.",
         "options": {
           "live": "Live",
           "postRecording": "Post-Recording"
@@ -869,13 +1349,11 @@
       "customWords": {
         "title": "Custom Words",
         "description": "**Names, products and jargon the engine keeps getting wrong.** After each transcription Handy finds similar-sounding words and substitutes your spelling instead.\n\n**Default:** empty.\n\nAdd whole words as you hit them. If it starts correcting things you did not mean, lower Word Correction Threshold on the Debug page.",
-        "placeholder": "Add a word",
-        "add": "Add",
+        "placeholder": "Add a word, then press Enter",
         "remove": "Remove {{word}}",
         "duplicate": "\"{{word}}\" already exists"
       },
       "tabs": {
-        "app": "App",
         "output": "Output",
         "typer": "Typer",
         "providers": "Providers",
@@ -924,7 +1402,7 @@
         "empty": "No recordings yet"
       },
       "llmProviders": {
-        "hint": "One registry of providers — name, endpoint, key, model and cost per million tokens — shared by Token Count, Model Testing and Post Process. Each slot keeps a stable id (#1, #2, …) that those screens reference, so a change here applies everywhere; unticking Enable this provider removes the slot from all three. Default: the three local slots are on and every cloud slot is off until you paste a key.",
+        "hint": "One registry of providers — name, endpoint, key, model and cost per million tokens — shared by Token Count, Model Testing and Post-processing. Each slot keeps a stable id (#1, #2, …) that those screens reference, so a change here applies everywhere; unticking Enable this provider removes the slot from all three. Default: the three local slots are on and every cloud slot is off until you paste a key.",
         "enable": "Enable this provider",
         "namePlaceholder": "Provider name",
         "baseUrl": "Base URL",
@@ -1037,10 +1515,21 @@
       "systemAudioGain": {
         "title": "System audio level",
         "description": "How loud the system audio is relative to your voice. Raise it if the other person comes out too quiet to transcribe; lower it if they drown you out. Only the system audio is scaled — your microphone is never touched."
+      },
+      "progressColor": {
+        "title": "Progress Colour",
+        "description": "**The colour of the pill's glowing parts:** the progress light and its glow (the line, the light around the edge and the circling light), the glowing T and the sound bars. Chosen with three sliders: Hue (which colour), Saturation (how vivid) and Lightness. The swatch shows the result; the reset button brings back the default.\n\n**Default:** cyan.",
+        "hue": "Hue",
+        "saturation": "Saturation",
+        "lightness": "Lightness",
+        "reset": "Back to the default colour"
+      },
+      "pillPreview": {
+        "title": "Preview",
+        "description": "**The recording pill as the settings around it make it, moving:** recording on the left (the T lit while the live text box is on, the sound bars) and transcribing on the right, its progress running from 0 to 100% over and over with your progress style, glow and colour, at your Overlay Size."
       }
     },
     "postProcessing": {
-      "title": "Post Process",
       "hotkey": {
         "title": "Hotkey"
       },
@@ -1081,7 +1570,7 @@
           "title": "Temperature",
           "description": "Lower is more deterministic and firm (0 = most literal); higher is more creative."
         },
-        "registryNote": "The provider's API key, model, and base URL are configured in Advanced → Registered LLM Providers."
+        "registryNote": "The provider's API key, model, and base URL are configured in More › Providers › Registered LLM Providers."
       },
       "disableThinking": {
         "label": "Disable Thinking",
@@ -1118,7 +1607,7 @@
       "copied": "Copied",
       "streamingHint": "Text appears progressively as you speak only when the shortcut you pressed—Transcribe or Push-to-Talk—is set to Live and you’re using a local model.",
       "finalHint": "In Post-Recording mode, or with API Transcription or OpenRouter Transcription, the full transcript appears all at once when recording ends; set each shortcut’s mode in",
-      "advancedTranscription": "Advanced → Transcription",
+      "advancedTranscription": "General › Transcription",
       "finalHintSuffix": "."
     },
     "history": {
@@ -1194,7 +1683,7 @@
       },
       "postProcessingToggle": {
         "label": "Post Processing",
-        "description": "**Turns on the optional AI clean-up pass** and adds a Post Process page to the sidebar, where you choose the provider and the prompt.\n\n**Default:** Off.\n\nYour normal Transcribe Shortcut is unaffected: clean-up runs only on the separate Post-Processing Hotkey, and History keeps the raw transcription next to the processed one."
+        "description": "**Turns on the optional AI clean-up pass**; its hotkey, provider and prompt appear right below this switch.\n\n**Default:** Off.\n\nYour normal Record/Transcribe Shortcut is unaffected: clean-up runs only on the separate Post-Processing Hotkey, and History keeps the raw transcription next to the processed one."
       },
       "muteWhileRecording": {
         "label": "Mute While Recording",
@@ -1271,7 +1760,8 @@
       "loading": "Loading models…",
       "error": "Failed to load models",
       "noMatches": "No matching models — type to use a custom id"
-    }
+    },
+    "revealHint": "Switch it on to see more settings."
   },
   "common": {
     "loading": "Loading...",
@@ -1327,8 +1817,12 @@
     "pause": "Pause",
     "resume": "Resume",
     "liveTextBox": "Live text box",
-    "slowPc": "Transcribing at {{percent}}% of this PC's normal speed",
-    "speedUnknown": "PC speed: not measured yet"
+    "menu": {
+      "changeShortcut": "Change shortcut…",
+      "liveTextSettings": "Live text box settings…",
+      "hidePause": "Hide the pause button"
+    },
+    "tooQuiet": "Too quiet — speak up"
   },
   "flm": {
     "windowsApplicationControlBlocked": "Windows Application Control blocked flm.exe because it is not signed. The NPU engine is unavailable. Choose a different transcription model.",
@@ -1352,7 +1846,7 @@
     "providerOption": "{{name}} (provider)",
     "configureProviders": "Configure providers",
     "noProviders": "No providers configured.",
-    "chipDisabled": "Not configured — switch it on with Enable this provider under Advanced > Providers > Registered LLM Providers.",
+    "chipDisabled": "Not configured — switch it on with Enable this provider under More › Providers › Registered LLM Providers.",
     "chips": {
       "cl100k_base": "cl100k (GPT-4)",
       "o200k_base": "o200k (GPT-4o)",
@@ -1380,7 +1874,6 @@
     }
   },
   "keyboardTyper": {
-    "title": "Keyboard Typer",
     "description": "**Sends this text to the focused window as individual simulated keystrokes**, so it works where pasting is blocked — remote consoles, VM viewers, password prompts.\n\n- Go: starts the Start delay countdown (default 10 s) so you can click into the target window first.\n- Type Text Shortcut: when you are already in the target, typing begins after about a second.\n\nThe text lives in memory only — it is never written to your settings, to History, or to the logs.",
     "placeholder": "Enter the text to type...",
     "go": "Go",
@@ -1398,7 +1891,7 @@
     "shortcut": {
       "label": "Shortcut:",
       "unset": "not set",
-      "hint": "(change it in Advanced settings; press it again to cancel)"
+      "hint": "(change it on the Shortcuts page; press it again to cancel)"
     },
     "status": {
       "idle": "Click Go, then focus the target window — or use the shortcut directly in the target app.",
@@ -1410,7 +1903,7 @@
     }
   },
   "modelTesting": {
-    "description": "**Sends one prompt to every model you tick under Run and lays the answers out side by side** with token counts, cost and round-trip time. Models ticked under Judge then score all of those answers using your judge prompt.\n\n**Default:** nothing selected and both prompts empty.\n\nThe list comes from Advanced > Registered LLM Providers, so a run uses your own API keys — your prompt leaves this machine and, for paid providers, costs real money.",
+    "description": "**Sends one prompt to every model you tick under Run and lays the answers out side by side** with token counts, cost and round-trip time. Models ticked under Judge then score all of those answers using your judge prompt.\n\n**Default:** nothing selected and both prompts empty.\n\nThe list comes from More › Providers › Registered LLM Providers, so a run uses your own API keys — your prompt leaves this machine and, for paid providers, costs real money.",
     "providersLabel": "Models",
     "configureProviders": "Configure providers",
     "selectAll": "Select all to run",
@@ -1418,7 +1911,7 @@
     "run": "Run",
     "judge": "Judge",
     "costPerM": "in ${{input}} · out ${{output}} /1M",
-    "noProviders": "No chat-capable providers configured. Add one in Advanced → Registered LLM Providers.",
+    "noProviders": "No chat-capable providers configured. Add one in More › Providers › Registered LLM Providers.",
     "mainPromptLabel": "Prompt for all models",
     "mainPromptPlaceholder": "The prompt sent to every selected model…",
     "judgePromptLabel": "Judge / arbiter prompt (optional)",
@@ -1483,6 +1976,7 @@
   "floating": {
     "waiting": "Waiting for transcription…",
     "listening": "Listening…",
+    "listeningShort": "Listening",
     "copy": "Copy",
     "copied": "Copied"
   },
@@ -1491,5 +1985,153 @@
       "message": "Update to {{expected}} did not complete — still running {{actual}}. The installer was launched but nothing was replaced; a security policy may have blocked it.",
       "download": "Download manually"
     }
+  },
+  "whatsNew": {
+    "intro": "The new and changed things of the last updates. Show me opens the setting.",
+    "release": "Version {{version}}",
+    "show": "Show me",
+    "items": {
+      "files": {
+        "title": "Transcribe a file",
+        "description": "The new Files page transcribes an audio file you pick (WAV, MP3, M4A, AAC, FLAC, OGG, Opus) with the model you choose, and keeps a list of transcribed files. The watched folders moved there too."
+      },
+      "helpMode": {
+        "title": "Help mode",
+        "description": "The ? at the top right of every page: point at a setting to read what it does. It replaces the \"i\" on every row."
+      },
+      "setups": {
+        "title": "Jumper and Post-processing setups",
+        "description": "Two guided setups on the Setups page: remember places and jump to them, or connect an AI that cleans up your text."
+      },
+      "firstSetup": {
+        "title": "A setup guide on the first start",
+        "description": "Languages, a suggested speech model, shortcuts, the microphone and a first try. Run it again from the Setups page."
+      },
+      "modelRatings": {
+        "title": "Model ratings you can compare",
+        "description": "The speed and accuracy bars now come from measured results, and the descriptions match them."
+      },
+      "progressStyle": {
+        "title": "Light around the edge",
+        "description": "Progress Style: while transcribing, a glowing light runs round the pill instead of the line along its bottom."
+      },
+      "overlaySize": {
+        "title": "Overlay Size",
+        "description": "Make the recording pill bigger: 125% or 150%."
+      },
+      "reopenLastPage": {
+        "title": "Reopen Last Page",
+        "description": "Handy Tool opens on the page you had open."
+      },
+      "liveTextSize": {
+        "title": "Live text box: size and height",
+        "description": "Choose the text size, and how many lines the whole-text box shows."
+      },
+      "micWarmup": {
+        "title": "Wait for the microphone to warm up",
+        "description": "A microphone that starts quiet no longer loses your first words."
+      },
+      "tooQuiet": {
+        "title": "Too quiet — speak up",
+        "description": "A hint when you speak too quietly for the model to hear you well."
+      },
+      "newIcon": {
+        "title": "New app icon",
+        "description": "The new wave-caret icon in the app, the installer, the taskbar and Start."
+      },
+      "holdUndo": {
+        "title": "Hold to remove words",
+        "description": "For live transcription (the live text box on): Ctrl+Backspace removes the last word, and holding it keeps removing. Switch it on with Undo last word in General."
+      },
+      "liveTranscript": {
+        "title": "The live text is your transcript",
+        "description": "With \"Live text box\" on, what the box shows is the transcript: at stop only your last second or two is added, so the text is ready at once."
+      },
+      "historyTabs": {
+        "title": "History tabs and statistics",
+        "description": "History has Recordings, Statistics and Settings tabs. Statistics counts your recordings and their length per day, week, month and year."
+      },
+      "liveTextFade": {
+        "title": "Fade when you stop talking",
+        "description": "The live text fades 3 seconds after it stops changing; your next words bring it back."
+      },
+      "appearanceSetup": {
+        "title": "Appearance setup",
+        "description": "A guided setup that shows every look moving before you pick it: the pill, its progress and the live text box. On the Setups page and at the top of General › App."
+      },
+      "progressColor": {
+        "title": "Your own progress colour",
+        "description": "Pick the colour of the progress light and its glow, the glowing T and the sound bars with three sliders: hue, saturation and lightness."
+      },
+      "liveTextBox": {
+        "title": "Live text box",
+        "description": "A small box next to the recording pill shows your words as you speak: the newest line or the whole text. The T on the pill or its own shortcut switches it."
+      },
+      "newLook": {
+        "title": "A new look",
+        "description": "The whole app is redesigned, in light and dark. The recording pill is smaller, with longer sound bars, and the tray icon is new."
+      },
+      "newLayout": {
+        "title": "A new sidebar with search",
+        "description": "The pages you use most are in the sidebar; the old Advanced tabs and Keyboard Typer are under More, the App settings on General. The search box finds any setting."
+      },
+      "shortcutsPage": {
+        "title": "Every shortcut in one place",
+        "description": "The Shortcuts page lists all shortcuts, and warns when two share the same keys or when a single key would fire as you type."
+      },
+      "shortcutNone": {
+        "title": "Switch a shortcut off",
+        "description": "The × on a shortcut sets it to None, so its keys work in other apps again, for example Escape for Cancel. Reset brings it back."
+      },
+      "pauseButton": {
+        "title": "Pause button",
+        "description": "Pause and resume a take from the recording pill, or with its own shortcut. Switch it on in General."
+      },
+      "progressPercent": {
+        "title": "Transcribing 42%",
+        "description": "The pill shows how far the transcription is, and its × still cancels while it runs."
+      },
+      "micStatus": {
+        "title": "The pill tells you about the microphone",
+        "description": "\"Starting mic...\" until it really records, and \"No microphone\" or \"Microphone blocked\" when it cannot start, instead of recording silence."
+      },
+      "micKeepWarm": {
+        "title": "Keep microphone ready",
+        "description": "Keeps the microphone open for a few minutes after a take, so the next one starts at once."
+      },
+      "liveTextAfterStop": {
+        "title": "Show the text as it's transcribed",
+        "description": "Without the live text box, the box appears when you stop and your text is typed into it as it comes in."
+      },
+      "pillMenus": {
+        "title": "Right-click the pill's buttons",
+        "description": "The T, pause and × on the pill have menus: switch what the box shows, change a shortcut, or keep a take in History only."
+      },
+      "trayClick": {
+        "title": "Click the tray icon to open",
+        "description": "A left click on the tray icon opens the window; the menu is on right click."
+      },
+      "blockedUpdate": {
+        "title": "Blocked updates are reported",
+        "description": "If an update did not install (for example, Windows Smart App Control blocked it), a banner says so, with a link to download it yourself."
+      },
+      "macBuilds": {
+        "title": "macOS builds",
+        "description": "Handy Tool now comes for Intel and Apple Silicon Macs too. They are not signed yet."
+      },
+      "soundSource": {
+        "title": "Sound source moved",
+        "description": "Sound source is now in General › Sound, right above the microphone picker. Windows only."
+      },
+      "systemAudioControls": {
+        "title": "System audio delay and level",
+        "description": "When system audio is recorded, set how far it lags your microphone and how loud it is next to it."
+      },
+      "linuxBuilds": {
+        "title": "Linux packages",
+        "description": ".deb, .rpm and .AppImage packages for x86_64 and ARM64. They have not been tested yet."
+      }
+    },
+    "installed": "Installed"
   }
 }

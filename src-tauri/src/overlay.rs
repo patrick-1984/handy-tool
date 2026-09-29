@@ -7,6 +7,10 @@ use tauri::{AppHandle, Emitter, Manager};
 /// If the generation changed between spawning and waking, the hide is stale and skipped.
 static OVERLAY_GENERATION: AtomicU64 = AtomicU64::new(0);
 
+/// The pill showed a "Transcribing N%" figure since it was last shown: its hide
+/// waits a moment longer for the figure to run up to 100% first.
+static PROGRESS_SHOWN: AtomicBool = AtomicBool::new(false);
+
 #[cfg(not(target_os = "macos"))]
 use log::debug;
 
@@ -34,19 +38,33 @@ tauri_panel! {
     })
 }
 
-const OVERLAY_WIDTH: f64 = 204.0;
-/// Extra room on the pill for the speed chip, when it is switched on.
-const SPEED_CHIP_WIDTH: f64 = 44.0;
+/// The pill at its normal size; the Pill size setting scales it (the page zooms).
+const BASE_OVERLAY_WIDTH: f64 = 188.0;
+const BASE_OVERLAY_HEIGHT: f64 = 36.0;
 
-/// The pill's width: wider while the speed chip is on.
-fn overlay_width(settings: &settings::AppSettings) -> f64 {
-    if settings.speed_indicator_enabled {
-        OVERLAY_WIDTH + SPEED_CHIP_WIDTH
-    } else {
-        OVERLAY_WIDTH
-    }
+/// Transparent room round the pill inside its window: the progress light runs
+/// centred on the pill's border (half of it outside), with its glow.
+const OVERLAY_MARGIN: f64 = 10.0;
+
+/// The pill's size for the current settings.
+fn overlay_size(settings: &settings::AppSettings) -> (f64, f64) {
+    let scale = settings.pill_scale_factor();
+    (BASE_OVERLAY_WIDTH * scale, BASE_OVERLAY_HEIGHT * scale)
 }
-const OVERLAY_HEIGHT: f64 = 36.0;
+
+/// The pill's window: the pill plus its margin on every side.
+fn overlay_window_size(settings: &settings::AppSettings) -> (f64, f64) {
+    let (width, height) = overlay_size(settings);
+    let margin = OVERLAY_MARGIN * settings.pill_scale_factor();
+    (width + 2.0 * margin, height + 2.0 * margin)
+}
+
+/// Where the pill's window goes so the pill itself sits at its usual place.
+fn overlay_window_position(app_handle: &AppHandle) -> Option<(f64, f64)> {
+    let (x, y) = calculate_overlay_position(app_handle)?;
+    let margin = OVERLAY_MARGIN * settings::get_settings(app_handle).pill_scale_factor();
+    Some((x - margin, y - margin))
+}
 
 #[cfg(target_os = "macos")]
 const OVERLAY_TOP_OFFSET: f64 = 46.0;
@@ -173,12 +191,13 @@ fn calculate_overlay_position(app_handle: &AppHandle) -> Option<(f64, f64)> {
         let work_area_y = work_area.position.y as f64 / scale;
 
         let settings = settings::get_settings(app_handle);
+        let (width, height) = overlay_size(&settings);
 
-        let x = work_area_x + (work_area_width - overlay_width(&settings)) / 2.0;
+        let x = work_area_x + (work_area_width - width) / 2.0;
         let y = match settings.overlay_position {
             OverlayPosition::Top => work_area_y + OVERLAY_TOP_OFFSET,
             OverlayPosition::Bottom | OverlayPosition::None => {
-                work_area_y + work_area_height - OVERLAY_HEIGHT - OVERLAY_BOTTOM_OFFSET
+                work_area_y + work_area_height - height - OVERLAY_BOTTOM_OFFSET
             }
         };
 
@@ -190,7 +209,7 @@ fn calculate_overlay_position(app_handle: &AppHandle) -> Option<(f64, f64)> {
 /// Creates the recording overlay window and keeps it hidden by default
 #[cfg(not(target_os = "macos"))]
 pub fn create_recording_overlay(app_handle: &AppHandle) {
-    let position = calculate_overlay_position(app_handle);
+    let position = overlay_window_position(app_handle);
 
     // On Linux (Wayland), monitor detection often fails, but we don't need exact coordinates
     // for Layer Shell as we use anchors. On other platforms, we require a position.
@@ -210,7 +229,10 @@ pub fn create_recording_overlay(app_handle: &AppHandle) {
     )
     .title("Recording")
     .resizable(false)
-    .inner_size(OVERLAY_WIDTH, OVERLAY_HEIGHT)
+    .inner_size(
+        overlay_window_size(&settings::get_settings(app_handle)).0,
+        overlay_window_size(&settings::get_settings(app_handle)).1,
+    )
     .shadow(false)
     .maximizable(false)
     .minimizable(false)
@@ -268,7 +290,7 @@ pub fn create_recording_overlay(app_handle: &AppHandle) {
 /// Creates the recording overlay panel and keeps it hidden by default (macOS)
 #[cfg(target_os = "macos")]
 pub fn create_recording_overlay(app_handle: &AppHandle) {
-    if let Some((x, y)) = calculate_overlay_position(app_handle) {
+    if let Some((x, y)) = overlay_window_position(app_handle) {
         // PanelBuilder creates a Tauri window then converts it to NSPanel.
         // The window remains registered, so get_webview_window() still works.
         match PanelBuilder::<_, RecordingOverlayPanel>::new(app_handle, "recording_overlay")
@@ -277,8 +299,8 @@ pub fn create_recording_overlay(app_handle: &AppHandle) {
             .position(tauri::Position::Logical(tauri::LogicalPosition { x, y }))
             .level(PanelLevel::Status)
             .size(tauri::Size::Logical(tauri::LogicalSize {
-                width: OVERLAY_WIDTH,
-                height: OVERLAY_HEIGHT,
+                width: overlay_window_size(&settings::get_settings(app_handle)).0,
+                height: overlay_window_size(&settings::get_settings(app_handle)).1,
             }))
             .has_shadow(false)
             .transparent(true)
@@ -303,14 +325,23 @@ pub fn create_recording_overlay(app_handle: &AppHandle) {
 }
 
 fn show_overlay_state(app_handle: &AppHandle, state: &str) {
+    // The main window follows the take too (the setup's Try it), whether or
+    // not the pill is shown. `emit_to` only queues the event.
+    let _ = app_handle.emit_to("main", "take-state", state);
+
+    // Bump generation so any pending delayed-hide thread becomes stale - also
+    // with no pill (position None), or an old hide would end the new take in
+    // the main window.
+    OVERLAY_GENERATION.fetch_add(1, Ordering::SeqCst);
+
     // Check if overlay should be shown based on position setting
     let settings = settings::get_settings(app_handle);
     if settings.overlay_position == OverlayPosition::None {
         return;
     }
-
-    // Bump generation so any pending delayed-hide thread becomes stale
-    OVERLAY_GENERATION.fetch_add(1, Ordering::SeqCst);
+    if state != "transcribing" && state != "processing" {
+        PROGRESS_SHOWN.store(false, Ordering::Relaxed);
+    }
 
     update_overlay_position(app_handle);
 
@@ -375,12 +406,10 @@ pub fn update_overlay_position(app_handle: &AppHandle) {
             update_gtk_layer_shell_anchors(&overlay_window);
         }
 
-        let width = overlay_width(&settings::get_settings(app_handle));
-        let _ = overlay_window.set_size(tauri::Size::Logical(tauri::LogicalSize {
-            width,
-            height: OVERLAY_HEIGHT,
-        }));
-        if let Some((x, y)) = calculate_overlay_position(app_handle) {
+        // The Pill size setting may have changed since the last take.
+        let (width, height) = overlay_window_size(&settings::get_settings(app_handle));
+        let _ = overlay_window.set_size(tauri::Size::Logical(tauri::LogicalSize { width, height }));
+        if let Some((x, y)) = overlay_window_position(app_handle) {
             let _ = overlay_window
                 .set_position(tauri::Position::Logical(tauri::LogicalPosition { x, y }));
         }
@@ -392,6 +421,10 @@ pub fn hide_recording_overlay(app_handle: &AppHandle) {
     // Stop the audio worker from emitting levels immediately (T-306), before any
     // window work below — the actual native hide is delayed for the fade-out.
     OVERLAY_VISIBLE.store(false, Ordering::Relaxed);
+    let _ = app_handle.emit_to("main", "take-state", "idle");
+    if QUIET_HINT_SHOWN.swap(false, Ordering::Relaxed) {
+        set_quiet_hint_visible(app_handle, false);
+    }
     // Always hide the overlay regardless of settings - if setting was changed while recording,
     // we still want to hide it properly
     if let Some(overlay_window) = app_handle.get_webview_window("recording_overlay") {
@@ -405,11 +438,25 @@ pub fn hide_recording_overlay(app_handle: &AppHandle) {
         if let Some(w) = &live_text {
             let _ = w.emit("live-text-hide", ());
         }
+        // A "Transcribing N%" figure first runs up to 100% (the pill does that
+        // on hide-overlay), then fades.
+        let fade_ms = if PROGRESS_SHOWN.swap(false, Ordering::Relaxed) {
+            650
+        } else {
+            300
+        };
         std::thread::spawn(move || {
-            std::thread::sleep(std::time::Duration::from_millis(300));
+            std::thread::sleep(std::time::Duration::from_millis(fade_ms));
             // Only hide if no new show has occurred since we were spawned
             if OVERLAY_GENERATION.load(Ordering::SeqCst) == generation {
                 let _ = window_clone.hide();
+            }
+            // The live text box keeps a finished take's final text on screen a
+            // moment longer, and text still being typed in until it is done (it
+            // fades itself, at most ~13.5 s); its window is click-through, so
+            // staying up costs nothing.
+            std::thread::sleep(std::time::Duration::from_millis(14_000 - fade_ms));
+            if OVERLAY_GENERATION.load(Ordering::SeqCst) == generation {
                 if let Some(w) = live_text {
                     let _ = w.hide();
                 }
@@ -422,14 +469,16 @@ pub fn hide_recording_overlay(app_handle: &AppHandle) {
 
 const LIVE_TEXT_LABEL: &str = "live_text";
 const LIVE_TEXT_WIDTH: f64 = 460.0;
-/// "Last words" is one line next to the pill.
-const LIVE_TEXT_ONE_LINE_HEIGHT: f64 = 36.0;
-/// "Whole text" grows from one line towards the screen's middle: at most this
-/// share of the work area, and never taller than LIVE_TEXT_MAX_HEIGHT. The window
-/// is click-through and transparent, so the room it keeps costs nothing.
-const LIVE_TEXT_MAX_SHARE: f64 = 0.4;
-const LIVE_TEXT_MAX_HEIGHT: f64 = 420.0;
-const LIVE_TEXT_GAP: f64 = 6.0;
+/// "Last words" is one line next to the pill: 40 px at the normal 15 px text.
+fn live_text_one_line_height(settings: &settings::AppSettings) -> f64 {
+    (settings.live_text_font_size.clamp(11, 28) as f64 * 8.0 / 3.0).round()
+}
+/// "Whole text" grows from one line towards the screen's middle, up to the
+/// chosen number of lines (Box height) but never taller than this share of the
+/// work area. The window is click-through and transparent, so the room it keeps
+/// costs nothing.
+const LIVE_TEXT_MAX_SHARE: f64 = 0.5;
+const LIVE_TEXT_GAP: f64 = 8.0;
 
 #[derive(Clone, serde::Serialize)]
 struct LiveTextShow {
@@ -438,6 +487,8 @@ struct LiveTextShow {
     fade: bool,
     /// The box sits below the pill (pill at the top of the screen) instead of above.
     below_pill: bool,
+    /// Text size in logical pixels.
+    font_size: u32,
 }
 
 /// The box's window size for the current settings: the chosen width, and one
@@ -445,7 +496,7 @@ struct LiveTextShow {
 fn live_text_size(app_handle: &AppHandle, settings: &settings::AppSettings) -> (f64, f64) {
     let width = settings.live_text_width as f64;
     if settings.live_text_mode == crate::settings::LiveTextMode::LastWords {
-        return (width, LIVE_TEXT_ONE_LINE_HEIGHT);
+        return (width, live_text_one_line_height(settings));
     }
     let work_area_height = app_handle
         .primary_monitor()
@@ -455,7 +506,14 @@ fn live_text_size(app_handle: &AppHandle, settings: &settings::AppSettings) -> (
         .unwrap_or(1000.0);
     (
         width,
-        (work_area_height * LIVE_TEXT_MAX_SHARE).min(LIVE_TEXT_MAX_HEIGHT),
+        // The lines at the chosen text size (line height 1.55) plus the box's
+        // padding and border.
+        (settings.live_text_lines.clamp(2, 30) as f64
+            * settings.live_text_font_size.clamp(11, 28) as f64
+            * 1.55
+            + 26.0)
+            .ceil()
+            .min(work_area_height * LIVE_TEXT_MAX_SHARE),
     )
 }
 
@@ -466,10 +524,10 @@ fn live_text_position(
     (width, height): (f64, f64),
 ) -> Option<(f64, f64)> {
     let (x, y) = calculate_overlay_position(app_handle)?;
-    let pill_width = overlay_width(&settings::get_settings(app_handle));
+    let (pill_width, pill_height) = overlay_size(&settings::get_settings(app_handle));
     let lx = x + pill_width / 2.0 - width / 2.0;
     let ly = if below_pill {
-        y + OVERLAY_HEIGHT + LIVE_TEXT_GAP
+        y + pill_height + LIVE_TEXT_GAP
     } else {
         y - height - LIVE_TEXT_GAP
     };
@@ -488,7 +546,10 @@ pub fn create_live_text_window(app_handle: &AppHandle) {
     )
     .title("Live text")
     .resizable(false)
-    .inner_size(LIVE_TEXT_WIDTH, LIVE_TEXT_ONE_LINE_HEIGHT)
+    .inner_size(
+        LIVE_TEXT_WIDTH,
+        live_text_one_line_height(&settings::get_settings(app_handle)),
+    )
     .shadow(false)
     .maximizable(false)
     .minimizable(false)
@@ -532,6 +593,25 @@ pub fn show_live_text_window(app_handle: &AppHandle) {
     if !settings.live_text_box_enabled || settings.overlay_position == OverlayPosition::None {
         return;
     }
+    present_live_text_window(app_handle, &settings);
+}
+
+/// "Show the text as it's transcribed": a take without the live text box gets the
+/// box at stop, for its transcript to be typed into as it comes in. Returns
+/// whether the box is shown for that.
+pub fn show_live_text_after_stop(app_handle: &AppHandle) -> bool {
+    let settings = settings::get_settings(app_handle);
+    if !settings.live_text_after_stop
+        || settings.live_text_box_enabled
+        || settings.overlay_position == OverlayPosition::None
+    {
+        return false;
+    }
+    present_live_text_window(app_handle, &settings);
+    true
+}
+
+fn present_live_text_window(app_handle: &AppHandle, settings: &settings::AppSettings) {
     let below_pill = settings.overlay_position == OverlayPosition::Top;
     if let Some(window) = app_handle.get_webview_window(LIVE_TEXT_LABEL) {
         let (width, height) = live_text_size(app_handle, &settings);
@@ -545,6 +625,7 @@ pub fn show_live_text_window(app_handle: &AppHandle) {
                 mode: settings.live_text_mode,
                 fade: settings.live_text_fade,
                 below_pill,
+                font_size: settings.live_text_font_size.clamp(11, 28),
             },
         );
         if window.show().is_ok() {
@@ -564,6 +645,109 @@ pub fn refresh_live_text_window(app_handle: &AppHandle) {
         let _ = window.emit("live-text-hide", ());
         let _ = window.hide();
     }
+}
+
+/* ─────────────────────────── "Too quiet" box ───────────────────────────── */
+
+const QUIET_HINT_LABEL: &str = "quiet_hint";
+/// Room for the box in any language; the window is transparent and click-through.
+const QUIET_HINT_WIDTH: f64 = 320.0;
+// The box fills its window, so it sits exactly QUIET_HINT_GAP under the pill.
+const QUIET_HINT_HEIGHT: f64 = 22.0;
+const QUIET_HINT_GAP: f64 = 6.0;
+
+/// This take shows "Too quiet" in its own box rather than in the pill (set per take).
+static QUIET_HINT_BOX: AtomicBool = AtomicBool::new(false);
+/// The box is up.
+static QUIET_HINT_SHOWN: AtomicBool = AtomicBool::new(false);
+
+/// Per take: "Too quiet" in its own box (where that window exists) or in the pill.
+pub fn set_quiet_hint_box(on: bool) {
+    QUIET_HINT_BOX.store(on && cfg!(not(target_os = "macos")), Ordering::Relaxed);
+}
+
+/// Pre-creates the "Too quiet" box (hidden): a click-through, never-focused strip
+/// just under the recording pill - in the gap above the taskbar when the pill
+/// is at the bottom, so it never covers the live text box.
+#[cfg(not(target_os = "macos"))]
+pub fn create_quiet_hint_window(app_handle: &AppHandle) {
+    let mut builder = WebviewWindowBuilder::new(
+        app_handle,
+        QUIET_HINT_LABEL,
+        tauri::WebviewUrl::App("src/quiethint/index.html".into()),
+    )
+    .title("Too quiet")
+    .resizable(false)
+    .inner_size(QUIET_HINT_WIDTH, QUIET_HINT_HEIGHT)
+    .shadow(false)
+    .maximizable(false)
+    .minimizable(false)
+    .closable(false)
+    .decorations(false)
+    .always_on_top(true)
+    .skip_taskbar(true)
+    .transparent(true)
+    .focused(false)
+    .focusable(false)
+    .visible(false);
+    // Same portable webview data dir as the other windows (T-114 finding #1).
+    #[cfg(windows)]
+    {
+        if let Some(portable_dir) = crate::portable::portable_data_dir() {
+            builder = builder.data_directory(portable_dir.join("webview"));
+        }
+    }
+    match builder.build() {
+        Ok(window) => {
+            let _ = window.set_ignore_cursor_events(true);
+            debug!("Too-quiet box created (hidden)");
+        }
+        Err(e) => debug!("Failed to create the too-quiet box: {}", e),
+    }
+}
+
+/// macOS: the recording overlay is an NSPanel there; the pill shows the hint itself.
+#[cfg(target_os = "macos")]
+pub fn create_quiet_hint_window(_app_handle: &AppHandle) {}
+
+/// Shows or hides the box. Called from the audio worker, so the work runs on a
+/// thread of its own: placing the box asks the main loop for the monitor,
+/// which must never block the worker (T-306).
+fn set_quiet_hint_visible(app_handle: &AppHandle, show: bool) {
+    let app = app_handle.clone();
+    std::thread::spawn(move || {
+        let Some(window) = app.get_webview_window(QUIET_HINT_LABEL) else {
+            return;
+        };
+        if show {
+            let settings = settings::get_settings(&app);
+            let scale = settings.pill_scale_factor();
+            let (pill_width, pill_height) = overlay_size(&settings);
+            let (width, height) = (QUIET_HINT_WIDTH * scale, QUIET_HINT_HEIGHT * scale);
+            let _ = window.set_size(tauri::Size::Logical(tauri::LogicalSize { width, height }));
+            if let Some((x, y)) = calculate_overlay_position(&app) {
+                let x = x + pill_width / 2.0 - width / 2.0;
+                let y = y + pill_height + QUIET_HINT_GAP;
+                let _ =
+                    window.set_position(tauri::Position::Logical(tauri::LogicalPosition { x, y }));
+            }
+            let _ = window.emit("quiet-hint", true);
+            if window.show().is_ok() {
+                #[cfg(target_os = "windows")]
+                force_overlay_topmost(&window);
+            }
+            if QUIET_HINT_SHOWN.load(Ordering::Relaxed) {
+                return;
+            }
+            // Hidden again while this was being shown.
+        }
+        let _ = window.emit("quiet-hint", false);
+        // Let it fade, unless it came back in the meantime.
+        std::thread::sleep(std::time::Duration::from_millis(250));
+        if !QUIET_HINT_SHOWN.load(Ordering::Relaxed) {
+            let _ = window.hide();
+        }
+    });
 }
 
 /* ──────────────────── Floating Transcription Window ────────────────────── */
@@ -679,13 +863,23 @@ const MIC_LEVEL_EMIT_INTERVAL_MS: u64 = 33;
 /// false the instant a hide is requested.
 static OVERLAY_VISIBLE: AtomicBool = AtomicBool::new(false);
 
+/// One `mic-level` update: the spectrum, and whether the microphone is live
+/// (false while a cold one is still warming up - the pill says "Starting mic").
+#[derive(Clone, serde::Serialize)]
+struct MicLevel<'a> {
+    levels: &'a [f32],
+    live: bool,
+    /// Speech too quiet to be kept was heard just now: the pill says so.
+    too_quiet: bool,
+}
+
 /// Forwards mic spectrum levels to the recording overlay window.
 ///
 /// The overlay is the only `mic-level` consumer, so delivery targets it via
 /// `emit_to` instead of an app-wide broadcast, is rate-limited to ~30 events
 /// per second, and is skipped entirely while the overlay is disabled
 /// (`OverlayPosition::None`, the Linux default) or hidden.
-pub fn emit_levels(app_handle: &AppHandle, levels: &Vec<f32>) {
+pub fn emit_levels(app_handle: &AppHandle, levels: &[f32], live: bool, too_quiet: bool) {
     // Rate limit first — it's the cheapest check.
     let now_ms = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
@@ -715,14 +909,32 @@ pub fn emit_levels(app_handle: &AppHandle, levels: &Vec<f32>) {
     if !OVERLAY_VISIBLE.load(Ordering::Relaxed) {
         return;
     }
-    let _ = app_handle.emit_to("recording_overlay", "mic-level", levels);
+    // "Too quiet" in a box of its own: the pill keeps its sound bars.
+    let in_box = QUIET_HINT_BOX.load(Ordering::Relaxed);
+    if in_box && QUIET_HINT_SHOWN.swap(too_quiet, Ordering::Relaxed) != too_quiet {
+        set_quiet_hint_visible(app_handle, too_quiet);
+    }
+    let _ = app_handle.emit_to(
+        "recording_overlay",
+        "mic-level",
+        MicLevel {
+            levels,
+            live,
+            too_quiet: too_quiet && !in_box,
+        },
+    );
 }
 
 /// Sends the overlay how far the take's transcription is (percent). Like
 /// `emit_levels`, skipped while the overlay is hidden (same T-306 flag).
 pub fn emit_transcription_progress(app_handle: &AppHandle, percent: u8) {
+    // The main window too (the setup's Try it), even with the pill hidden. A
+    // name of its own: a window's listen() hears every emit_to target, so the
+    // pill must not get this copy (nor the main window the pill's).
+    let _ = app_handle.emit_to("main", "take-progress", percent);
     if !OVERLAY_VISIBLE.load(Ordering::Relaxed) {
         return;
     }
+    PROGRESS_SHOWN.store(true, Ordering::Relaxed);
     let _ = app_handle.emit_to("recording_overlay", "transcription-progress", percent);
 }

@@ -1,5 +1,297 @@
 # Changelog
 
+## [1.13.0] - 2026-09-29 15:23
+
+### Changed
+
+- **What's new follows the GitHub releases:** 1.13.0 lists everything since 1.6.2 (1.7-1.12 were
+  never released on their own), most important first - 30 items, 17 of them new - then 1.6.2 and
+  1.6.1 as they were released.
+- **The AltGr "Risky" warning only where it applies:** on Windows it now asks your installed
+  keyboards and warns only when one of them types a character with AltGr on that key (AltGr+Shift
+  for a chord with Shift), naming the language it belongs to ("A keyboard you use for Polish
+  (Poland) types a character with AltGr+O..."); Ctrl+Alt+Space gets its own explanation. A US
+  English keyboard has no AltGr, so no warning.
+- **A moving pill preview in General › App** (under Progress Style): recording and transcribing
+  side by side, the progress running 0-100% over and over with your style, glow, colour and size.
+  It replaces the small swatch next to Progress Colour.
+- **The Appearance setup is shorter:** Lines and Fade are left to the settings; its last step says
+  where the rest is.
+- **Clearer setups:** the Jumper setup (and its card and row) says what it is for - Handy Tool
+  pastes your dictation into the right field for you, even from another window; the Appearance
+  setup's live text box step says that with the box on the take is not transcribed again at the
+  end (ready at once, a little less accurate).
+- **More's App tab is now a group on General** (Appearance, Start Hidden, Reopen Last Page, Launch
+  on Startup, Show Tray Icon, the overlay's position, size and progress, Keyboard Implementation),
+  above Updates: these are settings you want at hand. More opens on Output now.
+- **The designer's second round** (brief 2), in light and dark:
+  - **Setups:** each setup is a row with an icon tile and a secondary **Start →** (one primary
+    button per page); the Jumper's "Windows only" is a tag instead of a sentence.
+  - **Setup steps:** the name, the step count and its segments (the current one longer) and
+    Close setup sit above a divider; Back, Skip (now a text button) and Save & next under a second
+    one. The first-start guide the same, its buttons always at the bottom of the window.
+  - **Choices are cards with a radio:** picked is the radio's dot, an accent edge and a soft tint
+    together; hover only darkens the edge. The first-start guide's model cards the same.
+  - **Providers** (Post-processing setup): the model in monospace, the status a badge with an
+    icon - Ready, Needs a key, and Needs a model in amber, the only one that blocks.
+  - **Jumper setup places:** a target tile, "Remembered: **app**" with a tick and a button to show
+    that place again; during the countdown the row is tinted and shows its number.
+  - **Language chips** have square corners and keep their weight when picked.
+  - **Where should the text be saved?** 440 px over a dimmed backdrop; each choice is a row with
+    an icon and an arrow (paths in monospace, shortened in the middle), Remember my choice and
+    Cancel in a band at the bottom. Focus starts on the first row; Esc cancels.
+  - **Files:** the model menu is grouped (Your dictation model, Downloaded, Not downloaded), each
+    with its size and a download glyph instead of "(not downloaded)"; a model to download shows
+    **Download · 487 MB** as the main button. A 4 px progress bar, a success tick on the result,
+    the saved path in monospace, 32 px icon buttons in the list.
+  - **Help mode:** the ? fills when it is on, the hint sits on a tinted pill with an Esc key cap,
+    the setting pointed at gets a rounded outline while the others dim, and its description
+    hangs from its name.
+  - **What's new:** **Show me →**, and the installed version is marked "Installed".
+  - **Recording pill:** the T glows with a two-step cyan glow (3 + 8 px); paused shows four grey
+    dots; a microphone problem has an amber icon and white text (was all red); quiet sound bars
+    are a darker cyan instead of faded; the "Too quiet" box is 22 px tall and 6 px under the pill,
+    with an amber speaker icon.
+  - Both versions where the design differed from what was chosen before: **Progress Style** has
+    a third option, **Light circling the edge** (the designer's 1 px light with a fading tail, one
+    lap every 1.6 s, no glow; with reduced motion it becomes the line), next to the filling edge
+    light; and **Wide Sound Bars** (General › App, default Off) gives the designer's 2.5 px bars
+    and gaps (77.5 px) instead of the narrower 2 px ones (62 px).
+- **What's new covers the last three versions:** 1.11.0 added (the live text as the transcript,
+  History tabs and statistics, the slow-PC warning, fading live text, the live text box
+  shortcut, the AltGr warning switch). Search and What's new now outline Recording statistics
+  and the Transcription cost report too.
+- **Keyboard Typer moved to More › Tools** (first in that row), so the sidebar keeps the
+  pages used most. Its shortcut stays on the Shortcuts page.
+- **A smaller pill with shorter sound bars:** 188 px wide (was 204) and 16 bars (was 23). A
+  microphone problem ("Microphone blocked", "No microphone") uses the whole pill; while the
+  microphone starts, "Starting mic..." gets the pause button's room; "Transcribing 42%" drops
+  its spinner once there is a percentage. Every pill text fits in all 17 languages (a few
+  translations were shortened); anything longer ends in "…".
+- **The T glows** while the live text box is on: no filled circle any more, the letter itself
+  glows cyan, like the edge light.
+- **Model ratings on one scale:** the speed and accuracy bars rank all the models against each
+  other (before, "Ultra-fast" and "Fast" models both showed 5/5), and the descriptions use the
+  same words - Fastest, Very fast, Fast, Medium speed, Slow; top, very, fairly accurate, basic.
+  Accuracy from the English error rates of the Open ASR Leaderboard and the Moonshine v2 paper;
+  speed from published comparisons, checked on a laptop (i5-1145G7).
+- **Transcribe Shortcut is now called Record/Transcribe Shortcut** (General, Shortcuts, the
+  setup), in every language.
+- **Setup buttons**: each step that saves something now has **Skip** (go on without saving
+  that step) and **Save & next** instead of Next.
+- **Redesign: the designer's whole-app design**, in light and dark:
+  - Warm neutral greys with the brand cyan kept for switches, sliders and selection (and a
+    stronger cyan for text, so it stays readable). Depth comes from 1px borders and a very soft
+    shadow, like Windows 11 Settings. Settings sit on white cards; rows are at least 52px tall.
+  - Inputs, dropdowns and secondary buttons are 32px with a slightly darker bottom edge that
+    turns into a 2px cyan line while you type in them (no extra focus ring on top). Switches
+    say On/Off beside them; shortcuts show their keys as small key caps, with a "Conflict" or
+    "Risky" badge where it applies.
+  - Settings a switch reveals use the designer's **connected rail**: the parent setting has a
+    bold title with a one-line summary, and below it a cyan rail with the revealed settings in
+    a card of their own (Post-processing: its Hotkey, API and Prompt sections).
+  - Every sidebar page has a title with its icon; the sidebar shows the app icon and name, and
+    the open page has a light fill with a thin cyan bar. Tabs are plain words. Duplicate
+    headings removed; content stops at a comfortable width on very wide windows.
+  - Models are cards with accuracy and speed bars; the one in use has a cyan edge and "Active".
+  - **Custom Words** is one field with the words as chips: Enter adds a word, × removes one.
+  - Keyboard Typer, MCP & CLI and Backup use the same rows and cards as the other pages (MCP's
+    server is a real switch that says Running or Stopped).
+  - **Recording pill:** a bold T, filled pause and play, a plain ×, a small spinner while the
+    microphone starts and while transcribing, the progress as a thin line along the pill's
+    bottom, grey flat bars while paused, an icon with each microphone problem, and the pause
+    button dimmed until the microphone is live. While transcribing, a thin cyan line fills along the
+    pill's bottom - or, with **More › App › Progress Style** set to "Light around the edge", a
+    glowing light runs round the pill from the bottom centre, centred on its border, its trail
+    staying lit - and glowing evenly, no brighter at the head - up to the figure. Its aura
+    stays close to the light and fades out before the edge of the pill's window (a wider one
+    was cut off in a straight line); the pill's shadow is smaller for the same reason ("Transcribing 42%" stays in the middle). The sound bars are longer: 23 bars across most
+    of the pill instead of 9, low to high pitch over the voice range (400 Hz - 4 kHz), each
+    its own band (the first three of the old bars used to move as one). The higher bands are
+    lifted by 8 dB per octave above 500 Hz, so the right-hand bars move as much as the left:
+    measured over 12 takes, they used to average 0.01-0.03 against 0.23-0.28 on the left.
+  - **Cancel while transcribing:** the pill keeps its × during "Transcribing N%". It hides
+    the pill and the text is not pasted; the take still lands in History (the transcription
+    finishes in the background) and skips post-processing. Cancelling at that point used to
+    run the recording teardown, which could break the transcription still running.
+  - **Live text box:** larger text (15px), a cyan caret where the next words appear and a thin
+    border; the one-line box fades its left edge only when the text is cut off.
+  - **Live Transcription window** follows the app's colours, with bigger text, a caret, and a
+    footer showing "● Listening · <model>" and Copy (Copy no longer covers the text).
+  - One colour system: 158 hard-coded dark-only colours (grey/blue) in 18 files now use the
+    app's theme tokens, so inputs, tables and buttons also look right in light mode.
+  - The tray icon is the designer's plain line glyph (white on a dark taskbar, black on a
+    light one), with a dot while recording and three dots while transcribing.
+  - The recording pill and the dark-mode focus ring are brand cyan instead of the pink left
+    over from upstream Handy. The sidebar no longer shows a stray horizontal scroll bar.
+- **Live takes no longer lose words.** Read on its own, a short stretch of speech often came
+  back empty from Parakeet (the log showed most 1.5 s windows, and some whole 2-5 s sentences,
+  read as nothing), and the live preview locked that "nothing" in when you paused - so those
+  words were missing from the box and from the delivered text. Now a window is only settled
+  when it holds a plausible number of words (at least 0.8 per second of speech); otherwise it
+  stays open and is read again together with what follows (up to 20 s). Settling a sentence
+  also reads the 4 s before it along for context (8 s at stop), keeping only the new words.
+- **The live text box shows the final text:** when you stop, the take's final text appears
+  whole at once and stays about 1.5 s before the box fades, so words said just before stopping
+  are seen too (they used to start typing in just as the box closed). Cancel still hides it at
+  once.
+
+### Fixed
+
+- **"Transcribing N%" no longer sits at 99%.** On this PC's log, 57% of long transcriptions
+  ran past the estimate and then showed 99% for 10-70% of the wait. Three causes, all fixed:
+  - The estimate used one average speed, but a long stretch costs more per second of audio
+    than a short one (0.14 s per second for short clips, 0.21 s at 20-35 s). It now learns
+    from recent transcriptions of a similar length, scaled to the length at hand.
+  - Past about 70% the figure now slows down smoothly instead of running into a 99% wall,
+    so an overrun keeps creeping on. It still never goes backwards.
+  - After stop, each segment still waiting is weighed by its length (a short tail used to
+    count as much as a long segment, so the figure could jump to 50% and then crawl), and a
+    live take's figure also covers the wait for the preview update still running.
+
+  Replayed on the logged timings: time spent at 98-99% drops from 44% of the wait to 8%.
+  The pill also counts up to each new figure (1% at a time, faster across a bigger gap)
+  instead of jumping, and a take that finishes before 100% runs the figure up to 100% in a
+  quick burst before the pill fades (visual only; the text is not delayed).
+
+- **Switching the live text box on mid-take shows text right away.** It used to read the
+  whole take again before showing anything - 23 s for a 60 s take on this PC, so nothing
+  appeared before the take ended - and threw away the parts already transcribed. Now those
+  parts fill the box at once and only what was said after them is read.
+- **The pill's T sits exactly in its circle.** The letter came from the font and landed up
+  to a screen pixel right of centre (0.8 px at 125% display scaling); it is now drawn.
+- **Right-clicking a button on the recording pill** no longer opens the web view's own menu
+  (Refresh, Save as, Print, More tools), and the button's name ("Live text box") no longer
+  stays in the pill afterwards instead of the sound bars.
+- **Texts no longer point to pages that are gone.** About 17 descriptions and hints in all 17
+  languages still sent you to the "Advanced" or "Post Process" page (removed in 1.10.0). They
+  now name where the setting really is, in each language's own words: More › Output (Paste
+  Method, jump slot actions), More › Providers › Registered LLM Providers, the Shortcuts page
+  (Keyboard Typer shortcut), and "right below this switch" for Post-processing's options.
+  Two pointers were wrong even before: Jumper › Delivery options said "on the General page"
+  (it is More › Output), and Current Audio's "set each shortcut's mode in…" link opened More ›
+  Output - it now reads General › Transcription and opens General, where Transcription Mode is.
+
+### Added
+
+- **Progress Colour** (General › App): pick the colour of the pill's glowing parts - the progress
+  light and its glow, the glowing T, the sound bars and the spinner - with three sliders (hue, saturation and
+  lightness), a swatch and a button back to the default cyan. The Appearance setup has a colour
+  step with six ready colours, and its previews use the colour.
+- **"Switch it on to see more settings."** under every switch that reveals more settings
+  (Post-processing, the live text box, Pause button, text before/after, ...) while it is off, so
+  an empty space below it no longer reads as "there is nothing more".
+- **The first start's Try it shows what the take is doing**, as the pill does: recording (press
+  the shortcut again when done), paused, transcribing with its percentage and a bar, processing,
+  then the words - or a microphone problem, which stays in view until the next take.
+  The last screen marks the Appearance setup Recommended.
+- **A Post-processing setup row** at the top of More › Post-processing, like General › App's and
+  the Jumper page's.
+- **Appearance setup** (Setups): the look of the recording pill and the live text box, one
+  thing per step - theme, where the pill appears, its size, the sound bars, the progress style and
+  its glow, the live text box (on, what it shows, width, text size, lines, fade) and where "Too
+  quiet" shows. Every choice is shown side by side, moving (the real pill with its bars, progress
+  and glow; the box with words appearing), so nothing has to be tried by recording. It opens by
+  saying what the pill's parts are for - the T switches the live text box. `Save & next` keeps a
+  choice; Skip and Close setup keep what was set.
+- **A setup row at the top of the settings it walks through:** General › App starts the
+  Appearance setup, the Jumper page the Jumper setup (the button opens Setups and starts it).
+- **The first start ends with the other setups on offer** (Appearance, Post-processing, Jumper):
+  optional, as the defaults already work.
+- **What's new** in the sidebar: the new and changed things of the last releases, each with
+  **Show me** (opens the page where the setting lives and outlines it, as search does: a live
+  text box setting hidden while the box is off outlines the box's switch; setups outline their
+  cards, model ratings your model's card). A dot marks news you have not opened yet.
+- **Glow Strength and Glowing Line** (More › App, under Progress Style): how strongly the
+  progress light glows, 0-200% (100% is about as bright near the light as the first edge
+  light, and the glow always fades out within the pill's window), and a switch that gives the
+  line along the bottom the same glow.
+- **Jumper setup** (Setups, Windows): what the Jumper is for (jump back with a key, have your
+  dictation land there, or both), whether to remember the mouse position, "Show me the place"
+  (a 5-second countdown, then the field you clicked into is remembered; add as many places as you
+  like), their shortcuts, and a test.
+- **Post-processing setup** (Setups): what the AI should do (a ready prompt or your own), which AI
+  (key, address and model right there, with List models), the shortcut, and a try on a sample
+  sentence.
+- **Help mode** replaces the "i" beside every setting: a **?** at the right end of each page's
+  title line. While it is on, the cursor is the help cursor and pointing anywhere on a setting
+  outlines it and shows its description; nothing can be changed - the first click anywhere
+  (or the ? again, or Esc) only leaves help mode. Scrolling still works.
+- **Files** page in the sidebar (after History), with two parts:
+  - **Transcribe a file**: pick a WAV, MP3, M4A, AAC (Signal voice notes), FLAC, OGG or Opus
+    file. It is cut at its pauses into pieces of up to about 40 seconds and each piece is
+    transcribed once, so the text is final as it comes (no live text, no second pass). A
+    progress bar follows the file's length, and Stop ends it. The text is shown with Copy text.
+    The original file is only ever read.
+  - **Model** menu: your dictation model by default, then the other downloaded models, then the
+    ones not downloaded yet (pick one and Download it first). The model you pick is remembered.
+    A model other than your dictation model loads beside it, so dictation stays ready, and is
+    unloaded again after the file.
+  - **Where the text goes**: when you pick a file, a pop-up asks - In Handy's folder, Next to
+    the recording, or Don't save - with **Remember my choice**. The **Save the text** setting
+    shows the remembered choice and can go back to Ask every time. Nothing is overwritten: a
+    taken name gets "(2)". **Keep a copy of the audio** (off) copies the recording into Handy's
+    `files` folder, or one you choose.
+  - **Transcribed files**: every file transcribed there, newest first, with its date, length,
+    model and text - copy it, show the saved .txt, or remove it from the list.
+  - **Watched folders** moved here from More › Translator (that tab is gone). Its groups are
+    now called Watched folders and Folders.
+- **MP3, M4A, AAC and FLAC** can be read by the watched folders too (before: WAV, OGG, Opus).
+  The decoder was already inside the app, so it adds almost nothing to its size.
+- **Overlay Size** (More › App): Normal, Large (125%) or Extra large (150%); the "Too quiet"
+  box grows with it.
+- **Text size for the live text box** (General › Transcription › Live text box): Small,
+  Normal, Large or Extra large; the one-line box grows with it. **Box height** for Whole text:
+  3, 6 (default), 10 or 16 lines before the oldest slide out.
+- **Reopen Last Page** (More › App, on by default): Handy Tool opens on the page that was open
+  when you closed it.
+- **Setup guide on the first start** (replaces the plain model list; every step can be skipped,
+  or all of it). Pick the languages you speak — several at once — and it suggests three speech
+  models that understand all of them: the most accurate, a balanced one and the fastest ("See
+  all models" lists and searches the rest). One is always selected - the balanced one to start
+  with, which is Parakeet V3 (many languages) whenever it understands yours - and the button
+  reads "Download and continue" until a model is here. The one you pick downloads while you
+  go on, and is selected when it lands. Then the basic shortcuts (Transcribe, Push-to-Talk,
+  Cancel), each with its default shown so you can keep or change it, the microphone, and
+  "Try it": press the shortcut, say a sentence, and your words appear right there. Next
+  skips any step. The new **Setups** page (in the sidebar, after General) runs it again, and
+  will list the guided setups for more features as they come.
+- **"Wait for the microphone to warm up"** (General › Sound, on by default). On this PC the
+  Realtek microphone starts 15-20 dB quiet after a cold start and fades in: the pill
+  already showed sound bars (it switched on the first audio, however faint), and the first
+  words spoken into the quiet part were dropped as noise. Now each cold start measures how
+  long its microphone takes to settle (from the levels of its first 3 s), and the next cold
+  starts keep "Starting mic..." up for the average of the last 5 plus 0.1 s (0.6 s before the
+  first measurement). It never says the microphone is ready while it still sends digital
+  silence: after a replug this Realtek input sent 0.5 s of exact zeros before its 0.5 s
+  fade-in, and the fade-in is now counted from its first sound. A warm start (Keep microphone
+  ready) is never delayed. The setting shows the measured time.
+- **"Too quiet — speak up"** (General › Sound › Warn when you speak too quietly, on by
+  default), in a small box of its own just under the pill (Show it in its own box, on by
+  default; with the pill at the bottom it sits in the gap above the taskbar, so it never covers
+  the live text box, and the pill keeps its sound bars) or inside the pill: shown for 2 s instead of the sound bars when, for about 0.7 s, it hears
+  sound that is almost speech (speech probability 0.08-0.3, just under what the detector
+  keeps) and clearly above the room's noise. Silence, music and typing don't set it off.
+- **Right-click menus on the recording pill's buttons.** T: last words / whole text, Live
+  text box settings…, Change shortcut…. Pause: Change shortcut…, Hide the pause button (not
+  while paused). Cancel: finish and keep in History only / discard, Change shortcut…. The
+  "…" items open Handy on that setting, scrolled to and outlined. Native menus, so the small
+  pill window does not cut them off.
+- **"Show the text as it's transcribed"** (General › Transcription, off by default). For a
+  take without the live text box, the box appears when you stop and the transcript is typed
+  into it as it comes in: the parts already transcribed during the take at once, the rest as
+  it lands. Just to watch; the text is delivered as usual. The box now waits for text still
+  being typed in (plus 1.5 s) before it fades.
+- **A visible note on live transcription's trade-offs** in General › Transcription whenever it
+  is on (live text box, or Transcription Mode = Live): a little less accurate on long stretches
+  without pauses, more CPU and battery, Undo only with Parakeet.
+
+### Removed
+
+- **PC speed on the pill** and the speed measurements behind it (1.11.0-1.12.0). Short clips
+  made the figure swing (it could read 200%), and it showed "-" until five measurements existed.
+  The file it kept, `transcription_speed.json` in the app data folder, is no longer used.
+
 ## [1.12.0] - 2026-09-26 22:48
 
 ### Added

@@ -159,9 +159,63 @@ fn default_live_text_width() -> u32 {
     460
 }
 
+fn default_live_text_font_size() -> u32 {
+    15
+}
+
+fn default_pill_scale() -> u32 {
+    100
+}
+
+fn default_progress_glow() -> u32 {
+    100
+}
+
+fn default_live_text_lines() -> u32 {
+    6
+}
+
+/// How the pill shows the transcription's progress.
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type, Default)]
+#[serde(rename_all = "lowercase")]
+pub enum ProgressStyle {
+    /// A thin cyan line along the pill's bottom.
+    #[default]
+    Line,
+    /// A glowing light running round the pill's edge.
+    Ring,
+    /// A thin light circling the pill's edge, one lap every 1.6 s.
+    Lap,
+}
+
+/// Transcribe a file: where the text goes.
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum FileTextSave {
+    /// A pop-up asks each time a file is picked.
+    #[default]
+    Ask,
+    /// In `files_folder` (Handy's own folder unless another is chosen).
+    HandyFolder,
+    /// Next to the recording, in its own folder.
+    NextToFile,
+    /// Not saved; still shown to copy and kept in the list.
+    DontSave,
+}
+
 fn default_true() -> bool {
     true
 }
+
+/// Measured microphone warm-ups kept (the wait is their average).
+pub const MIC_WARMUP_KEPT: usize = 5;
+/// Added to the average warm-up, so an average start is safely covered.
+const MIC_WARMUP_MARGIN_MS: u32 = 100;
+/// Longest wait the pill ever puts before a take.
+pub const MIC_WARMUP_MAX_MS: u32 = 3000;
+/// The wait on a cold start before any was measured: a Realtek input's fade-in
+/// (0.5 s) plus the margin. The first cold start measures the real one.
+const MIC_WARMUP_DEFAULT_MS: u32 = 600;
 
 /// A registered LLM provider. This single registry powers token counting, LLM
 /// post-processing, and the model-testing tool. Post-processing and the tester
@@ -883,6 +937,9 @@ pub struct AppSettings {
     pub sound_theme: SoundTheme,
     #[serde(default = "default_start_hidden")]
     pub start_hidden: bool,
+    /// Open the app on the page that was open when it was closed.
+    #[serde(default = "default_true")]
+    pub reopen_last_page: bool,
     #[serde(default = "default_autostart_enabled")]
     pub autostart_enabled: bool,
     #[serde(default)]
@@ -932,6 +989,42 @@ pub struct AppSettings {
     /// one starts without an idle device's wake-up delay. 0 (default) = close at once.
     #[serde(default)]
     pub mic_keep_warm_minutes: u32,
+    /// After a cold start, keep "Starting mic..." on the pill until the microphone
+    /// has warmed up: some inputs start 15-20 dB quiet and fade in, and the first
+    /// words spoken into that were dropped as noise. The wait is measured.
+    #[serde(default = "default_true")]
+    pub mic_warmup_wait: bool,
+    /// The last few measured fade-ins of this PC's microphone after a cold start,
+    /// in ms from its first sound (the digital silence some start with is not
+    /// counted), newest last.
+    #[serde(default)]
+    pub mic_fade_in_measured_ms: Vec<u32>,
+    /// The pill says "Too quiet" when it hears voice-like sound too quiet for
+    /// the speech detector to keep.
+    #[serde(default = "default_true")]
+    pub too_quiet_hint: bool,
+    /// ...in a small box of its own under the pill (the pill keeps its sound
+    /// bars) instead of inside the pill.
+    #[serde(default = "default_true")]
+    pub too_quiet_hint_box: bool,
+    /// The recording pill's size, in percent of its normal size (100, 125, 150).
+    #[serde(default = "default_pill_scale")]
+    pub pill_scale: u32,
+    /// How the pill shows the transcription's progress.
+    #[serde(default)]
+    pub progress_style: ProgressStyle,
+    /// How strong the progress glow is, in percent of its normal strength (0-200).
+    #[serde(default = "default_progress_glow")]
+    pub progress_glow: u32,
+    /// Progress Style: line - the line glows like the light around the edge.
+    #[serde(default)]
+    pub progress_line_glow: bool,
+    /// The progress light's colour and glow as "#rrggbb"; empty = the default cyan.
+    #[serde(default)]
+    pub progress_color: String,
+    /// Wider sound bars on the pill (2.5 px bars and gaps: 77.5 px instead of 62).
+    #[serde(default)]
+    pub sound_bars_wide: bool,
     /// Pause/resume button on the recording overlay, plus the Pause shortcut.
     #[serde(default)]
     pub pause_button_enabled: bool,
@@ -950,9 +1043,16 @@ pub struct AppSettings {
     /// How wide the live text box is, in logical pixels (wider = fewer lines).
     #[serde(default = "default_live_text_width")]
     pub live_text_width: u32,
-    /// The recording pill shows how fast this PC transcribes against its normal.
+    /// The live text box's text size, in logical pixels.
+    #[serde(default = "default_live_text_font_size")]
+    pub live_text_font_size: u32,
+    /// "Whole text": how many lines the box shows before the oldest slide out.
+    #[serde(default = "default_live_text_lines")]
+    pub live_text_lines: u32,
+    /// A take without the live text box shows the box at stop, with its
+    /// transcript typed in as it comes in (just to watch; delivery is unchanged).
     #[serde(default)]
-    pub speed_indicator_enabled: bool,
+    pub live_text_after_stop: bool,
     /// Warn next to shortcuts that AltGr can also type (Windows reports AltGr
     /// as Ctrl+Alt).
     #[serde(default = "default_true")]
@@ -1392,6 +1492,19 @@ pub struct AppSettings {
     /// Folder scan interval in seconds (no UI; edit settings_store.json).
     #[serde(default = "default_translator_poll_secs")]
     pub translator_poll_secs: u64,
+    /// Transcribe a file: where the text goes (`Ask` = a pop-up each time).
+    #[serde(default)]
+    pub file_text_save: FileTextSave,
+    /// Transcribe a file: the model last picked for files. Empty = the
+    /// dictation model.
+    #[serde(default)]
+    pub file_model: String,
+    /// Transcribe a file: also keep a copy of the audio in `files_folder`.
+    #[serde(default)]
+    pub file_keep_audio: bool,
+    /// Where those go. Empty = `{app_data}/files`.
+    #[serde(default)]
+    pub files_folder: String,
 }
 
 fn default_translator_priority() -> TranslatorPriority {
@@ -2219,6 +2332,30 @@ pub fn apply_affixes(text: &str, spec: &AffixSpec<'_>) -> String {
 }
 
 impl AppSettings {
+    /// How long a cold microphone needs before the pill shows it as live, in ms:
+    /// the average of its measured warm-ups plus a little margin; 0 when the
+    /// wait is off or nothing has been measured yet.
+    /// The pill's size as a factor of its normal size (1.0 - 1.5).
+    pub fn pill_scale_factor(&self) -> f64 {
+        self.pill_scale.clamp(100, 150) as f64 / 100.0
+    }
+
+    pub fn applied_mic_warmup_ms(&self) -> u32 {
+        let measured = &self.mic_fade_in_measured_ms;
+        if !self.mic_warmup_wait {
+            return 0;
+        }
+        if measured.is_empty() {
+            return MIC_WARMUP_DEFAULT_MS;
+        }
+        let average = measured.iter().sum::<u32>() / measured.len() as u32;
+        if average == 0 {
+            0
+        } else {
+            (average + MIC_WARMUP_MARGIN_MS).min(MIC_WARMUP_MAX_MS)
+        }
+    }
+
     /// The capture source that will actually be used.
     ///
     /// Non-Windows builds are pinned to `Microphone` regardless of what is stored:
@@ -2516,6 +2653,7 @@ pub fn get_default_settings() -> AppSettings {
         audio_feedback_volume: default_audio_feedback_volume(),
         sound_theme: default_sound_theme(),
         start_hidden: default_start_hidden(),
+        reopen_last_page: true,
         autostart_enabled: default_autostart_enabled(),
         automatic_update_checks: default_automatic_update_checks(),
         portable_autostart_consent: PortableAutostartConsent::default(),
@@ -2530,13 +2668,25 @@ pub fn get_default_settings() -> AppSettings {
         transcribe_gpu_device: default_transcribe_gpu_device(),
         always_on_microphone: false,
         mic_keep_warm_minutes: 0,
+        mic_warmup_wait: true,
+        mic_fade_in_measured_ms: Vec::new(),
+        too_quiet_hint: true,
+        too_quiet_hint_box: true,
+        pill_scale: default_pill_scale(),
+        progress_style: ProgressStyle::Line,
+        progress_glow: default_progress_glow(),
+        progress_line_glow: false,
+        progress_color: String::new(),
+        sound_bars_wide: false,
         pause_button_enabled: false,
         undo_word_enabled: false,
         live_text_box_enabled: false,
         live_text_mode: LiveTextMode::LastWords,
         live_text_fade: false,
         live_text_width: default_live_text_width(),
-        speed_indicator_enabled: false,
+        live_text_font_size: default_live_text_font_size(),
+        live_text_lines: default_live_text_lines(),
+        live_text_after_stop: false,
         altgr_warning_enabled: true,
         selected_microphone: None,
         clamshell_microphone: None,
@@ -2665,6 +2815,10 @@ pub fn get_default_settings() -> AppSettings {
         translator_model_unload_timeout: ModelUnloadTimeout::Never,
         translator_model_unload_custom_seconds: default_model_unload_custom_seconds(),
         translator_poll_secs: default_translator_poll_secs(),
+        file_text_save: FileTextSave::Ask,
+        file_model: String::new(),
+        file_keep_audio: false,
+        files_folder: String::new(),
     }
 }
 

@@ -6,7 +6,7 @@ use crate::settings::{
 use anyhow::Result;
 use log::{debug, error, info, warn};
 use serde::Serialize;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, VecDeque};
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU64, Ordering};
 use std::sync::{Arc, Condvar, Mutex, MutexGuard};
@@ -66,35 +66,83 @@ static VULKAN_OP_LOCK: Mutex<()> = Mutex::new(());
 /// slot: the engine is taken out of it for the duration of the call.
 struct RunningJob {
     started: std::time::Instant,
-    /// Expected wall time from this model's measured speed; None until the model
-    /// has finished a long-enough transcription since the app started.
-    expected: Option<Duration>,
+    /// Expected wall time in seconds, from this model's recent timings; None
+    /// until it has a few since the app started.
+    expected: Option<f32>,
     /// Whisper's own percentage (0-100); -1 until it reports. Other engines never do.
     reported: Arc<AtomicI32>,
 }
 
 static RUNNING_JOB: Mutex<Option<RunningJob>> = Mutex::new(None);
 
-/// Seconds of processing per second of audio, per model id: a moving average of
-/// this machine's recent transcriptions.
-static MODEL_SPEED: Mutex<BTreeMap<String, f64>> = Mutex::new(BTreeMap::new());
+/// This machine's recent engine calls per model id, oldest first: (seconds of
+/// audio, seconds the call took).
+static MODEL_TIMINGS: Mutex<BTreeMap<String, VecDeque<(f32, f32)>>> = Mutex::new(BTreeMap::new());
 
-/// Clips shorter than this are dominated by fixed overhead and would skew the speed.
-const MIN_SPEED_SAMPLE_SECS: f64 = 2.0;
+/// Clips shorter than this are dominated by fixed overhead and would skew the estimate.
+const MIN_TIMING_SAMPLE_SECS: f32 = 2.0;
+/// Timings kept per model.
+const TIMINGS_KEPT: usize = 64;
+/// Weight of each older timing relative to the next newer one.
+const TIMING_RECENCY: f64 = 0.97;
+/// How far apart in length (natural log) two calls can be and still count as similar.
+const TIMING_LENGTH_SIGMA: f64 = 0.5;
+/// Time per audio second grows with length: ∝ length^this.
+const TIMING_LENGTH_GROWTH: f64 = 0.3;
+/// The shown percentage follows the estimate up to here, then slows down.
+const PROGRESS_LINEAR_UNTIL: f32 = 0.7;
 
-/// How far the running local engine call is, 0.0..=0.99: real for Whisper,
-/// estimated from audio length × measured speed for the other engines. None when
-/// nothing is running or there is no basis for an estimate yet.
-pub fn running_transcription_fraction() -> Option<f32> {
+/// Expected wall time, in seconds, of transcribing `audio_secs` of audio with
+/// `model_id`. Time per audio second is not constant - on a slow PC Parakeet took
+/// 0.14 s for short clips but 0.21 s at 20-35 s - so one average misjudged long
+/// takes. Recent calls of similar length count most; each is scaled to the asked
+/// length first, so an unusual length still gets an answer. None until the model
+/// has a timing.
+pub fn expected_transcription_secs(model_id: &str, audio_secs: f32) -> Option<f32> {
+    let timings = MODEL_TIMINGS.lock().ok()?;
+    let calls = timings.get(model_id).filter(|c| !c.is_empty())?;
+    let newest = calls.len() - 1;
+    let (mut weight, mut log_ratio) = (0.0f64, 0.0f64);
+    for (i, &(secs, took)) in calls.iter().enumerate() {
+        let apart = (audio_secs as f64 / secs as f64).ln();
+        let similar = (-(apart * apart) / (2.0 * TIMING_LENGTH_SIGMA * TIMING_LENGTH_SIGMA))
+            .exp()
+            .max(1e-4);
+        let w = TIMING_RECENCY.powi((newest - i) as i32) * similar;
+        weight += w;
+        log_ratio += w * ((took as f64 / secs as f64).ln() + TIMING_LENGTH_GROWTH * apart);
+    }
+    Some(((log_ratio / weight).exp() * audio_secs as f64) as f32)
+}
+
+/// Share of a call to show as done when `r` = time so far / expected time: true
+/// to the estimate up to 70%, then slowing down smoothly towards 100% - so a call
+/// that runs longer than expected keeps creeping on instead of stopping at 99%.
+pub fn eased_progress(r: f32) -> f32 {
+    let k = PROGRESS_LINEAR_UNTIL;
+    if r <= k {
+        r.max(0.0)
+    } else {
+        1.0 - (1.0 - k) * (-(r - k) / (1.0 - k)).exp()
+    }
+}
+
+/// Work left in the running local engine call, in expected seconds; None when
+/// nothing is running or there is no basis yet. Whisper's own percentage, once
+/// it reports one, is a floor under the time-based figure.
+pub fn running_transcription_remaining() -> Option<f32> {
     let job = RUNNING_JOB.lock().ok()?;
     let job = job.as_ref()?;
     let reported = job.reported.load(Ordering::Relaxed);
-    let fraction = if reported >= 0 {
-        reported as f32 / 100.0
-    } else {
-        job.started.elapsed().as_secs_f32() / job.expected?.as_secs_f32().max(0.001)
-    };
-    Some(fraction.clamp(0.0, 0.99))
+    let reported = (reported >= 0).then(|| reported as f32 / 100.0);
+    match job.expected {
+        Some(expected) => {
+            let done = eased_progress(job.started.elapsed().as_secs_f32() / expected.max(0.001));
+            Some(expected * (1.0 - done.max(reported.unwrap_or(0.0)).min(1.0)))
+        }
+        // No timings yet: Whisper's figure alone, the whole call counting as 1.
+        None => reported.map(|r| 1.0 - r.min(1.0)),
+    }
 }
 
 /// Clears the running job however the engine call ends, including a panic.
@@ -1461,6 +1509,10 @@ impl TranscriptionManager {
             // Release the lock before transcribing — no mutex held during the engine call
             drop(engine_guard);
 
+            // Timed by the audio's own length (before any padding), like the
+            // estimates for chunks still waiting their turn.
+            let audio_secs = audio.len() as f32 / 16_000.0;
+
             // Pad trailing silence for engines that drop final tokens when the
             // audio ends abruptly (tail segment at stop, ~45 s hard cuts, live
             // 3 s timer cuts). Whisper gets its audio untouched.
@@ -1476,15 +1528,10 @@ impl TranscriptionManager {
             };
 
             // Publish this call for the overlay's progress percentage, and time it
-            // to keep the model's measured speed current.
-            let audio_secs = audio.len() as f64 / 16_000.0;
+            // to keep the model's timings current.
             let speed_key = taken_model_id.clone().unwrap_or_default();
             let reported = Arc::new(AtomicI32::new(-1));
-            let expected = MODEL_SPEED
-                .lock()
-                .ok()
-                .and_then(|speeds| speeds.get(&speed_key).copied())
-                .map(|speed| Duration::from_secs_f64(speed * audio_secs));
+            let expected = expected_transcription_secs(&speed_key, audio_secs);
             let job_started = std::time::Instant::now();
             if let Ok(mut job) = RUNNING_JOB.lock() {
                 *job = Some(RunningJob {
@@ -1589,13 +1636,15 @@ impl TranscriptionManager {
 
             drop(job_guard);
             if transcribe_result.as_ref().is_ok_and(|r| r.is_ok())
-                && audio_secs >= MIN_SPEED_SAMPLE_SECS
+                && audio_secs >= MIN_TIMING_SAMPLE_SECS
             {
-                let measured = job_started.elapsed().as_secs_f64() / audio_secs;
-                crate::speed::record(&self.app_handle, &speed_key, audio_secs, measured);
-                if let Ok(mut speeds) = MODEL_SPEED.lock() {
-                    let speed = speeds.entry(speed_key).or_insert(measured);
-                    *speed = *speed * 0.7 + measured * 0.3;
+                let took = job_started.elapsed().as_secs_f32();
+                if let Ok(mut timings) = MODEL_TIMINGS.lock() {
+                    let calls = timings.entry(speed_key).or_default();
+                    if calls.len() == TIMINGS_KEPT {
+                        calls.pop_front();
+                    }
+                    calls.push_back((audio_secs, took));
                 }
             }
 
@@ -2262,6 +2311,41 @@ impl Drop for TranscriptionManager {
                 debug!("Idle watcher thread joined successfully");
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod progress_estimate_tests {
+    use super::{MODEL_TIMINGS, eased_progress, expected_transcription_secs};
+    use std::collections::VecDeque;
+
+    #[test]
+    fn eased_progress_follows_the_estimate_then_slows_down() {
+        assert_eq!(eased_progress(0.0), 0.0);
+        assert!((eased_progress(0.5) - 0.5).abs() < 1e-6);
+        assert!((eased_progress(0.7) - 0.7).abs() < 1e-6);
+        // Past the estimate it still moves, ever slower, and never reaches 100%.
+        let (at_1, at_1_5, at_3) = (
+            eased_progress(1.0),
+            eased_progress(1.5),
+            eased_progress(3.0),
+        );
+        assert!(0.85 < at_1 && at_1 < at_1_5 && at_1_5 < at_3 && at_3 < 1.0);
+    }
+
+    #[test]
+    fn estimate_needs_timings_and_a_longer_clip_costs_more_per_second() {
+        let id = "progress-estimate-test-model";
+        assert!(expected_transcription_secs(id, 10.0).is_none());
+        MODEL_TIMINGS
+            .lock()
+            .unwrap()
+            .insert(id.into(), VecDeque::from(vec![(5.0, 0.7); 3]));
+        let short = expected_transcription_secs(id, 5.0).unwrap();
+        assert!((short - 0.7).abs() < 0.01);
+        let long = expected_transcription_secs(id, 20.0).unwrap();
+        assert!(long > 4.0 * short);
+        MODEL_TIMINGS.lock().unwrap().remove(id);
     }
 }
 

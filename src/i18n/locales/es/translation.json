@@ -11,14 +11,16 @@
     "shortcuts": "Atajos",
     "models": "Modelos",
     "history": "Historial",
+    "files": "Archivos",
     "debug": "Depuración",
     "about": "Acerca de",
     "backup": "Copia de seguridad",
     "currentAudio": "Audio Actual",
+    "setups": "Configuraciones",
     "tokenCount": "Conteo de Tokens",
     "keyboardTyper": "Escritura de Teclado",
+    "whatsNew": "Novedades",
     "jumper": "Jumper",
-    "translator": "Traductor",
     "more": "Más",
     "groups": {
       "settings": "Ajustes",
@@ -60,10 +62,342 @@
       "installWhenIdle": "Instalar cuando esté inactivo",
       "installRestartNow": "Instalar y reiniciar ahora",
       "enableAutomatic": "Activar actualizaciones automáticas"
+    },
+    "unread": "sin leer"
+  },
+  "helpMode": {
+    "button": "Modo ayuda: señala un ajuste para ver qué hace",
+    "hint": "Señala un ajuste para ver qué hace. Haz clic en cualquier sitio o pulsa Esc para salir."
+  },
+  "setup": {
+    "skipSetup": "Omitir configuración",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "saveNext": "Guardar y seguir",
+    "skip": "Omitir",
+    "start": "Empezar la configuración",
+    "finish": "Terminar",
+    "step": "Paso {{current}} de {{total}}",
+    "welcome": {
+      "title": "Te damos la bienvenida a Handy Tool",
+      "body": "Habla y tus palabras se escriben donde esté el cursor. Tu voz se convierte en texto en este PC.",
+      "steps": "Esta breve configuración pregunta qué idiomas hablas, te sugiere un modelo de voz para ellos y te muestra tus atajos y tu micrófono. Puedes omitir cualquier paso y cambiarlo todo después en los ajustes."
+    },
+    "languages": {
+      "title": "¿En qué idiomas vas a hablar?",
+      "body": "Elige todos los idiomas que usas. Los modelos de voz sugeridos entenderán todos ellos.",
+      "search": "Buscar idiomas",
+      "noMatch": "Ningún idioma coincide.",
+      "selected": "Seleccionados: {{languages}}"
+    },
+    "model": {
+      "body": "Tres buenas opciones para {{languages}}: la más precisa, una equilibrada y la más rápida. Elige una y se descargará mientras terminas la configuración; puedes cambiarla después en la página Modelos.",
+      "bodyAny": "Tres buenas opciones: la más precisa, una equilibrada y la más rápida. Elige una y se descargará mientras terminas la configuración; puedes cambiarla después en la página Modelos.",
+      "accurate": "Más preciso",
+      "balanced": "Equilibrado",
+      "fast": "Más rápido",
+      "downloadContinue": "Descargar y continuar",
+      "seeAll": "Ver todos los modelos",
+      "showSuggestions": "Volver a las tres sugerencias",
+      "search": "Buscar modelos",
+      "notForLanguages": "No entiende todos tus idiomas"
+    },
+    "shortcuts": {
+      "title": "Tus atajos",
+      "body": "Funcionan desde ya. Consérvalos, o haz clic en uno y pulsa las teclas que prefieras. Cada uno muestra su valor predeterminado, así que siempre puedes volver a él.",
+      "default": "Predeterminado: {{keys}}.",
+      "transcribe": "Pulsa una vez para empezar y otra para terminar.",
+      "ptt": "Mantén pulsado mientras hablas.",
+      "cancel": "Detiene una grabación sin escribir nada.",
+      "more": "Hay más atajos (Transcribir y enviar, pausa, deshacer última palabra, …) en la página Atajos."
+    },
+    "microphone": {
+      "title": "¿Qué micrófono?",
+      "body": "Predeterminado sigue el micrófono predeterminado del sistema. Elige otro si hablas por unos auriculares o un micrófono USB."
+    },
+    "try": {
+      "title": "Pruébalo",
+      "body": "Pulsa {{keys}}, di una frase y vuelve a pulsar. Tus palabras aparecerán abajo.",
+      "placeholder": "Aquí aparecerán tus palabras.",
+      "listening": "Escuchando… pulsa {{keys}} de nuevo cuando termines.",
+      "downloading": "{{model}} aún se está descargando ({{percent}} %). Pruébalo cuando esté listo, o sigue con Siguiente.",
+      "noModel": "Aún no has elegido un modelo de voz, así que no hay nada que probar. Sigue con Siguiente y elige uno en la página Modelos."
+    },
+    "done": {
+      "title": "Todo listo",
+      "howTo": "Pulsa {{keys}}, habla y vuelve a pulsar: el texto se escribe donde esté el cursor.",
+      "downloading": "{{model}} se está descargando ({{percent}} %) — se usará en cuanto esté listo.",
+      "ready": "Modelo de voz: {{model}}.",
+      "noModel": "Aún no has elegido un modelo de voz: elige uno en la página Modelos.",
+      "suggested": {
+        "title": "¿Quieres ajustar más?",
+        "body": "Todo funciona ya con buenos valores predeterminados, así que no los necesitas ahora. Si quieres, una de estas configuraciones te guía por más opciones."
+      }
+    },
+    "catalog": {
+      "description": "Las configuraciones guiadas te hacen unas preguntas y lo ajustan todo por ti. Puedes omitir cualquier paso.",
+      "basic": {
+        "title": "Configuración básica",
+        "description": "Tus idiomas, un modelo de voz sugerido para ellos, los atajos básicos, tu micrófono y una prueba rápida: la misma guía que en el primer inicio."
+      },
+      "start": "Empezar",
+      "jumper": {
+        "title": "Jumper",
+        "description": "Deja que Handy Tool pegue tu dictado en el campo correcto por ti: recuerda los lugares donde escribes (un chat, un documento, un campo en una sesión remota), lleva el texto allí automáticamente estés donde estés, y vuelve a ellos con una tecla."
+      },
+      "postProcessing": {
+        "title": "Posprocesamiento",
+        "description": "Deja que un modelo de IA limpie o transforme lo que dictas (puntuación, muletillas, una estructura, una traducción), con su propio atajo."
+      },
+      "windowsOnly": "Solo Windows",
+      "appearance": {
+        "title": "Apariencia",
+        "description": "Cómo se ven la píldora de grabación y el cuadro de texto en vivo: la posición y el tamaño de la píldora, sus barras de sonido, cómo muestra el progreso, y el cuadro de texto en vivo, con cada opción mostrándose en movimiento antes de elegirla."
+      }
+    },
+    "closeSetup": "Cerrar configuración",
+    "jumper": {
+      "name": "Configurar Jumper",
+      "place": "Lugar {{n}}",
+      "goal": {
+        "title": "¿Para qué quieres el Jumper?",
+        "body": "En muchas apps (un chat, un correo, un documento, un escritorio remoto) Handy Tool puede poner tu dictado directamente en el campo de texto correcto por ti. El Jumper recuerda esos campos, así que el texto llega allí automáticamente, incluso estando en otra ventana, y una tecla te lleva de vuelta a ellos. Elige lo que quieres; podrás cambiarlo más tarde en la página Jumper.",
+        "jump": {
+          "title": "Volver con una tecla",
+          "detail": "Pulsa un atajo y el campo recordado vuelve a estar delante, listo para escribir."
+        },
+        "land": {
+          "title": "Que mi dictado llegue allí",
+          "detail": "Estés donde estés cuando termina una grabación, el texto va al campo recordado, así puedes leer otra cosa mientras dictas."
+        },
+        "both": {
+          "title": "Ambas",
+          "detail": "Salta allí con una tecla, y el dictado también llega allí."
+        }
+      },
+      "mouse": {
+        "title": "¿Recordar también la posición del ratón?",
+        "body": "En navegadores y apps como Discord o Teams, Windows solo ve la ventana entera, no el cuadro de texto. Con la posición del ratón recordada, Handy vuelve a hacer clic justo en ese cuadro.",
+        "no": {
+          "title": "No, solo el campo",
+          "detail": "Suficiente para la mayoría de apps de escritorio (Word, Bloc de notas, correo)."
+        },
+        "yes": {
+          "title": "Sí, también la posición del ratón",
+          "detail": "Para páginas web y apps de chat. Handy hace clic donde estaba el ratón cuando mostraste el lugar."
+        }
+      },
+      "places": {
+        "title": "Muéstrame el lugar",
+        "body": "Pulsa el botón y luego haz clic en el campo de texto que quieras en {{seconds}} segundos. Handy recuerda el campo que tiene el foco al acabar el tiempo. Puedes añadir más lugares.",
+        "first": "Aún no hay ningún lugar.",
+        "another": "¿Otro lugar?",
+        "countdown": "Haz clic en el campo ahora… {{seconds}}",
+        "show": "Muéstrame el lugar",
+        "add": "Añadir otro lugar",
+        "remembered": "Recordado: {{app}}",
+        "failed": "No se pudo recordar: {{reason}}",
+        "again": "Mostrar este lugar otra vez"
+      },
+      "shortcuts": {
+        "title": "Tus atajos",
+        "body": "Fijar recuerda el campo en el que estás ahora; Saltar te lleva de vuelta. Mantén los predeterminados o haz clic en uno y pulsa las teclas que quieras."
+      },
+      "test": {
+        "title": "Pruébalo",
+        "bodyJump": "Haz clic en Saltar allí: el campo recordado debería pasar al frente, listo para escribir.",
+        "bodyLand": "Haz clic en Saltar allí para comprobar cada lugar. Luego dicta en cualquier sitio: al terminar la grabación, el texto llega al Lugar 1.",
+        "none": "No se recordó ningún lugar. Puedes añadir lugares en la página Jumper con sus atajos Fijar.",
+        "jump": "Saltar allí"
+      },
+      "done": {
+        "title": "El Jumper está listo",
+        "body": "Tus lugares se conservan tras reiniciar. Todo lo demás (más ranuras, sesiones remotas, seguir dónde llegó el texto) está en la página Jumper."
+      }
+    },
+    "postProcessing": {
+      "name": "Configurar posprocesamiento",
+      "prompt": {
+        "title": "¿Qué debe hacer la IA con tus palabras?",
+        "body": "Tras una grabación, un modelo de IA reescribe el texto como pidas. Elige la instrucción; podrás editarla en {{postProcessingPage}}.",
+        "own": "Escribir la mía",
+        "ownDetail": "Tus propias instrucciones, por ejemplo \"Traduce al inglés\" o \"Escríbelo como lista\".",
+        "ownDefaultName": "Mi instrucción",
+        "ownPlaceholder": "Dile a la IA qué hacer con el texto, p. ej. Corrige la puntuación y quita las muletillas. Conserva mis palabras."
+      },
+      "provider": {
+        "title": "¿Qué IA debe hacerlo?",
+        "body": "Una en línea necesita una clave de su web; una en este PC (LM Studio, FLM) solo su modelo. La misma lista está en {{providersPage}}.",
+        "noModel": "Sin modelo aún",
+        "ready": "Lista",
+        "needsKey": "Necesita una clave",
+        "needsModel": "Necesita un modelo",
+        "key": "Clave API",
+        "address": "Dirección",
+        "model": "Modelo",
+        "list": "Ver modelos",
+        "listFailed": "No se pudieron listar los modelos: {{reason}}"
+      },
+      "shortcut": {
+        "title": "Tu atajo de posprocesamiento",
+        "body": "Dicta con este atajo cuando quieras que la IA rehaga el texto; tus otros atajos siguen igual."
+      },
+      "try": {
+        "title": "Pruébalo",
+        "body": "Edita el ejemplo si quieres y pásalo por la IA con tu instrucción.",
+        "sample": "pues eh creo que deberíamos em quedar el martes no espera el miércoles como a las tres y traer el el informe",
+        "run": "Ejecutar",
+        "result": "La versión de la IA:",
+        "failed": "No funcionó: {{reason}}"
+      },
+      "done": {
+        "title": "El posprocesamiento está listo",
+        "body": "Dicta con el atajo de posprocesamiento y se pega la versión de la IA. La instrucción, la IA y más opciones están en {{postProcessingPage}}."
+      }
+    },
+    "appearance": {
+      "name": "Configurar apariencia",
+      "sample": "Hola Ana, enviaré los números del borrador el viernes para que todos puedan comentar antes de la revisión de la próxima semana.",
+      "intro": {
+        "title": "Tu píldora de grabación",
+        "body": "Mientras dictas, esta píldora muestra qué está haciendo Handy Tool. Aquí tienes para qué sirve cada parte. Los siguientes pasos muestran cada opción moviéndose una junto a otra, para que puedas compararlas antes de elegir.",
+        "t": "T: el cuadro de texto en vivo, que muestra tus palabras mientras hablas. Haz clic en la T para activar o desactivar el cuadro en cualquier momento; brilla mientras está activado.",
+        "bars": "Barras de sonido: tu voz. Se mueven mientras el micrófono te oye.",
+        "pause": "Pausa: deja de escuchar por un momento; pulsa de nuevo para continuar. Se muestra cuando el botón de pausa está activado.",
+        "cancel": "×: cancela la toma. No se transcribe ni se pega nada."
+      },
+      "theme": {
+        "title": "¿Claro u oscuro?",
+        "body": "Los colores de todas las ventanas de Handy Tool. La píldora de grabación se mantiene oscura en todos los casos.",
+        "system": "Sigue a Windows, y cambia cuando Windows lo hace.",
+        "light": "Siempre claro.",
+        "dark": "Siempre oscuro."
+      },
+      "position": {
+        "title": "¿Dónde debería aparecer la píldora?",
+        "body": "Mientras dictas, en la parte inferior o superior de la pantalla, o en ningún sitio.",
+        "bottom": "En el centro, justo encima de la barra de tareas.",
+        "top": "En el centro, en la parte superior de la pantalla.",
+        "none": "Sin píldora. El icono de la bandeja sigue mostrando que está grabando."
+      },
+      "size": {
+        "title": "¿Qué tamaño debería tener la píldora?",
+        "body": "Más grande se ve mejor en una pantalla grande o de alta resolución."
+      },
+      "bars": {
+        "title": "¿Qué anchura deberían tener las barras de sonido?",
+        "body": "Las barras en el centro de la píldora muestran tu voz.",
+        "narrow": {
+          "title": "Estrecha",
+          "detail": "62 px, con más espacio alrededor."
+        },
+        "wide": {
+          "title": "Ancha",
+          "detail": "77,5 px, barras más gruesas."
+        }
+      },
+      "progress": {
+        "title": "¿Cómo debería mostrar el progreso?",
+        "body": "Cuando dejas de hablar, la píldora muestra cómo va la transcripción.",
+        "line": "Una línea fina se llena por abajo.",
+        "ring": "Una luz brillante recorre el borde y queda encendida hasta la cifra.",
+        "lap": "Una luz fina sigue girando por el borde; la cifra está en el texto."
+      },
+      "glow": {
+        "title": "¿Con qué intensidad debería brillar?",
+        "body": "El brillo alrededor de la luz de progreso. Puedes ajustarlo más tarde con Intensidad del Brillo.",
+        "none": {
+          "title": "Sin brillo",
+          "detail": "Solo la línea."
+        },
+        "soft": {
+          "title": "Suave"
+        },
+        "normal": {
+          "title": "Normal"
+        },
+        "strong": {
+          "title": "Intenso"
+        },
+        "brightest": {
+          "title": "Máximo"
+        }
+      },
+      "liveText": {
+        "title": "¿Mostrar tus palabras mientras hablas?",
+        "body": "El cuadro de texto en vivo se sitúa junto a la píldora y muestra lo que dices mientras hablas; la T de la píldora lo activa y desactiva en cualquier momento. Con él activado, las palabras del cuadro son tu texto: la toma no se transcribe otra vez entera al final, así que el texto está listo al instante, aunque puede ser algo menos preciso.",
+        "off": {
+          "title": "Desactivado",
+          "detail": "Solo la píldora."
+        },
+        "last_words": {
+          "title": "Últimas palabras",
+          "detail": "Una línea con tus palabras más recientes."
+        },
+        "full_text": {
+          "title": "Texto completo",
+          "detail": "Todo lo dicho hasta ahora; el cuadro crece mientras hablas."
+        },
+        "remote": "{{model}} se ejecuta en línea y solo recibe el audio al detener, así que el cuadro de texto en vivo no puede funcionar con él. Elige primero un modelo que funcione en este PC en la página Modelos."
+      },
+      "width": {
+        "title": "¿Qué anchura debería tener el cuadro?",
+        "body": "Un cuadro más ancho necesita menos líneas para el mismo texto."
+      },
+      "textSize": {
+        "title": "¿Qué tamaño debería tener el texto?",
+        "body": "El tamaño de las palabras en el cuadro de texto en vivo."
+      },
+      "quiet": {
+        "title": "Cuando hablas demasiado bajo",
+        "body": "Si tu voz es demasiado baja para que el modelo te oiga bien, la píldora puede avisarte.",
+        "box": {
+          "title": "En un cuadro bajo la píldora",
+          "detail": "La píldora conserva sus barras de sonido."
+        },
+        "pill": {
+          "title": "En la píldora",
+          "detail": "En lugar de las barras de sonido, por un momento."
+        },
+        "off": {
+          "title": "No avisarme",
+          "detail": "Sin aviso."
+        }
+      },
+      "done": {
+        "title": "Tu aspecto ya está listo",
+        "body": "Tu píldora y tu cuadro de texto en vivo ya están configurados. Hay más en los ajustes: General › Aplicación para la píldora (tamaño, barras de sonido, progreso, brillo y color, con una vista previa en movimiento), y General › Transcripción para el cuadro de texto en vivo (anchura, tamaño del texto, líneas, desvanecido). También puedes volver a ejecutar esta configuración desde Configuraciones."
+      },
+      "color": {
+        "title": "¿En qué color debería brillar?",
+        "body": "El color de la luz de progreso y su brillo, la T brillante y las barras de sonido. Para cualquier otro color, usa Color de Progreso en General › Aplicación.",
+        "cyan": "Cian (predeterminado)",
+        "blue": "Azul",
+        "violet": "Violeta",
+        "pink": "Rosa",
+        "amber": "Ámbar",
+        "green": "Verde",
+        "custom": "Tu color"
+      }
+    },
+    "promo": {
+      "start": "Empezar configuración",
+      "appearance": {
+        "title": "Configuración de apariencia",
+        "text": "Mira cada aspecto en movimiento antes de elegirlo: la píldora, su progreso y el cuadro de texto en vivo."
+      },
+      "jumper": {
+        "title": "Configuración de Jumper",
+        "text": "Haz que tu dictado se pegue en el campo correcto automáticamente: configura tus lugares y sus atajos paso a paso, con una prueba al final."
+      },
+      "postProcessing": {
+        "title": "Configuración de posprocesamiento",
+        "text": "Deja que una IA limpie o transforme lo que dictas: elige qué debe hacer y qué IA, paso a paso, con una prueba al final."
+      }
     }
   },
   "onboarding": {
-    "subtitle": "Para comenzar, elige un modelo de transcripción",
+    "title": "Elige un modelo de voz",
     "recommended": "Recomendado",
     "download": "Descargar",
     "downloading": "Descargando...",
@@ -76,51 +410,51 @@
     "models": {
       "small": {
         "name": "Whisper Small",
-        "description": "Rápido y bastante preciso."
+        "description": "Rápido y preciso. 99 idiomas."
       },
       "medium": {
         "name": "Whisper Medium",
-        "description": "Buena precisión, velocidad media"
+        "description": "Velocidad media, preciso. 99 idiomas."
       },
       "turbo": {
         "name": "Whisper Turbo",
-        "description": "Equilibrio entre precisión y velocidad."
+        "description": "Velocidad media, muy preciso. 99 idiomas."
       },
       "large": {
         "name": "Whisper Large",
-        "description": "Buena precisión, pero lento."
+        "description": "Lento, máxima precisión en 99 idiomas; traduce al inglés."
       },
       "parakeet-tdt-0.6b-v2": {
         "name": "Parakeet V2",
-        "description": "Solo inglés. El mejor modelo para hablantes de inglés."
+        "description": "Muy rápido, máxima precisión. Solo inglés."
       },
       "parakeet-tdt-0.6b-v3": {
         "name": "Parakeet V3",
-        "description": "Rápido y preciso"
+        "description": "Muy rápido, máxima precisión. 25 idiomas europeos."
       },
       "moonshine-base": {
         "name": "Moonshine Base",
-        "description": "Muy rápido, solo inglés. Maneja bien los acentos."
+        "description": "Muy rápido, bastante preciso. Solo inglés."
       },
       "moonshine-tiny-streaming-en": {
         "name": "Moonshine V2 Tiny",
-        "description": "Ultrarrápido, solo inglés"
+        "description": "El más rápido, precisión básica. Solo inglés."
       },
       "moonshine-small-streaming-en": {
         "name": "Moonshine V2 Small",
-        "description": "Rápido, solo inglés. Buen equilibrio entre velocidad y precisión."
+        "description": "Muy rápido, muy preciso. Solo inglés."
       },
       "moonshine-medium-streaming-en": {
         "name": "Moonshine V2 Medium",
-        "description": "Solo inglés. Alta calidad."
+        "description": "Rápido, máxima precisión. Solo inglés."
       },
       "breeze-asr": {
         "name": "Breeze ASR",
-        "description": "Optimizado para mandarín taiwanés. Soporte para cambio de código."
+        "description": "Lento, muy preciso. Hecho para el mandarín de Taiwán, también mezclado con inglés."
       },
       "sense-voice-int8": {
         "name": "SenseVoice",
-        "description": "Muy rápido. Chino, inglés, japonés, coreano, cantonés."
+        "description": "El más rápido, preciso. Lo mejor para chino, cantonés, japonés y coreano; también inglés."
       }
     },
     "errors": {
@@ -175,7 +509,10 @@
       "languageOnly": "Solo {{language}}"
     },
     "cancel": "Cancelar",
-    "cancelDownload": "Cancelar descarga"
+    "cancelDownload": "Cancelar descarga",
+    "ready": "Listo",
+    "useModel": "Usar este modelo",
+    "inUse": "Se usa para todo el dictado."
   },
   "settings": {
     "modelSettings": {
@@ -187,7 +524,6 @@
       }
     },
     "models": {
-      "title": "Modelos de Transcripción",
       "description": "Elige qué modelo de voz transcribe tu dictado: los modelos difieren en precisión, velocidad y cuánta memoria retienen mientras están cargados. Predeterminado: nada seleccionado en una instalación nueva; la incorporación descarga y selecciona tu primer modelo. Tu elección también decide si Idioma y Traducir al Inglés se ofrecen en la página General, y el Traductor usa este mismo modelo siempre que su Modelo por lotes se deje en \"Igual que el dictado (predeterminado)\".",
       "downloaded": "Descargados",
       "available": "Disponibles para Descargar",
@@ -220,8 +556,8 @@
         "singleKey": "Esta tecla sola activa el atajo en todas partes, así que ya no podrás escribirla. Añade un modificador como Ctrl o Alt.",
         "bindings": {
           "transcribe": {
-            "name": "Atajo de Transcripción",
-            "description": "Presiona una vez para empezar a grabar y otra vez para terminar; la transcripción se entrega en la ventana que tenía el enfoque. Predeterminado: Ctrl+Espacio. Sigue el Modo de Transcripción y el Método de Pegado de la página Avanzado; para mantener presionado en vez de alternar, usa el Atajo de Presionar para Hablar."
+            "name": "Atajo de Grabación/Transcripción",
+            "description": "Presiona una vez para empezar a grabar y otra vez para terminar; la transcripción se entrega en la ventana que tenía el enfoque. Predeterminado: Ctrl+Espacio. Sigue el Modo de Transcripción y el Método de Pegado en Más › Salida; para mantener presionado en vez de alternar, usa el Atajo de Presionar para Hablar."
           },
           "cancel": {
             "name": "Atajo de Cancelar",
@@ -245,7 +581,7 @@
           },
           "transcribe_ptt": {
             "name": "Atajo de Presionar para Hablar",
-            "description": "Mantén presionado este atajo para grabar y suéltalo para detener; el micrófono se apaga al soltar, así que nada de lo que digas después puede filtrarse al texto. Predeterminado: Ctrl+Alt+Espacio. Tiene su propio Modo de Transcripción (PTT) y su propio Método de Pegado (PTT), así que presionar para hablar puede comportarse distinto del Atajo de Transcripción."
+            "description": "Mantén presionado este atajo para grabar y suéltalo para detener; el micrófono se apaga al soltar, así que nada de lo que digas después puede filtrarse al texto. Predeterminado: Ctrl+Alt+Espacio. Tiene su propio Modo de Transcripción (PTT) y su propio Método de Pegado (PTT), así que presionar para hablar puede comportarse distinto del Atajo de Grabación/Transcripción."
           },
           "type_text": {
             "name": "Atajo de Escribir Texto",
@@ -257,7 +593,7 @@
           },
           "anchor_set": {
             "name": "Fijar Ancla",
-            "description": "Captura el campo de texto que tienes enfocado ahora mismo como el destino Rápida 1. Predeterminado: ctrl+shift+F1. Por sí solo no entrega nada: pon 'Acción de ranura al finalizar' en 'Saltar / entregar a la ranura' con la ranura fijada en Rápida 1 (Avanzado → Transcripción) para que tu próxima transcripción llegue allí. Los cuadros de contraseña y las propias ventanas de Handy se rechazan."
+            "description": "Captura el campo de texto que tienes enfocado ahora mismo como el destino Rápida 1. Predeterminado: ctrl+shift+F1. Por sí solo no entrega nada: pon 'Acción de ranura al finalizar' en 'Saltar / entregar a la ranura' con la ranura fijada en Rápida 1 (Más › Salida) para que tu próxima transcripción llegue allí. Los cuadros de contraseña y las propias ventanas de Handy se rechazan."
           },
           "anchor_jump": {
             "name": "Saltar al Ancla",
@@ -265,19 +601,19 @@
           },
           "jump_set_slot_1": {
             "name": "Fijar Ranura 1",
-            "description": "Memoriza el campo que tienes enfocado ahora mismo como la ranura estática 1, reemplazando lo que contuviera. Predeterminado: ctrl+alt+shift+1. La ranura es solo un marcador hasta que algo la usa: salta a ella con 'Saltar a la Ranura 1', o dirige la 'Acción de ranura al finalizar' de un flujo (Avanzado → Transcripción) a la Ranura 1 para que las transcripciones se entreguen allí."
+            "description": "Memoriza el campo que tienes enfocado ahora mismo como la ranura estática 1, reemplazando lo que contuviera. Predeterminado: ctrl+alt+shift+1. La ranura es solo un marcador hasta que algo la usa: salta a ella con 'Saltar a la Ranura 1', o dirige la 'Acción de ranura al finalizar' de un flujo (Más › Salida) a la Ranura 1 para que las transcripciones se entreguen allí."
           },
           "jump_set_slot_2": {
             "name": "Fijar Ranura 2",
-            "description": "Memoriza el campo que tienes enfocado ahora mismo como la ranura estática 2, reemplazando lo que contuviera. Predeterminado: ctrl+alt+shift+2. Vuelve con 'Saltar a la Ranura 2', o dirige la 'Acción de ranura al finalizar' de un flujo (Avanzado → Transcripción) a la Ranura 2 para que las transcripciones se entreguen allí."
+            "description": "Memoriza el campo que tienes enfocado ahora mismo como la ranura estática 2, reemplazando lo que contuviera. Predeterminado: ctrl+alt+shift+2. Vuelve con 'Saltar a la Ranura 2', o dirige la 'Acción de ranura al finalizar' de un flujo (Más › Salida) a la Ranura 2 para que las transcripciones se entreguen allí."
           },
           "jump_set_slot_3": {
             "name": "Fijar Ranura 3",
-            "description": "Memoriza el campo que tienes enfocado ahora mismo como la ranura estática 3, reemplazando lo que contuviera. Predeterminado: ctrl+alt+shift+3. Vuelve con 'Saltar a la Ranura 3', o dirige la 'Acción de ranura al finalizar' de un flujo (Avanzado → Transcripción) a la Ranura 3 para que las transcripciones se entreguen allí."
+            "description": "Memoriza el campo que tienes enfocado ahora mismo como la ranura estática 3, reemplazando lo que contuviera. Predeterminado: ctrl+alt+shift+3. Vuelve con 'Saltar a la Ranura 3', o dirige la 'Acción de ranura al finalizar' de un flujo (Más › Salida) a la Ranura 3 para que las transcripciones se entreguen allí."
           },
           "jump_set_slot_4": {
             "name": "Fijar Ranura 4",
-            "description": "Memoriza el campo que tienes enfocado ahora mismo como la ranura estática 4, reemplazando lo que contuviera. Predeterminado: ctrl+alt+shift+4. Vuelve con 'Saltar a la Ranura 4', o dirige la 'Acción de ranura al finalizar' de un flujo (Avanzado → Transcripción) a la Ranura 4 para que las transcripciones se entreguen allí."
+            "description": "Memoriza el campo que tienes enfocado ahora mismo como la ranura estática 4, reemplazando lo que contuviera. Predeterminado: ctrl+alt+shift+4. Vuelve con 'Saltar a la Ranura 4', o dirige la 'Acción de ranura al finalizar' de un flujo (Más › Salida) a la Ranura 4 para que las transcripciones se entreguen allí."
           },
           "jump_slot_1": {
             "name": "Saltar a la Ranura 1",
@@ -308,15 +644,17 @@
           "set": "Error al configurar el atajo: {{error}}",
           "reset": "Error al restablecer el atajo al valor original",
           "registrationFailed": "Algunos atajos no se pudieron registrar y están inactivos: {{bindings}}. Es posible que otra aplicación ya los esté usando: elige una combinación distinta en Configuración."
-        }
+        },
+        "badge": {
+          "conflict": "Conflicto",
+          "risky": "Arriesgado"
+        },
+        "altGrConflictLayout": "Una distribución de teclado que usas para {{layouts}} escribe un carácter con AltGr+{{key}}. Windows informa de AltGr como Ctrl+Alt, así que este atajo se activaría en su lugar. Elige una combinación sin Ctrl+Alt.",
+        "altGrConflictSpace": "Una distribución de teclado que usas para {{layouts}} escribe caracteres con AltGr, y AltGr suele seguir pulsado para el espacio después de uno. Windows informa de AltGr como Ctrl+Alt, así que este atajo se activaría en lugar de ese espacio. Elige una combinación sin Ctrl+Alt."
       },
       "pauseButton": {
         "label": "Botón de pausa",
         "description": "Añade un botón de pausa a la superposición de grabación: en pausa no se graba nada y al reanudar sigue la misma toma. Predeterminado: Desactivado. Tras 10 minutos en pausa se libera el micrófono hasta reanudar."
-      },
-      "speedIndicator": {
-        "label": "Velocidad del PC en la barra",
-        "description": "Muestra a la izquierda de la barra de grabación un icono de PC con un porcentaje: lo rápido que este PC transcribe comparado con su velocidad normal para el modelo que usas. 100 % es lo normal; ámbar por debajo del 70 %, rojo por debajo del 50 %. Predeterminado: desactivado. Necesita unas cuantas grabaciones con un modelo antes de tener una referencia."
       },
       "undoWord": {
         "label": "Deshacer la última palabra",
@@ -330,6 +668,16 @@
           "worksWith": "Necesita un modelo que funcione en este PC, porque los servicios remotos solo reciben el audio al detener. Funciona con: {{models}}.",
           "noLocal": "Necesita un modelo que funcione en este PC, porque los servicios remotos solo reciben el audio al detener. Descarga uno en la página Modelos."
         }
+      },
+      "liveTextAfterStop": {
+        "label": "Mostrar el texto mientras se transcribe",
+        "description": "**Cuando termina una toma sin el cuadro de texto en vivo, el cuadro aparece y la transcripción se escribe en él a medida que llega**: lo ya transcrito al instante y el resto en cuanto está listo. Solo para mirar: el texto se entrega como siempre.\n\n**Predeterminado:** Desactivado.\n\nUsa el estilo y el ancho del cuadro de texto en vivo. Con el cuadro de texto en vivo activado, cada toma es en vivo y muestra su texto de todos modos."
+      },
+      "liveTradeoffs": {
+        "title": "Transcripción en vivo: conviene saber",
+        "accuracy": "El texto que ves es el que obtienes, así que es algo menos preciso que Tras la grabación, sobre todo en tramos largos sin pausas. Tras la grabación da el texto más preciso.",
+        "cpu": "Usa más CPU y batería mientras hablas.",
+        "undo": "Deshacer la última palabra solo funciona con modelos Parakeet."
       },
       "liveTextMode": {
         "title": "El texto en vivo muestra",
@@ -348,6 +696,22 @@
         "medium": "Medio",
         "wide": "Ancho",
         "extraWide": "Muy ancho"
+      },
+      "liveTextHeight": {
+        "title": "Alto del cuadro",
+        "description": "Cuántas líneas muestra el cuadro de texto en vivo en el modo Texto completo antes de que las más antiguas se desplacen fuera. **Predeterminado:** Medio (6 líneas).",
+        "small": "Pequeño (3 líneas)",
+        "medium": "Medio (6 líneas)",
+        "large": "Grande (10 líneas)",
+        "extraLarge": "Muy grande (16 líneas)"
+      },
+      "liveTextSize": {
+        "title": "Tamaño del texto",
+        "description": "Qué tamaño tiene el texto del cuadro de texto en vivo. **Predeterminado:** Normal.",
+        "small": "Pequeño",
+        "normal": "Normal",
+        "large": "Grande",
+        "extraLarge": "Muy grande"
       },
       "language": {
         "title": "Idioma",
@@ -392,7 +756,7 @@
         },
         "idleBehavior": {
           "title": "Cuando no hay ninguna grabación activa",
-          "description": "Qué ocurre al presionar el Atajo de Transcribir y Enviar cuando no se está grabando nada. Predeterminado: Iniciar una grabación, así una pulsación empieza y la siguiente pega y envía. Elige No hacer nada para que esta tecla sea un finalizador puro: inicias las tomas con el Atajo de Transcripción y presionas esta solo cuando quieres que ese resultado se pegue y se envíe.",
+          "description": "Qué ocurre al presionar el Atajo de Transcribir y Enviar cuando no se está grabando nada. Predeterminado: Iniciar una grabación, así una pulsación empieza y la siguiente pega y envía. Elige No hacer nada para que esta tecla sea un finalizador puro: inicias las tomas con el Atajo de Grabación/Transcripción y presionas esta solo cuando quieres que ese resultado se pegue y se envíe.",
           "options": {
             "startNormal": "Iniciar una grabación",
             "doNothing": "No hacer nada"
@@ -407,7 +771,7 @@
         "title": "Paste last transcription",
         "pasteMethod": {
           "title": "Paste method",
-          "description": "Cómo el atajo 'Paste last transcription' coloca el texto en la ventana enfocada. Es independiente del Método de Pegado de la página Avanzado, así que puedes ajustarlo para ese único destino problemático. Predeterminado: Portapapeles (Ctrl+V); prueba Portapapeles (Shift+Insert) en una terminal, Directo para escribir los caracteres en vez de pegarlos, o Ninguno para solo colocar el texto en el portapapeles y pegarlo tú mismo."
+          "description": "Cómo el atajo 'Paste last transcription' coloca el texto en la ventana enfocada. Es independiente del Método de Pegado en Más › Salida, así que puedes ajustarlo para ese único destino problemático. Predeterminado: Portapapeles (Ctrl+V); prueba Portapapeles (Shift+Insert) en una terminal, Directo para escribir los caracteres en vez de pegarlos, o Ninguno para solo colocar el texto en el portapapeles y pegarlo tú mismo."
         },
         "clipboard": {
           "title": "Clipboard",
@@ -502,7 +866,7 @@
       },
       "altGrWarning": {
         "label": "Avisar de atajos con AltGr",
-        "description": "Muestra un aviso junto a los atajos que AltGr también puede escribir. Windows interpreta AltGr como Ctrl+Alt, así que un atajo como Ctrl+Alt+O se activa al escribir ó con AltGr y el carácter nunca llega. Predeterminado: activado. Desactívalo si nunca escribes caracteres con AltGr.",
+        "description": "**Muestra un aviso ámbar junto a los atajos con los que AltGr también escribe.** Windows interpreta AltGr como Ctrl+Alt, así que un atajo como Ctrl+Alt+O se activa al escribir ó con AltGr y el carácter nunca llega. En Windows solo avisa cuando una de tus distribuciones de teclado escribe algo con AltGr en esa tecla (o AltGr+Shift, para una combinación con Shift), y nombra el idioma al que pertenece esa distribución.\n\n**Predeterminado:** Activado. Desactívalo si nunca escribes caracteres con AltGr.",
         "turnOff": "Desactivar este aviso"
       }
     },
@@ -520,6 +884,20 @@
         "off": "Desactivado",
         "minutes": "{{minutes}} min"
       },
+      "micWarmup": {
+        "title": "Esperar a que el micrófono se caliente",
+        "description": "**Tras arrancar un micrófono inactivo, la barra de grabación sigue mostrando \"Iniciando micro...\" hasta que está realmente listo.** Algunos micrófonos empiezan mucho más bajos y suben durante un segundo más o menos; las palabras dichas en ese tiempo se descartaban como ruido. La espera es la media de los últimos arranques en frío de este micrófono, medidos por la propia app.\n\n**Predeterminado:** Activado.\n\nSolo espera un arranque en frío: un micrófono mantenido listo arranca al instante. Oculto con Micrófono Siempre Activo.",
+        "measured": "Medido en este PC: {{seconds}} s.",
+        "notMeasured": "Aún sin medir: se mide solo en el próximo arranque en frío."
+      },
+      "tooQuiet": {
+        "title": "Avisar si hablas demasiado bajo",
+        "description": "**Si hablas tan bajo que tus palabras no se guardan, la barra de grabación muestra un momento \"Muy bajo: habla alto\"**. Reacciona a un sonido que es casi voz y está claramente por encima del ruido de la sala durante unos 0,7 s; el silencio, la música y el tecleo no lo activan. No detecta palabras mal entendidas: eso lo muestra el cuadro de texto en vivo.\n\n**Predeterminado:** Activado.",
+        "box": {
+          "title": "Mostrarlo en su propio recuadro",
+          "description": "**\"Muy bajo: habla alto\" aparece en un recuadro pequeño justo debajo de la barra de grabación, y la barra sigue mostrando sus barras de sonido.** Con la barra abajo en la pantalla, el recuadro queda en el hueco sobre la barra de tareas, así que nunca tapa el cuadro de texto en vivo. Desactivado: la barra lo muestra en lugar de las barras de sonido (con el botón de pausa activado, las traducciones largas se cortan).\n\n**Predeterminado:** Activado."
+        }
+      },
       "audioFeedback": {
         "label": "Retroalimentación de Audio",
         "description": "Reproduce una señal corta cuando empieza la grabación y otra distinta cuando se detiene, así sabes que el micrófono está activo sin mirar la pantalla. Predeterminado: Desactivado. Activarlo habilita Dispositivo de Salida y Volumen de abajo; los dos sonidos de señal se pueden cambiar por tus propios archivos con Tema de Sonido en la página de Depuración."
@@ -536,7 +914,6 @@
       }
     },
     "advanced": {
-      "title": "Avanzado",
       "groups": {
         "app": "Aplicación",
         "output": "Salida",
@@ -571,6 +948,36 @@
           "bottom": "Abajo",
           "top": "Arriba"
         }
+      },
+      "reopenLastPage": {
+        "title": "Reabrir Última Página",
+        "description": "**Abre Handy Tool en la página que tenías abierta al cerrarlo** (por ejemplo, Historial) en lugar de General.\n\n**Predeterminado:** Activado."
+      },
+      "overlaySize": {
+        "title": "Tamaño de Superposición",
+        "description": "**Qué tamaño tiene la superposición de grabación**, y el recuadro «Muy bajo» debajo de ella. Más grande se ve mejor en pantallas grandes o de alta resolución.\n\n**Predeterminado:** Normal.",
+        "normal": "Normal",
+        "large": "Grande",
+        "extraLarge": "Muy grande"
+      },
+      "soundBarsWide": {
+        "title": "Barras de Sonido Anchas",
+        "description": "**Barras de sonido más anchas en la superposición de grabación:** barras y huecos de 2,5 px (77,5 px) en lugar de 2 px (62 px).\n\n**Predeterminado:** Desactivado."
+      },
+      "progressStyle": {
+        "title": "Estilo de Progreso",
+        "description": "**Cómo muestra la superposición de grabación el avance de una transcripción:** una línea fina que se llena por abajo; una luz brillante que recorre el borde desde el centro inferior, iluminada tras ella hasta la cifra; o una luz fina que gira por el borde, una vuelta cada 1,6 segundos (la cifra está en el texto). Con movimiento reducido, la luz que gira pasa a ser la línea.\n\n**Predeterminado:** Línea.",
+        "line": "Línea abajo",
+        "ring": "Luz alrededor del borde",
+        "lap": "Luz que gira por el borde"
+      },
+      "progressLineGlow": {
+        "title": "Línea Luminosa",
+        "description": "**La línea de progreso brilla como la luz del borde**, con un halo que sobresale del borde de la superposición.\n\n**Predeterminado:** Desactivado. Solo con Estilo de Progreso: Línea abajo."
+      },
+      "progressGlow": {
+        "title": "Intensidad del Brillo",
+        "description": "**Cuánto brilla la luz de progreso**: «Luz alrededor del borde» y la línea cuando «Línea Luminosa» está activado. 0 % apaga el brillo; 200 % lo duplica.\n\n**Predeterminado:** 100 %."
       },
       "pasteMethod": {
         "title": "Método de Pegado",
@@ -640,8 +1047,7 @@
       "customWords": {
         "title": "Palabras Personalizadas",
         "description": "Una lista de nombres, productos y jerga que el motor sigue entendiendo mal; después de cada transcripción, Handy encuentra palabras de sonido similar y las sustituye por tu forma de escribirlas. Predeterminado: vacío. Agrega palabras completas a medida que las encuentres, y si empieza a corregir cosas que no querías, baja el Umbral de Corrección de Palabras en la página de Depuración.",
-        "placeholder": "Agregar una palabra",
-        "add": "Agregar",
+        "placeholder": "Añade una palabra y pulsa Intro",
         "remove": "Eliminar {{word}}",
         "duplicate": "\"{{word}}\" ya existe"
       },
@@ -737,7 +1143,6 @@
         }
       },
       "tabs": {
-        "app": "Aplicación",
         "output": "Salida",
         "typer": "Escritura",
         "providers": "Proveedores",
@@ -899,10 +1304,21 @@
       "systemAudioGain": {
         "title": "Nivel del audio del sistema",
         "description": "Qué volumen tiene el audio del sistema respecto a tu voz. Súbelo si la otra persona queda demasiado baja para transcribirla; bájalo si te tapa. Solo se escala el audio del sistema: tu micrófono nunca se toca."
+      },
+      "progressColor": {
+        "title": "Color de Progreso",
+        "description": "**El color de las partes brillantes de la píldora:** la luz de progreso y su brillo (la línea, la luz alrededor del borde y la luz que gira), la T brillante y las barras de sonido. Se elige con tres deslizadores: Tono (qué color), Saturación (qué tan vivo) y Luminosidad. La muestra enseña el resultado; el botón de reinicio recupera el predeterminado.\n\n**Predeterminado:** cian.",
+        "hue": "Tono",
+        "saturation": "Saturación",
+        "lightness": "Luminosidad",
+        "reset": "Volver al color predeterminado"
+      },
+      "pillPreview": {
+        "title": "Vista previa",
+        "description": "**La píldora de grabación tal como la configuran los ajustes de alrededor, en movimiento:** grabando a la izquierda (la T brillante mientras el cuadro de texto en vivo está activado, las barras de sonido) y transcribiendo a la derecha, con su progreso recorriendo de 0 a 100 % una y otra vez con tu estilo de progreso, brillo y color, a tu Tamaño de Superposición."
       }
     },
     "postProcessing": {
-      "title": "Post Proceso",
       "hotkey": {
         "title": "Tecla de acceso rápido"
       },
@@ -943,7 +1359,7 @@
           "title": "Temperatura",
           "description": "Un valor más bajo es más determinista y firme (0 = más literal); un valor más alto es más creativo."
         },
-        "registryNote": "La clave API, el modelo y la URL base del proveedor se configuran en Avanzado → Proveedores LLM Registrados."
+        "registryNote": "La clave API, el modelo y la URL base del proveedor se configuran en Más › Proveedores › Proveedores LLM Registrados."
       },
       "prompts": {
         "title": "Prompt",
@@ -1044,7 +1460,7 @@
       },
       "postProcessingToggle": {
         "label": "Post Procesamiento",
-        "description": "Activa el paso opcional de limpieza con IA y agrega una página de Post Proceso a la barra lateral, donde eliges el proveedor y el prompt. Predeterminado: Desactivado. Tu Atajo de Transcripción normal no se ve afectado: la limpieza solo se ejecuta con la Tecla de Post Procesamiento independiente, y el Historial conserva la transcripción sin procesar junto a la procesada."
+        "description": "Activa el paso opcional de limpieza con IA; su tecla, proveedor y prompt aparecen justo debajo de este interruptor. Predeterminado: Desactivado. Tu Atajo de Grabación/Transcripción normal no se ve afectado: la limpieza solo se ejecuta con la Tecla de Post Procesamiento independiente, y el Historial conserva la transcripción sin procesar junto a la procesada."
       },
       "muteWhileRecording": {
         "label": "Silenciar Durante la Grabación",
@@ -1102,7 +1518,7 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "Un destino de entrega cuya aplicación, clase de ventana o clase de control contenga uno de estos fragmentos (sin distinguir mayúsculas) se trata como escritorio remoto, por lo que usa el valor Remoto de 'Paste delay after jump (Windows)' y 'Submit delay before Enter (Windows)' en Advanced → Transcription en lugar del Local. Ya no tiene que ser un destino de salto: desde 1.3.0 también se clasifica una ventana remota ya enfocada, que es lo que hace que allí se aplique el retardo de envío. Predeterminado: msrdc, mstsc, Citrix. Añade el nombre del proceso que use tu cliente RDP o Citrix si las entregas siguen perdiéndose; una lista vacía trata todos los destinos como locales.",
+        "description": "Un destino de entrega cuya aplicación, clase de ventana o clase de control contenga uno de estos fragmentos (sin distinguir mayúsculas) se trata como escritorio remoto, por lo que usa el valor Remoto de 'Paste delay after jump (Windows)' y 'Submit delay before Enter (Windows)' en Más › Salida en lugar del Local. Ya no tiene que ser un destino de salto: desde 1.3.0 también se clasifica una ventana remota ya enfocada, que es lo que hace que allí se aplique el retardo de envío. Predeterminado: msrdc, mstsc, Citrix. Añade el nombre del proceso que use tu cliente RDP o Citrix si las entregas siguen perdiéndose; una lista vacía trata todos los destinos como locales.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
@@ -1115,8 +1531,8 @@
         "title": "Ranura rápida (Anclaje y Entrega)",
         "optionsMoved": {
           "title": "Opciones de entrega",
-          "description": "No es un ajuste, es una señal. Lo que realmente hace un salto con una ranura se configura por flujo en Avanzado → Transcripción: 'Acción de ranura al iniciar', 'Acción de ranura al finalizar', 'Rastrear última ubicación de salida' y 'Volver al enfoque anterior tras la entrega' existen una vez para Transcribir y otra vez para Transcribir y Enviar.",
-          "hint": "Se configuran en los grupos Transcribir y Transcribir y Enviar de la página General."
+          "description": "No es un ajuste, es una señal. Lo que realmente hace un salto con una ranura se configura por flujo en Más › Salida: 'Acción de ranura al iniciar', 'Acción de ranura al finalizar', 'Rastrear última ubicación de salida' y 'Volver al enfoque anterior tras la entrega' existen una vez para Transcribir y otra vez para Transcribir y Enviar.",
+          "hint": "Se configuran en los grupos Transcribir y Transcribir y Enviar en Más › Salida."
         }
       },
       "hot2": {
@@ -1171,10 +1587,10 @@
       }
     },
     "translator": {
-      "title": "Traductor",
+      "title": "Carpetas vigiladas",
       "enabled": {
         "label": "Vigilar carpetas",
-        "description": "Activa para transcribir cada archivo .wav, .ogg u .opus nuevo que llegue a una carpeta vigilada a un archivo .txt junto a él, usando tu modelo, Idioma y ajustes de Traducir al Inglés actuales. Predeterminado: desactivado. Los archivos que ya están en una carpeta cuando empieza la vigilancia se dejan a propósito sin tocar, y las carpetas en sí se eligen en Agregar una carpeta."
+        "description": "Activa para transcribir cada archivo .wav, .mp3, .m4a, .aac, .flac, .ogg u .opus nuevo que llegue a una carpeta vigilada a un archivo .txt junto a él, usando tu modelo, Idioma y ajustes de Traducir al Inglés actuales. Predeterminado: desactivado. Los archivos que ya están en una carpeta cuando empieza la vigilancia se dejan a propósito sin tocar, y las carpetas en sí se eligen en Agregar una carpeta."
       },
       "priority": {
         "title": "Prioridad",
@@ -1210,7 +1626,7 @@
         "counters": "{{done}} completados, {{failed}} fallidos en esta sesión"
       },
       "folders": {
-        "title": "Carpetas vigiladas",
+        "title": "Carpetas",
         "none": "Sin carpetas",
         "emptyTitle": "Sin carpetas vigiladas",
         "emptyDescription": "Agrega una carpeta para empezar a vigilarla en busca de grabaciones nuevas.",
@@ -1224,10 +1640,83 @@
         "removeAriaLabel": "Dejar de vigilar la carpeta {{name}}"
       }
     },
+    "files": {
+      "model": {
+        "title": "Modelo",
+        "description": "**Qué modelo de voz transcribe el archivo.** También aparecen los modelos aún no descargados; elige uno y descárgalo primero.\n\n**Predeterminado:** tu modelo de dictado, y el que elijas se recuerda. Otro modelo se carga junto a tu modelo de dictado, así el dictado sigue listo, y se libera al terminar el archivo.",
+        "dictation": "{{name}} (tu modelo de dictado)",
+        "notDownloaded": "{{name}} (no descargado)",
+        "groups": {
+          "dictation": "Tu modelo de dictado",
+          "downloaded": "Descargados",
+          "notDownloaded": "No descargados"
+        },
+        "downloadSize": "Descargar · {{size}}"
+      },
+      "transcribe": {
+        "title": "Transcribir un archivo",
+        "choose": {
+          "title": "Elegir un archivo de audio",
+          "description": "**Transcribe el archivo de audio que elijas**: WAV, MP3, M4A, AAC, FLAC, OGG u Opus, como una grabación del móvil, con el modelo elegido arriba y tus ajustes de idioma.\n\nEl archivo se corta en sus pausas en partes de hasta unos 40 segundos, y cada parte se transcribe una vez: sin texto en vivo ni segunda pasada. El archivo original solo se lee, nunca se modifica.",
+          "button": "Elegir archivo…"
+        },
+        "audioFiles": "Archivos de audio",
+        "decoding": "Leyendo {{file}}…",
+        "progress": "{{done}} de {{total}} · {{percent}} %",
+        "cancel": "Detener",
+        "cancelled": "Detenido: {{file}}",
+        "failed": "No se pudo transcribir {{file}}: {{error}}",
+        "startFailed": "No se pudo iniciar: {{reason}}",
+        "done": "{{file}} está transcrito",
+        "copy": "Copiar texto",
+        "savedTo": "Texto guardado en {{path}}",
+        "saveFailed": "No se pudo guardar: {{error}}",
+        "empty": "No se encontró voz en este archivo."
+      },
+      "options": {
+        "saveText": {
+          "title": "Guardar el texto",
+          "description": "**Dónde se guarda la transcripción como .txt**, con el nombre del archivo de audio. Si el nombre ya existe, se añade un número; no se sobrescribe nada.\n\n**Predeterminado:** Preguntar cada vez: una ventana pregunta al elegir un archivo y puede recordar tu elección. El texto se muestra para copiar en cualquier caso.",
+          "options": {
+            "ask": "Preguntar cada vez",
+            "handy_folder": "En la carpeta de Handy",
+            "next_to_file": "Junto a la grabación",
+            "dont_save": "No guardar"
+          }
+        },
+        "keepAudio": {
+          "title": "Guardar una copia del audio",
+          "description": "**Copia el archivo de audio en la carpeta de abajo**, junto a su texto, para que lo conserves aunque el original se mueva o se borre.\n\n**Predeterminado:** desactivado. El original nunca se mueve ni se modifica."
+        },
+        "folder": {
+          "title": "Carpeta",
+          "description": "**Dónde va el texto cuando se guarda en la carpeta de Handy, y dónde van las copias de audio.**\n\n**Predeterminado:** una carpeta \"files\" dentro de la carpeta de datos de Handy.",
+          "change": "Cambiar",
+          "reset": "Volver a la carpeta de Handy"
+        }
+      },
+      "ask": {
+        "title": "¿Dónde guardar el texto?",
+        "handyFolder": "En la carpeta de Handy",
+        "nextToFile": "Junto a la grabación",
+        "dontSave": "No guardar",
+        "dontSaveHint": "El texto se sigue mostrando para copiar y queda en la lista.",
+        "remember": "Recordar mi elección",
+        "rememberHint": "Puedes cambiarlo luego en Guardar el texto."
+      },
+      "log": {
+        "title": "Archivos transcritos",
+        "empty": "Aún no se ha transcrito nada. Cada archivo que transcribas aquí aparece en la lista con su texto.",
+        "showMore": "Mostrar todo",
+        "showLess": "Mostrar menos",
+        "reveal": "Mostrar en la carpeta",
+        "delete": "Quitar de la lista"
+      }
+    },
     "currentAudio": {
       "streamingHint": "El texto aparece progresivamente mientras hablas solo cuando el atajo que pulsaste — Transcribir o Pulsar para hablar — está configurado como En vivo y usas un modelo local.",
       "finalHint": "En el modo Posterior a la grabación, o con la transcripción por API u OpenRouter, la transcripción completa aparece de una vez al finalizar la grabación; configura el modo de cada atajo en",
-      "advancedTranscription": "Avanzado → Transcripción",
+      "advancedTranscription": "General › Transcripción",
       "finalHintSuffix": ".",
       "title": "Audio Actual",
       "idle": "Comienza a grabar para ver la transcripción en vivo",
@@ -1259,7 +1748,8 @@
       "loading": "Cargando modelos…",
       "error": "Error al cargar los modelos",
       "noMatches": "Ningún modelo coincide — escribe para usar un id personalizado"
-    }
+    },
+    "revealHint": "Actívalo para ver más ajustes."
   },
   "common": {
     "loading": "Cargando...",
@@ -1315,12 +1805,17 @@
     "pause": "Pausa",
     "resume": "Reanudar",
     "liveTextBox": "Cuadro de texto en vivo",
-    "slowPc": "Transcribiendo al {{percent}} % de la velocidad normal de este PC",
-    "speedUnknown": "Velocidad del PC: aún sin medir"
+    "menu": {
+      "changeShortcut": "Cambiar atajo…",
+      "liveTextSettings": "Ajustes del cuadro de texto en vivo…",
+      "hidePause": "Ocultar el botón de pausa"
+    },
+    "tooQuiet": "Muy bajo: habla alto"
   },
   "floating": {
     "waiting": "Esperando la transcripción…",
     "listening": "Escuchando…",
+    "listeningShort": "Escuchando",
     "copy": "Copiar",
     "copied": "Copiado"
   },
@@ -1358,7 +1853,7 @@
     "fileTooLarge": "El archivo es demasiado grande (máx. 10 MB).",
     "loadedFile": "Cargado: {{name}}",
     "providerOption": "{{name}} (proveedor)",
-    "chipDisabled": "No configurado: actívalo con 'Habilitar este proveedor' en Avanzado > Proveedores > Proveedores LLM Registrados.",
+    "chipDisabled": "No configurado: actívalo con 'Habilitar este proveedor' en Más › Proveedores › Proveedores LLM Registrados.",
     "chips": {
       "cl100k_base": "cl100k (GPT-4)",
       "o200k_base": "o200k (GPT-4o)",
@@ -1386,7 +1881,6 @@
     }
   },
   "keyboardTyper": {
-    "title": "Escritura de Teclado",
     "description": "Envía este texto a la ventana enfocada como pulsaciones de teclado simuladas individuales, así funciona donde el pegado está bloqueado: consolas remotas, visores de VM, cuadros de contraseña. Presiona Iniciar y obtienes la cuenta atrás de Retraso de inicio (10 s por defecto) para hacer clic primero en la ventana de destino; presiona el Atajo de Escribir Texto cuando ya estés en el destino y la escritura empieza cerca de un segundo después en su lugar. El texto vive solo en memoria: nunca se escribe en tu configuración, en el Historial ni en los registros.",
     "placeholder": "Ingresa el texto a escribir...",
     "go": "Iniciar",
@@ -1404,7 +1898,7 @@
     "shortcut": {
       "label": "Atajo:",
       "unset": "no configurado",
-      "hint": "(cámbialo en la configuración Avanzada; presiónalo de nuevo para cancelar)"
+      "hint": "(cámbialo en la página Atajos; presiónalo de nuevo para cancelar)"
     },
     "status": {
       "idle": "Haz clic en Iniciar y luego enfoca la ventana de destino, o usa el atajo directamente en la app de destino.",
@@ -1417,14 +1911,14 @@
   },
   "modelTesting": {
     "configureProviders": "Configurar proveedores",
-    "description": "Envía un mismo prompt a cada modelo que marques bajo Ejecutar y coloca las respuestas una junto a otra con conteo de tokens, costo y tiempo de ida y vuelta; los modelos marcados bajo Juez luego califican todas esas respuestas usando tu prompt de juez. Predeterminado: nada seleccionado y ambos prompts vacíos. La lista viene de Avanzado > Proveedores LLM Registrados, así que una ejecución usa tus propias claves API: tu prompt sale de esta máquina y, para proveedores de pago, cuesta dinero real.",
+    "description": "Envía un mismo prompt a cada modelo que marques bajo Ejecutar y coloca las respuestas una junto a otra con conteo de tokens, costo y tiempo de ida y vuelta; los modelos marcados bajo Juez luego califican todas esas respuestas usando tu prompt de juez. Predeterminado: nada seleccionado y ambos prompts vacíos. La lista viene de Más › Proveedores › Proveedores LLM Registrados, así que una ejecución usa tus propias claves API: tu prompt sale de esta máquina y, para proveedores de pago, cuesta dinero real.",
     "providersLabel": "Modelos",
     "selectAll": "Seleccionar todos para ejecutar",
     "clear": "Limpiar",
     "run": "Ejecutar",
     "judge": "Juez",
     "costPerM": "entrada ${{input}} · salida ${{output}} /1M",
-    "noProviders": "No hay proveedores con capacidad de chat configurados. Agrega uno en Avanzado → Proveedores LLM Registrados.",
+    "noProviders": "No hay proveedores con capacidad de chat configurados. Agrega uno en Más › Proveedores › Proveedores LLM Registrados.",
     "mainPromptLabel": "Prompt para todos los modelos",
     "mainPromptPlaceholder": "El prompt que se envía a cada modelo seleccionado…",
     "judgePromptLabel": "Prompt del juez / árbitro (opcional)",
@@ -1491,5 +1985,153 @@
       "message": "La actualización a {{expected}} no se completó: sigue ejecutándose {{actual}}. El instalador se inició pero no se reemplazó nada; puede haberlo bloqueado una directiva de seguridad.",
       "download": "Descargar manualmente"
     }
+  },
+  "whatsNew": {
+    "intro": "Lo nuevo y lo cambiado en las últimas actualizaciones. Mostrar abre el ajuste.",
+    "release": "Versión {{version}}",
+    "show": "Mostrar",
+    "items": {
+      "files": {
+        "title": "Transcribir un archivo",
+        "description": "La nueva página Archivos transcribe un archivo de audio que elijas (WAV, MP3, M4A, AAC, FLAC, OGG, Opus) con el modelo que elijas y guarda una lista de archivos transcritos. Las carpetas vigiladas también se mudaron allí."
+      },
+      "helpMode": {
+        "title": "Modo ayuda",
+        "description": "El ? arriba a la derecha de cada página: señala un ajuste para leer qué hace. Sustituye la \"i\" de cada fila."
+      },
+      "setups": {
+        "title": "Configuraciones de Jumper y posprocesamiento",
+        "description": "Dos configuraciones guiadas en la página Configuraciones: recuerda lugares y salta a ellos, o conecta una IA que limpia tu texto."
+      },
+      "firstSetup": {
+        "title": "Guía de configuración al primer inicio",
+        "description": "Idiomas, un modelo de voz sugerido, atajos, el micrófono y una primera prueba. Vuelve a ejecutarla desde Configuraciones."
+      },
+      "modelRatings": {
+        "title": "Valoraciones de modelos comparables",
+        "description": "Las barras de velocidad y precisión salen ahora de mediciones, y las descripciones coinciden con ellas."
+      },
+      "progressStyle": {
+        "title": "Luz alrededor del borde",
+        "description": "Estilo de progreso: al transcribir, una luz brillante recorre la píldora en lugar de la línea inferior."
+      },
+      "overlaySize": {
+        "title": "Tamaño de la superposición",
+        "description": "Agranda la píldora de grabación: 125 % o 150 %."
+      },
+      "reopenLastPage": {
+        "title": "Reabrir la última página",
+        "description": "Handy Tool se abre en la página que tenías abierta."
+      },
+      "liveTextSize": {
+        "title": "Cuadro de texto en vivo: tamaño y altura",
+        "description": "Elige el tamaño del texto y cuántas líneas muestra el cuadro de texto completo."
+      },
+      "micWarmup": {
+        "title": "Esperar a que el micrófono se caliente",
+        "description": "Un micrófono que empieza bajo ya no pierde tus primeras palabras."
+      },
+      "tooQuiet": {
+        "title": "Muy bajo — habla más alto",
+        "description": "Un aviso cuando hablas demasiado bajo para que el modelo te oiga bien."
+      },
+      "newIcon": {
+        "title": "Nuevo icono de la app",
+        "description": "El nuevo icono de onda en la app, el instalador, la barra de tareas e Inicio."
+      },
+      "holdUndo": {
+        "title": "Mantén para borrar palabras",
+        "description": "Con la transcripción en vivo (cuadro de texto en vivo activado): Ctrl+Retroceso borra la última palabra y, mantenido, sigue borrando. Actívalo con Deshacer la última palabra en General."
+      },
+      "liveTranscript": {
+        "title": "El texto en vivo es tu transcripción",
+        "description": "Con «Cuadro de texto en vivo» activado, lo que muestra el cuadro es la transcripción: al detener solo se añade tu último segundo o dos, así que el texto está listo al instante."
+      },
+      "historyTabs": {
+        "title": "Pestañas del historial y estadísticas",
+        "description": "El historial tiene las pestañas Grabaciones, Estadísticas y Ajustes. Estadísticas cuenta tus grabaciones y su duración por día, semana, mes y año."
+      },
+      "liveTextFade": {
+        "title": "Desvanecer al dejar de hablar",
+        "description": "El texto en vivo se desvanece 3 segundos después de dejar de cambiar; tus siguientes palabras lo traen de vuelta."
+      },
+      "appearanceSetup": {
+        "title": "Configuración de apariencia",
+        "description": "Una configuración guiada que muestra cada aspecto en movimiento antes de elegirlo: la píldora, su progreso y el cuadro de texto en vivo. En la página Configuraciones y arriba de General › Aplicación."
+      },
+      "progressColor": {
+        "title": "Tu propio color de progreso",
+        "description": "Elige el color de la luz de progreso y su brillo, la T brillante y las barras de sonido con tres deslizadores: tono, saturación y luminosidad."
+      },
+      "liveTextBox": {
+        "title": "Cuadro de texto en vivo",
+        "description": "Un pequeño cuadro junto a la píldora de grabación muestra tus palabras mientras hablas: la última línea o todo el texto. La T de la píldora o su propio atajo lo cambia."
+      },
+      "newLook": {
+        "title": "Un nuevo aspecto",
+        "description": "Toda la app está rediseñada, en claro y en oscuro. La píldora de grabación es más pequeña, con barras de sonido más largas, y el icono de la bandeja es nuevo."
+      },
+      "newLayout": {
+        "title": "Una nueva barra lateral con búsqueda",
+        "description": "Las páginas que más usas están en la barra lateral; las antiguas pestañas de Avanzado y Escritura de Teclado están en Más, los ajustes de Aplicación en General. El cuadro de búsqueda encuentra cualquier ajuste."
+      },
+      "shortcutsPage": {
+        "title": "Todos los atajos en un solo lugar",
+        "description": "La página Atajos lista todos los atajos, y avisa cuando dos comparten las mismas teclas o cuando una sola tecla se activaría mientras escribes."
+      },
+      "shortcutNone": {
+        "title": "Desactiva un atajo",
+        "description": "El × de un atajo lo pone en Ninguno, así que sus teclas vuelven a funcionar en otras apps, por ejemplo Escape para Cancelar. Restablecer lo recupera."
+      },
+      "pauseButton": {
+        "title": "Botón de pausa",
+        "description": "Pausa y reanuda una toma desde la píldora de grabación, o con su propio atajo. Actívalo en General."
+      },
+      "progressPercent": {
+        "title": "Transcribiendo 42%",
+        "description": "La píldora muestra cuánto lleva la transcripción, y su × sigue cancelando mientras se ejecuta."
+      },
+      "micStatus": {
+        "title": "La píldora te informa sobre el micrófono",
+        "description": "\"Iniciando micro...\" hasta que realmente graba, y \"Sin micrófono\" o \"Micrófono bloqueado\" cuando no puede empezar, en lugar de grabar silencio."
+      },
+      "micKeepWarm": {
+        "title": "Mantener el micrófono listo",
+        "description": "Mantiene el micrófono abierto unos minutos después de una toma, para que la siguiente empiece al instante."
+      },
+      "liveTextAfterStop": {
+        "title": "Mostrar el texto mientras se transcribe",
+        "description": "Sin el cuadro de texto en vivo, el cuadro aparece cuando detienes y tu texto se escribe en él a medida que llega."
+      },
+      "pillMenus": {
+        "title": "Haz clic derecho en los botones de la píldora",
+        "description": "La T, la pausa y el × de la píldora tienen menús: cambia qué muestra el cuadro, cambia un atajo, o guarda una toma solo en el Historial."
+      },
+      "trayClick": {
+        "title": "Haz clic en el icono de la bandeja para abrir",
+        "description": "Un clic izquierdo en el icono de la bandeja abre la ventana; el menú está en el clic derecho."
+      },
+      "blockedUpdate": {
+        "title": "Las actualizaciones bloqueadas se notifican",
+        "description": "Si una actualización no se instaló (por ejemplo, porque Windows Smart App Control la bloqueó), un banner lo indica, con un enlace para descargarla tú mismo."
+      },
+      "macBuilds": {
+        "title": "Compilaciones para macOS",
+        "description": "Handy Tool ahora también está disponible para Macs Intel y Apple Silicon. Todavía no están firmadas."
+      },
+      "soundSource": {
+        "title": "La fuente de sonido se ha movido",
+        "description": "La fuente de sonido ahora está en General › Sonido, justo encima del selector de micrófono. Solo Windows."
+      },
+      "systemAudioControls": {
+        "title": "Retardo y nivel del audio del sistema",
+        "description": "Cuando se graba el audio del sistema, ajusta cuánto se retrasa respecto a tu micrófono y qué tan alto suena junto a él."
+      },
+      "linuxBuilds": {
+        "title": "Paquetes de Linux",
+        "description": "Paquetes .deb, .rpm y .AppImage para x86_64 y ARM64. Todavía no se han probado."
+      }
+    },
+    "installed": "Instalada"
   }
 }

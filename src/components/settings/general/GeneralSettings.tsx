@@ -3,6 +3,9 @@ import { SlidersHorizontal, Captions, Volume2, RefreshCw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { MicrophoneSelector } from "../MicrophoneSelector";
 import { MicKeepWarm } from "../MicKeepWarm";
+import { MicWarmupWait } from "../MicWarmupWait";
+import { TooQuietHint } from "../TooQuietHint";
+import { LiveTextAfterStop } from "../LiveTextAfterStop";
 import { CaptureSourceSettings } from "../CaptureSourceSettings";
 import { ShortcutInput } from "../ShortcutInput";
 import { SettingsGroup } from "../../ui/SettingsGroup";
@@ -20,12 +23,13 @@ import { AppendTrailingSpace } from "../AppendTrailingSpace";
 import { CancelBehaviorSetting } from "../CancelBehaviorSetting";
 import {
   LiveTextBoxSetting,
+  LiveTradeoffsNotice,
   PauseButtonSetting,
-  SpeedIndicatorSetting,
   UndoWordSetting,
 } from "../TakeControls";
 import { UpdateSettings } from "./UpdateSettings";
 import { ShortcutRegistrationFailures } from "../ShortcutRegistrationFailures";
+import { AppSection } from "../advanced/AdvancedSettings";
 
 export const GeneralSettings: React.FC = () => {
   const { t } = useTranslation();
@@ -46,7 +50,6 @@ export const GeneralSettings: React.FC = () => {
         <ShortcutInput shortcutId="paste_last" grouped={true} />
         <CancelBehaviorSetting descriptionMode="tooltip" grouped={true} />
         <PauseButtonSetting descriptionMode="tooltip" grouped={true} />
-        <SpeedIndicatorSetting descriptionMode="tooltip" grouped={true} />
       </SettingsGroup>
       <ShortcutRegistrationFailures />
       <ModelSettingsCard />
@@ -56,7 +59,9 @@ export const GeneralSettings: React.FC = () => {
       >
         <TranscriptionModeSetting descriptionMode="tooltip" grouped={true} />
         <TranscriptionModePttSetting descriptionMode="tooltip" grouped={true} />
+        <LiveTradeoffsNotice />
         <LiveTextBoxSetting descriptionMode="tooltip" grouped={true} />
+        <LiveTextAfterStop descriptionMode="tooltip" grouped={true} />
         <UndoWordSetting descriptionMode="tooltip" grouped={true} />
         <GpuDeviceSelector descriptionMode="tooltip" grouped={true} />
         <CustomWords descriptionMode="tooltip" grouped />
@@ -66,6 +71,8 @@ export const GeneralSettings: React.FC = () => {
         <CaptureSourceSettings descriptionMode="tooltip" grouped={true} />
         <MicrophoneSelector descriptionMode="tooltip" grouped={true} />
         <MicKeepWarm descriptionMode="tooltip" grouped={true} />
+        <MicWarmupWait descriptionMode="tooltip" grouped={true} />
+        <TooQuietHint descriptionMode="tooltip" grouped={true} />
         <MuteWhileRecording descriptionMode="tooltip" grouped={true} />
         <AudioFeedback descriptionMode="tooltip" grouped={true} />
         <OutputDeviceSelector
@@ -75,6 +82,8 @@ export const GeneralSettings: React.FC = () => {
         />
         <VolumeSlider disabled={!audioFeedbackEnabled} />
       </SettingsGroup>
+      {/* The app itself: appearance, start-up, the overlay's look. */}
+      <AppSection />
       <SettingsGroup
         icon={RefreshCw}
         title={t("settings.general.updates.title")}

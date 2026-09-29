@@ -5,7 +5,9 @@ use crate::audio_feedback::{SoundType, play_feedback_sound, play_feedback_sound_
 use crate::audio_toolkit::ClosedChunk;
 use crate::managers::audio::{AudioRecordingManager, StartFailure};
 use crate::managers::history::HistoryManager;
-use crate::managers::transcription::{TranscriptionManager, running_transcription_fraction};
+use crate::managers::transcription::{
+    TranscriptionManager, expected_transcription_secs, running_transcription_remaining,
+};
 use crate::settings::{
     APPLE_INTELLIGENCE_PROVIDER_ID, AppSettings, TranscriptionMode, get_settings,
 };
@@ -74,6 +76,19 @@ static SEGMENT_BUSY: Lazy<Mutex<Option<Arc<AtomicBool>>>> = Lazy::new(|| Mutex::
 /// on a CPU-only Parakeet after a minute of speech).
 const PREVIEW_MAX_WINDOW_SECS: f32 = 6.0;
 const PREVIEW_KEEP_SECS: f32 = 2.5;
+/// A window read on its own can come back with too few words — Parakeet often
+/// hears nothing in a short clip that it reads fine with the audio around it.
+/// Below this many words per second of speech (dictation runs at 2-3) the
+/// preview does not settle the window: it is read again with what follows.
+const PREVIEW_MIN_WORDS_PER_SEC: f32 = 0.8;
+/// ...unless it has grown this long without anything recognisable (noise).
+const PREVIEW_MAX_UNSETTLED_SECS: f32 = 20.0;
+/// Audio before the window read along for context when a window is settled
+/// (utterance end), and at the final catch-up; only words starting in the
+/// window itself are kept (with a little slack for timestamps).
+const PREVIEW_CONTEXT_SECS: f32 = 4.0;
+const PREVIEW_FINAL_CONTEXT_SECS: f32 = 8.0;
+const PREVIEW_CONTEXT_SLACK_SECS: f32 = 0.15;
 
 /// A word of the live preview and where its audio starts in the take's kept
 /// samples (None when the engine gives no word timings).
@@ -93,6 +108,9 @@ struct LivePreview {
     tail: Vec<LiveWord>,
     /// How much of the take's kept audio the words describe.
     last_len: usize,
+    /// The engine gives word timings (Parakeet), so audio can be read along for
+    /// context and the words outside the window told apart.
+    timed: bool,
     updates: usize,
 }
 
@@ -118,6 +136,15 @@ impl LivePreview {
     }
 }
 
+/// Whether a live-preview window's words may be settled (frozen for good): the
+/// take is over, the window is too short to matter, it has gone on too long to
+/// wait for, or it holds a plausible number of words for its length.
+fn window_settled(words: usize, window_secs: f32, last: bool) -> bool {
+    last || window_secs < 0.6
+        || window_secs > PREVIEW_MAX_UNSETTLED_SECS
+        || words as f32 >= window_secs * PREVIEW_MIN_WORDS_PER_SEC
+}
+
 /// A snapshot of the take's kept audio for the live preview to catch up on.
 struct LiveJob {
     samples: Vec<f32>,
@@ -126,6 +153,8 @@ struct LiveJob {
     /// Undo presses to carry out once the preview has caught up with `samples`,
     /// so the word removed is the last one spoken, not the last one shown.
     undo: usize,
+    /// The take is over (stop): the last chance, so whatever is heard is kept.
+    last: bool,
 }
 
 /// The live preview of the take in progress. Snapshots queue up and one
@@ -176,6 +205,13 @@ struct ChunkedSession {
     /// silently saving a textless recording.
     error_count: AtomicUsize,
     last_error: Mutex<Option<String>>,
+    /// Chunks not transcribed yet (index → samples) and the one in the engine
+    /// now, so the percentage after stop weighs each by the work it needs.
+    unfinished: Mutex<BTreeMap<usize, usize>>,
+    transcribing: Mutex<Option<usize>>,
+    /// Every closed chunk's length (index → samples), for handing the finished
+    /// ones over when the take is switched to live midway.
+    lengths: Mutex<BTreeMap<usize, usize>>,
 }
 
 impl ChunkedSession {
@@ -191,7 +227,48 @@ impl ChunkedSession {
             pcm: Mutex::new(BTreeMap::new()),
             error_count: AtomicUsize::new(0),
             last_error: Mutex::new(None),
+            unfinished: Mutex::new(BTreeMap::new()),
+            transcribing: Mutex::new(None),
+            lengths: Mutex::new(BTreeMap::new()),
         }
+    }
+
+    /// The text of the chunks transcribed so far without a gap from the first,
+    /// and how many samples of the take they cover.
+    fn finished_start(&self) -> (String, usize) {
+        let transcripts = self.transcripts.lock().unwrap_or_else(|p| p.into_inner());
+        let lengths = self.lengths.lock().unwrap_or_else(|p| p.into_inner());
+        let mut texts = Vec::new();
+        let mut samples = 0;
+        for (index, (&chunk, transcript)) in transcripts.iter().enumerate() {
+            match (transcript, lengths.get(&chunk)) {
+                (Some(text), Some(&len)) if chunk == index => {
+                    if !text.is_empty() {
+                        texts.push(text.as_str());
+                    }
+                    samples += len;
+                }
+                _ => break,
+            }
+        }
+        (texts.join(" "), samples)
+    }
+
+    /// Expected seconds of engine work left on this take's chunks; None when a
+    /// chunk has no estimate yet.
+    fn work_left(&self, model_id: &str) -> Option<f32> {
+        let unfinished = self.unfinished.lock().ok()?.clone();
+        let transcribing = *self.transcribing.lock().ok()?;
+        let mut left = 0.0;
+        for (index, samples) in unfinished {
+            let whole = || expected_transcription_secs(model_id, samples as f32 / 16_000.0);
+            left += if Some(index) == transcribing {
+                running_transcription_remaining().or_else(whole)?
+            } else {
+                whole()?
+            };
+        }
+        Some(left)
     }
 
     /// Concatenate buffered chunk PCM in index order (deferred mode).
@@ -214,33 +291,80 @@ impl ChunkedSession {
 
 static CHUNKED_SESSION: Lazy<Mutex<Option<Arc<ChunkedSession>>>> = Lazy::new(|| Mutex::new(None));
 
+/// "Show the text as it's transcribed": put a stopped take's text so far in the
+/// live text box, which types it in (not all at once like a live take's final).
+fn show_text_after_stop(app: &AppHandle, text: &str) {
+    let _ = app.emit(
+        "live-transcription-chunk",
+        LiveTranscriptionChunk {
+            index: 0,
+            text: text.to_string(),
+            is_final: false,
+        },
+    );
+}
+
 /// Shows "Transcribing N%" on the overlay while a stopped take is still being
-/// transcribed. The first figure appears after half a second, so a quick finish
-/// never flickers a number; it never goes backwards; it stops when dropped.
+/// transcribed: how much of the work left at the start is done since, from
+/// `remaining` (expected seconds of engine work still to do). The first figure
+/// appears after half a second, so a quick finish never flickers a number; it
+/// never goes backwards; it stops when dropped.
 struct ProgressTicker {
     stop: Arc<AtomicBool>,
 }
 
 impl ProgressTicker {
-    fn start(app: &AppHandle, fraction: impl Fn() -> Option<f32> + Send + 'static) -> Self {
+    fn start(app: &AppHandle, remaining: impl Fn() -> Option<f32> + Send + 'static) -> Self {
         let stop = Arc::new(AtomicBool::new(false));
         let stop_thread = Arc::clone(&stop);
         let app = app.clone();
         std::thread::spawn(move || {
-            std::thread::sleep(Duration::from_millis(500));
-            let mut shown = 0u8;
+            let started = Instant::now();
+            let mut meter = ProgressMeter::default();
+            let mut emitted = 0u8;
             while !stop_thread.load(Ordering::Relaxed) {
-                if let Some(f) = fraction() {
-                    let percent = (f.clamp(0.0, 0.99) * 100.0) as u8;
-                    if percent > shown {
-                        shown = percent;
-                        utils::emit_transcription_progress(&app, shown);
+                if let Some(left) = remaining() {
+                    let percent = (meter.update(left) * 100.0) as u8;
+                    if percent > emitted && started.elapsed() >= Duration::from_millis(500) {
+                        emitted = percent;
+                        utils::emit_transcription_progress(&app, percent);
                     }
                 }
-                std::thread::sleep(Duration::from_millis(150));
+                std::thread::sleep(Duration::from_millis(100));
             }
         });
         Self { stop }
+    }
+}
+
+/// Turns "seconds of work left" readings into a progress figure (0.0..=0.99)
+/// that never goes backwards: `from` plus the share of the rest that the work
+/// left at `left_then` has shrunk by. When an estimate grows (a slow chunk makes
+/// the rest look slower), it carries on from the figure reached instead of
+/// stalling until the work shrinks back below the old estimate.
+#[derive(Default)]
+struct ProgressMeter {
+    anchor: Option<(f32, f32)>, // (from, left_then)
+    progress: f32,
+}
+
+impl ProgressMeter {
+    fn update(&mut self, left: f32) -> f32 {
+        if !left.is_finite() || left < 0.0 {
+            return self.progress;
+        }
+        match self.anchor {
+            Some((from, left_then)) if left_then > 0.0 => {
+                let now = from + (1.0 - from) * (1.0 - left / left_then);
+                if now < self.progress {
+                    self.anchor = Some((self.progress, left));
+                } else {
+                    self.progress = now.min(0.99);
+                }
+            }
+            _ => self.anchor = Some((self.progress, left)),
+        }
+        self.progress
     }
 }
 
@@ -954,6 +1078,16 @@ mod post_process_prompt_tests {
     }
 }
 
+/// The Post-processing setup's Try it: `text` through the chosen provider and
+/// prompt, exactly as a take would be.
+#[tauri::command]
+#[specta::specta]
+pub async fn post_process_sample(app: AppHandle, text: String) -> Result<String, String> {
+    post_process_transcription(&get_settings(&app), &text)
+        .await
+        .ok_or_else(|| "no answer - check the provider's key and model".to_string())
+}
+
 async fn post_process_transcription(settings: &AppSettings, transcription: &str) -> Option<String> {
     let pp_start = Instant::now();
 
@@ -1444,6 +1578,12 @@ impl ShortcutAction for TranscribeAction {
                     let session_inner = Arc::clone(&session);
                     let idx = closed.index;
                     let pcm = closed.pcm;
+                    if let Ok(mut unfinished) = session.unfinished.lock() {
+                        unfinished.insert(idx, pcm.len());
+                    }
+                    if let Ok(mut lengths) = session.lengths.lock() {
+                        lengths.insert(idx, pcm.len());
+                    }
                     std::thread::spawn(move || {
                         // Serialize with other chunk threads (see
                         // CHUNK_TRANSCRIBE_LOCK); recover the guard even if a
@@ -1451,12 +1591,21 @@ impl ShortcutAction for TranscribeAction {
                         let _serial = CHUNK_TRANSCRIBE_LOCK
                             .lock()
                             .unwrap_or_else(|poisoned| poisoned.into_inner());
+                        let finished = || {
+                            if let Ok(mut unfinished) = session_inner.unfinished.lock() {
+                                unfinished.remove(&idx);
+                            }
+                            session_inner.done_count.fetch_add(1, Ordering::SeqCst);
+                        };
                         // Cancelled sessions don't get engine time — a queued
                         // worker from an abandoned take must not delay the
                         // recording the user is making NOW.
                         if session_inner.abandoned.load(Ordering::SeqCst) {
-                            session_inner.done_count.fetch_add(1, Ordering::SeqCst);
+                            finished();
                             return;
+                        }
+                        if let Ok(mut transcribing) = session_inner.transcribing.lock() {
+                            *transcribing = Some(idx);
                         }
                         let text = match tm_inner.transcribe(pcm) {
                             Ok(t) => t,
@@ -1475,7 +1624,7 @@ impl ShortcutAction for TranscribeAction {
                         if let Ok(mut map) = session_inner.transcripts.lock() {
                             map.insert(idx, Some(text));
                         }
-                        session_inner.done_count.fetch_add(1, Ordering::SeqCst);
+                        finished();
                     });
                 });
             } else {
@@ -1637,6 +1786,9 @@ impl ShortcutAction for TranscribeAction {
                 // transcription ERRORED — lets the empty-text check below tell an
                 // engine failure apart from genuine silence after `session` drops.
                 let mut transcription_error: Option<String> = None;
+                // "Show the text as it's transcribed": the box shows the chunks
+                // done so far at once, then each one as it lands, then the text.
+                let after_stop = crate::overlay::show_live_text_after_stop(&ah);
                 if let Some(session) = chunked_session {
                     let total = session.closed_count.load(Ordering::SeqCst);
                     produced_audio = total > 0;
@@ -1650,28 +1802,24 @@ impl ShortcutAction for TranscribeAction {
                     // take minutes to transcribe on a slow/CPU engine, so we must
                     // not give up early or the result is lost.
                     let wait_start = Instant::now();
-                    // Progress over what was still left at stop: whole segments
-                    // finished since, plus how far the running one is.
-                    let done_at_stop = session.done_count.load(Ordering::SeqCst);
+                    // Progress over the engine work still left at stop, each
+                    // chunk weighed by its length (a short tail no longer
+                    // counts as much as a long chunk).
                     let progress_session = Arc::clone(&session);
-                    let progress = ProgressTicker::start(&ah, move || {
-                        let left_at_stop = total.saturating_sub(done_at_stop);
-                        if left_at_stop == 0 {
-                            return None;
-                        }
-                        let finished = progress_session
-                            .done_count
-                            .load(Ordering::SeqCst)
-                            .saturating_sub(done_at_stop);
-                        let running = running_transcription_fraction();
-                        if finished == 0 && running.is_none() {
-                            return None; // no basis for a figure yet
-                        }
-                        Some((finished as f32 + running.unwrap_or(0.0)) / left_at_stop as f32)
-                    });
+                    let model_id = tm.get_current_model().unwrap_or_default();
+                    let progress =
+                        ProgressTicker::start(&ah, move || progress_session.work_left(&model_id));
+                    let mut shown = String::new();
                     while session.done_count.load(Ordering::SeqCst) < total
                         && wait_start.elapsed() < Duration::from_secs(15 * 60)
                     {
+                        if after_stop {
+                            let so_far = session.assemble();
+                            if so_far != shown {
+                                show_text_after_stop(&ah, &so_far);
+                                shown = so_far;
+                            }
+                        }
                         tokio::time::sleep(Duration::from_millis(100)).await;
                     }
                     drop(progress);
@@ -1764,6 +1912,8 @@ impl ShortcutAction for TranscribeAction {
                     if let Some(converted) = maybe_convert_chinese_variant(&settings, &text).await {
                         text = converted;
                     }
+                    // A take cancelled while transcribing skips post-processing.
+                    let post_process = post_process && take_generation_current(take_gen);
                     if post_process {
                         show_processing_overlay(&ah);
                     }
@@ -1876,6 +2026,9 @@ impl ShortcutAction for TranscribeAction {
                             &st.affixes_for(submit_override.is_some()),
                         )
                     };
+                    if after_stop {
+                        show_text_after_stop(&ah, &text);
+                    }
                     // Off the event loop on Windows (long remote jump delays);
                     // on the main thread elsewhere (enigo). See dispatch_delivery.
                     dispatch_delivery(
@@ -1904,6 +2057,29 @@ impl ShortcutAction for TranscribeAction {
             let samples_taken = rm.stop_recording(&binding_id);
             // Mic is cold now — the stop beep can't leak into the take.
             play_feedback_sound(&ah, SoundType::Stop);
+            // "Show the text as it's transcribed" (a take without the live text
+            // box): the box shows the text once it is ready.
+            let after_stop = crate::overlay::show_live_text_after_stop(&ah);
+
+            // A live take's percentage covers the wait below too: the preview
+            // update in flight, then the final catch-up.
+            let live_progress = match (&live_session, &samples_taken) {
+                (Some(session), Some(samples)) if use_live => {
+                    let final_secs = session.final_window_secs(samples.len());
+                    let model_id = tm.get_current_model().unwrap_or_default();
+                    let busy = busy_flag.clone();
+                    Some(ProgressTicker::start(&ah, move || {
+                        let final_call = expected_transcription_secs(&model_id, final_secs)?;
+                        let in_flight = busy.as_ref().is_some_and(|b| b.load(Ordering::Relaxed));
+                        Some(match running_transcription_remaining() {
+                            Some(left) if in_flight => left + final_call,
+                            Some(left) => left,
+                            None => final_call,
+                        })
+                    }))
+                }
+                _ => None,
+            };
 
             // Wait for the live preview's update in flight to finish (off main
             // thread): it covers at most a few seconds of audio, and the final
@@ -1972,13 +2148,13 @@ impl ShortcutAction for TranscribeAction {
                 // audio transcribed below.
                 let live_final = if use_live {
                     live_session.as_ref().and_then(|session| {
-                        let _progress = ProgressTicker::start(&ah, running_transcription_fraction);
                         let text = session.finish(samples.clone());
                         (!text.trim().is_empty()).then_some(text)
                     })
                 } else {
                     None
                 };
+                drop(live_progress);
                 if let Some(text) = &live_final {
                     info!("Live take: delivering the live text ({} chars)", text.len());
                 }
@@ -1995,7 +2171,7 @@ impl ShortcutAction for TranscribeAction {
                     let _serial = CHUNK_TRANSCRIBE_LOCK
                         .lock()
                         .unwrap_or_else(|poisoned| poisoned.into_inner());
-                    let _progress = ProgressTicker::start(&ah, running_transcription_fraction);
+                    let _progress = ProgressTicker::start(&ah, running_transcription_remaining);
                     match tm.transcribe(samples) {
                         Ok(text) => Ok(text),
                         Err(e) => {
@@ -2047,6 +2223,8 @@ impl ShortcutAction for TranscribeAction {
                                 final_text = converted_text;
                             }
 
+                            // A take cancelled while transcribing skips post-processing.
+                            let post_process = post_process && take_generation_current(take_gen);
                             // Then apply LLM post-processing if this is the post-process hotkey
                             // Uses final_text which may already have Chinese conversion applied
                             if post_process {
@@ -2124,6 +2302,9 @@ impl ShortcutAction for TranscribeAction {
                                     &st.affixes_for(submit_override.is_some()),
                                 )
                             };
+                            if after_stop {
+                                show_text_after_stop(&ah, &final_text);
+                            }
                             dispatch_delivery(
                                 ah.clone(),
                                 delivered,
@@ -2316,8 +2497,9 @@ impl LiveSession {
             .unwrap_or(false)
     }
 
-    /// The words in `window` (the take's audio from sample `from` on).
-    fn transcribe(&self, window: &[f32], from: usize) -> Option<Vec<LiveWord>> {
+    /// The words in `window` (the take's audio from sample `from` on), and
+    /// whether the engine gave word timings.
+    fn transcribe(&self, window: &[f32], from: usize) -> Option<(Vec<LiveWord>, bool)> {
         // Serialize with other engine users (Translator batch segments): wait
         // briefly instead of failing fast, so the preview is delayed — not
         // dropped — when a batch segment holds the engine.
@@ -2334,7 +2516,8 @@ impl LiveSession {
                 return None;
             }
         };
-        Some(match timings {
+        let timed = timings.is_some();
+        let words = match timings {
             Some(timed) => timed
                 .into_iter()
                 .map(|(secs, text)| LiveWord {
@@ -2349,7 +2532,51 @@ impl LiveSession {
                     text: w.to_string(),
                 })
                 .collect(),
-        })
+        };
+        Some((words, timed))
+    }
+
+    /// Begin the preview from text already transcribed, covering the take's
+    /// first `samples`: shown at once, and only the audio after it is read. Its
+    /// words carry no timings, so Undo last word stops at them.
+    fn start_from(&self, text: &str, samples: usize) {
+        let mut p = self.preview.lock().unwrap_or_else(|p| p.into_inner());
+        p.frozen = text
+            .split_whitespace()
+            .map(|w| LiveWord {
+                start: None,
+                text: w.to_string(),
+            })
+            .collect();
+        p.frozen_until = samples;
+        p.last_len = samples;
+        p.updates += 1;
+        let (index, text) = (p.updates, p.text());
+        drop(p);
+        if let Ok(mut live) = self.live_text.lock() {
+            *live = text.clone();
+        }
+        let _ = self.app.emit(
+            "live-transcription-chunk",
+            LiveTranscriptionChunk {
+                index,
+                text,
+                is_final: false,
+            },
+        );
+    }
+
+    /// Seconds of audio the final catch-up of a `total`-sample take will read, as
+    /// things stand (a preview update still running can shorten it).
+    fn final_window_secs(&self, total: usize) -> f32 {
+        let p = self.preview.lock().unwrap_or_else(|p| p.into_inner());
+        let read_from = if p.timed {
+            p.frozen_until
+                .saturating_sub((PREVIEW_FINAL_CONTEXT_SECS * 16_000.0) as usize)
+        } else {
+            p.frozen_until
+        };
+        total.saturating_sub(read_from) as f32 / 16_000.0
     }
 
     /// The take is over: catch the preview up with the whole recording and
@@ -2361,6 +2588,7 @@ impl LiveSession {
             samples,
             utterance_ended: true,
             undo: 0,
+            last: true,
         });
         let raw = self
             .preview
@@ -2385,27 +2613,57 @@ impl LiveSession {
     /// then carry out the snapshot's undo presses.
     fn update(&self, job: LiveJob) {
         let len = job.samples.len();
-        let (from, last_len) = {
+        let (from, last_len, timed) = {
             let p = self.preview.lock().unwrap_or_else(|p| p.into_inner());
-            (p.frozen_until, p.last_len)
+            (p.frozen_until, p.last_len, p.timed)
+        };
+        // Settling a window (utterance end, stop) reads the audio before it
+        // along, for context; only the window's own words are kept.
+        let context_secs = match (job.last, job.utterance_ended) {
+            (true, _) => PREVIEW_FINAL_CONTEXT_SECS,
+            (false, true) => PREVIEW_CONTEXT_SECS,
+            _ => 0.0,
+        };
+        let read_from = if timed {
+            from.saturating_sub((context_secs * 16_000.0) as usize)
+        } else {
+            from
         };
         // An undo's snapshot may hold nothing new since the last update.
         let words = if len > last_len && from < len {
-            self.transcribe(&job.samples[from..], from)
+            self.transcribe(&job.samples[read_from..], read_from)
+                .map(|(words, has_timings)| {
+                    let slack = (PREVIEW_CONTEXT_SLACK_SECS * 16_000.0) as usize;
+                    let own = words
+                        .into_iter()
+                        .filter(|w| w.start.map_or(true, |s| s + slack >= from))
+                        .collect::<Vec<_>>();
+                    (own, has_timings)
+                })
         } else {
             None
         };
 
         let mut p = self.preview.lock().unwrap_or_else(|p| p.into_inner());
+        let window_secs = (len - from.min(len)) as f32 / 16_000.0;
+        // Too few words for this much speech: probably misheard for want of
+        // context, so keep the window open — the next read takes in more.
+        let settled = |count: usize| window_settled(count, window_secs, job.last);
         match words {
-            Some(words) if job.utterance_ended => {
-                p.frozen.extend(words);
-                p.frozen_until = len;
-                p.tail.clear();
-                p.last_len = len;
-            }
-            Some(words) => {
-                if (len - from) as f32 / 16_000.0 > PREVIEW_MAX_WINDOW_SECS {
+            Some((words, has_timings)) => {
+                p.timed |= has_timings;
+                if !settled(words.len()) {
+                    debug!(
+                        "Live preview: {} word(s) for {:.1} s of speech — kept open to read again",
+                        words.len(),
+                        window_secs
+                    );
+                    p.tail = words;
+                } else if job.utterance_ended {
+                    p.frozen.extend(words);
+                    p.frozen_until = len;
+                    p.tail.clear();
+                } else if window_secs > PREVIEW_MAX_WINDOW_SECS {
                     // Freeze all but the last few seconds, at a word boundary when
                     // the engine gives word timings; without them, freeze it all.
                     let keep_from = len.saturating_sub((PREVIEW_KEEP_SECS * 16_000.0) as usize);
@@ -2431,7 +2689,7 @@ impl LiveSession {
                 }
                 p.last_len = len;
             }
-            None if job.utterance_ended && len == p.last_len => {
+            None if job.utterance_ended && len == p.last_len && settled(p.tail.len()) => {
                 // Nothing new, but the words shown end an utterance.
                 let tail = std::mem::take(&mut p.tail);
                 p.frozen.extend(tail);
@@ -2489,6 +2747,7 @@ impl LiveSession {
                             samples,
                             utterance_ended: false,
                             undo: carried,
+                            last: false,
                         });
                 }
             }
@@ -2538,6 +2797,7 @@ fn start_live_session(
             samples,
             utterance_ended,
             undo: 0,
+            last: false,
         });
     });
     session
@@ -2545,8 +2805,9 @@ fn start_live_session(
 
 /// The live text box was switched on during a take that started without it:
 /// make the take live from here on, so the box fills and stop delivers the live
-/// text. It stops being transcribed in chunks, and what was said so far is
-/// transcribed once to catch the box up.
+/// text. It stops being transcribed in chunks; the chunks already transcribed
+/// fill the box at once, and only what was said after them is transcribed to
+/// catch up (reading the whole take again took 23 s for a 60 s take here).
 pub fn make_take_live(app: &AppHandle) {
     let rm = app.state::<Arc<AudioRecordingManager>>();
     if !rm.is_recording() {
@@ -2563,8 +2824,10 @@ pub fn make_take_live(app: &AppHandle) {
         }
     }
     rm.clear_on_chunk_callback();
+    let mut done = (String::new(), 0);
     if let Ok(mut g) = CHUNKED_SESSION.lock() {
         if let Some(session) = g.as_ref() {
+            done = session.finished_start();
             session.abandoned.store(true, Ordering::SeqCst);
         }
         *g = None;
@@ -2572,12 +2835,19 @@ pub fn make_take_live(app: &AppHandle) {
     let tm = app.state::<Arc<TranscriptionManager>>();
     let session = start_live_session(app, &rm, &tm);
     shortcut::register_undo_word_for_live_take(app);
-    info!("Live text box switched on mid-take: the take is live from here on");
+    info!(
+        "Live text box switched on mid-take: the take is live from here on ({:.1} s already transcribed)",
+        done.1 as f32 / 16_000.0
+    );
+    if done.1 > 0 {
+        session.start_from(&done.0, done.1);
+    }
     if let Some(samples) = rm.snapshot_recording() {
         session.push(LiveJob {
             samples,
             utterance_ended: false,
             undo: 0,
+            last: false,
         });
     }
 }
@@ -2602,6 +2872,7 @@ pub fn undo_last_word(app: &AppHandle) {
         samples,
         utterance_ended: false,
         undo: 1,
+        last: false,
     });
 }
 
@@ -2967,3 +3238,82 @@ pub static ACTION_MAP: Lazy<HashMap<String, Arc<dyn ShortcutAction>>> = Lazy::ne
     }
     map
 });
+
+#[cfg(test)]
+mod chunk_handover_tests {
+    use super::ChunkedSession;
+
+    #[test]
+    fn only_chunks_finished_without_a_gap_are_handed_over() {
+        let session = ChunkedSession::new(0, false);
+        {
+            let mut transcripts = session.transcripts.lock().unwrap();
+            transcripts.insert(0, Some("first part".into()));
+            transcripts.insert(1, Some(String::new())); // silent chunk
+            transcripts.insert(2, None); // still being transcribed
+            transcripts.insert(3, Some("later part".into()));
+            let mut lengths = session.lengths.lock().unwrap();
+            for (index, len) in [(0, 16_000), (1, 8_000), (2, 32_000), (3, 16_000)] {
+                lengths.insert(index, len);
+            }
+        }
+        assert_eq!(session.finished_start(), ("first part".to_string(), 24_000));
+    }
+}
+
+#[cfg(test)]
+mod progress_meter_tests {
+    use super::ProgressMeter;
+
+    #[test]
+    fn follows_the_work_left() {
+        let mut m = ProgressMeter::default();
+        assert_eq!(m.update(10.0), 0.0);
+        assert!((m.update(5.0) - 0.5).abs() < 1e-6);
+        assert!((m.update(2.5) - 0.75).abs() < 1e-6);
+    }
+
+    #[test]
+    fn a_grown_estimate_slows_it_down_but_never_back() {
+        let mut m = ProgressMeter::default();
+        m.update(10.0);
+        assert!((m.update(5.0) - 0.5).abs() < 1e-6);
+        // The rest now looks twice as long: it holds, then goes on from there.
+        assert!((m.update(10.0) - 0.5).abs() < 1e-6);
+        assert!((m.update(5.0) - 0.75).abs() < 1e-6);
+    }
+
+    #[test]
+    fn needs_work_to_measure_and_stops_short_of_done() {
+        let mut m = ProgressMeter::default();
+        assert_eq!(m.update(0.0), 0.0);
+        assert_eq!(m.update(4.0), 0.0);
+        assert!((m.update(0.0) - 0.99).abs() < 1e-6);
+    }
+}
+
+#[cfg(test)]
+mod live_preview_tests {
+    use super::window_settled;
+
+    #[test]
+    fn an_empty_read_of_real_speech_stays_open() {
+        // 5.5 s of speech read back as nothing: read it again later.
+        assert!(!window_settled(0, 5.5, false));
+        // Two words for three seconds is too few as well.
+        assert!(!window_settled(2, 3.0, false));
+    }
+
+    #[test]
+    fn normal_speech_settles() {
+        assert!(window_settled(12, 5.0, false));
+        assert!(window_settled(3, 3.0, false));
+    }
+
+    #[test]
+    fn the_end_of_the_take_and_endless_noise_settle_anyway() {
+        assert!(window_settled(0, 5.5, true));
+        assert!(window_settled(0, 25.0, false));
+        assert!(window_settled(0, 0.4, false));
+    }
+}

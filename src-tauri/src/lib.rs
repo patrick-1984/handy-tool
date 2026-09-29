@@ -11,6 +11,7 @@ mod clipboard;
 mod commands;
 mod helpers;
 mod input;
+mod keyboard_layouts;
 mod llm_client;
 mod managers;
 mod mcp;
@@ -20,7 +21,6 @@ mod portable;
 mod settings;
 mod shortcut;
 mod signal_handle;
-mod speed;
 mod token_count;
 mod transcription_coordinator;
 mod tray;
@@ -133,7 +133,7 @@ fn take_show_window_marker() -> bool {
     marker.exists() && std::fs::remove_file(&marker).is_ok()
 }
 
-fn show_main_window(app: &AppHandle) {
+pub(crate) fn show_main_window(app: &AppHandle) {
     if let Some(main_window) = app.get_webview_window("main") {
         // On macOS, restore the Regular activation policy BEFORE showing or
         // focusing: while the app is still an Accessory, macOS can ignore the
@@ -389,6 +389,7 @@ fn initialize_core_logic(app_handle: &AppHandle) {
     // Create the floating transcription window (hidden by default)
     overlay::create_floating_transcription_window(app_handle);
     overlay::create_live_text_window(app_handle);
+    overlay::create_quiet_hint_window(app_handle);
 
     // Stamp the persisted appearance theme onto both aux windows now that
     // they exist (T-204). `settings` here was fetched above for the
@@ -463,6 +464,8 @@ pub fn run(cli_args: CliArgs) {
         anchor::get_jump_slots,
         anchor::clear_jump_slot,
         anchor::jump_to_slot,
+        anchor::set_jump_slot_after,
+        actions::post_process_sample,
         commands::translator::get_translator_status,
         commands::translator::change_translator_enabled,
         commands::translator::change_translator_priority,
@@ -470,6 +473,17 @@ pub fn run(cli_args: CliArgs) {
         commands::translator::translator_add_folder,
         commands::translator::translator_set_folder_enabled,
         commands::translator::translator_remove_folder,
+        commands::files::transcribe_file,
+        commands::files::get_file_job,
+        commands::files::cancel_file_job,
+        commands::files::get_file_transcriptions,
+        commands::files::delete_file_transcription,
+        commands::files::get_files_folder,
+        commands::files::open_files_folder,
+        commands::files::change_file_text_save_setting,
+        commands::files::change_file_model_setting,
+        commands::files::change_file_keep_audio_setting,
+        commands::files::change_files_folder_setting,
         shortcut::change_post_process_enabled_setting,
         shortcut::change_transcription_mode_setting,
         shortcut::change_transcription_mode_ptt_setting,
@@ -525,6 +539,7 @@ pub fn run(cli_args: CliArgs) {
         shortcut::handy_keys::start_handy_keys_recording,
         shortcut::handy_keys::stop_handy_keys_recording,
         commands::cancel_operation,
+        commands::open_settings_at,
         commands::get_app_dir_path,
         commands::get_app_settings,
         commands::get_default_settings,
@@ -575,13 +590,26 @@ pub fn run(cli_args: CliArgs) {
         commands::audio::update_microphone_mode,
         commands::audio::change_mic_keep_warm_setting,
         commands::audio::change_pause_button_setting,
+        commands::audio::change_mic_warmup_wait_setting,
+        commands::audio::change_too_quiet_hint_setting,
+        commands::audio::change_too_quiet_hint_box_setting,
         commands::audio::change_undo_word_setting,
         commands::audio::change_live_text_box_setting,
         commands::audio::toggle_live_text_box,
         commands::audio::change_live_text_mode_setting,
         commands::audio::change_live_text_fade_setting,
+        commands::audio::change_live_text_after_stop_setting,
         commands::audio::change_live_text_width_setting,
-        commands::audio::change_speed_indicator_setting,
+        commands::audio::change_live_text_font_size_setting,
+        commands::audio::change_pill_scale_setting,
+        commands::audio::change_progress_style_setting,
+        commands::audio::change_progress_glow_setting,
+        commands::audio::change_progress_line_glow_setting,
+        commands::audio::change_sound_bars_wide_setting,
+        commands::audio::change_progress_color_setting,
+        keyboard_layouts::get_altgr_layouts,
+        commands::audio::change_live_text_lines_setting,
+        commands::audio::change_reopen_last_page_setting,
         commands::audio::toggle_pause_recording,
         commands::audio::get_microphone_mode,
         commands::audio::get_available_microphones,
@@ -862,6 +890,7 @@ pub fn run(cli_args: CliArgs) {
                 if window.label() == "floating_transcription"
                     || window.label() == "recording_overlay"
                     || window.label() == "live_text"
+                    || window.label() == "quiet_hint"
                 {
                     api.prevent_close();
                     let _ = window.hide();

@@ -2,7 +2,9 @@ import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSettings } from "../../../hooks/useSettings";
 import { useNavStore } from "../../../stores/navStore";
+import { Ellipsis } from "lucide-react";
 import { STICKY_TABS, TabBar } from "../../ui/TabBar";
+import { PageTitle } from "../../ui/PageTitle";
 import {
   SECTIONS_CONFIG,
   type SectionPlacement,
@@ -34,30 +36,33 @@ export const MorePage: React.FC<{ section: SidebarSection }> = ({
   const ActiveComponent = SECTIONS_CONFIG[section].component;
 
   return (
-    <div className="w-full space-y-4">
-      <div className={`flex flex-col gap-1 ${STICKY_TABS}`}>
-        {ROWS.map((row) => (
-          <div key={row.placement} className="flex items-start gap-1">
-            <span className="w-20 shrink-0 pt-2.5 text-[11px] font-semibold uppercase tracking-wider text-text/70">
-              {t(row.labelKey)}
-            </span>
-            <TabBar
-              tabs={Object.entries(SECTIONS_CONFIG)
-                .filter(
-                  ([_, config]) =>
-                    config.placement === row.placement &&
-                    config.enabled(settings),
-                )
-                .map(([id, config]) => ({
-                  id: id as SidebarSection,
-                  label: t(config.labelKey),
-                  icon: config.icon,
-                }))}
-              active={section}
-              onSelect={navigateTo}
-            />
-          </div>
-        ))}
+    <div className="w-full space-y-6">
+      {/* The title and both tab rows stay in view while the page scrolls. */}
+      <div className={`-mt-6 pt-6 flex flex-col gap-3 ${STICKY_TABS}`}>
+        <PageTitle icon={Ellipsis} label={t("sidebar.more")} />
+        <div className="flex flex-col">
+          {ROWS.map((row) => (
+            <div key={row.placement} className="flex items-start gap-1">
+              <span className="w-20 shrink-0 pt-2.5 text-xs font-semibold uppercase tracking-[0.06em] text-text-secondary">
+                {t(row.labelKey)}
+              </span>
+              <TabBar
+                tabs={Object.entries(SECTIONS_CONFIG)
+                  .filter(
+                    ([_, config]) =>
+                      config.placement === row.placement &&
+                      config.enabled(settings),
+                  )
+                  .map(([id, config]) => ({
+                    id: id as SidebarSection,
+                    label: t(config.labelKey),
+                  }))}
+                active={section}
+                onSelect={navigateTo}
+              />
+            </div>
+          ))}
+        </div>
       </div>
       <ActiveComponent />
     </div>

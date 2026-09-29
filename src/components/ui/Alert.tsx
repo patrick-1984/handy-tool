@@ -5,35 +5,36 @@ type AlertVariant = "error" | "warning" | "info" | "success";
 
 interface AlertProps {
   variant?: AlertVariant;
-  /** When true, removes rounded corners for use inside containers */
+  /** When true, removes rounded corners and borders for use inside containers */
   contained?: boolean;
   children: React.ReactNode;
   className?: string;
 }
 
+/** The redesign's notices: a tinted card with a matching border and icon. */
 const variantStyles: Record<
   AlertVariant,
   { container: string; icon: string; text: string }
 > = {
   error: {
-    container: "bg-red-500/10",
-    icon: "text-red-500",
-    text: "text-red-400",
+    container: "bg-err-bg border-err-border",
+    icon: "text-err-text",
+    text: "text-text",
   },
   warning: {
-    container: "bg-yellow-500/10",
-    icon: "text-yellow-500",
-    text: "text-yellow-400",
+    container: "bg-warn-bg border-warn-border",
+    icon: "text-warn-text",
+    text: "text-text",
   },
   info: {
-    container: "bg-blue-500/10",
-    icon: "text-blue-500",
-    text: "text-blue-400",
+    container: "bg-info-bg border-info-border",
+    icon: "text-accent-text",
+    text: "text-text",
   },
   success: {
-    container: "bg-green-500/10",
-    icon: "text-green-500",
-    text: "text-green-400",
+    container: "bg-surface border-border",
+    icon: "text-ok-text",
+    text: "text-text",
   },
 };
 
@@ -55,10 +56,12 @@ export const Alert: React.FC<AlertProps> = ({
 
   return (
     <div
-      className={`flex items-start gap-3 p-4 ${styles.container} ${contained ? "" : "rounded-lg"} ${className}`}
+      className={`flex items-start gap-3 px-4 py-3 ${styles.container} ${contained ? "" : "rounded-lg border"} ${className}`}
     >
-      <Icon className={`w-5 h-5 shrink-0 mt-0.5 ${styles.icon}`} />
-      <p className={`text-sm ${styles.text}`}>{children}</p>
+      <Icon className={`w-4 h-4 shrink-0 mt-0.5 ${styles.icon}`} />
+      <div className={`text-[13px] leading-[18px] ${styles.text}`}>
+        {children}
+      </div>
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import React from "react";
+import { Cpu } from "lucide-react";
 
 type ModelStatus =
   | "ready"
@@ -24,37 +25,28 @@ const ModelStatusButton: React.FC<ModelStatusButtonProps> = ({
   onClick,
   className = "",
 }) => {
-  const getStatusColor = (status: ModelStatus): string => {
-    switch (status) {
-      case "ready":
-        return "bg-green-400";
-      case "loading":
-        return "bg-yellow-400 animate-pulse";
-      case "downloading":
-        return "bg-logo-primary animate-pulse";
-      case "extracting":
-        return "bg-orange-400 animate-pulse";
-      case "error":
-        return "bg-red-400";
-      case "unloaded":
-        return "bg-mid-gray/60";
-      case "none":
-        return "bg-red-400";
-      default:
-        return "bg-mid-gray/60";
-    }
-  };
-
+  // The status itself is shown at the footer's other end (see ModelSelector);
+  // a loading or failing model still colours the chip icon.
+  const busy = ["loading", "downloading", "extracting"].includes(status);
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 hover:text-text/80 transition-colors ${className}`}
-      title={`Model status: ${displayText}`}
+      className={`flex items-center gap-2 h-7 px-2 -ms-2 rounded-md text-text hover:bg-hover transition-colors cursor-pointer ${className}`}
+      title={displayText}
     >
-      <div className={`w-2 h-2 rounded-full ${getStatusColor(status)}`} />
-      <span className="max-w-28 truncate">{displayText}</span>
+      <Cpu
+        className={`w-3.5 h-3.5 shrink-0 ${
+          status === "error" || status === "none"
+            ? "text-err-text"
+            : busy
+              ? "text-accent-text animate-pulse"
+              : "text-text-secondary"
+        }`}
+      />
+      <span className="max-w-48 truncate font-semibold">{displayText}</span>
+      {/* The list opens upwards: the caret points up. */}
       <svg
-        className={`w-3 h-3 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+        className={`w-3 h-3 text-text-secondary transition-transform ${isDropdownOpen ? "" : "rotate-180"}`}
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"

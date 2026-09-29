@@ -72,6 +72,37 @@ pub fn change_pause_button_setting(app: AppHandle, enabled: bool) -> Result<(), 
     Ok(())
 }
 
+/// After a cold start, keep "Starting mic..." on the pill until the microphone
+/// has warmed up (the wait measured on its recent cold starts).
+#[tauri::command]
+#[specta::specta]
+pub fn change_mic_warmup_wait_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
+    let mut settings = get_settings(&app);
+    settings.mic_warmup_wait = enabled;
+    write_settings(&app, settings);
+    Ok(())
+}
+
+/// Show "Too quiet" on the pill when speech is too quiet to be kept.
+#[tauri::command]
+#[specta::specta]
+pub fn change_too_quiet_hint_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
+    let mut settings = get_settings(&app);
+    settings.too_quiet_hint = enabled;
+    write_settings(&app, settings);
+    Ok(())
+}
+
+/// Show "Too quiet" in a box of its own under the pill instead of inside it.
+#[tauri::command]
+#[specta::specta]
+pub fn change_too_quiet_hint_box_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
+    let mut settings = get_settings(&app);
+    settings.too_quiet_hint_box = enabled;
+    write_settings(&app, settings);
+    Ok(())
+}
+
 /// Allow the Undo-last-word shortcut during live takes.
 #[tauri::command]
 #[specta::specta]
@@ -139,6 +170,17 @@ pub fn change_live_text_fade_setting(app: AppHandle, enabled: bool) -> Result<()
     Ok(())
 }
 
+/// Show the live text box at stop for a take without it, with the transcript
+/// typed in as it comes in.
+#[tauri::command]
+#[specta::specta]
+pub fn change_live_text_after_stop_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
+    let mut settings = get_settings(&app);
+    settings.live_text_after_stop = enabled;
+    write_settings(&app, settings);
+    Ok(())
+}
+
 /// How wide the live text box is (logical pixels).
 #[tauri::command]
 #[specta::specta]
@@ -150,14 +192,106 @@ pub fn change_live_text_width_setting(app: AppHandle, width: u32) -> Result<(), 
     Ok(())
 }
 
-/// Show the speed chip on the recording pill (it widens the pill to fit).
+/// The live text box's text size, in logical pixels.
 #[tauri::command]
 #[specta::specta]
-pub fn change_speed_indicator_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
+pub fn change_live_text_font_size_setting(app: AppHandle, size: u32) -> Result<(), String> {
     let mut settings = get_settings(&app);
-    settings.speed_indicator_enabled = enabled;
+    settings.live_text_font_size = size.clamp(11, 28);
+    write_settings(&app, settings);
+    crate::overlay::refresh_live_text_window(&app);
+    Ok(())
+}
+
+/// The recording pill's size, in percent of its normal size.
+#[tauri::command]
+#[specta::specta]
+pub fn change_pill_scale_setting(app: AppHandle, scale: u32) -> Result<(), String> {
+    let mut settings = get_settings(&app);
+    settings.pill_scale = scale.clamp(100, 150);
     write_settings(&app, settings);
     crate::overlay::update_overlay_position(&app);
+    Ok(())
+}
+
+/// How the pill shows the transcription's progress.
+#[tauri::command]
+#[specta::specta]
+pub fn change_progress_style_setting(
+    app: AppHandle,
+    style: crate::settings::ProgressStyle,
+) -> Result<(), String> {
+    let mut settings = get_settings(&app);
+    settings.progress_style = style;
+    write_settings(&app, settings);
+    Ok(())
+}
+
+/// How strong the progress glow is, in percent of its normal strength.
+#[tauri::command]
+#[specta::specta]
+pub fn change_progress_glow_setting(app: AppHandle, strength: u32) -> Result<(), String> {
+    let mut settings = get_settings(&app);
+    settings.progress_glow = strength.min(200);
+    write_settings(&app, settings);
+    Ok(())
+}
+
+/// The progress light's colour ("#rrggbb", or empty for the default cyan).
+#[tauri::command]
+#[specta::specta]
+pub fn change_progress_color_setting(app: AppHandle, color: String) -> Result<(), String> {
+    let valid = color.is_empty()
+        || (color.len() == 7
+            && color.starts_with('#')
+            && color[1..].chars().all(|c| c.is_ascii_hexdigit()));
+    if !valid {
+        return Err(format!("Not a colour: {color}"));
+    }
+    let mut settings = get_settings(&app);
+    settings.progress_color = color.to_ascii_lowercase();
+    write_settings(&app, settings);
+    Ok(())
+}
+
+/// Wider sound bars on the pill.
+#[tauri::command]
+#[specta::specta]
+pub fn change_sound_bars_wide_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
+    let mut settings = get_settings(&app);
+    settings.sound_bars_wide = enabled;
+    write_settings(&app, settings);
+    Ok(())
+}
+
+/// Progress Style: line - whether the line glows too.
+#[tauri::command]
+#[specta::specta]
+pub fn change_progress_line_glow_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
+    let mut settings = get_settings(&app);
+    settings.progress_line_glow = enabled;
+    write_settings(&app, settings);
+    Ok(())
+}
+
+/// "Whole text": how many lines the live text box shows.
+#[tauri::command]
+#[specta::specta]
+pub fn change_live_text_lines_setting(app: AppHandle, lines: u32) -> Result<(), String> {
+    let mut settings = get_settings(&app);
+    settings.live_text_lines = lines.clamp(2, 30);
+    write_settings(&app, settings);
+    crate::overlay::refresh_live_text_window(&app);
+    Ok(())
+}
+
+/// Open the app on the page that was open when it was closed.
+#[tauri::command]
+#[specta::specta]
+pub fn change_reopen_last_page_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
+    let mut settings = get_settings(&app);
+    settings.reopen_last_page = enabled;
+    write_settings(&app, settings);
     Ok(())
 }
 

@@ -11,14 +11,16 @@
     "shortcuts": "Atalhos",
     "models": "Modelos",
     "history": "Histórico",
+    "files": "Arquivos",
     "debug": "Depuração",
     "about": "Sobre",
     "backup": "Cópia de segurança",
     "currentAudio": "Áudio Atual",
+    "setups": "Configurações",
     "tokenCount": "Contagem de Tokens",
     "keyboardTyper": "Digitador de Teclado",
+    "whatsNew": "Novidades",
     "jumper": "Saltos",
-    "translator": "Tradutor",
     "more": "Mais",
     "groups": {
       "settings": "Configurações",
@@ -60,10 +62,342 @@
       "installWhenIdle": "Instalar quando estiver ocioso",
       "installRestartNow": "Instalar e reiniciar agora",
       "enableAutomatic": "Ativar atualizações automáticas"
+    },
+    "unread": "não lido"
+  },
+  "helpMode": {
+    "button": "Modo de ajuda: aponte para uma configuração para ver o que ela faz",
+    "hint": "Aponte para uma configuração para ver o que ela faz. Clique em qualquer lugar ou pressione Esc para sair."
+  },
+  "setup": {
+    "skipSetup": "Pular configuração",
+    "back": "Voltar",
+    "next": "Avançar",
+    "saveNext": "Salvar e avançar",
+    "skip": "Pular",
+    "start": "Iniciar configuração",
+    "finish": "Concluir",
+    "step": "Etapa {{current}} de {{total}}",
+    "welcome": {
+      "title": "Boas-vindas ao Handy Tool",
+      "body": "Fale, e suas palavras são digitadas onde estiver o cursor. Sua fala vira texto neste PC.",
+      "steps": "Esta configuração rápida pergunta quais idiomas você fala, sugere um modelo de voz para eles e mostra seus atalhos e seu microfone. Qualquer etapa pode ser pulada, e tudo pode ser alterado depois nas configurações."
+    },
+    "languages": {
+      "title": "Em quais idiomas você vai falar?",
+      "body": "Escolha todos os idiomas que você usa. Os modelos de voz sugeridos entenderão todos eles.",
+      "search": "Pesquisar idiomas",
+      "noMatch": "Nenhum idioma corresponde.",
+      "selected": "Selecionados: {{languages}}"
+    },
+    "model": {
+      "body": "Três boas opções para {{languages}}: a mais precisa, uma equilibrada e a mais rápida. Escolha uma e ela será baixada enquanto você termina a configuração; dá para trocar depois na página Modelos.",
+      "bodyAny": "Três boas opções: a mais precisa, uma equilibrada e a mais rápida. Escolha uma e ela será baixada enquanto você termina a configuração; dá para trocar depois na página Modelos.",
+      "accurate": "Mais preciso",
+      "balanced": "Equilibrado",
+      "fast": "Mais rápido",
+      "downloadContinue": "Baixar e continuar",
+      "seeAll": "Ver todos os modelos",
+      "showSuggestions": "Voltar às três sugestões",
+      "search": "Pesquisar modelos",
+      "notForLanguages": "Não entende todos os seus idiomas"
+    },
+    "shortcuts": {
+      "title": "Seus atalhos",
+      "body": "Eles já funcionam. Mantenha-os, ou clique em um e pressione as teclas que preferir. Cada um mostra o padrão, então você sempre pode voltar a ele.",
+      "default": "Padrão: {{keys}}.",
+      "transcribe": "Pressione uma vez para começar e outra para parar.",
+      "ptt": "Segure enquanto fala.",
+      "cancel": "Para uma gravação sem digitar nada.",
+      "more": "Mais atalhos (Transcrever e enviar, pausa, desfazer última palavra, …) estão na página Atalhos."
+    },
+    "microphone": {
+      "title": "Qual microfone?",
+      "body": "Padrão segue o microfone padrão do sistema. Escolha outro se você fala em um headset ou microfone USB."
+    },
+    "try": {
+      "title": "Experimente",
+      "body": "Pressione {{keys}}, diga uma frase e pressione de novo. Suas palavras aparecem abaixo.",
+      "placeholder": "Suas palavras vão aparecer aqui.",
+      "listening": "Ouvindo… pressione {{keys}} de novo quando terminar.",
+      "downloading": "{{model}} ainda está sendo baixado ({{percent}}%). Experimente quando estiver pronto — ou siga com Avançar.",
+      "noModel": "Nenhum modelo de voz escolhido ainda, então não há o que experimentar. Siga com Avançar e escolha um na página Modelos."
+    },
+    "done": {
+      "title": "Tudo pronto",
+      "howTo": "Pressione {{keys}}, fale e pressione de novo: o texto é digitado onde estiver o cursor.",
+      "downloading": "{{model}} está sendo baixado ({{percent}}%) — será usado assim que estiver pronto.",
+      "ready": "Modelo de voz: {{model}}.",
+      "noModel": "Nenhum modelo de voz escolhido ainda: escolha um na página Modelos.",
+      "suggested": {
+        "title": "Quer ajustar mais alguma coisa?",
+        "body": "Tudo já funciona com boas configurações padrão, então você não precisa disso agora. Se quiser, uma dessas configurações guiadas te ajuda com mais detalhes."
+      }
+    },
+    "catalog": {
+      "description": "As configurações guiadas fazem algumas perguntas e ajustam tudo para você. Qualquer etapa pode ser pulada.",
+      "basic": {
+        "title": "Configuração básica",
+        "description": "Seus idiomas, um modelo de voz sugerido para eles, os atalhos básicos, seu microfone e um teste rápido — o mesmo guia do primeiro uso."
+      },
+      "start": "Iniciar",
+      "jumper": {
+        "title": "Jumper",
+        "description": "Deixe o Handy Tool colar seu ditado no campo certo para você: ele memoriza os lugares onde você digita (uma caixa de chat, um documento, um campo numa sessão remota), coloca o texto lá automaticamente onde quer que você esteja, e volta a eles com uma tecla."
+      },
+      "postProcessing": {
+        "title": "Pós-processamento",
+        "description": "Deixe um modelo de IA limpar ou remodelar o que você dita (pontuação, vícios de linguagem, uma estrutura, uma tradução), com seu próprio atalho."
+      },
+      "windowsOnly": "Só Windows",
+      "appearance": {
+        "title": "Aparência",
+        "description": "Como a pílula de gravação e a caixa de texto ao vivo se parecem: o lugar e o tamanho da pílula, suas barras de som, como ela mostra o progresso, e a caixa de texto ao vivo, com cada opção em movimento antes de você escolher."
+      }
+    },
+    "closeSetup": "Fechar configuração",
+    "jumper": {
+      "name": "Configurar Jumper",
+      "place": "Lugar {{n}}",
+      "goal": {
+        "title": "Para que serve o Jumper para você?",
+        "body": "Em muitos apps (um chat, um e-mail, um documento, uma área de trabalho remota), o Handy Tool pode colocar seu ditado direto no campo de texto certo para você. O Jumper memoriza esses campos, então o texto chega lá automaticamente, mesmo quando você está em outra janela, e uma tecla leva você de volta a eles. Escolha o que você quer; dá para mudar depois na página Jumper.",
+        "jump": {
+          "title": "Voltar com uma tecla",
+          "detail": "Aperte um atalho e o campo memorizado está de novo na sua frente, pronto para digitar."
+        },
+        "land": {
+          "title": "Meu ditado deve chegar lá",
+          "detail": "Onde quer que você esteja quando uma gravação termina, o texto vai para o campo memorizado; você pode ler outra coisa enquanto dita."
+        },
+        "both": {
+          "title": "Os dois",
+          "detail": "Vá até lá com uma tecla, e o ditado também chega lá."
+        }
+      },
+      "mouse": {
+        "title": "Memorizar também a posição do mouse?",
+        "body": "Em navegadores e apps como Discord ou Teams, o Windows vê só a janela inteira, não a caixa de texto. Com a posição do mouse, o Handy clica de volta exatamente nessa caixa.",
+        "no": {
+          "title": "Não, só o campo",
+          "detail": "Basta para a maioria dos apps (Word, Bloco de Notas, e-mail)."
+        },
+        "yes": {
+          "title": "Sim, a posição do mouse também",
+          "detail": "Para páginas web e apps de chat. O Handy clica onde o mouse estava quando você mostrou o lugar."
+        }
+      },
+      "places": {
+        "title": "Mostre-me o lugar",
+        "body": "Aperte o botão e clique no campo de texto desejado em até {{seconds}} segundos. O Handy memoriza o campo que tem o foco quando o tempo acaba. Você pode adicionar mais lugares.",
+        "first": "Nenhum lugar ainda.",
+        "another": "Outro lugar?",
+        "countdown": "Clique no campo agora… {{seconds}}",
+        "show": "Mostre-me o lugar",
+        "add": "Adicionar outro lugar",
+        "remembered": "Memorizado: {{app}}",
+        "failed": "Não foi possível memorizar: {{reason}}",
+        "again": "Mostrar este lugar de novo"
+      },
+      "shortcuts": {
+        "title": "Seus atalhos",
+        "body": "Definir memoriza o campo em que você está agora; Pular leva você de volta. Mantenha os padrões ou clique num e aperte as teclas que quiser."
+      },
+      "test": {
+        "title": "Experimente",
+        "bodyJump": "Clique em Ir para lá: o campo memorizado deve vir para a frente, pronto para digitar.",
+        "bodyLand": "Clique em Ir para lá para conferir cada lugar. Depois dite em qualquer lugar: ao terminar a gravação, o texto chega no Lugar 1.",
+        "none": "Nenhum lugar foi memorizado. Você pode adicionar lugares na página Jumper com os atalhos Definir.",
+        "jump": "Ir para lá"
+      },
+      "done": {
+        "title": "O Jumper está pronto",
+        "body": "Seus lugares continuam após reiniciar. Todo o resto (mais slots, sessões remotas, acompanhar onde o texto chegou) está na página Jumper."
+      }
+    },
+    "postProcessing": {
+      "name": "Configurar pós-processamento",
+      "prompt": {
+        "title": "O que a IA deve fazer com suas palavras?",
+        "body": "Depois de uma gravação, um modelo de IA reescreve o texto do jeito que você pedir. Escolha a instrução; dá para editar depois em {{postProcessingPage}}.",
+        "own": "Escrever a minha",
+        "ownDetail": "Suas próprias instruções, por exemplo \"Traduza para o inglês\" ou \"Escreva como lista\".",
+        "ownDefaultName": "Minha instrução",
+        "ownPlaceholder": "Diga à IA o que fazer com o texto, ex.: Corrija a pontuação e tire os vícios de linguagem. Mantenha minhas palavras."
+      },
+      "provider": {
+        "title": "Qual IA deve fazer isso?",
+        "body": "Uma online precisa de uma chave do site dela; uma rodando neste PC (LM Studio, FLM) só do modelo. A mesma lista está em {{providersPage}}.",
+        "noModel": "Sem modelo ainda",
+        "ready": "Pronto",
+        "needsKey": "Precisa de chave",
+        "needsModel": "Precisa de modelo",
+        "key": "Chave de API",
+        "address": "Endereço",
+        "model": "Modelo",
+        "list": "Listar modelos",
+        "listFailed": "Não foi possível listar os modelos: {{reason}}"
+      },
+      "shortcut": {
+        "title": "Seu atalho de pós-processamento",
+        "body": "Dite com este atalho quando quiser que a IA refaça o texto; seus outros atalhos continuam simples."
+      },
+      "try": {
+        "title": "Experimente",
+        "body": "Edite o exemplo se quiser e passe-o pela IA com sua instrução.",
+        "sample": "então é acho que a gente devia hã se encontrar na terça não espera quarta tipo às três e levar o o relatório",
+        "run": "Executar",
+        "result": "A versão da IA:",
+        "failed": "Não funcionou: {{reason}}"
+      },
+      "done": {
+        "title": "O pós-processamento está pronto",
+        "body": "Dite com o atalho de pós-processamento e a versão da IA é colada. A instrução, a IA e mais opções estão em {{postProcessingPage}}."
+      }
+    },
+    "appearance": {
+      "name": "Configuração de aparência",
+      "sample": "Oi Ana, vou enviar os números do rascunho na sexta para todo mundo comentar antes da revisão da próxima semana.",
+      "intro": {
+        "title": "Sua pílula de gravação",
+        "body": "Enquanto você dita, esta pílula mostra o que o Handy Tool está fazendo. Veja para que servem suas partes. As próximas etapas mostram cada opção em movimento lado a lado, para você comparar antes de escolher.",
+        "t": "T: a caixa de texto ao vivo, que mostra suas palavras enquanto você fala. Clique no T para ligar ou desligar a caixa a qualquer momento; ele brilha enquanto a caixa está ligada.",
+        "bars": "Barras de som: sua voz. Elas se movem enquanto o microfone ouve você.",
+        "pause": "Pausar: para de ouvir por um momento; aperte de novo para continuar. Aparece quando o botão de pausa está ligado.",
+        "cancel": "×: cancela a gravação. Nada é transcrito ou colado."
+      },
+      "theme": {
+        "title": "Claro ou escuro?",
+        "body": "As cores de todas as janelas do Handy Tool. A pílula de gravação fica escura em todas elas.",
+        "system": "Segue o Windows, e muda quando o Windows muda.",
+        "light": "Sempre claro.",
+        "dark": "Sempre escuro."
+      },
+      "position": {
+        "title": "Onde a pílula deve aparecer?",
+        "body": "Enquanto você dita, embaixo ou em cima da tela, ou em lugar nenhum.",
+        "bottom": "No meio, logo acima da barra de tarefas.",
+        "top": "No meio, no topo da tela.",
+        "none": "Sem pílula. O ícone da bandeja ainda mostra que está gravando."
+      },
+      "size": {
+        "title": "Que tamanho deve ter a pílula?",
+        "body": "Maior é mais fácil de ver em uma tela grande ou de alta resolução."
+      },
+      "bars": {
+        "title": "Que largura devem ter as barras de som?",
+        "body": "As barras no meio da pílula mostram sua voz.",
+        "narrow": {
+          "title": "Estreitas",
+          "detail": "62 px, com mais espaço ao redor."
+        },
+        "wide": {
+          "title": "Largas",
+          "detail": "77,5 px, barras mais fortes."
+        }
+      },
+      "progress": {
+        "title": "Como ela deve mostrar o progresso?",
+        "body": "Depois que você para, a pílula mostra quanto falta da transcrição.",
+        "line": "Uma linha fina se enche embaixo.",
+        "ring": "Uma luz brilhante percorre a borda e fica acesa até a porcentagem.",
+        "lap": "Uma luz fina continua girando pela borda; a porcentagem está no texto."
+      },
+      "glow": {
+        "title": "Quanto ela deve brilhar?",
+        "body": "O brilho ao redor da luz de progresso. Você pode ajustar depois em Intensidade do Brilho.",
+        "none": {
+          "title": "Sem brilho",
+          "detail": "Só a linha."
+        },
+        "soft": {
+          "title": "Suave"
+        },
+        "normal": {
+          "title": "Normal"
+        },
+        "strong": {
+          "title": "Forte"
+        },
+        "brightest": {
+          "title": "Mais brilhante"
+        }
+      },
+      "liveText": {
+        "title": "Mostrar suas palavras enquanto você fala?",
+        "body": "A caixa de texto ao vivo fica ao lado da pílula e mostra o que você diz enquanto fala; o T na pílula liga e desliga a caixa a qualquer momento. Com ela ligada, as palavras da caixa se tornam o seu texto: a gravação não é transcrita de novo por inteiro no final, então o texto fica pronto na hora, mas pode ser um pouco menos preciso.",
+        "off": {
+          "title": "Desligado",
+          "detail": "Só a pílula."
+        },
+        "last_words": {
+          "title": "Últimas palavras",
+          "detail": "Uma linha com suas palavras mais novas."
+        },
+        "full_text": {
+          "title": "Texto inteiro",
+          "detail": "Tudo até agora; a caixa cresce enquanto você fala."
+        },
+        "remote": "{{model}} roda online e só recebe o áudio depois que você para, então a caixa de texto ao vivo não funciona com ele. Escolha primeiro um modelo que rode neste PC na página Modelos."
+      },
+      "width": {
+        "title": "Que largura deve ter a caixa?",
+        "body": "Uma caixa mais larga precisa de menos linhas para o mesmo texto."
+      },
+      "textSize": {
+        "title": "Que tamanho deve ter o texto?",
+        "body": "O tamanho das palavras na caixa de texto ao vivo."
+      },
+      "quiet": {
+        "title": "Quando você fala baixo demais",
+        "body": "Se sua voz estiver baixa demais para o modelo ouvir bem, a pílula pode avisar você.",
+        "box": {
+          "title": "Numa caixa embaixo da pílula",
+          "detail": "A pílula mantém suas barras de som."
+        },
+        "pill": {
+          "title": "Na pílula",
+          "detail": "No lugar das barras de som, por um momento."
+        },
+        "off": {
+          "title": "Não me avise",
+          "detail": "Sem aviso."
+        }
+      },
+      "done": {
+        "title": "Sua aparência está definida",
+        "body": "Sua pílula e caixa de texto ao vivo estão definidas. Mais está nas configurações: Geral › Aplicativo para a pílula (tamanho, barras de som, progresso, brilho e cor, com uma prévia em movimento), e Geral › Transcrição para a caixa de texto ao vivo (largura, tamanho do texto, linhas, esmaecimento). Você também pode executar esta configuração de novo em Configurações."
+      },
+      "color": {
+        "title": "De que cor ela deve brilhar?",
+        "body": "A cor da luz de progresso e seu brilho, o T brilhando e as barras de som. Para qualquer outra cor, use Cor do Progresso em Geral › Aplicativo.",
+        "cyan": "Ciano (padrão)",
+        "blue": "Azul",
+        "violet": "Violeta",
+        "pink": "Rosa",
+        "amber": "Âmbar",
+        "green": "Verde",
+        "custom": "Sua cor"
+      }
+    },
+    "promo": {
+      "start": "Iniciar configuração",
+      "appearance": {
+        "title": "Configuração de aparência",
+        "text": "Veja cada aparência em movimento antes de escolher: a pílula, seu progresso e a caixa de texto ao vivo."
+      },
+      "jumper": {
+        "title": "Configuração do Jumper",
+        "text": "Faça seu ditado ser colado automaticamente no campo certo: configure seus lugares e seus atalhos passo a passo, com um teste no final."
+      },
+      "postProcessing": {
+        "title": "Configuração de pós-processamento",
+        "text": "Deixe uma IA limpar ou remodelar o que você dita: escolha o que ela deve fazer e qual IA, passo a passo, com um teste no final."
+      }
     }
   },
   "onboarding": {
-    "subtitle": "Para começar, escolha um modelo de transcrição",
+    "title": "Escolha um modelo de voz",
     "recommended": "Recomendado",
     "download": "Baixar",
     "downloading": "Baixando...",
@@ -76,51 +410,51 @@
     "models": {
       "small": {
         "name": "Whisper Small",
-        "description": "Rápido e razoavelmente preciso."
+        "description": "Rápido e preciso. 99 idiomas."
       },
       "medium": {
         "name": "Whisper Medium",
-        "description": "Boa precisão, velocidade média"
+        "description": "Velocidade média, preciso. 99 idiomas."
       },
       "turbo": {
         "name": "Whisper Turbo",
-        "description": "Precisão e velocidade balanceadas."
+        "description": "Velocidade média, muito preciso. 99 idiomas."
       },
       "large": {
         "name": "Whisper Large",
-        "description": "Boa precisão, mas lento."
+        "description": "Lento, precisão máxima em 99 idiomas; traduz para o inglês."
       },
       "parakeet-tdt-0.6b-v2": {
         "name": "Parakeet V2",
-        "description": "Apenas inglês. O melhor modelo para falantes de inglês."
+        "description": "Muito rápido, precisão máxima. Só inglês."
       },
       "parakeet-tdt-0.6b-v3": {
         "name": "Parakeet V3",
-        "description": "Rápido e preciso"
+        "description": "Muito rápido, precisão máxima. 25 idiomas europeus."
       },
       "moonshine-base": {
         "name": "Moonshine Base",
-        "description": "Muito rápido, apenas inglês. Lida bem com sotaques."
+        "description": "Muito rápido, razoavelmente preciso. Só inglês."
       },
       "moonshine-tiny-streaming-en": {
         "name": "Moonshine V2 Tiny",
-        "description": "Ultrarrápido, apenas inglês"
+        "description": "O mais rápido, precisão básica. Só inglês."
       },
       "moonshine-small-streaming-en": {
         "name": "Moonshine V2 Small",
-        "description": "Rápido, apenas inglês. Bom equilíbrio entre velocidade e precisão."
+        "description": "Muito rápido, muito preciso. Só inglês."
       },
       "moonshine-medium-streaming-en": {
         "name": "Moonshine V2 Medium",
-        "description": "Apenas inglês. Alta qualidade."
+        "description": "Rápido, precisão máxima. Só inglês."
       },
       "breeze-asr": {
         "name": "Breeze ASR",
-        "description": "Otimizado para mandarim taiwanês. Suporte para alternância de código."
+        "description": "Lento, muito preciso. Feito para o mandarim de Taiwan, também misturado com inglês."
       },
       "sense-voice-int8": {
         "name": "SenseVoice",
-        "description": "Muito rápido. Chinês, inglês, japonês, coreano, cantonês."
+        "description": "O mais rápido, preciso. Melhor para chinês, cantonês, japonês e coreano; também inglês."
       }
     },
     "errors": {
@@ -175,7 +509,10 @@
       "languageOnly": "Apenas {{language}}"
     },
     "cancel": "Cancelar",
-    "cancelDownload": "Cancelar download"
+    "cancelDownload": "Cancelar download",
+    "ready": "Pronto",
+    "useModel": "Usar este modelo",
+    "inUse": "Usado em todo o ditado."
   },
   "settings": {
     "modelSettings": {
@@ -202,8 +539,8 @@
         "singleKey": "Esta tecla sozinha aciona o atalho em qualquer lugar, então você não poderá mais digitá-la. Adicione um modificador como Ctrl ou Alt.",
         "bindings": {
           "transcribe": {
-            "name": "Atalho de Transcrição",
-            "description": "Pressione uma vez para iniciar a gravação e novamente para finalizar; a transcrição é entregue na janela que estava em foco. Padrão: Ctrl+Space. Segue o Modo de Transcrição e o Método de Colar da página Avançado — para gravar mantendo pressionado, use o Atalho de Pressionar para Falar."
+            "name": "Atalho de Gravação/Transcrição",
+            "description": "Pressione uma vez para iniciar a gravação e novamente para finalizar; a transcrição é entregue na janela que estava em foco. Padrão: Ctrl+Space. Segue o Modo de Transcrição e o Método de Colar em Mais › Saída — para gravar mantendo pressionado, use o Atalho de Pressionar para Falar."
           },
           "cancel": {
             "name": "Atalho de Cancelar",
@@ -227,7 +564,7 @@
           },
           "transcribe_ptt": {
             "name": "Atalho de Pressionar para Falar",
-            "description": "Mantenha este atalho pressionado para gravar e solte para parar; o microfone desliga ao soltar, então qualquer coisa que você diga depois não pode vazar para o texto. Padrão: Ctrl+Shift+Space. Tem seu próprio Modo de Transcrição (PTT) e seu próprio Método de Colar (PTT), então pressionar-para-falar pode se comportar diferente do Atalho de Transcrição."
+            "description": "Mantenha este atalho pressionado para gravar e solte para parar; o microfone desliga ao soltar, então qualquer coisa que você diga depois não pode vazar para o texto. Padrão: Ctrl+Shift+Space. Tem seu próprio Modo de Transcrição (PTT) e seu próprio Método de Colar (PTT), então pressionar-para-falar pode se comportar diferente do Atalho de Gravação/Transcrição."
           },
           "type_text": {
             "name": "Atalho de Digitar Texto",
@@ -239,7 +576,7 @@
           },
           "anchor_set": {
             "name": "Definir Âncora",
-            "description": "Captura o campo de texto atualmente em foco como o destino Ativo 1. Padrão: ctrl+shift+F1. Por si só não entrega nada — defina 'Ação do slot de salto ao finalizar' como 'Saltar / entregar no slot' com o slot definido para Ativo 1 (Avançado → Transcrição) para fazer sua próxima transcrição chegar lá. Caixas de senha e as próprias janelas do Handy Tool são recusadas."
+            "description": "Captura o campo de texto atualmente em foco como o destino Ativo 1. Padrão: ctrl+shift+F1. Por si só não entrega nada — defina 'Ação do slot de salto ao finalizar' como 'Saltar / entregar no slot' com o slot definido para Ativo 1 (Mais › Saída) para fazer sua próxima transcrição chegar lá. Caixas de senha e as próprias janelas do Handy Tool são recusadas."
           },
           "anchor_jump": {
             "name": "Saltar para a Âncora",
@@ -247,19 +584,19 @@
           },
           "jump_set_slot_1": {
             "name": "Definir Slot de Salto 1",
-            "description": "Memoriza o campo atualmente em foco como slot estático 1, substituindo o que ele continha. Padrão: ctrl+alt+shift+1. O slot é apenas um marcador até que algo o use — salte até ele com 'Saltar para o Slot 1', ou aponte a 'Ação do slot de salto ao finalizar' de um fluxo (Avançado → Transcrição) para o Slot 1 para que as transcrições sejam entregues lá."
+            "description": "Memoriza o campo atualmente em foco como slot estático 1, substituindo o que ele continha. Padrão: ctrl+alt+shift+1. O slot é apenas um marcador até que algo o use — salte até ele com 'Saltar para o Slot 1', ou aponte a 'Ação do slot de salto ao finalizar' de um fluxo (Mais › Saída) para o Slot 1 para que as transcrições sejam entregues lá."
           },
           "jump_set_slot_2": {
             "name": "Definir Slot de Salto 2",
-            "description": "Memoriza o campo atualmente em foco como slot estático 2, substituindo o que ele continha. Padrão: ctrl+alt+shift+2. Salte de volta com 'Saltar para o Slot 2', ou aponte a 'Ação do slot de salto ao finalizar' de um fluxo (Avançado → Transcrição) para o Slot 2 para que as transcrições sejam entregues lá."
+            "description": "Memoriza o campo atualmente em foco como slot estático 2, substituindo o que ele continha. Padrão: ctrl+alt+shift+2. Salte de volta com 'Saltar para o Slot 2', ou aponte a 'Ação do slot de salto ao finalizar' de um fluxo (Mais › Saída) para o Slot 2 para que as transcrições sejam entregues lá."
           },
           "jump_set_slot_3": {
             "name": "Definir Slot de Salto 3",
-            "description": "Memoriza o campo atualmente em foco como slot estático 3, substituindo o que ele continha. Padrão: ctrl+alt+shift+3. Salte de volta com 'Saltar para o Slot 3', ou aponte a 'Ação do slot de salto ao finalizar' de um fluxo (Avançado → Transcrição) para o Slot 3 para que as transcrições sejam entregues lá."
+            "description": "Memoriza o campo atualmente em foco como slot estático 3, substituindo o que ele continha. Padrão: ctrl+alt+shift+3. Salte de volta com 'Saltar para o Slot 3', ou aponte a 'Ação do slot de salto ao finalizar' de um fluxo (Mais › Saída) para o Slot 3 para que as transcrições sejam entregues lá."
           },
           "jump_set_slot_4": {
             "name": "Definir Slot de Salto 4",
-            "description": "Memoriza o campo atualmente em foco como slot estático 4, substituindo o que ele continha. Padrão: ctrl+alt+shift+4. Salte de volta com 'Saltar para o Slot 4', ou aponte a 'Ação do slot de salto ao finalizar' de um fluxo (Avançado → Transcrição) para o Slot 4 para que as transcrições sejam entregues lá."
+            "description": "Memoriza o campo atualmente em foco como slot estático 4, substituindo o que ele continha. Padrão: ctrl+alt+shift+4. Salte de volta com 'Saltar para o Slot 4', ou aponte a 'Ação do slot de salto ao finalizar' de um fluxo (Mais › Saída) para o Slot 4 para que as transcrições sejam entregues lá."
           },
           "jump_slot_1": {
             "name": "Saltar para o Slot 1",
@@ -290,15 +627,17 @@
           "set": "Falha ao definir atalho: {{error}}",
           "reset": "Falha ao redefinir atalho para o valor original",
           "registrationFailed": "Alguns atalhos não puderam ser registrados e estão inativos: {{bindings}}. Outro aplicativo pode já estar usando-os — escolha uma combinação diferente em Configurações."
-        }
+        },
+        "badge": {
+          "conflict": "Conflito",
+          "risky": "Arriscado"
+        },
+        "altGrConflictLayout": "Um teclado que você usa para {{layouts}} digita um caractere com AltGr+{{key}}. O Windows trata o AltGr como Ctrl+Alt, então este atalho dispararia em vez disso. Escolha uma combinação sem Ctrl+Alt.",
+        "altGrConflictSpace": "Um teclado que você usa para {{layouts}} digita caracteres com AltGr, e o AltGr costuma continuar pressionado para o espaço depois de um deles. O Windows trata o AltGr como Ctrl+Alt, então este atalho dispararia em vez desse espaço. Escolha uma combinação sem Ctrl+Alt."
       },
       "pauseButton": {
         "label": "Botão de pausa",
         "description": "Adiciona um botão de pausa à sobreposição de gravação: em pausa nada é gravado e retomar continua a mesma gravação. Padrão: Desativado. Após 10 minutos em pausa, o microfone é liberado até retomar."
-      },
-      "speedIndicator": {
-        "label": "Velocidade do PC na barra",
-        "description": "Mostra à esquerda da barra de gravação um ícone de PC com uma porcentagem: quão rápido este PC transcreve comparado à sua velocidade normal para o modelo em uso. 100% é o normal; âmbar abaixo de 70%, vermelho abaixo de 50%. Padrão: desativado. Precisa de algumas gravações com um modelo antes de ter uma referência."
       },
       "undoWord": {
         "label": "Desfazer a última palavra",
@@ -312,6 +651,16 @@
           "worksWith": "Precisa de um modelo que rode neste PC, porque serviços remotos só recebem o áudio depois que você para. Funciona com: {{models}}.",
           "noLocal": "Precisa de um modelo que rode neste PC, porque serviços remotos só recebem o áudio depois que você para. Baixe um na página Modelos."
         }
+      },
+      "liveTextAfterStop": {
+        "label": "Mostrar o texto enquanto é transcrito",
+        "description": "**Quando uma gravação sem a caixa de texto ao vivo termina, a caixa aparece e a transcrição é digitada nela à medida que chega** — o que já foi transcrito na hora, o resto assim que estiver pronto. Só para ver: o texto é entregue como sempre.\n\n**Padrão:** Desligado.\n\nUsa o estilo e a largura da caixa de texto ao vivo. Com a caixa de texto ao vivo ligada, toda gravação é ao vivo e mostra o texto de qualquer forma."
+      },
+      "liveTradeoffs": {
+        "title": "Transcrição ao vivo: bom saber",
+        "accuracy": "O texto que você vê é o texto que recebe, então é um pouco menos preciso que Pós-gravação, principalmente em trechos longos sem pausas. Pós-gravação dá o texto mais preciso.",
+        "cpu": "Usa mais CPU e bateria enquanto você fala.",
+        "undo": "Desfazer a última palavra só funciona com modelos Parakeet."
       },
       "liveTextMode": {
         "title": "O texto ao vivo mostra",
@@ -330,6 +679,22 @@
         "medium": "Média",
         "wide": "Larga",
         "extraWide": "Muito larga"
+      },
+      "liveTextHeight": {
+        "title": "Altura da caixa",
+        "description": "Quantas linhas a caixa de texto ao vivo mostra no modo Texto completo antes de as mais antigas saírem. **Padrão:** Média (6 linhas).",
+        "small": "Pequena (3 linhas)",
+        "medium": "Média (6 linhas)",
+        "large": "Grande (10 linhas)",
+        "extraLarge": "Muito grande (16 linhas)"
+      },
+      "liveTextSize": {
+        "title": "Tamanho do texto",
+        "description": "O tamanho do texto na caixa de texto ao vivo. **Padrão:** Normal.",
+        "small": "Pequeno",
+        "normal": "Normal",
+        "large": "Grande",
+        "extraLarge": "Muito grande"
       },
       "language": {
         "title": "Idioma",
@@ -374,7 +739,7 @@
         },
         "idleBehavior": {
           "title": "Quando nenhuma gravação está ativa",
-          "description": "O que acontece quando você pressiona o Atalho de Transcrever e Enviar enquanto nada está sendo gravado. Padrão: Iniciar uma gravação, então uma pressão inicia e a próxima cola e envia. Escolha Não fazer nada para tornar esta tecla um finalizador puro: você inicia as gravações com o Atalho de Transcrição e pressiona esta apenas quando quiser que o resultado seja colado e enviado.",
+          "description": "O que acontece quando você pressiona o Atalho de Transcrever e Enviar enquanto nada está sendo gravado. Padrão: Iniciar uma gravação, então uma pressão inicia e a próxima cola e envia. Escolha Não fazer nada para tornar esta tecla um finalizador puro: você inicia as gravações com o Atalho de Gravação/Transcrição e pressiona esta apenas quando quiser que o resultado seja colado e enviado.",
           "options": {
             "startNormal": "Iniciar uma gravação",
             "doNothing": "Não fazer nada"
@@ -389,7 +754,7 @@
         "title": "Paste last transcription",
         "pasteMethod": {
           "title": "Paste method",
-          "description": "Como o atalho Paste last transcription coloca o texto na janela em foco. É independente do Método de Colar da página Avançado, então você pode ajustá-lo para aquele destino específico e difícil. Padrão: Área de Transferência (Ctrl+V) — tente Área de Transferência (Shift+Insert) em um terminal, Direto para digitar os caracteres em vez de colar, ou Nenhum para apenas colocar o texto na área de transferência e colá-lo manualmente."
+          "description": "Como o atalho Paste last transcription coloca o texto na janela em foco. É independente do Método de Colar em Mais › Saída, então você pode ajustá-lo para aquele destino específico e difícil. Padrão: Área de Transferência (Ctrl+V) — tente Área de Transferência (Shift+Insert) em um terminal, Direto para digitar os caracteres em vez de colar, ou Nenhum para apenas colocar o texto na área de transferência e colá-lo manualmente."
         },
         "clipboard": {
           "title": "Clipboard",
@@ -484,12 +849,11 @@
       },
       "altGrWarning": {
         "label": "Avisar sobre atalhos com AltGr",
-        "description": "Mostra um aviso ao lado de atalhos que o AltGr também pode digitar. O Windows trata AltGr como Ctrl+Alt, então um atalho como Ctrl+Alt+O dispara quando você digita ó com AltGr e o caractere nunca chega. Padrão: ativado. Desative se você nunca digita caracteres com AltGr.",
+        "description": "**Mostra um aviso âmbar ao lado de atalhos que o AltGr também digita.** O Windows trata o AltGr como Ctrl+Alt, então um atalho como Ctrl+Alt+O dispara quando você digita ó com AltGr, e o caractere nunca chega. No Windows, ele avisa só quando um dos seus teclados digita algo com AltGr nessa tecla (ou AltGr+Shift, para uma combinação com Shift), e nomeia o idioma ao qual o teclado pertence.\n\n**Padrão:** Ligado. Desative se você nunca digita caracteres com AltGr.",
         "turnOff": "Desativar este aviso"
       }
     },
     "models": {
-      "title": "Modelos de Transcrição",
       "description": "Escolha qual modelo de fala transcreve o seu ditado — os modelos diferem em precisão, velocidade e quanta memória ocupam enquanto carregados. Padrão: nada selecionado em uma instalação nova; a integração inicial baixa e seleciona seu primeiro modelo. Sua escolha também decide se Idioma e Traduzir para Inglês são oferecidos na página Geral, e o Tradutor usa esse mesmo modelo sempre que seu Modelo do lote for deixado em \"Mesmo do ditado (padrão)\".",
       "downloaded": "Baixados",
       "available": "Disponíveis para Download",
@@ -520,6 +884,20 @@
         "off": "Desativado",
         "minutes": "{{minutes}} min"
       },
+      "micWarmup": {
+        "title": "Esperar o microfone aquecer",
+        "description": "**Depois que um microfone ocioso inicia, a barra de gravação continua mostrando \"Iniciando micro...\" até que ele esteja realmente pronto.** Alguns microfones começam bem mais baixos e sobem ao longo de cerca de um segundo; palavras ditas nesse tempo eram descartadas como ruído. A espera é a média das últimas partidas a frio deste microfone, medidas pelo próprio app.\n\n**Padrão:** Ligado.\n\nSó uma partida a frio espera: um microfone mantido pronto começa na hora. Oculto com Microfone Sempre Ativo.",
+        "measured": "Medido neste PC: {{seconds}} s.",
+        "notMeasured": "Ainda não medido — ele se mede sozinho na próxima partida a frio."
+      },
+      "tooQuiet": {
+        "title": "Avisar quando você fala baixo demais",
+        "description": "**Quando você fala tão baixo que suas palavras não são mantidas, a barra de gravação mostra por um momento \"Muito baixo — fale alto\"**. Reage a um som que é quase voz e claramente acima do ruído do ambiente por cerca de 0,7 s; silêncio, música e digitação não o disparam. Não percebe palavras entendidas errado — a caixa de texto ao vivo mostra isso.\n\n**Padrão:** Ligado.",
+        "box": {
+          "title": "Mostrar em uma caixa própria",
+          "description": "**\"Muito baixo — fale alto\" aparece em uma caixinha logo abaixo da barra de gravação, e a barra continua mostrando as barras de som.** Com a barra na parte de baixo da tela, a caixa fica no espaço acima da barra de tarefas, então nunca cobre a caixa de texto ao vivo. Desligado: a barra mostra o aviso no lugar das barras de som (com o botão de pausa ligado, traduções mais longas são cortadas).\n\n**Padrão:** Ligado."
+        }
+      },
       "audioFeedback": {
         "label": "Feedback de Áudio",
         "description": "Reproduz um sinal curto quando a gravação começa e outro diferente quando ela termina, para que você saiba que o microfone está ativo sem olhar para a tela. Padrão: Desligado. Ativar habilita Dispositivo de Saída e Volume abaixo; os dois sons de sinal podem ser trocados pelos seus próprios arquivos em Tema de Som, na página Depuração."
@@ -536,7 +914,6 @@
       }
     },
     "advanced": {
-      "title": "Avançado",
       "groups": {
         "app": "Aplicativo",
         "output": "Saída",
@@ -571,6 +948,36 @@
           "bottom": "Inferior",
           "top": "Superior"
         }
+      },
+      "reopenLastPage": {
+        "title": "Reabrir Última Página",
+        "description": "**Abre o Handy Tool na página que estava aberta quando você o fechou** (por exemplo, Histórico) em vez de Geral.\n\n**Padrão:** Ligado."
+      },
+      "overlaySize": {
+        "title": "Tamanho da Sobreposição",
+        "description": "**O tamanho da sobreposição de gravação**, e da caixa \"Muito baixo\" abaixo dela. Maior é mais fácil de ver em telas grandes ou de alta resolução.\n\n**Padrão:** Normal.",
+        "normal": "Normal",
+        "large": "Grande",
+        "extraLarge": "Muito grande"
+      },
+      "soundBarsWide": {
+        "title": "Barras de Som Largas",
+        "description": "**Barras de som mais largas na sobreposição de gravação:** barras e espaços de 2,5 px (77,5 px) em vez de 2 px (62 px).\n\n**Padrão:** Desligado."
+      },
+      "progressStyle": {
+        "title": "Estilo do Progresso",
+        "description": "**Como a sobreposição de gravação mostra o andamento de uma transcrição:** uma linha fina que se enche embaixo; uma luz que percorre a borda a partir do centro de baixo, acesa atrás de si até a porcentagem; ou uma luz fina girando pela borda, uma volta a cada 1,6 segundo (a porcentagem está no texto). Com movimento reduzido, a luz que gira vira a linha.\n\n**Padrão:** Linha.",
+        "line": "Linha embaixo",
+        "ring": "Luz ao redor da borda",
+        "lap": "Luz girando pela borda"
+      },
+      "progressLineGlow": {
+        "title": "Linha Luminosa",
+        "description": "**A linha de progresso brilha como a luz da borda**, com um halo que passa da borda da sobreposição.\n\n**Padrão:** Desligado. Só com Estilo do Progresso: Linha embaixo."
+      },
+      "progressGlow": {
+        "title": "Intensidade do Brilho",
+        "description": "**Quanto brilha a luz de progresso**: \"Luz ao redor da borda\" e a linha quando \"Linha Luminosa\" está ligada. 0% desliga o brilho, 200% o dobra.\n\n**Padrão:** 100%."
       },
       "pasteMethod": {
         "title": "Método de Colar",
@@ -640,8 +1047,7 @@
       "customWords": {
         "title": "Palavras Personalizadas",
         "description": "Uma lista de nomes, produtos e termos técnicos que o motor continua errando; depois de cada transcrição, o Handy encontra palavras com som semelhante e as substitui pela sua grafia. Padrão: vazio. Adicione palavras inteiras conforme você as encontra, e se ele começar a corrigir coisas que você não quis dizer, diminua o Limite de Correção de Palavras, na página Depuração.",
-        "placeholder": "Adicionar uma palavra",
-        "add": "Adicionar",
+        "placeholder": "Adicione uma palavra e pressione Enter",
         "remove": "Remover {{word}}",
         "duplicate": "\"{{word}}\" já existe"
       },
@@ -737,7 +1143,6 @@
         }
       },
       "tabs": {
-        "app": "Aplicativo",
         "output": "Saída",
         "typer": "Digitador",
         "providers": "Provedores",
@@ -899,10 +1304,21 @@
       "systemAudioGain": {
         "title": "Nível do áudio do sistema",
         "description": "Quão alto está o áudio do sistema em relação à sua voz. Aumente se a outra pessoa ficar demasiado baixa para transcrever; reduza se o abafar. Só o áudio do sistema é ajustado — o microfone nunca é tocado."
+      },
+      "progressColor": {
+        "title": "Cor do Progresso",
+        "description": "**A cor das partes brilhantes da pílula:** a luz de progresso e seu brilho (a linha, a luz ao redor da borda e a luz girando pela borda), o T brilhando e as barras de som. Escolhida com três controles deslizantes: Matiz (qual cor), Saturação (quão vívida) e Luminosidade. A amostra mostra o resultado; o botão de redefinir traz de volta a cor padrão.\n\n**Padrão:** ciano.",
+        "hue": "Matiz",
+        "saturation": "Saturação",
+        "lightness": "Luminosidade",
+        "reset": "Voltar à cor padrão"
+      },
+      "pillPreview": {
+        "title": "Prévia",
+        "description": "**A pílula de gravação como as configurações ao redor dela a fazem, em movimento:** gravando à esquerda (o T aceso enquanto a caixa de texto ao vivo está ligada, as barras de som) e transcrevendo à direita, com o progresso indo de 0 a 100% repetidamente, no seu estilo de progresso, brilho e cor, no seu Tamanho da Sobreposição."
       }
     },
     "postProcessing": {
-      "title": "Pós-Processamento",
       "hotkey": {
         "title": "Tecla de atalho"
       },
@@ -943,7 +1359,7 @@
           "title": "Temperatura",
           "description": "Valores mais baixos são mais determinísticos e rígidos (0 = mais literal); valores mais altos são mais criativos."
         },
-        "registryNote": "A chave de API, o modelo e a URL base do provedor são configurados em Avançado → Provedores de LLM Registrados."
+        "registryNote": "A chave de API, o modelo e a URL base do provedor são configurados em Mais › Provedores › Provedores de LLM Registrados."
       },
       "prompts": {
         "title": "Prompt",
@@ -1044,7 +1460,7 @@
       },
       "postProcessingToggle": {
         "label": "Pós-Processamento",
-        "description": "Ativa a etapa opcional de refinamento por IA e adiciona uma página Pós-Processamento à barra lateral, onde você escolhe o provedor e o prompt. Padrão: Desligado. Seu Atalho de Transcrição normal não é afetado — o refinamento roda apenas na Tecla de Pós-Processamento separada, e o Histórico mantém a transcrição bruta ao lado da processada."
+        "description": "Ativa a etapa opcional de refinamento por IA; a tecla, o provedor e o prompt aparecem logo abaixo deste interruptor. Padrão: Desligado. Seu Atalho de Gravação/Transcrição normal não é afetado — o refinamento roda apenas na Tecla de Pós-Processamento separada, e o Histórico mantém a transcrição bruta ao lado da processada."
       },
       "muteWhileRecording": {
         "label": "Silenciar Durante Gravação",
@@ -1102,7 +1518,7 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "Um destino de entrega cuja aplicação, classe de janela ou classe de controlo contenha um destes fragmentos (sem distinguir maiúsculas) é tratado como ambiente de trabalho remoto, pelo que usa o valor Remoto de 'Paste delay after jump (Windows)' e 'Submit delay before Enter (Windows)' em Advanced → Transcription em vez do Local. Já não tem de ser um destino de salto: desde a 1.3.0 uma janela remota já em primeiro plano também é classificada, e é isso que faz o atraso de envio aplicar-se ali. Predefinição: msrdc, mstsc, Citrix. Adicione o nome do processo do seu cliente RDP ou Citrix se as entregas continuarem a perder-se; uma lista vazia trata todos os destinos como locais.",
+        "description": "Um destino de entrega cuja aplicação, classe de janela ou classe de controlo contenha um destes fragmentos (sem distinguir maiúsculas) é tratado como ambiente de trabalho remoto, pelo que usa o valor Remoto de 'Paste delay after jump (Windows)' e 'Submit delay before Enter (Windows)' em Mais › Saída em vez do Local. Já não tem de ser um destino de salto: desde a 1.3.0 uma janela remota já em primeiro plano também é classificada, e é isso que faz o atraso de envio aplicar-se ali. Predefinição: msrdc, mstsc, Citrix. Adicione o nome do processo do seu cliente RDP ou Citrix se as entregas continuarem a perder-se; uma lista vazia trata todos os destinos como locais.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
@@ -1115,8 +1531,8 @@
         "title": "Slot ativo (Ancorar e Entregar)",
         "optionsMoved": {
           "title": "Opções de entrega",
-          "description": "Não é uma configuração — é um indicador. O que um salto realmente faz com um slot é configurado por fluxo em Avançado → Transcrição: 'Ação do slot de salto ao iniciar', 'Ação do slot de salto ao finalizar', 'Rastrear local da última saída' e 'Retornar o foco após a entrega' existem uma vez para Transcrever e outra vez para Transcrever e Enviar.",
-          "hint": "Configurado nos grupos Transcrever e Transcrever e Enviar na página Geral."
+          "description": "Não é uma configuração — é um indicador. O que um salto realmente faz com um slot é configurado por fluxo em Mais › Saída: 'Ação do slot de salto ao iniciar', 'Ação do slot de salto ao finalizar', 'Rastrear local da última saída' e 'Retornar o foco após a entrega' existem uma vez para Transcrever e outra vez para Transcrever e Enviar.",
+          "hint": "Configurado nos grupos Transcrever e Transcrever e Enviar em Mais › Saída."
         }
       },
       "hot2": {
@@ -1171,10 +1587,10 @@
       }
     },
     "translator": {
-      "title": "Tradutor",
+      "title": "Pastas monitoradas",
       "enabled": {
         "label": "Monitorar pastas",
-        "description": "Ative para transcrever cada novo arquivo .wav, .ogg ou .opus que chegar em uma pasta monitorada para um arquivo .txt ao lado, usando as configurações atuais de Modelo, Idioma e Traduzir para Inglês. Padrão: desligado. Arquivos já presentes em uma pasta quando o monitoramento começa são deliberadamente ignorados, e as próprias pastas são escolhidas em Adicionar uma pasta."
+        "description": "Ative para transcrever cada novo arquivo .wav, .mp3, .m4a, .aac, .flac, .ogg ou .opus que chegar em uma pasta monitorada para um arquivo .txt ao lado, usando as configurações atuais de Modelo, Idioma e Traduzir para Inglês. Padrão: desligado. Arquivos já presentes em uma pasta quando o monitoramento começa são deliberadamente ignorados, e as próprias pastas são escolhidas em Adicionar uma pasta."
       },
       "priority": {
         "title": "Prioridade",
@@ -1210,7 +1626,7 @@
         "counters": "{{done}} concluído(s), {{failed}} com falha nesta sessão"
       },
       "folders": {
-        "title": "Pastas monitoradas",
+        "title": "Pastas",
         "none": "Nenhuma pasta",
         "emptyTitle": "Nenhuma pasta monitorada",
         "emptyDescription": "Adicione uma pasta para começar a monitorá-la em busca de novas gravações.",
@@ -1224,10 +1640,83 @@
         "removeAriaLabel": "Parar de monitorar a pasta {{name}}"
       }
     },
+    "files": {
+      "model": {
+        "title": "Modelo",
+        "description": "**Qual modelo de voz transcreve o arquivo.** Modelos ainda não baixados também aparecem; escolha um e baixe-o primeiro.\n\n**Padrão:** seu modelo de ditado, e o que você escolher é lembrado. Outro modelo carrega ao lado do seu modelo de ditado, para o ditado continuar pronto, e é liberado quando o arquivo termina.",
+        "dictation": "{{name}} (seu modelo de ditado)",
+        "notDownloaded": "{{name}} (não baixado)",
+        "groups": {
+          "dictation": "Seu modelo de ditado",
+          "downloaded": "Baixados",
+          "notDownloaded": "Não baixados"
+        },
+        "downloadSize": "Baixar · {{size}}"
+      },
+      "transcribe": {
+        "title": "Transcrever um arquivo",
+        "choose": {
+          "title": "Escolher um arquivo de áudio",
+          "description": "**Transcreve o arquivo de áudio que você escolher**: WAV, MP3, M4A, AAC, FLAC, OGG ou Opus, como uma gravação do celular, com o modelo escolhido acima e suas configurações de idioma.\n\nO arquivo é cortado nas pausas em partes de até cerca de 40 segundos, e cada parte é transcrita uma vez: sem texto ao vivo, sem segunda passada. O arquivo original é apenas lido, nunca alterado.",
+          "button": "Escolher arquivo…"
+        },
+        "audioFiles": "Arquivos de áudio",
+        "decoding": "Lendo {{file}}…",
+        "progress": "{{done}} de {{total}} · {{percent}}%",
+        "cancel": "Parar",
+        "cancelled": "Parado: {{file}}",
+        "failed": "Não foi possível transcrever {{file}}: {{error}}",
+        "startFailed": "Não foi possível iniciar: {{reason}}",
+        "done": "{{file}} foi transcrito",
+        "copy": "Copiar texto",
+        "savedTo": "Texto salvo em {{path}}",
+        "saveFailed": "Não foi possível salvar: {{error}}",
+        "empty": "Nenhuma fala encontrada neste arquivo."
+      },
+      "options": {
+        "saveText": {
+          "title": "Salvar o texto",
+          "description": "**Onde a transcrição é salva como .txt**, com o nome do arquivo de áudio. Se o nome já existir, um número é adicionado; nada é sobrescrito.\n\n**Padrão:** Perguntar sempre: uma janela pergunta quando você escolhe um arquivo e pode lembrar sua escolha. O texto é mostrado para copiar de qualquer forma.",
+          "options": {
+            "ask": "Perguntar sempre",
+            "handy_folder": "Na pasta do Handy",
+            "next_to_file": "Ao lado da gravação",
+            "dont_save": "Não salvar"
+          }
+        },
+        "keepAudio": {
+          "title": "Manter uma cópia do áudio",
+          "description": "**Copia o arquivo de áudio para a pasta abaixo**, ao lado do texto, para você ainda tê-lo se o original for movido ou apagado.\n\n**Padrão:** desativado. O original nunca é movido nem alterado."
+        },
+        "folder": {
+          "title": "Pasta",
+          "description": "**Para onde vai o texto salvo na pasta do Handy, e para onde vão as cópias de áudio.**\n\n**Padrão:** uma pasta \"files\" dentro da pasta de dados do Handy.",
+          "change": "Alterar",
+          "reset": "Voltar à pasta do Handy"
+        }
+      },
+      "ask": {
+        "title": "Onde salvar o texto?",
+        "handyFolder": "Na pasta do Handy",
+        "nextToFile": "Ao lado da gravação",
+        "dontSave": "Não salvar",
+        "dontSaveHint": "O texto continua visível para copiar e fica na lista.",
+        "remember": "Lembrar minha escolha",
+        "rememberHint": "Você pode mudar depois em Salvar o texto."
+      },
+      "log": {
+        "title": "Arquivos transcritos",
+        "empty": "Nada transcrito ainda. Cada arquivo que você transcrever aqui aparece na lista com seu texto.",
+        "showMore": "Mostrar tudo",
+        "showLess": "Mostrar menos",
+        "reveal": "Mostrar na pasta",
+        "delete": "Remover da lista"
+      }
+    },
     "currentAudio": {
       "streamingHint": "O texto aparece progressivamente enquanto você fala somente quando o atalho pressionado — Transcrever ou Pressionar para falar — está definido como Ao vivo e você está usando um modelo local.",
       "finalHint": "No modo Pós-gravação, ou com a transcrição por API ou OpenRouter, a transcrição completa aparece de uma só vez quando a gravação termina; defina o modo de cada atalho em",
-      "advancedTranscription": "Avançado → Transcrição",
+      "advancedTranscription": "Geral › Transcrição",
       "finalHintSuffix": ".",
       "title": "Áudio Atual",
       "idle": "Inicie a gravação para ver a transcrição em tempo real",
@@ -1259,7 +1748,8 @@
       "loading": "Carregando modelos…",
       "error": "Falha ao carregar modelos",
       "noMatches": "Nenhum modelo correspondente — digite para usar um id personalizado"
-    }
+    },
+    "revealHint": "Ative para ver mais configurações."
   },
   "common": {
     "loading": "Carregando...",
@@ -1315,8 +1805,12 @@
     "pause": "Pausar",
     "resume": "Retomar",
     "liveTextBox": "Caixa de texto ao vivo",
-    "slowPc": "Transcrevendo a {{percent}}% da velocidade normal deste PC",
-    "speedUnknown": "Velocidade do PC: ainda não medida"
+    "menu": {
+      "changeShortcut": "Alterar atalho…",
+      "liveTextSettings": "Configurações da caixa de texto ao vivo…",
+      "hidePause": "Ocultar o botão de pausa"
+    },
+    "tooQuiet": "Muito baixo — fale alto"
   },
   "brand": {
     "name": "Handy",
@@ -1352,7 +1846,7 @@
     "fileTooLarge": "O arquivo é muito grande (máx. 10 MB).",
     "loadedFile": "Carregado: {{name}}",
     "providerOption": "{{name}} (provedor)",
-    "chipDisabled": "Não configurado — ative com Habilitar este provedor em Avançado > Provedores > Provedores de LLM Registrados.",
+    "chipDisabled": "Não configurado — ative com Habilitar este provedor em Mais › Provedores › Provedores de LLM Registrados.",
     "chips": {
       "cl100k_base": "cl100k (GPT-4)",
       "o200k_base": "o200k (GPT-4o)",
@@ -1380,7 +1874,6 @@
     }
   },
   "keyboardTyper": {
-    "title": "Digitador de Teclado",
     "description": "Envia este texto para a janela em foco como teclas simuladas individuais, então funciona onde colar é bloqueado — consoles remotos, visualizadores de VM, prompts de senha. Pressione Ir e você recebe a contagem regressiva do Atraso inicial (10 s por padrão) para clicar primeiro na janela de destino; pressione o Atalho de Digitar Texto quando você já estiver no destino, e a digitação começa depois de cerca de um segundo. O texto vive apenas na memória — nunca é gravado nas suas configurações, no Histórico ou nos logs.",
     "placeholder": "Digite o texto a ser digitado...",
     "go": "Ir",
@@ -1398,7 +1891,7 @@
     "shortcut": {
       "label": "Atalho:",
       "unset": "não definido",
-      "hint": "(altere em Configurações Avançadas; pressione novamente para cancelar)"
+      "hint": "(altere na página Atalhos; pressione novamente para cancelar)"
     },
     "status": {
       "idle": "Clique em Ir e depois foque a janela de destino — ou use o atalho diretamente no aplicativo de destino.",
@@ -1411,14 +1904,14 @@
   },
   "modelTesting": {
     "configureProviders": "Configurar provedores",
-    "description": "Envia um prompt para cada modelo marcado em Executar e exibe as respostas lado a lado com contagem de tokens, custo e tempo de ida e volta; modelos marcados em Avaliador então pontuam todas essas respostas usando o seu prompt de avaliação. Padrão: nada selecionado e ambos os prompts vazios. A lista vem de Avançado > Provedores de LLM Registrados, então uma execução usa suas próprias chaves de API — seu prompt sai deste computador e, para provedores pagos, custa dinheiro de verdade.",
+    "description": "Envia um prompt para cada modelo marcado em Executar e exibe as respostas lado a lado com contagem de tokens, custo e tempo de ida e volta; modelos marcados em Avaliador então pontuam todas essas respostas usando o seu prompt de avaliação. Padrão: nada selecionado e ambos os prompts vazios. A lista vem de Mais › Provedores › Provedores de LLM Registrados, então uma execução usa suas próprias chaves de API — seu prompt sai deste computador e, para provedores pagos, custa dinheiro de verdade.",
     "providersLabel": "Modelos",
     "selectAll": "Selecionar todos para executar",
     "clear": "Limpar",
     "run": "Executar",
     "judge": "Avaliador",
     "costPerM": "entrada ${{input}} · saída ${{output}} /1M",
-    "noProviders": "Nenhum provedor com suporte a chat configurado. Adicione um em Avançado → Provedores de LLM Registrados.",
+    "noProviders": "Nenhum provedor com suporte a chat configurado. Adicione um em Mais › Provedores › Provedores de LLM Registrados.",
     "mainPromptLabel": "Prompt para todos os modelos",
     "mainPromptPlaceholder": "O prompt enviado a cada modelo selecionado…",
     "judgePromptLabel": "Prompt do avaliador / árbitro (opcional)",
@@ -1483,6 +1976,7 @@
   "floating": {
     "waiting": "Aguardando transcrição…",
     "listening": "Ouvindo…",
+    "listeningShort": "Ouvindo",
     "copy": "Copiar",
     "copied": "Copiado"
   },
@@ -1491,5 +1985,153 @@
       "message": "A atualização para {{expected}} não foi concluída — continua a executar {{actual}}. O instalador foi iniciado mas nada foi substituído; uma política de segurança pode tê-lo bloqueado.",
       "download": "Transferir manualmente"
     }
+  },
+  "whatsNew": {
+    "intro": "O que há de novo e o que mudou nas últimas atualizações. Mostrar abre a configuração.",
+    "release": "Versão {{version}}",
+    "show": "Mostrar",
+    "items": {
+      "files": {
+        "title": "Transcrever um arquivo",
+        "description": "A nova página Arquivos transcreve um arquivo de áudio que você escolher (WAV, MP3, M4A, AAC, FLAC, OGG, Opus) com o modelo escolhido e mantém uma lista de arquivos transcritos. As pastas monitoradas também foram para lá."
+      },
+      "helpMode": {
+        "title": "Modo de ajuda",
+        "description": "O ? no canto superior direito de cada página: aponte para uma configuração para ler o que ela faz. Substitui o \"i\" em cada linha."
+      },
+      "setups": {
+        "title": "Configurações do Jumper e do pós-processamento",
+        "description": "Duas configurações guiadas na página Configurações: memorizar lugares e pular para eles, ou conectar uma IA que limpa seu texto."
+      },
+      "firstSetup": {
+        "title": "Um guia no primeiro início",
+        "description": "Idiomas, um modelo de voz sugerido, atalhos, o microfone e um primeiro teste. Rode de novo pela página Configurações."
+      },
+      "modelRatings": {
+        "title": "Notas de modelos comparáveis",
+        "description": "As barras de velocidade e precisão agora vêm de medições, e as descrições batem com elas."
+      },
+      "progressStyle": {
+        "title": "Luz ao redor da borda",
+        "description": "Estilo de progresso: ao transcrever, uma luz brilhante percorre a pílula em vez da linha na parte de baixo."
+      },
+      "overlaySize": {
+        "title": "Tamanho da sobreposição",
+        "description": "Aumente a pílula de gravação: 125% ou 150%."
+      },
+      "reopenLastPage": {
+        "title": "Reabrir a última página",
+        "description": "O Handy Tool abre na página que estava aberta."
+      },
+      "liveTextSize": {
+        "title": "Caixa de texto ao vivo: tamanho e altura",
+        "description": "Escolha o tamanho do texto e quantas linhas a caixa de texto inteiro mostra."
+      },
+      "micWarmup": {
+        "title": "Esperar o microfone aquecer",
+        "description": "Um microfone que começa baixo não perde mais suas primeiras palavras."
+      },
+      "tooQuiet": {
+        "title": "Muito baixo — fale mais alto",
+        "description": "Um aviso quando você fala baixo demais para o modelo ouvir bem."
+      },
+      "newIcon": {
+        "title": "Novo ícone do app",
+        "description": "O novo ícone de onda no app, no instalador, na barra de tarefas e no Iniciar."
+      },
+      "holdUndo": {
+        "title": "Segure para apagar palavras",
+        "description": "Na transcrição ao vivo (caixa de texto ao vivo ligada): Ctrl+Backspace apaga a última palavra e, segurando, continua apagando. Ative com Desfazer a última palavra em Geral."
+      },
+      "liveTranscript": {
+        "title": "O texto ao vivo é a sua transcrição",
+        "description": "Com \"Caixa de texto ao vivo\" ligada, o que a caixa mostra é a transcrição: ao parar, só é acrescentado o seu último segundo ou dois, então o texto fica pronto na hora."
+      },
+      "historyTabs": {
+        "title": "Abas do histórico e estatísticas",
+        "description": "O histórico tem as abas Gravações, Estatísticas e Configurações. Estatísticas conta suas gravações e a duração por dia, semana, mês e ano."
+      },
+      "liveTextFade": {
+        "title": "Esmaecer quando você para de falar",
+        "description": "O texto ao vivo esmaece 3 segundos depois de parar de mudar; suas próximas palavras o trazem de volta."
+      },
+      "appearanceSetup": {
+        "title": "Configuração de aparência",
+        "description": "Uma configuração guiada que mostra cada aparência em movimento antes de você escolher: a pílula, seu progresso e a caixa de texto ao vivo. Na página Configurações e no topo de Geral › Aplicativo."
+      },
+      "progressColor": {
+        "title": "Sua própria cor de progresso",
+        "description": "Escolha a cor da luz de progresso e seu brilho, o T brilhando e as barras de som, com três controles deslizantes: matiz, saturação e luminosidade."
+      },
+      "liveTextBox": {
+        "title": "Caixa de texto ao vivo",
+        "description": "Uma pequena caixa ao lado da pílula de gravação mostra suas palavras enquanto você fala: a linha mais recente ou o texto inteiro. O T na pílula ou seu próprio atalho a alterna."
+      },
+      "newLook": {
+        "title": "Um novo visual",
+        "description": "O aplicativo inteiro foi redesenhado, no claro e no escuro. A pílula de gravação é menor, com barras de som mais longas, e o ícone da bandeja é novo."
+      },
+      "newLayout": {
+        "title": "Uma nova barra lateral com busca",
+        "description": "As páginas que você mais usa estão na barra lateral; as antigas abas Avançado e Digitador de Teclado ficam em Mais, e as configurações do Aplicativo estão em Geral. A caixa de busca encontra qualquer configuração."
+      },
+      "shortcutsPage": {
+        "title": "Todos os atalhos em um só lugar",
+        "description": "A página Atalhos lista todos os atalhos e avisa quando dois compartilham as mesmas teclas ou quando uma única tecla dispararia enquanto você digita."
+      },
+      "shortcutNone": {
+        "title": "Desligar um atalho",
+        "description": "O × em um atalho o define como Nenhum, para que suas teclas voltem a funcionar em outros aplicativos, por exemplo Escape para Cancelar. Redefinir o traz de volta."
+      },
+      "pauseButton": {
+        "title": "Botão de pausa",
+        "description": "Pause e retome uma gravação pela pílula de gravação, ou com seu próprio atalho. Ative-o em Geral."
+      },
+      "progressPercent": {
+        "title": "Transcrevendo 42%",
+        "description": "A pílula mostra o andamento da transcrição, e o × continua cancelando enquanto ela roda."
+      },
+      "micStatus": {
+        "title": "A pílula avisa sobre o microfone",
+        "description": "\"Iniciando micro...\" até que ele realmente grave, e \"Sem microfone\" ou \"Microfone bloqueado\" quando não consegue começar, em vez de gravar silêncio."
+      },
+      "micKeepWarm": {
+        "title": "Manter o microfone pronto",
+        "description": "Mantém o microfone aberto por alguns minutos após uma gravação, para que a próxima comece na hora."
+      },
+      "liveTextAfterStop": {
+        "title": "Mostrar o texto enquanto é transcrito",
+        "description": "Sem a caixa de texto ao vivo, a caixa aparece quando você para e seu texto é digitado nela à medida que chega."
+      },
+      "pillMenus": {
+        "title": "Clique com o botão direito nos botões da pílula",
+        "description": "O T, a pausa e o × na pílula têm menus: trocar o que a caixa mostra, mudar um atalho, ou manter uma gravação só no Histórico."
+      },
+      "trayClick": {
+        "title": "Clique no ícone da bandeja para abrir",
+        "description": "Um clique com o botão esquerdo no ícone da bandeja abre a janela; o menu fica no clique com o botão direito."
+      },
+      "blockedUpdate": {
+        "title": "Atualizações bloqueadas são informadas",
+        "description": "Se uma atualização não foi instalada (por exemplo, o Smart App Control do Windows a bloqueou), um banner avisa, com um link para baixar você mesmo."
+      },
+      "macBuilds": {
+        "title": "Versões para macOS",
+        "description": "O Handy Tool agora também vem para Macs Intel e Apple Silicon. Ainda não estão assinados."
+      },
+      "soundSource": {
+        "title": "Fonte de som mudou de lugar",
+        "description": "Fonte de som agora fica em Geral › Som, logo acima do seletor de microfone. Apenas Windows."
+      },
+      "systemAudioControls": {
+        "title": "Atraso e nível do áudio do sistema",
+        "description": "Quando o áudio do sistema é gravado, defina o quanto ele está atrasado em relação ao microfone e quão alto está ao lado dele."
+      },
+      "linuxBuilds": {
+        "title": "Pacotes para Linux",
+        "description": ".deb, .rpm e .AppImage para x86_64 e ARM64. Ainda não foram testados."
+      }
+    },
+    "installed": "Instalada"
   }
 }

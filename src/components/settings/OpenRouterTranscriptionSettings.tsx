@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useSettings } from "../../hooks/useSettings";
 import { SettingContainer } from "../ui/SettingContainer";
 import { Dropdown } from "@/components/ui";
+import { TEXT_FIELD } from "../ui/controlClasses";
 import type {
   OpenRouterTranscriptionRoute,
   TranscriptionAudioFormat,
@@ -13,8 +14,7 @@ interface Props {
   grouped?: boolean;
 }
 
-const INPUT_CLASS =
-  "w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-blue-500 focus:outline-none";
+const INPUT_CLASS = `w-full ${TEXT_FIELD}`;
 
 /**
  * Config for the "OpenRouter Transcription" engine (T-308: dedicated base URL +

@@ -160,15 +160,23 @@ export const searchSettings = (
 
 /**
  * Scroll to the control titled `title` on the page just opened and outline it
- * briefly. The page renders after navigation, so it retries for about a second.
+ * briefly. The page renders after navigation, so it retries for about a second;
+ * if it never shows up (a setting only shown while its parent is on), the
+ * `fallback` title (that parent) is outlined instead.
  */
-export const highlightSetting = (title: string, attempt = 0) => {
+export const highlightSetting = (
+  title: string,
+  attempt = 0,
+  fallback?: string,
+) => {
   const el = document.querySelector(
     `[data-setting-title="${CSS.escape(title)}"]`,
   );
   if (!el) {
     if (attempt < 10) {
-      setTimeout(() => highlightSetting(title, attempt + 1), 100);
+      setTimeout(() => highlightSetting(title, attempt + 1, fallback), 100);
+    } else if (fallback) {
+      highlightSetting(fallback);
     }
     return;
   }

@@ -8,6 +8,7 @@ import {
 } from "../../lib/utils/keyboard";
 import { X } from "lucide-react";
 import { ResetButton } from "../ui/ResetButton";
+import { ShortcutChip } from "./ShortcutChip";
 import { AltGrWarning } from "./AltGrWarning";
 import { SingleKeyWarning } from "./SingleKeyWarning";
 import { ShortcutConflictWarning } from "./ShortcutConflictWarning";
@@ -245,14 +246,6 @@ export const GlobalShortcutInput: React.FC<GlobalShortcutInputProps> = ({
   };
 
   // Format the current shortcut keys being recorded
-  const formatCurrentKeys = (): string => {
-    if (recordedKeys.length === 0)
-      return t("settings.general.shortcut.pressKeys");
-
-    // Use the same formatting as the display to ensure consistency
-    return formatKeyCombination(recordedKeys.join("+"), osType);
-  };
-
   // Store references to shortcut elements
   const setShortcutRef = (id: string, ref: HTMLDivElement | null) => {
     shortcutRefs.current.set(id, ref);
@@ -278,7 +271,7 @@ export const GlobalShortcutInput: React.FC<GlobalShortcutInputProps> = ({
         descriptionMode={descriptionMode}
         grouped={grouped}
       >
-        <div className="text-sm text-mid-gray">
+        <div className="text-sm text-text-secondary">
           {t("settings.general.shortcut.loading")}
         </div>
       </SettingContainer>
@@ -294,7 +287,7 @@ export const GlobalShortcutInput: React.FC<GlobalShortcutInputProps> = ({
         descriptionMode={descriptionMode}
         grouped={grouped}
       >
-        <div className="text-sm text-mid-gray">
+        <div className="text-sm text-text-secondary">
           {t("settings.general.shortcut.none")}
         </div>
       </SettingContainer>
@@ -310,7 +303,7 @@ export const GlobalShortcutInput: React.FC<GlobalShortcutInputProps> = ({
         descriptionMode={descriptionMode}
         grouped={grouped}
       >
-        <div className="text-sm text-mid-gray">
+        <div className="text-sm text-text-secondary">
           {t("settings.general.shortcut.none")}
         </div>
       </SettingContainer>
@@ -336,42 +329,43 @@ export const GlobalShortcutInput: React.FC<GlobalShortcutInputProps> = ({
       disabled={disabled}
       layout="horizontal"
     >
-      <div className="flex items-center space-x-1">
+      <div className="flex items-center gap-2">
         <ShortcutConflictWarning shortcutId={shortcutId} />
         <AltGrWarning binding={binding.current_binding} />
         <SingleKeyWarning binding={binding.current_binding} />
-        {editingShortcutId === shortcutId ? (
-          <div
-            ref={(ref) => setShortcutRef(shortcutId, ref)}
-            className="px-2 py-1 text-sm font-semibold border border-logo-primary bg-logo-primary/30 rounded-md"
-          >
-            {formatCurrentKeys()}
-          </div>
-        ) : (
-          <div
-            className={`px-2 py-1 text-sm bg-mid-gray/10 border border-mid-gray/80 hover:bg-logo-primary/10 rounded-md cursor-pointer hover:border-logo-primary ${
-              binding.current_binding ? "font-semibold" : "text-mid-gray"
-            }`}
-            onClick={() => startRecording(shortcutId)}
-          >
-            {binding.current_binding
+        <ShortcutChip
+          keys={
+            binding.current_binding
               ? formatKeyCombination(binding.current_binding, osType)
-              : t("settings.general.shortcut.unset")}
-          </div>
-        )}
-        <ResetButton
-          onClick={clearBinding}
-          disabled={
-            !binding.current_binding || isUpdating(`binding_${shortcutId}`)
+              : null
           }
-          ariaLabel={t("settings.general.shortcut.clear")}
+          unsetLabel={t("settings.general.shortcut.unset")}
+          recording={editingShortcutId === shortcutId}
+          recordedKeys={
+            recordedKeys.length
+              ? formatKeyCombination(recordedKeys.join("+"), osType)
+              : ""
+          }
+          pressKeysLabel={t("settings.general.shortcut.pressKeys")}
+          onStartRecording={() => startRecording(shortcutId)}
+          recordingRef={(ref) => setShortcutRef(shortcutId, ref)}
         >
-          <X className="h-4 w-4" />
-        </ResetButton>
-        <ResetButton
-          onClick={() => resetBinding(shortcutId)}
-          disabled={isUpdating(`binding_${shortcutId}`)}
-        />
+          <ResetButton
+            onClick={clearBinding}
+            disabled={
+              !binding.current_binding || isUpdating(`binding_${shortcutId}`)
+            }
+            ariaLabel={t("settings.general.shortcut.clear")}
+            className="h-6 w-6"
+          >
+            <X className="h-3.5 w-3.5" />
+          </ResetButton>
+          <ResetButton
+            onClick={() => resetBinding(shortcutId)}
+            disabled={isUpdating(`binding_${shortcutId}`)}
+            className="h-6 w-6"
+          />
+        </ShortcutChip>
       </div>
     </SettingContainer>
   );

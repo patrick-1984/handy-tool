@@ -57,8 +57,8 @@ export const UpdateBanner: React.FC = () => {
   // is available when their last one silently did not apply is worse than useless.
   if (failedUpdate && !outcomeDismissed) {
     return (
-      <div className="flex items-center gap-3 border-b border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm">
-        <RefreshCw className="h-4 w-4 shrink-0 text-amber-500" />
+      <div className="flex items-center gap-3 border-b border-warn-border bg-warn-bg px-4 py-2 text-[13px]">
+        <RefreshCw className="h-4 w-4 shrink-0 text-warn-text" />
         <span className="flex-1">
           {t("updater.failed.message", {
             expected: failedUpdate.expected,
@@ -72,7 +72,7 @@ export const UpdateBanner: React.FC = () => {
               "https://github.com/patrick-1984/handy-tool/releases/latest",
             )
           }
-          className="rounded bg-amber-500/20 px-2 py-1 hover:bg-amber-500/30"
+          className="h-7 rounded-md border border-control-border border-b-control-bottom bg-control px-2.5 hover:bg-control-hover cursor-pointer"
         >
           {t("updater.failed.download")}
         </button>
@@ -80,7 +80,7 @@ export const UpdateBanner: React.FC = () => {
           type="button"
           aria-label={t("sidebar.update.later")}
           onClick={() => setOutcomeDismissed(true)}
-          className="rounded p-1 hover:bg-amber-500/20"
+          className="rounded-md p-1 hover:bg-hover cursor-pointer"
         >
           <X className="h-4 w-4" />
         </button>
@@ -122,13 +122,17 @@ export const UpdateBanner: React.FC = () => {
         <button
           type="button"
           onClick={() => void openUrl(status.releases_url)}
-          className="font-semibold underline"
+          className="h-7 px-2.5 rounded-md bg-btn text-on-btn text-xs font-medium hover:bg-btn-hover cursor-pointer"
         >
           {t("sidebar.update.downloadPortableZip")}
         </button>
       );
       secondary = (
-        <button type="button" onClick={dismiss} className="underline">
+        <button
+          type="button"
+          onClick={dismiss}
+          className="text-accent-text hover:underline cursor-pointer"
+        >
           {t("sidebar.update.remindLater")}
         </button>
       );
@@ -142,7 +146,7 @@ export const UpdateBanner: React.FC = () => {
         <button
           type="button"
           onClick={install}
-          className="font-semibold underline"
+          className="h-7 px-2.5 rounded-md bg-btn text-on-btn text-xs font-medium hover:bg-btn-hover cursor-pointer"
         >
           {status.waiting_for_idle
             ? t("sidebar.update.installWhenIdle")
@@ -151,14 +155,18 @@ export const UpdateBanner: React.FC = () => {
       );
       secondary = (
         <>
-          <button type="button" onClick={dismiss} className="underline">
+          <button
+            type="button"
+            onClick={dismiss}
+            className="text-accent-text hover:underline cursor-pointer"
+          >
             {t("sidebar.update.remindLater")}
           </button>
           {!silent && (
             <button
               type="button"
               onClick={() => void enableAutomatic()}
-              className="underline"
+              className="text-accent-text hover:underline cursor-pointer"
             >
               {t("sidebar.update.enableAutomatic")}
             </button>
@@ -181,7 +189,7 @@ export const UpdateBanner: React.FC = () => {
         type="button"
         onClick={install}
         disabled={status.waiting_for_idle}
-        className="font-semibold underline disabled:no-underline disabled:opacity-60"
+        className="h-7 px-2.5 rounded-md bg-btn text-on-btn text-xs font-medium hover:bg-btn-hover cursor-pointer disabled:bg-dis-bg disabled:text-dis-text disabled:cursor-not-allowed"
       >
         {status.waiting_for_idle
           ? t("sidebar.update.waiting")
@@ -197,7 +205,11 @@ export const UpdateBanner: React.FC = () => {
       reason: status.error_detail ?? t("sidebar.update.unknownError"),
     });
     primary = (
-      <button type="button" onClick={retry} className="font-semibold underline">
+      <button
+        type="button"
+        onClick={retry}
+        className="h-7 px-2.5 rounded-md bg-btn text-on-btn text-xs font-medium hover:bg-btn-hover cursor-pointer"
+      >
         {t("sidebar.update.tryAgain")}
       </button>
     );
@@ -205,7 +217,7 @@ export const UpdateBanner: React.FC = () => {
       <button
         type="button"
         onClick={() => void openUrl(status.releases_url)}
-        className="underline"
+        className="text-accent-text hover:underline cursor-pointer"
       >
         {t(
           status.portable
@@ -217,20 +229,22 @@ export const UpdateBanner: React.FC = () => {
   }
 
   return (
-    <div className="mx-1 mt-1 rounded-lg border border-logo-primary/40 bg-logo-primary/10 p-2 text-xs">
+    <div className="mx-1 mt-2 rounded-lg border border-border bg-surface p-3 text-xs shadow-card">
       <div className="flex items-start gap-2">
         {status.state === "downloading" ? (
-          <Download className="mt-0.5 h-4 w-4 shrink-0" />
+          <Download className="mt-0.5 h-4 w-4 shrink-0 text-accent-text" />
         ) : (
           <RefreshCw
-            className={`mt-0.5 h-4 w-4 shrink-0 ${status.state === "checking" ? "animate-spin" : ""}`}
+            className={`mt-0.5 h-4 w-4 shrink-0 text-accent-text ${status.state === "checking" ? "animate-spin" : ""}`}
           />
         )}
         <div className="min-w-0 flex-1">
-          <p className="font-medium leading-snug">{title}</p>
-          {detail && <p className="mt-1 break-words text-text/70">{detail}</p>}
+          <p className="text-[13px] font-semibold leading-snug">{title}</p>
+          {detail && (
+            <p className="mt-1 break-words text-text-secondary">{detail}</p>
+          )}
           {(primary || secondary) && (
-            <div className="mt-2 flex flex-wrap gap-x-2 gap-y-1">
+            <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
               {primary}
               {secondary}
             </div>

@@ -80,7 +80,6 @@ export const PasteMethodSetting: React.FC<PasteMethodProps> = React.memo(
         description={t("settings.advanced.pasteMethod.description")}
         descriptionMode={descriptionMode}
         grouped={grouped}
-        tooltipPosition="bottom"
       >
         <div className="flex flex-col gap-2">
           <Dropdown

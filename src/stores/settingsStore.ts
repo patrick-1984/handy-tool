@@ -3,8 +3,10 @@ import { subscribeWithSelector } from "zustand/middleware";
 import type {
   AppSettings as Settings,
   AudioDevice,
+  FileTextSave,
   LlmProvider,
   ModelTestLibrary,
+  ProgressStyle,
 } from "@/bindings";
 import { commands } from "@/bindings";
 
@@ -63,6 +65,12 @@ const settingUpdaters: {
     commands.changeMicKeepWarmSetting(value as number),
   pause_button_enabled: (value) =>
     commands.changePauseButtonSetting(value as boolean),
+  mic_warmup_wait: (value) =>
+    commands.changeMicWarmupWaitSetting(value as boolean),
+  too_quiet_hint: (value) =>
+    commands.changeTooQuietHintSetting(value as boolean),
+  too_quiet_hint_box: (value) =>
+    commands.changeTooQuietHintBoxSetting(value as boolean),
   undo_word_enabled: (value) =>
     commands.changeUndoWordSetting(value as boolean),
   live_text_box_enabled: (value) =>
@@ -71,10 +79,26 @@ const settingUpdaters: {
     commands.changeLiveTextModeSetting(value as "last_words" | "full_text"),
   live_text_fade: (value) =>
     commands.changeLiveTextFadeSetting(value as boolean),
+  live_text_after_stop: (value) =>
+    commands.changeLiveTextAfterStopSetting(value as boolean),
+  live_text_font_size: (value) =>
+    commands.changeLiveTextFontSizeSetting(value as number),
+  pill_scale: (value) => commands.changePillScaleSetting(value as number),
+  live_text_lines: (value) =>
+    commands.changeLiveTextLinesSetting(value as number),
+  reopen_last_page: (value) =>
+    commands.changeReopenLastPageSetting(value as boolean),
+  progress_style: (value) =>
+    commands.changeProgressStyleSetting(value as ProgressStyle),
+  progress_glow: (value) => commands.changeProgressGlowSetting(value as number),
+  progress_line_glow: (value) =>
+    commands.changeProgressLineGlowSetting(value as boolean),
+  sound_bars_wide: (value) =>
+    commands.changeSoundBarsWideSetting(value as boolean),
+  progress_color: (value) =>
+    commands.changeProgressColorSetting(value as string),
   live_text_width: (value) =>
     commands.changeLiveTextWidthSetting(value as number),
-  speed_indicator_enabled: (value) =>
-    commands.changeSpeedIndicatorSetting(value as boolean),
   altgr_warning_enabled: (value) =>
     commands.changeAltgrWarningSetting(value as boolean),
   audio_feedback: (value) =>
@@ -243,6 +267,12 @@ const settingUpdaters: {
   translator_priority: (value) =>
     commands.changeTranslatorPriority(value as string),
   translator_model: (value) => commands.changeTranslatorModel(value as string),
+  file_text_save: (value) =>
+    commands.changeFileTextSaveSetting(value as FileTextSave),
+  file_model: (value) => commands.changeFileModelSetting(value as string),
+  file_keep_audio: (value) =>
+    commands.changeFileKeepAudioSetting(value as boolean),
+  files_folder: (value) => commands.changeFilesFolderSetting(value as string),
   jumper_persist: (value) =>
     commands.changeJumperPersistSetting(value as boolean),
   model_unload_custom_seconds: (value) =>

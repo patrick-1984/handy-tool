@@ -66,7 +66,6 @@ export const TypingToolSetting: React.FC<TypingToolProps> = React.memo(
         description={t("settings.advanced.typingTool.description")}
         descriptionMode={descriptionMode}
         grouped={grouped}
-        tooltipPosition="bottom"
       >
         <Dropdown
           options={typingToolOptions}

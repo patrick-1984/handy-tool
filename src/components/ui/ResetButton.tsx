@@ -9,15 +9,17 @@ interface ResetButtonProps {
   children?: React.ReactNode;
 }
 
+/** A small icon-only button (reset, clear): no frame until hovered. */
 export const ResetButton: React.FC<ResetButtonProps> = React.memo(
   ({ onClick, disabled = false, className = "", ariaLabel, children }) => (
     <button
       type="button"
       aria-label={ariaLabel}
-      className={`p-1 rounded-md border border-transparent transition-all duration-150 ${
+      title={ariaLabel}
+      className={`inline-flex items-center justify-center h-7 w-7 rounded-md transition-colors duration-150 ${
         disabled
-          ? "opacity-50 cursor-not-allowed text-text/40"
-          : "hover:bg-logo-primary/30 active:bg-logo-primary/50 active:translate-y-[1px] hover:cursor-pointer hover:border-logo-primary text-text/80"
+          ? "cursor-not-allowed text-dis-text"
+          : "cursor-pointer text-text-secondary hover:bg-hover hover:text-text active:bg-active"
       } ${className}`}
       onClick={onClick}
       disabled={disabled}
