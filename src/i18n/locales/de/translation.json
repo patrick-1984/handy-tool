@@ -330,7 +330,7 @@
       },
       "liveText": {
         "title": "Deine Worte zeigen, während du sprichst?",
-        "body": "Das Live-Textfeld sitzt neben der Pille und zeigt, was du sagst, während du sprichst; das T auf der Pille schaltet es jederzeit ein oder aus. Ist es an, werden die Worte im Feld zu deinem Text: Die Aufnahme wird am Ende nicht noch einmal als Ganzes transkribiert, daher ist der Text sofort fertig, kann aber etwas weniger genau sein.",
+        "body": "Das Live-Textfeld sitzt neben der Pille und zeigt, was du sagst, während du sprichst; das T auf der Pille schaltet es jederzeit ein oder aus. Mit einem Parakeet-Modell werden die Worte im Feld zu deinem Text: Die Aufnahme wird am Ende nicht noch einmal als Ganzes transkribiert, nur ihr Ende wird nachgeholt, daher ist der Text früher fertig, kann aber etwas weniger genau sein. Mit anderen Modellen ist das Feld nur eine Vorschau: Beim Stoppen wird die ganze Aufnahme noch einmal transkribiert.",
         "off": {
           "title": "Aus",
           "detail": "Nur die Pille."
@@ -667,7 +667,7 @@
       },
       "liveTextBox": {
         "label": "Live-Textfeld",
-        "description": "Zeigt, was du sagst, in einem kleinen Feld neben der Aufnahmeleiste, etwa alle 1,5 Sekunden aktualisiert. Solange es an ist, laufen alle Aufnahmen im Live-Modus und der Text im Feld ist dein Transkript: Beim Stoppen kommen nur die letzten ein, zwei Sekunden dazu, daher ist er sofort fertig — die Aufnahme wird nicht ein zweites Mal transkribiert. Braucht ein Modell, das auf diesem PC läuft. Standard: Aus; die T-Taste der Leiste schaltet es ebenfalls.",
+        "description": "Zeigt, was du sagst, in einem kleinen Feld neben der Aufnahmeleiste, etwa alle 1,5 Sekunden aktualisiert. Solange es an ist, laufen alle Aufnahmen im Live-Modus. Mit einem Parakeet-Modell ist der Text im Feld dein Transkript: Beim Stoppen wird nur das Ende der Aufnahme nachgeholt — die Aufnahme wird nicht ein zweites Mal transkribiert. Mit anderen Modellen ist das Feld nur eine Vorschau, und beim Stoppen wird die ganze Aufnahme noch einmal transkribiert. Braucht ein Modell, das auf diesem PC läuft. Standard: Aus; die T-Taste der Leiste schaltet es ebenfalls.",
         "remoteModel": {
           "title": "Das Live-Textfeld funktioniert nicht mit {{model}}",
           "worksWith": "Es braucht ein Modell, das auf diesem PC läuft, denn entfernte Dienste bekommen das Audio erst nach dem Stoppen. Es funktioniert mit: {{models}}.",
@@ -680,7 +680,7 @@
       },
       "liveTradeoffs": {
         "title": "Live-Transkription: gut zu wissen",
-        "accuracy": "Der Text, den du siehst, ist der Text, den du bekommst – daher etwas ungenauer als Nach der Aufnahme, vor allem bei langen Passagen ohne Pause. Nach der Aufnahme liefert den genauesten Text.",
+        "accuracy": "Mit einem Parakeet-Modell ist der Text, den du siehst, der Text, den du bekommst – daher etwas ungenauer als Nach der Aufnahme, vor allem bei langen Passagen ohne Pause; Nach der Aufnahme liefert den genauesten Text. Andere Modelle transkribieren beim Stoppen die ganze Aufnahme noch einmal, daher ist das Feld nur eine Vorschau und eine lange Aufnahme braucht länger bis zum Ergebnis.",
         "cpu": "Sie braucht beim Sprechen mehr CPU und Akku.",
         "undo": "Letztes Wort rückgängig funktioniert nur mit Parakeet-Modellen."
       },
@@ -1104,7 +1104,7 @@
       },
       "transcriptionMode": {
         "title": "Transkriptionsmodus",
-        "description": "Live zeigt den Text schon beim Sprechen; Nach der Aufnahme nimmt still auf und transkribiert im Hintergrund. So oder so passiert die meiste Arbeit während du sprichst, daher ist der Text kurz nach dem Stoppen fertig. Im Live-Modus bekommst du genau den Text, den du gesehen hast. Standard: Nach der Aufnahme. Gilt nur für das Aufnahme-/Transkriptions-Tastenkürzel; API-Modelle verhalten sich immer wie Nach der Aufnahme.",
+        "description": "Live zeigt den Text schon beim Sprechen; Nach der Aufnahme nimmt still auf und transkribiert im Hintergrund. Ist Absturzsichere Aufnahme an (Standard), transkribiert Nach der Aufnahme die Aufnahme schon während du sprichst Stück für Stück, daher ist der Text kurz nach dem Stoppen fertig; ist sie aus, wird die ganze Aufnahme beim Stoppen transkribiert. Im Live-Modus mit einem Parakeet-Modell bekommst du genau den Text, den du gesehen hast, und beim Stoppen wird nur das Ende nachgeholt; mit anderen Modellen transkribiert der Live-Modus beim Stoppen die ganze Aufnahme noch einmal. Standard: Nach der Aufnahme. Gilt nur für das Aufnahme-/Transkriptions-Tastenkürzel; API-Modelle verhalten sich immer wie Nach der Aufnahme.",
         "options": {
           "live": "Live",
           "postRecording": "Nach der Aufnahme"
@@ -1112,7 +1112,7 @@
       },
       "transcriptionModePtt": {
         "title": "Transkriptionsmodus (PTT)",
-        "description": "Dieselbe Wahl zwischen Live und Nach der Aufnahme, aber nur für das Push-to-Talk-Tastenkürzel. Standard: Live — bewusst das Gegenteil von Transkriptionsmodus, weil gehaltene Aufnahmen kurz sind und die Vorschau fast augenblicklich erscheint. Der zugestellte Text stammt trotzdem aus einem abschließenden Durchgang über die gesamte Aufnahme.",
+        "description": "Dieselbe Wahl zwischen Live und Nach der Aufnahme, aber nur für das Push-to-Talk-Tastenkürzel. Standard: Live — bewusst das Gegenteil von Transkriptionsmodus, weil gehaltene Aufnahmen kurz sind und die Vorschau fast augenblicklich erscheint. Mit einem Parakeet-Modell ist der zugestellte Text der Live-Text, dessen Ende beim Stoppen nachgeholt wird; mit anderen Modellen stammt er aus einem abschließenden Durchgang über die gesamte Aufnahme.",
         "options": {
           "live": "Live",
           "postRecording": "Nach der Aufnahme"
@@ -1595,7 +1595,7 @@
       "title": "Überwachte Ordner",
       "enabled": {
         "label": "Ordner überwachen",
-        "description": "Aktivieren, um jede neue .wav-, .mp3-, .m4a-, .aac-, .flac-, .ogg- oder .opus-Datei, die in einem überwachten Ordner erscheint, mit deinem aktuellen Modell sowie den Einstellungen Sprache und Ins Englische übersetzen in eine .txt-Datei daneben zu transkribieren. Standard: aus. Dateien, die beim Start der Überwachung schon im Ordner liegen, werden bewusst nicht angerührt; die Ordner selbst wählst du unter Ordner hinzufügen."
+        "description": "Aktivieren, um jede neue Datei im Format .wav, .mp3, .m4a, .mp4 (ihre Tonspur), .aac, .flac, .ogg (Opus) oder .opus, die in einem überwachten Ordner erscheint, mit deinem aktuellen Modell sowie den Einstellungen Sprache und Ins Englische übersetzen in eine .txt-Datei daneben zu transkribieren. Standard: aus. Dateien, die beim Start der Überwachung schon im Ordner liegen, werden bewusst nicht angerührt; die Ordner selbst wählst du unter Ordner hinzufügen."
       },
       "priority": {
         "title": "Priorität",
@@ -1662,7 +1662,7 @@
         "title": "Datei transkribieren",
         "choose": {
           "title": "Audiodatei wählen",
-          "description": "**Transkribiert eine Audiodatei deiner Wahl**: WAV, MP3, M4A, AAC, FLAC, OGG oder Opus, etwa eine Handyaufnahme, mit dem oben gewählten Modell und deinen Spracheinstellungen.\n\nDie Datei wird an ihren Pausen in Stücke von bis zu etwa 40 Sekunden geteilt, und jedes Stück wird einmal transkribiert: kein Live-Text, kein zweiter Durchgang. Die Originaldatei wird nur gelesen, nie verändert.",
+          "description": "**Transkribiert eine Audiodatei deiner Wahl**: WAV, MP3, M4A, MP4 (die Tonspur eines Videos), AAC, FLAC oder Ogg Opus (.ogg, .opus), etwa eine Handyaufnahme, mit dem oben gewählten Modell und deinen Spracheinstellungen.\n\nDie Datei wird an ihren Pausen in Stücke von bis zu etwa 40 Sekunden geteilt, und jedes Stück wird einmal transkribiert: kein Live-Text, kein zweiter Durchgang. Die Originaldatei wird nur gelesen, nie verändert.",
           "button": "Datei wählen…"
         },
         "audioFiles": "Audiodateien",
@@ -1998,7 +1998,7 @@
     "items": {
       "files": {
         "title": "Datei transkribieren",
-        "description": "Die neue Seite Dateien transkribiert eine Audiodatei deiner Wahl (WAV, MP3, M4A, AAC, FLAC, OGG, Opus) mit dem Modell deiner Wahl und führt eine Liste transkribierter Dateien. Auch die überwachten Ordner sind dorthin umgezogen."
+        "description": "Die neue Seite Dateien transkribiert eine Audiodatei deiner Wahl (WAV, MP3, M4A, AAC, FLAC, Ogg Opus und den Ton eines MP4-Videos) mit dem Modell deiner Wahl und führt eine Liste transkribierter Dateien. Auch die überwachten Ordner sind dorthin umgezogen."
       },
       "helpMode": {
         "title": "Hilfemodus",
@@ -2049,8 +2049,8 @@
         "description": "Bei der Live-Transkription (Live-Textfeld an): Strg+Rücktaste löscht das letzte Wort, gehalten löscht sie weiter. Einschalten mit Letztes Wort rückgängig unter Allgemein."
       },
       "liveTranscript": {
-        "title": "Der Live-Text ist dein Transkript",
-        "description": "Ist „Live-Textfeld“ an, ist der Text im Feld das Transkript: Beim Stoppen kommt nur die letzte Sekunde oder zwei hinzu, der Text ist also sofort fertig."
+        "title": "Mit Parakeet ist der Live-Text dein Transkript",
+        "description": "Ist „Live-Textfeld“ an und ein Parakeet-Modell gewählt, ist der Text im Feld das Transkript: Beim Stoppen wird nur das Ende der Aufnahme nachgeholt, statt die ganze Aufnahme noch einmal zu transkribieren. Andere Modelle transkribieren beim Stoppen weiterhin die ganze Aufnahme noch einmal."
       },
       "historyTabs": {
         "title": "Verlauf-Tabs und Statistik",

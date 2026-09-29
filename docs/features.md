@@ -239,12 +239,14 @@ paste method, so it can behave differently from the toggle.
 **The situation.** A long dictation used to be a black box: you talked for four minutes and only
 found out at the end whether the microphone was even working.
 **What Handy does.** Live mode transcribes progressively while you speak and shows the text
-within seconds. Post-Recording records silently and transcribes in the background as you go.
-Either way most of the work is done while you talk, so the text is ready moments after you stop.
-In Live mode the text you saw is the text you get: only your last second or two is added at
-stop. Post-Recording's segments are longer, which can be slightly more accurate. The two
-shortcuts are configured separately — the toggle defaults to Post-Recording, push-to-talk to
-Live.
+within seconds. Post-Recording records silently. With Crash-Safe Recording on (the default) it
+transcribes the take in the background as you go, so the text is ready moments after you stop;
+with it off, the whole take is transcribed in one pass when you stop. In Live mode with a
+Parakeet model the text you saw is the text you get: at stop only what you said after the last
+fixed word is transcribed and added. With other models the live text is a preview, and the
+whole take is transcribed again when you stop. Post-Recording's segments are longer than
+Parakeet's live windows, which can be slightly more accurate. The two shortcuts are configured
+separately — the toggle defaults to Post-Recording, push-to-talk to Live.
 **Where.** `General › Transcription › Transcription Mode = Live` and
 `General › Transcription › Transcription Mode (PTT) = Live`.
 **Since.** 0.8.2.
@@ -258,14 +260,17 @@ machine works through everything you had said.
 natural silences every 20 to 45 seconds and each segment is transcribed in the background while
 you keep talking, then joined in order. When you stop, only the last segment is left to do, so
 a long take finishes almost immediately. Cuts are always at silence, so no word is ever split
-across a boundary. When what is left still takes more than half a second, the overlay shows how
+across a boundary. This is how a Post-Recording take with a model that runs on this PC works
+while Crash-Safe Recording is on; with it off, the whole take is transcribed in one pass when
+you stop. When what is left still takes more than half a second, the overlay shows how
 far it is — **Transcribing 42%**. It counts the seconds of work left when you stopped (every
 segment still waiting, weighed by its length) and is estimated from this machine's recent
 transcriptions of a similar length, since a long segment takes more time per second of audio
 than a short one; Whisper's own figure is used as a floor. Past about 70% it slows down
 smoothly, so a transcription that runs longer than expected keeps creeping on rather than
 sitting at 99%.
-**Where.** No control — this is always active.
+**Where.** No control of its own — it follows `History › Settings › Crash-Safe Recording = On`,
+the default.
 **Since.** 0.11.2. The percentage since 1.8.0; weighed by work and length-aware since 2.0.0.
 
 ### Live mode delivers the end of your sentence
@@ -273,10 +278,10 @@ sitting at 99%.
 <a id="live-mode-stopped-eating-the-end-of-your-sentence"></a>
 **The situation.** In live mode the pasted text was missing the last few words — whatever you
 said after the final on-screen update.
-**What Handy does.** On stop, the audio since the last fixed word — your last second or two —
-is transcribed and added to the live text, and that is what you get, ready at once. Nothing you
-said after the last on-screen update is lost, and the whole take is not transcribed a second
-time. That needs a model that gives word timings (Parakeet): only then can the live text be cut
+**What Handy does.** On stop, once any live update still running has finished, the audio since
+the last fixed word is transcribed — read together with up to 8 seconds before it, for context —
+and added to the live text, and that is what you get. Nothing you said after the last on-screen
+update is lost, and the whole take is not transcribed a second time. That needs a model that gives word timings (Parakeet): only then can the live text be cut
 between words. With other models, and whenever the live preview produced no text at all, the
 complete audio is transcribed at stop instead.
 **Where.** No control — this is always active.
@@ -298,9 +303,10 @@ and its width is yours to choose. New words are typed in letter by letter rather
 your eye can follow them; removed words go at once. When you stop, the final text appears whole
 and stays a moment before the box fades, so the last words are seen too. Optionally the text fades away a few seconds
 after you stop talking. The box ignores the mouse and never takes focus. While it is on, every take
-runs in Live mode and the text in the box is your transcript: at stop only your last second or
-two is added, so it is ready at once. The box shows the raw words; Custom Words corrections are
-applied to the delivered text. The overlay's **T** button — or the Live Text Box On/Off
+runs in Live mode. With a Parakeet model the text in the box is your transcript: at stop only
+what you said after the last fixed word is transcribed and added. With other models the box is
+a preview, and the whole take is transcribed again at stop. The box shows the raw words; Custom
+Words corrections are applied to the delivered text. The overlay's **T** button — or the Live Text Box On/Off
 shortcut, which has no default key — switches it; switched on in the middle of a take, that
 take turns live on the spot: the parts already transcribed fill the box at once, and only what
 you said after them is read to catch up. A take without the box can still show its text when
@@ -308,16 +314,20 @@ it stops: the box appears and the transcript is typed in as it comes in. It
 needs a model that runs on this PC — remote engines get the audio only after you stop — so
 switching it on with one selected explains that and lists your models that work.
 While live transcription is on, a notice in the Transcription section spells out what it costs:
-slightly less accuracy on long stretches without pauses, more CPU and battery, Undo only with
-Parakeet.
+with Parakeet slightly less accuracy on long stretches without pauses, with other models a
+longer wait at stop, more CPU and battery, Undo only with Parakeet.
 **Where.** `General › Transcription › Live text box = On`,
 `General › Transcription › Live text shows = Whole text` and
 `General › Transcription › Fade when you stop talking = On`,
 `General › Transcription › Box width = Wide` and
 `General › Transcription › Show the text as it's transcribed = On`.
-**Since.** 1.10.0. Typed-in words, fading and the live text as the transcript since 1.11.0;
-before 1.11.0 the last words before a pause could stay missing from the box until you spoke
-again.
+**Applies to.** Not macOS, where the box has no window yet, nor Linux under Wayland, where Handy
+does not create it: a plain window there is placed, and may be focused, by the compositor. The
+separate "Too quiet" box is left out on both for the same reason; the overlay shows the hint
+itself.
+**Since.** 1.10.0. Typed-in words, fading and the live text as the transcript since 1.11.0 (only
+with Parakeet since 2.0.0); before 1.11.0 the last words before a pause could stay missing from
+the box until you spoke again. Left out on Linux under Wayland since 2.0.1.
 
 ### Take back the last word without starting over
 
@@ -329,11 +339,15 @@ date with what you said, then removes the newest word — you see it disappear f
 box — and cuts the recording back to where that word started, so it stays out of the final text
 too. Hold the shortcut and it keeps removing words, like holding Backspace. Keep talking and the
 new words take its place. It needs word positions, which only
-Parakeet models report; with other engines the shortcut does nothing. The audio kept in History
-still contains the removed words.
+Parakeet models report; with other engines the shortcut does nothing. The delivered text leaves
+the removed words out; the audio kept in History may not. An Opus recording (Crash-Safe
+Recording on, the default) still contains them, because it is written to disk while you speak;
+a WAV recording (Crash-Safe Recording off) has them cut out too.
 **Where.** `General › Transcription › Undo last word = On`; the shortcut is
 `Shortcuts › Dictation › Undo Last Word` — `ctrl+backspace` by default, active only during a
 live take.
+**Applies to.** Not Linux, where the Undo Last Word shortcut is never registered, so the option
+is not offered.
 **Since.** 1.10.0. Up-to-date removal since 1.11.0.
 
 ### Pause a take without ending it
@@ -2070,8 +2084,9 @@ Pick a recording, or drop a folder of them, and get text back while you get on w
 <a id="one-file-transcribed-as-accurately-as-the-model-can"></a>
 **The situation.** You have a voice note from your phone, an interview or a lecture, and you want
 its text without playing it into the microphone.
-**What Handy does.** Reads WAV, MP3, M4A, AAC, FLAC, OGG and Opus files, cuts the audio at its
-pauses into pieces of up to about forty seconds and transcribes each piece once with the model
+**What Handy does.** Reads WAV, MP3, M4A, AAC, FLAC and Ogg Opus (`.ogg`, `.opus`) files, and
+the audio track of an MP4 video; Ogg Vorbis is not supported. It cuts the audio at its pauses into
+pieces of up to about forty seconds and transcribes each piece once with the model
 you pick for files (your dictation model to start with; another one loads beside it, and one not
 downloaded yet is downloaded first), so the text is final as it comes — no live preview, no second
 pass. A progress bar follows the file's length. The text is shown to copy and kept in a list of
@@ -2087,8 +2102,9 @@ only ever read.
 **The situation.** You have interviews, voice memos or meeting captures piling up, and
 transcribing them one at a time by hand is the whole afternoon.
 **What Handy does.** Watches folders you choose and transcribes new audio files into a `.txt`
-file next to the source, using your engines and your settings. It runs in the background while
-you keep using the app normally.
+file next to the source, using your engines and your settings. It reads the same formats as a
+file you pick, the audio track of an MP4 video included. It runs in the background while you
+keep using the app normally.
 **Where.** `Files › Watched folders › Watch folders = On` then `Files › Folders › Add a folder`.
 **Since.** The 0.3x series.
 
@@ -2382,7 +2398,8 @@ quiet — and words spoken into that were dropped as noise, so after such a cold
 overlay keeps reading **Starting mic...** until the microphone has warmed up. The wait is
 measured on the microphone's own recent cold starts, and it can be switched off. And if you
 speak too quietly for your words to be kept, **Too quiet — speak up** appears for a moment in a
-small box just under the overlay (or, if you prefer, in the overlay instead of the sound bars). When a take cannot start, the overlay says why for a moment
+small box just under the overlay (or, if you prefer — and always on macOS and on Linux under
+Wayland, where that box is not created — in the overlay instead of the sound bars). When a take cannot start, the overlay says why for a moment
 instead of vanishing: **No microphone** when none is connected, **Microphone blocked** when
 Windows privacy settings deny apps the microphone, and **Microphone error** when the device
 refuses to start. Optionally you can keep the microphone

@@ -24,7 +24,7 @@ A numbered Windows-only saved destination. Nine static slots complement the two 
 
 ## Live transcription
 
-Text is produced during the take, so much of a long recording is already processed when you stop. Compare **post-recording transcription**. See [Watch the text appear, or wait for the most accurate pass](../features.md#live-or-post-recording).
+Text is produced and shown during the take; only with a Parakeet model is that text also what gets delivered. Compare **post-recording transcription**. See [Watch the text appear, or wait for the most accurate pass](../features.md#live-or-post-recording).
 
 ## Paste method
 
@@ -36,7 +36,7 @@ An optional second pass in which a selected LLM provider receives the transcript
 
 ## Post-recording transcription
 
-Audio is collected first and transcribed after the take stops. Compare **live transcription**. Remote API and OpenRouter transcription use the completed VAD-retained recording rather than live segments. See [Watch the text appear, or wait for the most accurate pass](../features.md#live-or-post-recording).
+No text is shown during the take; it arrives when the take stops, even where segments were already transcribed in the background. Compare **live transcription**. Remote API and OpenRouter transcription use the completed VAD-retained recording rather than live segments. See [Watch the text appear, or wait for the most accurate pass](../features.md#live-or-post-recording).
 
 ## Provider
 

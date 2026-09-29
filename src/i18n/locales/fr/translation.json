@@ -330,7 +330,7 @@
       },
       "liveText": {
         "title": "Montrer vos mots pendant que vous parlez ?",
-        "body": "La zone de texte en direct se place à côté de la pilule et montre ce que vous dites pendant que vous parlez ; le T sur la pilule l'active ou la désactive à tout moment. Une fois activée, les mots dans la zone deviennent votre texte : la prise n'est pas transcrite une seconde fois à la fin, le texte est donc prêt aussitôt, mais un peu moins précis.",
+        "body": "La zone de texte en direct se place à côté de la pilule et montre ce que vous dites pendant que vous parlez ; le T sur la pilule l'active ou la désactive à tout moment. Avec un modèle Parakeet, les mots dans la zone deviennent votre texte : la prise n'est pas transcrite une seconde fois en entier à la fin, seule sa fin est rattrapée, le texte est donc prêt plus tôt, mais peut être un peu moins précis. Avec les autres modèles, la zone n'est qu'un aperçu : à l'arrêt, toute la prise est transcrite à nouveau.",
         "off": {
           "title": "Désactivée",
           "detail": "Seulement la pilule."
@@ -667,7 +667,7 @@
       },
       "liveTextBox": {
         "label": "Zone de texte en direct",
-        "description": "Affiche ce que vous dites dans un petit cadre près de la barre d'enregistrement, mis à jour environ toutes les 1,5 s. Tant qu'il est activé, chaque enregistrement est en mode direct et le texte du cadre est votre transcription : à l'arrêt, seule la dernière seconde ou deux est ajoutée, il est donc prêt aussitôt — l'enregistrement n'est pas transcrit une seconde fois. Nécessite un modèle qui tourne sur ce PC. Par défaut : désactivé ; le bouton T de la barre le bascule aussi.",
+        "description": "Affiche ce que vous dites dans un petit cadre près de la barre d'enregistrement, mis à jour environ toutes les 1,5 s. Tant qu'il est activé, chaque enregistrement est en mode direct. Avec un modèle Parakeet, le texte du cadre est votre transcription : à l'arrêt, seule la fin de l'enregistrement est rattrapée — l'enregistrement n'est pas transcrit une seconde fois. Avec les autres modèles, le cadre n'est qu'un aperçu et tout l'enregistrement est transcrit à nouveau à l'arrêt. Nécessite un modèle qui tourne sur ce PC. Par défaut : désactivé ; le bouton T de la barre le bascule aussi.",
         "remoteModel": {
           "title": "Le cadre de texte en direct ne fonctionne pas avec {{model}}",
           "worksWith": "Il faut un modèle qui tourne sur ce PC, car les services distants ne reçoivent l'audio qu'après l'arrêt. Il fonctionne avec : {{models}}.",
@@ -680,7 +680,7 @@
       },
       "liveTradeoffs": {
         "title": "Transcription en direct : bon à savoir",
-        "accuracy": "Le texte que vous voyez est celui que vous obtenez : il est donc un peu moins précis qu'Après l'enregistrement, surtout sur de longs passages sans pause. Après l'enregistrement donne le texte le plus précis.",
+        "accuracy": "Avec un modèle Parakeet, le texte que vous voyez est celui que vous obtenez : il est donc un peu moins précis qu'Après l'enregistrement, surtout sur de longs passages sans pause ; Après l'enregistrement donne le texte le plus précis. Les autres modèles transcrivent tout l'enregistrement à nouveau à l'arrêt : le cadre n'est alors qu'un aperçu, et un long enregistrement met plus de temps à se terminer.",
         "cpu": "Elle sollicite davantage le processeur et la batterie pendant que vous parlez.",
         "undo": "Annuler le dernier mot ne fonctionne qu'avec les modèles Parakeet."
       },
@@ -1104,7 +1104,7 @@
       },
       "transcriptionMode": {
         "title": "Mode de transcription",
-        "description": "Direct affiche le texte pendant que vous parlez ; Après l'enregistrement enregistre discrètement et transcrit en arrière-plan. Dans les deux cas, l'essentiel du travail se fait pendant que vous parlez, le texte est donc prêt peu après l'arrêt. En mode direct, vous obtenez exactement le texte vu. Par défaut : Après l'enregistrement. Ne concerne que le raccourci de transcription ; les modèles API se comportent toujours comme Après l'enregistrement.",
+        "description": "Direct affiche le texte pendant que vous parlez ; Après l'enregistrement enregistre discrètement et transcrit en arrière-plan. Avec « Enregistrement résistant aux plantages » activé (par défaut), Après l'enregistrement transcrit l'enregistrement par morceaux pendant que vous parlez, le texte est donc prêt peu après l'arrêt ; s'il est désactivé, tout l'enregistrement est transcrit à l'arrêt. En mode direct avec un modèle Parakeet, vous obtenez exactement le texte vu, et seule la fin est rattrapée à l'arrêt ; avec les autres modèles, le mode direct transcrit tout l'enregistrement à nouveau à l'arrêt. Par défaut : Après l'enregistrement. Ne concerne que le raccourci de transcription ; les modèles API se comportent toujours comme Après l'enregistrement.",
         "options": {
           "live": "En direct",
           "postRecording": "Après enregistrement"
@@ -1112,7 +1112,7 @@
       },
       "transcriptionModePtt": {
         "title": "Mode de transcription (PTT)",
-        "description": "Le même choix En direct / Après enregistrement, appliqué uniquement au Raccourci Appuyer pour parler. Par défaut : En direct — délibérément l'inverse du Mode de transcription, car les prises maintenues sont courtes et l'aperçu apparaît presque instantanément. Le texte livré provient toujours d'une passe finale sur l'enregistrement complet.",
+        "description": "Le même choix En direct / Après enregistrement, appliqué uniquement au Raccourci Appuyer pour parler. Par défaut : En direct — délibérément l'inverse du Mode de transcription, car les prises maintenues sont courtes et l'aperçu apparaît presque instantanément. Avec un modèle Parakeet, le texte livré est le texte en direct, dont la fin est rattrapée à l'arrêt ; avec les autres modèles, il provient d'une passe finale sur l'enregistrement complet.",
         "options": {
           "live": "En direct",
           "postRecording": "Après enregistrement"
@@ -1595,7 +1595,7 @@
       "title": "Dossiers surveillés",
       "enabled": {
         "label": "Surveiller des dossiers",
-        "description": "Activez pour transcrire chaque nouveau fichier .wav, .mp3, .m4a, .aac, .flac, .ogg ou .opus qui arrive dans un dossier surveillé en un fichier .txt à côté, en utilisant votre modèle, votre Langue et vos réglages « Traduire en anglais » actuels. Désactivé par défaut. Les fichiers déjà présents dans un dossier au démarrage de la surveillance sont volontairement laissés intacts, et les dossiers eux-mêmes se choisissent sous Ajouter un dossier."
+        "description": "Activez pour transcrire chaque nouveau fichier .wav, .mp3, .m4a, .mp4 (sa piste audio), .aac, .flac, .ogg (Opus) ou .opus qui arrive dans un dossier surveillé en un fichier .txt à côté, en utilisant votre modèle, votre Langue et vos réglages « Traduire en anglais » actuels. Désactivé par défaut. Les fichiers déjà présents dans un dossier au démarrage de la surveillance sont volontairement laissés intacts, et les dossiers eux-mêmes se choisissent sous Ajouter un dossier."
       },
       "priority": {
         "title": "Priorité",
@@ -1662,7 +1662,7 @@
         "title": "Transcrire un fichier",
         "choose": {
           "title": "Choisir un fichier audio",
-          "description": "**Transcrit le fichier audio de votre choix** : WAV, MP3, M4A, AAC, FLAC, OGG ou Opus, comme un enregistrement de téléphone, avec le modèle choisi ci-dessus et vos réglages de langue.\n\nLe fichier est découpé à ses pauses en morceaux d'environ 40 secondes au plus, et chaque morceau est transcrit une fois : pas de texte en direct, pas de second passage. Le fichier d'origine est seulement lu, jamais modifié.",
+          "description": "**Transcrit le fichier audio de votre choix** : WAV, MP3, M4A, MP4 (la piste audio d'une vidéo), AAC, FLAC ou Ogg Opus (.ogg, .opus), comme un enregistrement de téléphone, avec le modèle choisi ci-dessus et vos réglages de langue.\n\nLe fichier est découpé à ses pauses en morceaux d'environ 40 secondes au plus, et chaque morceau est transcrit une fois : pas de texte en direct, pas de second passage. Le fichier d'origine est seulement lu, jamais modifié.",
           "button": "Choisir un fichier…"
         },
         "audioFiles": "Fichiers audio",
@@ -1998,7 +1998,7 @@
     "items": {
       "files": {
         "title": "Transcrire un fichier",
-        "description": "La nouvelle page Fichiers transcrit un fichier audio de votre choix (WAV, MP3, M4A, AAC, FLAC, OGG, Opus) avec le modèle choisi et garde la liste des fichiers transcrits. Les dossiers surveillés y ont aussi déménagé."
+        "description": "La nouvelle page Fichiers transcrit un fichier audio de votre choix (WAV, MP3, M4A, AAC, FLAC, Ogg Opus et le son d'une vidéo MP4) avec le modèle choisi et garde la liste des fichiers transcrits. Les dossiers surveillés y ont aussi déménagé."
       },
       "helpMode": {
         "title": "Mode aide",
@@ -2049,8 +2049,8 @@
         "description": "Avec la transcription en direct (zone de texte en direct activée) : Ctrl+Retour arrière efface le dernier mot, et maintenu continue d'effacer. À activer avec Annuler le dernier mot dans Général."
       },
       "liveTranscript": {
-        "title": "Le texte en direct est votre transcription",
-        "description": "Avec « Zone de texte en direct » activé, ce qu'affiche la zone est la transcription : à l'arrêt, seules votre dernière seconde ou deux sont ajoutées, le texte est donc prêt tout de suite."
+        "title": "Avec Parakeet, le texte en direct est votre transcription",
+        "description": "Avec « Zone de texte en direct » activé et un modèle Parakeet, ce qu'affiche la zone est la transcription : à l'arrêt, seule la fin de l'enregistrement est rattrapée, au lieu de tout transcrire à nouveau. Les autres modèles transcrivent toujours tout l'enregistrement à nouveau à l'arrêt."
       },
       "historyTabs": {
         "title": "Onglets de l'historique et statistiques",

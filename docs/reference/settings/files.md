@@ -14,7 +14,7 @@ The speech model that transcribes the file. The list shows your dictation model 
 
 `Files › Transcribe a file › Choose an audio file`
 
-Opens a file picker for one WAV, MP3, M4A, AAC, FLAC, OGG or Opus file and transcribes it with the model chosen in [Model](#model) and the language settings. While [Save the text](#save-the-text) is `Ask every time`, a pop-up first asks where the text goes: `In Handy's folder`, `Next to the recording` or `Don't save`, with `Remember my choice`. A progress bar follows the file's length; `Stop` ends it after the piece in progress. When it finishes, the text is shown with `Copy text`. The original file is only read. **Default:** not applicable; this is an action.
+Opens a file picker for one WAV, MP3, M4A, MP4 (its audio track), AAC, FLAC or Ogg Opus (`.ogg`, `.opus`) file and transcribes it with the model chosen in [Model](#model) and the language settings. While [Save the text](#save-the-text) is `Ask every time`, a pop-up first asks where the text goes: `In Handy's folder`, `Next to the recording` or `Don't save`, with `Remember my choice`. A progress bar follows the file's length; `Stop` ends it after the piece in progress. When it finishes, the text is shown with `Copy text`. The original file is only read. **Default:** not applicable; this is an action.
 
 Catalog: [One file, transcribed as accurately as the model can](../../features.md#one-file-transcribed-as-accurately-as-the-model-can).
 

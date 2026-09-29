@@ -330,7 +330,7 @@
       },
       "liveText": {
         "title": "Mostrare le tue parole mentre parli?",
-        "body": "Il riquadro testo dal vivo si trova accanto alla pillola e mostra ciò che dici mentre parli; la T sulla pillola lo attiva e disattiva in qualsiasi momento. Quando è attivo, le parole nel riquadro diventano il tuo testo: la registrazione non viene trascritta di nuovo per intero alla fine, quindi il testo è pronto subito ma può essere un po' meno preciso.",
+        "body": "Il riquadro testo dal vivo si trova accanto alla pillola e mostra ciò che dici mentre parli; la T sulla pillola lo attiva e disattiva in qualsiasi momento. Con un modello Parakeet, le parole nel riquadro diventano il tuo testo: la registrazione non viene trascritta di nuovo per intero alla fine, se ne recupera solo la parte finale, quindi il testo è pronto prima ma può essere un po' meno preciso. Con gli altri modelli il riquadro è solo un'anteprima: all'arresto la registrazione viene trascritta di nuovo per intero.",
         "off": {
           "title": "Disattivato",
           "detail": "Solo la pillola."
@@ -667,7 +667,7 @@
       },
       "liveTextBox": {
         "label": "Riquadro testo dal vivo",
-        "description": "Mostra ciò che dici in un piccolo riquadro accanto alla barra di registrazione, aggiornato circa ogni 1,5 s. Quando è attivo, ogni registrazione è in modalità dal vivo e il testo nel riquadro è la tua trascrizione: all'arresto si aggiunge solo l'ultimo secondo o due, quindi è pronto subito — la registrazione non viene trascritta una seconda volta. Richiede un modello che gira su questo PC. Predefinito: disattivato; anche il pulsante T della barra lo cambia.",
+        "description": "Mostra ciò che dici in un piccolo riquadro accanto alla barra di registrazione, aggiornato circa ogni 1,5 s. Quando è attivo, ogni registrazione è in modalità dal vivo. Con un modello Parakeet il testo nel riquadro è la tua trascrizione: all'arresto si recupera solo la parte finale della registrazione — la registrazione non viene trascritta una seconda volta. Con gli altri modelli il riquadro è solo un'anteprima e all'arresto l'intera registrazione viene trascritta di nuovo. Richiede un modello che gira su questo PC. Predefinito: disattivato; anche il pulsante T della barra lo cambia.",
         "remoteModel": {
           "title": "Il riquadro del testo dal vivo non funziona con {{model}}",
           "worksWith": "Serve un modello che gira su questo PC, perché i servizi remoti ricevono l'audio solo dopo l'arresto. Funziona con: {{models}}.",
@@ -680,7 +680,7 @@
       },
       "liveTradeoffs": {
         "title": "Trascrizione dal vivo: da sapere",
-        "accuracy": "Il testo che vedi è il testo che ottieni, quindi è un po' meno preciso di Dopo la registrazione, soprattutto nei tratti lunghi senza pause. Dopo la registrazione dà il testo più preciso.",
+        "accuracy": "Con un modello Parakeet il testo che vedi è il testo che ottieni, quindi è un po' meno preciso di Dopo la registrazione, soprattutto nei tratti lunghi senza pause; Dopo la registrazione dà il testo più preciso. Gli altri modelli trascrivono di nuovo l'intera registrazione all'arresto, quindi il riquadro è solo un'anteprima e una registrazione lunga richiede più tempo per finire.",
         "cpu": "Usa più CPU e batteria mentre parli.",
         "undo": "Annulla ultima parola funziona solo con i modelli Parakeet."
       },
@@ -1104,7 +1104,7 @@
       },
       "transcriptionMode": {
         "title": "Modalità di Trascrizione",
-        "description": "Dal vivo mostra il testo mentre parli; Dopo la registrazione registra in silenzio e trascrive in background. In entrambi i casi quasi tutto il lavoro avviene mentre parli, quindi il testo è pronto pochi istanti dopo l'arresto. In modalità dal vivo ottieni esattamente il testo che hai visto. Predefinito: Dopo la registrazione. Vale solo per la scorciatoia di trascrizione; i modelli API si comportano sempre come Dopo la registrazione.",
+        "description": "Dal vivo mostra il testo mentre parli; Dopo la registrazione registra in silenzio e trascrive in background. Con «Registrazione recuperabile dopo un arresto anomalo» attiva (predefinito), Dopo la registrazione trascrive la registrazione a pezzi mentre parli, quindi il testo è pronto pochi istanti dopo l'arresto; se è disattivata, l'intera registrazione viene trascritta all'arresto. In modalità dal vivo con un modello Parakeet ottieni esattamente il testo che hai visto e all'arresto si recupera solo la parte finale; con gli altri modelli la modalità dal vivo trascrive di nuovo l'intera registrazione all'arresto. Predefinito: Dopo la registrazione. Vale solo per la scorciatoia di trascrizione; i modelli API si comportano sempre come Dopo la registrazione.",
         "options": {
           "live": "Live",
           "postRecording": "Post-Registrazione"
@@ -1112,7 +1112,7 @@
       },
       "transcriptionModePtt": {
         "title": "Modalità di Trascrizione (PTT)",
-        "description": "La stessa scelta tra Live e Post-Registrazione, applicata solo alla Scorciatoia Premi per Parlare. Predefinito: Live — deliberatamente l'opposto di Modalità di Trascrizione, perché le registrazioni tenute premute sono brevi e l'anteprima appare quasi subito. Il testo consegnato proviene comunque da un passaggio finale sull'intera registrazione.",
+        "description": "La stessa scelta tra Live e Post-Registrazione, applicata solo alla Scorciatoia Premi per Parlare. Predefinito: Live — deliberatamente l'opposto di Modalità di Trascrizione, perché le registrazioni tenute premute sono brevi e l'anteprima appare quasi subito. Con un modello Parakeet il testo consegnato è il testo dal vivo, con la parte finale recuperata all'arresto; con gli altri modelli proviene da un passaggio finale sull'intera registrazione.",
         "options": {
           "live": "Live",
           "postRecording": "Post-Registrazione"
@@ -1595,7 +1595,7 @@
       "title": "Cartelle monitorate",
       "enabled": {
         "label": "Monitora cartelle",
-        "description": "Attiva per trascrivere ogni nuovo file .wav, .mp3, .m4a, .aac, .flac, .ogg o .opus che arriva in una cartella monitorata in un file .txt accanto ad esso, usando il modello attuale, la Lingua e le impostazioni di Traduci in inglese. Predefinito: disattivato. I file già presenti in una cartella quando inizia il monitoraggio vengono deliberatamente ignorati, e le cartelle stesse si scelgono in Aggiungi una cartella."
+        "description": "Attiva per trascrivere ogni nuovo file .wav, .mp3, .m4a, .mp4 (la sua traccia audio), .aac, .flac, .ogg (Opus) o .opus che arriva in una cartella monitorata in un file .txt accanto ad esso, usando il modello attuale, la Lingua e le impostazioni di Traduci in inglese. Predefinito: disattivato. I file già presenti in una cartella quando inizia il monitoraggio vengono deliberatamente ignorati, e le cartelle stesse si scelgono in Aggiungi una cartella."
       },
       "priority": {
         "title": "Priorità",
@@ -1662,7 +1662,7 @@
         "title": "Trascrivi un file",
         "choose": {
           "title": "Scegli un file audio",
-          "description": "**Trascrive il file audio che scegli**: WAV, MP3, M4A, AAC, FLAC, OGG o Opus, come una registrazione del telefono, con il modello scelto sopra e le impostazioni della lingua.\n\nIl file viene diviso nelle pause in pezzi fino a circa 40 secondi, e ogni pezzo viene trascritto una volta: niente testo dal vivo, nessun secondo passaggio. Il file originale viene solo letto, mai modificato.",
+          "description": "**Trascrive il file audio che scegli**: WAV, MP3, M4A, MP4 (la traccia audio di un video), AAC, FLAC o Ogg Opus (.ogg, .opus), come una registrazione del telefono, con il modello scelto sopra e le impostazioni della lingua.\n\nIl file viene diviso nelle pause in pezzi fino a circa 40 secondi, e ogni pezzo viene trascritto una volta: niente testo dal vivo, nessun secondo passaggio. Il file originale viene solo letto, mai modificato.",
           "button": "Scegli file…"
         },
         "audioFiles": "File audio",
@@ -1998,7 +1998,7 @@
     "items": {
       "files": {
         "title": "Trascrivi un file",
-        "description": "La nuova pagina File trascrive un file audio che scegli (WAV, MP3, M4A, AAC, FLAC, OGG, Opus) con il modello che scegli e tiene un elenco dei file trascritti. Anche le cartelle monitorate si sono spostate lì."
+        "description": "La nuova pagina File trascrive un file audio che scegli (WAV, MP3, M4A, AAC, FLAC, Ogg Opus e l'audio di un video MP4) con il modello che scegli e tiene un elenco dei file trascritti. Anche le cartelle monitorate si sono spostate lì."
       },
       "helpMode": {
         "title": "Modalità aiuto",
@@ -2049,8 +2049,8 @@
         "description": "Con la trascrizione dal vivo (riquadro del testo dal vivo attivo): Ctrl+Backspace cancella l'ultima parola e, tenuto premuto, continua a cancellare. Si attiva con Annulla l'ultima parola in Generale."
       },
       "liveTranscript": {
-        "title": "Il testo dal vivo è la tua trascrizione",
-        "description": "Con «Riquadro testo dal vivo» attivo, ciò che mostra il riquadro è la trascrizione: all'arresto si aggiunge solo l'ultimo secondo o due, quindi il testo è subito pronto."
+        "title": "Con Parakeet, il testo dal vivo è la tua trascrizione",
+        "description": "Con «Riquadro testo dal vivo» attivo e un modello Parakeet, ciò che mostra il riquadro è la trascrizione: all'arresto si recupera solo la parte finale della registrazione, invece di trascriverla di nuovo per intero. Gli altri modelli trascrivono ancora di nuovo l'intera registrazione all'arresto."
       },
       "historyTabs": {
         "title": "Schede della cronologia e statistiche",

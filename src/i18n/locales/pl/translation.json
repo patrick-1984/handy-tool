@@ -330,7 +330,7 @@
       },
       "liveText": {
         "title": "Pokazywać twoje słowa podczas mówienia?",
-        "body": "Pole tekstu na żywo znajduje się obok pigułki i pokazuje to, co mówisz podczas dyktowania; litera T na pigułce w każdej chwili je włącza i wyłącza. Gdy jest włączone, słowa w polu stają się twoim tekstem: nagranie nie jest transkrybowane drugi raz w całości na końcu, więc tekst jest gotowy od razu, ale bywa nieco mniej dokładny.",
+        "body": "Pole tekstu na żywo znajduje się obok pigułki i pokazuje to, co mówisz podczas dyktowania; litera T na pigułce w każdej chwili je włącza i wyłącza. Z modelem Parakeet słowa w polu stają się twoim tekstem: nagranie nie jest transkrybowane drugi raz w całości na końcu, uzupełniana jest tylko jego końcówka, więc tekst jest gotowy szybciej, ale bywa nieco mniej dokładny. Z innymi modelami pole jest tylko podglądem: po zatrzymaniu całe nagranie jest transkrybowane jeszcze raz.",
         "off": {
           "title": "Wyłączone",
           "detail": "Tylko pigułka."
@@ -667,7 +667,7 @@
       },
       "liveTextBox": {
         "label": "Pole tekstu na żywo",
-        "description": "Pokazuje to, co mówisz, w małym okienku obok paska nagrywania, odświeżane mniej więcej co 1,5 s. Gdy jest włączone, każde nagranie działa w trybie na żywo, a tekst w okienku jest twoją transkrypcją: po zatrzymaniu dochodzi tylko ostatnia sekunda lub dwie, więc jest gotowy od razu — nagranie nie jest transkrybowane drugi raz. Wymaga modelu działającego na tym komputerze. Domyślnie: wyłączone; przełącza je też przycisk T na pasku.",
+        "description": "Pokazuje to, co mówisz, w małym okienku obok paska nagrywania, odświeżane mniej więcej co 1,5 s. Gdy jest włączone, każde nagranie działa w trybie na żywo. Z modelem Parakeet tekst w okienku jest twoją transkrypcją: po zatrzymaniu uzupełniana jest tylko końcówka nagrania — nagranie nie jest transkrybowane drugi raz. Z innymi modelami okienko jest tylko podglądem, a po zatrzymaniu całe nagranie jest transkrybowane jeszcze raz. Wymaga modelu działającego na tym komputerze. Domyślnie: wyłączone; przełącza je też przycisk T na pasku.",
         "remoteModel": {
           "title": "Okienko tekstu na żywo nie działa z modelem {{model}}",
           "worksWith": "Potrzebny jest model działający na tym komputerze, bo zdalne usługi dostają dźwięk dopiero po zatrzymaniu. Działa z: {{models}}.",
@@ -680,7 +680,7 @@
       },
       "liveTradeoffs": {
         "title": "Transkrypcja na żywo: warto wiedzieć",
-        "accuracy": "Tekst, który widzisz, jest tekstem, który dostajesz, więc jest trochę mniej dokładny niż Po nagraniu — zwłaszcza przy długich fragmentach bez pauz. Najdokładniejszy tekst daje tryb Po nagraniu.",
+        "accuracy": "Z modelem Parakeet tekst, który widzisz, jest tekstem, który dostajesz, więc jest trochę mniej dokładny niż Po nagraniu — zwłaszcza przy długich fragmentach bez pauz; najdokładniejszy tekst daje tryb Po nagraniu. Inne modele po zatrzymaniu transkrybują całe nagranie jeszcze raz, więc okienko jest tylko podglądem, a długie nagranie dłużej się kończy.",
         "cpu": "Podczas mówienia bardziej obciąża procesor i baterię.",
         "undo": "Cofanie ostatniego słowa działa tylko z modelami Parakeet."
       },
@@ -1104,7 +1104,7 @@
       },
       "transcriptionMode": {
         "title": "Tryb transkrypcji",
-        "description": "Na żywo pokazuje tekst już podczas mówienia; Po nagraniu nagrywa po cichu i transkrybuje w tle. W obu trybach większość pracy dzieje się, gdy mówisz, więc tekst jest gotowy chwilę po zatrzymaniu. W trybie na żywo dostajesz dokładnie ten tekst, który widziałeś. Domyślnie: Po nagraniu. Dotyczy tylko skrótu transkrypcji; modele API zawsze działają jak Po nagraniu.",
+        "description": "Na żywo pokazuje tekst już podczas mówienia; Po nagraniu nagrywa po cichu i transkrybuje w tle. Gdy „Nagrywanie odporne na awarie” jest włączone (domyślnie), Po nagraniu transkrybuje nagranie kawałek po kawałku, gdy mówisz, więc tekst jest gotowy chwilę po zatrzymaniu; gdy jest wyłączone, całe nagranie jest transkrybowane po zatrzymaniu. W trybie na żywo z modelem Parakeet dostajesz dokładnie ten tekst, który widziałeś, a po zatrzymaniu uzupełniana jest tylko końcówka; z innymi modelami tryb na żywo po zatrzymaniu transkrybuje całe nagranie jeszcze raz. Domyślnie: Po nagraniu. Dotyczy tylko skrótu transkrypcji; modele API zawsze działają jak Po nagraniu.",
         "options": {
           "live": "Na żywo",
           "postRecording": "Po nagraniu"
@@ -1112,7 +1112,7 @@
       },
       "transcriptionModePtt": {
         "title": "Tryb transkrypcji (PTT)",
-        "description": "Ten sam wybór Na żywo / Po nagraniu, ale dotyczący wyłącznie Skrótu Push-to-Talk. Domyślnie: Na żywo — celowo odwrotnie niż w Tryb transkrypcji, ponieważ przytrzymywane nagrania są krótkie i podgląd pojawia się praktycznie od razu. Dostarczony tekst wciąż pochodzi z ostatecznego przebiegu po całym nagraniu.",
+        "description": "Ten sam wybór Na żywo / Po nagraniu, ale dotyczący wyłącznie Skrótu Push-to-Talk. Domyślnie: Na żywo — celowo odwrotnie niż w Tryb transkrypcji, ponieważ przytrzymywane nagrania są krótkie i podgląd pojawia się praktycznie od razu. Z modelem Parakeet dostarczony tekst to tekst na żywo, którego końcówka jest uzupełniana po zatrzymaniu; z innymi modelami pochodzi z ostatecznego przebiegu po całym nagraniu.",
         "options": {
           "live": "Na żywo",
           "postRecording": "Po nagraniu"
@@ -1595,7 +1595,7 @@
       "title": "Obserwowane foldery",
       "enabled": {
         "label": "Obserwuj foldery",
-        "description": "Włącz, aby transkrybować każdy nowy plik .wav, .mp3, .m4a, .aac, .flac, .ogg lub .opus, który trafi do obserwowanego folderu, do sąsiadującego pliku .txt, korzystając z aktualnego modelu oraz ustawień Język i Tłumacz na angielski. Domyślnie: wyłączone. Pliki znajdujące się już w folderze w chwili rozpoczęcia obserwacji są celowo pozostawiane bez zmian, a same foldery wybiera się w Dodaj folder."
+        "description": "Włącz, aby transkrybować każdy nowy plik .wav, .mp3, .m4a, .mp4 (jego ścieżka dźwiękowa), .aac, .flac, .ogg (Opus) lub .opus, który trafi do obserwowanego folderu, do sąsiadującego pliku .txt, korzystając z aktualnego modelu oraz ustawień Język i Tłumacz na angielski. Domyślnie: wyłączone. Pliki znajdujące się już w folderze w chwili rozpoczęcia obserwacji są celowo pozostawiane bez zmian, a same foldery wybiera się w Dodaj folder."
       },
       "priority": {
         "title": "Priorytet",
@@ -1662,7 +1662,7 @@
         "title": "Transkrybuj plik",
         "choose": {
           "title": "Wybierz plik audio",
-          "description": "**Transkrybuje wybrany plik audio**: WAV, MP3, M4A, AAC, FLAC, OGG lub Opus, np. nagranie z telefonu, modelem wybranym powyżej i z twoimi ustawieniami języka.\n\nPlik jest dzielony w pauzach na kawałki do około 40 sekund, a każdy kawałek jest transkrybowany raz: bez tekstu na żywo i bez drugiego przebiegu. Oryginalny plik jest tylko odczytywany, nigdy zmieniany.",
+          "description": "**Transkrybuje wybrany plik audio**: WAV, MP3, M4A, MP4 (ścieżka dźwiękowa wideo), AAC, FLAC lub Ogg Opus (.ogg, .opus), np. nagranie z telefonu, modelem wybranym powyżej i z twoimi ustawieniami języka.\n\nPlik jest dzielony w pauzach na kawałki do około 40 sekund, a każdy kawałek jest transkrybowany raz: bez tekstu na żywo i bez drugiego przebiegu. Oryginalny plik jest tylko odczytywany, nigdy zmieniany.",
           "button": "Wybierz plik…"
         },
         "audioFiles": "Pliki audio",
@@ -1998,7 +1998,7 @@
     "items": {
       "files": {
         "title": "Transkrybuj plik",
-        "description": "Nowa strona Pliki transkrybuje wybrany plik audio (WAV, MP3, M4A, AAC, FLAC, OGG, Opus) wybranym modelem i prowadzi listę transkrybowanych plików. Przeniesiono tam też obserwowane foldery."
+        "description": "Nowa strona Pliki transkrybuje wybrany plik audio (WAV, MP3, M4A, AAC, FLAC, Ogg Opus oraz dźwięk wideo MP4) wybranym modelem i prowadzi listę transkrybowanych plików. Przeniesiono tam też obserwowane foldery."
       },
       "helpMode": {
         "title": "Tryb pomocy",
@@ -2049,8 +2049,8 @@
         "description": "Przy transkrypcji na żywo (okno tekstu na żywo włączone): Ctrl+Backspace usuwa ostatnie słowo, a przytrzymany usuwa dalej. Włączysz to przełącznikiem Cofnij ostatnie słowo w Ogólnych."
       },
       "liveTranscript": {
-        "title": "Tekst na żywo to twoja transkrypcja",
-        "description": "Gdy „Pole tekstu na żywo” jest włączone, to, co pokazuje okno, jest transkrypcją: po zatrzymaniu dochodzi tylko ostatnia sekunda lub dwie, więc tekst jest gotowy od razu."
+        "title": "Z Parakeet tekst na żywo to twoja transkrypcja",
+        "description": "Gdy „Pole tekstu na żywo” jest włączone i używasz modelu Parakeet, to, co pokazuje okno, jest transkrypcją: po zatrzymaniu uzupełniana jest tylko końcówka nagrania, zamiast transkrybować całość jeszcze raz. Inne modele nadal transkrybują po zatrzymaniu całe nagranie jeszcze raz."
       },
       "historyTabs": {
         "title": "Karty Historii i statystyki",

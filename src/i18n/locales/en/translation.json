@@ -342,7 +342,7 @@
       },
       "liveText": {
         "title": "Show your words while you speak?",
-        "body": "The live text box sits next to the pill and shows what you say as you talk; the T on the pill switches it on and off at any time. With it on, the words in the box become your text: the take is not transcribed again as a whole at the end, so the text is ready at once but can be a little less accurate.",
+        "body": "The live text box sits next to the pill and shows what you say as you talk; the T on the pill switches it on and off at any time. With a Parakeet model the words in the box become your text: the take is not transcribed again as a whole at the end, only its last part is caught up, so the text is ready sooner but can be a little less accurate. With other models the box is only a preview: the whole take is transcribed again when you stop.",
         "off": {
           "title": "Off",
           "detail": "Only the pill."
@@ -662,7 +662,7 @@
       },
       "liveTextBox": {
         "label": "Live text box",
-        "description": "**Shows what you are saying in a small box next to the recording overlay**, updated about every 1.5 seconds.\n\n**Default:** Off. The T button on the overlay switches it too.\n\nWhile it is on, every take runs in Live mode and the text in the box is your transcript: when you stop, only your last second or two is added, so it is ready at once — the take is not transcribed a second time. Text before a pause is fixed and only the last few seconds are re-read, so it stays quick on a busy PC. Needs a model that runs on this PC.",
+        "description": "**Shows what you are saying in a small box next to the recording overlay**, updated about every 1.5 seconds.\n\n**Default:** Off. The T button on the overlay switches it too.\n\nWhile it is on, every take runs in Live mode. Text before a pause is fixed and only the last few seconds are re-read, so it stays quick on a busy PC. With a Parakeet model the text in the box is your transcript: when you stop, only what you said after the last fixed words is transcribed and added — the take is not transcribed a second time. With other models the box is only a preview and the whole take is transcribed again when you stop. Needs a model that runs on this PC.",
         "remoteModel": {
           "title": "The live text box doesn't work with {{model}}",
           "worksWith": "It needs a model that runs on this PC, because remote engines only get the audio after you stop. It works with: {{models}}.",
@@ -675,7 +675,7 @@
       },
       "liveTradeoffs": {
         "title": "Live transcription: good to know",
-        "accuracy": "The text you see is the text you get, so it is a little less accurate than Post-Recording, most of all on long stretches without pauses. Post-Recording gives the most accurate text.",
+        "accuracy": "With a Parakeet model the text you see is the text you get, so it is a little less accurate than Post-Recording, most of all on long stretches without pauses; Post-Recording gives the most accurate text. Other models transcribe the whole take again when you stop, so the box is only a preview and a long take takes longer to finish.",
         "cpu": "It uses more CPU and battery while you talk.",
         "undo": "Undo last word works only with Parakeet models."
       },
@@ -963,7 +963,7 @@
       "title": "Watched folders",
       "enabled": {
         "label": "Watch folders",
-        "description": "**Transcribes every new .wav, .mp3, .m4a, .aac, .flac, .ogg or .opus file that lands in a watched folder** into a .txt file next to it, using your current model, Language and Translate to English settings.\n\n**Default:** off.\n\nFiles already sitting in a folder when watching starts are deliberately left alone. The folders themselves are chosen under Add a folder."
+        "description": "**Transcribes every new .wav, .mp3, .m4a, .mp4 (its audio track), .aac, .flac, .ogg (Opus) or .opus file that lands in a watched folder** into a .txt file next to it, using your current model, Language and Translate to English settings.\n\n**Default:** off.\n\nFiles already sitting in a folder when watching starts are deliberately left alone. The folders themselves are chosen under Add a folder."
       },
       "priority": {
         "title": "Priority",
@@ -1030,7 +1030,7 @@
         "title": "Transcribe a file",
         "choose": {
           "title": "Choose an audio file",
-          "description": "**Transcribes an audio file you pick**: WAV, MP3, M4A, AAC, FLAC, OGG or Opus, such as a phone recording, with the model chosen above and your language settings.\n\nThe file is cut at its pauses into pieces of up to about 40 seconds, and each piece is transcribed once: no live text, no second pass. The original file is only read, never changed.",
+          "description": "**Transcribes an audio file you pick**: WAV, MP3, M4A, MP4 (the audio track of a video), AAC, FLAC or Ogg Opus (.ogg, .opus), such as a phone recording, with the model chosen above and your language settings.\n\nThe file is cut at its pauses into pieces of up to about 40 seconds, and each piece is transcribed once: no live text, no second pass. The original file is only read, never changed.",
           "button": "Choose file…"
         },
         "audioFiles": "Audio files",
@@ -1308,7 +1308,7 @@
       },
       "transcriptionMode": {
         "title": "Transcription Mode",
-        "description": "**Live shows the text building up while you speak; Post-Recording records quietly and transcribes in the background.**\n\n**Default:** Post-Recording.\n\nEither way most of the work is done while you talk, so the text is ready moments after you stop. In Live mode the text you saw is the text you get. This governs Record/Transcribe Shortcut only, and API transcription models always behave as Post-Recording.",
+        "description": "**Live shows the text building up while you speak; Post-Recording records quietly and transcribes in the background.**\n\n**Default:** Post-Recording.\n\nWith Crash-Safe Recording on (the default), Post-Recording transcribes the take piece by piece while you talk, so the text is ready moments after you stop; with it off, the whole take is transcribed when you stop. In Live mode with a Parakeet model the text you saw is the text you get, and only the end of the take is caught up at stop; with other models Live mode transcribes the whole take again when you stop. This governs Record/Transcribe Shortcut only, and API transcription models always behave as Post-Recording.",
         "options": {
           "live": "Live",
           "postRecording": "Post-Recording"
@@ -1316,7 +1316,7 @@
       },
       "transcriptionModePtt": {
         "title": "Transcription Mode (PTT)",
-        "description": "The same Live-or-Post-Recording choice, applied only to Push-to-Talk Shortcut. Default: Live — deliberately the opposite of Transcription Mode, because held takes are short and the preview shows up almost at once. The delivered text still comes from a final pass over the whole recording.",
+        "description": "The same Live-or-Post-Recording choice, applied only to Push-to-Talk Shortcut. Default: Live — deliberately the opposite of Transcription Mode, because held takes are short and the preview shows up almost at once. With a Parakeet model the delivered text is the live text, with the end of the take caught up at stop; with other models it comes from a final pass over the whole recording.",
         "options": {
           "live": "Live",
           "postRecording": "Post-Recording"
@@ -1998,7 +1998,7 @@
     "items": {
       "files": {
         "title": "Transcribe a file",
-        "description": "The new Files page transcribes an audio file you pick (WAV, MP3, M4A, AAC, FLAC, OGG, Opus) with the model you choose, and keeps a list of transcribed files. The watched folders moved there too."
+        "description": "The new Files page transcribes an audio file you pick (WAV, MP3, M4A, AAC, FLAC, Ogg Opus, or the sound of an MP4 video) with the model you choose, and keeps a list of transcribed files. The watched folders moved there too."
       },
       "helpMode": {
         "title": "Help mode",
@@ -2049,8 +2049,8 @@
         "description": "For live transcription (the live text box on): Ctrl+Backspace removes the last word, and holding it keeps removing. Switch it on with Undo last word in General."
       },
       "liveTranscript": {
-        "title": "The live text is your transcript",
-        "description": "With \"Live text box\" on, what the box shows is the transcript: at stop only your last second or two is added, so the text is ready at once."
+        "title": "With Parakeet, the live text is your transcript",
+        "description": "With \"Live text box\" on and a Parakeet model, what the box shows is the transcript: at stop only the end of the take is caught up, instead of the whole take being transcribed again. Other models still transcribe the whole take again at stop."
       },
       "historyTabs": {
         "title": "History tabs and statistics",

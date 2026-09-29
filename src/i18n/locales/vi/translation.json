@@ -330,7 +330,7 @@
       },
       "liveText": {
         "title": "Hiện lời bạn nói trong khi bạn nói?",
-        "body": "Hộp văn bản trực tiếp nằm cạnh thanh ghi âm và hiện những gì bạn nói trong khi bạn nói; chữ T trên thanh ghi âm bật hoặc tắt hộp này bất kỳ lúc nào. Khi bật, các từ trong hộp chính là văn bản của bạn: lượt ghi không được phiên âm lại toàn bộ ở cuối, nên có văn bản ngay nhưng có thể kém chính xác hơn một chút.",
+        "body": "Hộp văn bản trực tiếp nằm cạnh thanh ghi âm và hiện những gì bạn nói trong khi bạn nói; chữ T trên thanh ghi âm bật hoặc tắt hộp này bất kỳ lúc nào. Với mô hình Parakeet, các từ trong hộp chính là văn bản của bạn: lượt ghi không được phiên âm lại toàn bộ ở cuối, chỉ phần cuối được bổ sung, nên có văn bản sớm hơn nhưng có thể kém chính xác hơn một chút. Với các mô hình khác, hộp chỉ để xem trước: khi dừng, toàn bộ lượt ghi được phiên âm lại.",
         "off": {
           "title": "Tắt",
           "detail": "Chỉ thanh ghi âm."
@@ -667,7 +667,7 @@
       },
       "liveTextBox": {
         "label": "Hộp văn bản trực tiếp",
-        "description": "Hiển thị những gì bạn nói trong một ô nhỏ cạnh thanh ghi âm, cập nhật khoảng mỗi 1,5 giây. Khi bật, mọi lần ghi đều chạy ở chế độ trực tiếp và văn bản trong ô chính là bản phiên âm của bạn: khi dừng chỉ thêm một hai giây cuối, nên có ngay — bản ghi không bị phiên âm lại lần hai. Cần mô hình chạy trên máy này. Mặc định: Tắt; nút T trên thanh cũng bật/tắt được.",
+        "description": "Hiển thị những gì bạn nói trong một ô nhỏ cạnh thanh ghi âm, cập nhật khoảng mỗi 1,5 giây. Khi bật, mọi lần ghi đều chạy ở chế độ trực tiếp. Với mô hình Parakeet, văn bản trong ô chính là bản phiên âm của bạn: khi dừng chỉ bổ sung phần cuối của bản ghi — bản ghi không bị phiên âm lại lần hai. Với các mô hình khác, ô chỉ để xem trước và khi dừng toàn bộ bản ghi được phiên âm lại. Cần mô hình chạy trên máy này. Mặc định: Tắt; nút T trên thanh cũng bật/tắt được.",
         "remoteModel": {
           "title": "Ô văn bản trực tiếp không hoạt động với {{model}}",
           "worksWith": "Cần mô hình chạy trên máy này, vì dịch vụ từ xa chỉ nhận âm thanh sau khi bạn dừng. Hoạt động với: {{models}}.",
@@ -680,7 +680,7 @@
       },
       "liveTradeoffs": {
         "title": "Phiên âm trực tiếp: nên biết",
-        "accuracy": "Văn bản bạn thấy là văn bản bạn nhận, nên kém chính xác hơn chế độ Sau khi ghi một chút, nhất là khi nói dài không ngắt nghỉ. Sau khi ghi cho văn bản chính xác nhất.",
+        "accuracy": "Với mô hình Parakeet, văn bản bạn thấy là văn bản bạn nhận, nên kém chính xác hơn chế độ Sau khi ghi một chút, nhất là khi nói dài không ngắt nghỉ; Sau khi ghi cho văn bản chính xác nhất. Các mô hình khác phiên âm lại toàn bộ bản ghi khi dừng, nên ô chỉ để xem trước và bản ghi dài mất nhiều thời gian hơn để xong.",
         "cpu": "Dùng nhiều CPU và pin hơn khi bạn nói.",
         "undo": "Hoàn tác từ cuối chỉ hoạt động với mô hình Parakeet."
       },
@@ -1104,7 +1104,7 @@
       },
       "transcriptionMode": {
         "title": "Chế độ phiên âm",
-        "description": "Trực tiếp hiển thị văn bản khi bạn nói; Sau khi ghi thì ghi âm lặng lẽ và phiên âm ở nền. Cả hai đều làm phần lớn công việc trong lúc bạn nói, nên văn bản sẵn sàng ngay sau khi dừng. Ở chế độ trực tiếp, bạn nhận đúng văn bản đã thấy. Mặc định: Sau khi ghi. Chỉ áp dụng cho phím tắt phiên âm; mô hình API luôn hoạt động như Sau khi ghi.",
+        "description": "Trực tiếp hiển thị văn bản khi bạn nói; Sau khi ghi thì ghi âm lặng lẽ và phiên âm ở nền. Khi bật \"Ghi âm an toàn khi gặp lỗi\" (mặc định), Sau khi ghi phiên âm bản ghi từng phần trong lúc bạn nói, nên văn bản sẵn sàng ngay sau khi dừng; khi tắt, toàn bộ bản ghi được phiên âm lúc dừng. Ở chế độ trực tiếp với mô hình Parakeet, bạn nhận đúng văn bản đã thấy và khi dừng chỉ bổ sung phần cuối; với các mô hình khác, chế độ trực tiếp phiên âm lại toàn bộ bản ghi khi dừng. Mặc định: Sau khi ghi. Chỉ áp dụng cho phím tắt phiên âm; mô hình API luôn hoạt động như Sau khi ghi.",
         "options": {
           "live": "Trực tiếp",
           "postRecording": "Sau khi ghi"
@@ -1112,7 +1112,7 @@
       },
       "transcriptionModePtt": {
         "title": "Chế độ phiên âm (PTT)",
-        "description": "Cùng lựa chọn Live-hoặc-Post-Recording, chỉ áp dụng cho Push-to-Talk Shortcut. Mặc định: Live — cố ý ngược với Transcription Mode, vì các đoạn ghi âm giữ phím thường ngắn và bản xem trước hiện ra gần như ngay lập tức. Văn bản được gửi vẫn đến từ một lượt xử lý cuối trên toàn bộ bản ghi.",
+        "description": "Cùng lựa chọn Live-hoặc-Post-Recording, chỉ áp dụng cho Push-to-Talk Shortcut. Mặc định: Live — cố ý ngược với Transcription Mode, vì các đoạn ghi âm giữ phím thường ngắn và bản xem trước hiện ra gần như ngay lập tức. Với mô hình Parakeet, văn bản được gửi là văn bản trực tiếp, được bổ sung phần cuối khi dừng; với các mô hình khác, nó đến từ một lượt xử lý cuối trên toàn bộ bản ghi.",
         "options": {
           "live": "Trực tiếp",
           "postRecording": "Sau khi ghi"
@@ -1595,7 +1595,7 @@
       "title": "Thư mục được theo dõi",
       "enabled": {
         "label": "Theo dõi thư mục",
-        "description": "Bật để phiên âm mọi file .wav, .mp3, .m4a, .aac, .flac, .ogg hoặc .opus mới xuất hiện trong một thư mục được theo dõi thành file .txt bên cạnh, dùng model, Language và Translate to English hiện tại của bạn. Mặc định: tắt. Các file đã có sẵn trong thư mục khi bắt đầu theo dõi sẽ chủ ý được bỏ qua, còn thư mục được chọn ở Add a folder."
+        "description": "Bật để phiên âm mọi file .wav, .mp3, .m4a, .mp4 (rãnh âm thanh), .aac, .flac, .ogg (Opus) hoặc .opus mới xuất hiện trong một thư mục được theo dõi thành file .txt bên cạnh, dùng model, Language và Translate to English hiện tại của bạn. Mặc định: tắt. Các file đã có sẵn trong thư mục khi bắt đầu theo dõi sẽ chủ ý được bỏ qua, còn thư mục được chọn ở Add a folder."
       },
       "priority": {
         "title": "Mức ưu tiên",
@@ -1662,7 +1662,7 @@
         "title": "Phiên âm một file",
         "choose": {
           "title": "Chọn file âm thanh",
-          "description": "**Phiên âm file âm thanh bạn chọn**: WAV, MP3, M4A, AAC, FLAC, OGG hoặc Opus, chẳng hạn bản ghi âm trên điện thoại, bằng model đã chọn ở trên và cài đặt ngôn ngữ của bạn.\n\nFile được cắt tại các khoảng lặng thành từng đoạn tối đa khoảng 40 giây, và mỗi đoạn được phiên âm một lần: không có văn bản trực tiếp, không có lượt thứ hai. File gốc chỉ được đọc, không bao giờ bị thay đổi.",
+          "description": "**Phiên âm file âm thanh bạn chọn**: WAV, MP3, M4A, MP4 (rãnh âm thanh của video), AAC, FLAC hoặc Ogg Opus (.ogg, .opus), chẳng hạn bản ghi âm trên điện thoại, bằng model đã chọn ở trên và cài đặt ngôn ngữ của bạn.\n\nFile được cắt tại các khoảng lặng thành từng đoạn tối đa khoảng 40 giây, và mỗi đoạn được phiên âm một lần: không có văn bản trực tiếp, không có lượt thứ hai. File gốc chỉ được đọc, không bao giờ bị thay đổi.",
           "button": "Chọn file…"
         },
         "audioFiles": "File âm thanh",
@@ -1998,7 +1998,7 @@
     "items": {
       "files": {
         "title": "Phiên âm một file",
-        "description": "Trang File mới phiên âm file âm thanh bạn chọn (WAV, MP3, M4A, AAC, FLAC, OGG, Opus) bằng model bạn chọn và giữ danh sách file đã phiên âm. Các thư mục được theo dõi cũng chuyển về đó."
+        "description": "Trang File mới phiên âm file âm thanh bạn chọn (WAV, MP3, M4A, AAC, FLAC, Ogg Opus và âm thanh của video MP4) bằng model bạn chọn và giữ danh sách file đã phiên âm. Các thư mục được theo dõi cũng chuyển về đó."
       },
       "helpMode": {
         "title": "Chế độ trợ giúp",
@@ -2049,8 +2049,8 @@
         "description": "Khi phiên âm trực tiếp (ô văn bản trực tiếp bật): Ctrl+Backspace xóa từ cuối, giữ phím để xóa tiếp. Bật bằng Hoàn tác từ cuối trong mục Chung."
       },
       "liveTranscript": {
-        "title": "Văn bản trực tiếp chính là bản chép lời",
-        "description": "Khi \"Hộp văn bản trực tiếp\" bật, nội dung trong ô chính là bản chép lời: khi dừng, chỉ một hai giây cuối được thêm vào, nên văn bản có ngay."
+        "title": "Với Parakeet, văn bản trực tiếp chính là bản chép lời",
+        "description": "Khi \"Hộp văn bản trực tiếp\" bật và dùng mô hình Parakeet, nội dung trong ô chính là bản chép lời: khi dừng, chỉ phần cuối của bản ghi được bổ sung thay vì chép lại toàn bộ. Các mô hình khác vẫn chép lại toàn bộ bản ghi khi dừng."
       },
       "historyTabs": {
         "title": "Thẻ Lịch sử và thống kê",

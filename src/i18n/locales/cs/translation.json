@@ -330,7 +330,7 @@
       },
       "liveText": {
         "title": "Ukazovat vaše slova, zatímco mluvíte?",
-        "body": "Živý text je okénko vedle pilulky a ukazuje, co říkáte, zatímco mluvíte; T na pilulce ho kdykoli zapne nebo vypne. Když je zapnutý, slova v okénku se stanou vaším textem: nahrávka se na konci znovu nepřepisuje jako celek, takže je text hned hotový, ale může být o něco méně přesný.",
+        "body": "Živý text je okénko vedle pilulky a ukazuje, co říkáte, zatímco mluvíte; T na pilulce ho kdykoli zapne nebo vypne. S modelem Parakeet se slova v okénku stanou vaším textem: nahrávka se na konci znovu nepřepisuje jako celek, jen se doplní její konec, takže je text hotový dřív, ale může být o něco méně přesný. S jinými modely je okénko jen náhled: po zastavení se celá nahrávka přepíše znovu.",
         "off": {
           "title": "Vypnuto",
           "detail": "Jen pilulka."
@@ -667,7 +667,7 @@
       },
       "liveTextBox": {
         "label": "Živý text",
-        "description": "Ukazuje, co říkáte, v malém okénku u nahrávacího panelu, aktualizováno asi každých 1,5 s. Když je zapnuté, každé nahrávání běží v živém režimu a text v okénku je váš přepis: po zastavení se doplní jen poslední sekunda či dvě, takže je hned hotový — nahrávka se nepřepisuje podruhé. Vyžaduje model běžící na tomto počítači. Výchozí: Vypnuto; přepíná ho i tlačítko T na panelu.",
+        "description": "Ukazuje, co říkáte, v malém okénku u nahrávacího panelu, aktualizováno asi každých 1,5 s. Když je zapnuté, každé nahrávání běží v živém režimu. S modelem Parakeet je text v okénku váš přepis: po zastavení se doplní jen konec nahrávky — nahrávka se nepřepisuje podruhé. S jinými modely je okénko jen náhled a po zastavení se celá nahrávka přepíše znovu. Vyžaduje model běžící na tomto počítači. Výchozí: Vypnuto; přepíná ho i tlačítko T na panelu.",
         "remoteModel": {
           "title": "Okénko živého textu nefunguje s modelem {{model}}",
           "worksWith": "Potřebuje model běžící na tomto počítači, protože vzdálené služby dostanou zvuk až po zastavení. Funguje s: {{models}}.",
@@ -680,7 +680,7 @@
       },
       "liveTradeoffs": {
         "title": "Živý přepis: dobré vědět",
-        "accuracy": "Text, který vidíte, je text, který dostanete, takže je o něco méně přesný než Po nahrávání — hlavně u dlouhých úseků bez pauz. Nejpřesnější text dává Po nahrávání.",
+        "accuracy": "S modelem Parakeet je text, který vidíte, text, který dostanete, takže je o něco méně přesný než Po nahrávání — hlavně u dlouhých úseků bez pauz; nejpřesnější text dává Po nahrávání. Jiné modely po zastavení přepíší celou nahrávku znovu, takže okénko je jen náhled a dlouhá nahrávka se dokončuje déle.",
         "cpu": "Během mluvení víc zatěžuje procesor a baterii.",
         "undo": "Odebrání posledního slova funguje jen s modely Parakeet."
       },
@@ -1104,7 +1104,7 @@
       },
       "transcriptionMode": {
         "title": "Režim přepisu",
-        "description": "Živý režim ukazuje text už během mluvení; Po nahrávání nahrává potichu a přepisuje na pozadí. V obou případech se většina práce udělá během mluvení, takže text je hotový chvíli po zastavení. V živém režimu dostanete přesně text, který jste viděli. Výchozí: Po nahrávání. Platí jen pro zkratku přepisu; modely API se vždy chovají jako Po nahrávání.",
+        "description": "Živý režim ukazuje text už během mluvení; Po nahrávání nahrává potichu a přepisuje na pozadí. Se zapnutým nastavením „Nahrávání odolné proti pádu“ (výchozí) přepisuje Po nahrávání nahrávku po částech už během mluvení, takže text je hotový chvíli po zastavení; když je vypnuté, celá nahrávka se přepíše až po zastavení. V živém režimu s modelem Parakeet dostanete přesně text, který jste viděli, a po zastavení se doplní jen konec; s jinými modely živý režim po zastavení přepíše celou nahrávku znovu. Výchozí: Po nahrávání. Platí jen pro zkratku přepisu; modely API se vždy chovají jako Po nahrávání.",
         "options": {
           "live": "Živý",
           "postRecording": "Po nahrání"
@@ -1112,7 +1112,7 @@
       },
       "transcriptionModePtt": {
         "title": "Režim přepisu (PTT)",
-        "description": "Stejná volba Živý / Po nahrání, ale platí jen pro zkratku Stisk a mluv. Výchozí: Živý — úmyslně opak Režimu přepisu, protože podržené nahrávky jsou krátké a náhled se objeví téměř okamžitě. Doručený text pochází vždy z finálního průchodu celou nahrávkou.",
+        "description": "Stejná volba Živý / Po nahrání, ale platí jen pro zkratku Stisk a mluv. Výchozí: Živý — úmyslně opak Režimu přepisu, protože podržené nahrávky jsou krátké a náhled se objeví téměř okamžitě. S modelem Parakeet je doručený text živý text, jen s doplněným koncem po zastavení; s jinými modely pochází z finálního průchodu celou nahrávkou.",
         "options": {
           "live": "Živý",
           "postRecording": "Po nahrání"
@@ -1595,7 +1595,7 @@
       "title": "Sledované složky",
       "enabled": {
         "label": "Sledovat složky",
-        "description": "Zapnutím se každý nový soubor .wav, .mp3, .m4a, .aac, .flac, .ogg nebo .opus, který přibude do sledované složky, přepíše do souboru .txt vedle něj, s použitím vašeho aktuálního modelu, Jazyka a nastavení Překládat do angličtiny. Výchozí: vypnuto. Soubory, které ve složce už leží ve chvíli zapnutí sledování, se úmyslně nechávají bez povšimnutí, a samotné složky se vybírají v Přidat složku."
+        "description": "Zapnutím se každý nový soubor .wav, .mp3, .m4a, .mp4 (jeho zvuková stopa), .aac, .flac, .ogg (Opus) nebo .opus, který přibude do sledované složky, přepíše do souboru .txt vedle něj, s použitím vašeho aktuálního modelu, Jazyka a nastavení Překládat do angličtiny. Výchozí: vypnuto. Soubory, které ve složce už leží ve chvíli zapnutí sledování, se úmyslně nechávají bez povšimnutí, a samotné složky se vybírají v Přidat složku."
       },
       "priority": {
         "title": "Priorita",
@@ -1662,7 +1662,7 @@
         "title": "Přepsat soubor",
         "choose": {
           "title": "Vybrat zvukový soubor",
-          "description": "**Přepíše zvukový soubor, který vyberete**: WAV, MP3, M4A, AAC, FLAC, OGG nebo Opus, třeba nahrávku z telefonu, modelem vybraným výše a s vaším nastavením jazyka.\n\nSoubor se v pauzách rozdělí na kousky do zhruba 40 sekund a každý kousek se přepíše jednou: žádný živý text, žádný druhý průchod. Původní soubor se jen čte, nikdy nemění.",
+          "description": "**Přepíše zvukový soubor, který vyberete**: WAV, MP3, M4A, MP4 (zvuková stopa videa), AAC, FLAC nebo Ogg Opus (.ogg, .opus), třeba nahrávku z telefonu, modelem vybraným výše a s vaším nastavením jazyka.\n\nSoubor se v pauzách rozdělí na kousky do zhruba 40 sekund a každý kousek se přepíše jednou: žádný živý text, žádný druhý průchod. Původní soubor se jen čte, nikdy nemění.",
           "button": "Vybrat soubor…"
         },
         "audioFiles": "Zvukové soubory",
@@ -1998,7 +1998,7 @@
     "items": {
       "files": {
         "title": "Přepsat soubor",
-        "description": "Nová stránka Soubory přepíše zvukový soubor, který vyberete (WAV, MP3, M4A, AAC, FLAC, OGG, Opus), vybraným modelem a vede seznam přepsaných souborů. Přesunuly se tam i sledované složky."
+        "description": "Nová stránka Soubory přepíše zvukový soubor, který vyberete (WAV, MP3, M4A, AAC, FLAC, Ogg Opus i zvuk videa MP4), vybraným modelem a vede seznam přepsaných souborů. Přesunuly se tam i sledované složky."
       },
       "helpMode": {
         "title": "Režim nápovědy",
@@ -2049,8 +2049,8 @@
         "description": "Při živém přepisu (okno živého textu zapnuté): Ctrl+Backspace smaže poslední slovo a podržením maže dál. Zapnete to přepínačem Vrátit poslední slovo v Obecných."
       },
       "liveTranscript": {
-        "title": "Živý text je váš přepis",
-        "description": "Když je „Živý text“ zapnuté, to, co okno ukazuje, je přepis: po zastavení se přidá jen poslední sekunda nebo dvě, takže je text hned hotový."
+        "title": "S Parakeetem je živý text váš přepis",
+        "description": "Když je „Živý text“ zapnuté a používáte model Parakeet, to, co okno ukazuje, je přepis: po zastavení se jen doplní konec nahrávky, místo aby se celá přepisovala znovu. Jiné modely po zastavení přepíší celou nahrávku znovu."
       },
       "historyTabs": {
         "title": "Karty historie a statistiky",

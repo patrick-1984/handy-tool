@@ -39,7 +39,7 @@ This list follows the same layout ([how the pages are arranged](docs/features.md
   [find what you dictated last Tuesday](docs/features.md#what-did-i-dictate-last-tuesday), [hear what it heard](docs/features.md#hear-what-it-heard),
   and [see how much you have dictated](docs/features.md#how-much-have-i-dictated).
 - **Files** — [transcribe an audio file as accurately as the model can](docs/features.md#one-file-transcribed-as-accurately-as-the-model-can)
-  (WAV, MP3, M4A, AAC, FLAC, OGG, Opus), and [a folder of recordings, transcribed while you sleep](docs/features.md#a-folder-of-recordings-transcribed-while-you-sleep).
+  (WAV, MP3, M4A, MP4 audio track, AAC, FLAC, Ogg Opus), and [a folder of recordings, transcribed while you sleep](docs/features.md#a-folder-of-recordings-transcribed-while-you-sleep).
 - **Jumper** _(Windows)_ — [send the text where you were](docs/features.md#send-it-where-you-were) or
   [jump back to your draft](docs/features.md#jump-back-to-your-draft), from any window. [It never pastes blind](docs/features.md#it-never-pastes-blind)
   and [refuses to type into a password box](docs/features.md#it-refuses-to-dictate-into-a-password-box).

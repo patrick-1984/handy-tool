@@ -330,7 +330,7 @@
       },
       "liveText": {
         "title": "Konuşurken sözleriniz gösterilsin mi?",
-        "body": "Canlı metin kutusu hapın yanında durur ve konuştukça söylediklerinizi gösterir; haptaki T onu istediğiniz zaman açıp kapatır. Açıkken kutudaki sözcükler dökümünüz olur: kayıt sonunda yeniden bir bütün olarak yazıya dökülmez, bu yüzden metin hemen hazır olur ama biraz daha az doğru olabilir.",
+        "body": "Canlı metin kutusu hapın yanında durur ve konuştukça söylediklerinizi gösterir; haptaki T onu istediğiniz zaman açıp kapatır. Parakeet modeliyle kutudaki sözcükler dökümünüz olur: kayıt sonunda yeniden bir bütün olarak yazıya dökülmez, yalnızca son kısmı tamamlanır, bu yüzden metin daha çabuk hazır olur ama biraz daha az doğru olabilir. Diğer modellerde kutu yalnızca bir önizlemedir: durdurduğunuzda kaydın tamamı yeniden yazıya dökülür.",
         "off": {
           "title": "Kapalı",
           "detail": "Yalnızca hap."
@@ -667,7 +667,7 @@
       },
       "liveTextBox": {
         "label": "Canlı metin kutusu",
-        "description": "Söylediklerinizi kayıt çubuğunun yanındaki küçük bir kutuda gösterir, yaklaşık 1,5 saniyede bir günceller. Açıkken her kayıt canlı modda çalışır ve kutudaki metin sizin dökümünüzdür: durdurduğunuzda yalnızca son bir iki saniye eklenir, bu yüzden hemen hazırdır — kayıt ikinci kez yazıya dökülmez. Bu bilgisayarda çalışan bir model gerekir. Varsayılan: Kapalı; çubuktaki T düğmesi de değiştirir.",
+        "description": "Söylediklerinizi kayıt çubuğunun yanındaki küçük bir kutuda gösterir, yaklaşık 1,5 saniyede bir günceller. Açıkken her kayıt canlı modda çalışır. Parakeet modeliyle kutudaki metin sizin dökümünüzdür: durdurduğunuzda yalnızca kaydın son kısmı tamamlanır — kayıt ikinci kez yazıya dökülmez. Diğer modellerde kutu yalnızca bir önizlemedir ve durdurduğunuzda kaydın tamamı yeniden yazıya dökülür. Bu bilgisayarda çalışan bir model gerekir. Varsayılan: Kapalı; çubuktaki T düğmesi de değiştirir.",
         "remoteModel": {
           "title": "Canlı metin kutusu {{model}} ile çalışmaz",
           "worksWith": "Bu bilgisayarda çalışan bir model gerekir, çünkü uzak hizmetler sesi ancak durdurduktan sonra alır. Şunlarla çalışır: {{models}}.",
@@ -680,7 +680,7 @@
       },
       "liveTradeoffs": {
         "title": "Canlı döküm: bilmekte fayda var",
-        "accuracy": "Gördüğünüz metin aldığınız metindir; bu yüzden özellikle duraksamadan uzun konuşmalarda Kayıt sonrasından biraz daha az doğrudur. En doğru metni Kayıt sonrası verir.",
+        "accuracy": "Parakeet modeliyle gördüğünüz metin aldığınız metindir; bu yüzden özellikle duraksamadan uzun konuşmalarda Kayıt sonrasından biraz daha az doğrudur. En doğru metni Kayıt sonrası verir. Diğer modeller durdurunca kaydın tamamını yeniden yazıya döker; bu yüzden kutu yalnızca bir önizlemedir ve uzun bir kaydın bitmesi daha uzun sürer.",
         "cpu": "Konuşurken daha fazla işlemci ve pil kullanır.",
         "undo": "Son sözcüğü geri alma yalnızca Parakeet modelleriyle çalışır."
       },
@@ -1104,7 +1104,7 @@
       },
       "transcriptionMode": {
         "title": "Transkripsiyon Modu",
-        "description": "Canlı, siz konuşurken metni gösterir; Kayıt sonrası sessizce kaydeder ve arka planda yazıya döker. Her iki durumda da işin çoğu siz konuşurken yapılır, bu yüzden metin durdurduktan hemen sonra hazırdır. Canlı modda gördüğünüz metni alırsınız. Varsayılan: Kayıt sonrası. Yalnızca yazıya dökme kısayolu için geçerlidir; API modelleri her zaman Kayıt sonrası gibi davranır.",
+        "description": "Canlı, siz konuşurken metni gösterir; Kayıt sonrası sessizce kaydeder ve arka planda yazıya döker. Çökmeye Dayanıklı Kayıt açıkken (varsayılan) Kayıt sonrası, kaydı siz konuşurken parça parça yazıya döker, bu yüzden metin durdurduktan hemen sonra hazırdır; kapalıyken kaydın tamamı durdurduğunuzda yazıya dökülür. Parakeet modeliyle Canlı modda gördüğünüz metni alırsınız ve durdurunca yalnızca son kısım tamamlanır; diğer modellerde Canlı mod durdurunca kaydın tamamını yeniden yazıya döker. Varsayılan: Kayıt sonrası. Yalnızca yazıya dökme kısayolu için geçerlidir; API modelleri her zaman Kayıt sonrası gibi davranır.",
         "options": {
           "live": "Canlı",
           "postRecording": "Kayıt Sonrası"
@@ -1112,7 +1112,7 @@
       },
       "transcriptionModePtt": {
         "title": "Transkripsiyon Modu (PTT)",
-        "description": "Yalnızca Bas Konuş Kısayolu'na uygulanan aynı Canlı veya Kayıt Sonrası seçimi. Varsayılan: Canlı — bilerek Transkripsiyon Modu'nun tersi, çünkü basılı tutulan kayıtlar kısadır ve önizleme neredeyse anında görünür. Teslim edilen metin yine de kaydın tamamı üzerindeki son geçişten gelir.",
+        "description": "Yalnızca Bas Konuş Kısayolu'na uygulanan aynı Canlı veya Kayıt Sonrası seçimi. Varsayılan: Canlı — bilerek Transkripsiyon Modu'nun tersi, çünkü basılı tutulan kayıtlar kısadır ve önizleme neredeyse anında görünür. Parakeet modeliyle teslim edilen metin canlı metindir ve son kısmı durdurunca tamamlanır; diğer modellerde kaydın tamamı üzerindeki son geçişten gelir.",
         "options": {
           "live": "Canlı",
           "postRecording": "Kayıt Sonrası"
@@ -1595,7 +1595,7 @@
       "title": "İzlenen klasörler",
       "enabled": {
         "label": "Klasörleri izle",
-        "description": "İzlenen bir klasöre gelen her yeni .wav, .mp3, .m4a, .aac, .flac, .ogg veya .opus dosyasını, geçerli model, Dil ve İngilizceye Çevir ayarlarınızı kullanarak yanına bir .txt dosyası olarak transkribe etmek için açın. Varsayılan: kapalı. İzleme başladığında klasörde zaten bulunan dosyalara kasıtlı olarak dokunulmaz ve klasörlerin kendisi Klasör ekle altında seçilir."
+        "description": "İzlenen bir klasöre gelen her yeni .wav, .mp3, .m4a, .mp4 (ses parçası), .aac, .flac, .ogg (Opus) veya .opus dosyasını, geçerli model, Dil ve İngilizceye Çevir ayarlarınızı kullanarak yanına bir .txt dosyası olarak transkribe etmek için açın. Varsayılan: kapalı. İzleme başladığında klasörde zaten bulunan dosyalara kasıtlı olarak dokunulmaz ve klasörlerin kendisi Klasör ekle altında seçilir."
       },
       "priority": {
         "title": "Öncelik",
@@ -1662,7 +1662,7 @@
         "title": "Dosya yazıya dök",
         "choose": {
           "title": "Ses dosyası seç",
-          "description": "**Seçtiğiniz ses dosyasını yazıya döker**: WAV, MP3, M4A, AAC, FLAC, OGG veya Opus, örneğin bir telefon kaydı; yukarıda seçilen modeli ve dil ayarlarınızı kullanır.\n\nDosya duraklamalarından en fazla yaklaşık 40 saniyelik parçalara bölünür ve her parça bir kez yazıya dökülür: canlı metin yok, ikinci geçiş yok. Orijinal dosya yalnızca okunur, asla değiştirilmez.",
+          "description": "**Seçtiğiniz ses dosyasını yazıya döker**: WAV, MP3, M4A, MP4 (bir videonun ses parçası), AAC, FLAC veya Ogg Opus (.ogg, .opus), örneğin bir telefon kaydı; yukarıda seçilen modeli ve dil ayarlarınızı kullanır.\n\nDosya duraklamalarından en fazla yaklaşık 40 saniyelik parçalara bölünür ve her parça bir kez yazıya dökülür: canlı metin yok, ikinci geçiş yok. Orijinal dosya yalnızca okunur, asla değiştirilmez.",
           "button": "Dosya seç…"
         },
         "audioFiles": "Ses dosyaları",
@@ -1998,7 +1998,7 @@
     "items": {
       "files": {
         "title": "Dosya yazıya dök",
-        "description": "Yeni Dosyalar sayfası seçtiğiniz ses dosyasını (WAV, MP3, M4A, AAC, FLAC, OGG, Opus) seçtiğiniz modelle yazıya döker ve yazıya dökülen dosyaların listesini tutar. İzlenen klasörler de oraya taşındı."
+        "description": "Yeni Dosyalar sayfası seçtiğiniz ses dosyasını (WAV, MP3, M4A, AAC, FLAC, Ogg Opus ve bir MP4 videonun sesi) seçtiğiniz modelle yazıya döker ve yazıya dökülen dosyaların listesini tutar. İzlenen klasörler de oraya taşındı."
       },
       "helpMode": {
         "title": "Yardım modu",
@@ -2049,8 +2049,8 @@
         "description": "Canlı yazıya dökmede (canlı metin kutusu açıkken): Ctrl+Geri tuşu son sözcüğü siler, basılı tutunca silmeye devam eder. Genel'deki Son kelimeyi geri al ile açın."
       },
       "liveTranscript": {
-        "title": "Canlı metin, dökümünüzün kendisi",
-        "description": "\"Canlı metin kutusu\" açıkken kutunun gösterdiği metin dökümdür: durdurunca yalnızca son bir iki saniyeniz eklenir, metin hemen hazır olur."
+        "title": "Parakeet ile canlı metin, dökümünüzün kendisi",
+        "description": "\"Canlı metin kutusu\" açıkken ve bir Parakeet modeliyle kutunun gösterdiği metin dökümdür: durdurunca kaydın tamamı yeniden yazıya dökülmez, yalnızca son kısmı tamamlanır. Diğer modeller durdurunca kaydın tamamını yeniden yazıya döker."
       },
       "historyTabs": {
         "title": "Geçmiş sekmeleri ve istatistikler",

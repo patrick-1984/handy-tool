@@ -330,7 +330,7 @@
       },
       "liveText": {
         "title": "¿Mostrar tus palabras mientras hablas?",
-        "body": "El cuadro de texto en vivo se sitúa junto a la píldora y muestra lo que dices mientras hablas; la T de la píldora lo activa y desactiva en cualquier momento. Con él activado, las palabras del cuadro son tu texto: la toma no se transcribe otra vez entera al final, así que el texto está listo al instante, aunque puede ser algo menos preciso.",
+        "body": "El cuadro de texto en vivo se sitúa junto a la píldora y muestra lo que dices mientras hablas; la T de la píldora lo activa y desactiva en cualquier momento. Con un modelo Parakeet, las palabras del cuadro son tu texto: la toma no se transcribe otra vez entera al final, solo se completa su parte final, así que el texto está listo antes, aunque puede ser algo menos preciso. Con otros modelos, el cuadro es solo una vista previa: al detener, la toma se transcribe otra vez entera.",
         "off": {
           "title": "Desactivado",
           "detail": "Solo la píldora."
@@ -667,7 +667,7 @@
       },
       "liveTextBox": {
         "label": "Cuadro de texto en vivo",
-        "description": "Muestra lo que dices en un pequeño cuadro junto a la barra de grabación, actualizado cada 1,5 s aproximadamente. Mientras está activo, todas las grabaciones van en modo en vivo y el texto del cuadro es tu transcripción: al detener solo se añade el último segundo o dos, así que está listo al instante — la grabación no se transcribe una segunda vez. Requiere un modelo que funcione en este PC. Predeterminado: desactivado; el botón T de la barra también lo cambia.",
+        "description": "Muestra lo que dices en un pequeño cuadro junto a la barra de grabación, actualizado cada 1,5 s aproximadamente. Mientras está activo, todas las grabaciones van en modo en vivo. Con un modelo Parakeet, el texto del cuadro es tu transcripción: al detener solo se completa el final de la grabación — la grabación no se transcribe una segunda vez. Con otros modelos, el cuadro es solo una vista previa y al detener se transcribe otra vez toda la grabación. Requiere un modelo que funcione en este PC. Predeterminado: desactivado; el botón T de la barra también lo cambia.",
         "remoteModel": {
           "title": "El cuadro de texto en vivo no funciona con {{model}}",
           "worksWith": "Necesita un modelo que funcione en este PC, porque los servicios remotos solo reciben el audio al detener. Funciona con: {{models}}.",
@@ -680,7 +680,7 @@
       },
       "liveTradeoffs": {
         "title": "Transcripción en vivo: conviene saber",
-        "accuracy": "El texto que ves es el que obtienes, así que es algo menos preciso que Tras la grabación, sobre todo en tramos largos sin pausas. Tras la grabación da el texto más preciso.",
+        "accuracy": "Con un modelo Parakeet, el texto que ves es el que obtienes, así que es algo menos preciso que Tras la grabación, sobre todo en tramos largos sin pausas; Tras la grabación da el texto más preciso. Los demás modelos transcriben otra vez toda la grabación al detener, así que el cuadro es solo una vista previa y una grabación larga tarda más en terminar.",
         "cpu": "Usa más CPU y batería mientras hablas.",
         "undo": "Deshacer la última palabra solo funciona con modelos Parakeet."
       },
@@ -1104,7 +1104,7 @@
       },
       "transcriptionMode": {
         "title": "Modo de Transcripción",
-        "description": "En vivo muestra el texto mientras hablas; Tras la grabación graba en silencio y transcribe en segundo plano. En ambos casos casi todo el trabajo se hace mientras hablas, así que el texto está listo momentos después de detener. En modo en vivo recibes exactamente el texto que viste. Predeterminado: Tras la grabación. Solo afecta al atajo de transcripción; los modelos de API siempre funcionan como Tras la grabación.",
+        "description": "En vivo muestra el texto mientras hablas; Tras la grabación graba en silencio y transcribe en segundo plano. Con «Grabación recuperable tras fallos» activada (lo predeterminado), Tras la grabación transcribe la grabación por partes mientras hablas, así que el texto está listo momentos después de detener; con ella desactivada, toda la grabación se transcribe al detener. En modo en vivo con un modelo Parakeet recibes exactamente el texto que viste y al detener solo se completa el final; con otros modelos, el modo en vivo transcribe otra vez toda la grabación al detener. Predeterminado: Tras la grabación. Solo afecta al atajo de transcripción; los modelos de API siempre funcionan como Tras la grabación.",
         "options": {
           "live": "En vivo",
           "postRecording": "Posgrabación"
@@ -1112,7 +1112,7 @@
       },
       "transcriptionModePtt": {
         "title": "Modo de Transcripción (PTT)",
-        "description": "La misma elección entre En Vivo y Posgrabación, aplicada solo al Atajo de Presionar para Hablar. Predeterminado: En Vivo, deliberadamente lo opuesto de Modo de Transcripción, porque las tomas mantenidas son cortas y la vista previa aparece casi al instante. El texto entregado sigue viniendo de una pasada final sobre la grabación completa.",
+        "description": "La misma elección entre En Vivo y Posgrabación, aplicada solo al Atajo de Presionar para Hablar. Predeterminado: En Vivo, deliberadamente lo opuesto de Modo de Transcripción, porque las tomas mantenidas son cortas y la vista previa aparece casi al instante. Con un modelo Parakeet, el texto entregado es el texto en vivo, con el final completado al detener; con otros modelos viene de una pasada final sobre la grabación completa.",
         "options": {
           "live": "En vivo",
           "postRecording": "Posgrabación"
@@ -1595,7 +1595,7 @@
       "title": "Carpetas vigiladas",
       "enabled": {
         "label": "Vigilar carpetas",
-        "description": "Activa para transcribir cada archivo .wav, .mp3, .m4a, .aac, .flac, .ogg u .opus nuevo que llegue a una carpeta vigilada a un archivo .txt junto a él, usando tu modelo, Idioma y ajustes de Traducir al Inglés actuales. Predeterminado: desactivado. Los archivos que ya están en una carpeta cuando empieza la vigilancia se dejan a propósito sin tocar, y las carpetas en sí se eligen en Agregar una carpeta."
+        "description": "Activa para transcribir cada archivo .wav, .mp3, .m4a, .mp4 (su pista de audio), .aac, .flac, .ogg (Opus) u .opus nuevo que llegue a una carpeta vigilada a un archivo .txt junto a él, usando tu modelo, Idioma y ajustes de Traducir al Inglés actuales. Predeterminado: desactivado. Los archivos que ya están en una carpeta cuando empieza la vigilancia se dejan a propósito sin tocar, y las carpetas en sí se eligen en Agregar una carpeta."
       },
       "priority": {
         "title": "Prioridad",
@@ -1662,7 +1662,7 @@
         "title": "Transcribir un archivo",
         "choose": {
           "title": "Elegir un archivo de audio",
-          "description": "**Transcribe el archivo de audio que elijas**: WAV, MP3, M4A, AAC, FLAC, OGG u Opus, como una grabación del móvil, con el modelo elegido arriba y tus ajustes de idioma.\n\nEl archivo se corta en sus pausas en partes de hasta unos 40 segundos, y cada parte se transcribe una vez: sin texto en vivo ni segunda pasada. El archivo original solo se lee, nunca se modifica.",
+          "description": "**Transcribe el archivo de audio que elijas**: WAV, MP3, M4A, MP4 (la pista de audio de un vídeo), AAC, FLAC u Ogg Opus (.ogg, .opus), como una grabación del móvil, con el modelo elegido arriba y tus ajustes de idioma.\n\nEl archivo se corta en sus pausas en partes de hasta unos 40 segundos, y cada parte se transcribe una vez: sin texto en vivo ni segunda pasada. El archivo original solo se lee, nunca se modifica.",
           "button": "Elegir archivo…"
         },
         "audioFiles": "Archivos de audio",
@@ -1998,7 +1998,7 @@
     "items": {
       "files": {
         "title": "Transcribir un archivo",
-        "description": "La nueva página Archivos transcribe un archivo de audio que elijas (WAV, MP3, M4A, AAC, FLAC, OGG, Opus) con el modelo que elijas y guarda una lista de archivos transcritos. Las carpetas vigiladas también se mudaron allí."
+        "description": "La nueva página Archivos transcribe un archivo de audio que elijas (WAV, MP3, M4A, AAC, FLAC, Ogg Opus y el sonido de un vídeo MP4) con el modelo que elijas y guarda una lista de archivos transcritos. Las carpetas vigiladas también se mudaron allí."
       },
       "helpMode": {
         "title": "Modo ayuda",
@@ -2049,8 +2049,8 @@
         "description": "Con la transcripción en vivo (cuadro de texto en vivo activado): Ctrl+Retroceso borra la última palabra y, mantenido, sigue borrando. Actívalo con Deshacer la última palabra en General."
       },
       "liveTranscript": {
-        "title": "El texto en vivo es tu transcripción",
-        "description": "Con «Cuadro de texto en vivo» activado, lo que muestra el cuadro es la transcripción: al detener solo se añade tu último segundo o dos, así que el texto está listo al instante."
+        "title": "Con Parakeet, el texto en vivo es tu transcripción",
+        "description": "Con «Cuadro de texto en vivo» activado y un modelo Parakeet, lo que muestra el cuadro es la transcripción: al detener solo se completa el final de la grabación, en lugar de transcribirla otra vez entera. Los demás modelos siguen transcribiendo otra vez toda la grabación al detener."
       },
       "historyTabs": {
         "title": "Pestañas del historial y estadísticas",

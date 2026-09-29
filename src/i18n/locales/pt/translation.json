@@ -330,7 +330,7 @@
       },
       "liveText": {
         "title": "Mostrar suas palavras enquanto você fala?",
-        "body": "A caixa de texto ao vivo fica ao lado da pílula e mostra o que você diz enquanto fala; o T na pílula liga e desliga a caixa a qualquer momento. Com ela ligada, as palavras da caixa se tornam o seu texto: a gravação não é transcrita de novo por inteiro no final, então o texto fica pronto na hora, mas pode ser um pouco menos preciso.",
+        "body": "A caixa de texto ao vivo fica ao lado da pílula e mostra o que você diz enquanto fala; o T na pílula liga e desliga a caixa a qualquer momento. Com um modelo Parakeet, as palavras da caixa se tornam o seu texto: a gravação não é transcrita de novo por inteiro no final, só o trecho final é completado, então o texto fica pronto mais cedo, mas pode ser um pouco menos preciso. Com outros modelos, a caixa é só uma pré-visualização: ao parar, a gravação é transcrita de novo por inteiro.",
         "off": {
           "title": "Desligado",
           "detail": "Só a pílula."
@@ -650,7 +650,7 @@
       },
       "liveTextBox": {
         "label": "Caixa de texto ao vivo",
-        "description": "Mostra o que você diz numa pequena caixa ao lado da barra de gravação, atualizada a cada 1,5 s aproximadamente. Enquanto está ativo, toda gravação corre no modo ao vivo e o texto da caixa é a sua transcrição: ao parar, só o último segundo ou dois é acrescentado, então fica pronto na hora — a gravação não é transcrita uma segunda vez. Requer um modelo que rode neste PC. Padrão: desativado; o botão T da barra também o alterna.",
+        "description": "Mostra o que você diz numa pequena caixa ao lado da barra de gravação, atualizada a cada 1,5 s aproximadamente. Enquanto está ativo, toda gravação corre no modo ao vivo. Com um modelo Parakeet, o texto da caixa é a sua transcrição: ao parar, só o trecho final da gravação é completado — a gravação não é transcrita uma segunda vez. Com outros modelos, a caixa é só uma pré-visualização e, ao parar, a gravação inteira é transcrita de novo. Requer um modelo que rode neste PC. Padrão: desativado; o botão T da barra também o alterna.",
         "remoteModel": {
           "title": "A caixa de texto ao vivo não funciona com {{model}}",
           "worksWith": "Precisa de um modelo que rode neste PC, porque serviços remotos só recebem o áudio depois que você para. Funciona com: {{models}}.",
@@ -663,7 +663,7 @@
       },
       "liveTradeoffs": {
         "title": "Transcrição ao vivo: bom saber",
-        "accuracy": "O texto que você vê é o texto que recebe, então é um pouco menos preciso que Pós-gravação, principalmente em trechos longos sem pausas. Pós-gravação dá o texto mais preciso.",
+        "accuracy": "Com um modelo Parakeet, o texto que você vê é o texto que recebe, então é um pouco menos preciso que Pós-gravação, principalmente em trechos longos sem pausas; Pós-gravação dá o texto mais preciso. Os outros modelos transcrevem a gravação inteira de novo ao parar, então a caixa é só uma pré-visualização e uma gravação longa demora mais para terminar.",
         "cpu": "Usa mais CPU e bateria enquanto você fala.",
         "undo": "Desfazer a última palavra só funciona com modelos Parakeet."
       },
@@ -1104,7 +1104,7 @@
       },
       "transcriptionMode": {
         "title": "Modo de Transcrição",
-        "description": "Ao vivo mostra o texto enquanto você fala; Pós-gravação grava em silêncio e transcreve em segundo plano. Em ambos, quase todo o trabalho acontece enquanto você fala, então o texto fica pronto logo depois de parar. No modo ao vivo você recebe exatamente o texto que viu. Padrão: Pós-gravação. Vale só para o atalho de transcrição; modelos de API sempre agem como Pós-gravação.",
+        "description": "Ao vivo mostra o texto enquanto você fala; Pós-gravação grava em silêncio e transcreve em segundo plano. Com \"Gravação recuperável após falhas\" ligada (o padrão), Pós-gravação transcreve a gravação em partes enquanto você fala, então o texto fica pronto logo depois de parar; com ela desligada, a gravação inteira é transcrita ao parar. No modo ao vivo com um modelo Parakeet você recebe exatamente o texto que viu, e ao parar só o trecho final é completado; com outros modelos, o modo ao vivo transcreve a gravação inteira de novo ao parar. Padrão: Pós-gravação. Vale só para o atalho de transcrição; modelos de API sempre agem como Pós-gravação.",
         "options": {
           "live": "Tempo real",
           "postRecording": "Pós-Gravação"
@@ -1112,7 +1112,7 @@
       },
       "transcriptionModePtt": {
         "title": "Modo de Transcrição (PTT)",
-        "description": "A mesma escolha entre Tempo real e Pós-Gravação, aplicada apenas ao Atalho de Pressionar para Falar. Padrão: Tempo real — deliberadamente o oposto do Modo de Transcrição, porque as gravações mantidas são curtas e a pré-visualização aparece quase de imediato. O texto entregue ainda vem de uma passagem final sobre toda a gravação.",
+        "description": "A mesma escolha entre Tempo real e Pós-Gravação, aplicada apenas ao Atalho de Pressionar para Falar. Padrão: Tempo real — deliberadamente o oposto do Modo de Transcrição, porque as gravações mantidas são curtas e a pré-visualização aparece quase de imediato. Com um modelo Parakeet, o texto entregue é o texto ao vivo, com o trecho final completado ao parar; com outros modelos, vem de uma passagem final sobre toda a gravação.",
         "options": {
           "live": "Tempo real",
           "postRecording": "Pós-Gravação"
@@ -1595,7 +1595,7 @@
       "title": "Pastas monitoradas",
       "enabled": {
         "label": "Monitorar pastas",
-        "description": "Ative para transcrever cada novo arquivo .wav, .mp3, .m4a, .aac, .flac, .ogg ou .opus que chegar em uma pasta monitorada para um arquivo .txt ao lado, usando as configurações atuais de Modelo, Idioma e Traduzir para Inglês. Padrão: desligado. Arquivos já presentes em uma pasta quando o monitoramento começa são deliberadamente ignorados, e as próprias pastas são escolhidas em Adicionar uma pasta."
+        "description": "Ative para transcrever cada novo arquivo .wav, .mp3, .m4a, .mp4 (sua faixa de áudio), .aac, .flac, .ogg (Opus) ou .opus que chegar em uma pasta monitorada para um arquivo .txt ao lado, usando as configurações atuais de Modelo, Idioma e Traduzir para Inglês. Padrão: desligado. Arquivos já presentes em uma pasta quando o monitoramento começa são deliberadamente ignorados, e as próprias pastas são escolhidas em Adicionar uma pasta."
       },
       "priority": {
         "title": "Prioridade",
@@ -1662,7 +1662,7 @@
         "title": "Transcrever um arquivo",
         "choose": {
           "title": "Escolher um arquivo de áudio",
-          "description": "**Transcreve o arquivo de áudio que você escolher**: WAV, MP3, M4A, AAC, FLAC, OGG ou Opus, como uma gravação do celular, com o modelo escolhido acima e suas configurações de idioma.\n\nO arquivo é cortado nas pausas em partes de até cerca de 40 segundos, e cada parte é transcrita uma vez: sem texto ao vivo, sem segunda passada. O arquivo original é apenas lido, nunca alterado.",
+          "description": "**Transcreve o arquivo de áudio que você escolher**: WAV, MP3, M4A, MP4 (a faixa de áudio de um vídeo), AAC, FLAC ou Ogg Opus (.ogg, .opus), como uma gravação do celular, com o modelo escolhido acima e suas configurações de idioma.\n\nO arquivo é cortado nas pausas em partes de até cerca de 40 segundos, e cada parte é transcrita uma vez: sem texto ao vivo, sem segunda passada. O arquivo original é apenas lido, nunca alterado.",
           "button": "Escolher arquivo…"
         },
         "audioFiles": "Arquivos de áudio",
@@ -1998,7 +1998,7 @@
     "items": {
       "files": {
         "title": "Transcrever um arquivo",
-        "description": "A nova página Arquivos transcreve um arquivo de áudio que você escolher (WAV, MP3, M4A, AAC, FLAC, OGG, Opus) com o modelo escolhido e mantém uma lista de arquivos transcritos. As pastas monitoradas também foram para lá."
+        "description": "A nova página Arquivos transcreve um arquivo de áudio que você escolher (WAV, MP3, M4A, AAC, FLAC, Ogg Opus e o som de um vídeo MP4) com o modelo escolhido e mantém uma lista de arquivos transcritos. As pastas monitoradas também foram para lá."
       },
       "helpMode": {
         "title": "Modo de ajuda",
@@ -2049,8 +2049,8 @@
         "description": "Na transcrição ao vivo (caixa de texto ao vivo ligada): Ctrl+Backspace apaga a última palavra e, segurando, continua apagando. Ative com Desfazer a última palavra em Geral."
       },
       "liveTranscript": {
-        "title": "O texto ao vivo é a sua transcrição",
-        "description": "Com \"Caixa de texto ao vivo\" ligada, o que a caixa mostra é a transcrição: ao parar, só é acrescentado o seu último segundo ou dois, então o texto fica pronto na hora."
+        "title": "Com Parakeet, o texto ao vivo é a sua transcrição",
+        "description": "Com \"Caixa de texto ao vivo\" ligada e um modelo Parakeet, o que a caixa mostra é a transcrição: ao parar, só o trecho final da gravação é completado, em vez de transcrever tudo de novo. Os outros modelos continuam transcrevendo a gravação inteira de novo ao parar."
       },
       "historyTabs": {
         "title": "Abas do histórico e estatísticas",

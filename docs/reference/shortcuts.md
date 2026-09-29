@@ -21,6 +21,8 @@ Nothing in either table runs anywhere but Windows today. The `Survives to planne
 | Type Text                       | `ctrl+shift+f11`   | Types the prepared Keyboard Typer text.                | Yes                        | **Type Text** on 12 keys; Fn layer on 9 keys |
 | Paste Last Transcription        | `ctrl+shift+f10`   | Delivers the most recent transcription again.          | Yes                        | **Paste Last** on every layout               |
 
+On Linux, Cancel, Pause / Resume and Undo Last Word are never registered, so they are not offered there; the overlay's pause button still works.
+
 Rebind them at:
 
 - `Shortcuts` — every action in both tables on one page, with duplicates flagged. Any action can

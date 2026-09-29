@@ -32,7 +32,7 @@ Catalog: [Escape stops the delivery, not your words](../../features.md#escape-st
 
 `General › Pause button`
 
-Adds a pause button to the recording overlay. While paused nothing is recorded; resuming continues the same take. After 10 minutes paused the microphone is released until you resume. When on, a Pause / Resume shortcut row appears under it. **Default:** Off; the shortcut has no default.
+Adds a pause button to the recording overlay. While paused nothing is recorded; resuming continues the same take. After 10 minutes paused the microphone is released until you resume. When on, a Pause / Resume shortcut row appears under it, except on Linux, where that shortcut is never registered; the overlay's button works there too. **Default:** Off; the shortcut has no default.
 
 Catalog: [Pause a take without ending it](../../features.md#pause-a-take).
 
@@ -94,7 +94,7 @@ Catalog: [Watch the text appear, or wait for the most accurate pass](../../featu
 
 `General › Transcription › Live text box`
 
-Shows the words being spoken in a small box next to the recording overlay, updated about every 1.5 seconds. While it is on, every take runs in Live mode and the box's text is the transcript; at stop only the last second or two is added. Needs a model that runs on this PC: with a remote engine selected, switching it on shows which of your models work instead. The overlay's T button, and the Live Text Box On/Off shortcut (shown under it while it is on; no default key), switch the same setting. **Default:** Off.
+Shows the words being spoken in a small box next to the recording overlay, updated about every 1.5 seconds. While it is on, every take runs in Live mode. With a Parakeet model the box's text is the transcript, and at stop only what was said after the last fixed word is transcribed and added; with other models the box is a preview and the whole take is transcribed again at stop. There is no box on macOS, where it has no window yet, or on Linux under Wayland, where Handy does not create it. Needs a model that runs on this PC: with a remote engine selected, switching it on shows which of your models work instead. The overlay's T button, and the Live Text Box On/Off shortcut (shown under it while it is on; no default key), switch the same setting. **Default:** Off.
 
 Catalog: [See your words next to the overlay while you talk](../../features.md#live-text-box).
 
@@ -148,7 +148,7 @@ Catalog: [See your words next to the overlay while you talk](../../features.md#l
 
 `General › Transcription › Undo last word`
 
-Each press of its shortcut first brings the live text up to date, then removes the newest word from it and cuts the recording back to where that word started; holding the shortcut keeps removing words. Needs a Parakeet model. When on, an Undo Last Word shortcut row appears under it. **Default:** Off; the shortcut is `ctrl+backspace`, registered only during a live take.
+Each press of its shortcut first brings the live text up to date, then removes the newest word from it and cuts the recording back to where that word started; holding the shortcut keeps removing words. Needs a Parakeet model. When on, an Undo Last Word shortcut row appears under it. The option is not shown on Linux, where its shortcut is never registered. **Default:** Off; the shortcut is `ctrl+backspace`, registered only during a live take.
 
 Catalog: [Take back the last word without starting over](../../features.md#undo-last-word).
 
