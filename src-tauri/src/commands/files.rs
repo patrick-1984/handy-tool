@@ -429,7 +429,9 @@ pub fn transcribe_file(
             file_name: file_name.clone(),
         },
     );
-    std::thread::Builder::new()
+    // Kept for the spawn-failure path below: the closure takes the originals.
+    let (app_on_error, name_on_error) = (app.clone(), file_name.clone());
+    let spawned = std::thread::Builder::new()
         .name("file-transcribe".into())
         .spawn(move || {
             let result = transcribe_whole(&app, &path, &file_name, &model_id, save);
@@ -443,8 +445,20 @@ pub fn transcribe_file(
                 }
             };
             publish(&app, job);
-        })
-        .map_err(|e| e.to_string())?;
+        });
+    if let Err(e) = spawned {
+        // JOB already says Decoding: leaving it there would refuse every later
+        // file and hold back the updater (file_job_running) for good.
+        let error = format!("could not start the file transcription: {e}");
+        publish(
+            &app_on_error,
+            FileJob::Failed {
+                file_name: name_on_error,
+                error: error.clone(),
+            },
+        );
+        return Err(error);
+    }
     Ok(())
 }
 
