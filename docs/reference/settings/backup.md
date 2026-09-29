@@ -6,7 +6,7 @@ Open `Backup`. Export archives are gzip-compressed tar files and are not encrypt
 
 ### Export config + history
 
-`More › Backup › Configuration + history › Export config + history`
+`Advanced settings › Backup › Configuration + history › Export config + history`
 
 Exports `settings_store.json` and `history.db` without audio or downloaded models. Stored API keys and the MCP token are included. **Default:** not applicable; this is an action.
 
@@ -16,7 +16,7 @@ Catalog: [One file that carries your whole setup](../../features.md#one-file-tha
 
 ### Export full backup
 
-`More › Backup › Full data (with compressed audio) › Export full backup`
+`Advanced settings › Backup › Full data (with compressed audio) › Export full backup`
 
 Exports configuration and history plus Opus and Ogg recordings. WAV, FLAC, temporary chunks, and downloaded models remain excluded. **Default:** not applicable; this is an action.
 
@@ -28,7 +28,7 @@ Catalog: [What a backup deliberately leaves out](../../features.md#what-a-backup
 
 ### Configuration & history (settings, history DB)
 
-`More › Backup › Restore from backup › Configuration & history (settings, history DB)`
+`Advanced settings › Backup › Restore from backup › Configuration & history (settings, history DB)`
 
 Chooses whether restore replaces the settings file and history database. A successful restore of either requires a restart. **Default:** selected.
 
@@ -36,7 +36,7 @@ Catalog: [Move machines, or undo a bad week](../../features.md#move-machines-or-
 
 ### Recordings (audio files)
 
-`More › Backup › Restore from backup › Recordings (audio files)`
+`Advanced settings › Backup › Restore from backup › Recordings (audio files)`
 
 Chooses whether the archive's eligible audio files are restored. It can be used independently of [Configuration & history (settings, history DB)](#configuration--history-settings-history-db). **Default:** selected.
 
@@ -44,7 +44,7 @@ Catalog: [Move machines, or undo a bad week](../../features.md#move-machines-or-
 
 ### Restore from backup…
 
-`More › Backup › Restore from backup › Restore from backup…`
+`Advanced settings › Backup › Restore from backup › Restore from backup…`
 
 Opens an archive and restores the selected categories. A `Restart Handy Tool now` action appears when the restored data requires it. **Default:** not applicable; this is an action.
 

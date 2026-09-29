@@ -17,6 +17,7 @@
     "backup": "Sao lưu",
     "currentAudio": "Âm thanh hiện tại",
     "setups": "Thiết lập",
+    "transcription": "Phiên âm",
     "tokenCount": "Đếm Token",
     "keyboardTyper": "Bộ gõ bàn phím",
     "whatsNew": "Có gì mới",
@@ -63,7 +64,11 @@
       "installRestartNow": "Cài và khởi động lại ngay",
       "enableAutomatic": "Bật cập nhật tự động"
     },
-    "unread": "chưa đọc"
+    "unread": "chưa đọc",
+    "transcriptionProviders": "Nhà cung cấp phiên âm",
+    "llmProviders": "Nhà cung cấp LLM",
+    "advancedSettings": "Cài đặt nâng cao",
+    "moreTools": "Công cụ khác"
   },
   "helpMode": {
     "button": "Chế độ trợ giúp: trỏ vào một cài đặt để xem nó làm gì",
@@ -557,7 +562,7 @@
         "bindings": {
           "transcribe": {
             "name": "Phím tắt ghi âm/phiên âm",
-            "description": "Nhấn một lần để bắt đầu ghi âm và lần nữa để kết thúc; bản phiên âm được gửi vào cửa sổ đang focus. Mặc định: Ctrl+Space. Nó theo Transcription Mode và Paste Method ở Thêm › Đầu ra — để ghi âm khi giữ phím, dùng Push-to-Talk Shortcut."
+            "description": "Nhấn một lần để bắt đầu ghi âm và lần nữa để kết thúc; bản phiên âm được gửi vào cửa sổ đang focus. Mặc định: Ctrl+Space. Nó theo Transcription Mode và Paste Method ở Phiên âm — để ghi âm khi giữ phím, dùng Push-to-Talk Shortcut."
           },
           "cancel": {
             "name": "Phím tắt hủy",
@@ -593,7 +598,7 @@
           },
           "anchor_set": {
             "name": "Đặt điểm neo",
-            "description": "Ghi nhận ô nhập văn bản bạn đang chọn làm đích Hot 1. Mặc định: ctrl+shift+F1. Tự nó không gửi gì cả — đặt 'Jump slot action on finish' thành 'Jump / deliver to slot' với ô nhảy là Hot 1 (Thêm › Đầu ra) để bản phiên âm tiếp theo của bạn được gửi đến đó. Hộp mật khẩu và các cửa sổ riêng của Handy bị từ chối."
+            "description": "Ghi nhận ô nhập văn bản bạn đang chọn làm đích Hot 1. Mặc định: ctrl+shift+F1. Tự nó không gửi gì cả — đặt 'Jump slot action on finish' thành 'Jump / deliver to slot' với ô nhảy là Hot 1 (Phiên âm) để bản phiên âm tiếp theo của bạn được gửi đến đó. Hộp mật khẩu và các cửa sổ riêng của Handy bị từ chối."
           },
           "anchor_jump": {
             "name": "Nhảy đến điểm neo",
@@ -601,19 +606,19 @@
           },
           "jump_set_slot_1": {
             "name": "Đặt ô nhảy 1",
-            "description": "Ghi nhớ ô nhập bạn đang chọn làm ô nhảy tĩnh số 1, thay thế nội dung cũ. Mặc định: ctrl+alt+shift+1. Ô nhảy chỉ là một đánh dấu cho đến khi được dùng — nhảy đến nó bằng 'Jump to Slot 1', hoặc đặt 'Jump slot action on finish' của một luồng (Thêm › Đầu ra) trỏ đến Slot 1 để phiên âm được gửi đến đó."
+            "description": "Ghi nhớ ô nhập bạn đang chọn làm ô nhảy tĩnh số 1, thay thế nội dung cũ. Mặc định: ctrl+alt+shift+1. Ô nhảy chỉ là một đánh dấu cho đến khi được dùng — nhảy đến nó bằng 'Jump to Slot 1', hoặc đặt 'Jump slot action on finish' của một luồng (Phiên âm) trỏ đến Slot 1 để phiên âm được gửi đến đó."
           },
           "jump_set_slot_2": {
             "name": "Đặt ô nhảy 2",
-            "description": "Ghi nhớ ô nhập bạn đang chọn làm ô nhảy tĩnh số 2, thay thế nội dung cũ. Mặc định: ctrl+alt+shift+2. Nhảy về bằng 'Jump to Slot 2', hoặc đặt 'Jump slot action on finish' của một luồng (Thêm › Đầu ra) trỏ đến Slot 2 để phiên âm được gửi đến đó."
+            "description": "Ghi nhớ ô nhập bạn đang chọn làm ô nhảy tĩnh số 2, thay thế nội dung cũ. Mặc định: ctrl+alt+shift+2. Nhảy về bằng 'Jump to Slot 2', hoặc đặt 'Jump slot action on finish' của một luồng (Phiên âm) trỏ đến Slot 2 để phiên âm được gửi đến đó."
           },
           "jump_set_slot_3": {
             "name": "Đặt ô nhảy 3",
-            "description": "Ghi nhớ ô nhập bạn đang chọn làm ô nhảy tĩnh số 3, thay thế nội dung cũ. Mặc định: ctrl+alt+shift+3. Nhảy về bằng 'Jump to Slot 3', hoặc đặt 'Jump slot action on finish' của một luồng (Thêm › Đầu ra) trỏ đến Slot 3 để phiên âm được gửi đến đó."
+            "description": "Ghi nhớ ô nhập bạn đang chọn làm ô nhảy tĩnh số 3, thay thế nội dung cũ. Mặc định: ctrl+alt+shift+3. Nhảy về bằng 'Jump to Slot 3', hoặc đặt 'Jump slot action on finish' của một luồng (Phiên âm) trỏ đến Slot 3 để phiên âm được gửi đến đó."
           },
           "jump_set_slot_4": {
             "name": "Đặt ô nhảy 4",
-            "description": "Ghi nhớ ô nhập bạn đang chọn làm ô nhảy tĩnh số 4, thay thế nội dung cũ. Mặc định: ctrl+alt+shift+4. Nhảy về bằng 'Jump to Slot 4', hoặc đặt 'Jump slot action on finish' của một luồng (Thêm › Đầu ra) trỏ đến Slot 4 để phiên âm được gửi đến đó."
+            "description": "Ghi nhớ ô nhập bạn đang chọn làm ô nhảy tĩnh số 4, thay thế nội dung cũ. Mặc định: ctrl+alt+shift+4. Nhảy về bằng 'Jump to Slot 4', hoặc đặt 'Jump slot action on finish' của một luồng (Phiên âm) trỏ đến Slot 4 để phiên âm được gửi đến đó."
           },
           "jump_slot_1": {
             "name": "Nhảy đến ô 1",
@@ -771,7 +776,7 @@
         "title": "Dán bản phiên âm gần nhất",
         "pasteMethod": {
           "title": "Paste method",
-          "description": "Cách phím tắt Paste Last Transcription đưa văn bản vào cửa sổ đang focus. Tách biệt với Paste Method ở Thêm › Đầu ra, nên bạn có thể tinh chỉnh riêng cho một mục tiêu khó chiều. Mặc định: Clipboard (Ctrl+V) — thử Clipboard (Shift+Insert) trong terminal, Direct để gõ từng ký tự thay vì dán, hoặc None để chỉ đặt văn bản vào khay nhớ tạm và bạn dán bằng tay."
+          "description": "Cách phím tắt Paste Last Transcription đưa văn bản vào cửa sổ đang focus. Tách biệt với Paste Method ở Phiên âm, nên bạn có thể tinh chỉnh riêng cho một mục tiêu khó chiều. Mặc định: Clipboard (Ctrl+V) — thử Clipboard (Shift+Insert) trong terminal, Direct để gõ từng ký tự thay vì dán, hoặc None để chỉ đặt văn bản vào khay nhớ tạm và bạn dán bằng tay."
         },
         "clipboard": {
           "title": "Clipboard",
@@ -1359,7 +1364,7 @@
           "title": "Nhiệt độ",
           "description": "Thấp hơn cho kết quả nhất quán và chắc chắn hơn (0 = sát nghĩa nhất); cao hơn cho kết quả sáng tạo hơn."
         },
-        "registryNote": "Khóa API, mô hình và URL cơ sở của nhà cung cấp được cấu hình trong Thêm › Nhà cung cấp › Nhà cung cấp LLM đã đăng ký."
+        "registryNote": "Khóa API, mô hình và URL cơ sở của nhà cung cấp được cấu hình trong Cài đặt nâng cao › Nhà cung cấp LLM › Nhà cung cấp LLM đã đăng ký."
       },
       "prompts": {
         "title": "Prompt",
@@ -1518,7 +1523,7 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "Một đích nhận có tên ứng dụng, lớp cửa sổ hoặc lớp điều khiển chứa một trong các đoạn này (không phân biệt chữ hoa chữ thường) sẽ được coi là máy tính từ xa, nên dùng giá trị Từ xa của 'Paste delay after jump (Windows)' và 'Submit delay before Enter (Windows)' trong Thêm › Đầu ra thay vì giá trị Cục bộ. Nó không còn phải là đích của một lần nhảy: từ 1.3.0, cửa sổ từ xa đang được lấy tiêu điểm cũng được phân loại, và đó là điều làm cho độ trễ gửi được áp dụng ở đó. Mặc định: msrdc, mstsc, Citrix. Hãy thêm tên tiến trình mà ứng dụng RDP hoặc Citrix của bạn dùng nếu các lần gửi vào đó vẫn bị mất; danh sách trống coi mọi đích là cục bộ.",
+        "description": "Một đích nhận có tên ứng dụng, lớp cửa sổ hoặc lớp điều khiển chứa một trong các đoạn này (không phân biệt chữ hoa chữ thường) sẽ được coi là máy tính từ xa, nên dùng giá trị Từ xa của 'Paste delay after jump (Windows)' và 'Submit delay before Enter (Windows)' trong Phiên âm thay vì giá trị Cục bộ. Nó không còn phải là đích của một lần nhảy: từ 1.3.0, cửa sổ từ xa đang được lấy tiêu điểm cũng được phân loại, và đó là điều làm cho độ trễ gửi được áp dụng ở đó. Mặc định: msrdc, mstsc, Citrix. Hãy thêm tên tiến trình mà ứng dụng RDP hoặc Citrix của bạn dùng nếu các lần gửi vào đó vẫn bị mất; danh sách trống coi mọi đích là cục bộ.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
@@ -1531,8 +1536,8 @@
         "title": "Ô nóng (Neo & Gửi)",
         "optionsMoved": {
           "title": "Tùy chọn gửi",
-          "description": "Không phải một cài đặt — chỉ là biển báo. Một lần nhảy thực sự làm gì với một ô nhảy được cấu hình theo từng luồng ở Thêm › Đầu ra: 'Jump slot action on start', 'Jump slot action on finish', 'Track last output location' và 'Return focus after delivery' mỗi thứ tồn tại một lần cho Transcribe và một lần cho Transcribe & Submit.",
-          "hint": "Được cấu hình trong các nhóm Phiên âm và Phiên âm & Gửi ở Thêm › Đầu ra."
+          "description": "Không phải một cài đặt — chỉ là biển báo. Một lần nhảy thực sự làm gì với một ô nhảy được cấu hình theo từng luồng ở Phiên âm: 'Jump slot action on start', 'Jump slot action on finish', 'Track last output location' và 'Return focus after delivery' mỗi thứ tồn tại một lần cho Transcribe và một lần cho Transcribe & Submit.",
+          "hint": "Được cấu hình trong các nhóm Phiên âm và Phiên âm & Gửi ở Phiên âm."
         }
       },
       "hot2": {
@@ -1853,7 +1858,7 @@
     "fileTooLarge": "Tệp quá lớn (tối đa 10 MB).",
     "loadedFile": "Đã tải: {{name}}",
     "providerOption": "{{name}} (nhà cung cấp)",
-    "chipDisabled": "Chưa được cấu hình — bật bằng Enable this provider trong Thêm › Nhà cung cấp › Registered LLM Providers.",
+    "chipDisabled": "Chưa được cấu hình — bật bằng Enable this provider trong Cài đặt nâng cao › Nhà cung cấp LLM › Registered LLM Providers.",
     "chips": {
       "cl100k_base": "cl100k (GPT-4)",
       "o200k_base": "o200k (GPT-4o)",
@@ -1911,14 +1916,14 @@
   },
   "modelTesting": {
     "configureProviders": "Cấu hình nhà cung cấp",
-    "description": "Gửi một prompt đến mọi model bạn tick dưới Run và xếp các câu trả lời song song với số token, chi phí và thời gian phản hồi; các model tick dưới Judge sau đó chấm điểm tất cả câu trả lời đó bằng prompt giám khảo của bạn. Mặc định: không có gì được chọn và cả hai prompt để trống. Danh sách lấy từ Thêm › Nhà cung cấp › Registered LLM Providers, nên một lần chạy dùng khoá API của riêng bạn — prompt của bạn ra khỏi máy này và, với các nhà cung cấp trả phí, tốn tiền thật.",
+    "description": "Gửi một prompt đến mọi model bạn tick dưới Run và xếp các câu trả lời song song với số token, chi phí và thời gian phản hồi; các model tick dưới Judge sau đó chấm điểm tất cả câu trả lời đó bằng prompt giám khảo của bạn. Mặc định: không có gì được chọn và cả hai prompt để trống. Danh sách lấy từ Cài đặt nâng cao › Nhà cung cấp LLM › Registered LLM Providers, nên một lần chạy dùng khoá API của riêng bạn — prompt của bạn ra khỏi máy này và, với các nhà cung cấp trả phí, tốn tiền thật.",
     "providersLabel": "Mô hình",
     "selectAll": "Chọn tất cả để chạy",
     "clear": "Xóa",
     "run": "Chạy",
     "judge": "Đánh giá",
     "costPerM": "vào ${{input}} · ra ${{output}} /1M",
-    "noProviders": "Chưa có nhà cung cấp hỗ trợ chat nào được cấu hình. Thêm một nhà cung cấp trong Thêm › Nhà cung cấp › Nhà cung cấp LLM đã đăng ký.",
+    "noProviders": "Chưa có nhà cung cấp hỗ trợ chat nào được cấu hình. Thêm một nhà cung cấp trong Cài đặt nâng cao › Nhà cung cấp LLM › Nhà cung cấp LLM đã đăng ký.",
     "mainPromptLabel": "Prompt cho tất cả mô hình",
     "mainPromptPlaceholder": "Prompt được gửi đến mọi mô hình đã chọn…",
     "judgePromptLabel": "Prompt đánh giá / trọng tài (không bắt buộc)",
@@ -2130,6 +2135,18 @@
       "linuxBuilds": {
         "title": "Gói Linux",
         "description": "Gói .deb, .rpm và .AppImage cho x86_64 và ARM64. Chúng chưa được kiểm thử."
+      },
+      "transcriptionPage": {
+        "title": "Phiên âm có trang riêng",
+        "description": "Các cài đặt Đầu ra (cách dán, bộ nhớ tạm, tự động gửi, hành động của khe nhảy, dịch sang tiếng Anh) giờ có trang riêng trên thanh bên, ngay dưới Thiết lập: Phiên âm."
+      },
+      "providerPages": {
+        "title": "Hai trang nhà cung cấp",
+        "description": "Nhà cung cấp giờ là Nhà cung cấp phiên âm (phiên âm qua API và OpenRouter); các nhà cung cấp LLM đã đăng ký có trang riêng ngay bên cạnh: Nhà cung cấp LLM. Cả hai nằm trong Cài đặt nâng cao."
+      },
+      "sidebarMenus": {
+        "title": "Cài đặt nâng cao và Công cụ khác",
+        "description": "Thêm giờ là hai mục: Cài đặt nâng cao gồm các trang cài đặt, và Công cụ khác ngay sau Jumper gồm Bộ gõ bàn phím, Đếm Token, Kiểm tra mô hình và Âm thanh hiện tại."
       }
     },
     "installed": "Đã cài"

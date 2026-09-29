@@ -24,7 +24,7 @@ Treat History as part of dictation, not as an archive you visit months later. It
 ## Settings that matter
 
 - [History settings](../reference/settings/history.md)
-- [More settings](../reference/settings/advanced.md)
+- [Transcription and Advanced settings](../reference/settings/advanced.md)
 - [General settings](../reference/settings/general.md)
 
 ## When it goes wrong

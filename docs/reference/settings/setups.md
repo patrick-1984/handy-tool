@@ -22,7 +22,7 @@ Catalog: [A guided setup for the look, with previews](../../features.md#a-guided
 
 `Setups › Post-processing`
 
-Runs on the page: what the AI should do with your words (a ready prompt or your own), which AI (a provider from the registry, with its key, address and model filled in right there; `List models` asks it), the post-processing shortcut, and a Try it that sends a sample sentence through the AI with your prompt. Turns post-processing on. Also started from the top of `More › Post-processing`. **Default:** not run.
+Runs on the page: what the AI should do with your words (a ready prompt or your own), which AI (a provider from the registry, with its key, address and model filled in right there; `List models` asks it), the post-processing shortcut, and a Try it that sends a sample sentence through the AI with your prompt. Turns post-processing on. Also started from the top of `Advanced settings › Post-processing`. **Default:** not run.
 
 Catalog: [A guided setup for post-processing](../../features.md#a-guided-setup-for-post-processing).
 

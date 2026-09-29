@@ -21,7 +21,7 @@ Tune remote delivery only after the same flow works in a local application. Your
 
 ## Settings that matter
 
-- [More settings](../reference/settings/advanced.md)
+- [Transcription and Advanced settings](../reference/settings/advanced.md)
 - [Jumper settings](../reference/settings/jumper.md)
 
 ## When it goes wrong
@@ -33,8 +33,8 @@ Tune remote delivery only after the same flow works in a local application. Your
 ## Set it up
 
 1. Confirm that the remote client is recognized at `Jumper › Remote desktop detection › Remote match strings` _{Windows only}_.
-2. Give the activated remote target time before a plain paste at `More › Output › Transcribe › Paste delay after jump (Windows) = 600 ms` _{Windows only}_.
-3. Give Citrix or RDP time to fetch the clipboard at `More › Output › Transcribe › Clipboard restore delay = 1 s`.
+2. Give the activated remote target time before a plain paste at `Transcription › Transcribe › Paste delay after jump (Windows) = 600 ms` _{Windows only}_.
+3. Give Citrix or RDP time to fetch the clipboard at `Transcription › Transcribe › Clipboard restore delay = 1 s`.
 4. The sending flow shares the paste delay from step 2; Transcribe & Submit has no separate one.
-5. Delay its submit separately at `More › Output › Transcribe & Submit › Submit delay before Enter (Windows) = 600 ms` _{Windows only}_.
+5. Delay its submit separately at `Transcription › Transcribe & Submit › Submit delay before Enter (Windows) = 600 ms` _{Windows only}_.
 6. Test with harmless text, then shorten or lengthen one delay at a time until the target is reliable.

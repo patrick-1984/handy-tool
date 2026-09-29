@@ -4,7 +4,7 @@ Open `Token Count`. The page has no persisted settings of its own; provider chip
 
 ### Paste text here to count tokens...
 
-`More › Token Count › Paste text here to count tokens...`
+`More Tools › Token Count › Paste text here to count tokens...`
 
 Holds the text to count. **Default:** empty.
 
@@ -12,7 +12,7 @@ Catalog: [What will this prompt cost?](../../features.md#what-will-this-prompt-c
 
 ### cl100k (GPT-4)
 
-`More › Token Count › cl100k (GPT-4)`
+`More Tools › Token Count › cl100k (GPT-4)`
 
 Counts the current text locally with `cl100k_base`. **Default:** available; no count until clicked.
 
@@ -20,7 +20,7 @@ Catalog: [Counts without a network call](../../features.md#counts-without-a-netw
 
 ### o200k (GPT-4o)
 
-`More › Token Count › o200k (GPT-4o)`
+`More Tools › Token Count › o200k (GPT-4o)`
 
 Counts the current text locally with `o200k_base`. **Default:** available; no count until clicked.
 
@@ -28,7 +28,7 @@ Catalog: [Counts without a network call](../../features.md#counts-without-a-netw
 
 ### Estimate
 
-`More › Token Count › Estimate`
+`More Tools › Token Count › Estimate`
 
 Produces the built-in rough local estimate; dynamic provider chips follow it. **Default:** available; excluded from the exact-tokenizer difference baseline.
 
@@ -36,7 +36,7 @@ Catalog: [Counts without a network call](../../features.md#counts-without-a-netw
 
 ### Count with all
 
-`More › Token Count › Count with all`
+`More Tools › Token Count › Count with all`
 
 Runs enabled counters serially, which suits provider entries sharing one local loader. **Default:** idle.
 
@@ -44,7 +44,7 @@ Catalog: [One click, every provider, one table](../../features.md#one-click-ever
 
 ### Count with all (parallel)
 
-`More › Token Count › Count with all (parallel)`
+`More Tools › Token Count › Count with all (parallel)`
 
 Runs enabled counters concurrently where their provider configuration allows it. **Default:** idle.
 
@@ -52,13 +52,13 @@ Catalog: [One click, every provider, one table](../../features.md#one-click-ever
 
 ### Cancel
 
-`More › Token Count › Cancel`
+`More Tools › Token Count › Cancel`
 
 Stops an active all-provider sweep. **Default:** hidden while no sweep is running.
 
 ### Open file...
 
-`More › Token Count › Open file...`
+`More Tools › Token Count › Open file...`
 
 Loads a text file, up to the supported 10 MB limit, for counting. **Default:** no file selected.
 

@@ -17,6 +17,7 @@
     "backup": "Yedekleme",
     "currentAudio": "Mevcut Ses",
     "setups": "Kurulumlar",
+    "transcription": "Transkripsiyon",
     "tokenCount": "Token Sayımı",
     "keyboardTyper": "Klavye Yazıcısı",
     "whatsNew": "Yenilikler",
@@ -63,7 +64,11 @@
       "installRestartNow": "Şimdi kur ve yeniden başlat",
       "enableAutomatic": "Otomatik güncellemeleri aç"
     },
-    "unread": "okunmadı"
+    "unread": "okunmadı",
+    "transcriptionProviders": "Transkripsiyon sağlayıcıları",
+    "llmProviders": "LLM sağlayıcıları",
+    "advancedSettings": "Gelişmiş ayarlar",
+    "moreTools": "Diğer araçlar"
   },
   "helpMode": {
     "button": "Yardım modu: ne yaptığını görmek için bir ayarın üzerine gelin",
@@ -557,7 +562,7 @@
         "bindings": {
           "transcribe": {
             "name": "Kayıt/Transkripsiyon Kısayolu",
-            "description": "Kaydı başlatmak için bir kez, sonlandırmak için tekrar basın; transkripsiyon odaktaki pencereye teslim edilir. Varsayılan: Ctrl+Space. Transkripsiyon Modu'nu ve Daha fazla › Çıktı altındaki Yapıştırma Yöntemi'ni izler — basılı tutarak kaydetmek için bunun yerine Bas Konuş Kısayolu'nu kullanın."
+            "description": "Kaydı başlatmak için bir kez, sonlandırmak için tekrar basın; transkripsiyon odaktaki pencereye teslim edilir. Varsayılan: Ctrl+Space. Transkripsiyon Modu'nu ve Transkripsiyon altındaki Yapıştırma Yöntemi'ni izler — basılı tutarak kaydetmek için bunun yerine Bas Konuş Kısayolu'nu kullanın."
           },
           "cancel": {
             "name": "İptal Kısayolu",
@@ -593,7 +598,7 @@
           },
           "anchor_set": {
             "name": "Sabit Nokta Belirle",
-            "description": "Şu anda odaklanılan metin alanını Sıcak 1 hedefi olarak yakalar. Varsayılan: ctrl+shift+F1. Kendi başına hiçbir şey teslim etmez — sonraki transkripsiyonunuzun oraya inmesi için 'Bitişte yuva eylemi'ni, yuva Sıcak 1'e ayarlanmış 'Yuvaya atla / teslim et' olarak ayarlayın (Daha fazla › Çıktı). Parola kutuları ve Handy'nin kendi pencereleri kabul edilmez."
+            "description": "Şu anda odaklanılan metin alanını Sıcak 1 hedefi olarak yakalar. Varsayılan: ctrl+shift+F1. Kendi başına hiçbir şey teslim etmez — sonraki transkripsiyonunuzun oraya inmesi için 'Bitişte yuva eylemi'ni, yuva Sıcak 1'e ayarlanmış 'Yuvaya atla / teslim et' olarak ayarlayın (Transkripsiyon). Parola kutuları ve Handy'nin kendi pencereleri kabul edilmez."
           },
           "anchor_jump": {
             "name": "Sabit Noktaya Atla",
@@ -601,19 +606,19 @@
           },
           "jump_set_slot_1": {
             "name": "Atlama Yuvası 1'i Belirle",
-            "description": "Şu anda odaklanılan alanı, önceki içeriğinin üzerine yazarak statik yuva 1 olarak kaydeder. Varsayılan: ctrl+alt+shift+1. Bir şey onu kullanana kadar yuva sadece bir yer imidir — 'Yuva 1'e Atla' ile geri dönün veya bir akışın 'Bitişte yuva eylemi'ni (Daha fazla › Çıktı) Yuva 1'e ayarlayarak transkripsiyonların oraya teslim edilmesini sağlayın."
+            "description": "Şu anda odaklanılan alanı, önceki içeriğinin üzerine yazarak statik yuva 1 olarak kaydeder. Varsayılan: ctrl+alt+shift+1. Bir şey onu kullanana kadar yuva sadece bir yer imidir — 'Yuva 1'e Atla' ile geri dönün veya bir akışın 'Bitişte yuva eylemi'ni (Transkripsiyon) Yuva 1'e ayarlayarak transkripsiyonların oraya teslim edilmesini sağlayın."
           },
           "jump_set_slot_2": {
             "name": "Atlama Yuvası 2'yi Belirle",
-            "description": "Şu anda odaklanılan alanı, önceki içeriğinin üzerine yazarak statik yuva 2 olarak kaydeder. Varsayılan: ctrl+alt+shift+2. 'Yuva 2'ye Atla' ile geri dönün veya bir akışın 'Bitişte yuva eylemi'ni (Daha fazla › Çıktı) Yuva 2'ye ayarlayarak transkripsiyonların oraya teslim edilmesini sağlayın."
+            "description": "Şu anda odaklanılan alanı, önceki içeriğinin üzerine yazarak statik yuva 2 olarak kaydeder. Varsayılan: ctrl+alt+shift+2. 'Yuva 2'ye Atla' ile geri dönün veya bir akışın 'Bitişte yuva eylemi'ni (Transkripsiyon) Yuva 2'ye ayarlayarak transkripsiyonların oraya teslim edilmesini sağlayın."
           },
           "jump_set_slot_3": {
             "name": "Atlama Yuvası 3'ü Belirle",
-            "description": "Şu anda odaklanılan alanı, önceki içeriğinin üzerine yazarak statik yuva 3 olarak kaydeder. Varsayılan: ctrl+alt+shift+3. 'Yuva 3'e Atla' ile geri dönün veya bir akışın 'Bitişte yuva eylemi'ni (Daha fazla › Çıktı) Yuva 3'e ayarlayarak transkripsiyonların oraya teslim edilmesini sağlayın."
+            "description": "Şu anda odaklanılan alanı, önceki içeriğinin üzerine yazarak statik yuva 3 olarak kaydeder. Varsayılan: ctrl+alt+shift+3. 'Yuva 3'e Atla' ile geri dönün veya bir akışın 'Bitişte yuva eylemi'ni (Transkripsiyon) Yuva 3'e ayarlayarak transkripsiyonların oraya teslim edilmesini sağlayın."
           },
           "jump_set_slot_4": {
             "name": "Atlama Yuvası 4'ü Belirle",
-            "description": "Şu anda odaklanılan alanı, önceki içeriğinin üzerine yazarak statik yuva 4 olarak kaydeder. Varsayılan: ctrl+alt+shift+4. 'Yuva 4'e Atla' ile geri dönün veya bir akışın 'Bitişte yuva eylemi'ni (Daha fazla › Çıktı) Yuva 4'e ayarlayarak transkripsiyonların oraya teslim edilmesini sağlayın."
+            "description": "Şu anda odaklanılan alanı, önceki içeriğinin üzerine yazarak statik yuva 4 olarak kaydeder. Varsayılan: ctrl+alt+shift+4. 'Yuva 4'e Atla' ile geri dönün veya bir akışın 'Bitişte yuva eylemi'ni (Transkripsiyon) Yuva 4'e ayarlayarak transkripsiyonların oraya teslim edilmesini sağlayın."
           },
           "jump_slot_1": {
             "name": "Yuva 1'e Atla",
@@ -771,7 +776,7 @@
         "title": "Paste last transcription",
         "pasteMethod": {
           "title": "Paste method",
-          "description": "Son Transkripsiyonu Yapıştır kısayolunun metni odaklanılan pencereye nasıl koyacağı. Bu, Daha fazla › Çıktı altındaki Yapıştırma Yöntemi'nden ayrıdır; böylece onu tek bir zorlu hedef için ayarlayabilirsiniz. Varsayılan: Pano (Ctrl+V) — bir terminalde Pano (Shift+Insert)'i, karakterleri yapıştırmak yerine yazmak için Doğrudan'ı veya metni yalnızca panoya koyup elle yapıştırmak için Yok'u deneyin."
+          "description": "Son Transkripsiyonu Yapıştır kısayolunun metni odaklanılan pencereye nasıl koyacağı. Bu, Transkripsiyon altındaki Yapıştırma Yöntemi'nden ayrıdır; böylece onu tek bir zorlu hedef için ayarlayabilirsiniz. Varsayılan: Pano (Ctrl+V) — bir terminalde Pano (Shift+Insert)'i, karakterleri yapıştırmak yerine yazmak için Doğrudan'ı veya metni yalnızca panoya koyup elle yapıştırmak için Yok'u deneyin."
         },
         "clipboard": {
           "title": "Clipboard",
@@ -1359,7 +1364,7 @@
           "title": "Sıcaklık",
           "description": "Daha düşük değer daha kararlı ve tutarlıdır (0 = en birebir); daha yüksek değer daha yaratıcıdır."
         },
-        "registryNote": "Sağlayıcının API anahtarı, modeli ve temel URL'si Daha fazla › Sağlayıcılar › Kayıtlı LLM Sağlayıcıları'nda yapılandırılır."
+        "registryNote": "Sağlayıcının API anahtarı, modeli ve temel URL'si Gelişmiş ayarlar › LLM sağlayıcıları › Kayıtlı LLM Sağlayıcıları'nda yapılandırılır."
       },
       "prompts": {
         "title": "Prompt",
@@ -1518,7 +1523,7 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "Uygulaması, pencere sınıfı veya denetim sınıfı bu parçalardan birini içeren bir teslim hedefi (büyük/küçük harf duyarsız) uzak masaüstü sayılır ve Daha fazla › Çıktı altındaki 'Paste delay after jump (Windows)' ile 'Submit delay before Enter (Windows)' için Yerel yerine Uzak değeri kullanır. Artık bir atlama hedefi olması gerekmiyor: 1.3.0'dan bu yana hâlihazırda odakta olan uzak pencere de sınıflandırılır ve gönderme gecikmesi orada bu sayede uygulanır. Varsayılan: msrdc, mstsc, Citrix. Oraya yapılan teslimler yutulmaya devam ediyorsa RDP veya Citrix istemcinizin süreç adını ekleyin; boş liste her hedefi yerel sayar.",
+        "description": "Uygulaması, pencere sınıfı veya denetim sınıfı bu parçalardan birini içeren bir teslim hedefi (büyük/küçük harf duyarsız) uzak masaüstü sayılır ve Transkripsiyon altındaki 'Paste delay after jump (Windows)' ile 'Submit delay before Enter (Windows)' için Yerel yerine Uzak değeri kullanır. Artık bir atlama hedefi olması gerekmiyor: 1.3.0'dan bu yana hâlihazırda odakta olan uzak pencere de sınıflandırılır ve gönderme gecikmesi orada bu sayede uygulanır. Varsayılan: msrdc, mstsc, Citrix. Oraya yapılan teslimler yutulmaya devam ediyorsa RDP veya Citrix istemcinizin süreç adını ekleyin; boş liste her hedefi yerel sayar.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
@@ -1531,8 +1536,8 @@
         "title": "Sıcak yuva (Sabitleme ve Teslimat)",
         "optionsMoved": {
           "title": "Teslimat seçenekleri",
-          "description": "Bir ayar değil — bir yol işareti. Bir atlamanın bir yuvayla gerçekte ne yapacağı, Daha fazla › Çıktıda akış başına yapılandırılır: 'Başlangıçta yuva eylemi', 'Bitişte yuva eylemi', 'Son çıktı konumunu izle' ve 'Teslimattan sonra odağı geri döndür' — her biri Transkribe Et için bir kez ve Transkribe Et ve Gönder için bir kez bulunur.",
-          "hint": "Daha fazla › Çıktı altındaki Transkribe Et ve Transkribe Et ve Gönder gruplarında yapılandırılır."
+          "description": "Bir ayar değil — bir yol işareti. Bir atlamanın bir yuvayla gerçekte ne yapacağı, Transkripsiyonda akış başına yapılandırılır: 'Başlangıçta yuva eylemi', 'Bitişte yuva eylemi', 'Son çıktı konumunu izle' ve 'Teslimattan sonra odağı geri döndür' — her biri Transkribe Et için bir kez ve Transkribe Et ve Gönder için bir kez bulunur.",
+          "hint": "Transkripsiyon altındaki Transkribe Et ve Transkribe Et ve Gönder gruplarında yapılandırılır."
         }
       },
       "hot2": {
@@ -1846,7 +1851,7 @@
     "fileTooLarge": "Dosya çok büyük (maks. 10 MB).",
     "loadedFile": "Yüklendi: {{name}}",
     "providerOption": "{{name}} (sağlayıcı)",
-    "chipDisabled": "Yapılandırılmadı — Daha fazla › Sağlayıcılar › Kayıtlı LLM Sağlayıcıları altında 'Bu sağlayıcıyı etkinleştir' ile açın.",
+    "chipDisabled": "Yapılandırılmadı — Gelişmiş ayarlar › LLM sağlayıcıları › Kayıtlı LLM Sağlayıcıları altında 'Bu sağlayıcıyı etkinleştir' ile açın.",
     "chips": {
       "cl100k_base": "cl100k (GPT-4)",
       "o200k_base": "o200k (GPT-4o)",
@@ -1904,14 +1909,14 @@
   },
   "modelTesting": {
     "configureProviders": "Sağlayıcıları yapılandır",
-    "description": "Çalıştır altında işaretlediğiniz her modele bir prompt gönderir ve yanıtları token sayıları, maliyet ve gidiş-dönüş süresiyle yan yana dizer; Jüri altında işaretlenen modeller ardından tüm bu yanıtları jüri promptunuzu kullanarak puanlar. Varsayılan: hiçbir şey seçilmemiş ve her iki prompt da boş. Liste Daha fazla › Sağlayıcılar › Kayıtlı LLM Sağlayıcıları'ndan gelir; bu nedenle bir çalıştırma kendi API anahtarlarınızı kullanır — promptunuz bu makineden çıkar ve ücretli sağlayıcılar için gerçek para maliyeti oluşturur.",
+    "description": "Çalıştır altında işaretlediğiniz her modele bir prompt gönderir ve yanıtları token sayıları, maliyet ve gidiş-dönüş süresiyle yan yana dizer; Jüri altında işaretlenen modeller ardından tüm bu yanıtları jüri promptunuzu kullanarak puanlar. Varsayılan: hiçbir şey seçilmemiş ve her iki prompt da boş. Liste Gelişmiş ayarlar › LLM sağlayıcıları › Kayıtlı LLM Sağlayıcıları'ndan gelir; bu nedenle bir çalıştırma kendi API anahtarlarınızı kullanır — promptunuz bu makineden çıkar ve ücretli sağlayıcılar için gerçek para maliyeti oluşturur.",
     "providersLabel": "Modeller",
     "selectAll": "Çalıştırmak için tümünü seç",
     "clear": "Temizle",
     "run": "Çalıştır",
     "judge": "Jüri",
     "costPerM": "giriş ${{input}} · çıkış ${{output}} /1M",
-    "noProviders": "Chat destekli hiçbir sağlayıcı yapılandırılmadı. Daha fazla › Sağlayıcılar › Kayıtlı LLM Sağlayıcıları'ndan bir tane ekleyin.",
+    "noProviders": "Chat destekli hiçbir sağlayıcı yapılandırılmadı. Gelişmiş ayarlar › LLM sağlayıcıları › Kayıtlı LLM Sağlayıcıları'ndan bir tane ekleyin.",
     "mainPromptLabel": "Tüm modeller için prompt",
     "mainPromptPlaceholder": "Seçili her modele gönderilen prompt…",
     "judgePromptLabel": "Jüri / hakem promptu (isteğe bağlı)",
@@ -2130,6 +2135,18 @@
       "linuxBuilds": {
         "title": "Linux paketleri",
         "description": "x86_64 ve ARM64 için .deb, .rpm ve .AppImage paketleri. Henüz test edilmediler."
+      },
+      "transcriptionPage": {
+        "title": "Transkripsiyonun kendi sayfası var",
+        "description": "Çıktı ayarlarının (yapıştırma yöntemi, pano, otomatik gönderme, atlama yuvası eylemleri, İngilizceye çeviri) artık kenar çubuğunda, Kurulumlar öğesinin hemen altında kendi sayfası var: Transkripsiyon."
+      },
+      "providerPages": {
+        "title": "İki sağlayıcı sayfası",
+        "description": "Sağlayıcılar artık Transkripsiyon sağlayıcıları (API ve OpenRouter ile transkripsiyon); kayıtlı LLM sağlayıcılarının hemen yanında kendi sayfası var: LLM sağlayıcıları. İkisi de Gelişmiş ayarlar içinde."
+      },
+      "sidebarMenus": {
+        "title": "Gelişmiş ayarlar ve Diğer araçlar",
+        "description": "Daha fazla artık iki öğe: ayar sayfalarını içeren Gelişmiş ayarlar ve Jumper'ın hemen ardından gelen Diğer araçlar (Klavye Yazıcısı, Token Sayımı, Model Testi, Mevcut Ses)."
       }
     },
     "installed": "Yüklü"

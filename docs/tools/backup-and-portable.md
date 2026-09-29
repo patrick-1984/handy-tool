@@ -27,9 +27,9 @@ Export before moving machines or making broad configuration changes. Use portabl
 
 ## Set it up
 
-1. For settings and History only, use `More › Backup › Configuration + history › Export config + history`.
-2. To add eligible compressed recordings, use `More › Backup › Full data (with compressed audio) › Export full backup`.
-3. On restore, choose settings and History at `More › Backup › Restore from backup › Configuration & history (settings, history DB) = On`.
-4. Choose eligible audio separately at `More › Backup › Restore from backup › Recordings (audio files) = On`.
-5. Apply the archive from `More › Backup › Restore from backup › Restore from backup…`, then restart when settings or History were restored.
+1. For settings and History only, use `Advanced settings › Backup › Configuration + history › Export config + history`.
+2. To add eligible compressed recordings, use `Advanced settings › Backup › Full data (with compressed audio) › Export full backup`.
+3. On restore, choose settings and History at `Advanced settings › Backup › Restore from backup › Configuration & history (settings, history DB) = On`.
+4. Choose eligible audio separately at `Advanced settings › Backup › Restore from backup › Recordings (audio files) = On`.
+5. Apply the archive from `Advanced settings › Backup › Restore from backup › Restore from backup…`, then restart when settings or History were restored.
 6. Treat every exported archive as a secret-bearing file. Store and transfer it with the same care as the API keys inside it.

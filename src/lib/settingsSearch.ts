@@ -13,7 +13,7 @@ export interface SearchEntry {
   /** For History: the tab the control is on. */
   historyTab?: HistoryTab;
   title: string;
-  /** Where it lives, e.g. "More › Output › Paste last transcription". */
+  /** Where it lives, e.g. "Transcription › Paste last transcription". */
   where: string;
   haystack: string;
 }
@@ -48,8 +48,9 @@ const plain = (text: string) => text.replace(/\*\*/g, "");
  */
 export const buildSearchIndex = (
   t: TFunction,
-  /** Pages currently shown; `more` marks those on the More page. */
-  sections: { id: string; labelKey: string; more: boolean }[],
+  /** Pages currently shown; `group` is the i18n key of the tabbed entry
+   * (Advanced settings, More Tools) a page is in, null for sidebar pages. */
+  sections: { id: string; labelKey: string; group: string | null }[],
   osType: OSType,
   bindings: Partial<Record<string, ShortcutBinding>>,
   postProcessEnabled: boolean,
@@ -57,7 +58,6 @@ export const buildSearchIndex = (
   enabledTakeShortcuts: string[],
 ): SearchEntry[] => {
   const sectionByLabelKey = new Map(sections.map((s) => [s.labelKey, s]));
-  const more = t("sidebar.more");
   const entries: SearchEntry[] = [];
 
   for (const e of navMap as NavMapEntry[]) {
@@ -76,7 +76,7 @@ export const buildSearchIndex = (
     const page = t(e.pageKey);
     // A group titled like its page adds nothing to the path.
     const where = [
-      section.more ? more : null,
+      section.group ? t(section.group) : null,
       page,
       tab,
       group !== page ? group : null,

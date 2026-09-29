@@ -17,6 +17,7 @@
     "backup": "Sauvegarde",
     "currentAudio": "Audio en cours",
     "setups": "Configurations",
+    "transcription": "Transcription",
     "tokenCount": "Comptage de tokens",
     "keyboardTyper": "Frappe clavier",
     "whatsNew": "Nouveautés",
@@ -63,7 +64,11 @@
       "installRestartNow": "Installer et redémarrer maintenant",
       "enableAutomatic": "Activer les mises à jour automatiques"
     },
-    "unread": "non lu"
+    "unread": "non lu",
+    "transcriptionProviders": "Fournisseurs de transcription",
+    "llmProviders": "Fournisseurs LLM",
+    "advancedSettings": "Paramètres avancés",
+    "moreTools": "Plus d'outils"
   },
   "helpMode": {
     "button": "Mode aide : pointez un réglage pour voir ce qu’il fait",
@@ -557,7 +562,7 @@
         "bindings": {
           "transcribe": {
             "name": "Raccourci Enregistrement/Transcription",
-            "description": "Appuyez une fois pour démarrer l'enregistrement et à nouveau pour terminer ; la transcription est livrée dans la fenêtre qui avait le focus. Par défaut : Ctrl+Espace. Il suit le Mode de transcription et la Méthode de collage dans Plus › Sortie — pour un enregistrement en maintenant la touche, utilisez plutôt le Raccourci Appuyer pour parler."
+            "description": "Appuyez une fois pour démarrer l'enregistrement et à nouveau pour terminer ; la transcription est livrée dans la fenêtre qui avait le focus. Par défaut : Ctrl+Espace. Il suit le Mode de transcription et la Méthode de collage dans Transcription — pour un enregistrement en maintenant la touche, utilisez plutôt le Raccourci Appuyer pour parler."
           },
           "cancel": {
             "name": "Raccourci d'Annulation",
@@ -593,7 +598,7 @@
           },
           "anchor_set": {
             "name": "Définir l'ancre",
-            "description": "Capture le champ de texte actuellement actif comme destination Rapide 1. Par défaut : ctrl+shift+F1. Seul, il ne livre rien — réglez « Action sur l'emplacement à la fin » sur « Sauter / livrer vers l'emplacement » avec l'emplacement réglé sur Rapide 1 (Plus › Sortie) pour que votre prochaine transcription y arrive. Les champs de mot de passe et les propres fenêtres de Handy sont refusés."
+            "description": "Capture le champ de texte actuellement actif comme destination Rapide 1. Par défaut : ctrl+shift+F1. Seul, il ne livre rien — réglez « Action sur l'emplacement à la fin » sur « Sauter / livrer vers l'emplacement » avec l'emplacement réglé sur Rapide 1 (Transcription) pour que votre prochaine transcription y arrive. Les champs de mot de passe et les propres fenêtres de Handy sont refusés."
           },
           "anchor_jump": {
             "name": "Aller à l'ancre",
@@ -601,19 +606,19 @@
           },
           "jump_set_slot_1": {
             "name": "Définir l'emplacement de saut 1",
-            "description": "Mémorise le champ actuellement actif comme emplacement fixe 1, en remplaçant ce qu'il contenait. Par défaut : ctrl+alt+maj+1. L'emplacement n'est qu'un signet jusqu'à ce qu'on l'utilise — sautez-y avec « Aller à l'emplacement 1 », ou réglez « Action sur l'emplacement à la fin » d'un flux (Plus › Sortie) sur l'emplacement 1 pour que les transcriptions y soient livrées."
+            "description": "Mémorise le champ actuellement actif comme emplacement fixe 1, en remplaçant ce qu'il contenait. Par défaut : ctrl+alt+maj+1. L'emplacement n'est qu'un signet jusqu'à ce qu'on l'utilise — sautez-y avec « Aller à l'emplacement 1 », ou réglez « Action sur l'emplacement à la fin » d'un flux (Transcription) sur l'emplacement 1 pour que les transcriptions y soient livrées."
           },
           "jump_set_slot_2": {
             "name": "Définir l'emplacement de saut 2",
-            "description": "Mémorise le champ actuellement actif comme emplacement fixe 2, en remplaçant ce qu'il contenait. Par défaut : ctrl+alt+maj+2. Sautez-y à nouveau avec « Aller à l'emplacement 2 », ou réglez « Action sur l'emplacement à la fin » d'un flux (Plus › Sortie) sur l'emplacement 2 pour que les transcriptions y soient livrées."
+            "description": "Mémorise le champ actuellement actif comme emplacement fixe 2, en remplaçant ce qu'il contenait. Par défaut : ctrl+alt+maj+2. Sautez-y à nouveau avec « Aller à l'emplacement 2 », ou réglez « Action sur l'emplacement à la fin » d'un flux (Transcription) sur l'emplacement 2 pour que les transcriptions y soient livrées."
           },
           "jump_set_slot_3": {
             "name": "Définir l'emplacement de saut 3",
-            "description": "Mémorise le champ actuellement actif comme emplacement fixe 3, en remplaçant ce qu'il contenait. Par défaut : ctrl+alt+maj+3. Sautez-y à nouveau avec « Aller à l'emplacement 3 », ou réglez « Action sur l'emplacement à la fin » d'un flux (Plus › Sortie) sur l'emplacement 3 pour que les transcriptions y soient livrées."
+            "description": "Mémorise le champ actuellement actif comme emplacement fixe 3, en remplaçant ce qu'il contenait. Par défaut : ctrl+alt+maj+3. Sautez-y à nouveau avec « Aller à l'emplacement 3 », ou réglez « Action sur l'emplacement à la fin » d'un flux (Transcription) sur l'emplacement 3 pour que les transcriptions y soient livrées."
           },
           "jump_set_slot_4": {
             "name": "Définir l'emplacement de saut 4",
-            "description": "Mémorise le champ actuellement actif comme emplacement fixe 4, en remplaçant ce qu'il contenait. Par défaut : ctrl+alt+maj+4. Sautez-y à nouveau avec « Aller à l'emplacement 4 », ou réglez « Action sur l'emplacement à la fin » d'un flux (Plus › Sortie) sur l'emplacement 4 pour que les transcriptions y soient livrées."
+            "description": "Mémorise le champ actuellement actif comme emplacement fixe 4, en remplaçant ce qu'il contenait. Par défaut : ctrl+alt+maj+4. Sautez-y à nouveau avec « Aller à l'emplacement 4 », ou réglez « Action sur l'emplacement à la fin » d'un flux (Transcription) sur l'emplacement 4 pour que les transcriptions y soient livrées."
           },
           "jump_slot_1": {
             "name": "Aller à l'emplacement 1",
@@ -771,7 +776,7 @@
         "title": "Paste last transcription",
         "pasteMethod": {
           "title": "Paste method",
-          "description": "Comment le raccourci « Paste last transcription » place le texte dans la fenêtre active. Ce réglage est distinct de la Méthode de collage dans Plus › Sortie, pour pouvoir l'ajuster pour cette seule cible récalcitrante. Par défaut : Presse-papiers (Ctrl+V) — essayez Presse-papiers (Shift+Insert) dans un terminal, Direct pour taper les caractères au lieu de coller, ou Aucun pour seulement placer le texte dans le presse-papiers afin de le coller vous-même."
+          "description": "Comment le raccourci « Paste last transcription » place le texte dans la fenêtre active. Ce réglage est distinct de la Méthode de collage dans Transcription, pour pouvoir l'ajuster pour cette seule cible récalcitrante. Par défaut : Presse-papiers (Ctrl+V) — essayez Presse-papiers (Shift+Insert) dans un terminal, Direct pour taper les caractères au lieu de coller, ou Aucun pour seulement placer le texte dans le presse-papiers afin de le coller vous-même."
         },
         "clipboard": {
           "title": "Clipboard",
@@ -1359,7 +1364,7 @@
           "title": "Température",
           "description": "Plus la valeur est basse, plus le résultat est déterministe et rigoureux (0 = le plus littéral) ; plus elle est haute, plus il est créatif."
         },
-        "registryNote": "La clé API, le modèle et l'URL de base du fournisseur sont configurés dans Plus › Fournisseurs › Fournisseurs LLM enregistrés."
+        "registryNote": "La clé API, le modèle et l'URL de base du fournisseur sont configurés dans Paramètres avancés › Fournisseurs LLM › Fournisseurs LLM enregistrés."
       },
       "prompts": {
         "title": "Prompt",
@@ -1518,7 +1523,7 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "Une cible de remise dont l'application, la classe de fenêtre ou la classe de contrôle contient l'un de ces fragments (insensible à la casse) est traitée comme un bureau distant, et utilise donc la valeur Distant de 'Paste delay after jump (Windows)' et 'Submit delay before Enter (Windows)' dans Plus › Sortie au lieu de la valeur Local. Ce n'est plus forcément une cible de saut : depuis 1.3.0 une fenêtre distante déjà au premier plan est aussi classée, et c'est ce qui fait que le délai d'envoi s'y applique. Par défaut : msrdc, mstsc, Citrix. Ajoutez le nom du processus de votre client RDP ou Citrix si les remises continuent d'être avalées ; une liste vide traite chaque cible comme locale.",
+        "description": "Une cible de remise dont l'application, la classe de fenêtre ou la classe de contrôle contient l'un de ces fragments (insensible à la casse) est traitée comme un bureau distant, et utilise donc la valeur Distant de 'Paste delay after jump (Windows)' et 'Submit delay before Enter (Windows)' dans Transcription au lieu de la valeur Local. Ce n'est plus forcément une cible de saut : depuis 1.3.0 une fenêtre distante déjà au premier plan est aussi classée, et c'est ce qui fait que le délai d'envoi s'y applique. Par défaut : msrdc, mstsc, Citrix. Ajoutez le nom du processus de votre client RDP ou Citrix si les remises continuent d'être avalées ; une liste vide traite chaque cible comme locale.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
@@ -1531,8 +1536,8 @@
         "title": "Emplacement rapide (Ancre et livraison)",
         "optionsMoved": {
           "title": "Options de livraison",
-          "description": "Pas un réglage — un panneau indicateur. Ce qu'un saut fait réellement avec un emplacement se configure par flux sur Plus › Sortie : « Action sur l'emplacement au démarrage », « Action sur l'emplacement à la fin », « Suivre le dernier emplacement de sortie » et « Rendre le focus après la livraison » existent chacun une fois pour Transcrire et une fois pour Transcrire et envoyer.",
-          "hint": "Configurés dans les groupes Transcrire et Transcrire et envoyer dans Plus › Sortie."
+          "description": "Pas un réglage — un panneau indicateur. Ce qu'un saut fait réellement avec un emplacement se configure par flux sur Transcription : « Action sur l'emplacement au démarrage », « Action sur l'emplacement à la fin », « Suivre le dernier emplacement de sortie » et « Rendre le focus après la livraison » existent chacun une fois pour Transcrire et une fois pour Transcrire et envoyer.",
+          "hint": "Configurés dans les groupes Transcrire et Transcrire et envoyer dans Transcription."
         }
       },
       "hot2": {
@@ -1853,7 +1858,7 @@
     "fileTooLarge": "Le fichier est trop volumineux (max 10 Mo).",
     "loadedFile": "Chargé : {{name}}",
     "providerOption": "{{name}} (fournisseur)",
-    "chipDisabled": "Non configuré — activez-le avec « Activer ce fournisseur » sous Plus › Fournisseurs › Fournisseurs LLM enregistrés.",
+    "chipDisabled": "Non configuré — activez-le avec « Activer ce fournisseur » sous Paramètres avancés › Fournisseurs LLM › Fournisseurs LLM enregistrés.",
     "chips": {
       "cl100k_base": "cl100k (GPT-4)",
       "o200k_base": "o200k (GPT-4o)",
@@ -1911,14 +1916,14 @@
   },
   "modelTesting": {
     "configureProviders": "Configurer les fournisseurs",
-    "description": "Envoie un même prompt à chaque modèle coché sous Exécuter et présente les réponses côte à côte avec le nombre de tokens, le coût et le temps aller-retour ; les modèles cochés sous Juge notent ensuite toutes ces réponses à l'aide de votre prompt de juge. Par défaut : rien n'est sélectionné et les deux prompts sont vides. La liste provient de Plus › Fournisseurs › Fournisseurs LLM enregistrés, donc une exécution utilise vos propres clés API — votre prompt quitte cette machine et, pour les fournisseurs payants, coûte réellement de l'argent.",
+    "description": "Envoie un même prompt à chaque modèle coché sous Exécuter et présente les réponses côte à côte avec le nombre de tokens, le coût et le temps aller-retour ; les modèles cochés sous Juge notent ensuite toutes ces réponses à l'aide de votre prompt de juge. Par défaut : rien n'est sélectionné et les deux prompts sont vides. La liste provient de Paramètres avancés › Fournisseurs LLM › Fournisseurs LLM enregistrés, donc une exécution utilise vos propres clés API — votre prompt quitte cette machine et, pour les fournisseurs payants, coûte réellement de l'argent.",
     "providersLabel": "Modèles",
     "selectAll": "Tout sélectionner pour exécuter",
     "clear": "Effacer",
     "run": "Exécuter",
     "judge": "Juge",
     "costPerM": "entrée ${{input}} · sortie ${{output}} /1M",
-    "noProviders": "Aucun fournisseur compatible chat configuré. Ajoutez-en un dans Plus › Fournisseurs › Fournisseurs LLM enregistrés.",
+    "noProviders": "Aucun fournisseur compatible chat configuré. Ajoutez-en un dans Paramètres avancés › Fournisseurs LLM › Fournisseurs LLM enregistrés.",
     "mainPromptLabel": "Prompt pour tous les modèles",
     "mainPromptPlaceholder": "Le prompt envoyé à chaque modèle sélectionné…",
     "judgePromptLabel": "Prompt du juge / arbitre (facultatif)",
@@ -2130,6 +2135,18 @@
       "linuxBuilds": {
         "title": "Paquets Linux",
         "description": "Paquets .deb, .rpm et .AppImage pour x86_64 et ARM64. Ils n'ont pas encore été testés."
+      },
+      "transcriptionPage": {
+        "title": "La transcription a sa propre page",
+        "description": "Les réglages de Sortie (méthode de collage, presse-papiers, envoi automatique, actions des emplacements de saut, traduction en anglais) ont désormais leur propre page dans la barre latérale, juste sous Configurations : Transcription."
+      },
+      "providerPages": {
+        "title": "Deux pages de fournisseurs",
+        "description": "Fournisseurs devient Fournisseurs de transcription (transcription par API et OpenRouter) ; les fournisseurs LLM enregistrés ont leur propre page à côté : Fournisseurs LLM. Les deux sont dans Paramètres avancés."
+      },
+      "sidebarMenus": {
+        "title": "Paramètres avancés et Plus d'outils",
+        "description": "Plus devient deux entrées : Paramètres avancés, avec les pages de réglages, et Plus d'outils, juste après Jumper, avec Frappe clavier, Comptage de tokens, Test de modèles et Audio en cours."
       }
     },
     "installed": "Installée"

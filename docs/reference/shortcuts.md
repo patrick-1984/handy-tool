@@ -28,9 +28,9 @@ Rebind them at:
 - `General › Record/Transcribe Shortcut`
 - `General › Push-to-Talk Shortcut`
 - `General › Transcribe & Submit Shortcut`
-- `More › Keyboard Typer › Type Text Shortcut`
+- `More Tools › Keyboard Typer › Type Text Shortcut`
 - `General › Paste Last Transcription`
-- `More › Post-processing › Hotkey › Post-Processing Hotkey` _{requires: Post-processing enabled}_
+- `Advanced settings › Post-processing › Hotkey › Post-Processing Hotkey` _{requires: Post-processing enabled}_
 - `Shortcuts › Dictation › Cancel Shortcut`
 - `General › Pause button` and `General › Transcription › Undo last word` — each shows its shortcut row once it is On.
 

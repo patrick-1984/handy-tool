@@ -17,6 +17,7 @@
     "backup": "Cópia de segurança",
     "currentAudio": "Áudio Atual",
     "setups": "Configurações",
+    "transcription": "Transcrição",
     "tokenCount": "Contagem de Tokens",
     "keyboardTyper": "Digitador de Teclado",
     "whatsNew": "Novidades",
@@ -63,7 +64,11 @@
       "installRestartNow": "Instalar e reiniciar agora",
       "enableAutomatic": "Ativar atualizações automáticas"
     },
-    "unread": "não lido"
+    "unread": "não lido",
+    "transcriptionProviders": "Provedores de transcrição",
+    "llmProviders": "Provedores de LLM",
+    "advancedSettings": "Configurações avançadas",
+    "moreTools": "Mais ferramentas"
   },
   "helpMode": {
     "button": "Modo de ajuda: aponte para uma configuração para ver o que ela faz",
@@ -540,7 +545,7 @@
         "bindings": {
           "transcribe": {
             "name": "Atalho de Gravação/Transcrição",
-            "description": "Pressione uma vez para iniciar a gravação e novamente para finalizar; a transcrição é entregue na janela que estava em foco. Padrão: Ctrl+Space. Segue o Modo de Transcrição e o Método de Colar em Mais › Saída — para gravar mantendo pressionado, use o Atalho de Pressionar para Falar."
+            "description": "Pressione uma vez para iniciar a gravação e novamente para finalizar; a transcrição é entregue na janela que estava em foco. Padrão: Ctrl+Space. Segue o Modo de Transcrição e o Método de Colar em Transcrição — para gravar mantendo pressionado, use o Atalho de Pressionar para Falar."
           },
           "cancel": {
             "name": "Atalho de Cancelar",
@@ -576,7 +581,7 @@
           },
           "anchor_set": {
             "name": "Definir Âncora",
-            "description": "Captura o campo de texto atualmente em foco como o destino Ativo 1. Padrão: ctrl+shift+F1. Por si só não entrega nada — defina 'Ação do slot de salto ao finalizar' como 'Saltar / entregar no slot' com o slot definido para Ativo 1 (Mais › Saída) para fazer sua próxima transcrição chegar lá. Caixas de senha e as próprias janelas do Handy Tool são recusadas."
+            "description": "Captura o campo de texto atualmente em foco como o destino Ativo 1. Padrão: ctrl+shift+F1. Por si só não entrega nada — defina 'Ação do slot de salto ao finalizar' como 'Saltar / entregar no slot' com o slot definido para Ativo 1 (Transcrição) para fazer sua próxima transcrição chegar lá. Caixas de senha e as próprias janelas do Handy Tool são recusadas."
           },
           "anchor_jump": {
             "name": "Saltar para a Âncora",
@@ -584,19 +589,19 @@
           },
           "jump_set_slot_1": {
             "name": "Definir Slot de Salto 1",
-            "description": "Memoriza o campo atualmente em foco como slot estático 1, substituindo o que ele continha. Padrão: ctrl+alt+shift+1. O slot é apenas um marcador até que algo o use — salte até ele com 'Saltar para o Slot 1', ou aponte a 'Ação do slot de salto ao finalizar' de um fluxo (Mais › Saída) para o Slot 1 para que as transcrições sejam entregues lá."
+            "description": "Memoriza o campo atualmente em foco como slot estático 1, substituindo o que ele continha. Padrão: ctrl+alt+shift+1. O slot é apenas um marcador até que algo o use — salte até ele com 'Saltar para o Slot 1', ou aponte a 'Ação do slot de salto ao finalizar' de um fluxo (Transcrição) para o Slot 1 para que as transcrições sejam entregues lá."
           },
           "jump_set_slot_2": {
             "name": "Definir Slot de Salto 2",
-            "description": "Memoriza o campo atualmente em foco como slot estático 2, substituindo o que ele continha. Padrão: ctrl+alt+shift+2. Salte de volta com 'Saltar para o Slot 2', ou aponte a 'Ação do slot de salto ao finalizar' de um fluxo (Mais › Saída) para o Slot 2 para que as transcrições sejam entregues lá."
+            "description": "Memoriza o campo atualmente em foco como slot estático 2, substituindo o que ele continha. Padrão: ctrl+alt+shift+2. Salte de volta com 'Saltar para o Slot 2', ou aponte a 'Ação do slot de salto ao finalizar' de um fluxo (Transcrição) para o Slot 2 para que as transcrições sejam entregues lá."
           },
           "jump_set_slot_3": {
             "name": "Definir Slot de Salto 3",
-            "description": "Memoriza o campo atualmente em foco como slot estático 3, substituindo o que ele continha. Padrão: ctrl+alt+shift+3. Salte de volta com 'Saltar para o Slot 3', ou aponte a 'Ação do slot de salto ao finalizar' de um fluxo (Mais › Saída) para o Slot 3 para que as transcrições sejam entregues lá."
+            "description": "Memoriza o campo atualmente em foco como slot estático 3, substituindo o que ele continha. Padrão: ctrl+alt+shift+3. Salte de volta com 'Saltar para o Slot 3', ou aponte a 'Ação do slot de salto ao finalizar' de um fluxo (Transcrição) para o Slot 3 para que as transcrições sejam entregues lá."
           },
           "jump_set_slot_4": {
             "name": "Definir Slot de Salto 4",
-            "description": "Memoriza o campo atualmente em foco como slot estático 4, substituindo o que ele continha. Padrão: ctrl+alt+shift+4. Salte de volta com 'Saltar para o Slot 4', ou aponte a 'Ação do slot de salto ao finalizar' de um fluxo (Mais › Saída) para o Slot 4 para que as transcrições sejam entregues lá."
+            "description": "Memoriza o campo atualmente em foco como slot estático 4, substituindo o que ele continha. Padrão: ctrl+alt+shift+4. Salte de volta com 'Saltar para o Slot 4', ou aponte a 'Ação do slot de salto ao finalizar' de um fluxo (Transcrição) para o Slot 4 para que as transcrições sejam entregues lá."
           },
           "jump_slot_1": {
             "name": "Saltar para o Slot 1",
@@ -754,7 +759,7 @@
         "title": "Paste last transcription",
         "pasteMethod": {
           "title": "Paste method",
-          "description": "Como o atalho Paste last transcription coloca o texto na janela em foco. É independente do Método de Colar em Mais › Saída, então você pode ajustá-lo para aquele destino específico e difícil. Padrão: Área de Transferência (Ctrl+V) — tente Área de Transferência (Shift+Insert) em um terminal, Direto para digitar os caracteres em vez de colar, ou Nenhum para apenas colocar o texto na área de transferência e colá-lo manualmente."
+          "description": "Como o atalho Paste last transcription coloca o texto na janela em foco. É independente do Método de Colar em Transcrição, então você pode ajustá-lo para aquele destino específico e difícil. Padrão: Área de Transferência (Ctrl+V) — tente Área de Transferência (Shift+Insert) em um terminal, Direto para digitar os caracteres em vez de colar, ou Nenhum para apenas colocar o texto na área de transferência e colá-lo manualmente."
         },
         "clipboard": {
           "title": "Clipboard",
@@ -1359,7 +1364,7 @@
           "title": "Temperatura",
           "description": "Valores mais baixos são mais determinísticos e rígidos (0 = mais literal); valores mais altos são mais criativos."
         },
-        "registryNote": "A chave de API, o modelo e a URL base do provedor são configurados em Mais › Provedores › Provedores de LLM Registrados."
+        "registryNote": "A chave de API, o modelo e a URL base do provedor são configurados em Configurações avançadas › Provedores de LLM › Provedores de LLM Registrados."
       },
       "prompts": {
         "title": "Prompt",
@@ -1518,7 +1523,7 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "Um destino de entrega cuja aplicação, classe de janela ou classe de controlo contenha um destes fragmentos (sem distinguir maiúsculas) é tratado como ambiente de trabalho remoto, pelo que usa o valor Remoto de 'Paste delay after jump (Windows)' e 'Submit delay before Enter (Windows)' em Mais › Saída em vez do Local. Já não tem de ser um destino de salto: desde a 1.3.0 uma janela remota já em primeiro plano também é classificada, e é isso que faz o atraso de envio aplicar-se ali. Predefinição: msrdc, mstsc, Citrix. Adicione o nome do processo do seu cliente RDP ou Citrix se as entregas continuarem a perder-se; uma lista vazia trata todos os destinos como locais.",
+        "description": "Um destino de entrega cuja aplicação, classe de janela ou classe de controlo contenha um destes fragmentos (sem distinguir maiúsculas) é tratado como ambiente de trabalho remoto, pelo que usa o valor Remoto de 'Paste delay after jump (Windows)' e 'Submit delay before Enter (Windows)' em Transcrição em vez do Local. Já não tem de ser um destino de salto: desde a 1.3.0 uma janela remota já em primeiro plano também é classificada, e é isso que faz o atraso de envio aplicar-se ali. Predefinição: msrdc, mstsc, Citrix. Adicione o nome do processo do seu cliente RDP ou Citrix se as entregas continuarem a perder-se; uma lista vazia trata todos os destinos como locais.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
@@ -1531,8 +1536,8 @@
         "title": "Slot ativo (Ancorar e Entregar)",
         "optionsMoved": {
           "title": "Opções de entrega",
-          "description": "Não é uma configuração — é um indicador. O que um salto realmente faz com um slot é configurado por fluxo em Mais › Saída: 'Ação do slot de salto ao iniciar', 'Ação do slot de salto ao finalizar', 'Rastrear local da última saída' e 'Retornar o foco após a entrega' existem uma vez para Transcrever e outra vez para Transcrever e Enviar.",
-          "hint": "Configurado nos grupos Transcrever e Transcrever e Enviar em Mais › Saída."
+          "description": "Não é uma configuração — é um indicador. O que um salto realmente faz com um slot é configurado por fluxo em Transcrição: 'Ação do slot de salto ao iniciar', 'Ação do slot de salto ao finalizar', 'Rastrear local da última saída' e 'Retornar o foco após a entrega' existem uma vez para Transcrever e outra vez para Transcrever e Enviar.",
+          "hint": "Configurado nos grupos Transcrever e Transcrever e Enviar em Transcrição."
         }
       },
       "hot2": {
@@ -1846,7 +1851,7 @@
     "fileTooLarge": "O arquivo é muito grande (máx. 10 MB).",
     "loadedFile": "Carregado: {{name}}",
     "providerOption": "{{name}} (provedor)",
-    "chipDisabled": "Não configurado — ative com Habilitar este provedor em Mais › Provedores › Provedores de LLM Registrados.",
+    "chipDisabled": "Não configurado — ative com Habilitar este provedor em Configurações avançadas › Provedores de LLM › Provedores de LLM Registrados.",
     "chips": {
       "cl100k_base": "cl100k (GPT-4)",
       "o200k_base": "o200k (GPT-4o)",
@@ -1904,14 +1909,14 @@
   },
   "modelTesting": {
     "configureProviders": "Configurar provedores",
-    "description": "Envia um prompt para cada modelo marcado em Executar e exibe as respostas lado a lado com contagem de tokens, custo e tempo de ida e volta; modelos marcados em Avaliador então pontuam todas essas respostas usando o seu prompt de avaliação. Padrão: nada selecionado e ambos os prompts vazios. A lista vem de Mais › Provedores › Provedores de LLM Registrados, então uma execução usa suas próprias chaves de API — seu prompt sai deste computador e, para provedores pagos, custa dinheiro de verdade.",
+    "description": "Envia um prompt para cada modelo marcado em Executar e exibe as respostas lado a lado com contagem de tokens, custo e tempo de ida e volta; modelos marcados em Avaliador então pontuam todas essas respostas usando o seu prompt de avaliação. Padrão: nada selecionado e ambos os prompts vazios. A lista vem de Configurações avançadas › Provedores de LLM › Provedores de LLM Registrados, então uma execução usa suas próprias chaves de API — seu prompt sai deste computador e, para provedores pagos, custa dinheiro de verdade.",
     "providersLabel": "Modelos",
     "selectAll": "Selecionar todos para executar",
     "clear": "Limpar",
     "run": "Executar",
     "judge": "Avaliador",
     "costPerM": "entrada ${{input}} · saída ${{output}} /1M",
-    "noProviders": "Nenhum provedor com suporte a chat configurado. Adicione um em Mais › Provedores › Provedores de LLM Registrados.",
+    "noProviders": "Nenhum provedor com suporte a chat configurado. Adicione um em Configurações avançadas › Provedores de LLM › Provedores de LLM Registrados.",
     "mainPromptLabel": "Prompt para todos os modelos",
     "mainPromptPlaceholder": "O prompt enviado a cada modelo selecionado…",
     "judgePromptLabel": "Prompt do avaliador / árbitro (opcional)",
@@ -2130,6 +2135,18 @@
       "linuxBuilds": {
         "title": "Pacotes para Linux",
         "description": ".deb, .rpm e .AppImage para x86_64 e ARM64. Ainda não foram testados."
+      },
+      "transcriptionPage": {
+        "title": "A transcrição tem página própria",
+        "description": "As configurações de Saída (método de colagem, área de transferência, envio automático, ações dos slots de salto, traduzir para inglês) agora têm página própria na barra lateral, logo abaixo de Configurações: Transcrição."
+      },
+      "providerPages": {
+        "title": "Duas páginas de provedores",
+        "description": "Provedores agora é Provedores de transcrição (transcrição por API e OpenRouter); os provedores de LLM registrados têm uma página própria ao lado: Provedores de LLM. Ambas ficam em Configurações avançadas."
+      },
+      "sidebarMenus": {
+        "title": "Configurações avançadas e Mais ferramentas",
+        "description": "Mais agora são duas entradas: Configurações avançadas, com as páginas de configurações, e Mais ferramentas, logo depois do Jumper, com Digitador de Teclado, Contagem de Tokens, Teste de Modelos e Áudio Atual."
       }
     },
     "installed": "Instalada"

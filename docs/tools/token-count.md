@@ -20,7 +20,7 @@ Use Token Count as a preflight for long prompts and files. Start with an offline
 ## Settings that matter
 
 - [Token Count settings](../reference/settings/token-count.md)
-- [More settings](../reference/settings/advanced.md)
+- [Transcription and Advanced settings](../reference/settings/advanced.md)
 
 ## When it goes wrong
 
@@ -29,9 +29,9 @@ Use Token Count as a preflight for long prompts and files. Start with an offline
 
 ## Set it up
 
-1. Paste the prompt at `More › Token Count › Paste text here to count tokens...`.
-2. For an offline GPT-4 baseline, choose `More › Token Count › cl100k (GPT-4)`.
-3. For an offline GPT-4o baseline, choose `More › Token Count › o200k (GPT-4o)`.
-4. To compare enabled services, run `More › Token Count › Count with all`.
-5. Use `More › Token Count › Count with all (parallel)` only when the configured providers can accept concurrent work.
-6. For a saved prompt, begin at `More › Token Count › Open file...`.
+1. Paste the prompt at `More Tools › Token Count › Paste text here to count tokens...`.
+2. For an offline GPT-4 baseline, choose `More Tools › Token Count › cl100k (GPT-4)`.
+3. For an offline GPT-4o baseline, choose `More Tools › Token Count › o200k (GPT-4o)`.
+4. To compare enabled services, run `More Tools › Token Count › Count with all`.
+5. Use `More Tools › Token Count › Count with all (parallel)` only when the configured providers can accept concurrent work.
+6. For a saved prompt, begin at `More Tools › Token Count › Open file...`.

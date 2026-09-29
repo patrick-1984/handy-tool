@@ -5,8 +5,8 @@ import {
   Archive,
   AudioLines,
   Bot,
-  ClipboardPaste,
-  Ellipsis,
+  BrainCircuit,
+  Captions,
   FileAudio,
   Gift,
   FlaskConical,
@@ -17,9 +17,11 @@ import {
   ListChecks,
   MoveUpRight,
   Plug,
+  Settings as Gear,
   SlidersHorizontal,
   Sparkles,
   Terminal,
+  ToolCase,
   Type,
   Cpu,
 } from "lucide-react";
@@ -39,6 +41,7 @@ import {
   ShortcutsSettings,
   OutputSection,
   ProvidersSection,
+  LlmProvidersSection,
   McpSection,
   PostProcessingSection,
   CurrentAudioView,
@@ -91,6 +94,16 @@ export const SECTIONS_CONFIG = {
     placement: "sidebar",
     enabled: () => true,
   },
+  // How the transcription is delivered (paste, clipboard, submit, jumps). It was
+  // More › Output before 2.0.1; the id stays "output" so saved pages, search and
+  // What's new keep pointing at it.
+  output: {
+    labelKey: "sidebar.transcription",
+    icon: Captions,
+    component: OutputSection,
+    placement: "sidebar",
+    enabled: () => true,
+  },
   shortcuts: {
     labelKey: "sidebar.shortcuts",
     icon: Keyboard,
@@ -133,18 +146,20 @@ export const SECTIONS_CONFIG = {
     placement: "sidebar",
     enabled: () => true,
   },
-  // --- More › Settings ---
-  output: {
-    labelKey: "settings.advanced.tabs.output",
-    icon: ClipboardPaste,
-    component: OutputSection,
+  // --- Advanced settings (the sidebar's More entry before 2.0.1) ---
+  // Transcription providers (the id stays "providers"), then the LLM providers
+  // that were a group on the same page before 2.0.1.
+  providers: {
+    labelKey: "sidebar.transcriptionProviders",
+    icon: Plug,
+    component: ProvidersSection,
     placement: "more-settings",
     enabled: () => true,
   },
-  providers: {
-    labelKey: "settings.advanced.tabs.providers",
-    icon: Plug,
-    component: ProvidersSection,
+  llmProviders: {
+    labelKey: "sidebar.llmProviders",
+    icon: BrainCircuit,
+    component: LlmProvidersSection,
     placement: "more-settings",
     enabled: () => true,
   },
@@ -183,7 +198,7 @@ export const SECTIONS_CONFIG = {
     placement: "more-settings",
     enabled: () => true,
   },
-  // --- More › Tools ---
+  // --- More Tools (its own sidebar entry, after Jumper) ---
   keyboardTyper: {
     labelKey: "sidebar.keyboardTyper",
     icon: Type,
@@ -217,6 +232,13 @@ export const SECTIONS_CONFIG = {
 export const isMoreSection = (section: SidebarSection) =>
   SECTIONS_CONFIG[section].placement !== "sidebar";
 
+/** The sidebar entries that hold several pages as tabs (see MorePage). */
+export const MORE_GROUPS = {
+  "more-settings": { labelKey: "sidebar.advancedSettings", icon: Gear },
+  "more-tools": { labelKey: "sidebar.moreTools", icon: ToolCase },
+} as const;
+export type MoreGroup = keyof typeof MORE_GROUPS;
+
 interface SidebarProps {
   activeSection: SidebarSection;
   onSectionChange: (section: SidebarSection) => void;
@@ -246,6 +268,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const { t } = useTranslation();
   const { settings } = useSettings();
   const lastMoreSection = useNavStore((state) => state.lastMoreSection);
+  const lastToolsSection = useNavStore((state) => state.lastToolsSection);
   const [width, setWidth] = useState<number>(loadSidebarWidth);
   const [searchQuery, setSearchQuery] = useState("");
   // What's new carries a dot until this version's news were opened.
@@ -281,14 +304,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       availableSections.map(({ id, labelKey, placement }) => ({
         id,
         labelKey,
-        more: placement !== "sidebar",
+        group: placement === "sidebar" ? null : MORE_GROUPS[placement].labelKey,
       })),
     [sectionIds],
   );
-  // More reopens the tab last used there, unless it has been hidden since.
-  const moreTarget = availableSections.some((s) => s.id === lastMoreSection)
-    ? lastMoreSection
-    : "output";
 
   // Drag the right edge to resize; persist the width to localStorage on release.
   const startResize = (e: React.MouseEvent) => {
@@ -352,6 +371,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
     </div>
   );
 
+  // Advanced settings and More Tools: each opens its pages as tabs (MorePage)
+  // and reopens the tab last used there, unless that one is hidden now.
+  const renderGroup = (group: MoreGroup) => {
+    const pages = availableSections.filter((s) => s.placement === group);
+    const last = group === "more-tools" ? lastToolsSection : lastMoreSection;
+    const target = pages.some((s) => s.id === last) ? last : pages[0]?.id;
+    if (!target) return null;
+    const { icon, labelKey } = MORE_GROUPS[group];
+    return renderItem(
+      group,
+      icon,
+      t(labelKey),
+      SECTIONS_CONFIG[activeSection].placement === group,
+      () => onSectionChange(target),
+    );
+  };
+
   return (
     <div
       className="relative flex flex-col h-full shrink-0 bg-sidebar border-e border-border items-center px-2 overflow-y-auto overflow-x-hidden"
@@ -375,24 +411,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
         />
         {!searchQuery.trim() && (
           <div className="flex flex-col w-full gap-1">
-            {sidebarSections.map((section) =>
-              renderItem(
-                section.id,
-                section.icon,
-                t(section.labelKey),
-                activeSection === section.id,
-                () => onSectionChange(section.id),
-                section.id === "whatsNew" && newsUnseen,
-              ),
-            )}
+            {sidebarSections.map((section) => (
+              <React.Fragment key={section.id}>
+                {renderItem(
+                  section.id,
+                  section.icon,
+                  t(section.labelKey),
+                  activeSection === section.id,
+                  () => onSectionChange(section.id),
+                  section.id === "whatsNew" && newsUnseen,
+                )}
+                {section.id === "jumper" && renderGroup("more-tools")}
+              </React.Fragment>
+            ))}
             <div className="mx-2 my-1 border-t border-border" />
-            {renderItem(
-              "more",
-              Ellipsis,
-              t("sidebar.more"),
-              isMoreSection(activeSection),
-              () => onSectionChange(moreTarget),
-            )}
+            {renderGroup("more-settings")}
             <UpdateBanner />
           </div>
         )}

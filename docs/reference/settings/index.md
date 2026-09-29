@@ -1,6 +1,6 @@
 # Settings reference
 
-This shelf mirrors the Windows 1.10.0 sidebar and its More page. Open a page below when you need the exact control label, location, shipped default, or interaction with another control.
+This shelf mirrors the Windows 2.0.1 sidebar, with its Advanced settings and More Tools entries. Open a page below when you need the exact control label, location, shipped default, or interaction with another control.
 
 ## Sidebar
 
@@ -12,15 +12,15 @@ This shelf mirrors the Windows 1.10.0 sidebar and its More page. Open a page bel
 - [Files](files.md) — transcribe a file you pick, and the watched folders.
 - [Jumper](jumper.md) — Windows-only anchors, slots, cursor options, and remote matching.
 
-## More › Settings
+## Advanced settings › Settings
 
-- [Output, Providers, Post-processing, MCP & CLI](advanced.md) — how text is delivered, speech and LLM providers, and the local server.
+- [Transcription, Transcription providers, LLM providers, Post-processing, MCP & CLI](advanced.md) — how text is delivered, speech and LLM providers, and the local server.
 - [Post-processing](post-processing.md) — provider, prompt, and generation controls under the Post-processing switch.
 - [Backup](backup.md) — export and selective restore.
 - [Debug](debug.md) — logging and low-level timing or device controls.
 - [About](about.md) — language, version, source, and data locations.
 
-## More › Tools
+## More Tools
 
 - [Keyboard Typer](keyboard-typer.md) — the in-memory text buffer and typing timing.
 - [Token Count](token-count.md) — local and provider-backed counting actions.
@@ -29,9 +29,9 @@ This shelf mirrors the Windows 1.10.0 sidebar and its More page. Open a page bel
 
 ## Hidden controls
 
-Set `More › Post-processing › Post Processing = On` to reveal post-processing's hotkey, provider, and prompt controls on that tab. They carry _{requires: Post-processing enabled}_.
+Set `Advanced settings › Post-processing › Post Processing = On` to reveal post-processing's hotkey, provider, and prompt controls on that tab. They carry _{requires: Post-processing enabled}_.
 
-Press `ctrl+shift+d` to enable debug mode and reveal the `Debug` tab on More. Its controls carry _{requires: Debug mode}_. Press the chord again to hide the tab; debug mode defaults to off.
+Press `ctrl+shift+d` to enable debug mode and reveal the `Debug` tab on Advanced settings. Its controls carry _{requires: Debug mode}_. Press the chord again to hide the tab; debug mode defaults to off.
 
 ## Controls with no working interface
 

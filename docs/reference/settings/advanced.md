@@ -1,8 +1,8 @@
-# More settings
+# Transcription and Advanced settings
 
-Open `More`, the last entry in the sidebar. Its Settings row has these tabs in this order: App, Output, Providers, Post-processing, MCP & CLI, Backup, Debug, About. This page covers the first five; [Backup](backup.md), [Debug](debug.md) and [About](about.md) have their own pages, as do the Tools row's [Token Count](token-count.md), [Model Testing](model-testing.md) and [Current Audio](current-audio.md). More reopens the tab you used last.
+**Transcription** is in the sidebar, just under Setups. **Advanced settings** is the last entry in the sidebar; its tabs, in this order, are Transcription providers, LLM providers, Post-processing, MCP & CLI, Backup, Debug and About. This page covers Transcription, the two provider tabs, MCP & CLI and Post-processing; [Backup](backup.md), [Debug](debug.md) and [About](about.md) have their own pages, as do the tools on **More Tools** (its own sidebar entry, after Jumper): [Token Count](token-count.md), [Model Testing](model-testing.md) and [Current Audio](current-audio.md). Advanced settings and More Tools each reopen the tab you used last.
 
-## Output
+## Transcription
 
 ### Transcribe
 
@@ -10,7 +10,7 @@ Open `More`, the last entry in the sidebar. Its Settings row has these tabs in t
 
 #### Paste Method
 
-`More › Output › Transcribe › Paste Method`
+`Transcription › Transcribe › Paste Method`
 
 Chooses how ordinary dictation inserts text. `Direct` uses simulated keystrokes without reading or writing the clipboard; `None` leaves delivery to you. **Default:** `Clipboard (Ctrl+V)`.
 
@@ -20,7 +20,7 @@ Catalog: [Ctrl+V doesn't work in that app](../../features.md#ctrl-v-doesnt-work-
 
 #### Paste Method (PTT)
 
-`More › Output › Transcribe › Paste Method (PTT)`
+`Transcription › Transcribe › Paste Method (PTT)`
 
 Chooses the delivery method used by [Push-to-Talk Shortcut](general.md#push-to-talk-shortcut), independently of ordinary dictation. **Default:** `Clipboard (Ctrl+V)`.
 
@@ -28,13 +28,13 @@ Catalog: [Ctrl+V doesn't work in that app](../../features.md#ctrl-v-doesnt-work-
 
 #### Typing Tool
 
-`More › Output › Transcribe › Typing Tool` _{planned}_
+`Transcription › Transcribe › Typing Tool` _{planned}_
 
 Chooses which Linux input-injection utility backs `Direct` delivery. The control is not present in the shipped Windows build; macOS and Linux builds are planned. **Default:** `Auto (Recommended)`.
 
 #### Clipboard Handling
 
-`More › Output › Transcribe › Clipboard Handling`
+`Transcription › Transcribe › Clipboard Handling`
 
 Chooses the final clipboard state after clipboard-based delivery. `Don't Modify Clipboard` restores previous text and withholds a recovery write after failure; the take remains in History. It combines with [Clipboard restore delay](#transcribe-clipboard-restore-delay). **Default:** `Don't Modify Clipboard`.
 
@@ -42,7 +42,7 @@ Catalog: [Dictation doesn't steal your clipboard](../../features.md#dictation-do
 
 #### Auto Submit
 
-`More › Output › Transcribe › Auto Submit`
+`Transcription › Transcribe › Auto Submit`
 
 Chooses whether ordinary dictation sends Enter, Ctrl+Enter, or Super+Enter after pasting. `Off` sends no submit key. **Default:** `Off`.
 
@@ -52,7 +52,7 @@ Catalog: [Send it without reaching for Enter](../../features.md#send-it-without-
 
 #### Clipboard restore delay
 
-`More › Output › Transcribe › Clipboard restore delay`
+`Transcription › Transcribe › Clipboard restore delay`
 
 Adds a wait before restoring clipboard text; it matters only with [Clipboard Handling](#clipboard-handling) set to preserve the clipboard. **Default:** `Off (instant)`, in addition to the built-in delay.
 
@@ -62,7 +62,7 @@ Catalog: [Your remote session pastes the right thing](../../features.md#your-rem
 
 #### Clipboard restore delay for remote desktops
 
-`More › Output › Transcribe › Clipboard restore delay for remote desktops` _{Windows only}_
+`Transcription › Transcribe › Clipboard restore delay for remote desktops` _{Windows only}_
 
 Overrides the restore delay when the delivery target is classified remote by [Remote match strings](jumper.md#remote-match-strings). `Not set` inherits the value above — and is the default, so this control changes nothing until you pick a value. The remaining choices match the delay above. Raising it trades exposure for reliability: the transcript stays on your clipboard longer. **Default:** `Not set`.
 
@@ -70,7 +70,7 @@ Catalog: [A remote paste gets the right clipboard, not the one before it](../../
 
 #### Paste delay after jump (Windows)
 
-`More › Output › Transcribe › Paste delay after jump (Windows)` _{Windows only}_
+`Transcription › Transcribe › Paste delay after jump (Windows)` _{Windows only}_
 
 Sets the shared post-jump wait for local and remote targets. [Remote match strings](jumper.md#remote-match-strings) chooses the column. The choices are `Off`, `100`, `200`, `300`, `400`, `500`, `600`, `700`, `800`, `900`, `1000`, `1500`, and `2000` ms. **Default:** Local apps `300 ms`; Remote desktop `600 ms`.
 
@@ -80,7 +80,7 @@ Catalog: [Separate timing for remote desktops and local apps](../../features.md#
 
 #### Jump slot action on start
 
-`More › Output › Transcribe › Jump slot action on start` _{Windows only}_
+`Transcription › Transcribe › Jump slot action on start` _{Windows only}_
 
 Chooses a slot and the additional Jumper action taken when an idle Transcribe press starts a take. **Default:** slot `Hot 1`; `Do nothing`.
 
@@ -90,7 +90,7 @@ Catalog: [Decide what a jump does at the start and at the end of a take](../../f
 
 #### Jump slot action on finish
 
-`More › Output › Transcribe › Jump slot action on finish` _{Windows only}_
+`Transcription › Transcribe › Jump slot action on finish` _{Windows only}_
 
 Chooses a slot and the Jumper action taken when Transcribe finishes a take. A jump action delivers to that slot. **Default:** slot `Hot 1`; `Do nothing`.
 
@@ -100,7 +100,7 @@ Catalog: [Decide what a jump does at the start and at the end of a take](../../f
 
 #### Track last output location
 
-`More › Output › Transcribe › Track last output location` _{Windows only}_
+`Transcription › Transcribe › Track last output location` _{Windows only}_
 
 When enabled, records the ordinary flow's delivery target into the selected `Save location into` slot. **Default:** Off; slot `Hot 1`.
 
@@ -110,7 +110,7 @@ Catalog: [Remember where the text actually landed](../../features.md#remember-wh
 
 #### Return focus after delivery
 
-`More › Output › Transcribe › Return focus after delivery` _{Windows only}_
+`Transcription › Transcribe › Return focus after delivery` _{Windows only}_
 
 Returns focus to the starting window after an anchored ordinary delivery, unless you changed windows yourself. **Default:** On.
 
@@ -120,7 +120,7 @@ Catalog: [Focus comes back to you](../../features.md#focus-comes-back-to-you).
 
 #### Paste method
 
-`More › Output › Transcribe & Submit › Paste method`
+`Transcription › Transcribe & Submit › Paste method`
 
 Chooses the paste method for this flow only. **Default:** `Clipboard (Ctrl+V)`.
 
@@ -128,7 +128,7 @@ Catalog: [Its own paste method, for the one app that needs it](../../features.md
 
 #### Submit key
 
-`More › Output › Transcribe & Submit › Submit key`
+`Transcription › Transcribe & Submit › Submit key`
 
 Chooses the key always sent after this flow pastes. **Default:** `Enter`.
 
@@ -136,7 +136,7 @@ Catalog: [Enter, Ctrl+Enter, or Super+Enter](../../features.md#enter-ctrl-enter-
 
 #### When no recording is active
 
-`More › Output › Transcribe & Submit › When no recording is active`
+`Transcription › Transcribe & Submit › When no recording is active`
 
 Chooses whether an idle press starts a recording or does nothing. **Default:** `Start a recording`.
 
@@ -144,7 +144,7 @@ Catalog: [Pressing it when nothing is recording](../../features.md#pressing-it-w
 
 #### Clipboard
 
-`More › Output › Transcribe & Submit › Clipboard`
+`Transcription › Transcribe & Submit › Clipboard`
 
 Sets this flow's final clipboard state independently of [Clipboard Handling](#clipboard-handling). With `Don't Modify Clipboard`, a failed delivery does not park the transcript; recovery remains available from History. **Default:** `Don't Modify Clipboard`.
 
@@ -154,7 +154,7 @@ Catalog: [Its own clipboard policy](../../features.md#its-own-clipboard-policy);
 
 #### Clipboard restore delay
 
-`More › Output › Transcribe & Submit › Clipboard restore delay`
+`Transcription › Transcribe & Submit › Clipboard restore delay`
 
 Adds this flow's wait before restoring preserved clipboard text. **Default:** `Off (instant)`, in addition to the built-in delay.
 
@@ -162,7 +162,7 @@ Catalog: [Your remote session pastes the right thing](../../features.md#your-rem
 
 #### Submit delay before Enter (Windows)
 
-`More › Output › Transcribe & Submit › Submit delay before Enter (Windows)` _{Windows only}_
+`Transcription › Transcribe & Submit › Submit delay before Enter (Windows)` _{Windows only}_
 
 Waits before sending the submit key. It applies after a real jump, and always for a remote desktop target even when that window was already focused; an already-focused local target submits instantly. [Remote match strings](jumper.md#remote-match-strings) selects the timing. Changed in 1.3.0 - before that an already-focused remote target got no wait at all. The choices are `Off`, `100`, `200`, `300`, `400`, `500`, `600`, `700`, `800`, `900`, `1000`, `1500`, and `2000` ms. **Default:** Local apps `300 ms`; Remote desktop `600 ms`.
 
@@ -172,7 +172,7 @@ Catalog: [The Enter key lands in the remote window](../../features.md#the-enter-
 
 #### Jump slot action on start
 
-`More › Output › Transcribe & Submit › Jump slot action on start` _{Windows only}_
+`Transcription › Transcribe & Submit › Jump slot action on start` _{Windows only}_
 
 Chooses a slot and additional Jumper action for an idle press of this flow. **Default:** slot `Hot 1`; `Do nothing`.
 
@@ -182,7 +182,7 @@ Catalog: [Decide what a jump does at the start and at the end of a take](../../f
 
 #### Jump slot action on finish
 
-`More › Output › Transcribe & Submit › Jump slot action on finish` _{Windows only}_
+`Transcription › Transcribe & Submit › Jump slot action on finish` _{Windows only}_
 
 Chooses a slot and Jumper action when this flow finishes a take. **Default:** slot `Hot 1`; `Do nothing`.
 
@@ -192,7 +192,7 @@ Catalog: [You can see which slot an action targets](../../features.md#you-can-se
 
 #### Return focus after delivery
 
-`More › Output › Transcribe & Submit › Return focus after delivery` _{Windows only}_
+`Transcription › Transcribe & Submit › Return focus after delivery` _{Windows only}_
 
 Returns focus after this flow's anchored delivery. **Default:** On.
 
@@ -202,7 +202,7 @@ Catalog: [Focus comes back to you](../../features.md#focus-comes-back-to-you).
 
 #### Track last output location
 
-`More › Output › Transcribe & Submit › Track last output location` _{Windows only}_
+`Transcription › Transcribe & Submit › Track last output location` _{Windows only}_
 
 When enabled, records this flow's delivery target into its selected `Save location into` slot. **Default:** Off; slot `Hot 1`.
 
@@ -212,7 +212,7 @@ Catalog: [Remember where the text actually landed](../../features.md#remember-wh
 
 #### Paste method
 
-`More › Output › Paste last transcription › Paste method`
+`Transcription › Paste last transcription › Paste method`
 
 Chooses the delivery method used only by [Paste Last Transcription](general.md#paste-last-transcription). **Default:** `Clipboard (Ctrl+V)`.
 
@@ -220,19 +220,19 @@ Catalog: [Ctrl+V doesn't work in that app](../../features.md#ctrl-v-doesnt-work-
 
 #### Clipboard
 
-`More › Output › Paste last transcription › Clipboard`
+`Transcription › Paste last transcription › Clipboard`
 
 Chooses whether re-pasting restores the previous clipboard text or leaves the transcription there. **Default:** `Don't Modify Clipboard`.
 
 Catalog: [Dictation doesn't steal your clipboard](../../features.md#dictation-doesnt-steal-your-clipboard).
 
-## Providers
+## Transcription providers
 
 ### API Transcription (OpenAI-compatible)
 
 #### API URL
 
-`More › Providers › API Transcription (OpenAI-compatible) › API URL`
+`Advanced settings › Transcription providers › API Transcription (OpenAI-compatible) › API URL`
 
 Sets the base URL used by the custom OpenAI-compatible speech engine. **Default:** empty.
 
@@ -240,7 +240,7 @@ Catalog: [Point it at any OpenAI-compatible speech endpoint](../../features.md#p
 
 #### API Key
 
-`More › Providers › API Transcription (OpenAI-compatible) › API Key`
+`Advanced settings › Transcription providers › API Transcription (OpenAI-compatible) › API Key`
 
 Stores the optional bearer key for that endpoint. **Default:** empty.
 
@@ -248,7 +248,7 @@ Catalog: [Where do I put the URL and the key?](../../features.md#where-do-i-put-
 
 #### Model
 
-`More › Providers › API Transcription (OpenAI-compatible) › Model`
+`Advanced settings › Transcription providers › API Transcription (OpenAI-compatible) › Model`
 
 Sets the remote speech-model identifier. **Default:** empty.
 
@@ -258,7 +258,7 @@ Catalog: [Point it at any OpenAI-compatible speech endpoint](../../features.md#p
 
 #### API URL
 
-`More › Providers › OpenRouter Transcription › API URL`
+`Advanced settings › Transcription providers › OpenRouter Transcription › API URL`
 
 Sets the OpenRouter-compatible base URL for speech requests. **Default:** `https://openrouter.ai/api/v1`.
 
@@ -266,7 +266,7 @@ Catalog: [One OpenRouter key, many speech models](../../features.md#one-openrout
 
 #### API Key
 
-`More › Providers › OpenRouter Transcription › API Key`
+`Advanced settings › Transcription providers › OpenRouter Transcription › API Key`
 
 Stores the key used for OpenRouter transcription. **Default:** empty.
 
@@ -274,7 +274,7 @@ Catalog: [One OpenRouter key, many speech models](../../features.md#one-openrout
 
 #### Transcription model
 
-`More › Providers › OpenRouter Transcription › Transcription model`
+`Advanced settings › Transcription providers › OpenRouter Transcription › Transcription model`
 
 Sets the OpenRouter model identifier. **Default:** `openai/whisper-large-v3`.
 
@@ -282,7 +282,7 @@ Catalog: [The model list actually contains speech models](../../features.md#the-
 
 #### Endpoint
 
-`More › Providers › OpenRouter Transcription › Endpoint`
+`Advanced settings › Transcription providers › OpenRouter Transcription › Endpoint`
 
 Chooses the dedicated speech route or an audio-capable chat route. **Default:** `Transcription (Whisper-style)`.
 
@@ -290,7 +290,7 @@ Catalog: [Whisper-style, or an audio-capable chat model](../../features.md#whisp
 
 #### Audio format
 
-`More › Providers › OpenRouter Transcription › Audio format`
+`Advanced settings › Transcription providers › OpenRouter Transcription › Audio format`
 
 Chooses Opus for smaller chat-route uploads or WAV for wider compatibility. The speech route still sends WAV. **Default:** `Opus — smaller (recommended)`.
 
@@ -298,11 +298,13 @@ Catalog: [Ten times less audio over the wire](../../features.md#ten-times-less-a
 
 #### Transcription cost report
 
-`More › Providers › OpenRouter Transcription › Transcription cost report`
+`Advanced settings › Transcription providers › OpenRouter Transcription › Transcription cost report`
 
 Shows duration and cost summaries and provides `Recalculate durations` and `Download CSV` actions. **Default:** no metered usage on a fresh install.
 
 Catalog: [Know what your dictation costs](../../features.md#know-what-your-dictation-costs).
+
+## LLM providers
 
 ### Registered LLM Providers
 
@@ -310,7 +312,7 @@ These controls repeat for every registered provider. Fresh settings contain elev
 
 #### Enable this provider
 
-`More › Providers › Registered LLM Providers › Enable this provider`
+`Advanced settings › LLM providers › Registered LLM Providers › Enable this provider`
 
 Includes or excludes the provider from tools that use enabled registry entries. **Default:** the seeded value for that provider; cloud seats without configuration are disabled.
 
@@ -318,7 +320,7 @@ Catalog: [Unconfigured seats stay out of the run](../../features.md#unconfigured
 
 #### Base URL
 
-`More › Providers › Registered LLM Providers › Base URL`
+`Advanced settings › LLM providers › Registered LLM Providers › Base URL`
 
 Edits the provider name and endpoint where the seeded provider permits it. **Default:** the provider's seeded endpoint.
 
@@ -326,7 +328,7 @@ Catalog: [Configure a provider once, use it everywhere](../../features.md#config
 
 #### API key
 
-`More › Providers › Registered LLM Providers › API key`
+`Advanced settings › LLM providers › Registered LLM Providers › API key`
 
 Stores that provider's credential. **Default:** empty.
 
@@ -334,7 +336,7 @@ Catalog: [Configure a provider once, use it everywhere](../../features.md#config
 
 #### Model
 
-`More › Providers › Registered LLM Providers › Model`
+`Advanced settings › LLM providers › Registered LLM Providers › Model`
 
 Selects or free-types the provider model identifier; refresh fetches advertised models. **Default:** the provider's seeded model, which may be empty.
 
@@ -342,7 +344,7 @@ Catalog: [Find a model among hundreds](../../features.md#find-a-model-among-hund
 
 #### Cost / 1M
 
-`More › Providers › Registered LLM Providers › Cost / 1M`
+`Advanced settings › LLM providers › Registered LLM Providers › Cost / 1M`
 
 Sets input and output USD per million tokens; `Persist` prevents automatic price lookup from replacing manual values. **Default:** provider-specific seeded prices; `Persist` Off.
 
@@ -350,7 +352,7 @@ Catalog: [Prices filled in for providers that don't publish them](../../features
 
 #### Concurrency
 
-`More › Providers › Registered LLM Providers › Concurrency`
+`Advanced settings › LLM providers › Registered LLM Providers › Concurrency`
 
 Makes a provider run sequentially with other entries in the same family. **Default:** provider-specific; seeded FLM and LM Studio entries use their family and sequential execution.
 
@@ -360,7 +362,7 @@ Catalog: [Several slots, one local loader](../../features.md#several-slots-one-l
 
 ### Enable MCP & CLI server
 
-`More › MCP & CLI › Enable MCP & CLI server`
+`Advanced settings › MCP & CLI › Enable MCP & CLI server`
 
 Starts the loopback server used by MCP and the command-line companion. [Port](#port) and [Token](#token) define its connection. **Default:** Off.
 
@@ -368,7 +370,7 @@ Catalog: [Let an agent drive the app](../../features.md#let-an-agent-drive-the-a
 
 ### Port
 
-`More › MCP & CLI › Port`
+`Advanced settings › MCP & CLI › Port`
 
 Sets the loopback TCP port from 1024 through 65535. **Default:** `8765`.
 
@@ -376,7 +378,7 @@ Catalog: [Bound to localhost, behind a token — and what that does not cover](.
 
 ### Token
 
-`More › MCP & CLI › Token`
+`Advanced settings › MCP & CLI › Token`
 
 Shows, hides, or regenerates the bearer token. It is generated on first enable. **Default:** empty until generated.
 
@@ -384,7 +386,7 @@ Catalog: [Bound to localhost, behind a token — and what that does not cover](.
 
 ### Command-line companion
 
-`More › MCP & CLI › Command-line companion`
+`Advanced settings › MCP & CLI › Command-line companion`
 
 Installs or reinstalls the `handy` command and shows connection snippets. **Default:** not installed.
 
@@ -396,7 +398,7 @@ Catalog: [A handy command on your PATH](../../features.md#a-handy-command-on-you
 
 ### Post Processing
 
-`More › Post-processing › Post Processing`
+`Advanced settings › Post-processing › Post Processing`
 
 Enables post-processing. Once it is on, its hotkey, provider and prompt controls appear below it on the same tab; they are described in [Post-processing settings](post-processing.md). **Default:** Off.
 

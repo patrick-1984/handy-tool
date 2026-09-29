@@ -17,6 +17,7 @@
     "backup": "Backup",
     "currentAudio": "Aktuelles Audio",
     "setups": "Einrichtungen",
+    "transcription": "Transkription",
     "tokenCount": "Token-Anzahl",
     "keyboardTyper": "Tastatur-Eingabe",
     "whatsNew": "Neuigkeiten",
@@ -63,7 +64,11 @@
       "installRestartNow": "Jetzt installieren und neu starten",
       "enableAutomatic": "Automatische Updates einschalten"
     },
-    "unread": "ungelesen"
+    "unread": "ungelesen",
+    "transcriptionProviders": "Transkriptionsanbieter",
+    "llmProviders": "LLM-Anbieter",
+    "advancedSettings": "Erweiterte Einstellungen",
+    "moreTools": "Weitere Werkzeuge"
   },
   "helpMode": {
     "button": "Hilfemodus: auf eine Einstellung zeigen, um zu sehen, was sie tut",
@@ -557,7 +562,7 @@
         "bindings": {
           "transcribe": {
             "name": "Aufnahme-/Transkriptions-Tastenkürzel",
-            "description": "Einmal drücken, um die Aufnahme zu starten, erneut drücken, um sie zu beenden; die Transkription wird in das zuvor fokussierte Fenster zugestellt. Standard: Strg+Leertaste. Es folgt Transkriptionsmodus und der Einfügemethode unter Mehr › Ausgabe — für Aufnahme durch Halten nutze stattdessen das Push-to-Talk-Tastenkürzel."
+            "description": "Einmal drücken, um die Aufnahme zu starten, erneut drücken, um sie zu beenden; die Transkription wird in das zuvor fokussierte Fenster zugestellt. Standard: Strg+Leertaste. Es folgt Transkriptionsmodus und der Einfügemethode unter Transkription — für Aufnahme durch Halten nutze stattdessen das Push-to-Talk-Tastenkürzel."
           },
           "cancel": {
             "name": "Abbrechen-Tastenkürzel",
@@ -593,7 +598,7 @@
           },
           "anchor_set": {
             "name": "Anker setzen",
-            "description": "Erfasst das aktuell fokussierte Textfeld als Hot-1-Ziel. Standard: ctrl+shift+F1. Für sich allein stellt es nichts zu — stelle die „Slot-Aktion beim Beenden“ auf „Springen / an Slot zustellen“ mit dem Slot Hot 1 (Mehr › Ausgabe), damit deine nächste Transkription dort landet. Passwortfelder und Handys eigene Fenster werden abgelehnt."
+            "description": "Erfasst das aktuell fokussierte Textfeld als Hot-1-Ziel. Standard: ctrl+shift+F1. Für sich allein stellt es nichts zu — stelle die „Slot-Aktion beim Beenden“ auf „Springen / an Slot zustellen“ mit dem Slot Hot 1 (Transkription), damit deine nächste Transkription dort landet. Passwortfelder und Handys eigene Fenster werden abgelehnt."
           },
           "anchor_jump": {
             "name": "Zu Anker springen",
@@ -601,19 +606,19 @@
           },
           "jump_set_slot_1": {
             "name": "Slot 1 setzen",
-            "description": "Merkt sich das aktuell fokussierte Feld als statischen Slot 1 und ersetzt dabei, was dort vorher gespeichert war. Standard: ctrl+alt+shift+1. Der Slot ist nur ein Lesezeichen, bis ihn etwas nutzt — springe mit „Zu Slot 1 springen“ dorthin, oder stelle die „Slot-Aktion beim Beenden“ eines Ablaufs (Mehr › Ausgabe) auf Slot 1, damit Transkriptionen dort zugestellt werden."
+            "description": "Merkt sich das aktuell fokussierte Feld als statischen Slot 1 und ersetzt dabei, was dort vorher gespeichert war. Standard: ctrl+alt+shift+1. Der Slot ist nur ein Lesezeichen, bis ihn etwas nutzt — springe mit „Zu Slot 1 springen“ dorthin, oder stelle die „Slot-Aktion beim Beenden“ eines Ablaufs (Transkription) auf Slot 1, damit Transkriptionen dort zugestellt werden."
           },
           "jump_set_slot_2": {
             "name": "Slot 2 setzen",
-            "description": "Merkt sich das aktuell fokussierte Feld als statischen Slot 2 und ersetzt dabei, was dort vorher gespeichert war. Standard: ctrl+alt+shift+2. Springe mit „Zu Slot 2 springen“ zurück, oder stelle die „Slot-Aktion beim Beenden“ eines Ablaufs (Mehr › Ausgabe) auf Slot 2, damit Transkriptionen dort zugestellt werden."
+            "description": "Merkt sich das aktuell fokussierte Feld als statischen Slot 2 und ersetzt dabei, was dort vorher gespeichert war. Standard: ctrl+alt+shift+2. Springe mit „Zu Slot 2 springen“ zurück, oder stelle die „Slot-Aktion beim Beenden“ eines Ablaufs (Transkription) auf Slot 2, damit Transkriptionen dort zugestellt werden."
           },
           "jump_set_slot_3": {
             "name": "Slot 3 setzen",
-            "description": "Merkt sich das aktuell fokussierte Feld als statischen Slot 3 und ersetzt dabei, was dort vorher gespeichert war. Standard: ctrl+alt+shift+3. Springe mit „Zu Slot 3 springen“ zurück, oder stelle die „Slot-Aktion beim Beenden“ eines Ablaufs (Mehr › Ausgabe) auf Slot 3, damit Transkriptionen dort zugestellt werden."
+            "description": "Merkt sich das aktuell fokussierte Feld als statischen Slot 3 und ersetzt dabei, was dort vorher gespeichert war. Standard: ctrl+alt+shift+3. Springe mit „Zu Slot 3 springen“ zurück, oder stelle die „Slot-Aktion beim Beenden“ eines Ablaufs (Transkription) auf Slot 3, damit Transkriptionen dort zugestellt werden."
           },
           "jump_set_slot_4": {
             "name": "Slot 4 setzen",
-            "description": "Merkt sich das aktuell fokussierte Feld als statischen Slot 4 und ersetzt dabei, was dort vorher gespeichert war. Standard: ctrl+alt+shift+4. Springe mit „Zu Slot 4 springen“ zurück, oder stelle die „Slot-Aktion beim Beenden“ eines Ablaufs (Mehr › Ausgabe) auf Slot 4, damit Transkriptionen dort zugestellt werden."
+            "description": "Merkt sich das aktuell fokussierte Feld als statischen Slot 4 und ersetzt dabei, was dort vorher gespeichert war. Standard: ctrl+alt+shift+4. Springe mit „Zu Slot 4 springen“ zurück, oder stelle die „Slot-Aktion beim Beenden“ eines Ablaufs (Transkription) auf Slot 4, damit Transkriptionen dort zugestellt werden."
           },
           "jump_slot_1": {
             "name": "Zu Slot 1 springen",
@@ -771,7 +776,7 @@
         "title": "Paste last transcription",
         "pasteMethod": {
           "title": "Paste method",
-          "description": "Wie das Tastenkürzel zum erneuten Einfügen der letzten Transkription den Text in das fokussierte Fenster bringt. Das ist unabhängig von der Einfügemethode unter Mehr › Ausgabe, sodass du es gezielt für das eine störrische Ziel anpassen kannst. Standard: Zwischenablage (Strg+V) — probiere Zwischenablage (Umschalt+Einfg) in einem Terminal, Direkt, um die Zeichen zu tippen statt einzufügen, oder Keine, um den Text nur in der Zwischenablage abzulegen und ihn selbst einzufügen."
+          "description": "Wie das Tastenkürzel zum erneuten Einfügen der letzten Transkription den Text in das fokussierte Fenster bringt. Das ist unabhängig von der Einfügemethode unter Transkription, sodass du es gezielt für das eine störrische Ziel anpassen kannst. Standard: Zwischenablage (Strg+V) — probiere Zwischenablage (Umschalt+Einfg) in einem Terminal, Direkt, um die Zeichen zu tippen statt einzufügen, oder Keine, um den Text nur in der Zwischenablage abzulegen und ihn selbst einzufügen."
         },
         "clipboard": {
           "title": "Clipboard",
@@ -1359,7 +1364,7 @@
           "title": "Temperatur",
           "description": "Niedriger ist deterministischer und strenger (0 = am wörtlichsten); höher ist kreativer."
         },
-        "registryNote": "API-Schlüssel, Modell und Basis-URL des Anbieters werden unter Mehr › Anbieter › Registrierte LLM-Anbieter konfiguriert."
+        "registryNote": "API-Schlüssel, Modell und Basis-URL des Anbieters werden unter Erweiterte Einstellungen › LLM-Anbieter › Registrierte LLM-Anbieter konfiguriert."
       },
       "prompts": {
         "title": "Prompt",
@@ -1518,7 +1523,7 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "Ein Zustellungsziel, dessen App, Fensterklasse oder Steuerelementklasse einen dieser Bestandteile enthält (ohne Groß-/Kleinschreibung), gilt als Remotedesktop und verwendet daher den Remote-Wert von 'Paste delay after jump (Windows)' und 'Submit delay before Enter (Windows)' unter Mehr › Ausgabe statt des lokalen. Es muss kein Sprungziel mehr sein: seit 1.3.0 wird auch ein bereits fokussiertes Remote-Fenster klassifiziert, und genau dadurch greift dort die Senden-Verzögerung. Standard: msrdc, mstsc, Citrix. Fügen Sie den Prozessnamen Ihres RDP- oder Citrix-Clients hinzu, wenn Zustellungen dorthin weiterhin verschluckt werden; eine leere Liste behandelt jedes Ziel als lokal.",
+        "description": "Ein Zustellungsziel, dessen App, Fensterklasse oder Steuerelementklasse einen dieser Bestandteile enthält (ohne Groß-/Kleinschreibung), gilt als Remotedesktop und verwendet daher den Remote-Wert von 'Paste delay after jump (Windows)' und 'Submit delay before Enter (Windows)' unter Transkription statt des lokalen. Es muss kein Sprungziel mehr sein: seit 1.3.0 wird auch ein bereits fokussiertes Remote-Fenster klassifiziert, und genau dadurch greift dort die Senden-Verzögerung. Standard: msrdc, mstsc, Citrix. Fügen Sie den Prozessnamen Ihres RDP- oder Citrix-Clients hinzu, wenn Zustellungen dorthin weiterhin verschluckt werden; eine leere Liste behandelt jedes Ziel als lokal.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
@@ -1531,8 +1536,8 @@
         "title": "Hot-Slot (Anker & Zustellung)",
         "optionsMoved": {
           "title": "Zustelloptionen",
-          "description": "Keine Einstellung — nur ein Hinweis. Was ein Sprung mit einem Slot tatsächlich macht, wird pro Ablauf unter Mehr › Ausgabe konfiguriert: „Slot-Aktion beim Start“, „Slot-Aktion beim Beenden“, „Letzten Ausgabeort verfolgen“ und „Fokus nach Zustellung zurückgeben“ existieren jeweils einmal für Transkribieren und einmal für Transkribieren & Absenden.",
-          "hint": "Konfiguriert in den Gruppen Transkribieren und Transkribieren & Absenden unter Mehr › Ausgabe."
+          "description": "Keine Einstellung — nur ein Hinweis. Was ein Sprung mit einem Slot tatsächlich macht, wird pro Ablauf unter Transkription konfiguriert: „Slot-Aktion beim Start“, „Slot-Aktion beim Beenden“, „Letzten Ausgabeort verfolgen“ und „Fokus nach Zustellung zurückgeben“ existieren jeweils einmal für Transkribieren und einmal für Transkribieren & Absenden.",
+          "hint": "Konfiguriert in den Gruppen Transkribieren und Transkribieren & Absenden unter Transkription."
         }
       },
       "hot2": {
@@ -1846,7 +1851,7 @@
     "fileTooLarge": "Datei ist zu groß (max. 10 MB).",
     "loadedFile": "Geladen: {{name}}",
     "providerOption": "{{name}} (Anbieter)",
-    "chipDisabled": "Nicht konfiguriert — aktiviere es mit Diesen Anbieter aktivieren unter Mehr › Anbieter › Registrierte LLM-Anbieter.",
+    "chipDisabled": "Nicht konfiguriert — aktiviere es mit Diesen Anbieter aktivieren unter Erweiterte Einstellungen › LLM-Anbieter › Registrierte LLM-Anbieter.",
     "chips": {
       "cl100k_base": "cl100k (GPT-4)",
       "o200k_base": "o200k (GPT-4o)",
@@ -1904,14 +1909,14 @@
   },
   "modelTesting": {
     "configureProviders": "Anbieter konfigurieren",
-    "description": "Sendet einen Prompt an jedes unter Ausführen angehakte Modell und stellt die Antworten mit Token-Anzahl, Kosten und Umlaufzeit nebeneinander dar; unter Jury angehakte Modelle bewerten anschließend alle diese Antworten mit deinem Jury-Prompt. Standard: nichts ausgewählt, beide Prompts leer. Die Liste stammt aus Mehr › Anbieter › Registrierte LLM-Anbieter, ein Durchlauf nutzt also deine eigenen API-Schlüssel — dein Prompt verlässt diesen Rechner und kostet bei kostenpflichtigen Anbietern echtes Geld.",
+    "description": "Sendet einen Prompt an jedes unter Ausführen angehakte Modell und stellt die Antworten mit Token-Anzahl, Kosten und Umlaufzeit nebeneinander dar; unter Jury angehakte Modelle bewerten anschließend alle diese Antworten mit deinem Jury-Prompt. Standard: nichts ausgewählt, beide Prompts leer. Die Liste stammt aus Erweiterte Einstellungen › LLM-Anbieter › Registrierte LLM-Anbieter, ein Durchlauf nutzt also deine eigenen API-Schlüssel — dein Prompt verlässt diesen Rechner und kostet bei kostenpflichtigen Anbietern echtes Geld.",
     "providersLabel": "Modelle",
     "selectAll": "Alle zur Ausführung auswählen",
     "clear": "Leeren",
     "run": "Ausführen",
     "judge": "Jury",
     "costPerM": "Eingabe ${{input}} · Ausgabe ${{output}} /1M",
-    "noProviders": "Keine chatfähigen Anbieter konfiguriert. Füge einen unter Mehr › Anbieter › Registrierte LLM-Anbieter hinzu.",
+    "noProviders": "Keine chatfähigen Anbieter konfiguriert. Füge einen unter Erweiterte Einstellungen › LLM-Anbieter › Registrierte LLM-Anbieter hinzu.",
     "mainPromptLabel": "Prompt für alle Modelle",
     "mainPromptPlaceholder": "Der Prompt, der an jedes ausgewählte Modell gesendet wird…",
     "judgePromptLabel": "Jury-/Schiedsrichter-Prompt (optional)",
@@ -2130,6 +2135,18 @@
       "linuxBuilds": {
         "title": "Linux-Pakete",
         "description": ".deb-, .rpm- und .AppImage-Pakete für x86_64 und ARM64. Sie wurden noch nicht getestet."
+      },
+      "transcriptionPage": {
+        "title": "Transkription hat eine eigene Seite",
+        "description": "Die Einstellungen von Ausgabe (Einfügemethode, Zwischenablage, automatisches Senden, Slot-Aktionen, Übersetzen ins Englische) haben jetzt eine eigene Seite in der Seitenleiste, direkt unter Einrichtungen: Transkription."
+      },
+      "providerPages": {
+        "title": "Zwei Anbieter-Seiten",
+        "description": "Anbieter heißt jetzt Transkriptionsanbieter (Transkription per API und OpenRouter); die registrierten LLM-Anbieter haben daneben eine eigene Seite: LLM-Anbieter. Beide liegen in Erweiterte Einstellungen."
+      },
+      "sidebarMenus": {
+        "title": "Erweiterte Einstellungen und Weitere Werkzeuge",
+        "description": "Aus Mehr sind zwei Einträge geworden: Erweiterte Einstellungen mit den Einstellungsseiten und Weitere Werkzeuge, direkt nach Jumper, mit Tastatur-Eingabe, Token-Anzahl, Modelltests und Aktuelles Audio."
       }
     },
     "installed": "Installiert"

@@ -25,6 +25,7 @@
     "backup": "Backup",
     "currentAudio": "Current Audio",
     "setups": "Setups",
+    "transcription": "Transcription",
     "history": "History",
     "files": "Files",
     "debug": "Debug",
@@ -75,7 +76,11 @@
       "installRestartNow": "Install and restart now",
       "enableAutomatic": "Turn on automatic updates"
     },
-    "unread": "unread"
+    "unread": "unread",
+    "transcriptionProviders": "Transcription providers",
+    "llmProviders": "LLM providers",
+    "advancedSettings": "Advanced settings",
+    "moreTools": "More Tools"
   },
   "helpMode": {
     "button": "Help mode: point at a setting to see what it does",
@@ -552,7 +557,7 @@
         "bindings": {
           "transcribe": {
             "name": "Record/Transcribe Shortcut",
-            "description": "Press once to start recording and again to finish; the transcription is delivered into the window that had focus. Default: Ctrl+Space. It follows Transcription Mode and the Paste Method on More › Output — for hold-to-record instead, use Push-to-Talk Shortcut."
+            "description": "Press once to start recording and again to finish; the transcription is delivered into the window that had focus. Default: Ctrl+Space. It follows Transcription Mode and the Paste Method on Transcription — for hold-to-record instead, use Push-to-Talk Shortcut."
           },
           "cancel": {
             "name": "Cancel Shortcut",
@@ -588,7 +593,7 @@
           },
           "anchor_set": {
             "name": "Set Anchor",
-            "description": "**Captures the text field you currently have focused as the Hot 1 destination.**\n\n**Default:** ctrl+shift+F1.\n\nOn its own it delivers nothing: set 'Jump slot action on finish' to 'Jump / deliver to slot' with the slot set to Hot 1 (More › Output) to make your next transcription land there. Password boxes and Handy's own windows are refused."
+            "description": "**Captures the text field you currently have focused as the Hot 1 destination.**\n\n**Default:** ctrl+shift+F1.\n\nOn its own it delivers nothing: set 'Jump slot action on finish' to 'Jump / deliver to slot' with the slot set to Hot 1 (Transcription) to make your next transcription land there. Password boxes and Handy's own windows are refused."
           },
           "anchor_jump": {
             "name": "Jump to Anchor",
@@ -596,19 +601,19 @@
           },
           "jump_set_slot_1": {
             "name": "Set Jump Slot 1",
-            "description": "**Memorizes the field you currently have focused as static slot 1**, replacing whatever it held.\n\n**Default:** ctrl+alt+shift+1.\n\nThe slot is only a bookmark until something uses it: jump to it with 'Jump to Slot 1', or point a flow's 'Jump slot action on finish' (More › Output) at Slot 1 to have transcriptions delivered there."
+            "description": "**Memorizes the field you currently have focused as static slot 1**, replacing whatever it held.\n\n**Default:** ctrl+alt+shift+1.\n\nThe slot is only a bookmark until something uses it: jump to it with 'Jump to Slot 1', or point a flow's 'Jump slot action on finish' (Transcription) at Slot 1 to have transcriptions delivered there."
           },
           "jump_set_slot_2": {
             "name": "Set Jump Slot 2",
-            "description": "Memorizes the field you currently have focused as static slot 2, replacing whatever it held. Default: ctrl+alt+shift+2. Jump back with 'Jump to Slot 2', or point a flow's 'Jump slot action on finish' (More › Output) at Slot 2 to have transcriptions delivered there."
+            "description": "Memorizes the field you currently have focused as static slot 2, replacing whatever it held. Default: ctrl+alt+shift+2. Jump back with 'Jump to Slot 2', or point a flow's 'Jump slot action on finish' (Transcription) at Slot 2 to have transcriptions delivered there."
           },
           "jump_set_slot_3": {
             "name": "Set Jump Slot 3",
-            "description": "Memorizes the field you currently have focused as static slot 3, replacing whatever it held. Default: ctrl+alt+shift+3. Jump back with 'Jump to Slot 3', or point a flow's 'Jump slot action on finish' (More › Output) at Slot 3 to have transcriptions delivered there."
+            "description": "Memorizes the field you currently have focused as static slot 3, replacing whatever it held. Default: ctrl+alt+shift+3. Jump back with 'Jump to Slot 3', or point a flow's 'Jump slot action on finish' (Transcription) at Slot 3 to have transcriptions delivered there."
           },
           "jump_set_slot_4": {
             "name": "Set Jump Slot 4",
-            "description": "Memorizes the field you currently have focused as static slot 4, replacing whatever it held. Default: ctrl+alt+shift+4. Jump back with 'Jump to Slot 4', or point a flow's 'Jump slot action on finish' (More › Output) at Slot 4 to have transcriptions delivered there."
+            "description": "Memorizes the field you currently have focused as static slot 4, replacing whatever it held. Default: ctrl+alt+shift+4. Jump back with 'Jump to Slot 4', or point a flow's 'Jump slot action on finish' (Transcription) at Slot 4 to have transcriptions delivered there."
           },
           "jump_slot_1": {
             "name": "Jump to Slot 1",
@@ -805,7 +810,7 @@
         "title": "Paste last transcription",
         "pasteMethod": {
           "title": "Paste method",
-          "description": "**How the Paste Last Transcription shortcut puts the text into the focused window** — separate from the Paste Method on More › Output, so you can tune it for the one stubborn target.\n\n**Default:** Clipboard (Ctrl+V).\n\n- Clipboard (Shift+Insert): try it in a terminal.\n- Direct: types the characters instead of pasting.\n- None: only places the text on the clipboard so you can paste it by hand."
+          "description": "**How the Paste Last Transcription shortcut puts the text into the focused window** — separate from the Paste Method on Transcription, so you can tune it for the one stubborn target.\n\n**Default:** Clipboard (Ctrl+V).\n\n- Clipboard (Shift+Insert): try it in a terminal.\n- Direct: types the characters instead of pasting.\n- None: only places the text on the clipboard so you can paste it by hand."
         },
         "clipboard": {
           "title": "Clipboard",
@@ -887,7 +892,7 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "**Marks remote desktop windows by name.** A delivery target whose app, window class or control class contains one of these fragments (case-insensitive) is treated as a remote desktop.\n\nRemote targets use the Remote value of 'Paste delay after jump (Windows)' and 'Submit delay before Enter (Windows)' on More › Output instead of the Local one. Since 1.3.0 an already-focused remote window is classified too, not only a jump target — which is what makes the submit delay apply there.\n\n**Default:** msrdc, mstsc, Citrix.\n\nAdd the process name your RDP or Citrix client uses if deliveries into it keep getting swallowed. An empty list treats every target as local.",
+        "description": "**Marks remote desktop windows by name.** A delivery target whose app, window class or control class contains one of these fragments (case-insensitive) is treated as a remote desktop.\n\nRemote targets use the Remote value of 'Paste delay after jump (Windows)' and 'Submit delay before Enter (Windows)' on Transcription instead of the Local one. Since 1.3.0 an already-focused remote window is classified too, not only a jump target — which is what makes the submit delay apply there.\n\n**Default:** msrdc, mstsc, Citrix.\n\nAdd the process name your RDP or Citrix client uses if deliveries into it keep getting swallowed. An empty list treats every target as local.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
@@ -899,8 +904,8 @@
         "title": "Hot slot (Anchor & Deliver)",
         "optionsMoved": {
           "title": "Delivery options",
-          "description": "**Not a setting — a signpost.** What a jump actually does with a slot is configured per flow on More › Output:\n\n- 'Jump slot action on start'\n- 'Jump slot action on finish'\n- 'Track last output location'\n- 'Return focus after delivery'\n\nEach exists once for Transcribe and once for Transcribe & Submit.",
-          "hint": "Configured in the Transcribe and Transcribe & Submit groups on More › Output."
+          "description": "**Not a setting — a signpost.** What a jump actually does with a slot is configured per flow on Transcription:\n\n- 'Jump slot action on start'\n- 'Jump slot action on finish'\n- 'Track last output location'\n- 'Return focus after delivery'\n\nEach exists once for Transcribe and once for Transcribe & Submit.",
+          "hint": "Configured in the Transcribe and Transcribe & Submit groups on Transcription."
         }
       },
       "hot2": {
@@ -1570,7 +1575,7 @@
           "title": "Temperature",
           "description": "Lower is more deterministic and firm (0 = most literal); higher is more creative."
         },
-        "registryNote": "The provider's API key, model, and base URL are configured in More › Providers › Registered LLM Providers."
+        "registryNote": "The provider's API key, model, and base URL are configured in Advanced settings › LLM providers › Registered LLM Providers."
       },
       "disableThinking": {
         "label": "Disable Thinking",
@@ -1846,7 +1851,7 @@
     "providerOption": "{{name}} (provider)",
     "configureProviders": "Configure providers",
     "noProviders": "No providers configured.",
-    "chipDisabled": "Not configured — switch it on with Enable this provider under More › Providers › Registered LLM Providers.",
+    "chipDisabled": "Not configured — switch it on with Enable this provider under Advanced settings › LLM providers › Registered LLM Providers.",
     "chips": {
       "cl100k_base": "cl100k (GPT-4)",
       "o200k_base": "o200k (GPT-4o)",
@@ -1903,7 +1908,7 @@
     }
   },
   "modelTesting": {
-    "description": "**Sends one prompt to every model you tick under Run and lays the answers out side by side** with token counts, cost and round-trip time. Models ticked under Judge then score all of those answers using your judge prompt.\n\n**Default:** nothing selected and both prompts empty.\n\nThe list comes from More › Providers › Registered LLM Providers, so a run uses your own API keys — your prompt leaves this machine and, for paid providers, costs real money.",
+    "description": "**Sends one prompt to every model you tick under Run and lays the answers out side by side** with token counts, cost and round-trip time. Models ticked under Judge then score all of those answers using your judge prompt.\n\n**Default:** nothing selected and both prompts empty.\n\nThe list comes from Advanced settings › LLM providers › Registered LLM Providers, so a run uses your own API keys — your prompt leaves this machine and, for paid providers, costs real money.",
     "providersLabel": "Models",
     "configureProviders": "Configure providers",
     "selectAll": "Select all to run",
@@ -1911,7 +1916,7 @@
     "run": "Run",
     "judge": "Judge",
     "costPerM": "in ${{input}} · out ${{output}} /1M",
-    "noProviders": "No chat-capable providers configured. Add one in More › Providers › Registered LLM Providers.",
+    "noProviders": "No chat-capable providers configured. Add one in Advanced settings › LLM providers › Registered LLM Providers.",
     "mainPromptLabel": "Prompt for all models",
     "mainPromptPlaceholder": "The prompt sent to every selected model…",
     "judgePromptLabel": "Judge / arbiter prompt (optional)",
@@ -2130,6 +2135,18 @@
       "linuxBuilds": {
         "title": "Linux packages",
         "description": ".deb, .rpm and .AppImage packages for x86_64 and ARM64. They have not been tested yet."
+      },
+      "transcriptionPage": {
+        "title": "Transcription has its own page",
+        "description": "The Output settings (Paste Method, the clipboard, auto submit, jump slot actions, translate to English) have their own page in the sidebar now, just under Setups: Transcription."
+      },
+      "providerPages": {
+        "title": "Two provider pages",
+        "description": "Providers is now Transcription providers (API and OpenRouter transcription); the Registered LLM Providers have a page of their own next to it: LLM providers. Both are in Advanced settings."
+      },
+      "sidebarMenus": {
+        "title": "Advanced settings and More Tools",
+        "description": "More is now two entries: Advanced settings holds the settings pages, and More Tools, right after Jumper, holds Keyboard Typer, Token Count, Model Testing and Current Audio."
       }
     },
     "installed": "Installed"

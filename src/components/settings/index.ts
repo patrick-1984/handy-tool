@@ -5,6 +5,7 @@ export {
   AppSection,
   OutputSection,
   ProvidersSection,
+  LlmProvidersSection,
   McpSection,
   PostProcessingSection,
 } from "./advanced/AdvancedSettings";

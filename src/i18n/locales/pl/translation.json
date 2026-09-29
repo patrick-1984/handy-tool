@@ -19,6 +19,7 @@
     "backup": "Kopia zapasowa",
     "currentAudio": "Aktualne audio",
     "setups": "Konfiguracje",
+    "transcription": "Transkrypcja",
     "tokenCount": "Liczenie tokenów",
     "jumper": "Skoki",
     "more": "Więcej",
@@ -63,7 +64,11 @@
       "installRestartNow": "Zainstaluj i uruchom ponownie",
       "enableAutomatic": "Włącz automatyczne aktualizacje"
     },
-    "unread": "nieprzeczytane"
+    "unread": "nieprzeczytane",
+    "transcriptionProviders": "Dostawcy transkrypcji",
+    "llmProviders": "Dostawcy LLM",
+    "advancedSettings": "Ustawienia zaawansowane",
+    "moreTools": "Więcej narzędzi"
   },
   "helpMode": {
     "button": "Tryb pomocy: wskaż ustawienie, aby zobaczyć, co robi",
@@ -557,7 +562,7 @@
         "bindings": {
           "transcribe": {
             "name": "Skrót nagrywania/transkrypcji",
-            "description": "Naciśnij raz, aby zacząć nagrywanie, i ponownie, aby zakończyć; transkrypcja jest dostarczana do okna, które miało fokus. Domyślnie: Ctrl+Space. Podlega ustawieniom Tryb transkrypcji i Metoda wklejania w Więcej › Wyjście — do nagrywania przez przytrzymanie użyj Skrótu Push-to-Talk."
+            "description": "Naciśnij raz, aby zacząć nagrywanie, i ponownie, aby zakończyć; transkrypcja jest dostarczana do okna, które miało fokus. Domyślnie: Ctrl+Space. Podlega ustawieniom Tryb transkrypcji i Metoda wklejania w Transkrypcja — do nagrywania przez przytrzymanie użyj Skrótu Push-to-Talk."
           },
           "cancel": {
             "name": "Skrót anulowania",
@@ -593,7 +598,7 @@
           },
           "anchor_set": {
             "name": "Ustaw kotwicę",
-            "description": "Przechwytuje aktualnie aktywne pole tekstowe jako cel slotu Hot 1. Domyślnie: ctrl+shift+F1. Samo w sobie nic nie dostarcza — ustaw „Akcja slotu skoku po zakończeniu” na „Przejdź / dostarcz do slotu” ze slotem Hot 1 (Więcej › Wyjście), aby kolejna transkrypcja tam trafiła. Pola hasła i okna samego Handy są odrzucane."
+            "description": "Przechwytuje aktualnie aktywne pole tekstowe jako cel slotu Hot 1. Domyślnie: ctrl+shift+F1. Samo w sobie nic nie dostarcza — ustaw „Akcja slotu skoku po zakończeniu” na „Przejdź / dostarcz do slotu” ze slotem Hot 1 (Transkrypcja), aby kolejna transkrypcja tam trafiła. Pola hasła i okna samego Handy są odrzucane."
           },
           "anchor_jump": {
             "name": "Przejdź do kotwicy",
@@ -601,19 +606,19 @@
           },
           "jump_set_slot_1": {
             "name": "Ustaw slot skoku 1",
-            "description": "Zapamiętuje aktualnie aktywne pole jako slot statyczny 1, zastępując to, co wcześniej zawierał. Domyślnie: ctrl+alt+shift+1. Slot jest tylko zakładką, dopóki coś z niego nie skorzysta — przejdź do niego skrótem „Przejdź do slotu 1” albo ustaw w „Akcja slotu skoku po zakończeniu” (Więcej › Wyjście) danego przepływu wartość Slot 1, aby transkrypcje trafiały właśnie tam."
+            "description": "Zapamiętuje aktualnie aktywne pole jako slot statyczny 1, zastępując to, co wcześniej zawierał. Domyślnie: ctrl+alt+shift+1. Slot jest tylko zakładką, dopóki coś z niego nie skorzysta — przejdź do niego skrótem „Przejdź do slotu 1” albo ustaw w „Akcja slotu skoku po zakończeniu” (Transkrypcja) danego przepływu wartość Slot 1, aby transkrypcje trafiały właśnie tam."
           },
           "jump_set_slot_2": {
             "name": "Ustaw slot skoku 2",
-            "description": "Zapamiętuje aktualnie aktywne pole jako slot statyczny 2, zastępując to, co wcześniej zawierał. Domyślnie: ctrl+alt+shift+2. Przejdź do niego skrótem „Przejdź do slotu 2” albo ustaw w „Akcja slotu skoku po zakończeniu” (Więcej › Wyjście) danego przepływu wartość Slot 2, aby transkrypcje trafiały właśnie tam."
+            "description": "Zapamiętuje aktualnie aktywne pole jako slot statyczny 2, zastępując to, co wcześniej zawierał. Domyślnie: ctrl+alt+shift+2. Przejdź do niego skrótem „Przejdź do slotu 2” albo ustaw w „Akcja slotu skoku po zakończeniu” (Transkrypcja) danego przepływu wartość Slot 2, aby transkrypcje trafiały właśnie tam."
           },
           "jump_set_slot_3": {
             "name": "Ustaw slot skoku 3",
-            "description": "Zapamiętuje aktualnie aktywne pole jako slot statyczny 3, zastępując to, co wcześniej zawierał. Domyślnie: ctrl+alt+shift+3. Przejdź do niego skrótem „Przejdź do slotu 3” albo ustaw w „Akcja slotu skoku po zakończeniu” (Więcej › Wyjście) danego przepływu wartość Slot 3, aby transkrypcje trafiały właśnie tam."
+            "description": "Zapamiętuje aktualnie aktywne pole jako slot statyczny 3, zastępując to, co wcześniej zawierał. Domyślnie: ctrl+alt+shift+3. Przejdź do niego skrótem „Przejdź do slotu 3” albo ustaw w „Akcja slotu skoku po zakończeniu” (Transkrypcja) danego przepływu wartość Slot 3, aby transkrypcje trafiały właśnie tam."
           },
           "jump_set_slot_4": {
             "name": "Ustaw slot skoku 4",
-            "description": "Zapamiętuje aktualnie aktywne pole jako slot statyczny 4, zastępując to, co wcześniej zawierał. Domyślnie: ctrl+alt+shift+4. Przejdź do niego skrótem „Przejdź do slotu 4” albo ustaw w „Akcja slotu skoku po zakończeniu” (Więcej › Wyjście) danego przepływu wartość Slot 4, aby transkrypcje trafiały właśnie tam."
+            "description": "Zapamiętuje aktualnie aktywne pole jako slot statyczny 4, zastępując to, co wcześniej zawierał. Domyślnie: ctrl+alt+shift+4. Przejdź do niego skrótem „Przejdź do slotu 4” albo ustaw w „Akcja slotu skoku po zakończeniu” (Transkrypcja) danego przepływu wartość Slot 4, aby transkrypcje trafiały właśnie tam."
           },
           "jump_slot_1": {
             "name": "Przejdź do slotu 1",
@@ -771,7 +776,7 @@
         "title": "Paste last transcription",
         "pasteMethod": {
           "title": "Paste method",
-          "description": "Jak skrót Wklej ostatnią transkrypcję wstawia tekst do aktywnego okna. To ustawienie jest niezależne od Metody wklejania w Więcej › Wyjście, dzięki czemu można je dostroić do jednego trudnego celu. Domyślnie: Schowek (Ctrl+V) — w terminalu wypróbuj Schowek (Shift+Insert), użyj Bezpośrednio, aby wpisać znaki zamiast wklejać, albo Brak, aby tylko umieścić tekst w schowku i wkleić go samodzielnie."
+          "description": "Jak skrót Wklej ostatnią transkrypcję wstawia tekst do aktywnego okna. To ustawienie jest niezależne od Metody wklejania w Transkrypcja, dzięki czemu można je dostroić do jednego trudnego celu. Domyślnie: Schowek (Ctrl+V) — w terminalu wypróbuj Schowek (Shift+Insert), użyj Bezpośrednio, aby wpisać znaki zamiast wklejać, albo Brak, aby tylko umieścić tekst w schowku i wkleić go samodzielnie."
         },
         "clipboard": {
           "title": "Clipboard",
@@ -1359,7 +1364,7 @@
           "title": "Temperatura",
           "description": "Niższa wartość jest bardziej deterministyczna i stanowcza (0 = najbardziej literalna); wyższa jest bardziej kreatywna."
         },
-        "registryNote": "Klucz API, model i adres bazowy dostawcy konfiguruje się w Więcej › Dostawcy › Zarejestrowani dostawcy LLM."
+        "registryNote": "Klucz API, model i adres bazowy dostawcy konfiguruje się w Ustawienia zaawansowane › Dostawcy LLM › Zarejestrowani dostawcy LLM."
       },
       "prompts": {
         "title": "Prompt",
@@ -1518,7 +1523,7 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "Cel dostarczenia, którego aplikacja, klasa okna lub klasa kontrolki zawiera jeden z tych fragmentów (bez uwzględniania wielkości liter), jest traktowany jako pulpit zdalny, więc używa wartości Zdalnej z 'Paste delay after jump (Windows)' i 'Submit delay before Enter (Windows)' w Więcej › Wyjście zamiast Lokalnej. Nie musi już być celem skoku: od 1.3.0 klasyfikowane jest także już aktywne okno zdalne, i właśnie dzięki temu opóźnienie wysłania tam obowiązuje. Domyślnie: msrdc, mstsc, Citrix. Dodaj nazwę procesu swojego klienta RDP lub Citrix, jeśli dostarczenia do niego nadal przepadają; pusta lista traktuje każdy cel jako lokalny.",
+        "description": "Cel dostarczenia, którego aplikacja, klasa okna lub klasa kontrolki zawiera jeden z tych fragmentów (bez uwzględniania wielkości liter), jest traktowany jako pulpit zdalny, więc używa wartości Zdalnej z 'Paste delay after jump (Windows)' i 'Submit delay before Enter (Windows)' w Transkrypcja zamiast Lokalnej. Nie musi już być celem skoku: od 1.3.0 klasyfikowane jest także już aktywne okno zdalne, i właśnie dzięki temu opóźnienie wysłania tam obowiązuje. Domyślnie: msrdc, mstsc, Citrix. Dodaj nazwę procesu swojego klienta RDP lub Citrix, jeśli dostarczenia do niego nadal przepadają; pusta lista traktuje każdy cel jako lokalny.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
@@ -1531,8 +1536,8 @@
         "title": "Slot Hot (Kotwica i dostarczanie)",
         "optionsMoved": {
           "title": "Opcje dostarczania",
-          "description": "To nie jest ustawienie — to wskazówka. To, co skok faktycznie robi ze slotem, konfiguruje się per przepływ na stronie Więcej › Wyjście: „Akcja slotu skoku przy starcie”, „Akcja slotu skoku po zakończeniu”, „Śledź ostatnie miejsce wyjścia” i „Przywróć fokus po dostarczeniu” istnieją osobno dla Transkrybuj i dla Transkrybuj i wyślij.",
-          "hint": "Konfigurowane w grupach Transkrybuj i Transkrybuj i wyślij w Więcej › Wyjście."
+          "description": "To nie jest ustawienie — to wskazówka. To, co skok faktycznie robi ze slotem, konfiguruje się per przepływ na stronie Transkrypcja: „Akcja slotu skoku przy starcie”, „Akcja slotu skoku po zakończeniu”, „Śledź ostatnie miejsce wyjścia” i „Przywróć fokus po dostarczeniu” istnieją osobno dla Transkrybuj i dla Transkrybuj i wyślij.",
+          "hint": "Konfigurowane w grupach Transkrybuj i Transkrybuj i wyślij w Transkrypcja."
         }
       },
       "hot2": {
@@ -1823,7 +1828,7 @@
     "fileTooLarge": "Plik jest za duży (maks. 10 MB).",
     "loadedFile": "Wczytano: {{name}}",
     "providerOption": "{{name}} (dostawca)",
-    "chipDisabled": "Nieskonfigurowany — włącz go za pomocą „Włącz tego dostawcę” w Więcej › Dostawcy › Zarejestrowani dostawcy LLM.",
+    "chipDisabled": "Nieskonfigurowany — włącz go za pomocą „Włącz tego dostawcę” w Ustawienia zaawansowane › Dostawcy LLM › Zarejestrowani dostawcy LLM.",
     "chips": {
       "cl100k_base": "cl100k (GPT-4)",
       "o200k_base": "o200k (GPT-4o)",
@@ -1904,14 +1909,14 @@
   },
   "modelTesting": {
     "configureProviders": "Skonfiguruj dostawców",
-    "description": "Wysyła jeden prompt do każdego modelu zaznaczonego w Uruchom i zestawia odpowiedzi obok siebie wraz z liczbą tokenów, kosztem i czasem przejścia; modele zaznaczone w Sędzia następnie oceniają wszystkie te odpowiedzi za pomocą Twojego promptu sędziego. Domyślnie: nic nie jest wybrane, a oba prompty są puste. Lista pochodzi z Więcej › Dostawcy › Zarejestrowani dostawcy LLM, więc uruchomienie korzysta z Twoich własnych kluczy API — Twój prompt opuszcza to urządzenie, a w przypadku płatnych dostawców kosztuje prawdziwe pieniądze.",
+    "description": "Wysyła jeden prompt do każdego modelu zaznaczonego w Uruchom i zestawia odpowiedzi obok siebie wraz z liczbą tokenów, kosztem i czasem przejścia; modele zaznaczone w Sędzia następnie oceniają wszystkie te odpowiedzi za pomocą Twojego promptu sędziego. Domyślnie: nic nie jest wybrane, a oba prompty są puste. Lista pochodzi z Ustawienia zaawansowane › Dostawcy LLM › Zarejestrowani dostawcy LLM, więc uruchomienie korzysta z Twoich własnych kluczy API — Twój prompt opuszcza to urządzenie, a w przypadku płatnych dostawców kosztuje prawdziwe pieniądze.",
     "providersLabel": "Modele",
     "selectAll": "Wybierz wszystkie do uruchomienia",
     "clear": "Wyczyść",
     "run": "Uruchom",
     "judge": "Sędzia",
     "costPerM": "wej. ${{input}} · wyj. ${{output}} /1M",
-    "noProviders": "Brak skonfigurowanych dostawców obsługujących czat. Dodaj jednego w Więcej › Dostawcy › Zarejestrowani dostawcy LLM.",
+    "noProviders": "Brak skonfigurowanych dostawców obsługujących czat. Dodaj jednego w Ustawienia zaawansowane › Dostawcy LLM › Zarejestrowani dostawcy LLM.",
     "mainPromptLabel": "Prompt dla wszystkich modeli",
     "mainPromptPlaceholder": "Prompt wysyłany do każdego wybranego modelu…",
     "judgePromptLabel": "Prompt sędziego / arbitra (opcjonalny)",
@@ -2130,6 +2135,18 @@
       "linuxBuilds": {
         "title": "Pakiety dla Linuksa",
         "description": "Pakiety .deb, .rpm i .AppImage dla x86_64 i ARM64. Nie zostały jeszcze przetestowane."
+      },
+      "transcriptionPage": {
+        "title": "Transkrypcja ma własną stronę",
+        "description": "Ustawienia Wyjścia (metoda wklejania, schowek, automatyczne wysyłanie, akcje slotów skoku, tłumaczenie na angielski) mają teraz własną stronę na pasku bocznym, tuż pod pozycją Konfiguracje: Transkrypcja."
+      },
+      "providerPages": {
+        "title": "Dwie strony dostawców",
+        "description": "Dostawcy to teraz Dostawcy transkrypcji (transkrypcja przez API i OpenRouter); zarejestrowani dostawcy LLM mają obok własną stronę: Dostawcy LLM. Obie są w sekcji Ustawienia zaawansowane."
+      },
+      "sidebarMenus": {
+        "title": "Ustawienia zaawansowane i Więcej narzędzi",
+        "description": "Z pozycji Więcej powstały dwie: Ustawienia zaawansowane ze stronami ustawień oraz Więcej narzędzi, tuż po Jumperze, gdzie są: Pisanie klawiaturą, Liczenie tokenów, Testowanie modeli, Aktualne audio."
       }
     },
     "installed": "Zainstalowana"

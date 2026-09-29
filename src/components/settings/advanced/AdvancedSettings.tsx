@@ -89,7 +89,7 @@ export const AppSection: React.FC = () => {
   );
 };
 
-/** More › Settings › Output: how dictated text is delivered, per flow. */
+/** Transcription (sidebar; More › Output before 2.0.1): how dictated text is delivered, per flow. */
 export const OutputSection: React.FC = () => {
   const { t } = useTranslation();
   return (
@@ -157,6 +157,16 @@ export const ProvidersSection: React.FC = () => {
           <TranscriptionCostReport />
         </div>
       </SettingsGroup>
+    </div>
+  );
+};
+
+/** Advanced settings › LLM providers: the providers post-processing, Token
+ * Count and Model Testing use (a group on the Providers page before 2.0.1). */
+export const LlmProvidersSection: React.FC = () => {
+  const { t } = useTranslation();
+  return (
+    <div className="w-full space-y-4">
       <SettingsGroup
         icon={BrainCircuit}
         title={t("settings.advanced.groups.llmProviders")}

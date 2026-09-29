@@ -4,8 +4,8 @@ Handy Tool is a local-first dictation tool for Windows: press a key, speak, and 
 
 ## Features
 
-2.0.0 rearranges the whole app. The pages you use most sit in the sidebar; everything else is one
-click away under **More**, in two rows of tabs — Settings and Tools. Every setting has one home,
+The pages you use most sit in the sidebar. The tools have an entry of their own, **More Tools**, and
+the rest of the settings are one click away under **Advanced settings**. Every setting has one home,
 [search finds any of them by name](docs/features.md#find-a-setting-by-typing-its-name), [Help mode](docs/features.md#help-mode) explains
 whichever one you point at, and [What's new](docs/features.md#whats-new) takes you straight to each new setting.
 This list follows the same layout ([how the pages are arranged](docs/features.md#six-pages-and-more)).
@@ -22,6 +22,10 @@ This list follows the same layout ([how the pages are arranged](docs/features.md
 - **Setups** — guided walk-throughs where every step can be skipped: the first-start guide (your languages,
   a suggested model, shortcuts, microphone, a first try), [the look, with moving previews](docs/features.md#a-guided-setup-for-the-look),
   [the Jumper](docs/features.md#a-guided-setup-for-the-jumper) and [post-processing](docs/features.md#a-guided-setup-for-post-processing).
+- **Transcription** — how the text is delivered: [a paste method for the app where Ctrl+V doesn't work](docs/features.md#ctrl-v-doesnt-work-in-that-app),
+  [a clipboard that is left alone](docs/features.md#dictation-doesnt-steal-your-clipboard), [sending without reaching for Enter](docs/features.md#send-it-without-reaching-for-enter),
+  [translation to English](docs/features.md#speak-any-language-get-english), and the timing that makes
+  [a remote session (RDP, Citrix) paste the right thing](docs/features.md#your-remote-session-pastes-the-right-thing).
 - **Shortcuts** — [every shortcut on one page](docs/features.md#every-shortcut-on-one-page) with conflict warnings;
   [any of them can be turned off](docs/features.md#turn-off-a-shortcut-you-dont-want), and
   [they don't eat the accented letters you type](docs/features.md#shortcuts-dont-eat-accented-letters).
@@ -39,17 +43,15 @@ This list follows the same layout ([how the pages are arranged](docs/features.md
 - **Jumper** _(Windows)_ — [send the text where you were](docs/features.md#send-it-where-you-were) or
   [jump back to your draft](docs/features.md#jump-back-to-your-draft), from any window. [It never pastes blind](docs/features.md#it-never-pastes-blind)
   and [refuses to type into a password box](docs/features.md#it-refuses-to-dictate-into-a-password-box).
+- **More Tools** — the tools, [listed below](#more-tools).
 - **What's new** — what changed in the last releases, each with **Show me**.
 
-### More › Settings
+### Advanced settings
 
-- **Output** — how the text is delivered: [a paste method for the app where Ctrl+V doesn't work](docs/features.md#ctrl-v-doesnt-work-in-that-app),
-  [a clipboard that is left alone](docs/features.md#dictation-doesnt-steal-your-clipboard), [sending without reaching for Enter](docs/features.md#send-it-without-reaching-for-enter),
-  [translation to English](docs/features.md#speak-any-language-get-english), and the timing that makes
-  [a remote session (RDP, Citrix) paste the right thing](docs/features.md#your-remote-session-pastes-the-right-thing).
-- **Providers** — [configure an AI provider once and use it everywhere](docs/features.md#configure-a-provider-once-use-it-everywhere);
-  [any OpenAI-compatible speech endpoint](docs/features.md#point-it-at-any-openai-compatible-speech-endpoint) or
+- **Transcription providers** — [any OpenAI-compatible speech endpoint](docs/features.md#point-it-at-any-openai-compatible-speech-endpoint) or
   [OpenRouter](docs/features.md#one-openrouter-key-many-speech-models) as a transcription engine.
+- **LLM providers** — [configure an AI provider once and use it everywhere](docs/features.md#configure-a-provider-once-use-it-everywhere):
+  post-processing, Token Count and Model Testing all use them.
 - **Post-processing** — [a second key that cleans the text up with AI](docs/features.md#a-second-key-for-clean-this-up), with a prompt
   [your dictated words can't hijack](docs/features.md#your-dictated-words-cant-hijack-the-model).
 - **MCP & CLI** — [let an agent drive the app](docs/features.md#let-an-agent-drive-the-app), or script it with
@@ -57,7 +59,7 @@ This list follows the same layout ([how the pages are arranged](docs/features.md
 - **Backup** — [one file that carries your whole setup](docs/features.md#one-file-that-carries-your-whole-setup).
 - **About** — version and licences. (**Debug** appears here too once debug mode is on.)
 
-### More › Tools
+### More Tools
 
 - **Keyboard Typer** — [when paste is blocked, type it instead](docs/features.md#when-paste-is-blocked-type-it-instead): virtual machines,
   remote consoles, password prompts.

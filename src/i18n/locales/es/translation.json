@@ -17,6 +17,7 @@
     "backup": "Copia de seguridad",
     "currentAudio": "Audio Actual",
     "setups": "Configuraciones",
+    "transcription": "Transcripción",
     "tokenCount": "Conteo de Tokens",
     "keyboardTyper": "Escritura de Teclado",
     "whatsNew": "Novedades",
@@ -63,7 +64,11 @@
       "installRestartNow": "Instalar y reiniciar ahora",
       "enableAutomatic": "Activar actualizaciones automáticas"
     },
-    "unread": "sin leer"
+    "unread": "sin leer",
+    "transcriptionProviders": "Proveedores de transcripción",
+    "llmProviders": "Proveedores LLM",
+    "advancedSettings": "Ajustes avanzados",
+    "moreTools": "Más herramientas"
   },
   "helpMode": {
     "button": "Modo ayuda: señala un ajuste para ver qué hace",
@@ -557,7 +562,7 @@
         "bindings": {
           "transcribe": {
             "name": "Atajo de Grabación/Transcripción",
-            "description": "Presiona una vez para empezar a grabar y otra vez para terminar; la transcripción se entrega en la ventana que tenía el enfoque. Predeterminado: Ctrl+Espacio. Sigue el Modo de Transcripción y el Método de Pegado en Más › Salida; para mantener presionado en vez de alternar, usa el Atajo de Presionar para Hablar."
+            "description": "Presiona una vez para empezar a grabar y otra vez para terminar; la transcripción se entrega en la ventana que tenía el enfoque. Predeterminado: Ctrl+Espacio. Sigue el Modo de Transcripción y el Método de Pegado en Transcripción; para mantener presionado en vez de alternar, usa el Atajo de Presionar para Hablar."
           },
           "cancel": {
             "name": "Atajo de Cancelar",
@@ -593,7 +598,7 @@
           },
           "anchor_set": {
             "name": "Fijar Ancla",
-            "description": "Captura el campo de texto que tienes enfocado ahora mismo como el destino Rápida 1. Predeterminado: ctrl+shift+F1. Por sí solo no entrega nada: pon 'Acción de ranura al finalizar' en 'Saltar / entregar a la ranura' con la ranura fijada en Rápida 1 (Más › Salida) para que tu próxima transcripción llegue allí. Los cuadros de contraseña y las propias ventanas de Handy se rechazan."
+            "description": "Captura el campo de texto que tienes enfocado ahora mismo como el destino Rápida 1. Predeterminado: ctrl+shift+F1. Por sí solo no entrega nada: pon 'Acción de ranura al finalizar' en 'Saltar / entregar a la ranura' con la ranura fijada en Rápida 1 (Transcripción) para que tu próxima transcripción llegue allí. Los cuadros de contraseña y las propias ventanas de Handy se rechazan."
           },
           "anchor_jump": {
             "name": "Saltar al Ancla",
@@ -601,19 +606,19 @@
           },
           "jump_set_slot_1": {
             "name": "Fijar Ranura 1",
-            "description": "Memoriza el campo que tienes enfocado ahora mismo como la ranura estática 1, reemplazando lo que contuviera. Predeterminado: ctrl+alt+shift+1. La ranura es solo un marcador hasta que algo la usa: salta a ella con 'Saltar a la Ranura 1', o dirige la 'Acción de ranura al finalizar' de un flujo (Más › Salida) a la Ranura 1 para que las transcripciones se entreguen allí."
+            "description": "Memoriza el campo que tienes enfocado ahora mismo como la ranura estática 1, reemplazando lo que contuviera. Predeterminado: ctrl+alt+shift+1. La ranura es solo un marcador hasta que algo la usa: salta a ella con 'Saltar a la Ranura 1', o dirige la 'Acción de ranura al finalizar' de un flujo (Transcripción) a la Ranura 1 para que las transcripciones se entreguen allí."
           },
           "jump_set_slot_2": {
             "name": "Fijar Ranura 2",
-            "description": "Memoriza el campo que tienes enfocado ahora mismo como la ranura estática 2, reemplazando lo que contuviera. Predeterminado: ctrl+alt+shift+2. Vuelve con 'Saltar a la Ranura 2', o dirige la 'Acción de ranura al finalizar' de un flujo (Más › Salida) a la Ranura 2 para que las transcripciones se entreguen allí."
+            "description": "Memoriza el campo que tienes enfocado ahora mismo como la ranura estática 2, reemplazando lo que contuviera. Predeterminado: ctrl+alt+shift+2. Vuelve con 'Saltar a la Ranura 2', o dirige la 'Acción de ranura al finalizar' de un flujo (Transcripción) a la Ranura 2 para que las transcripciones se entreguen allí."
           },
           "jump_set_slot_3": {
             "name": "Fijar Ranura 3",
-            "description": "Memoriza el campo que tienes enfocado ahora mismo como la ranura estática 3, reemplazando lo que contuviera. Predeterminado: ctrl+alt+shift+3. Vuelve con 'Saltar a la Ranura 3', o dirige la 'Acción de ranura al finalizar' de un flujo (Más › Salida) a la Ranura 3 para que las transcripciones se entreguen allí."
+            "description": "Memoriza el campo que tienes enfocado ahora mismo como la ranura estática 3, reemplazando lo que contuviera. Predeterminado: ctrl+alt+shift+3. Vuelve con 'Saltar a la Ranura 3', o dirige la 'Acción de ranura al finalizar' de un flujo (Transcripción) a la Ranura 3 para que las transcripciones se entreguen allí."
           },
           "jump_set_slot_4": {
             "name": "Fijar Ranura 4",
-            "description": "Memoriza el campo que tienes enfocado ahora mismo como la ranura estática 4, reemplazando lo que contuviera. Predeterminado: ctrl+alt+shift+4. Vuelve con 'Saltar a la Ranura 4', o dirige la 'Acción de ranura al finalizar' de un flujo (Más › Salida) a la Ranura 4 para que las transcripciones se entreguen allí."
+            "description": "Memoriza el campo que tienes enfocado ahora mismo como la ranura estática 4, reemplazando lo que contuviera. Predeterminado: ctrl+alt+shift+4. Vuelve con 'Saltar a la Ranura 4', o dirige la 'Acción de ranura al finalizar' de un flujo (Transcripción) a la Ranura 4 para que las transcripciones se entreguen allí."
           },
           "jump_slot_1": {
             "name": "Saltar a la Ranura 1",
@@ -771,7 +776,7 @@
         "title": "Paste last transcription",
         "pasteMethod": {
           "title": "Paste method",
-          "description": "Cómo el atajo 'Paste last transcription' coloca el texto en la ventana enfocada. Es independiente del Método de Pegado en Más › Salida, así que puedes ajustarlo para ese único destino problemático. Predeterminado: Portapapeles (Ctrl+V); prueba Portapapeles (Shift+Insert) en una terminal, Directo para escribir los caracteres en vez de pegarlos, o Ninguno para solo colocar el texto en el portapapeles y pegarlo tú mismo."
+          "description": "Cómo el atajo 'Paste last transcription' coloca el texto en la ventana enfocada. Es independiente del Método de Pegado en Transcripción, así que puedes ajustarlo para ese único destino problemático. Predeterminado: Portapapeles (Ctrl+V); prueba Portapapeles (Shift+Insert) en una terminal, Directo para escribir los caracteres en vez de pegarlos, o Ninguno para solo colocar el texto en el portapapeles y pegarlo tú mismo."
         },
         "clipboard": {
           "title": "Clipboard",
@@ -1359,7 +1364,7 @@
           "title": "Temperatura",
           "description": "Un valor más bajo es más determinista y firme (0 = más literal); un valor más alto es más creativo."
         },
-        "registryNote": "La clave API, el modelo y la URL base del proveedor se configuran en Más › Proveedores › Proveedores LLM Registrados."
+        "registryNote": "La clave API, el modelo y la URL base del proveedor se configuran en Ajustes avanzados › Proveedores LLM › Proveedores LLM Registrados."
       },
       "prompts": {
         "title": "Prompt",
@@ -1518,7 +1523,7 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "Un destino de entrega cuya aplicación, clase de ventana o clase de control contenga uno de estos fragmentos (sin distinguir mayúsculas) se trata como escritorio remoto, por lo que usa el valor Remoto de 'Paste delay after jump (Windows)' y 'Submit delay before Enter (Windows)' en Más › Salida en lugar del Local. Ya no tiene que ser un destino de salto: desde 1.3.0 también se clasifica una ventana remota ya enfocada, que es lo que hace que allí se aplique el retardo de envío. Predeterminado: msrdc, mstsc, Citrix. Añade el nombre del proceso que use tu cliente RDP o Citrix si las entregas siguen perdiéndose; una lista vacía trata todos los destinos como locales.",
+        "description": "Un destino de entrega cuya aplicación, clase de ventana o clase de control contenga uno de estos fragmentos (sin distinguir mayúsculas) se trata como escritorio remoto, por lo que usa el valor Remoto de 'Paste delay after jump (Windows)' y 'Submit delay before Enter (Windows)' en Transcripción en lugar del Local. Ya no tiene que ser un destino de salto: desde 1.3.0 también se clasifica una ventana remota ya enfocada, que es lo que hace que allí se aplique el retardo de envío. Predeterminado: msrdc, mstsc, Citrix. Añade el nombre del proceso que use tu cliente RDP o Citrix si las entregas siguen perdiéndose; una lista vacía trata todos los destinos como locales.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
@@ -1531,8 +1536,8 @@
         "title": "Ranura rápida (Anclaje y Entrega)",
         "optionsMoved": {
           "title": "Opciones de entrega",
-          "description": "No es un ajuste, es una señal. Lo que realmente hace un salto con una ranura se configura por flujo en Más › Salida: 'Acción de ranura al iniciar', 'Acción de ranura al finalizar', 'Rastrear última ubicación de salida' y 'Volver al enfoque anterior tras la entrega' existen una vez para Transcribir y otra vez para Transcribir y Enviar.",
-          "hint": "Se configuran en los grupos Transcribir y Transcribir y Enviar en Más › Salida."
+          "description": "No es un ajuste, es una señal. Lo que realmente hace un salto con una ranura se configura por flujo en Transcripción: 'Acción de ranura al iniciar', 'Acción de ranura al finalizar', 'Rastrear última ubicación de salida' y 'Volver al enfoque anterior tras la entrega' existen una vez para Transcribir y otra vez para Transcribir y Enviar.",
+          "hint": "Se configuran en los grupos Transcribir y Transcribir y Enviar en Transcripción."
         }
       },
       "hot2": {
@@ -1853,7 +1858,7 @@
     "fileTooLarge": "El archivo es demasiado grande (máx. 10 MB).",
     "loadedFile": "Cargado: {{name}}",
     "providerOption": "{{name}} (proveedor)",
-    "chipDisabled": "No configurado: actívalo con 'Habilitar este proveedor' en Más › Proveedores › Proveedores LLM Registrados.",
+    "chipDisabled": "No configurado: actívalo con 'Habilitar este proveedor' en Ajustes avanzados › Proveedores LLM › Proveedores LLM Registrados.",
     "chips": {
       "cl100k_base": "cl100k (GPT-4)",
       "o200k_base": "o200k (GPT-4o)",
@@ -1911,14 +1916,14 @@
   },
   "modelTesting": {
     "configureProviders": "Configurar proveedores",
-    "description": "Envía un mismo prompt a cada modelo que marques bajo Ejecutar y coloca las respuestas una junto a otra con conteo de tokens, costo y tiempo de ida y vuelta; los modelos marcados bajo Juez luego califican todas esas respuestas usando tu prompt de juez. Predeterminado: nada seleccionado y ambos prompts vacíos. La lista viene de Más › Proveedores › Proveedores LLM Registrados, así que una ejecución usa tus propias claves API: tu prompt sale de esta máquina y, para proveedores de pago, cuesta dinero real.",
+    "description": "Envía un mismo prompt a cada modelo que marques bajo Ejecutar y coloca las respuestas una junto a otra con conteo de tokens, costo y tiempo de ida y vuelta; los modelos marcados bajo Juez luego califican todas esas respuestas usando tu prompt de juez. Predeterminado: nada seleccionado y ambos prompts vacíos. La lista viene de Ajustes avanzados › Proveedores LLM › Proveedores LLM Registrados, así que una ejecución usa tus propias claves API: tu prompt sale de esta máquina y, para proveedores de pago, cuesta dinero real.",
     "providersLabel": "Modelos",
     "selectAll": "Seleccionar todos para ejecutar",
     "clear": "Limpiar",
     "run": "Ejecutar",
     "judge": "Juez",
     "costPerM": "entrada ${{input}} · salida ${{output}} /1M",
-    "noProviders": "No hay proveedores con capacidad de chat configurados. Agrega uno en Más › Proveedores › Proveedores LLM Registrados.",
+    "noProviders": "No hay proveedores con capacidad de chat configurados. Agrega uno en Ajustes avanzados › Proveedores LLM › Proveedores LLM Registrados.",
     "mainPromptLabel": "Prompt para todos los modelos",
     "mainPromptPlaceholder": "El prompt que se envía a cada modelo seleccionado…",
     "judgePromptLabel": "Prompt del juez / árbitro (opcional)",
@@ -2130,6 +2135,18 @@
       "linuxBuilds": {
         "title": "Paquetes de Linux",
         "description": "Paquetes .deb, .rpm y .AppImage para x86_64 y ARM64. Todavía no se han probado."
+      },
+      "transcriptionPage": {
+        "title": "La transcripción tiene su propia página",
+        "description": "Los ajustes de Salida (método de pegado, portapapeles, envío automático, acciones de ranuras de salto, traducir al inglés) tienen ahora su propia página en la barra lateral, justo debajo de Configuraciones: Transcripción."
+      },
+      "providerPages": {
+        "title": "Dos páginas de proveedores",
+        "description": "Proveedores ahora es Proveedores de transcripción (transcripción por API y OpenRouter); los proveedores LLM registrados tienen su propia página al lado: Proveedores LLM. Ambas están en Ajustes avanzados."
+      },
+      "sidebarMenus": {
+        "title": "Ajustes avanzados y Más herramientas",
+        "description": "Más ahora son dos entradas: Ajustes avanzados, con las páginas de ajustes, y Más herramientas, justo después de Jumper, con Escritura de Teclado, Conteo de Tokens, Prueba de Modelos y Audio Actual."
       }
     },
     "installed": "Instalada"

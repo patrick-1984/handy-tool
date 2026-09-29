@@ -16,7 +16,8 @@ interface SidebarSearchProps {
   query: string;
   onQueryChange: (query: string) => void;
   /** Sections currently shown in the sidebar; results only point at these. */
-  sections: { id: SidebarSection; labelKey: string; more: boolean }[];
+  /** `group`: the i18n key of the tabbed entry a page is in, or null. */
+  sections: { id: SidebarSection; labelKey: string; group: string | null }[];
 }
 
 /**

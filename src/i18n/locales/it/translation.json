@@ -17,6 +17,7 @@
     "backup": "Backup",
     "currentAudio": "Audio Corrente",
     "setups": "Configurazioni",
+    "transcription": "Trascrizione",
     "tokenCount": "Conteggio Token",
     "keyboardTyper": "Digitatore da Tastiera",
     "whatsNew": "Novità",
@@ -63,7 +64,11 @@
       "installRestartNow": "Installa e riavvia ora",
       "enableAutomatic": "Attiva gli aggiornamenti automatici"
     },
-    "unread": "non letto"
+    "unread": "non letto",
+    "transcriptionProviders": "Provider di trascrizione",
+    "llmProviders": "Provider LLM",
+    "advancedSettings": "Impostazioni avanzate",
+    "moreTools": "Altri strumenti"
   },
   "helpMode": {
     "button": "Modalità aiuto: punta un’impostazione per vedere cosa fa",
@@ -557,7 +562,7 @@
         "bindings": {
           "transcribe": {
             "name": "Scorciatoia Registrazione/Trascrizione",
-            "description": "Premi una volta per iniziare a registrare e di nuovo per terminare; la trascrizione viene consegnata nella finestra che aveva il focus. Predefinito: Ctrl+Space. Segue Modalità di Trascrizione e il Metodo di Incolla in Altro › Output — per la registrazione a tenuta premuta usa invece la Scorciatoia Premi per Parlare."
+            "description": "Premi una volta per iniziare a registrare e di nuovo per terminare; la trascrizione viene consegnata nella finestra che aveva il focus. Predefinito: Ctrl+Space. Segue Modalità di Trascrizione e il Metodo di Incolla in Trascrizione — per la registrazione a tenuta premuta usa invece la Scorciatoia Premi per Parlare."
           },
           "cancel": {
             "name": "Scorciatoia Annulla",
@@ -593,7 +598,7 @@
           },
           "anchor_set": {
             "name": "Imposta Ancora",
-            "description": "Cattura il campo di testo attualmente in focus come destinazione Rapido 1. Predefinito: ctrl+shift+F1. Da solo non consegna nulla — imposta 'Azione slot di salto al termine' su 'Salta / consegna allo slot' con lo slot impostato su Rapido 1 (Altro › Output) per far arrivare lì la tua prossima trascrizione. Le caselle password e le finestre di Handy stesso vengono rifiutate."
+            "description": "Cattura il campo di testo attualmente in focus come destinazione Rapido 1. Predefinito: ctrl+shift+F1. Da solo non consegna nulla — imposta 'Azione slot di salto al termine' su 'Salta / consegna allo slot' con lo slot impostato su Rapido 1 (Trascrizione) per far arrivare lì la tua prossima trascrizione. Le caselle password e le finestre di Handy stesso vengono rifiutate."
           },
           "anchor_jump": {
             "name": "Vai all'Ancora",
@@ -601,19 +606,19 @@
           },
           "jump_set_slot_1": {
             "name": "Imposta Slot di Salto 1",
-            "description": "Memorizza il campo attualmente in focus come slot statico 1, sostituendo quello che conteneva. Predefinito: ctrl+alt+shift+1. Lo slot è solo un segnalibro finché qualcosa non lo usa — saltaci con 'Salta allo Slot 1', oppure imposta 'Azione slot di salto al termine' di un flusso (Altro › Output) su Slot 1 per farci consegnare le trascrizioni."
+            "description": "Memorizza il campo attualmente in focus come slot statico 1, sostituendo quello che conteneva. Predefinito: ctrl+alt+shift+1. Lo slot è solo un segnalibro finché qualcosa non lo usa — saltaci con 'Salta allo Slot 1', oppure imposta 'Azione slot di salto al termine' di un flusso (Trascrizione) su Slot 1 per farci consegnare le trascrizioni."
           },
           "jump_set_slot_2": {
             "name": "Imposta Slot di Salto 2",
-            "description": "Memorizza il campo attualmente in focus come slot statico 2, sostituendo quello che conteneva. Predefinito: ctrl+alt+shift+2. Salta indietro con 'Salta allo Slot 2', oppure imposta 'Azione slot di salto al termine' di un flusso (Altro › Output) su Slot 2 per farci consegnare le trascrizioni."
+            "description": "Memorizza il campo attualmente in focus come slot statico 2, sostituendo quello che conteneva. Predefinito: ctrl+alt+shift+2. Salta indietro con 'Salta allo Slot 2', oppure imposta 'Azione slot di salto al termine' di un flusso (Trascrizione) su Slot 2 per farci consegnare le trascrizioni."
           },
           "jump_set_slot_3": {
             "name": "Imposta Slot di Salto 3",
-            "description": "Memorizza il campo attualmente in focus come slot statico 3, sostituendo quello che conteneva. Predefinito: ctrl+alt+shift+3. Salta indietro con 'Salta allo Slot 3', oppure imposta 'Azione slot di salto al termine' di un flusso (Altro › Output) su Slot 3 per farci consegnare le trascrizioni."
+            "description": "Memorizza il campo attualmente in focus come slot statico 3, sostituendo quello che conteneva. Predefinito: ctrl+alt+shift+3. Salta indietro con 'Salta allo Slot 3', oppure imposta 'Azione slot di salto al termine' di un flusso (Trascrizione) su Slot 3 per farci consegnare le trascrizioni."
           },
           "jump_set_slot_4": {
             "name": "Imposta Slot di Salto 4",
-            "description": "Memorizza il campo attualmente in focus come slot statico 4, sostituendo quello che conteneva. Predefinito: ctrl+alt+shift+4. Salta indietro con 'Salta allo Slot 4', oppure imposta 'Azione slot di salto al termine' di un flusso (Altro › Output) su Slot 4 per farci consegnare le trascrizioni."
+            "description": "Memorizza il campo attualmente in focus come slot statico 4, sostituendo quello che conteneva. Predefinito: ctrl+alt+shift+4. Salta indietro con 'Salta allo Slot 4', oppure imposta 'Azione slot di salto al termine' di un flusso (Trascrizione) su Slot 4 per farci consegnare le trascrizioni."
           },
           "jump_slot_1": {
             "name": "Salta allo Slot 1",
@@ -771,7 +776,7 @@
         "title": "Paste last transcription",
         "pasteMethod": {
           "title": "Paste method",
-          "description": "Come la scorciatoia Paste last transcription inserisce il testo nella finestra attiva. È separato dal Metodo di Incolla in Altro › Output, così puoi regolarlo per quell'unica destinazione ostinata. Predefinito: Appunti (Ctrl+V) — prova Appunti (Shift+Insert) in un terminale, Diretto per digitare i caratteri invece di incollare, oppure Nessuno per mettere il testo solo negli appunti e incollarlo tu a mano."
+          "description": "Come la scorciatoia Paste last transcription inserisce il testo nella finestra attiva. È separato dal Metodo di Incolla in Trascrizione, così puoi regolarlo per quell'unica destinazione ostinata. Predefinito: Appunti (Ctrl+V) — prova Appunti (Shift+Insert) in un terminale, Diretto per digitare i caratteri invece di incollare, oppure Nessuno per mettere il testo solo negli appunti e incollarlo tu a mano."
         },
         "clipboard": {
           "title": "Clipboard",
@@ -1359,7 +1364,7 @@
           "title": "Temperatura",
           "description": "Un valore più basso è più deterministico e rigoroso (0 = più letterale); un valore più alto è più creativo."
         },
-        "registryNote": "La chiave API, il modello e l'URL di base del provider vengono configurati in Altro › Provider › Provider LLM Registrati."
+        "registryNote": "La chiave API, il modello e l'URL di base del provider vengono configurati in Impostazioni avanzate › Provider LLM › Provider LLM Registrati."
       },
       "prompts": {
         "title": "Prompt",
@@ -1518,7 +1523,7 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "Una destinazione di consegna la cui app, classe di finestra o classe di controllo contiene uno di questi frammenti (senza distinzione tra maiuscole e minuscole) è trattata come desktop remoto, quindi usa il valore Remoto di 'Paste delay after jump (Windows)' e 'Submit delay before Enter (Windows)' in Altro › Output invece di quello Locale. Non deve più essere una destinazione di salto: dalla 1.3.0 viene classificata anche una finestra remota già in primo piano, ed è questo che fa applicare lì il ritardo di invio. Predefinito: msrdc, mstsc, Citrix. Aggiungi il nome del processo del tuo client RDP o Citrix se le consegne continuano a perdersi; un elenco vuoto tratta ogni destinazione come locale.",
+        "description": "Una destinazione di consegna la cui app, classe di finestra o classe di controllo contiene uno di questi frammenti (senza distinzione tra maiuscole e minuscole) è trattata come desktop remoto, quindi usa il valore Remoto di 'Paste delay after jump (Windows)' e 'Submit delay before Enter (Windows)' in Trascrizione invece di quello Locale. Non deve più essere una destinazione di salto: dalla 1.3.0 viene classificata anche una finestra remota già in primo piano, ed è questo che fa applicare lì il ritardo di invio. Predefinito: msrdc, mstsc, Citrix. Aggiungi il nome del processo del tuo client RDP o Citrix se le consegne continuano a perdersi; un elenco vuoto tratta ogni destinazione come locale.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
@@ -1531,8 +1536,8 @@
         "title": "Slot rapido (Ancora e Consegna)",
         "optionsMoved": {
           "title": "Opzioni di consegna",
-          "description": "Non è un'impostazione — è un segnale. Cosa fa davvero un salto con uno slot si configura per ciascun flusso in Altro › Output: 'Azione slot di salto all'avvio', 'Azione slot di salto al termine', 'Traccia l'ultima posizione di output' e 'Ripristina il focus dopo la consegna' esistono ciascuna una volta per Trascrivi e una volta per Trascrivi e Invia.",
-          "hint": "Configurabili nei gruppi Trascrivi e Trascrivi e Invia in Altro › Output."
+          "description": "Non è un'impostazione — è un segnale. Cosa fa davvero un salto con uno slot si configura per ciascun flusso in Trascrizione: 'Azione slot di salto all'avvio', 'Azione slot di salto al termine', 'Traccia l'ultima posizione di output' e 'Ripristina il focus dopo la consegna' esistono ciascuna una volta per Trascrivi e una volta per Trascrivi e Invia.",
+          "hint": "Configurabili nei gruppi Trascrivi e Trascrivi e Invia in Trascrizione."
         }
       },
       "hot2": {
@@ -1846,7 +1851,7 @@
     "fileTooLarge": "Il file è troppo grande (max 10 MB).",
     "loadedFile": "Caricato: {{name}}",
     "providerOption": "{{name}} (provider)",
-    "chipDisabled": "Non configurato — attivalo con 'Abilita questo provider' in Altro › Provider › Provider LLM Registrati.",
+    "chipDisabled": "Non configurato — attivalo con 'Abilita questo provider' in Impostazioni avanzate › Provider LLM › Provider LLM Registrati.",
     "chips": {
       "cl100k_base": "cl100k (GPT-4)",
       "o200k_base": "o200k (GPT-4o)",
@@ -1904,14 +1909,14 @@
   },
   "modelTesting": {
     "configureProviders": "Configura provider",
-    "description": "Invia un unico prompt a ogni modello che selezioni con Esegui e mette a confronto le risposte con conteggio dei token, costo e tempo di andata e ritorno; i modelli selezionati con Giudice valutano poi tutte quelle risposte usando il tuo prompt del giudice. Predefinito: nulla selezionato ed entrambi i prompt vuoti. L'elenco proviene da Altro › Provider › Provider LLM Registrati, quindi un'esecuzione usa le tue chiavi API — il tuo prompt lascia questo computer e, per i provider a pagamento, costa denaro reale.",
+    "description": "Invia un unico prompt a ogni modello che selezioni con Esegui e mette a confronto le risposte con conteggio dei token, costo e tempo di andata e ritorno; i modelli selezionati con Giudice valutano poi tutte quelle risposte usando il tuo prompt del giudice. Predefinito: nulla selezionato ed entrambi i prompt vuoti. L'elenco proviene da Impostazioni avanzate › Provider LLM › Provider LLM Registrati, quindi un'esecuzione usa le tue chiavi API — il tuo prompt lascia questo computer e, per i provider a pagamento, costa denaro reale.",
     "providersLabel": "Modelli",
     "selectAll": "Seleziona tutti da eseguire",
     "clear": "Pulisci",
     "run": "Esegui",
     "judge": "Giudice",
     "costPerM": "ingresso ${{input}} · uscita ${{output}} /1M",
-    "noProviders": "Nessun provider compatibile con la chat configurato. Aggiungine uno in Altro › Provider › Provider LLM Registrati.",
+    "noProviders": "Nessun provider compatibile con la chat configurato. Aggiungine uno in Impostazioni avanzate › Provider LLM › Provider LLM Registrati.",
     "mainPromptLabel": "Prompt per tutti i modelli",
     "mainPromptPlaceholder": "Il prompt inviato a ogni modello selezionato…",
     "judgePromptLabel": "Prompt del giudice / arbitro (opzionale)",
@@ -2130,6 +2135,18 @@
       "linuxBuilds": {
         "title": "Pacchetti Linux",
         "description": "Pacchetti .deb, .rpm e .AppImage per x86_64 e ARM64. Non sono ancora stati testati."
+      },
+      "transcriptionPage": {
+        "title": "La trascrizione ha una pagina sua",
+        "description": "Le impostazioni di Output (metodo di incolla, appunti, invio automatico, azioni degli slot di salto, traduzione in inglese) hanno ora una pagina propria nella barra laterale, subito sotto Configurazioni: Trascrizione."
+      },
+      "providerPages": {
+        "title": "Due pagine di provider",
+        "description": "Provider ora è Provider di trascrizione (trascrizione via API e OpenRouter); i provider LLM registrati hanno una pagina tutta loro accanto: Provider LLM. Entrambe sono in Impostazioni avanzate."
+      },
+      "sidebarMenus": {
+        "title": "Impostazioni avanzate e Altri strumenti",
+        "description": "Altro ora è diviso in due voci: Impostazioni avanzate, con le pagine delle impostazioni, e Altri strumenti, subito dopo Jumper, con Digitatore da Tastiera, Conteggio Token, Test dei Modelli e Audio Corrente."
       }
     },
     "installed": "Installata"

@@ -235,7 +235,7 @@ export const TokenCountPage: React.FC = () => {
         <button
           type="button"
           className={providerLinkClass}
-          onClick={() => navigateTo("providers")}
+          onClick={() => navigateTo("llmProviders")}
         >
           {t("tokenCount.configureProviders")}
         </button>
@@ -247,7 +247,7 @@ export const TokenCountPage: React.FC = () => {
           <button
             type="button"
             className={providerLinkClass}
-            onClick={() => navigateTo("providers")}
+            onClick={() => navigateTo("llmProviders")}
           >
             {t("tokenCount.configureProviders")}
           </button>

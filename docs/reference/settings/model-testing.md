@@ -4,7 +4,7 @@ Open `Model Testing`. Prompt text, images, and run selections are working state;
 
 ### Models
 
-`More › Model Testing › Models`
+`More Tools › Model Testing › Models`
 
 Lists enabled registered providers and provides per-provider run and judge choices. **Default:** the enabled, configured provider set; no rows selected for a new run.
 
@@ -12,7 +12,7 @@ Catalog: [Which model is actually better at my task?](../../features.md#which-mo
 
 ### Select all to run
 
-`More › Model Testing › Select all to run`
+`More Tools › Model Testing › Select all to run`
 
 Selects every eligible provider's [Run](#run) checkbox. **Default:** not applicable; this is an action.
 
@@ -20,13 +20,13 @@ Catalog: [Which model is actually better at my task?](../../features.md#which-mo
 
 ### Clear
 
-`More › Model Testing › Clear`
+`More Tools › Model Testing › Clear`
 
 Clears provider run and judge selections. **Default:** not applicable; this is an action.
 
 ### Run
 
-`More › Model Testing › Run`
+`More Tools › Model Testing › Run`
 
 Includes that provider as a model under test. **Default:** Off for each provider row.
 
@@ -34,7 +34,7 @@ Catalog: [Which model is actually better at my task?](../../features.md#which-mo
 
 ### Judge
 
-`More › Model Testing › Judge`
+`More Tools › Model Testing › Judge`
 
 Includes that provider in the judge panel. This is the per-provider checkbox, separate from the later Judge parameter row. **Default:** Off for each provider row.
 
@@ -42,7 +42,7 @@ Catalog: [Let a panel score the answers](../../features.md#let-a-panel-score-the
 
 ### Preset
 
-`More › Model Testing › Preset`
+`More Tools › Model Testing › Preset`
 
 Loads a saved pair of model and judge prompts. **Default:** no preset loaded; a fresh library is empty.
 
@@ -50,7 +50,7 @@ Catalog: [Stop retyping the same test prompts](../../features.md#stop-retyping-t
 
 ### Prompt for all models
 
-`More › Model Testing › Prompt for all models`
+`More Tools › Model Testing › Prompt for all models`
 
 Sets the prompt sent to every selected [Run](#run) provider. **Default:** empty.
 
@@ -58,7 +58,7 @@ Catalog: [Which model is actually better at my task?](../../features.md#which-mo
 
 ### Image (optional, for vision models)
 
-`More › Model Testing › Image (optional, for vision models)`
+`More Tools › Model Testing › Image (optional, for vision models)`
 
 Attaches an image by click or drag-and-drop for providers that accept vision input. **Default:** no image.
 
@@ -66,7 +66,7 @@ Catalog: [Test vision models with a real image](../../features.md#test-vision-mo
 
 ### Judge / arbiter prompt (optional)
 
-`More › Model Testing › Judge / arbiter prompt (optional)`
+`More Tools › Model Testing › Judge / arbiter prompt (optional)`
 
 Sets the instructions used by selected judge providers. **Default:** empty.
 
@@ -76,7 +76,7 @@ Catalog: [Let a panel score the answers](../../features.md#let-a-panel-score-the
 
 ### Judge
 
-`More › Model Testing › Judge`
+`More Tools › Model Testing › Judge`
 
 Sets judge temperature; the adjacent unlabeled choice uses the shared [Thinking](#thinking) options for judges. **Default:** temperature `0.3` and thinking `Auto`.
 
@@ -86,7 +86,7 @@ Catalog: [Thinking on or off, per model](../../features.md#thinking-on-or-off-pe
 
 ### Models
 
-`More › Model Testing › Models`
+`More Tools › Model Testing › Models`
 
 Sets the temperature used by models under test. **Default:** `0.3`.
 
@@ -94,7 +94,7 @@ Catalog: [Which model is actually better at my task?](../../features.md#which-mo
 
 ### Thinking
 
-`More › Model Testing › Thinking`
+`More Tools › Model Testing › Thinking`
 
 Chooses `Auto`, `On`, or `Off` reasoning for models under test; the Judge parameter row has its own corresponding selector. **Default:** `Auto`.
 
@@ -102,7 +102,7 @@ Catalog: [Thinking on or off, per model](../../features.md#thinking-on-or-off-pe
 
 ### Run test
 
-`More › Model Testing › Run test`
+`More Tools › Model Testing › Run test`
 
 Starts the configured comparison and becomes `Cancel` while work is in flight. **Default:** idle.
 
@@ -110,7 +110,7 @@ Catalog: [See what's happening between dispatch and verdict](../../features.md#s
 
 ### Copy Markdown
 
-`More › Model Testing › Copy Markdown`
+`More Tools › Model Testing › Copy Markdown`
 
 Copies the generated Markdown artifact after a run. **Default:** hidden until results exist.
 
@@ -118,7 +118,7 @@ Catalog: [One Markdown artifact you can keep](../../features.md#one-markdown-art
 
 ### Save
 
-`More › Model Testing › Save`
+`More Tools › Model Testing › Save`
 
 Writes the artifact to the last chosen path. It combines with [Save as…](#save-as). **Default:** unavailable until a path and results exist.
 
@@ -126,7 +126,7 @@ Catalog: [One Markdown artifact you can keep](../../features.md#one-markdown-art
 
 ### Save as…
 
-`More › Model Testing › Save as…`
+`More Tools › Model Testing › Save as…`
 
 Chooses a path and writes the current Markdown artifact. **Default:** no path selected.
 

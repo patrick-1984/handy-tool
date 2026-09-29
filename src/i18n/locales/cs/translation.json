@@ -17,6 +17,7 @@
     "backup": "Záloha",
     "currentAudio": "Aktuální zvuk",
     "setups": "Průvodci",
+    "transcription": "Přepis",
     "tokenCount": "Počet tokenů",
     "keyboardTyper": "Psaní na klávesnici",
     "whatsNew": "Co je nového",
@@ -63,7 +64,11 @@
       "installRestartNow": "Nainstalovat a restartovat",
       "enableAutomatic": "Zapnout automatické aktualizace"
     },
-    "unread": "nepřečteno"
+    "unread": "nepřečteno",
+    "transcriptionProviders": "Poskytovatelé přepisu",
+    "llmProviders": "Poskytovatelé LLM",
+    "advancedSettings": "Pokročilá nastavení",
+    "moreTools": "Další nástroje"
   },
   "helpMode": {
     "button": "Režim nápovědy: najeďte na nastavení a uvidíte, co dělá",
@@ -557,7 +562,7 @@
         "bindings": {
           "transcribe": {
             "name": "Zkratka nahrávání/přepisu",
-            "description": "Jedním stiskem zahájíte nahrávání, druhým je ukončíte; přepis se doručí do okna, které bylo zaměřené. Výchozí: Ctrl+Space. Řídí se Režimem přepisu a Způsobem vložení ze stránky Více › Výstup — pro nahrávání podržením místo toho použijte Zkratku Stisk a mluv."
+            "description": "Jedním stiskem zahájíte nahrávání, druhým je ukončíte; přepis se doručí do okna, které bylo zaměřené. Výchozí: Ctrl+Space. Řídí se Režimem přepisu a Způsobem vložení ze stránky Přepis — pro nahrávání podržením místo toho použijte Zkratku Stisk a mluv."
           },
           "cancel": {
             "name": "Zkratka zrušení",
@@ -593,7 +598,7 @@
           },
           "anchor_set": {
             "name": "Nastavit kotvu",
-            "description": "Zachytí aktuálně zaměřené textové pole jako cíl Aktivní 1. Výchozí: ctrl+shift+F1. Samo o sobě nic nedoručí — nastavte „Akci skokového slotu při ukončení“ na „Přejít / doručit do slotu“ se slotem Aktivní 1 (Více › Výstup), aby do něj váš další přepis dorazil. Přihlašovací pole a vlastní okna Handy jsou odmítnuta."
+            "description": "Zachytí aktuálně zaměřené textové pole jako cíl Aktivní 1. Výchozí: ctrl+shift+F1. Samo o sobě nic nedoručí — nastavte „Akci skokového slotu při ukončení“ na „Přejít / doručit do slotu“ se slotem Aktivní 1 (Přepis), aby do něj váš další přepis dorazil. Přihlašovací pole a vlastní okna Handy jsou odmítnuta."
           },
           "anchor_jump": {
             "name": "Přejít na kotvu",
@@ -601,19 +606,19 @@
           },
           "jump_set_slot_1": {
             "name": "Nastavit skokový slot 1",
-            "description": "Uloží aktuálně zaměřené pole jako statický slot 1 a přepíše, co v něm bylo dosud. Výchozí: ctrl+alt+shift+1. Slot je pouhá záložka, dokud jej něco nevyužije — přejděte na něj zkratkou „Přejít do slotu 1“, nebo v postupu nastavte „Akci skokového slotu při ukončení“ (Více › Výstup) na Slot 1, aby se do něj doručovaly přepisy."
+            "description": "Uloží aktuálně zaměřené pole jako statický slot 1 a přepíše, co v něm bylo dosud. Výchozí: ctrl+alt+shift+1. Slot je pouhá záložka, dokud jej něco nevyužije — přejděte na něj zkratkou „Přejít do slotu 1“, nebo v postupu nastavte „Akci skokového slotu při ukončení“ (Přepis) na Slot 1, aby se do něj doručovaly přepisy."
           },
           "jump_set_slot_2": {
             "name": "Nastavit skokový slot 2",
-            "description": "Uloží aktuálně zaměřené pole jako statický slot 2 a přepíše, co v něm bylo dosud. Výchozí: ctrl+alt+shift+2. Přejděte na něj zkratkou „Přejít do slotu 2“, nebo v postupu nastavte „Akci skokového slotu při ukončení“ (Více › Výstup) na Slot 2, aby se do něj doručovaly přepisy."
+            "description": "Uloží aktuálně zaměřené pole jako statický slot 2 a přepíše, co v něm bylo dosud. Výchozí: ctrl+alt+shift+2. Přejděte na něj zkratkou „Přejít do slotu 2“, nebo v postupu nastavte „Akci skokového slotu při ukončení“ (Přepis) na Slot 2, aby se do něj doručovaly přepisy."
           },
           "jump_set_slot_3": {
             "name": "Nastavit skokový slot 3",
-            "description": "Uloží aktuálně zaměřené pole jako statický slot 3 a přepíše, co v něm bylo dosud. Výchozí: ctrl+alt+shift+3. Přejděte na něj zkratkou „Přejít do slotu 3“, nebo v postupu nastavte „Akci skokového slotu při ukončení“ (Více › Výstup) na Slot 3, aby se do něj doručovaly přepisy."
+            "description": "Uloží aktuálně zaměřené pole jako statický slot 3 a přepíše, co v něm bylo dosud. Výchozí: ctrl+alt+shift+3. Přejděte na něj zkratkou „Přejít do slotu 3“, nebo v postupu nastavte „Akci skokového slotu při ukončení“ (Přepis) na Slot 3, aby se do něj doručovaly přepisy."
           },
           "jump_set_slot_4": {
             "name": "Nastavit skokový slot 4",
-            "description": "Uloží aktuálně zaměřené pole jako statický slot 4 a přepíše, co v něm bylo dosud. Výchozí: ctrl+alt+shift+4. Přejděte na něj zkratkou „Přejít do slotu 4“, nebo v postupu nastavte „Akci skokového slotu při ukončení“ (Více › Výstup) na Slot 4, aby se do něj doručovaly přepisy."
+            "description": "Uloží aktuálně zaměřené pole jako statický slot 4 a přepíše, co v něm bylo dosud. Výchozí: ctrl+alt+shift+4. Přejděte na něj zkratkou „Přejít do slotu 4“, nebo v postupu nastavte „Akci skokového slotu při ukončení“ (Přepis) na Slot 4, aby se do něj doručovaly přepisy."
           },
           "jump_slot_1": {
             "name": "Přejít do slotu 1",
@@ -771,7 +776,7 @@
         "title": "Paste last transcription",
         "pasteMethod": {
           "title": "Paste method",
-          "description": "Jak zkratka Vložit poslední přepis vkládá text do zaměřeného okna. Je nezávislá na Způsobu vložení na stránce Více › Výstup, takže ji lze doladit jen pro jeden problematický cíl. Výchozí: Schránka (Ctrl+V) — v terminálu zkuste Schránka (Shift+Insert), Přímé pro napsání znaků místo vložení, nebo Žádné, aby se text jen umístil do schránky a vy jej vložili sami."
+          "description": "Jak zkratka Vložit poslední přepis vkládá text do zaměřeného okna. Je nezávislá na Způsobu vložení na stránce Přepis, takže ji lze doladit jen pro jeden problematický cíl. Výchozí: Schránka (Ctrl+V) — v terminálu zkuste Schránka (Shift+Insert), Přímé pro napsání znaků místo vložení, nebo Žádné, aby se text jen umístil do schránky a vy jej vložili sami."
         },
         "clipboard": {
           "title": "Clipboard",
@@ -1359,7 +1364,7 @@
           "title": "Teplota",
           "description": "Nižší hodnota je determinističtější a přesnější (0 = nejvíce doslovné); vyšší je kreativnější."
         },
-        "registryNote": "API klíč, model a základní URL poskytovatele se konfigurují v Více › Poskytovatelé › Registrovaní poskytovatelé LLM."
+        "registryNote": "API klíč, model a základní URL poskytovatele se konfigurují v Pokročilá nastavení › Poskytovatelé LLM › Registrovaní poskytovatelé LLM."
       },
       "prompts": {
         "title": "Prompt",
@@ -1518,7 +1523,7 @@
       "remoteMatch": {
         "groupTitle": "Remote desktop detection",
         "title": "Remote match strings",
-        "description": "Cíl doručení, jehož aplikace, třída okna nebo třída ovládacího prvku obsahuje některý z těchto úryvků (bez ohledu na velikost písmen), je považován za vzdálenou plochu, takže použije vzdálenou hodnotu 'Paste delay after jump (Windows)' a 'Submit delay before Enter (Windows)' v Více › Výstup místo místní. Už to nemusí být cíl skoku: od 1.3.0 se klasifikuje i již zaostřené vzdálené okno, díky čemuž tam zpoždění odeslání platí. Výchozí: msrdc, mstsc, Citrix. Přidejte název procesu svého klienta RDP nebo Citrix, pokud se do něj doručení stále ztrácejí; prázdný seznam považuje každý cíl za místní.",
+        "description": "Cíl doručení, jehož aplikace, třída okna nebo třída ovládacího prvku obsahuje některý z těchto úryvků (bez ohledu na velikost písmen), je považován za vzdálenou plochu, takže použije vzdálenou hodnotu 'Paste delay after jump (Windows)' a 'Submit delay before Enter (Windows)' v Přepis místo místní. Už to nemusí být cíl skoku: od 1.3.0 se klasifikuje i již zaostřené vzdálené okno, díky čemuž tam zpoždění odeslání platí. Výchozí: msrdc, mstsc, Citrix. Přidejte název procesu svého klienta RDP nebo Citrix, pokud se do něj doručení stále ztrácejí; prázdný seznam považuje každý cíl za místní.",
         "placeholder": "e.g. msrdc",
         "add": "Add",
         "remove": "Remove {{value}}",
@@ -1531,8 +1536,8 @@
         "title": "Aktivní slot (Kotva a doručení)",
         "optionsMoved": {
           "title": "Možnosti doručení",
-          "description": "Nejde o nastavení, jen o odkaz. Co přechod se slotem skutečně udělá, se nastavuje pro každý postup samostatně na stránce Více › Výstup: „Akce skokového slotu při zahájení“, „Akce skokového slotu při ukončení“, „Sledovat poslední místo výstupu“ a „Vrátit zaměření po doručení“ existují jednou pro Přepis a jednou pro Přepsat a odeslat.",
-          "hint": "Nastavuje se ve skupinách Přepis a Přepsat a odeslat na stránce Více › Výstup."
+          "description": "Nejde o nastavení, jen o odkaz. Co přechod se slotem skutečně udělá, se nastavuje pro každý postup samostatně na stránce Přepis: „Akce skokového slotu při zahájení“, „Akce skokového slotu při ukončení“, „Sledovat poslední místo výstupu“ a „Vrátit zaměření po doručení“ existují jednou pro Přepis a jednou pro Přepsat a odeslat.",
+          "hint": "Nastavuje se ve skupinách Přepis a Přepsat a odeslat na stránce Přepis."
         }
       },
       "hot2": {
@@ -1846,7 +1851,7 @@
     "fileTooLarge": "Soubor je příliš velký (max. 10 MB).",
     "loadedFile": "Načteno: {{name}}",
     "providerOption": "{{name}} (poskytovatel)",
-    "chipDisabled": "Nenakonfigurováno — zapněte přepínačem „Povolit tohoto poskytovatele“ v Více › Poskytovatelé › Registrovaní poskytovatelé LLM.",
+    "chipDisabled": "Nenakonfigurováno — zapněte přepínačem „Povolit tohoto poskytovatele“ v Pokročilá nastavení › Poskytovatelé LLM › Registrovaní poskytovatelé LLM.",
     "chips": {
       "cl100k_base": "cl100k (GPT-4)",
       "o200k_base": "o200k (GPT-4o)",
@@ -1904,14 +1909,14 @@
   },
   "modelTesting": {
     "configureProviders": "Nastavit poskytovatele",
-    "description": "Odešle jeden prompt každému modelu zaškrtnutému pod Spustit a zobrazí odpovědi vedle sebe s počty tokenů, cenou a dobou odezvy; modely zaškrtnuté pod Porota poté ohodnotí všechny tyto odpovědi vaším promptem pro porotu. Výchozí: nic vybráno a oba prompty prázdné. Seznam pochází z Více › Poskytovatelé › Registrovaní poskytovatelé LLM, takže běh používá vaše vlastní API klíče — váš prompt opustí tento počítač a u placených poskytovatelů stojí skutečné peníze.",
+    "description": "Odešle jeden prompt každému modelu zaškrtnutému pod Spustit a zobrazí odpovědi vedle sebe s počty tokenů, cenou a dobou odezvy; modely zaškrtnuté pod Porota poté ohodnotí všechny tyto odpovědi vaším promptem pro porotu. Výchozí: nic vybráno a oba prompty prázdné. Seznam pochází z Pokročilá nastavení › Poskytovatelé LLM › Registrovaní poskytovatelé LLM, takže běh používá vaše vlastní API klíče — váš prompt opustí tento počítač a u placených poskytovatelů stojí skutečné peníze.",
     "providersLabel": "Modely",
     "selectAll": "Vybrat vše ke spuštění",
     "clear": "Vymazat",
     "run": "Spustit",
     "judge": "Porota",
     "costPerM": "vstup ${{input}} · výstup ${{output}} /1M",
-    "noProviders": "Nejsou nakonfigurováni žádní poskytovatelé schopní chatu. Přidejte jednoho v Více › Poskytovatelé › Registrovaní poskytovatelé LLM.",
+    "noProviders": "Nejsou nakonfigurováni žádní poskytovatelé schopní chatu. Přidejte jednoho v Pokročilá nastavení › Poskytovatelé LLM › Registrovaní poskytovatelé LLM.",
     "mainPromptLabel": "Prompt pro všechny modely",
     "mainPromptPlaceholder": "Prompt odeslaný každému vybranému modelu…",
     "judgePromptLabel": "Prompt pro porotu / rozhodčího (volitelné)",
@@ -2130,6 +2135,18 @@
       "linuxBuilds": {
         "title": "Balíčky pro Linux",
         "description": "Balíčky .deb, .rpm a .AppImage pro x86_64 a ARM64. Zatím nejsou otestované."
+      },
+      "transcriptionPage": {
+        "title": "Přepis má vlastní stránku",
+        "description": "Nastavení Výstupu (způsob vložení, schránka, automatické odeslání, akce slotů skoku, překlad do angličtiny) mají teď vlastní stránku v postranním panelu, hned pod položkou Průvodci: Přepis."
+      },
+      "providerPages": {
+        "title": "Dvě stránky poskytovatelů",
+        "description": "Poskytovatelé jsou nyní Poskytovatelé přepisu (přepis přes API a OpenRouter); registrovaní poskytovatelé LLM mají vlastní stránku hned vedle: Poskytovatelé LLM. Obě jsou v části Pokročilá nastavení."
+      },
+      "sidebarMenus": {
+        "title": "Pokročilá nastavení a Další nástroje",
+        "description": "Z položky Více jsou teď dvě: Pokročilá nastavení se stránkami nastavení a Další nástroje hned za Jumperem, kde najdete: Psaní na klávesnici, Počet tokenů, Testování modelů, Aktuální zvuk."
       }
     },
     "installed": "Nainstalovaná"

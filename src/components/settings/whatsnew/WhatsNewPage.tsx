@@ -39,6 +39,14 @@ const LIVE_TEXT_BOX = "settings.general.liveTextBox.label";
  */
 const RELEASES: { version: string; items: Item[] }[] = [
   {
+    version: "2.0.1",
+    items: [
+      { key: "transcriptionPage", section: "output" },
+      { key: "providerPages", section: "llmProviders" },
+      { key: "sidebarMenus", section: "keyboardTyper" },
+    ],
+  },
+  {
     version: "2.0.0", // everything since 1.6.2 (1.6.3-1.13.0 were local builds)
     items: [
       {
@@ -162,28 +170,6 @@ const RELEASES: { version: string; items: Item[] }[] = [
   {
     version: "1.6.2",
     items: [{ key: "blockedUpdate" }, { key: "macBuilds" }],
-  },
-  {
-    version: "1.6.1",
-    items: [
-      {
-        key: "soundSource",
-        windowsOnly: true,
-        section: "general",
-        titleKeys: ["settings.advanced.captureSource.title"],
-      },
-      {
-        key: "systemAudioControls",
-        windowsOnly: true,
-        section: "general",
-        titleKeys: [
-          "settings.advanced.systemAudioDelay.title",
-          "settings.advanced.systemAudioGain.title",
-        ],
-        fallbackKey: "settings.advanced.captureSource.title",
-      },
-      { key: "linuxBuilds" },
-    ],
   },
 ];
 

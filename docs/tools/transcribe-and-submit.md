@@ -21,7 +21,7 @@ Reserve this flow for fields where a submit key has a predictable meaning. Keep 
 
 ## Settings that matter
 
-- [More settings](../reference/settings/advanced.md)
+- [Transcription and Advanced settings](../reference/settings/advanced.md)
 
 ## When it goes wrong
 
@@ -32,9 +32,9 @@ Reserve this flow for fields where a submit key has a predictable meaning. Keep 
 ## Set it up
 
 1. Give the flow its own binding at `General › Transcribe & Submit Shortcut = ctrl+shift+f9`.
-2. Match the target field at `More › Output › Transcribe & Submit › Paste method = Clipboard (Ctrl+V)`.
-3. Choose what sends in that target at `More › Output › Transcribe & Submit › Submit key = Enter`.
-4. Make an idle press begin a take at `More › Output › Transcribe & Submit › When no recording is active = Start a recording`.
-5. If you use the Windows Jumper, route the finish at `More › Output › Transcribe & Submit › Jump slot action on finish = Jump / deliver to slot` _{Windows only}_.
-6. Select `Hot 1` in the adjacent destination list for `More › Output › Transcribe & Submit › Jump slot action on finish` _{Windows only}_.
-7. Return to what you were reading with `More › Output › Transcribe & Submit › Return focus after delivery = On` _{Windows only}_.
+2. Match the target field at `Transcription › Transcribe & Submit › Paste method = Clipboard (Ctrl+V)`.
+3. Choose what sends in that target at `Transcription › Transcribe & Submit › Submit key = Enter`.
+4. Make an idle press begin a take at `Transcription › Transcribe & Submit › When no recording is active = Start a recording`.
+5. If you use the Windows Jumper, route the finish at `Transcription › Transcribe & Submit › Jump slot action on finish = Jump / deliver to slot` _{Windows only}_.
+6. Select `Hot 1` in the adjacent destination list for `Transcription › Transcribe & Submit › Jump slot action on finish` _{Windows only}_.
+7. Return to what you were reading with `Transcription › Transcribe & Submit › Return focus after delivery = On` _{Windows only}_.

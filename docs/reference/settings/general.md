@@ -16,7 +16,7 @@ Catalog: [Press one key, speak, and the text appears where you were typing](../.
 
 `General › Push-to-Talk Shortcut`
 
-Sets the hold-to-record shortcut. It uses [Transcription Mode (PTT)](#transcription-mode-ptt) and the separate [Paste Method (PTT)](advanced.md#paste-method-ptt) on `More › Output`. **Default:** `ctrl+shift+space`.
+Sets the hold-to-record shortcut. It uses [Transcription Mode (PTT)](#transcription-mode-ptt) and the separate [Paste Method (PTT)](advanced.md#paste-method-ptt) on `Transcription`. **Default:** `ctrl+shift+space`.
 
 Catalog: [Hold a key for a one-line thought](../../features.md#hold-to-talk).
 

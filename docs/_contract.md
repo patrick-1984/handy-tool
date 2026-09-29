@@ -123,7 +123,7 @@ Mechanical rules:
 - Copy every page, tab, group, control, and option label character-for-character from the generated navigation map backed by `src/i18n/locales/en/translation.json`.
 - Use `›`, never `>`, `->`, or `→`.
 - Use at most four application segments: page, tab, group, control.
-- The sidebar pages are General, Setups, Shortcuts, Models, History, Files, and Jumper, then `More`. More's tabs are Output, Providers, Post-processing, MCP & CLI, Backup, Debug, and About (its Settings row), then Keyboard Typer, Token Count, Model Testing, and Current Audio (its Tools row). On those tabs `More` is the page segment and the tab name is the tab segment. History's tabs are Recordings, Statistics, and Settings. General's App group (Appearance, the overlay's look, Keyboard Implementation) was More's App tab until 1.13; its paths start with General, then App. There is no Advanced page, no Post Process page, no Experimental tab and no Experimental Features control; never write any of them.
+- The sidebar pages are General, Setups, Transcription, Shortcuts, Models, History, Files, Jumper, More Tools, and What's new, then `Advanced settings`. Advanced settings' tabs are Transcription providers, LLM providers, Post-processing, MCP & CLI, Backup, Debug, and About; More Tools' tabs are Keyboard Typer, Token Count, Model Testing, and Current Audio. On those tabs `Advanced settings` or `More Tools` is the page segment and the tab name is the tab segment. Transcription (a sidebar page) was More's Output tab until 2.0.1, and both provider tabs were one Providers tab. History's tabs are Recordings, Statistics, and Settings. General's App group (Appearance, the overlay's look, Keyboard Implementation) was More's App tab until 1.13; its paths start with General, then App. There is no Advanced page, no Post Process page, no Experimental tab and no Experimental Features control; never write any of them.
 - Omit a group when its visible title equals the page title.
 - Add ` = Value` only when the instruction tells the reader to choose that value. Split on the last `=`.
 - Toggle values are `On` and `Off`. Chords are lowercase, `+`-joined, and contain no spaces.
@@ -136,9 +136,9 @@ Mechanical rules:
 Valid examples:
 
 ```markdown
-Set `More › Output › Transcribe › Paste Method = Clipboard (Ctrl+V)`.
+Set `Transcription › Transcribe › Paste Method = Clipboard (Ctrl+V)`.
 
-Set `More › Output › Transcribe & Submit › Jump slot action on finish = Jump / deliver to slot` _{Windows only}_.
+Set `Transcription › Transcribe & Submit › Jump slot action on finish = Jump / deliver to slot` _{Windows only}_.
 ```
 
 ## Adding or changing a setting
