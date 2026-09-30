@@ -2150,7 +2150,7 @@
       },
       "silentUpdatesFixed": {
         "title": "Les mises à jour silencieuses s'installent à nouveau",
-        "description": "Une mise à jour installée en arrière-plan pouvait échouer pendant qu'un modèle vocal était chargé, et Handy restait alors sur l'ancienne version. L'installateur attend désormais que Handy soit fermé, et Handy décharge d'abord ses modèles."
+        "description": "Une mise à jour installée en arrière-plan pouvait échouer pendant qu'un modèle vocal était chargé, et Handy restait alors sur l'ancienne version. L'installateur attend désormais, jusqu'à une minute, que le Handy en cours d'exécution n'utilise plus son fichier programme avant de le remplacer."
       },
       "aboutPage": {
         "title": "À propos dans la barre latérale",

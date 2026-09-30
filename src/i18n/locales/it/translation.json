@@ -2150,7 +2150,7 @@
       },
       "silentUpdatesFixed": {
         "title": "Gli aggiornamenti silenziosi si installano di nuovo",
-        "description": "Un aggiornamento installato in background poteva fallire mentre era caricato un modello vocale, e Handy restava sulla versione precedente. Ora il programma di installazione aspetta che Handy sia chiuso, e Handy scarica prima i suoi modelli."
+        "description": "Un aggiornamento installato in background poteva fallire mentre era caricato un modello vocale, e Handy restava sulla versione precedente. Ora il programma di installazione attende, fino a un minuto, che l'Handy in esecuzione non usi più il suo file di programma prima di sostituirlo."
       },
       "aboutPage": {
         "title": "Informazioni nella barra laterale",

@@ -57,7 +57,9 @@ export const SidebarSearch: React.FC<SidebarSearchProps> = ({
   const pick = (entry: SearchEntry) => {
     navigateTo(entry.section as SidebarSection, entry.historyTab);
     onQueryChange("");
-    highlightSetting(entry.title);
+    // Once the destination has rendered: the page being left can carry a control
+    // with the same title (the update controls are on General and on About).
+    setTimeout(() => highlightSetting(entry.title), 50);
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

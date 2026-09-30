@@ -2150,7 +2150,7 @@
       },
       "silentUpdatesFixed": {
         "title": "Cập nhật im lặng lại được cài đặt",
-        "description": "Bản cập nhật cài trong nền có thể thất bại khi một mô hình giọng nói đang được tải, và Handy vẫn ở phiên bản cũ. Giờ trình cài đặt sẽ đợi đến khi Handy đóng, và Handy giải phóng các mô hình trước."
+        "description": "Bản cập nhật cài trong nền có thể thất bại khi một mô hình giọng nói đang được tải, và Handy vẫn ở phiên bản cũ. Giờ trình cài đặt sẽ đợi tối đa một phút cho đến khi Handy đang chạy không còn giữ tệp chương trình rồi mới thay thế nó."
       },
       "aboutPage": {
         "title": "Giới thiệu trên thanh bên",

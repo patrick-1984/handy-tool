@@ -2150,7 +2150,7 @@
       },
       "silentUpdatesFixed": {
         "title": "Tiché aktualizace se opět instalují",
-        "description": "Aktualizace instalovaná na pozadí mohla selhat, když byl načten řečový model, a Handy pak zůstal na staré verzi. Instalátor teď počká, až se Handy zavře, a Handy nejprve uvolní své modely."
+        "description": "Aktualizace instalovaná na pozadí mohla selhat, když byl načten řečový model, a Handy pak zůstal na staré verzi. Instalátor teď před nahrazením programového souboru až minutu počká, dokud ho běžící Handy nepřestane držet."
       },
       "aboutPage": {
         "title": "O aplikaci v postranním panelu",

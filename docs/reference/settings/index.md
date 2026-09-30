@@ -1,16 +1,17 @@
 # Settings reference
 
-This shelf mirrors the Windows 2.0.1 sidebar, with its Advanced settings and More Tools entries. Open a page below when you need the exact control label, location, shipped default, or interaction with another control.
+This shelf mirrors the Windows 2.0.2 sidebar, with its Advanced settings and More Tools entries. Open a page below when you need the exact control label, location, shipped default, or interaction with another control.
 
 ## Sidebar
 
+- [History](history.md) — saved transcription rows, the recordings folder, and retention.
 - [General](general.md) — shortcuts, model-specific choices, transcription, re-paste, sound, the app itself (appearance, the overlay's look), and updates.
 - [Setups](setups.md) — the guided setups, starting with the first-start one.
 - [Shortcuts](shortcuts.md) — every shortcut on one page, with duplicates flagged.
 - [Models](models.md) — downloads, selection, filtering, and idle unloading.
-- [History](history.md) — saved transcription rows, the recordings folder, and retention.
 - [Files](files.md) — transcribe a file you pick, and the watched folders.
 - [Jumper](jumper.md) — Windows-only anchors, slots, cursor options, and remote matching.
+- [About](about.md) — the update controls, language, version, source, and data locations.
 
 ## Advanced settings › Settings
 
@@ -18,7 +19,6 @@ This shelf mirrors the Windows 2.0.1 sidebar, with its Advanced settings and Mor
 - [Post-processing](post-processing.md) — provider, prompt, and generation controls under the Post-processing switch.
 - [Backup](backup.md) — export and selective restore.
 - [Debug](debug.md) — logging and low-level timing or device controls.
-- [About](about.md) — the update controls, language, version, source, and data locations.
 
 ## More Tools
 

@@ -2518,9 +2518,10 @@ waits for you. Switch silent installation on and the update is applied inside a 
 the same instant. Releases are signed and the signature is verified before anything is applied. A
 portable copy refuses to update itself in place and tells you to download the new portable
 release instead. `Check now` runs the same check on demand. An update installed in the background
-waits until the running Handy has fully closed before replacing its files (before 2.0.2 a large
-speech model still being unloaded made a silent update give up), and the installer notes each step
-in `installer.log` in the log folder.
+waits, up to a minute, until the running Handy's program file is no longer in use before the
+installer's own check (before 2.0.2 silent updates made while a speech model was loaded gave up,
+most likely because Handy was still closing), and the installer writes the outcome to
+`installer.log` in the log folder.
 **Where.** `General › Updates › Check for updates automatically`,
 `General › Updates › Install updates silently`, `General › Updates › Silent update time`,
 `General › Updates › Daily randomization`, and `General › Updates › Check now`.

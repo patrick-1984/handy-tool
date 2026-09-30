@@ -2150,7 +2150,7 @@
       },
       "silentUpdatesFixed": {
         "title": "Sessiz güncellemeler yeniden yükleniyor",
-        "description": "Bir konuşma modeli yüklüyken arka planda yüklenen güncelleme başarısız olabiliyor ve Handy eski sürümde kalıyordu. Yükleyici artık Handy kapanana kadar bekliyor ve Handy önce modellerini boşaltıyor."
+        "description": "Bir konuşma modeli yüklüyken arka planda yüklenen güncelleme başarısız olabiliyor ve Handy eski sürümde kalıyordu. Yükleyici artık program dosyasını değiştirmeden önce, çalışan Handy dosyayı bırakana kadar bir dakikaya kadar bekliyor."
       },
       "aboutPage": {
         "title": "Kenar çubuğunda Hakkında",

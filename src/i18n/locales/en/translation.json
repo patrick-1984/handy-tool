@@ -2150,7 +2150,7 @@
       },
       "silentUpdatesFixed": {
         "title": "Silent updates install again",
-        "description": "An update installed in the background could fail while a speech model was loaded, and Handy then stayed on the old version. The installer now waits until Handy has closed, and Handy unloads its models first."
+        "description": "An update installed in the background could fail while a speech model was loaded, and Handy then stayed on the old version. The installer now waits, up to a minute, until the running Handy no longer holds its program file before it replaces it."
       },
       "aboutPage": {
         "title": "About in the sidebar",

@@ -2150,7 +2150,7 @@
       },
       "silentUpdatesFixed": {
         "title": "静默更新恢复正常安装",
-        "description": "加载语音模型时，后台安装的更新可能会失败，Handy 便停留在旧版本。现在安装程序会等到 Handy 关闭，而 Handy 也会先释放模型。"
+        "description": "加载语音模型时，后台安装的更新可能会失败，Handy 便停留在旧版本。现在安装程序会等待最多一分钟，直到运行中的 Handy 不再占用程序文件，再进行替换。"
       },
       "aboutPage": {
         "title": "“关于”移到侧边栏",

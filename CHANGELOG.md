@@ -8,12 +8,14 @@ A fix release: silent updates install again, and a few sidebar changes.
 
 - **Silent updates install again.** An update installed in the background (the scheduled
   night-time update, or any update while a speech model was loaded) could fail without a word:
-  Handy stayed on the old version and did not restart. The old Handy was still closing when the
-  installer checked for it, and a silent install gives up in that case. The installer now waits
-  until Handy has fully closed (up to a minute) before it replaces anything, and notes each step in
-  `installer.log` in the log folder. Updates made right after a restart were never affected, which
-  is why "Install and restart now" kept working. This takes effect from the update to 2.0.2 on,
-  because the waiting is in the new version's installer.
+  Handy stayed on the old version and did not restart. Every failure on record happened with a
+  speech model loaded, and every update made right after a restart, before a model loaded, worked
+  (which is why "Install and restart now" kept working). The likely cause: the old Handy was still
+  closing when the installer checked for it, and a silent install gives up if the check then cannot
+  close it or a file is still in use. The installer now waits, up to a minute, until Handy's
+  program file is no longer in use before that check, and writes the outcome to `installer.log` in
+  the log folder. If the wait runs out, the installer carries on as before. This takes effect from
+  the update to 2.0.2 on, because the waiting is in the new version's installer.
 - The message after an update that did not take effect no longer blames a security policy alone:
   the installer may not have started, or may have found Handy still closing.
 

@@ -2150,7 +2150,7 @@
       },
       "silentUpdatesFixed": {
         "title": "As atualizações silenciosas voltam a ser instaladas",
-        "description": "Uma atualização instalada em segundo plano podia falhar enquanto um modelo de voz estava carregado, e o Handy ficava na versão antiga. Agora o instalador espera até o Handy fechar, e o Handy descarrega antes os seus modelos."
+        "description": "Uma atualização instalada em segundo plano podia falhar enquanto um modelo de voz estava carregado, e o Handy ficava na versão antiga. Agora o instalador espera, até um minuto, que o Handy em execução deixe de usar o seu ficheiro de programa antes de o substituir."
       },
       "aboutPage": {
         "title": "Sobre na barra lateral",

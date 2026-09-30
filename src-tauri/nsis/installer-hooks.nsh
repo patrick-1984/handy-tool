@@ -37,18 +37,19 @@
   Pop $0
 !macroend
 
-; An update the app starts itself (/UPDATE) can begin while the app is still
-; closing. With a large GPU speech model loaded, the old process was still there
-; when the template's app check ran, and a silent install gives up without a
-; word: the app stayed on the old version and did not restart (every scheduled
-; night-time update with a model loaded failed this way; updates made right
-; after a restart, before any model loaded, worked). The template's check finds
-; the app, then fails to kill it if it has exited meanwhile, and a file still in
-; use fails the copy - either ends a silent install. So first wait until the old
-; handy.exe can be opened for writing (append mode: nothing is changed), which is
-; impossible while any process still runs it - up to 60 s. A timeout is logged
-; and the template's own check then runs as before. Only /UPDATE: a setup started
-; by hand asks the user to close the app instead.
+; An update the app starts itself (/UPDATE) begins while the app is still
+; closing. Every silent update on record made with a speech model loaded failed
+; without a word (the app stayed on the old version and did not restart), and
+; every update made right after a restart worked. Leading hypothesis: the old
+; process was still exiting when the template's app check ran - that check can
+; find the app and then fail to kill it once it has exited, and a file still in
+; use fails the copy; either ends a silent install. So first wait until the
+; installed handy.exe can be opened for writing (append mode: nothing is
+; changed), which fails while a process runs it - polled every 250 ms, about a
+; minute in all. This only probes handy.exe, not every file the install
+; replaces. The outcome is logged; after a timeout the template's own check runs
+; as before. Only /UPDATE: a setup started by hand asks the user to close the
+; app instead.
 !macro NSIS_HOOK_PREINSTALL
   ${If} $UpdateMode = 1
   ${AndIf} ${FileExists} "$INSTDIR\${MAINBINARYNAME}.exe"
@@ -67,11 +68,11 @@
         Sleep 250
         Goto handy_wait_for_exit
       ${EndIf}
-      !insertmacro HandyInstallerLog "update: ${MAINBINARYNAME}.exe still in use after 60 s; continuing to the app check"
+      !insertmacro HandyInstallerLog "update: $INSTDIR\${MAINBINARYNAME}.exe could not be opened for writing for about 60 s; continuing to the app check"
       Goto handy_wait_end
     handy_wait_done:
       IntOp $R8 $R9 * 250
-      !insertmacro HandyInstallerLog "update: previous version closed (waited $R8 ms)"
+      !insertmacro HandyInstallerLog "update: $INSTDIR\${MAINBINARYNAME}.exe opened for writing after about $R8 ms"
     handy_wait_end:
     ClearErrors
     Pop $R9
