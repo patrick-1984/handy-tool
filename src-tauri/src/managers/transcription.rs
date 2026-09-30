@@ -1541,6 +1541,10 @@ impl TranscriptionManager {
                 });
             }
             let job_guard = RunningJobGuard;
+            // When the engine itself started: later than `job_started` for a
+            // Whisper call that first waits for the GPU lock (a model load can
+            // hold it). Only engine time counts, for the percentage and timings.
+            let engine_started = std::cell::Cell::new(job_started);
 
             let transcribe_result = catch_unwind(AssertUnwindSafe(
                 || -> Result<transcribe_rs::TranscriptionResult> {
@@ -1566,6 +1570,13 @@ impl TranscriptionManager {
                             // load_flight, or CHUNK_TRANSCRIBE_LOCK), so the lock
                             // order stays acyclic.
                             with_vulkan_op_lock(|| {
+                                let now = std::time::Instant::now();
+                                engine_started.set(now);
+                                if let Ok(mut job) = RUNNING_JOB.lock() {
+                                    if let Some(job) = job.as_mut() {
+                                        job.started = now;
+                                    }
+                                }
                                 whisper_engine.transcribe_samples(audio, Some(params))
                             })
                             .map_err(|e| anyhow::anyhow!("Whisper transcription failed: {}", e))
@@ -1638,7 +1649,7 @@ impl TranscriptionManager {
             if transcribe_result.as_ref().is_ok_and(|r| r.is_ok())
                 && audio_secs >= MIN_TIMING_SAMPLE_SECS
             {
-                let took = job_started.elapsed().as_secs_f32();
+                let took = engine_started.get().elapsed().as_secs_f32();
                 if let Ok(mut timings) = MODEL_TIMINGS.lock() {
                     let calls = timings.entry(speed_key).or_default();
                     if calls.len() == TIMINGS_KEPT {

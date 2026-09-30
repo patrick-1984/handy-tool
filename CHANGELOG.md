@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.0.4] - 2026-10-01
+
+A fix release: the transcription percentage reaches 100% when the text is ready.
+
+### Fixed
+
+- **"Transcribing N%" no longer shows 70% while the text is already pasted.** The figure is an
+  estimate for most takes: Parakeet, Moonshine and SenseVoice report no progress, and Whisper
+  reports it only once per 30 seconds of audio. Handy works it out from this PC's recent
+  transcriptions. When the transcription ended, the figure stopped where the estimate had got to.
+  It reached 100% only when the pill closed, after the text had been pasted, and after Enter too
+  with Transcribe & Submit. A take that finished sooner than estimated therefore pasted its text
+  with the pill still at 60-70%. The figure now goes to 100% the moment the text is ready, before
+  it is pasted. A quick take still shows no figure at all.
+- For Whisper, the time spent waiting for the graphics card (while a model is loading) no longer
+  counts as transcription time, both for the percentage and for the estimates it is based on.
+
 ## [2.0.3] - 2026-09-30
 
 A fix release: uninstalling with winget works.

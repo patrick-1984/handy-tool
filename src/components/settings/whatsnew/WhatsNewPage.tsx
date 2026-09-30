@@ -37,6 +37,10 @@ interface Item {
  */
 const RELEASES: { version: string; items: Item[] }[] = [
   {
+    version: "2.0.4",
+    items: [{ key: "progressFinish" }],
+  },
+  {
     version: "2.0.3",
     items: [{ key: "wingetUninstall" }],
   },
@@ -46,14 +50,6 @@ const RELEASES: { version: string; items: Item[] }[] = [
       { key: "silentUpdatesFixed" },
       { key: "aboutPage", section: "about" },
       { key: "historyFirst", section: "history" },
-    ],
-  },
-  {
-    version: "2.0.1",
-    items: [
-      { key: "transcriptionPage", section: "output" },
-      { key: "providerPages", section: "llmProviders" },
-      { key: "sidebarMenus", section: "keyboardTyper" },
     ],
   },
 ];

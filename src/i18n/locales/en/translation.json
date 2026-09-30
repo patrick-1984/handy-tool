@@ -1996,18 +1996,6 @@
     "release": "Version {{version}}",
     "show": "Show me",
     "items": {
-      "transcriptionPage": {
-        "title": "Transcription has its own page",
-        "description": "The Output settings (Paste Method, the clipboard, auto submit, jump slot actions, translate to English) have their own page in the sidebar now, just under Setups: Transcription."
-      },
-      "providerPages": {
-        "title": "Two provider pages",
-        "description": "Providers is now Transcription providers (API and OpenRouter transcription); the Registered LLM Providers have a page of their own next to it: LLM providers. Both are in Advanced settings."
-      },
-      "sidebarMenus": {
-        "title": "Advanced settings and More Tools",
-        "description": "More is now two entries: Advanced settings holds the settings pages, and More Tools, right after Jumper, holds Keyboard Typer, Token Count, Model Testing and Current Audio."
-      },
       "silentUpdatesFixed": {
         "title": "Silent updates install again",
         "description": "An update installed in the background could fail while a speech model was loaded, and Handy then stayed on the old version. The installer now waits, up to a minute, until the running Handy no longer holds its program file before it replaces it."
@@ -2023,6 +2011,10 @@
       "wingetUninstall": {
         "title": "Uninstalling with winget works",
         "description": "Uninstalling Handy with winget, or another tool that uninstalls quietly, now removes it. Before, it opened the uninstaller window and waited for a click, while winget reported success."
+      },
+      "progressFinish": {
+        "title": "The percentage reaches 100% when the text is ready",
+        "description": "After a take, the Transcribing percentage on the pill now goes to 100% the moment the text is ready. Before, it could stop at about 70% and finish only after the text had already been pasted."
       }
     },
     "installed": "Installed"

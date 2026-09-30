@@ -1996,18 +1996,6 @@
     "release": "Verze {{version}}",
     "show": "Ukázat",
     "items": {
-      "transcriptionPage": {
-        "title": "Přepis má vlastní stránku",
-        "description": "Nastavení Výstupu (způsob vložení, schránka, automatické odeslání, akce slotů skoku, překlad do angličtiny) mají teď vlastní stránku v postranním panelu, hned pod položkou Průvodci: Přepis."
-      },
-      "providerPages": {
-        "title": "Dvě stránky poskytovatelů",
-        "description": "Poskytovatelé jsou nyní Poskytovatelé přepisu (přepis přes API a OpenRouter); registrovaní poskytovatelé LLM mají vlastní stránku hned vedle: Poskytovatelé LLM. Obě jsou v části Pokročilá nastavení."
-      },
-      "sidebarMenus": {
-        "title": "Pokročilá nastavení a Další nástroje",
-        "description": "Z položky Více jsou teď dvě: Pokročilá nastavení se stránkami nastavení a Další nástroje hned za Jumperem, kde najdete: Psaní na klávesnici, Počet tokenů, Testování modelů, Aktuální zvuk."
-      },
       "silentUpdatesFixed": {
         "title": "Tiché aktualizace se opět instalují",
         "description": "Aktualizace instalovaná na pozadí mohla selhat, když byl načten řečový model, a Handy pak zůstal na staré verzi. Instalátor teď před nahrazením programového souboru až minutu počká, dokud ho běžící Handy nepřestane držet."
@@ -2023,6 +2011,10 @@
       "wingetUninstall": {
         "title": "Odinstalace přes winget funguje",
         "description": "Odinstalace Handy přes winget nebo jiný nástroj, který odinstalovává tiše, ho teď odstraní. Dříve se otevřelo okno odinstalátoru a čekalo na kliknutí, zatímco winget hlásil úspěch."
+      },
+      "progressFinish": {
+        "title": "Procento dosáhne 100 %, jakmile je text hotový",
+        "description": "Po nahrávce teď procento přepisu na pilulce dosáhne 100 % ve chvíli, kdy je text hotový. Dříve se mohlo zastavit kolem 70 % a doběhnout až poté, co byl text vložen."
       }
     },
     "installed": "Nainstalovaná"

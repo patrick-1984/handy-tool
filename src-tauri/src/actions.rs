@@ -21,7 +21,7 @@ use log::{debug, error, info, warn};
 use once_cell::sync::Lazy;
 use serde::Serialize;
 use std::collections::{BTreeMap, HashMap, VecDeque};
-use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU8, AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use tauri::AppHandle;
@@ -322,33 +322,59 @@ fn show_text_after_stop(app: &AppHandle, text: &str) {
 /// transcribed: how much of the work left at the start is done since, from
 /// `remaining` (expected seconds of engine work still to do). The first figure
 /// appears after half a second, so a quick finish never flickers a number; it
-/// never goes backwards; it stops when dropped.
+/// never goes backwards; it stops when dropped, or goes to 100% via `finish`.
 struct ProgressTicker {
     stop: Arc<AtomicBool>,
+    /// The last figure sent to the overlay; 0 while none has been shown.
+    emitted: Arc<AtomicU8>,
+    app: AppHandle,
 }
 
 impl ProgressTicker {
     fn start(app: &AppHandle, remaining: impl Fn() -> Option<f32> + Send + 'static) -> Self {
         let stop = Arc::new(AtomicBool::new(false));
-        let stop_thread = Arc::clone(&stop);
-        let app = app.clone();
+        let emitted = Arc::new(AtomicU8::new(0));
+        let (stop_thread, emitted_thread) = (Arc::clone(&stop), Arc::clone(&emitted));
+        let app_thread = app.clone();
         std::thread::spawn(move || {
             let started = Instant::now();
             let mut meter = ProgressMeter::default();
-            let mut emitted = 0u8;
             while !stop_thread.load(Ordering::Relaxed) {
                 if let Some(left) = remaining() {
                     let percent = (meter.update(left) * 100.0) as u8;
-                    if percent > emitted && started.elapsed() >= Duration::from_millis(500) {
-                        emitted = percent;
-                        utils::emit_transcription_progress(&app, percent);
+                    if percent > emitted_thread.load(Ordering::Relaxed)
+                        && started.elapsed() >= Duration::from_millis(500)
+                    {
+                        emitted_thread.store(percent, Ordering::Relaxed);
+                        utils::emit_transcription_progress(&app_thread, percent);
                     }
                 }
                 std::thread::sleep(Duration::from_millis(100));
             }
         });
-        Self { stop }
+        Self {
+            stop,
+            emitted,
+            app: app.clone(),
+        }
     }
+
+    /// The transcript is ready. Without this the figure froze at its last
+    /// estimate - often 60-70% on a short take - and reached 100% only when the
+    /// pill hid, after the text had already been pasted. Takes it to 100% now,
+    /// but only if a figure is on screen (a quick take still shows none).
+    fn finish(self) {
+        self.stop.store(true, Ordering::Relaxed);
+        if let Some(percent) = figure_when_done(self.emitted.swap(100, Ordering::Relaxed)) {
+            utils::emit_transcription_progress(&self.app, percent);
+        }
+    }
+}
+
+/// The figure to show once the transcript is ready, given the one on screen
+/// (0 = none): 100%, unless no figure was ever shown.
+fn figure_when_done(shown: u8) -> Option<u8> {
+    (shown > 0).then_some(100)
 }
 
 /// Turns "seconds of work left" readings into a progress figure (0.0..=0.99)
@@ -1836,8 +1862,16 @@ impl ShortcutAction for TranscribeAction {
                         }
                         tokio::time::sleep(Duration::from_millis(100)).await;
                     }
-                    drop(progress);
                     let done = session.done_count.load(Ordering::SeqCst);
+                    // Every chunk is transcribed: the text exists now, so the
+                    // figure goes to 100% before delivery, not after it. Not
+                    // for deferred (OpenRouter) takes - their one request is
+                    // still to come - nor after the backstop.
+                    if done == total && !session.deferred {
+                        progress.finish();
+                    } else {
+                        drop(progress);
+                    }
                     if done < total {
                         warn!(
                             "Chunk transcription wait hit the {}s backstop ({}/{} chunks done); saving partial result",
@@ -2215,7 +2249,12 @@ impl ShortcutAction for TranscribeAction {
                 } else {
                     None
                 };
-                drop(live_progress);
+                // The live text is the transcript: 100% now. Otherwise the whole
+                // take is transcribed below, with a figure of its own.
+                match live_progress {
+                    Some(ticker) if live_final.is_some() => ticker.finish(),
+                    other => drop(other),
+                }
                 if let Some(text) = &live_final {
                     info!("Live take: delivering the live text ({} chars)", text.len());
                 }
@@ -2232,9 +2271,12 @@ impl ShortcutAction for TranscribeAction {
                     let _serial = CHUNK_TRANSCRIBE_LOCK
                         .lock()
                         .unwrap_or_else(|poisoned| poisoned.into_inner());
-                    let _progress = ProgressTicker::start(&ah, running_transcription_remaining);
+                    let progress = ProgressTicker::start(&ah, running_transcription_remaining);
                     match tm.transcribe(samples) {
-                        Ok(text) => Ok(text),
+                        Ok(text) => {
+                            progress.finish();
+                            Ok(text)
+                        }
                         Err(e) => {
                             if let Some(live) = live_transcription {
                                 warn!(
@@ -3533,7 +3575,17 @@ mod chunk_handover_tests {
 
 #[cfg(test)]
 mod progress_meter_tests {
-    use super::ProgressMeter;
+    use super::{ProgressMeter, figure_when_done};
+
+    #[test]
+    fn a_shown_figure_goes_to_100_when_the_text_is_ready() {
+        // The meter stops at 99% at most; the ready transcript takes it the rest.
+        assert_eq!(figure_when_done(70), Some(100));
+        assert_eq!(figure_when_done(1), Some(100));
+        assert_eq!(figure_when_done(99), Some(100));
+        // A quick take never showed one: none now either (no flash of 100%).
+        assert_eq!(figure_when_done(0), None);
+    }
 
     #[test]
     fn follows_the_work_left() {

@@ -1996,18 +1996,6 @@
     "release": "Phiên bản {{version}}",
     "show": "Hiện cho tôi",
     "items": {
-      "transcriptionPage": {
-        "title": "Phiên âm có trang riêng",
-        "description": "Các cài đặt Đầu ra (cách dán, bộ nhớ tạm, tự động gửi, hành động của khe nhảy, dịch sang tiếng Anh) giờ có trang riêng trên thanh bên, ngay dưới Thiết lập: Phiên âm."
-      },
-      "providerPages": {
-        "title": "Hai trang nhà cung cấp",
-        "description": "Nhà cung cấp giờ là Nhà cung cấp phiên âm (phiên âm qua API và OpenRouter); các nhà cung cấp LLM đã đăng ký có trang riêng ngay bên cạnh: Nhà cung cấp LLM. Cả hai nằm trong Cài đặt nâng cao."
-      },
-      "sidebarMenus": {
-        "title": "Cài đặt nâng cao và Công cụ khác",
-        "description": "Thêm giờ là hai mục: Cài đặt nâng cao gồm các trang cài đặt, và Công cụ khác ngay sau Jumper gồm Bộ gõ bàn phím, Đếm Token, Kiểm tra mô hình và Âm thanh hiện tại."
-      },
       "silentUpdatesFixed": {
         "title": "Cập nhật im lặng lại được cài đặt",
         "description": "Bản cập nhật cài trong nền có thể thất bại khi một mô hình giọng nói đã được nạp vào bộ nhớ, và Handy vẫn ở phiên bản cũ. Giờ trình cài đặt sẽ đợi tối đa một phút cho đến khi Handy đang chạy không còn giữ tệp chương trình rồi mới thay thế nó."
@@ -2023,6 +2011,10 @@
       "wingetUninstall": {
         "title": "Gỡ cài đặt bằng winget hoạt động",
         "description": "Gỡ Handy bằng winget, hoặc một công cụ gỡ cài đặt im lặng khác, giờ sẽ thực sự xóa nó. Trước đây cửa sổ gỡ cài đặt mở ra và chờ một cú nhấp, trong khi winget báo thành công."
+      },
+      "progressFinish": {
+        "title": "Phần trăm đạt 100% khi văn bản sẵn sàng",
+        "description": "Sau mỗi lần ghi, phần trăm chép lời trên viên thuốc giờ lên 100% ngay khi văn bản sẵn sàng. Trước đây nó có thể dừng ở khoảng 70% và chỉ hoàn tất sau khi văn bản đã được dán."
       }
     },
     "installed": "Đã cài"

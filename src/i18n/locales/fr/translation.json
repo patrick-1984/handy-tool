@@ -1996,18 +1996,6 @@
     "release": "Version {{version}}",
     "show": "Montrer",
     "items": {
-      "transcriptionPage": {
-        "title": "La transcription a sa propre page",
-        "description": "Les réglages de Sortie (méthode de collage, presse-papiers, envoi automatique, actions des emplacements de saut, traduction en anglais) ont désormais leur propre page dans la barre latérale, juste sous Configurations : Transcription."
-      },
-      "providerPages": {
-        "title": "Deux pages de fournisseurs",
-        "description": "Fournisseurs devient Fournisseurs de transcription (transcription par API et OpenRouter) ; les fournisseurs LLM enregistrés ont leur propre page à côté : Fournisseurs LLM. Les deux sont dans Paramètres avancés."
-      },
-      "sidebarMenus": {
-        "title": "Paramètres avancés et Plus d'outils",
-        "description": "Plus devient deux entrées : Paramètres avancés, avec les pages de réglages, et Plus d'outils, juste après Jumper, avec Frappe clavier, Comptage de tokens, Test de modèles et Audio en cours."
-      },
       "silentUpdatesFixed": {
         "title": "Les mises à jour silencieuses s'installent à nouveau",
         "description": "Une mise à jour installée en arrière-plan pouvait échouer pendant qu'un modèle vocal était chargé, et Handy restait alors sur l'ancienne version. L'installateur attend désormais, jusqu'à une minute, que le Handy en cours d'exécution n'utilise plus son fichier programme avant de le remplacer."
@@ -2023,6 +2011,10 @@
       "wingetUninstall": {
         "title": "La désinstallation avec winget fonctionne",
         "description": "Désinstaller Handy avec winget, ou un autre outil qui désinstalle en silence, le supprime désormais. Avant, la fenêtre du programme de désinstallation s'ouvrait et attendait un clic, pendant que winget annonçait un succès."
+      },
+      "progressFinish": {
+        "title": "Le pourcentage atteint 100 % dès que le texte est prêt",
+        "description": "Après une prise, le pourcentage de transcription sur la pastille passe désormais à 100 % dès que le texte est prêt. Avant, il pouvait rester vers 70 % et ne se terminer qu'une fois le texte déjà collé."
       }
     },
     "installed": "Installée"

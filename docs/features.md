@@ -268,10 +268,11 @@ segment still waiting, weighed by its length) and is estimated from this machine
 transcriptions of a similar length, since a long segment takes more time per second of audio
 than a short one; Whisper's own figure is used as a floor. Past about 70% it slows down
 smoothly, so a transcription that runs longer than expected keeps creeping on rather than
-sitting at 99%.
+sitting at 99%. The moment the text is ready it goes to 100%, before the text is pasted, so a
+take that finishes sooner than estimated no longer shows 70% while its text lands.
 **Where.** No control of its own — it follows `History › Settings › Crash-Safe Recording = On`,
 the default.
-**Since.** 0.11.2. The percentage since 1.8.0; weighed by work and length-aware since 2.0.0.
+**Since.** 0.11.2. The percentage since 1.8.0; weighed by work and length-aware since 2.0.0; 100% when the text is ready since 2.0.4.
 
 ### Live mode delivers the end of your sentence
 

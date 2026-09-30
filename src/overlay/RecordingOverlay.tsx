@@ -60,8 +60,9 @@ const RecordingOverlay: React.FC = () => {
   // The figure on screen counts up to each new one instead of jumping: 1% per
   // step, bigger steps for a bigger gap, so even a jump rolls up smoothly.
   const [shownProgress, setShownProgress] = useState<number | null>(null);
-  // A take that finishes before its figure reaches 100% runs it up to 100% in
-  // a quick burst, then the pill fades (only a look: the text is already out).
+  // A take whose text is ready runs its figure up to 100% in a quick burst: the
+  // backend sends 100 the moment the transcript exists (before it is pasted),
+  // and a pill hidden before its figure got there does the same, then fades.
   const [finishing, setFinishing] = useState(false);
   const shownProgressRef = useRef<number | null>(null);
   shownProgressRef.current = shownProgress;
@@ -80,16 +81,17 @@ const RecordingOverlay: React.FC = () => {
       setShownProgress(target);
       return;
     }
+    const burst = finishing || target === 100;
     const timer = setTimeout(
       () => {
         const from = shownProgress ?? 0;
         const gap = target - from;
-        const step = finishing
+        const step = burst
           ? Math.max(2, Math.round(gap / 3))
           : Math.max(1, Math.round(gap / 6));
         setShownProgress(Math.min(target, from + step));
       },
-      finishing ? 16 : 30,
+      burst ? 16 : 30,
     );
     return () => clearTimeout(timer);
   }, [progress, shownProgress, finishing]);

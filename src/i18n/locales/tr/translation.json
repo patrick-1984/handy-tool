@@ -1996,18 +1996,6 @@
     "release": "Sürüm {{version}}",
     "show": "Göster",
     "items": {
-      "transcriptionPage": {
-        "title": "Transkripsiyonun kendi sayfası var",
-        "description": "Çıktı ayarlarının (yapıştırma yöntemi, pano, otomatik gönderme, atlama yuvası eylemleri, İngilizceye çeviri) artık kenar çubuğunda, Kurulumlar öğesinin hemen altında kendi sayfası var: Transkripsiyon."
-      },
-      "providerPages": {
-        "title": "İki sağlayıcı sayfası",
-        "description": "Sağlayıcılar artık Transkripsiyon sağlayıcıları (API ve OpenRouter ile transkripsiyon); kayıtlı LLM sağlayıcılarının hemen yanında kendi sayfası var: LLM sağlayıcıları. İkisi de Gelişmiş ayarlar içinde."
-      },
-      "sidebarMenus": {
-        "title": "Gelişmiş ayarlar ve Diğer araçlar",
-        "description": "Daha fazla artık iki öğe: ayar sayfalarını içeren Gelişmiş ayarlar ve Jumper'ın hemen ardından gelen Diğer araçlar (Klavye Yazıcısı, Token Sayımı, Model Testi, Mevcut Ses)."
-      },
       "silentUpdatesFixed": {
         "title": "Sessiz güncellemeler yeniden yükleniyor",
         "description": "Bir konuşma modeli yüklüyken arka planda yüklenen güncelleme başarısız olabiliyor ve Handy eski sürümde kalıyordu. Yükleyici artık program dosyasını değiştirmeden önce, çalışan Handy dosyayı bırakana kadar bir dakikaya kadar bekliyor."
@@ -2023,6 +2011,10 @@
       "wingetUninstall": {
         "title": "winget ile kaldırma çalışıyor",
         "description": "Handy'yi winget veya sessizce kaldıran başka bir araçla kaldırmak artık onu siliyor. Önceden kaldırma penceresi açılıp bir tıklama bekliyor, winget ise başarılı olduğunu bildiriyordu."
+      },
+      "progressFinish": {
+        "title": "Metin hazır olduğunda yüzde 100'e ulaşır",
+        "description": "Kayıttan sonra hap üzerindeki yazıya dökme yüzdesi artık metin hazır olduğu anda %100'e ulaşıyor. Önceden %70 civarında durup ancak metin yapıştırıldıktan sonra tamamlanabiliyordu."
       }
     },
     "installed": "Yüklü"

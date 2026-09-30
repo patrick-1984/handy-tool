@@ -1996,18 +1996,6 @@
     "release": "Wersja {{version}}",
     "show": "Pokaż",
     "items": {
-      "transcriptionPage": {
-        "title": "Transkrypcja ma własną stronę",
-        "description": "Ustawienia Wyjścia (metoda wklejania, schowek, automatyczne wysyłanie, akcje slotów skoku, tłumaczenie na angielski) mają teraz własną stronę na pasku bocznym, tuż pod pozycją Konfiguracje: Transkrypcja."
-      },
-      "providerPages": {
-        "title": "Dwie strony dostawców",
-        "description": "Dostawcy to teraz Dostawcy transkrypcji (transkrypcja przez API i OpenRouter); zarejestrowani dostawcy LLM mają obok własną stronę: Dostawcy LLM. Obie są w sekcji Ustawienia zaawansowane."
-      },
-      "sidebarMenus": {
-        "title": "Ustawienia zaawansowane i Więcej narzędzi",
-        "description": "Z pozycji Więcej powstały dwie: Ustawienia zaawansowane ze stronami ustawień oraz Więcej narzędzi, tuż po Jumperze, gdzie są: Pisanie klawiaturą, Liczenie tokenów, Testowanie modeli, Aktualne audio."
-      },
       "silentUpdatesFixed": {
         "title": "Ciche aktualizacje znów się instalują",
         "description": "Aktualizacja instalowana w tle mogła się nie udać, gdy był wczytany model mowy, i Handy zostawał przy starej wersji. Instalator czeka teraz do minuty, aż działający Handy przestanie używać pliku programu, i dopiero wtedy go zastępuje."
@@ -2023,6 +2011,10 @@
       "wingetUninstall": {
         "title": "Odinstalowanie przez winget działa",
         "description": "Odinstalowanie Handy przez winget lub inne narzędzie, które odinstalowuje po cichu, teraz go usuwa. Wcześniej otwierało się okno deinstalatora i czekało na kliknięcie, a winget zgłaszał powodzenie."
+      },
+      "progressFinish": {
+        "title": "Procent dochodzi do 100%, gdy tekst jest gotowy",
+        "description": "Po nagraniu procent transkrypcji na pigułce dochodzi teraz do 100% w chwili, gdy tekst jest gotowy. Wcześniej mógł stanąć na około 70% i dojść do końca dopiero po wklejeniu tekstu."
       }
     },
     "installed": "Zainstalowana"

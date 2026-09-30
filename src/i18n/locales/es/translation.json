@@ -1996,18 +1996,6 @@
     "release": "Versión {{version}}",
     "show": "Mostrar",
     "items": {
-      "transcriptionPage": {
-        "title": "La transcripción tiene su propia página",
-        "description": "Los ajustes de Salida (método de pegado, portapapeles, envío automático, acciones de ranuras de salto, traducir al inglés) tienen ahora su propia página en la barra lateral, justo debajo de Configuraciones: Transcripción."
-      },
-      "providerPages": {
-        "title": "Dos páginas de proveedores",
-        "description": "Proveedores ahora es Proveedores de transcripción (transcripción por API y OpenRouter); los proveedores LLM registrados tienen su propia página al lado: Proveedores LLM. Ambas están en Ajustes avanzados."
-      },
-      "sidebarMenus": {
-        "title": "Ajustes avanzados y Más herramientas",
-        "description": "Más ahora son dos entradas: Ajustes avanzados, con las páginas de ajustes, y Más herramientas, justo después de Jumper, con Escritura de Teclado, Conteo de Tokens, Prueba de Modelos y Audio Actual."
-      },
       "silentUpdatesFixed": {
         "title": "Las actualizaciones silenciosas vuelven a instalarse",
         "description": "Una actualización instalada en segundo plano podía fallar mientras había un modelo de voz cargado, y Handy se quedaba en la versión anterior. Ahora el instalador espera, hasta un minuto, a que el Handy en ejecución deje de usar su archivo de programa antes de sustituirlo."
@@ -2023,6 +2011,10 @@
       "wingetUninstall": {
         "title": "Desinstalar con winget funciona",
         "description": "Desinstalar Handy con winget, u otra herramienta que desinstala en silencio, ahora lo elimina. Antes se abría la ventana del desinstalador y esperaba un clic, mientras winget informaba de éxito."
+      },
+      "progressFinish": {
+        "title": "El porcentaje llega al 100 % cuando el texto está listo",
+        "description": "Tras una grabación, el porcentaje de transcripción de la píldora llega ahora al 100 % en cuanto el texto está listo. Antes podía quedarse en torno al 70 % y completarse solo después de pegar el texto."
       }
     },
     "installed": "Instalada"

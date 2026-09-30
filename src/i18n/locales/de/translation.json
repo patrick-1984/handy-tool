@@ -1996,18 +1996,6 @@
     "release": "Version {{version}}",
     "show": "Zeigen",
     "items": {
-      "transcriptionPage": {
-        "title": "Transkription hat eine eigene Seite",
-        "description": "Die Einstellungen von Ausgabe (Einfügemethode, Zwischenablage, automatisches Senden, Slot-Aktionen, Übersetzen ins Englische) haben jetzt eine eigene Seite in der Seitenleiste, direkt unter Einrichtungen: Transkription."
-      },
-      "providerPages": {
-        "title": "Zwei Anbieter-Seiten",
-        "description": "Anbieter heißt jetzt Transkriptionsanbieter (Transkription per API und OpenRouter); die registrierten LLM-Anbieter haben daneben eine eigene Seite: LLM-Anbieter. Beide liegen in Erweiterte Einstellungen."
-      },
-      "sidebarMenus": {
-        "title": "Erweiterte Einstellungen und Weitere Werkzeuge",
-        "description": "Aus Mehr sind zwei Einträge geworden: Erweiterte Einstellungen mit den Einstellungsseiten und Weitere Werkzeuge, direkt nach Jumper, mit Tastatur-Eingabe, Token-Anzahl, Modelltests und Aktuelles Audio."
-      },
       "silentUpdatesFixed": {
         "title": "Stille Updates werden wieder installiert",
         "description": "Ein im Hintergrund installiertes Update konnte scheitern, solange ein Sprachmodell geladen war, und Handy blieb dann auf der alten Version. Der Installer wartet jetzt bis zu einer Minute, bis das laufende Handy seine Programmdatei nicht mehr belegt, bevor er sie ersetzt."
@@ -2023,6 +2011,10 @@
       "wingetUninstall": {
         "title": "Deinstallieren mit winget funktioniert",
         "description": "Handy mit winget oder einem anderen Werkzeug, das still deinstalliert, zu deinstallieren, entfernt es jetzt. Vorher öffnete sich das Deinstallationsfenster und wartete auf einen Klick, während winget Erfolg meldete."
+      },
+      "progressFinish": {
+        "title": "Die Prozentzahl erreicht 100 %, sobald der Text fertig ist",
+        "description": "Nach einer Aufnahme springt die Transkriptions-Prozentzahl auf der Pille jetzt auf 100 %, sobald der Text fertig ist. Vorher konnte sie bei etwa 70 % stehen bleiben und erst vollständig werden, nachdem der Text schon eingefügt war."
       }
     },
     "installed": "Installiert"

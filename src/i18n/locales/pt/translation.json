@@ -1996,18 +1996,6 @@
     "release": "Versão {{version}}",
     "show": "Mostrar",
     "items": {
-      "transcriptionPage": {
-        "title": "A transcrição tem página própria",
-        "description": "As configurações de Saída (método de colagem, área de transferência, envio automático, ações dos slots de salto, traduzir para inglês) agora têm página própria na barra lateral, logo abaixo de Configurações: Transcrição."
-      },
-      "providerPages": {
-        "title": "Duas páginas de provedores",
-        "description": "Provedores agora é Provedores de transcrição (transcrição por API e OpenRouter); os provedores de LLM registrados têm uma página própria ao lado: Provedores de LLM. Ambas ficam em Configurações avançadas."
-      },
-      "sidebarMenus": {
-        "title": "Configurações avançadas e Mais ferramentas",
-        "description": "Mais agora são duas entradas: Configurações avançadas, com as páginas de configurações, e Mais ferramentas, logo depois do Jumper, com Digitador de Teclado, Contagem de Tokens, Teste de Modelos e Áudio Atual."
-      },
       "silentUpdatesFixed": {
         "title": "As atualizações silenciosas voltam a ser instaladas",
         "description": "Uma atualização instalada em segundo plano podia falhar enquanto um modelo de voz estava carregado, e o Handy ficava na versão antiga. Agora o instalador espera, até um minuto, que o Handy em execução deixe de usar o seu ficheiro de programa antes de o substituir."
@@ -2023,6 +2011,10 @@
       "wingetUninstall": {
         "title": "Desinstalar com o winget funciona",
         "description": "Desinstalar o Handy com o winget, ou outra ferramenta que desinstala em silêncio, agora remove-o. Antes, abria-se a janela do desinstalador à espera de um clique, enquanto o winget indicava sucesso."
+      },
+      "progressFinish": {
+        "title": "A percentagem chega a 100% quando o texto está pronto",
+        "description": "Depois de uma gravação, a percentagem de transcrição na pílula chega agora a 100% no momento em que o texto fica pronto. Antes podia parar por volta dos 70% e só terminar depois de o texto já ter sido colado."
       }
     },
     "installed": "Instalada"

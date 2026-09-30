@@ -1996,18 +1996,6 @@
     "release": "版本 {{version}}",
     "show": "显示",
     "items": {
-      "transcriptionPage": {
-        "title": "转录有了专属页面",
-        "description": "“输出”的设置（粘贴方式、剪贴板、自动发送、跳转槽操作、翻译成英文）现在在侧边栏有专属页面，就在“设置向导”下方：“转录”。"
-      },
-      "providerPages": {
-        "title": "两个提供商页面",
-        "description": "“提供商”现在是“转录提供商”（通过 API 和 OpenRouter 转录）；已注册的 LLM 提供商在旁边有自己的页面：“LLM 提供商”。两者都在“高级设置”中。"
-      },
-      "sidebarMenus": {
-        "title": "“高级设置”与“更多工具”",
-        "description": "“更多”现在分成两个项目：收录设置页面的“高级设置”，以及紧接在 Jumper 之后的“更多工具”（键盘输入器、令牌计数、模型测试、当前音频）。"
-      },
       "silentUpdatesFixed": {
         "title": "静默更新恢复正常安装",
         "description": "语音模型已加载到内存中时，后台安装的更新可能会失败，Handy 便停留在旧版本。现在安装程序会等待最多一分钟，直到运行中的 Handy 不再占用程序文件，再进行替换。"
@@ -2023,6 +2011,10 @@
       "wingetUninstall": {
         "title": "使用 winget 卸载已可正常工作",
         "description": "使用 winget 或其他静默卸载的工具卸载 Handy，现在会真正将其移除。之前会打开卸载程序窗口并等待点击，而 winget 却显示成功。"
+      },
+      "progressFinish": {
+        "title": "文字就绪时百分比即达 100%",
+        "description": "录音结束后，胶囊上的转录百分比现在会在文字就绪的那一刻达到 100%。之前可能停在约 70%，直到文字已经粘贴后才完成。"
       }
     },
     "installed": "已安装"

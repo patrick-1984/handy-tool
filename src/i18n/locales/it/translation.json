@@ -1996,18 +1996,6 @@
     "release": "Versione {{version}}",
     "show": "Mostra",
     "items": {
-      "transcriptionPage": {
-        "title": "La trascrizione ha una pagina sua",
-        "description": "Le impostazioni di Output (metodo di incolla, appunti, invio automatico, azioni degli slot di salto, traduzione in inglese) hanno ora una pagina propria nella barra laterale, subito sotto Configurazioni: Trascrizione."
-      },
-      "providerPages": {
-        "title": "Due pagine di provider",
-        "description": "Provider ora è Provider di trascrizione (trascrizione via API e OpenRouter); i provider LLM registrati hanno una pagina tutta loro accanto: Provider LLM. Entrambe sono in Impostazioni avanzate."
-      },
-      "sidebarMenus": {
-        "title": "Impostazioni avanzate e Altri strumenti",
-        "description": "Altro ora è diviso in due voci: Impostazioni avanzate, con le pagine delle impostazioni, e Altri strumenti, subito dopo Jumper, con Digitatore da Tastiera, Conteggio Token, Test dei Modelli e Audio Corrente."
-      },
       "silentUpdatesFixed": {
         "title": "Gli aggiornamenti silenziosi si installano di nuovo",
         "description": "Un aggiornamento installato in background poteva fallire mentre era caricato un modello vocale, e Handy restava sulla versione precedente. Ora il programma di installazione attende, fino a un minuto, che l'Handy in esecuzione non usi più il suo file di programma prima di sostituirlo."
@@ -2023,6 +2011,10 @@
       "wingetUninstall": {
         "title": "La disinstallazione con winget funziona",
         "description": "Disinstallare Handy con winget, o con un altro strumento che disinstalla in modo silenzioso, ora lo rimuove. Prima si apriva la finestra del programma di disinstallazione in attesa di un clic, mentre winget segnalava il successo."
+      },
+      "progressFinish": {
+        "title": "La percentuale arriva al 100% quando il testo è pronto",
+        "description": "Dopo una registrazione, la percentuale di trascrizione sulla pillola arriva ora al 100% appena il testo è pronto. Prima poteva fermarsi intorno al 70% e completarsi solo dopo che il testo era già stato incollato."
       }
     },
     "installed": "Installata"
