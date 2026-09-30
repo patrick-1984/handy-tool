@@ -1987,7 +1987,7 @@
   },
   "updater": {
     "failed": {
-      "message": "A atualização para {{expected}} não foi concluída — continua a executar {{actual}}. O instalador foi iniciado mas nada foi substituído; uma política de segurança pode tê-lo bloqueado.",
+      "message": "A atualização para {{expected}} não teve efeito — ainda está em execução a {{actual}}. O instalador pode não ter iniciado, pode ter encontrado o Handy ainda a fechar, ou uma política de segurança pode tê-lo bloqueado. Tente novamente ou transfira-a manualmente.",
       "download": "Transferir manualmente"
     }
   },

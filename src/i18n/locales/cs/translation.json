@@ -1987,7 +1987,7 @@
   },
   "updater": {
     "failed": {
-      "message": "Aktualizace na {{expected}} neproběhla — stále běží {{actual}}. Instalátor byl spuštěn, ale nic se nenahradilo; mohla ji zablokovat bezpečnostní politika.",
+      "message": "Aktualizace na {{expected}} se neprojevila — stále běží {{actual}}. Instalátor se možná nespustil, zastihl Handy ještě při zavírání, nebo ho zablokovala bezpečnostní zásada. Zkuste to znovu, nebo ji stáhněte sami.",
       "download": "Stáhnout ručně"
     }
   },

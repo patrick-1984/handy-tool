@@ -1987,7 +1987,7 @@
   },
   "updater": {
     "failed": {
-      "message": "La actualización a {{expected}} no se completó: sigue ejecutándose {{actual}}. El instalador se inició pero no se reemplazó nada; puede haberlo bloqueado una directiva de seguridad.",
+      "message": "La actualización a {{expected}} no se aplicó: sigue en ejecución {{actual}}. Puede que el instalador no llegara a iniciarse, que encontrara Handy todavía cerrándose o que una directiva de seguridad lo bloqueara. Inténtalo de nuevo o descárgala tú mismo.",
       "download": "Descargar manualmente"
     }
   },

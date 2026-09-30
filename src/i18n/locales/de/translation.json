@@ -1987,7 +1987,7 @@
   },
   "updater": {
     "failed": {
-      "message": "Update auf {{expected}} wurde nicht abgeschlossen — es läuft weiterhin {{actual}}. Das Installationsprogramm wurde gestartet, aber nichts ersetzt; möglicherweise hat eine Sicherheitsrichtlinie es blockiert.",
+      "message": "Das Update auf {{expected}} wurde nicht wirksam — es läuft noch {{actual}}. Der Installer ist womöglich nicht gestartet, hat Handy noch beim Beenden angetroffen, oder eine Sicherheitsrichtlinie hat ihn blockiert. Versuche es erneut oder lade es selbst herunter.",
       "download": "Manuell herunterladen"
     }
   },

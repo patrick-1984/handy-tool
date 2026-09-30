@@ -1987,7 +1987,7 @@
   },
   "updater": {
     "failed": {
-      "message": "Update to {{expected}} did not complete — still running {{actual}}. The installer was launched but nothing was replaced; a security policy may have blocked it.",
+      "message": "Update to {{expected}} did not take effect — still running {{actual}}. The installer may not have started, may have found Handy still closing, or a security policy may have blocked it. Try again, or download it yourself.",
       "download": "Download manually"
     }
   },

@@ -1,5 +1,30 @@
 # Changelog
 
+## [2.0.2] - 2026-09-30
+
+A fix release: silent updates install again, and a few sidebar changes.
+
+### Fixed
+
+- **Silent updates install again.** An update installed in the background (the scheduled
+  night-time update, or any update while a speech model was loaded) could fail without a word:
+  Handy stayed on the old version and did not restart. The old Handy was still closing when the
+  installer checked for it, and a silent install gives up in that case. The installer now waits
+  until Handy has fully closed (up to a minute) before it replaces anything, and notes each step in
+  `installer.log` in the log folder. Updates made right after a restart were never affected, which
+  is why "Install and restart now" kept working. This takes effect from the update to 2.0.2 on,
+  because the waiting is in the new version's installer.
+- The message after an update that did not take effect no longer blames a security policy alone:
+  the installer may not have started, or may have found Handy still closing.
+
+### Changed
+
+- **About is a sidebar page**, right after What's new, and its first group is **Updates**: check
+  for a new version, silent updates and their time. The same controls stay on General. It was a tab
+  of Advanced settings.
+- **History is the first page** in the sidebar, with a line under it.
+- **The version number is back** at the bottom-left of the sidebar.
+
 ## [2.0.1] - 2026-09-29
 
 A fix release for 2.0.0, with a clearer sidebar.

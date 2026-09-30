@@ -1987,7 +1987,7 @@
   },
   "updater": {
     "failed": {
-      "message": "La mise à jour vers {{expected}} n'a pas abouti — {{actual}} est toujours en cours d'exécution. L'installateur a été lancé mais rien n'a été remplacé ; une stratégie de sécurité l'a peut-être bloqué.",
+      "message": "La mise à jour vers {{expected}} n'a pas pris effet — {{actual}} est toujours en cours d'exécution. L'installateur n'a peut-être pas démarré, a trouvé Handy encore en train de se fermer, ou une stratégie de sécurité l'a bloqué. Réessayez ou téléchargez-la vous-même.",
       "download": "Télécharger manuellement"
     }
   },

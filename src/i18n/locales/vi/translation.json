@@ -1987,7 +1987,7 @@
   },
   "updater": {
     "failed": {
-      "message": "Bản cập nhật lên {{expected}} chưa hoàn tất — vẫn đang chạy {{actual}}. Trình cài đặt đã khởi chạy nhưng không có gì được thay thế; một chính sách bảo mật có thể đã chặn nó.",
+      "message": "Bản cập nhật lên {{expected}} chưa có hiệu lực — vẫn đang chạy {{actual}}. Có thể trình cài đặt không khởi động, gặp lúc Handy vẫn đang đóng, hoặc bị một chính sách bảo mật chặn. Hãy thử lại hoặc tự tải về.",
       "download": "Tải thủ công"
     }
   },

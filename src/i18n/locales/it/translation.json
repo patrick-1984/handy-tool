@@ -1987,7 +1987,7 @@
   },
   "updater": {
     "failed": {
-      "message": "L'aggiornamento a {{expected}} non è stato completato: è ancora in esecuzione {{actual}}. Il programma di installazione è stato avviato ma non è stato sostituito nulla; potrebbe averlo bloccato un criterio di sicurezza.",
+      "message": "L'aggiornamento a {{expected}} non ha avuto effetto: è ancora in esecuzione {{actual}}. Il programma di installazione potrebbe non essersi avviato, aver trovato Handy ancora in chiusura, oppure essere stato bloccato da un criterio di sicurezza. Riprova o scaricalo tu.",
       "download": "Scarica manualmente"
     }
   },

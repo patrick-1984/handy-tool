@@ -1987,7 +1987,7 @@
   },
   "updater": {
     "failed": {
-      "message": "{{expected}} sürümüne güncelleme tamamlanmadı — hâlâ {{actual}} çalışıyor. Yükleyici başlatıldı ancak hiçbir şey değiştirilmedi; bir güvenlik ilkesi engellemiş olabilir.",
+      "message": "{{expected}} sürümüne güncelleme uygulanmadı — hâlâ {{actual}} çalışıyor. Yükleyici başlamamış, Handy'yi henüz kapanırken bulmuş ya da bir güvenlik ilkesi tarafından engellenmiş olabilir. Yeniden deneyin veya kendiniz indirin.",
       "download": "Elle indir"
     }
   },

@@ -1987,7 +1987,7 @@
   },
   "updater": {
     "failed": {
-      "message": "Aktualizacja do {{expected}} nie została ukończona — nadal działa {{actual}}. Instalator został uruchomiony, ale nic nie zostało zastąpione; mogła go zablokować zasada zabezpieczeń.",
+      "message": "Aktualizacja do {{expected}} nie weszła w życie — nadal działa {{actual}}. Instalator mógł się nie uruchomić, zastać Handy jeszcze podczas zamykania albo zostać zablokowany przez zasady zabezpieczeń. Spróbuj ponownie lub pobierz ją samodzielnie.",
       "download": "Pobierz ręcznie"
     }
   },

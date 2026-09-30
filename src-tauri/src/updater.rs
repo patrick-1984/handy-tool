@@ -410,6 +410,7 @@ impl UpdateManager {
         }
 
         self.persist_attempt_marker(&version);
+        let version_for_log = version.clone();
         let mut installing = UpdaterStatus::state("installing");
         installing.version = Some(version);
         self.publish(installing);
@@ -434,8 +435,13 @@ impl UpdateManager {
         // it in which to write anything.
         mark_update_pending(&self.inner.app, &prepared.update.version);
 
-        // On Windows this launches NSIS with Tauri's silent update/restart
-        // arguments and exits the current process only after launch succeeds.
+        // On Windows this starts the NSIS installer with Tauri's silent
+        // update/restart arguments and then exits this process at once - without
+        // checking that the installer started (tauri-plugin-updater ignores the
+        // ShellExecuteW result). Only errors before that (extracting the
+        // installer) return here. The installer itself logs its progress to
+        // installer.log in the log folder (src-tauri/nsis/installer-hooks.nsh).
+        info!("Update to {version_for_log}: starting the installer; the app exits now");
         if let Err(error) = prepared.update.install(&bytes) {
             // A reported failure is already surfaced below, so drop the marker -
             // leaving it would make the next launch report the same thing twice.
@@ -724,7 +730,9 @@ pub fn resolve_pending_update(app: &AppHandle) -> UpdateOutcome {
         UpdateOutcome::Succeeded { version: actual }
     } else {
         warn!(
-            "Update to {} did NOT take effect - still running {}. The installer was launched              but nothing was replaced; on Windows this is usually Smart App Control or another              application-control policy refusing an unsigned installer.",
+            "Update to {} did NOT take effect - still running {}. The installer may not have \
+             started, may have found the app still closing and given up, or may have been \
+             refused by an application-control policy; see installer.log in the log folder.",
             record.expected_version, actual
         );
         UpdateOutcome::Blocked {
