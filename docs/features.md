@@ -690,8 +690,7 @@ Transcription was its Output tab. History first and About as a page since 2.0.2.
 **The situation.** An update brings new settings, and finding them means reading the changelog and
 then hunting through the pages.
 **What Handy does.** A **What's new** page in the sidebar lists the new and changed things of the last
-three GitHub releases (the installed one marked) - the 2.0.0 section carries everything since 1.6.2,
-as 1.7-1.12 were never released on their own; **Show me** opens the page where the setting lives and outlines it, as search does (a
+three GitHub releases (the installed one marked); **Show me** opens the page where the setting lives and outlines it, as search does (a
 setting shown only while its switch is on outlines that switch instead). A dot on the sidebar
 entry marks news you have not opened yet.
 **Where.** `What's new`.
