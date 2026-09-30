@@ -4,28 +4,23 @@ Handy Tool is a local-first dictation tool for Windows: press a key, speak, and 
 
 ## Download
 
-Each link downloads from the current [latest release](https://github.com/patrick-1984/handy-tool/releases/latest).
+Each link always fetches the newest release.
 
-| System                                 | Download                                            |
-| -------------------------------------- | --------------------------------------------------- |
-| **Windows** x64                        | [Installer (.exe)][win]                             |
-| **macOS** Apple Silicon — experimental | [Disk image (.dmg)][mac-arm]                        |
-| **macOS** Intel — experimental         | [Disk image (.dmg)][mac-intel]                      |
-| **Linux** x64 — experimental           | [AppImage][lx-ai] · [.deb][lx-deb] · [.rpm][lx-rpm] |
-| **Linux** ARM64 — experimental         | [AppImage][la-ai] · [.deb][la-deb] · [.rpm][la-rpm] |
+- **Windows** — [installer (.exe)][win]
+- **Linux x64** _(untested)_ — [.rpm][lx-rpm] · [.deb][lx-deb] · [AppImage][lx-ai]
+- **Linux ARM64** _(untested)_ — [.rpm][la-rpm] · [.deb][la-deb] · [AppImage][la-ai]
 
-The installers are not code-signed yet, so Windows and macOS warn the first time — [Install](#install)
-says what to do. The release page has the release notes and every file.
+The Windows installer is not code-signed yet, so Windows warns the first time — [Install](#install)
+says what to do. The [release page](https://github.com/patrick-1984/handy-tool/releases/latest) has
+the release notes and every file.
 
 [win]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-windows-x64-setup.exe
-[mac-arm]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-macos-apple-silicon.dmg
-[mac-intel]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-macos-intel.dmg
-[lx-ai]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-linux-x64.AppImage
-[lx-deb]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-linux-x64.deb
 [lx-rpm]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-linux-x64.rpm
-[la-ai]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-linux-arm64.AppImage
-[la-deb]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-linux-arm64.deb
+[lx-deb]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-linux-x64.deb
+[lx-ai]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-linux-x64.AppImage
 [la-rpm]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-linux-arm64.rpm
+[la-deb]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-linux-arm64.deb
+[la-ai]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-linux-arm64.AppImage
 
 ## Features
 
@@ -101,14 +96,14 @@ The [feature catalog](docs/features.md) has every capability, each explained by 
 ## Install
 
 Every release is built and signed by GitHub Actions from the published source. The
-[Download](#download) links above download from the current latest release; the same files, with the version
-in their names, are on the [latest release](https://github.com/patrick-1984/handy-tool/releases/latest) page.
+[Download](#download) links above fetch the newest release; the same files, with the version in
+their names, are on the [latest release](https://github.com/patrick-1984/handy-tool/releases/latest) page.
 
 ### Windows x64 — installer
 
-Download **`Handy.Tool_<version>_x64-setup.exe`** and run it. It installs per-user, so no
-administrator rights are needed, and it can update itself in place from then on — every update is
-signature-checked before it is applied.
+Download the [installer][win] (`Handy.Tool_<version>_x64-setup.exe` on the release page) and run
+it. It installs per-user, so no administrator rights are needed, and it can update itself in place
+from then on — every update is signature-checked before it is applied.
 
 > **Windows will warn you.** The installer is not signed with a code-signing certificate, so
 > SmartScreen or Smart App Control will say the publisher is unknown — and on some machines Smart App
@@ -120,30 +115,10 @@ signature-checked before it is applied.
 not attached to releases at the moment (the last one shipped with 1.3.0); [Portable](docs/portable.md)
 explains how to assemble one from a release build.
 
-### winget — _pending review_
+### Linux x64 and ARM64 — untested
 
-```powershell
-winget install patrick-1984.HandyTool
-```
-
-The package is [submitted to the winget community repository](https://github.com/microsoft/winget-pkgs/pull/420491)
-and has passed its automated validation; it is waiting for a moderator to merge it. Until then the
-command reports that no package was found. The submitted package is an older version, which updates
-itself to the latest release after installing.
-
-### macOS (Intel and Apple Silicon) — experimental
-
-Download **`Handy.Tool_<version>_x64.dmg`** (Intel) or **`Handy.Tool_<version>_aarch64.dmg`**
-(Apple Silicon) and drag `Handy Tool.app` to Applications. The app is not notarized, so macOS will
-refuse to open it until you clear the quarantine flag once:
-
-```sh
-xattr -dr com.apple.quarantine "/Applications/Handy Tool.app"
-```
-
-### Linux x64 and ARM64 — experimental
-
-`.deb`, `.rpm` and `.AppImage` packages are attached to each release.
+`.rpm`, `.deb` and `.AppImage` packages are attached to each release and linked under
+[Download](#download). They are built by CI but have not been tested on a real machine.
 
 Then, whichever route you took: grant microphone access and go through the short first-start setup:
 your languages, one of three speech models suggested for them, your shortcuts and your microphone. A
@@ -160,16 +135,17 @@ Moving between large screens and apps buried under other windows costs time. Whi
 
 ## Platform status
 
-| Platform            | Status                                                                            |
-| ------------------- | --------------------------------------------------------------------------------- |
-| Windows x64         | Built, tested, and released                                                       |
-| macOS Intel         | **Experimental.** Built and released by CI; not yet used in anger. Not notarized. |
-| macOS Apple Silicon | **Experimental.** Built and released by CI; not tested on real hardware.          |
-| Linux x64 and ARM64 | **Experimental.** Built and released by CI; not tested on real hardware.          |
+| Platform            | Status                                                               |
+| ------------------- | -------------------------------------------------------------------- |
+| Windows x64         | Built, tested, and released                                          |
+| macOS Intel         | **Not working yet.** Built by CI, but not usable yet.                |
+| macOS Apple Silicon | **Not working yet.** Built by CI, but not usable yet.                |
+| Linux x64 and ARM64 | **Untested.** Built and released by CI; not tested on real hardware. |
 
-Every platform is compiled on GitHub's runners, and the macOS and Linux packages ship with each
-release — but nobody has yet granted them microphone and accessibility permission and dictated a
-sentence on a real machine. Treat them as a first cut, not a finished port.
+Every platform is compiled on GitHub's runners. The Linux packages ship with each release, but
+nobody has yet granted them microphone and accessibility permission and dictated a sentence on a
+real machine — treat them as a first cut, not a finished port. macOS is not ready to use yet, so it
+has no download link.
 
 The Jumper family, system-audio capture and portable mode are Windows-only by construction. For the
 complete boundary, see [What runs today, and what is planned](docs/features.md#what-runs-today-and-what-is-planned).
