@@ -42,6 +42,14 @@ const LIVE_TEXT_BOX = "settings.general.liveTextBox.label";
  */
 const RELEASES: { version: string; items: Item[] }[] = [
   {
+    version: "2.0.2",
+    items: [
+      { key: "silentUpdatesFixed" },
+      { key: "aboutPage", section: "about" },
+      { key: "historyFirst", section: "history" },
+    ],
+  },
+  {
     version: "2.0.1",
     items: [
       { key: "transcriptionPage", section: "output" },
@@ -172,10 +180,6 @@ const RELEASES: { version: string; items: Item[] }[] = [
         titleKeys: ["settings.advanced.reopenLastPage.title"],
       },
     ],
-  },
-  {
-    version: "1.6.2",
-    items: [{ key: "blockedUpdate" }, { key: "macBuilds" }],
   },
 ];
 

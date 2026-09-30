@@ -18,7 +18,7 @@ This shelf mirrors the Windows 2.0.1 sidebar, with its Advanced settings and Mor
 - [Post-processing](post-processing.md) — provider, prompt, and generation controls under the Post-processing switch.
 - [Backup](backup.md) — export and selective restore.
 - [Debug](debug.md) — logging and low-level timing or device controls.
-- [About](about.md) — language, version, source, and data locations.
+- [About](about.md) — the update controls, language, version, source, and data locations.
 
 ## More Tools
 

@@ -2147,6 +2147,18 @@
       "sidebarMenus": {
         "title": "Erweiterte Einstellungen und Weitere Werkzeuge",
         "description": "Aus Mehr sind zwei Einträge geworden: Erweiterte Einstellungen mit den Einstellungsseiten und Weitere Werkzeuge, direkt nach Jumper, mit Tastatur-Eingabe, Token-Anzahl, Modelltests und Aktuelles Audio."
+      },
+      "silentUpdatesFixed": {
+        "title": "Stille Updates werden wieder installiert",
+        "description": "Ein im Hintergrund installiertes Update konnte scheitern, solange ein Sprachmodell geladen war, und Handy blieb dann auf der alten Version. Der Installer wartet jetzt, bis Handy beendet ist, und Handy entlädt vorher seine Modelle."
+      },
+      "aboutPage": {
+        "title": "Info in der Seitenleiste",
+        "description": "Info ist jetzt eine eigene Seite direkt nach Neuigkeiten, oben mit Aktualisierungen: nach einer neuen Version suchen, stille Updates und ihre Uhrzeit. Sie sind auch unter Allgemein."
+      },
+      "historyFirst": {
+        "title": "Verlauf zuerst",
+        "description": "Verlauf steht oben in der Seitenleiste, mit einer Linie darunter, und die Versionsnummer ist wieder unten links."
       }
     },
     "installed": "Installiert"

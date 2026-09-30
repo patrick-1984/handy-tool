@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Info, Heart } from "lucide-react";
+import { Info, Heart, RefreshCw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { getVersion } from "@tauri-apps/api/app";
 import { openUrl } from "@tauri-apps/plugin-opener";
@@ -9,6 +9,7 @@ import { Button } from "../../ui/Button";
 import { AppDataDirectory } from "../AppDataDirectory";
 import { AppLanguageSelector } from "../AppLanguageSelector";
 import { LogDirectory } from "../debug";
+import { UpdateSettings } from "../general/UpdateSettings";
 
 export const AboutSettings: React.FC = () => {
   const { t } = useTranslation();
@@ -30,6 +31,14 @@ export const AboutSettings: React.FC = () => {
 
   return (
     <div className="w-full space-y-6">
+      {/* The update controls, where people look for them first; they are on
+          General too. */}
+      <SettingsGroup
+        icon={RefreshCw}
+        title={t("settings.general.updates.title")}
+      >
+        <UpdateSettings />
+      </SettingsGroup>
       <SettingsGroup icon={Info} title={t("settings.about.title")}>
         <AppLanguageSelector descriptionMode="tooltip" grouped={true} />
         <SettingContainer

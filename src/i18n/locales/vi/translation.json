@@ -2147,6 +2147,18 @@
       "sidebarMenus": {
         "title": "Cài đặt nâng cao và Công cụ khác",
         "description": "Thêm giờ là hai mục: Cài đặt nâng cao gồm các trang cài đặt, và Công cụ khác ngay sau Jumper gồm Bộ gõ bàn phím, Đếm Token, Kiểm tra mô hình và Âm thanh hiện tại."
+      },
+      "silentUpdatesFixed": {
+        "title": "Cập nhật im lặng lại được cài đặt",
+        "description": "Bản cập nhật cài trong nền có thể thất bại khi một mô hình giọng nói đang được tải, và Handy vẫn ở phiên bản cũ. Giờ trình cài đặt sẽ đợi đến khi Handy đóng, và Handy giải phóng các mô hình trước."
+      },
+      "aboutPage": {
+        "title": "Giới thiệu trên thanh bên",
+        "description": "Giới thiệu giờ là một trang riêng ngay sau Có gì mới, với Bản cập nhật ở trên cùng: kiểm tra phiên bản mới, cập nhật im lặng và thời gian của chúng. Chúng vẫn có trong trang Chung."
+      },
+      "historyFirst": {
+        "title": "Lịch sử lên đầu",
+        "description": "Lịch sử nằm trên cùng thanh bên, có một đường kẻ bên dưới, và số phiên bản đã trở lại ở góc dưới bên trái."
       }
     },
     "installed": "Đã cài"

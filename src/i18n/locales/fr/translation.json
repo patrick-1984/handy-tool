@@ -2147,6 +2147,18 @@
       "sidebarMenus": {
         "title": "Paramètres avancés et Plus d'outils",
         "description": "Plus devient deux entrées : Paramètres avancés, avec les pages de réglages, et Plus d'outils, juste après Jumper, avec Frappe clavier, Comptage de tokens, Test de modèles et Audio en cours."
+      },
+      "silentUpdatesFixed": {
+        "title": "Les mises à jour silencieuses s'installent à nouveau",
+        "description": "Une mise à jour installée en arrière-plan pouvait échouer pendant qu'un modèle vocal était chargé, et Handy restait alors sur l'ancienne version. L'installateur attend désormais que Handy soit fermé, et Handy décharge d'abord ses modèles."
+      },
+      "aboutPage": {
+        "title": "À propos dans la barre latérale",
+        "description": "À propos est maintenant une page à part, juste après Nouveautés, avec Mises à jour en haut : chercher une nouvelle version, les mises à jour silencieuses et leur heure. Elles restent aussi dans Général."
+      },
+      "historyFirst": {
+        "title": "Historique en premier",
+        "description": "Historique est en haut de la barre latérale, avec une ligne en dessous, et le numéro de version est de retour en bas à gauche."
       }
     },
     "installed": "Installée"

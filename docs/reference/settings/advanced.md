@@ -1,6 +1,6 @@
 # Transcription and Advanced settings
 
-**Transcription** is in the sidebar, just under Setups. **Advanced settings** is the last entry in the sidebar; its tabs, in this order, are Transcription providers, LLM providers, Post-processing, MCP & CLI, Backup, Debug and About. This page covers Transcription, the two provider tabs, MCP & CLI and Post-processing; [Backup](backup.md), [Debug](debug.md) and [About](about.md) have their own pages, as do the tools on **More Tools** (its own sidebar entry, after Jumper): [Token Count](token-count.md), [Model Testing](model-testing.md) and [Current Audio](current-audio.md). Advanced settings and More Tools each reopen the tab you used last.
+**Transcription** is in the sidebar, just under Setups. **Advanced settings** is the last entry in the sidebar; its tabs, in this order, are Transcription providers, LLM providers, Post-processing, MCP & CLI, Backup and Debug. This page covers Transcription, the two provider tabs, MCP & CLI and Post-processing; [Backup](backup.md) and [Debug](debug.md) have their own pages, as does [About](about.md) (a sidebar page since 2.0.2), as do the tools on **More Tools** (its own sidebar entry, after Jumper): [Token Count](token-count.md), [Model Testing](model-testing.md) and [Current Audio](current-audio.md). Advanced settings and More Tools each reopen the tab you used last.
 
 ## Transcription
 

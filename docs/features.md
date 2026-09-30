@@ -670,17 +670,19 @@ controls and post-processing's own controls while it is off never show up.
 **The situation.** The sidebar had grown to seventeen entries in two groups, and some settings
 were in two places at once — History settings on both History and Advanced, the Cancel shortcut
 on Debug and Shortcuts.
-**What Handy does.** The sidebar holds the pages used most — General, Setups, Transcription,
-Shortcuts, Models, History, Files and Jumper — then **More Tools** (Keyboard Typer, Token Count,
-Model Testing, Current Audio) and What's new, and at the bottom **Advanced settings**
-(Transcription providers, LLM providers, Post-processing, MCP & CLI, Backup, Debug, About). More
-Tools and Advanced settings show their pages as tabs and each reopens the tab you used last.
+**What Handy does.** The sidebar starts with **History**, under a line of its own, then the pages
+used most — General, Setups, Transcription, Shortcuts, Models, Files and Jumper — then **More
+Tools** (Keyboard Typer, Token Count, Model Testing, Current Audio), What's new and **About**
+(the version, the update controls, credits), and at the bottom **Advanced settings**
+(Transcription providers, LLM providers, Post-processing, MCP & CLI, Backup, Debug). More Tools
+and Advanced settings show their pages as tabs and each reopens the tab you used last. The
+version you are running is shown at the bottom-left.
 Every setting has one home: History's settings sit at the bottom of History, the
 post-processing provider and prompt appear under the Post-processing switch, and the duplicate
-rows are gone.
+rows are gone. The update controls are the one exception: they are on About and on General.
 **Where.** `Advanced settings` and `More Tools`.
 **Since.** 1.10.0. Until 2.0.1 More Tools and Advanced settings were one **More** entry, and
-Transcription was its Output tab.
+Transcription was its Output tab. History first and About as a page since 2.0.2.
 
 ### What's new, one click from each setting
 
@@ -2484,7 +2486,7 @@ Windows-only. In the
 other direction, some code exists only for platforms that do not ship yet — on-device Apple
 Intelligence post-processing and closed-lid microphone switching on macOS, and the native text
 injection backends on Linux — and none of it is reachable today.
-**Where.** `Advanced settings › About › Version`.
+**Where.** `About › Version`.
 **Since.** 1.0.0 is the first public release.
 
 ### The app makes no calls you didn't ask for
@@ -2530,7 +2532,7 @@ it keeps and where.
 in a JSON file, transcripts in a SQLite database, audio in a recordings folder, downloaded models
 and rotated logs. Nothing is encrypted by Handy — file-system permissions are the protection —
 and there is a button in the app for both the data folder and the log folder.
-**Where.** `Advanced settings › About › App Data Directory` and `Advanced settings › About › Log Directory`.
+**Where.** `About › App Data Directory` and `About › Log Directory`.
 **Since.** Present since the fork's early releases.
 
 ### Your dictation is not written into logs at the normal level
@@ -2554,7 +2556,7 @@ followed the problem has already rotated it away.
 **What Handy does.** Logs rotate at 10 MB instead of 500 KB and rotated files are kept rather
 than being overwritten by the next session. Engine start failures are written to the log at error
 level rather than existing only as a toast you already dismissed.
-**Where.** `Advanced settings › About › Log Directory`.
+**Where.** `About › Log Directory`.
 **Since.** 0.53.0.
 
 ### The honest limits of clipboard safety
@@ -2678,7 +2680,7 @@ combination, an alternative key backend can be selected.
 **What Handy does.** Seventeen interface languages with right-to-left support. Tray menu strings
 are generated at build time from the same translation files as the interface, so they cannot fall
 out of step.
-**Where.** `Advanced settings › About › Application Language`.
+**Where.** `About › Application Language`.
 **Since.** Present since the fork's early releases.
 
 ### Diagnose without guessing

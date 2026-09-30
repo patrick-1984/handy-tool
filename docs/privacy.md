@@ -45,7 +45,7 @@ Dedicated per-engine API/OpenRouter language fields exist but are unused by the 
 
 ## Where data is stored
 
-Normal Windows state is under `File › %APPDATA%\pr.handy`. Use `Advanced settings › About › App Data Directory` to open the active location. With a usable `portable.marker` beside the executable, state goes to an adjacent `data` directory; if it cannot be created or written, Handy falls back to the profile location.
+Normal Windows state is under `File › %APPDATA%\pr.handy`. Use `About › App Data Directory` to open the active location. With a usable `portable.marker` beside the executable, state goes to an adjacent `data` directory; if it cannot be created or written, Handy falls back to the profile location.
 
 | Data                                              | Content                                                                                                                                               | Retention                                                                               |
 | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
@@ -71,7 +71,7 @@ Release builds default to **Info**, which does not record transcript content. Th
 
 At Debug, logs can record transcript fragments, complete API-transcription responses, complete final transcriptions in some flows, and LLM prompt/transcript previews.
 
-Use `Advanced settings › About › Log Directory` to inspect files. Press `ctrl+shift+d` to reveal the page, then change `Advanced settings › Debug › Log Level` _{requires: Debug mode}_. Lowering the level reduces future detail but does not erase existing logs.
+Use `About › Log Directory` to inspect files. Press `ctrl+shift+d` to reveal the page, then change `Advanced settings › Debug › Log Level` _{requires: Debug mode}_. Lowering the level reduces future detail but does not erase existing logs.
 
 See [The logs still exist when you finally need them](features.md#the-logs-still-exist-when-you-need-them).
 

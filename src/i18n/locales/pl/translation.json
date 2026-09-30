@@ -2147,6 +2147,18 @@
       "sidebarMenus": {
         "title": "Ustawienia zaawansowane i Więcej narzędzi",
         "description": "Z pozycji Więcej powstały dwie: Ustawienia zaawansowane ze stronami ustawień oraz Więcej narzędzi, tuż po Jumperze, gdzie są: Pisanie klawiaturą, Liczenie tokenów, Testowanie modeli, Aktualne audio."
+      },
+      "silentUpdatesFixed": {
+        "title": "Ciche aktualizacje znów się instalują",
+        "description": "Aktualizacja instalowana w tle mogła się nie udać, gdy był wczytany model mowy, i Handy zostawał przy starej wersji. Instalator czeka teraz, aż Handy się zamknie, a Handy najpierw zwalnia swoje modele."
+      },
+      "aboutPage": {
+        "title": "O programie na pasku bocznym",
+        "description": "O programie to teraz osobna strona, zaraz po Co nowego, a na górze Aktualizacje: sprawdzanie nowej wersji, ciche aktualizacje i ich godzina. Zostają też na stronie Ogólne."
+      },
+      "historyFirst": {
+        "title": "Historia na początku",
+        "description": "Historia jest na górze paska bocznego, z linią pod spodem, a numer wersji wrócił w lewy dolny róg."
       }
     },
     "installed": "Zainstalowana"

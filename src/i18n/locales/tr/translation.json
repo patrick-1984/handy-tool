@@ -2147,6 +2147,18 @@
       "sidebarMenus": {
         "title": "Gelişmiş ayarlar ve Diğer araçlar",
         "description": "Daha fazla artık iki öğe: ayar sayfalarını içeren Gelişmiş ayarlar ve Jumper'ın hemen ardından gelen Diğer araçlar (Klavye Yazıcısı, Token Sayımı, Model Testi, Mevcut Ses)."
+      },
+      "silentUpdatesFixed": {
+        "title": "Sessiz güncellemeler yeniden yükleniyor",
+        "description": "Bir konuşma modeli yüklüyken arka planda yüklenen güncelleme başarısız olabiliyor ve Handy eski sürümde kalıyordu. Yükleyici artık Handy kapanana kadar bekliyor ve Handy önce modellerini boşaltıyor."
+      },
+      "aboutPage": {
+        "title": "Kenar çubuğunda Hakkında",
+        "description": "Hakkında artık Yenilikler öğesinin hemen ardından gelen ayrı bir sayfa; en üstte Güncellemeler var: yeni sürüm kontrolü, sessiz güncellemeler ve saatleri. Bunlar Genel sayfasında da duruyor."
+      },
+      "historyFirst": {
+        "title": "Geçmiş en başta",
+        "description": "Geçmiş kenar çubuğunun en üstünde, altında bir çizgiyle; sürüm numarası da yeniden sol altta."
       }
     },
     "installed": "Yüklü"

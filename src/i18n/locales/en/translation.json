@@ -2147,6 +2147,18 @@
       "sidebarMenus": {
         "title": "Advanced settings and More Tools",
         "description": "More is now two entries: Advanced settings holds the settings pages, and More Tools, right after Jumper, holds Keyboard Typer, Token Count, Model Testing and Current Audio."
+      },
+      "silentUpdatesFixed": {
+        "title": "Silent updates install again",
+        "description": "An update installed in the background could fail while a speech model was loaded, and Handy then stayed on the old version. The installer now waits until Handy has closed, and Handy unloads its models first."
+      },
+      "aboutPage": {
+        "title": "About in the sidebar",
+        "description": "About is its own page now, right after What's new, with Updates at the top: check for a new version, silent updates and their time. They are on General too."
+      },
+      "historyFirst": {
+        "title": "History first",
+        "description": "History is at the top of the sidebar, with a line under it, and the version number is back at the bottom left."
       }
     },
     "installed": "Installed"

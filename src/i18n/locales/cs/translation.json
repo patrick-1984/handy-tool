@@ -2147,6 +2147,18 @@
       "sidebarMenus": {
         "title": "Pokročilá nastavení a Další nástroje",
         "description": "Z položky Více jsou teď dvě: Pokročilá nastavení se stránkami nastavení a Další nástroje hned za Jumperem, kde najdete: Psaní na klávesnici, Počet tokenů, Testování modelů, Aktuální zvuk."
+      },
+      "silentUpdatesFixed": {
+        "title": "Tiché aktualizace se opět instalují",
+        "description": "Aktualizace instalovaná na pozadí mohla selhat, když byl načten řečový model, a Handy pak zůstal na staré verzi. Instalátor teď počká, až se Handy zavře, a Handy nejprve uvolní své modely."
+      },
+      "aboutPage": {
+        "title": "O aplikaci v postranním panelu",
+        "description": "O aplikaci je teď samostatná stránka hned za Co je nového, nahoře s částí Aktualizace: hledání nové verze, tiché aktualizace a jejich čas. Zůstávají i na stránce Obecné."
+      },
+      "historyFirst": {
+        "title": "Historie jako první",
+        "description": "Historie je nahoře v postranním panelu s čarou pod sebou a číslo verze je zpět vlevo dole."
       }
     },
     "installed": "Nainstalovaná"

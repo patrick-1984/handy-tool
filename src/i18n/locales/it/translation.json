@@ -2147,6 +2147,18 @@
       "sidebarMenus": {
         "title": "Impostazioni avanzate e Altri strumenti",
         "description": "Altro ora è diviso in due voci: Impostazioni avanzate, con le pagine delle impostazioni, e Altri strumenti, subito dopo Jumper, con Digitatore da Tastiera, Conteggio Token, Test dei Modelli e Audio Corrente."
+      },
+      "silentUpdatesFixed": {
+        "title": "Gli aggiornamenti silenziosi si installano di nuovo",
+        "description": "Un aggiornamento installato in background poteva fallire mentre era caricato un modello vocale, e Handy restava sulla versione precedente. Ora il programma di installazione aspetta che Handy sia chiuso, e Handy scarica prima i suoi modelli."
+      },
+      "aboutPage": {
+        "title": "Informazioni nella barra laterale",
+        "description": "Informazioni è ora una pagina a sé, subito dopo Novità, con Aggiornamenti in alto: cercare una nuova versione, gli aggiornamenti silenziosi e il loro orario. Restano anche in Generale."
+      },
+      "historyFirst": {
+        "title": "Cronologia per prima",
+        "description": "Cronologia è in cima alla barra laterale, con una linea sotto, e il numero di versione è tornato in basso a sinistra."
       }
     },
     "installed": "Installata"

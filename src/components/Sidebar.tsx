@@ -80,6 +80,14 @@ interface SectionConfig {
 // Order within this object is the order in the sidebar and in each More row.
 export const SECTIONS_CONFIG = {
   // --- Sidebar ---
+  // First, with a divider under it: the takes you made.
+  history: {
+    labelKey: "sidebar.history",
+    icon: History,
+    component: HistorySettings,
+    placement: "sidebar",
+    enabled: () => true,
+  },
   general: {
     labelKey: "sidebar.general",
     icon: SlidersHorizontal,
@@ -118,13 +126,6 @@ export const SECTIONS_CONFIG = {
     placement: "sidebar",
     enabled: () => true,
   },
-  history: {
-    labelKey: "sidebar.history",
-    icon: History,
-    component: HistorySettings,
-    placement: "sidebar",
-    enabled: () => true,
-  },
   files: {
     labelKey: "sidebar.files",
     icon: FileAudio,
@@ -143,6 +144,15 @@ export const SECTIONS_CONFIG = {
     labelKey: "sidebar.whatsNew",
     icon: Gift,
     component: WhatsNewPage,
+    placement: "sidebar",
+    enabled: () => true,
+  },
+  // Version, the update controls and credits: a sidebar page since 2.0.2 (it was
+  // a tab of Advanced settings).
+  about: {
+    labelKey: "sidebar.about",
+    icon: Info,
+    component: AboutSettings,
     placement: "sidebar",
     enabled: () => true,
   },
@@ -190,13 +200,6 @@ export const SECTIONS_CONFIG = {
     component: DebugSettings,
     placement: "more-settings",
     enabled: (settings) => settings?.debug_mode ?? false,
-  },
-  about: {
-    labelKey: "sidebar.about",
-    icon: Info,
-    component: AboutSettings,
-    placement: "more-settings",
-    enabled: () => true,
   },
   // --- More Tools (its own sidebar entry, after Jumper) ---
   keyboardTyper: {
@@ -273,9 +276,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
   // What's new carries a dot until this version's news were opened.
   const [newsUnseen, setNewsUnseen] = useState(false);
+  // Shown at the bottom-left of the sidebar.
+  const [appVersion, setAppVersion] = useState("");
   useEffect(() => {
     const check = () =>
       getVersion().then((version) => {
+        setAppVersion(version);
         let seen: string | null = null;
         try {
           seen = localStorage.getItem(WHATS_NEW_SEEN_KEY);
@@ -424,6 +430,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 () => onSectionChange(section.id),
                 section.id === "whatsNew" && newsUnseen,
               )}
+              {section.id === "history" && (
+                <div className="mx-2 my-1 border-t border-border" />
+              )}
               {section.id === "jumper" && renderGroup("more-tools")}
             </React.Fragment>
           ))}
@@ -432,6 +441,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <UpdateBanner />
         </div>
       </div>
+      {appVersion && (
+        <div className="mt-auto w-full shrink-0 px-2.5 pt-3 pb-2 text-[11px] leading-4 text-text-secondary tabular-nums select-text">
+          {/* eslint-disable-next-line i18next/no-literal-string */}
+          <span>v{appVersion}</span>
+        </div>
+      )}
       {/* Drag handle: resize the sidebar; width persists across launches. */}
       <div
         onMouseDown={startResize}

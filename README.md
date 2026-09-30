@@ -12,6 +12,9 @@ This list follows the same layout ([how the pages are arranged](docs/features.md
 
 ### In the sidebar
 
+- **History** — [a crash mid-dictation costs you nothing](docs/features.md#a-crash-mid-dictation-costs-you-nothing);
+  [find what you dictated last Tuesday](docs/features.md#what-did-i-dictate-last-tuesday), [hear what it heard](docs/features.md#hear-what-it-heard),
+  and [see how much you have dictated](docs/features.md#how-much-have-i-dictated).
 - **General** — the dictation itself. [Press one key, speak, and the text appears where you were typing](docs/features.md#press-one-key-and-speak),
   or [hold a key for a one-line thought](docs/features.md#hold-to-talk). [Watch the text appear, or wait for the most accurate pass](docs/features.md#live-or-post-recording);
   with the [live text box](docs/features.md#live-text-box) your words sit next to the recording pill while you talk, and you can
@@ -35,9 +38,6 @@ This list follows the same layout ([how the pages are arranged](docs/features.md
   Moonshine or SenseVoice on your own computer — [on the GPU, integrated graphics included](docs/features.md#gpu-acceleration-including-integrated-graphics)
   or [on a laptop's NPU](docs/features.md#use-the-npu-in-your-laptop) — or a remote speech endpoint.
   [Ratings on one scale](docs/features.md#model-ratings-on-one-scale) make them comparable.
-- **History** — [a crash mid-dictation costs you nothing](docs/features.md#a-crash-mid-dictation-costs-you-nothing);
-  [find what you dictated last Tuesday](docs/features.md#what-did-i-dictate-last-tuesday), [hear what it heard](docs/features.md#hear-what-it-heard),
-  and [see how much you have dictated](docs/features.md#how-much-have-i-dictated).
 - **Files** — [transcribe an audio file as accurately as the model can](docs/features.md#one-file-transcribed-as-accurately-as-the-model-can)
   (WAV, MP3, M4A, MP4 audio track, AAC, FLAC, Ogg Opus), and [a folder of recordings, transcribed while you sleep](docs/features.md#a-folder-of-recordings-transcribed-while-you-sleep).
 - **Jumper** _(Windows)_ — [send the text where you were](docs/features.md#send-it-where-you-were) or
@@ -45,6 +45,8 @@ This list follows the same layout ([how the pages are arranged](docs/features.md
   and [refuses to type into a password box](docs/features.md#it-refuses-to-dictate-into-a-password-box).
 - **More Tools** — the tools, [listed below](#more-tools).
 - **What's new** — what changed in the last releases, each with **Show me**.
+- **About** — the update controls (check for a new version, silent updates), the version
+  and licences. The version you are running is also shown at the bottom-left of the sidebar.
 
 ### Advanced settings
 
@@ -57,7 +59,7 @@ This list follows the same layout ([how the pages are arranged](docs/features.md
 - **MCP & CLI** — [let an agent drive the app](docs/features.md#let-an-agent-drive-the-app), or script it with
   [a `handy` command on your PATH](docs/features.md#a-handy-command-on-your-path).
 - **Backup** — [one file that carries your whole setup](docs/features.md#one-file-that-carries-your-whole-setup).
-- **About** — version and licences. (**Debug** appears here too once debug mode is on.)
+- **Debug** — appears here once debug mode is on.
 
 ### More Tools
 
