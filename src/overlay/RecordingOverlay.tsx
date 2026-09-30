@@ -77,8 +77,8 @@ const RecordingOverlay: React.FC = () => {
       const timer = setTimeout(() => setIsVisible(false), 120);
       return () => clearTimeout(timer);
     }
-    // The backend's 100 means the text is ready and about to be pasted: show it
-    // at once, since a count-up would still be running when the text lands.
+    // The backend's 100 means the text is ready and is being pasted: show it at
+    // once rather than counting up to it.
     if (
       (target === 100 && !finishing) ||
       window.matchMedia("(prefers-reduced-motion: reduce)").matches

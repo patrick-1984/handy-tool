@@ -6,14 +6,14 @@ A fix release: the transcription percentage reaches 100% when the text is ready.
 
 ### Fixed
 
-- **"Transcribing N%" no longer shows 70% while the text is already pasted.** The figure is an
+- **"Transcribing N%" goes to 100% when the text is ready.** The figure is an
   estimate for most takes: Parakeet, Moonshine and SenseVoice report no progress, and Whisper
   reports it only once per 30 seconds of audio. Handy works it out from this PC's recent
   transcriptions. When the transcription ended, the figure stopped where the estimate had got to.
   It reached 100% only when the pill closed, after the text had been pasted, and after Enter too
   with Transcribe & Submit. A take that finished sooner than estimated therefore pasted its text
-  with the pill still at 60-70%. The figure now jumps to 100% the moment the text is ready,
-  instead of after it has been pasted. It does so only when there is text to deliver, not for a
+  with the pill still at 60-70%. The figure now jumps to 100% as soon as the text is ready, while
+  it is being pasted, instead of only after the paste. It does so only when there is text to deliver, not for a
   failed, empty or cancelled take. A quick take still shows no figure at all.
 - For Whisper, time spent waiting for the graphics card (while a model is loading) no longer
   counts as transcription time: the percentage does not move during the wait, and the timings the
