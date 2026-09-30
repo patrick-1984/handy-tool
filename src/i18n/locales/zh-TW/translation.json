@@ -2159,6 +2159,10 @@
       "historyFirst": {
         "title": "「歷史紀錄」排在最前面",
         "description": "「歷史紀錄」位於側邊欄最上方，下方有一條分隔線，版本號碼也重新顯示在左下角。"
+      },
+      "wingetUninstall": {
+        "title": "使用 winget 解除安裝已可正常運作",
+        "description": "使用 winget 或其他以靜默方式解除安裝的工具解除安裝 Handy，現在會真正將它移除。之前會開啟解除安裝程式視窗並等待點選，而 winget 卻顯示成功。"
       }
     },
     "installed": "已安裝"

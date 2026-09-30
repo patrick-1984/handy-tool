@@ -31,16 +31,15 @@ interface Item {
   notOnLinux?: boolean;
 }
 
-// A live text box setting is only shown while the box is on: then its switch.
-const LIVE_TEXT_BOX = "settings.general.liveTextBox.label";
-
 /**
  * The last three GitHub releases, newest first: what each brought to someone
- * updating from the one before. The coming release carries everything since
- * 1.6.2 (1.6.3-1.13.0 were only local builds). Add the next release on top and
- * drop the oldest.
+ * updating from the one before. Add the next release on top and drop the oldest.
  */
 const RELEASES: { version: string; items: Item[] }[] = [
+  {
+    version: "2.0.3",
+    items: [{ key: "wingetUninstall" }],
+  },
   {
     version: "2.0.2",
     items: [
@@ -55,130 +54,6 @@ const RELEASES: { version: string; items: Item[] }[] = [
       { key: "transcriptionPage", section: "output" },
       { key: "providerPages", section: "llmProviders" },
       { key: "sidebarMenus", section: "keyboardTyper" },
-    ],
-  },
-  {
-    version: "2.0.0", // everything since 1.6.2 (1.6.3-1.13.0 were local builds)
-    items: [
-      {
-        key: "files",
-        section: "files",
-        titleKeys: ["settings.files.transcribe.choose.title"],
-      },
-      {
-        key: "liveTextBox",
-        section: "general",
-        titleKeys: ["settings.general.liveTextBox.label"],
-      },
-      {
-        key: "liveTranscript",
-        section: "general",
-        titleKeys: ["settings.general.liveTextBox.label"],
-      },
-      {
-        key: "firstSetup",
-        section: "setups",
-        titleKeys: ["setup.catalog.basic.title"],
-      },
-      {
-        key: "setups",
-        section: "setups",
-        titleKeys: [
-          "setup.catalog.postProcessing.title",
-          "setup.catalog.jumper.title",
-        ],
-      },
-      {
-        key: "appearanceSetup",
-        section: "setups",
-        titleKeys: ["setup.catalog.appearance.title"],
-      },
-      { key: "newLook" },
-      { key: "newLayout" },
-      { key: "newIcon" },
-      { key: "helpMode", section: "general", titleKeys: ["helpMode.button"] },
-      { key: "shortcutsPage", section: "shortcuts" },
-      {
-        key: "shortcutNone",
-        section: "shortcuts",
-        titleKeys: ["settings.general.shortcut.bindings.cancel.name"],
-        // Cancel is not offered on Linux: outline the Transcribe shortcut there.
-        fallbackKey: "settings.general.shortcut.bindings.transcribe.name",
-      },
-      {
-        key: "historyTabs",
-        section: "history",
-        titleKeys: ["settings.history.stats.title"],
-        historyTab: "statistics",
-      },
-      {
-        key: "pauseButton",
-        section: "general",
-        titleKeys: ["settings.general.pauseButton.label"],
-      },
-      {
-        key: "holdUndo",
-        section: "general",
-        titleKeys: ["settings.general.undoWord.label"],
-        notOnLinux: true,
-      },
-      { key: "progressPercent" },
-      { key: "micStatus" },
-      {
-        key: "micWarmup",
-        section: "general",
-        titleKeys: ["settings.sound.micWarmup.title"],
-      },
-      {
-        key: "micKeepWarm",
-        section: "general",
-        titleKeys: ["settings.sound.micKeepWarm.title"],
-      },
-      {
-        key: "tooQuiet",
-        section: "general",
-        titleKeys: ["settings.sound.tooQuiet.title"],
-      },
-      { key: "modelRatings", section: "models", dictationModel: true },
-      {
-        key: "liveTextAfterStop",
-        section: "general",
-        titleKeys: ["settings.general.liveTextAfterStop.label"],
-      },
-      {
-        key: "liveTextSize",
-        section: "general",
-        titleKeys: ["settings.general.liveTextSize.title"],
-        fallbackKey: LIVE_TEXT_BOX,
-      },
-      {
-        key: "liveTextFade",
-        section: "general",
-        titleKeys: ["settings.general.liveTextFade.label"],
-        fallbackKey: LIVE_TEXT_BOX,
-      },
-      {
-        key: "progressStyle",
-        section: "general",
-        titleKeys: ["settings.advanced.progressStyle.title"],
-      },
-      {
-        key: "progressColor",
-        section: "general",
-        titleKeys: ["settings.advanced.progressColor.title"],
-      },
-      {
-        key: "overlaySize",
-        section: "general",
-        titleKeys: ["settings.advanced.overlaySize.title"],
-      },
-      { key: "pillMenus" },
-      { key: "trayClick" },
-      {
-        key: "reopenLastPage",
-        section: "general",
-        titleKeys: ["settings.advanced.reopenLastPage.title"],
-      },
     ],
   },
 ];

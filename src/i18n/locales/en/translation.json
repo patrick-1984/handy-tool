@@ -2159,6 +2159,10 @@
       "historyFirst": {
         "title": "History first",
         "description": "History is at the top of the sidebar, with a line under it, and the version number is back at the bottom left."
+      },
+      "wingetUninstall": {
+        "title": "Uninstalling with winget works",
+        "description": "Uninstalling Handy with winget, or another tool that uninstalls quietly, now removes it. Before, it opened the uninstaller window and waited for a click, while winget reported success."
       }
     },
     "installed": "Installed"

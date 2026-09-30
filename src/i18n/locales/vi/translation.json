@@ -2159,6 +2159,10 @@
       "historyFirst": {
         "title": "Lịch sử lên đầu",
         "description": "Lịch sử nằm trên cùng thanh bên, có một đường kẻ bên dưới, và số phiên bản đã trở lại ở góc dưới bên trái."
+      },
+      "wingetUninstall": {
+        "title": "Gỡ cài đặt bằng winget hoạt động",
+        "description": "Gỡ Handy bằng winget, hoặc một công cụ gỡ cài đặt im lặng khác, giờ sẽ thực sự xóa nó. Trước đây cửa sổ gỡ cài đặt mở ra và chờ một cú nhấp, trong khi winget báo thành công."
       }
     },
     "installed": "Đã cài"

@@ -2159,6 +2159,10 @@
       "historyFirst": {
         "title": "Historie jako první",
         "description": "Historie je nahoře v postranním panelu s čarou pod sebou a číslo verze je zpět vlevo dole."
+      },
+      "wingetUninstall": {
+        "title": "Odinstalace přes winget funguje",
+        "description": "Odinstalace Handy přes winget nebo jiný nástroj, který odinstalovává tiše, ho teď odstraní. Dříve se otevřelo okno odinstalátoru a čekalo na kliknutí, zatímco winget hlásil úspěch."
       }
     },
     "installed": "Nainstalovaná"

@@ -2159,6 +2159,10 @@
       "historyFirst": {
         "title": "Historia na początku",
         "description": "Historia jest na górze paska bocznego, z linią pod spodem, a numer wersji wrócił w lewy dolny róg."
+      },
+      "wingetUninstall": {
+        "title": "Odinstalowanie przez winget działa",
+        "description": "Odinstalowanie Handy przez winget lub inne narzędzie, które odinstalowuje po cichu, teraz go usuwa. Wcześniej otwierało się okno deinstalatora i czekało na kliknięcie, a winget zgłaszał powodzenie."
       }
     },
     "installed": "Zainstalowana"

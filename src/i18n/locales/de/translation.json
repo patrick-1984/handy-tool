@@ -2159,6 +2159,10 @@
       "historyFirst": {
         "title": "Verlauf zuerst",
         "description": "Verlauf steht oben in der Seitenleiste, mit einer Linie darunter, und die Versionsnummer ist wieder unten links."
+      },
+      "wingetUninstall": {
+        "title": "Deinstallieren mit winget funktioniert",
+        "description": "Handy mit winget oder einem anderen Werkzeug, das still deinstalliert, zu deinstallieren, entfernt es jetzt. Vorher öffnete sich das Deinstallationsfenster und wartete auf einen Klick, während winget Erfolg meldete."
       }
     },
     "installed": "Installiert"

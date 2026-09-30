@@ -2159,6 +2159,10 @@
       "historyFirst": {
         "title": "Geçmiş en başta",
         "description": "Geçmiş kenar çubuğunun en üstünde, altında bir çizgiyle; sürüm numarası da yeniden sol altta."
+      },
+      "wingetUninstall": {
+        "title": "winget ile kaldırma çalışıyor",
+        "description": "Handy'yi winget veya sessizce kaldıran başka bir araçla kaldırmak artık onu siliyor. Önceden kaldırma penceresi açılıp bir tıklama bekliyor, winget ise başarılı olduğunu bildiriyordu."
       }
     },
     "installed": "Yüklü"

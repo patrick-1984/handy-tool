@@ -2159,6 +2159,10 @@
       "historyFirst": {
         "title": "Historial primero",
         "description": "Historial está arriba en la barra lateral, con una línea debajo, y el número de versión vuelve a verse abajo a la izquierda."
+      },
+      "wingetUninstall": {
+        "title": "Desinstalar con winget funciona",
+        "description": "Desinstalar Handy con winget, u otra herramienta que desinstala en silencio, ahora lo elimina. Antes se abría la ventana del desinstalador y esperaba un clic, mientras winget informaba de éxito."
       }
     },
     "installed": "Instalada"

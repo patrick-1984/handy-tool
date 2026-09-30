@@ -2159,6 +2159,10 @@
       "historyFirst": {
         "title": "Cronologia per prima",
         "description": "Cronologia è in cima alla barra laterale, con una linea sotto, e il numero di versione è tornato in basso a sinistra."
+      },
+      "wingetUninstall": {
+        "title": "La disinstallazione con winget funziona",
+        "description": "Disinstallare Handy con winget, o con un altro strumento che disinstalla in modo silenzioso, ora lo rimuove. Prima si apriva la finestra del programma di disinstallazione in attesa di un clic, mentre winget segnalava il successo."
       }
     },
     "installed": "Installata"

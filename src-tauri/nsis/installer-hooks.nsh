@@ -90,6 +90,12 @@
   ${If} $UpdateMode = 1
     !insertmacro HandyInstallerLog "update: files installed"
   ${EndIf}
+  ; The template writes UninstallString but no QuietUninstallString, so a silent
+  ; uninstall by winget (and similar tools) started uninstall.exe without /S: the
+  ; uninstaller opened its window and waited for a click while winget, seeing its
+  ; launcher exit, reported "Successfully uninstalled" with nothing removed. The
+  ; uninstaller deletes this key, so nothing is left behind.
+  WriteRegStr SHCTX "${UNINSTKEY}" "QuietUninstallString" "$\"$INSTDIR\uninstall.exe$\" /S"
   ${IfNot} ${Silent}
   ${AndIf} $PassiveMode <> 1
     ClearErrors

@@ -1,5 +1,23 @@
 # Changelog
 
+## [2.0.3] - 2026-09-30
+
+A fix release: uninstalling with winget works.
+
+### Fixed
+
+- **Uninstalling with winget removes Handy.** `winget uninstall patrick-1984.HandyTool` reported
+  "Successfully uninstalled" and removed nothing. The uninstall entry had no quiet form, so winget
+  started the uninstaller without `/S`. The uninstaller then opened its window and waited for a
+  click, while winget, seeing the launcher exit, reported success. The installer now also writes
+  the quiet uninstall command, and winget uninstalls silently, with Handy running or not. Found by
+  testing the winget install in a clean Windows Sandbox. Existing installs get the fix with this
+  update.
+
+### Changed
+
+- The README shows the winget install (`winget install patrick-1984.HandyTool`) at the top.
+
 ## [2.0.2] - 2026-09-30
 
 A fix release: silent updates install again, and a few sidebar changes.
