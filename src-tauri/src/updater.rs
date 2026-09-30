@@ -647,12 +647,13 @@ fn pending_update_path(app: &AppHandle) -> Option<std::path::PathBuf> {
 
 /// Record that an installer is about to run.
 ///
-/// `Update::install` launches NSIS and then exits this process. It reports success
-/// as soon as the LAUNCH succeeds - it cannot know whether the installer actually
-/// replaced anything, and on a machine with an application-control policy the
-/// installer can be refused after launch. Without this marker the app simply
-/// restarts on the old version having reported a successful update, which is
-/// indistinguishable from "already up to date" and leaves the user stuck forever.
+/// `Update::install` starts NSIS and then exits this process without checking
+/// that the installer started - it cannot know whether the installer actually
+/// replaced anything: it may not start, may give up (a silent install does when
+/// it finds the app still running), or may be refused by an application-control
+/// policy. Without this marker the app simply restarts on the old version having
+/// reported a successful update, which is indistinguishable from "already up to
+/// date" and leaves the user stuck forever.
 fn mark_update_pending(app: &AppHandle, expected_version: &str) {
     let Some(path) = pending_update_path(app) else {
         return;
@@ -683,9 +684,11 @@ pub enum UpdateOutcome {
     None,
     /// The version changed to what was expected.
     Succeeded { version: String },
-    /// The installer ran but the version did not change. Almost always an
-    /// application-control policy (Windows Smart App Control / WDAC) refusing an
-    /// unsigned installer, which produces no error the updater can observe.
+    /// The update was attempted but the version did not change. The cause is not
+    /// observable from here: the installer may not have started, may have given
+    /// up, or may have been refused by an application-control policy (see
+    /// installer.log). The name predates that; it is kept because the frontend
+    /// reads it (`blocked` in bindings.ts).
     Blocked { expected: String, actual: String },
 }
 
