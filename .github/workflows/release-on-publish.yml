@@ -251,14 +251,15 @@ jobs:
           Write-Host "manifest validated: v$($m.version)"
 
       - name: Add version-free copies for the README's download links
+        # The README links to releases/latest/download/<name>, which resolves only
+        # for a name that is the same in every release. These are byte-identical
+        # copies of the installers checked above, in a folder of their own so no
+        # check above ever sees them. A convenience: this step and its upload are
+        # continue-on-error and a missing match only warns, so neither can stop the
+        # signed installer and latest.json from being attached and promoted.
+        continue-on-error: true
         shell: pwsh
         run: |
-          # The README links to releases/latest/download/<name>, which resolves only
-          # for a name that is the same in every release. These are byte-identical
-          # copies of the installers checked above, in a folder of their own so no
-          # check above ever sees them. A convenience: a surprise here warns instead
-          # of failing, so it can never block the update path (latest.json + the
-          # signed installer).
           $aliases = [ordered]@{
             'Handy-Tool-windows-x64-setup.exe'   = '*_x64-setup.exe'
             'Handy-Tool-macos-apple-silicon.dmg' = '*_aarch64.dmg'
@@ -290,11 +291,22 @@ jobs:
           # UPLOAD, never create: `release: published` means the release already
           # exists, and `gh release create` would fail against it.
           $tag = '${{ github.event.release.tag_name }}'
-          $assets = @(Get-ChildItem dist -Recurse -File |
-                      Where-Object { $_.Extension -in '.exe','.sig','.dmg','.deb','.rpm','.AppImage' -or $_.Name -eq 'latest.json' }) +
-                    @(Get-ChildItem dist-latest -File)
+          $assets = Get-ChildItem dist -Recurse -File |
+                    Where-Object { $_.Extension -in '.exe','.sig','.dmg','.deb','.rpm','.AppImage' -or $_.Name -eq 'latest.json' }
           & gh release upload $tag @($assets.FullName) --repo ${{ github.repository }} --clobber
           if ($LASTEXITCODE -ne 0) { throw "Asset upload failed" }
+
+      - name: Attach the version-free copies
+        continue-on-error: true # see "Add version-free copies"
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $tag = '${{ github.event.release.tag_name }}'
+          $copies = @(Get-ChildItem dist-latest -File -ErrorAction SilentlyContinue)
+          if (-not $copies) { Write-Host "::warning::no version-free copies to attach"; exit 0 }
+          & gh release upload $tag @($copies.FullName) --repo ${{ github.repository }} --clobber
+          if ($LASTEXITCODE -ne 0) { throw "Uploading the version-free copies failed (the release itself is unaffected)" }
 
       - name: Verify from the server, then promote to Latest
         shell: pwsh
@@ -312,7 +324,7 @@ jobs:
           Write-Host "attached: $names"
           # The README's download links: warn, never block (see the step that adds them).
           $landed = $names -split ','
-          $missing = @(Get-ChildItem dist-latest -File | Where-Object { $landed -notcontains $_.Name })
+          $missing = @(Get-ChildItem dist-latest -File -ErrorAction SilentlyContinue | Where-Object { $landed -notcontains $_.Name })
           if ($missing) { Write-Host "::warning::not attached, README links will 404: $($missing.Name -join ', ')" }
           & gh release edit $tag --repo ${{ github.repository }} --prerelease=false --latest
           if ($LASTEXITCODE -ne 0) { throw "Could not promote the release to Latest" }

@@ -4,7 +4,7 @@ Handy Tool is a local-first dictation tool for Windows: press a key, speak, and 
 
 ## Download
 
-Each link always fetches the newest release.
+Each link downloads from the current [latest release](https://github.com/patrick-1984/handy-tool/releases/latest).
 
 | System                                 | Download                                            |
 | -------------------------------------- | --------------------------------------------------- |
@@ -15,7 +15,7 @@ Each link always fetches the newest release.
 | **Linux** ARM64 — experimental         | [AppImage][la-ai] · [.deb][la-deb] · [.rpm][la-rpm] |
 
 The installers are not code-signed yet, so Windows and macOS warn the first time — [Install](#install)
-says what to do. Release notes and every file: [latest release](https://github.com/patrick-1984/handy-tool/releases/latest).
+says what to do. The release page has the release notes and every file.
 
 [win]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-windows-x64-setup.exe
 [mac-arm]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-macos-apple-silicon.dmg
@@ -101,7 +101,7 @@ The [feature catalog](docs/features.md) has every capability, each explained by 
 ## Install
 
 Every release is built and signed by GitHub Actions from the published source. The
-[Download](#download) links above always fetch the newest release; the same files, with the version
+[Download](#download) links above download from the current latest release; the same files, with the version
 in their names, are on the [latest release](https://github.com/patrick-1984/handy-tool/releases/latest) page.
 
 ### Windows x64 — installer
