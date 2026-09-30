@@ -26,6 +26,10 @@ A fix release: silent updates install again, and a few sidebar changes.
   of Advanced settings.
 - **History is the first page** in the sidebar, with a line under it.
 - **The version number is back** at the bottom-left of the sidebar.
+- **Download links that always fetch the newest release**, one per system, at the top of the
+  README. Each release now also carries its installers under names without the version
+  (`Handy-Tool-windows-x64-setup.exe`, `Handy-Tool-macos-apple-silicon.dmg`, …), so a
+  `releases/latest/download/` link keeps working from one release to the next.
 
 ## [2.0.1] - 2026-09-29
 

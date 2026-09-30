@@ -250,6 +250,38 @@ jobs:
           Copy-Item $manifest dist/latest.json
           Write-Host "manifest validated: v$($m.version)"
 
+      - name: Add version-free copies for the README's download links
+        shell: pwsh
+        run: |
+          # The README links to releases/latest/download/<name>, which resolves only
+          # for a name that is the same in every release. These are byte-identical
+          # copies of the installers checked above, in a folder of their own so no
+          # check above ever sees them. A convenience: a surprise here warns instead
+          # of failing, so it can never block the update path (latest.json + the
+          # signed installer).
+          $aliases = [ordered]@{
+            'Handy-Tool-windows-x64-setup.exe'   = '*_x64-setup.exe'
+            'Handy-Tool-macos-apple-silicon.dmg' = '*_aarch64.dmg'
+            'Handy-Tool-macos-intel.dmg'         = '*_x64.dmg'
+            'Handy-Tool-linux-x64.AppImage'      = '*_amd64.AppImage'
+            'Handy-Tool-linux-x64.deb'           = '*_amd64.deb'
+            'Handy-Tool-linux-x64.rpm'           = '*.x86_64.rpm'
+            'Handy-Tool-linux-arm64.AppImage'    = '*_aarch64.AppImage'
+            'Handy-Tool-linux-arm64.deb'         = '*_arm64.deb'
+            'Handy-Tool-linux-arm64.rpm'         = '*.aarch64.rpm'
+          }
+          New-Item -ItemType Directory -Force dist-latest | Out-Null
+          foreach ($name in $aliases.Keys) {
+            # -like, not -Filter: -Filter also matches 8.3 short names.
+            $src = @(Get-ChildItem dist -Recurse -File | Where-Object { $_.Name -like $aliases[$name] })
+            if ($src.Count -ne 1) {
+              Write-Host "::warning::$name not added: $($src.Count) files match $($aliases[$name])"
+              continue
+            }
+            Copy-Item -LiteralPath $src[0].FullName -Destination (Join-Path dist-latest $name)
+            Write-Host "$name <- $($src[0].Name)"
+          }
+
       - name: Attach the assets to the published release
         shell: pwsh
         env:
@@ -258,8 +290,9 @@ jobs:
           # UPLOAD, never create: `release: published` means the release already
           # exists, and `gh release create` would fail against it.
           $tag = '${{ github.event.release.tag_name }}'
-          $assets = Get-ChildItem dist -Recurse -File |
-                    Where-Object { $_.Extension -in '.exe','.sig','.dmg','.deb','.rpm','.AppImage' -or $_.Name -eq 'latest.json' }
+          $assets = @(Get-ChildItem dist -Recurse -File |
+                      Where-Object { $_.Extension -in '.exe','.sig','.dmg','.deb','.rpm','.AppImage' -or $_.Name -eq 'latest.json' }) +
+                    @(Get-ChildItem dist-latest -File)
           & gh release upload $tag @($assets.FullName) --repo ${{ github.repository }} --clobber
           if ($LASTEXITCODE -ne 0) { throw "Asset upload failed" }
 
@@ -277,6 +310,10 @@ jobs:
           if ($names -notmatch 'latest\.json') { throw "latest.json is NOT attached - auto-update would be broken. Not promoting." }
           if ($names -notmatch '\.sig') { throw "No updater signature attached. Not promoting." }
           Write-Host "attached: $names"
+          # The README's download links: warn, never block (see the step that adds them).
+          $landed = $names -split ','
+          $missing = @(Get-ChildItem dist-latest -File | Where-Object { $landed -notcontains $_.Name })
+          if ($missing) { Write-Host "::warning::not attached, README links will 404: $($missing.Name -join ', ')" }
           & gh release edit $tag --repo ${{ github.repository }} --prerelease=false --latest
           if ($LASTEXITCODE -ne 0) { throw "Could not promote the release to Latest" }
           Write-Host "promoted to Latest"

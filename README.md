@@ -2,6 +2,31 @@
 
 Handy Tool is a local-first dictation tool for Windows: press a key, speak, and the words land in the field you were working in, in the form that field expects.
 
+## Download
+
+Each link always fetches the newest release.
+
+| System                                 | Download                                            |
+| -------------------------------------- | --------------------------------------------------- |
+| **Windows** x64                        | [Installer (.exe)][win]                             |
+| **macOS** Apple Silicon — experimental | [Disk image (.dmg)][mac-arm]                        |
+| **macOS** Intel — experimental         | [Disk image (.dmg)][mac-intel]                      |
+| **Linux** x64 — experimental           | [AppImage][lx-ai] · [.deb][lx-deb] · [.rpm][lx-rpm] |
+| **Linux** ARM64 — experimental         | [AppImage][la-ai] · [.deb][la-deb] · [.rpm][la-rpm] |
+
+The installers are not code-signed yet, so Windows and macOS warn the first time — [Install](#install)
+says what to do. Release notes and every file: [latest release](https://github.com/patrick-1984/handy-tool/releases/latest).
+
+[win]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-windows-x64-setup.exe
+[mac-arm]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-macos-apple-silicon.dmg
+[mac-intel]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-macos-intel.dmg
+[lx-ai]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-linux-x64.AppImage
+[lx-deb]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-linux-x64.deb
+[lx-rpm]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-linux-x64.rpm
+[la-ai]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-linux-arm64.AppImage
+[la-deb]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-linux-arm64.deb
+[la-rpm]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-linux-arm64.rpm
+
 ## Features
 
 The pages you use most sit in the sidebar. The tools have an entry of their own, **More Tools**, and
@@ -75,8 +100,9 @@ The [feature catalog](docs/features.md) has every capability, each explained by 
 
 ## Install
 
-Every release is built and signed by GitHub Actions from the published source. Download from the
-[latest release](https://github.com/patrick-1984/handy-tool/releases/latest).
+Every release is built and signed by GitHub Actions from the published source. The
+[Download](#download) links above always fetch the newest release; the same files, with the version
+in their names, are on the [latest release](https://github.com/patrick-1984/handy-tool/releases/latest) page.
 
 ### Windows x64 — installer
 
