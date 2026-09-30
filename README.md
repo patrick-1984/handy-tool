@@ -6,7 +6,7 @@ Handy Tool is a local-first dictation tool for Windows: press a key, speak, and 
 
 Each link always fetches the newest release.
 
-- **Windows** — [installer (.exe)][win]
+- **Windows** — [installer (.exe)][win], or with winget: `winget install patrick-1984.HandyTool`
 - **Linux x64** _(untested)_ — [.rpm][lx-rpm] · [.deb][lx-deb] · [AppImage][lx-ai]
 - **Linux ARM64** _(untested)_ — [.rpm][la-rpm] · [.deb][la-deb] · [AppImage][la-ai]
 
@@ -114,6 +114,16 @@ from then on — every update is signature-checked before it is applied.
 ([how portable mode works](docs/features.md#run-it-from-a-usb-stick)). A ready-made portable ZIP is
 not attached to releases at the moment (the last one shipped with 1.3.0); [Portable](docs/portable.md)
 explains how to assemble one from a release build.
+
+### Windows — winget
+
+```powershell
+winget install patrick-1984.HandyTool
+```
+
+The same per-user installer, from the winget community repository. A new version reaches winget
+a little after each release, once Microsoft's review has passed; the app keeps itself up to date
+either way.
 
 ### Linux x64 and ARM64 — untested
 
