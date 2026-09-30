@@ -65,7 +65,9 @@ static VULKAN_OP_LOCK: Mutex<()> = Mutex::new(());
 /// The local engine call running right now. Only one runs at a time per engine
 /// slot: the engine is taken out of it for the duration of the call.
 struct RunningJob {
-    started: std::time::Instant,
+    /// When the engine began working; None while a Whisper call still waits for
+    /// the GPU lock (a model load can hold it), which counts as no progress.
+    started: Option<std::time::Instant>,
     /// Expected wall time in seconds, from this model's recent timings; None
     /// until it has a few since the app started.
     expected: Option<f32>,
@@ -137,7 +139,8 @@ pub fn running_transcription_remaining() -> Option<f32> {
     let reported = (reported >= 0).then(|| reported as f32 / 100.0);
     match job.expected {
         Some(expected) => {
-            let done = eased_progress(job.started.elapsed().as_secs_f32() / expected.max(0.001));
+            let elapsed = job.started.map_or(0.0, |s| s.elapsed().as_secs_f32());
+            let done = eased_progress(elapsed / expected.max(0.001));
             Some(expected * (1.0 - done.max(reported.unwrap_or(0.0)).min(1.0)))
         }
         // No timings yet: Whisper's figure alone, the whole call counting as 1.
@@ -1533,17 +1536,18 @@ impl TranscriptionManager {
             let reported = Arc::new(AtomicI32::new(-1));
             let expected = expected_transcription_secs(&speed_key, audio_secs);
             let job_started = std::time::Instant::now();
+            // Whisper first waits for the GPU lock: its clock starts once it
+            // holds it (below). Only engine time counts, for the percentage
+            // and for the timings.
+            let waits_for_gpu = matches!(engine, LoadedEngine::Whisper(_));
             if let Ok(mut job) = RUNNING_JOB.lock() {
                 *job = Some(RunningJob {
-                    started: job_started,
+                    started: (!waits_for_gpu).then_some(job_started),
                     expected,
                     reported: Arc::clone(&reported),
                 });
             }
             let job_guard = RunningJobGuard;
-            // When the engine itself started: later than `job_started` for a
-            // Whisper call that first waits for the GPU lock (a model load can
-            // hold it). Only engine time counts, for the percentage and timings.
             let engine_started = std::cell::Cell::new(job_started);
 
             let transcribe_result = catch_unwind(AssertUnwindSafe(
@@ -1574,7 +1578,7 @@ impl TranscriptionManager {
                                 engine_started.set(now);
                                 if let Ok(mut job) = RUNNING_JOB.lock() {
                                     if let Some(job) = job.as_mut() {
-                                        job.started = now;
+                                        job.started = Some(now);
                                     }
                                 }
                                 whisper_engine.transcribe_samples(audio, Some(params))

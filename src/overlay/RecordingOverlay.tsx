@@ -60,9 +60,9 @@ const RecordingOverlay: React.FC = () => {
   // The figure on screen counts up to each new one instead of jumping: 1% per
   // step, bigger steps for a bigger gap, so even a jump rolls up smoothly.
   const [shownProgress, setShownProgress] = useState<number | null>(null);
-  // A take whose text is ready runs its figure up to 100% in a quick burst: the
-  // backend sends 100 the moment the transcript exists (before it is pasted),
-  // and a pill hidden before its figure got there does the same, then fades.
+  // The backend sends 100 the moment the transcript exists, and the figure shows
+  // it at once. A pill hidden before its figure got to 100% (the text was ready
+  // but none was sent) runs it up in a quick burst, then fades.
   const [finishing, setFinishing] = useState(false);
   const shownProgressRef = useRef<number | null>(null);
   shownProgressRef.current = shownProgress;
@@ -77,21 +77,25 @@ const RecordingOverlay: React.FC = () => {
       const timer = setTimeout(() => setIsVisible(false), 120);
       return () => clearTimeout(timer);
     }
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    // The backend's 100 means the text is ready and about to be pasted: show it
+    // at once, since a count-up would still be running when the text lands.
+    if (
+      (target === 100 && !finishing) ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
       setShownProgress(target);
       return;
     }
-    const burst = finishing || target === 100;
     const timer = setTimeout(
       () => {
         const from = shownProgress ?? 0;
         const gap = target - from;
-        const step = burst
+        const step = finishing
           ? Math.max(2, Math.round(gap / 3))
           : Math.max(1, Math.round(gap / 6));
         setShownProgress(Math.min(target, from + step));
       },
-      burst ? 16 : 30,
+      finishing ? 16 : 30,
     );
     return () => clearTimeout(timer);
   }, [progress, shownProgress, finishing]);

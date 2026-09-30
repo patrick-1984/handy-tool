@@ -12,10 +12,12 @@ A fix release: the transcription percentage reaches 100% when the text is ready.
   transcriptions. When the transcription ended, the figure stopped where the estimate had got to.
   It reached 100% only when the pill closed, after the text had been pasted, and after Enter too
   with Transcribe & Submit. A take that finished sooner than estimated therefore pasted its text
-  with the pill still at 60-70%. The figure now goes to 100% the moment the text is ready, before
-  it is pasted. A quick take still shows no figure at all.
-- For Whisper, the time spent waiting for the graphics card (while a model is loading) no longer
-  counts as transcription time, both for the percentage and for the estimates it is based on.
+  with the pill still at 60-70%. The figure now jumps to 100% the moment the text is ready,
+  instead of after it has been pasted. It does so only when there is text to deliver, not for a
+  failed, empty or cancelled take. A quick take still shows no figure at all.
+- For Whisper, time spent waiting for the graphics card (while a model is loading) no longer
+  counts as transcription time: the percentage does not move during the wait, and the timings the
+  estimate is built from leave it out.
 
 ## [2.0.3] - 2026-09-30
 

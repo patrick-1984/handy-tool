@@ -2014,7 +2014,7 @@
       },
       "progressFinish": {
         "title": "Phần trăm đạt 100% khi văn bản sẵn sàng",
-        "description": "Sau mỗi lần ghi, phần trăm chép lời trên viên thuốc giờ lên 100% ngay khi văn bản sẵn sàng. Trước đây nó có thể dừng ở khoảng 70% và chỉ hoàn tất sau khi văn bản đã được dán."
+        "description": "Sau mỗi lần ghi, phần trăm chép lời trên thanh trạng thái giờ lên 100% ngay khi văn bản sẵn sàng. Trước đây nó có thể dừng ở khoảng 70% và chỉ hoàn tất sau khi văn bản đã được dán."
       }
     },
     "installed": "Đã cài"

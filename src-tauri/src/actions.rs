@@ -21,7 +21,7 @@ use log::{debug, error, info, warn};
 use once_cell::sync::Lazy;
 use serde::Serialize;
 use std::collections::{BTreeMap, HashMap, VecDeque};
-use std::sync::atomic::{AtomicBool, AtomicU8, AtomicU64, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use tauri::AppHandle;
@@ -325,16 +325,17 @@ fn show_text_after_stop(app: &AppHandle, text: &str) {
 /// never goes backwards; it stops when dropped, or goes to 100% via `finish`.
 struct ProgressTicker {
     stop: Arc<AtomicBool>,
-    /// The last figure sent to the overlay; 0 while none has been shown.
-    emitted: Arc<AtomicU8>,
+    /// The last figure sent to the overlay (0 = none). Held while a figure is
+    /// sent, so no lower figure can follow the 100 that `finish` sends.
+    shown: Arc<Mutex<u8>>,
     app: AppHandle,
 }
 
 impl ProgressTicker {
     fn start(app: &AppHandle, remaining: impl Fn() -> Option<f32> + Send + 'static) -> Self {
         let stop = Arc::new(AtomicBool::new(false));
-        let emitted = Arc::new(AtomicU8::new(0));
-        let (stop_thread, emitted_thread) = (Arc::clone(&stop), Arc::clone(&emitted));
+        let shown = Arc::new(Mutex::new(0u8));
+        let (stop_thread, shown_thread) = (Arc::clone(&stop), Arc::clone(&shown));
         let app_thread = app.clone();
         std::thread::spawn(move || {
             let started = Instant::now();
@@ -342,11 +343,13 @@ impl ProgressTicker {
             while !stop_thread.load(Ordering::Relaxed) {
                 if let Some(left) = remaining() {
                     let percent = (meter.update(left) * 100.0) as u8;
-                    if percent > emitted_thread.load(Ordering::Relaxed)
-                        && started.elapsed() >= Duration::from_millis(500)
-                    {
-                        emitted_thread.store(percent, Ordering::Relaxed);
-                        utils::emit_transcription_progress(&app_thread, percent);
+                    if started.elapsed() >= Duration::from_millis(500) {
+                        let mut shown = shown_thread.lock().unwrap_or_else(|p| p.into_inner());
+                        // `stop` again under the lock: `finish` sets it first.
+                        if !stop_thread.load(Ordering::Relaxed) && percent > *shown {
+                            *shown = percent;
+                            utils::emit_transcription_progress(&app_thread, percent);
+                        }
                     }
                 }
                 std::thread::sleep(Duration::from_millis(100));
@@ -354,7 +357,7 @@ impl ProgressTicker {
         });
         Self {
             stop,
-            emitted,
+            shown,
             app: app.clone(),
         }
     }
@@ -365,7 +368,9 @@ impl ProgressTicker {
     /// but only if a figure is on screen (a quick take still shows none).
     fn finish(self) {
         self.stop.store(true, Ordering::Relaxed);
-        if let Some(percent) = figure_when_done(self.emitted.swap(100, Ordering::Relaxed)) {
+        let mut shown = self.shown.lock().unwrap_or_else(|p| p.into_inner());
+        if let Some(percent) = figure_when_done(*shown) {
+            *shown = percent;
             utils::emit_transcription_progress(&self.app, percent);
         }
     }
@@ -1863,11 +1868,17 @@ impl ShortcutAction for TranscribeAction {
                         tokio::time::sleep(Duration::from_millis(100)).await;
                     }
                     let done = session.done_count.load(Ordering::SeqCst);
-                    // Every chunk is transcribed: the text exists now, so the
-                    // figure goes to 100% before delivery, not after it. Not
-                    // for deferred (OpenRouter) takes - their one request is
-                    // still to come - nor after the backstop.
-                    if done == total && !session.deferred {
+                    // Every chunk transcribed, none failed, some text, and the
+                    // take not cancelled: the text exists now, so the figure goes
+                    // to 100% before delivery, not after it. Not for deferred
+                    // (OpenRouter) takes - their one request is still to come -
+                    // nor after the backstop (done_count also counts failures).
+                    let text_ready = done == total
+                        && !session.deferred
+                        && session.error_count.load(Ordering::SeqCst) == 0
+                        && !session.assemble().trim().is_empty()
+                        && take_generation_current(take_gen);
+                    if text_ready {
                         progress.finish();
                     } else {
                         drop(progress);
@@ -2252,7 +2263,9 @@ impl ShortcutAction for TranscribeAction {
                 // The live text is the transcript: 100% now. Otherwise the whole
                 // take is transcribed below, with a figure of its own.
                 match live_progress {
-                    Some(ticker) if live_final.is_some() => ticker.finish(),
+                    Some(ticker) if live_final.is_some() && take_generation_current(take_gen) => {
+                        ticker.finish()
+                    }
                     other => drop(other),
                 }
                 if let Some(text) = &live_final {
@@ -2274,7 +2287,11 @@ impl ShortcutAction for TranscribeAction {
                     let progress = ProgressTicker::start(&ah, running_transcription_remaining);
                     match tm.transcribe(samples) {
                         Ok(text) => {
-                            progress.finish();
+                            // 100% only for text to deliver (not an empty result
+                            // or a take cancelled meanwhile).
+                            if !text.trim().is_empty() && take_generation_current(take_gen) {
+                                progress.finish();
+                            }
                             Ok(text)
                         }
                         Err(e) => {

@@ -2014,7 +2014,7 @@
       },
       "progressFinish": {
         "title": "Metin hazır olduğunda yüzde 100'e ulaşır",
-        "description": "Kayıttan sonra hap üzerindeki yazıya dökme yüzdesi artık metin hazır olduğu anda %100'e ulaşıyor. Önceden %70 civarında durup ancak metin yapıştırıldıktan sonra tamamlanabiliyordu."
+        "description": "Kayıttan sonra durum göstergesindeki yazıya dökme yüzdesi artık metin hazır olduğu anda %100'e ulaşıyor. Önceden %70 civarında durup ancak metin yapıştırıldıktan sonra tamamlanabiliyordu."
       }
     },
     "installed": "Yüklü"
