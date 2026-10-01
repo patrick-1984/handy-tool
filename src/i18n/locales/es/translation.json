@@ -2005,8 +2005,8 @@
         "description": "Tras una grabación, el porcentaje de transcripción de la píldora llega ahora al 100 % en cuanto el texto está listo. Antes podía quedarse en torno al 70 % y completarse solo después de pegar el texto."
       },
       "endOfTakeKept": {
-        "title": "El final de una grabación ya no se pierde",
-        "description": "Los últimos segundos antes de detener se conservan en la grabación y en el texto, aunque el detector de voz aún no los hubiera aceptado. Con Whisper, una grabación larga tampoco pierde ya la última palabra de cada fragmento."
+        "title": "El final de una grabación se conserva con más fiabilidad",
+        "description": "Al detener se conservan hasta 3 segundos que el detector de voz aún no había aceptado, en la grabación y en el texto, si contienen sonido a nivel de voz. Las palabras ya no se repiten tras retomar rápido, y Whisper omite con menos frecuencia la última palabra de un fragmento."
       }
     },
     "installed": "Instalada"

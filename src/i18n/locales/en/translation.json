@@ -2005,8 +2005,8 @@
         "description": "After a take, the Transcribing percentage on the pill now goes to 100% the moment the text is ready. Before, it could stop at about 70% and finish only after the text had already been pasted."
       },
       "endOfTakeKept": {
-        "title": "The end of a take is no longer lost",
-        "description": "The last seconds before you stop are kept, in the recording and the text, even if the speech detector had not accepted them yet. A long take also no longer loses the last word of a piece with Whisper."
+        "title": "The end of a take is kept more reliably",
+        "description": "When you stop, up to 3 seconds the speech detector had not yet accepted are kept, in the recording and the text, if they hold speech-level sound. Words no longer repeat after a quick restart, and Whisper is less likely to drop a piece's last word."
       }
     },
     "installed": "Installed"

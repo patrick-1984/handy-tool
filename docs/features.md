@@ -260,8 +260,9 @@ machine works through everything you had said.
 natural silences every 20 to 45 seconds and each segment is transcribed in the background while
 you keep talking, then joined in order. When you stop, only the last segment is left to do, so
 a long take finishes almost immediately. Cuts are always at silence, so no word is ever split
-across a boundary. When you stop, the last seconds before the press are kept even if the speech
-detector had not accepted them yet, unless they are silent (since 2.0.5). This is how a
+across a boundary. When you stop, up to the last 3 seconds before the press are kept even if the
+speech detector had not accepted them yet, as long as they hold continuous sound at a speech
+level (since 2.0.5). This is how a
 Post-Recording take with a model that runs on this PC works
 while Crash-Safe Recording is on; with it off, the whole take is transcribed in one pass when
 you stop. When what is left still takes more than half a second, the overlay shows how

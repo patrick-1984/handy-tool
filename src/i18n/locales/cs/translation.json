@@ -2005,8 +2005,8 @@
         "description": "Po nahrávce teď procento přepisu na pilulce dosáhne 100 % ve chvíli, kdy je text hotový. Dříve se mohlo zastavit kolem 70 % a doběhnout až poté, co byl text vložen."
       },
       "endOfTakeKept": {
-        "title": "Konec nahrávky se už neztrácí",
-        "description": "Poslední sekundy před zastavením se zachovají v nahrávce i v textu, i když je detektor řeči ještě nepřijal. Dlouhá nahrávka s Whisperem už také neztrácí poslední slovo úseku."
+        "title": "Konec nahrávky se uchová spolehlivěji",
+        "description": "Při zastavení se uchovají až 3 sekundy, které detektor řeči ještě nepřijal, v nahrávce i v textu, pokud obsahují zvuk na úrovni řeči. Slova se už neopakují po rychlém pokračování a Whisper méně často vynechá poslední slovo úseku."
       }
     },
     "installed": "Nainstalovaná"

@@ -2005,8 +2005,8 @@
         "description": "Kayıttan sonra durum göstergesindeki yazıya dökme yüzdesi artık metin hazır olduğu anda %100'e ulaşıyor. Önceden %70 civarında durup ancak metin yapıştırıldıktan sonra tamamlanabiliyordu."
       },
       "endOfTakeKept": {
-        "title": "Kaydın sonu artık kaybolmuyor",
-        "description": "Durdurmadan önceki son saniyeler, konuşma algılayıcı henüz kabul etmemiş olsa bile kayıtta ve metinde kalıyor. Whisper ile uzun bir kayıt artık bir bölümün son sözcüğünü de kaybetmiyor."
+        "title": "Kaydın sonu daha güvenilir şekilde korunuyor",
+        "description": "Durdurduğunuzda, konuşma algılayıcının henüz kabul etmediği en fazla 3 saniye, konuşma düzeyinde ses içeriyorsa kayıtta ve metinde kalıyor. Hızlıca yeniden konuşmaya başladığınızda sözcükler artık tekrarlanmıyor ve Whisper bir bölümün son sözcüğünü daha az atlıyor."
       }
     },
     "installed": "Yüklü"

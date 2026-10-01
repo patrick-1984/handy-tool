@@ -2005,8 +2005,8 @@
         "description": "Depois de uma gravação, a percentagem de transcrição na pílula chega agora a 100% no momento em que o texto fica pronto. Antes podia parar por volta dos 70% e só terminar depois de o texto já ter sido colado."
       },
       "endOfTakeKept": {
-        "title": "O fim de uma gravação já não se perde",
-        "description": "Os últimos segundos antes de parar são guardados, na gravação e no texto, mesmo que o detetor de voz ainda não os tivesse aceitado. Com o Whisper, uma gravação longa também já não perde a última palavra de um segmento."
+        "title": "O fim de uma gravação é guardado com mais fiabilidade",
+        "description": "Ao parar, até 3 segundos que o detetor de voz ainda não tinha aceitado são guardados, na gravação e no texto, se tiverem som ao nível da voz. As palavras já não se repetem depois de retomar rapidamente, e o Whisper omite menos vezes a última palavra de um segmento."
       }
     },
     "installed": "Instalada"

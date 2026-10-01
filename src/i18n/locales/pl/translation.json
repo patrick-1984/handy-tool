@@ -2005,8 +2005,8 @@
         "description": "Po nagraniu procent transkrypcji na pigułce dochodzi teraz do 100% w chwili, gdy tekst jest gotowy. Wcześniej mógł stanąć na około 70% i dojść do końca dopiero po wklejeniu tekstu."
       },
       "endOfTakeKept": {
-        "title": "Koniec nagrania już nie ginie",
-        "description": "Ostatnie sekundy przed zatrzymaniem zostają w nagraniu i w tekście, nawet jeśli wykrywacz mowy jeszcze ich nie przyjął. Z Whisperem długie nagranie nie gubi już też ostatniego słowa fragmentu."
+        "title": "Koniec nagrania jest zachowywany pewniej",
+        "description": "Przy zatrzymaniu do 3 sekund, których wykrywacz mowy jeszcze nie przyjął, zostaje w nagraniu i w tekście, jeśli zawierają dźwięk na poziomie mowy. Słowa nie powtarzają się już po szybkim podjęciu mówienia, a Whisper rzadziej gubi ostatnie słowo fragmentu."
       }
     },
     "installed": "Zainstalowana"

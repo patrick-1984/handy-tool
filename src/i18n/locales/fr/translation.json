@@ -2005,8 +2005,8 @@
         "description": "Après une prise, le pourcentage de transcription sur la pastille passe désormais à 100 % dès que le texte est prêt. Avant, il pouvait rester vers 70 % et ne se terminer qu'une fois le texte déjà collé."
       },
       "endOfTakeKept": {
-        "title": "La fin d'une prise n'est plus perdue",
-        "description": "Les dernières secondes avant l'arrêt sont conservées, dans l'enregistrement et le texte, même si le détecteur de parole ne les avait pas encore acceptées. Avec Whisper, une longue prise ne perd plus non plus le dernier mot d'un segment."
+        "title": "La fin d'une prise est conservée de façon plus fiable",
+        "description": "À l'arrêt, jusqu'à 3 secondes que le détecteur de parole n'avait pas encore acceptées sont conservées, dans l'enregistrement et le texte, si elles contiennent un son au niveau de la parole. Les mots ne se répètent plus après une reprise rapide, et Whisper omet moins souvent le dernier mot d'un segment."
       }
     },
     "installed": "Installée"

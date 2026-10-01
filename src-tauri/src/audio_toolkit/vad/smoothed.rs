@@ -8,7 +8,10 @@ pub struct SmoothedVad {
     hangover_frames: usize,
     onset_frames: usize,
 
-    frame_buffer: VecDeque<Vec<f32>>,
+    /// The newest frames, each with whether it was already emitted as speech:
+    /// a quick re-onset releases only the ones that were not (it used to repeat
+    /// up to the whole prefill - kept speech and hangover - into the take).
+    frame_buffer: VecDeque<(Vec<f32>, bool)>,
     hangover_counter: usize,
     onset_counter: usize,
     in_speech: bool,
@@ -38,6 +41,13 @@ impl SmoothedVad {
             temp_out: Vec::new(),
         }
     }
+
+    /// The frame just pushed is being emitted as speech.
+    fn mark_newest_emitted(&mut self) {
+        if let Some((_, emitted)) = self.frame_buffer.back_mut() {
+            *emitted = true;
+        }
+    }
 }
 
 impl VoiceActivityDetector for SmoothedVad {
@@ -45,14 +55,15 @@ impl VoiceActivityDetector for SmoothedVad {
         // Reset the edge-detection flag at the start of every frame
         self.just_ended = false;
 
+        // 2. Delegate to the wrapped boolean VAD - before buffering, so a frame
+        // it refuses (an error) leaves the buffer and onset state untouched.
+        let is_voice = self.inner_vad.is_voice(frame)?;
+
         // 1. Buffer every incoming frame for possible pre-roll
-        self.frame_buffer.push_back(frame.to_vec());
+        self.frame_buffer.push_back((frame.to_vec(), false));
         while self.frame_buffer.len() > self.prefill_frames + 1 {
             self.frame_buffer.pop_front();
         }
-
-        // 2. Delegate to the wrapped boolean VAD
-        let is_voice = self.inner_vad.is_voice(frame)?;
 
         match (self.in_speech, is_voice) {
             // Potential start of speech - need to accumulate onset frames
@@ -64,10 +75,14 @@ impl VoiceActivityDetector for SmoothedVad {
                     self.hangover_counter = self.hangover_frames;
                     self.onset_counter = 0; // Reset for next time
 
-                    // Collect prefill + current frame
+                    // Collect prefill + current frame - only what was not
+                    // emitted already (speech or hangover just before).
                     self.temp_out.clear();
-                    for buf in &self.frame_buffer {
-                        self.temp_out.extend(buf);
+                    for (buf, emitted) in self.frame_buffer.iter_mut() {
+                        if !*emitted {
+                            self.temp_out.extend(buf.iter());
+                            *emitted = true;
+                        }
                     }
                     Ok(VadFrame::Speech(&self.temp_out))
                 } else {
@@ -79,6 +94,7 @@ impl VoiceActivityDetector for SmoothedVad {
             // Ongoing Speech
             (true, true) => {
                 self.hangover_counter = self.hangover_frames;
+                self.mark_newest_emitted();
                 Ok(VadFrame::Speech(frame))
             }
 
@@ -86,6 +102,7 @@ impl VoiceActivityDetector for SmoothedVad {
             (true, false) => {
                 if self.hangover_counter > 0 {
                     self.hangover_counter -= 1;
+                    self.mark_newest_emitted();
                     Ok(VadFrame::Speech(frame))
                 } else {
                     self.in_speech = false;
@@ -129,8 +146,12 @@ impl VoiceActivityDetector for SmoothedVad {
             .rev()
             .take(self.onset_counter)
             .rev()
-            .flat_map(|f| f.iter().copied())
+            .filter(|(_, emitted)| !*emitted)
+            .flat_map(|(f, _)| f.iter().copied())
             .collect();
+        for (_, emitted) in self.frame_buffer.iter_mut() {
+            *emitted = true;
+        }
         self.onset_counter = 0;
         if pending.is_empty() {
             None
@@ -169,6 +190,22 @@ mod tests {
     fn smoothed(script: Vec<bool>) -> SmoothedVad {
         // prefill 2, hangover 2, onset 2 — onset needs two consecutive voiced frames.
         SmoothedVad::new(Box::new(ScriptedVad { script, i: 0 }), 2, 2, 2)
+    }
+
+    #[test]
+    fn a_quick_re_onset_does_not_repeat_what_was_already_kept() {
+        // prefill 4, hangover 2, onset 2: speech, its end, then speech again
+        // within the prefill window. Every frame must come out exactly once.
+        let script = vec![true, true, true, false, false, false, true, true];
+        let mut vad = SmoothedVad::new(Box::new(ScriptedVad { script, i: 0 }), 4, 2, 2);
+        let mut out = Vec::new();
+        for i in 0..8 {
+            let frame = vec![i as f32];
+            if let VadFrame::Speech(buf) = vad.push_frame(&frame).unwrap() {
+                out.extend_from_slice(buf);
+            }
+        }
+        assert_eq!(out, (0..8).map(|i| i as f32).collect::<Vec<_>>());
     }
 
     #[test]

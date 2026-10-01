@@ -2005,8 +2005,8 @@
         "description": "Nach einer Aufnahme springt die Transkriptions-Prozentzahl auf der Pille jetzt auf 100 %, sobald der Text fertig ist. Vorher konnte sie bei etwa 70 % stehen bleiben und erst vollständig werden, nachdem der Text schon eingefügt war."
       },
       "endOfTakeKept": {
-        "title": "Das Ende einer Aufnahme geht nicht mehr verloren",
-        "description": "Die letzten Sekunden vor dem Stoppen bleiben in Aufnahme und Text erhalten, auch wenn die Spracherkennung sie noch nicht angenommen hatte. Mit Whisper verliert eine lange Aufnahme außerdem nicht mehr das letzte Wort eines Abschnitts."
+        "title": "Das Ende einer Aufnahme bleibt zuverlässiger erhalten",
+        "description": "Beim Stoppen bleiben bis zu 3 Sekunden, die die Spracherkennung noch nicht angenommen hatte, in Aufnahme und Text erhalten, wenn sie Ton in Sprachlautstärke enthalten. Wörter wiederholen sich nach einem schnellen Weitersprechen nicht mehr, und Whisper lässt seltener das letzte Wort eines Abschnitts weg."
       }
     },
     "installed": "Installiert"

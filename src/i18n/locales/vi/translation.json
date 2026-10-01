@@ -2005,8 +2005,8 @@
         "description": "Sau mỗi lần ghi, phần trăm chép lời trên thanh trạng thái giờ lên 100% ngay khi văn bản sẵn sàng. Trước đây nó có thể dừng ở khoảng 70% và chỉ hoàn tất sau khi văn bản đã được dán."
       },
       "endOfTakeKept": {
-        "title": "Phần cuối của bản ghi không còn bị mất",
-        "description": "Vài giây cuối trước khi dừng giờ được giữ lại trong bản ghi và văn bản, kể cả khi bộ phát hiện giọng nói chưa chấp nhận. Với Whisper, bản ghi dài cũng không còn mất từ cuối của mỗi đoạn."
+        "title": "Phần cuối của bản ghi được giữ lại đáng tin cậy hơn",
+        "description": "Khi dừng, tối đa 3 giây mà bộ phát hiện giọng nói chưa chấp nhận sẽ được giữ trong bản ghi và văn bản, nếu có âm thanh ở mức giọng nói. Từ ngữ không còn bị lặp sau khi nói lại ngay, và Whisper ít bỏ sót từ cuối của mỗi đoạn hơn."
       }
     },
     "installed": "Đã cài"
