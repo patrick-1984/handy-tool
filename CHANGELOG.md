@@ -12,10 +12,9 @@ A fix release: the end of a take is kept more reliably.
   in a row to start keeping audio again, and it can misjudge speech at a normal level. Whatever it
   had not accepted when you pressed stop was dropped. At stop, Handy now also keeps up to 3
   seconds of what the detector had rejected since it last kept anything, when that holds at least
-  a quarter of a second of continuous sound at a speech level: within 20 dB of the take's own
-  speech, and clear of the room's noise between words. Quieter speech, or speech followed by a
-  longer silence before the stop, can still be missed. Silence and short sounds such as a key
-  click add nothing.
+  a quarter of a second of continuous sound within 15 dB of the take's own speech level. Quieter
+  speech, or speech followed by a longer silence before the stop, can still be missed. Silence,
+  short sounds such as a key click and room noise well below your voice add nothing.
 - **Words no longer repeat when you start talking again right after a pause.** When speech
   resumed within half a second of the detector deciding it had ended, the detector added back up
   to about 450 ms it had already kept. A word or syllable then appeared twice in the recording,
