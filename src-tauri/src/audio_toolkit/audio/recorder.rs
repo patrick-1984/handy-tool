@@ -958,6 +958,9 @@ struct ChunkState {
     seg_index: usize,
     seg_pcm: Vec<f32>,
     seg_samples: usize,
+    /// Audio that came in since the last segment cut, kept or not (for the
+    /// stop log: how much of it the detector kept).
+    seg_in_samples: usize,
 }
 
 impl ChunkState {
@@ -973,6 +976,7 @@ impl ChunkState {
             seg_index: 0,
             seg_pcm: Vec::new(),
             seg_samples: 0,
+            seg_in_samples: 0,
         };
         s.open_next_file();
         s
@@ -1038,6 +1042,7 @@ impl ChunkState {
         let pcm = std::mem::take(&mut self.seg_pcm);
         self.seg_index += 1;
         self.seg_samples = 0;
+        self.seg_in_samples = 0;
         ClosedChunk { index, pcm }
     }
 
@@ -1078,6 +1083,108 @@ fn apply_system_mix(
     let Ok(mut r) = ring.lock() else { return };
     r.pull(frame.len(), scratch);
     mix_into(frame, scratch, sys_gain);
+}
+
+/// At stop, up to this much audio the speech detector had rejected since it
+/// last kept a frame is kept after all. The detector needs two voiced frames in
+/// a row to start keeping audio again after a pause, and it can misjudge speech
+/// at a normal level: a take stopped ~2 s after a pause lost those 2 s from both
+/// its file and its text (2.0.4, confirmed by the user).
+const STOP_TAIL_KEEP_SAMPLES: usize = 3 * 16_000;
+/// A rejected frame counts as sound from this level (dBFS)...
+const STOP_TAIL_SOUND_DBFS: f32 = -50.0;
+/// ...and this far above the quietest frame of the take.
+const STOP_TAIL_ABOVE_FLOOR_DB: f32 = 12.0;
+/// The tail is kept only with at least this much sound in it, so a take that
+/// ends in silence gets no extra audio (on which Whisper can invent words).
+const STOP_TAIL_MIN_SOUND_SAMPLES: usize = 16_000 / 4;
+
+/// What the speech detector rejected since it last kept a frame (the newest
+/// STOP_TAIL_KEEP_SAMPLES of it), for a stop to keep, and the quietest frame of
+/// the take, to tell sound from room noise.
+struct StopTail {
+    frames: VecDeque<Vec<f32>>,
+    samples: usize,
+    /// Highest speech probability among the rejected frames (for the log).
+    max_prob: f32,
+    floor_db: f32,
+}
+
+impl Default for StopTail {
+    fn default() -> Self {
+        Self {
+            frames: VecDeque::new(),
+            samples: 0,
+            max_prob: 0.0,
+            floor_db: f32::INFINITY,
+        }
+    }
+}
+
+impl StopTail {
+    /// A frame of the take, before the detector's verdict: tracks the floor.
+    fn observe_level(&mut self, level_db: f32) {
+        self.floor_db = self.floor_db.min(level_db);
+    }
+
+    /// The detector kept a frame: what it rejected before is not a tail.
+    fn kept(&mut self) {
+        self.frames.clear();
+        self.samples = 0;
+        self.max_prob = 0.0;
+    }
+
+    /// The detector rejected `frame`.
+    fn rejected(&mut self, frame: &[f32], prob: Option<f32>) {
+        self.frames.push_back(frame.to_vec());
+        self.samples += frame.len();
+        while self.samples > STOP_TAIL_KEEP_SAMPLES {
+            match self.frames.pop_front() {
+                Some(old) => self.samples -= old.len(),
+                None => break,
+            }
+        }
+        if let Some(p) = prob {
+            self.max_prob = self.max_prob.max(p);
+        }
+    }
+
+    /// Samples in rejected frames loud enough to be sound, not room noise.
+    fn sound_samples(&self) -> usize {
+        let threshold = sound_threshold_db(self.floor_db);
+        self.frames
+            .iter()
+            .filter(|f| level_dbfs(f) >= threshold)
+            .map(|f| f.len())
+            .sum()
+    }
+
+    /// The rejected audio, oldest first, and empties the tail.
+    fn take(&mut self) -> Vec<f32> {
+        let out = self.frames.iter().flatten().copied().collect();
+        self.kept();
+        out
+    }
+
+    /// A new take (or a pause/resume boundary): nothing carries over.
+    fn reset(&mut self) {
+        *self = Self::default();
+    }
+}
+
+/// The level from which a rejected frame counts as sound, given the take's
+/// quietest frame so far.
+fn sound_threshold_db(floor_db: f32) -> f32 {
+    if floor_db.is_finite() {
+        (floor_db + STOP_TAIL_ABOVE_FLOOR_DB).max(STOP_TAIL_SOUND_DBFS)
+    } else {
+        STOP_TAIL_SOUND_DBFS
+    }
+}
+
+/// Whether a stop keeps the rejected tail: enough of it is sound.
+fn keep_stop_tail(sound_samples: usize) -> bool {
+    sound_samples >= STOP_TAIL_MIN_SOUND_SAMPLES
 }
 
 /// The level of `samples` in dBFS (-120 for silence).
@@ -1209,9 +1316,13 @@ fn process_frame(
     segment_start_idx: &mut usize,
     segment_cb: &SegmentCb,
     closed_chunk_cb: &ClosedChunkCb,
+    stop_tail: &mut StopTail,
 ) {
     if !recording {
         return;
+    }
+    if let Some(chunk) = chunk.as_mut() {
+        chunk.seg_in_samples += samples.len();
     }
 
     // Run VAD and append the speech samples while the lock is held (the speech
@@ -1220,15 +1331,22 @@ fn process_frame(
     let speech_ended;
     {
         if let Some(vad_arc) = vad {
+            stop_tail.observe_level(level_dbfs(samples));
             let mut det = vad_arc.lock().unwrap();
-            match det.push_frame(samples).unwrap_or(VadFrame::Speech(samples)) {
+            let kept = match det.push_frame(samples).unwrap_or(VadFrame::Speech(samples)) {
                 VadFrame::Speech(buf) => {
                     out_buf.extend_from_slice(buf);
                     if let Some(chunk) = chunk.as_mut() {
                         chunk.push_speech(buf);
                     }
+                    true
                 }
-                VadFrame::Noise => {}
+                VadFrame::Noise => false,
+            };
+            if kept {
+                stop_tail.kept();
+            } else {
+                stop_tail.rejected(samples, det.last_probability());
             }
             speech_ended = det.speech_ended();
         } else {
@@ -1382,6 +1500,8 @@ fn run_consumer(
     // pill says so.
     let mut quiet = QuietDetector::default();
     let mut quiet_until: Option<Instant> = None;
+    // What the detector rejected since it last kept a frame (see StopTail).
+    let mut stop_tail = StopTail::default();
 
     loop {
         // Acquire pairs with the callback's Release publish (finding 9): this
@@ -1473,6 +1593,7 @@ fn run_consumer(
                     &mut segment_start_idx,
                     &segment_cb,
                     &closed_chunk_cb,
+                    &mut stop_tail,
                 );
                 if watch_quiet {
                     let kept = processed_samples.len() > kept_before;
@@ -1527,6 +1648,7 @@ fn run_consumer(
                     paused_since = None;
                     quiet = QuietDetector::default();
                     quiet_until = None;
+                    stop_tail.reset();
                     if mic_released {
                         let _ = stream.play();
                         mic_released = false;
@@ -1566,6 +1688,7 @@ fn run_consumer(
                                 &mut segment_start_idx,
                                 &segment_cb,
                                 &closed_chunk_cb,
+                                &mut stop_tail,
                             )
                         });
                     }
@@ -1582,6 +1705,7 @@ fn run_consumer(
                             &mut segment_start_idx,
                             &segment_cb,
                             &closed_chunk_cb,
+                            &mut stop_tail,
                         )
                     });
 
@@ -1606,20 +1730,51 @@ fn run_consumer(
                                 &mut segment_start_idx,
                                 &segment_cb,
                                 &closed_chunk_cb,
+                                &mut stop_tail,
                             );
                         }
                     }
 
-                    // Flush audio the VAD is still holding back (voiced frames in
-                    // an unconfirmed onset) so a trailing word isn't dropped.
-                    if let Some(vad_arc) = &vad {
-                        if let Some(tail) = vad_arc.lock().unwrap().flush() {
-                            processed_samples.extend_from_slice(&tail);
-                            if let Some(chunk) = chunk_state.as_mut() {
-                                chunk.push_speech(&tail);
-                            }
+                    // Audio the VAD is still holding back (voiced frames in an
+                    // unconfirmed onset) - the newest part of `stop_tail`.
+                    let pending = vad.as_ref().and_then(|v| v.lock().unwrap().flush());
+                    // Words the detector had not (yet) accepted when stop came:
+                    // keep its rejected tail (<= 3 s) if it carries sound, else
+                    // just the held-back onset frames, as before.
+                    let tail_ms = stop_tail.samples * 1000 / 16_000;
+                    let sound_ms = stop_tail.sound_samples() * 1000 / 16_000;
+                    let max_prob = stop_tail.max_prob;
+                    let rescued = drain && keep_stop_tail(stop_tail.sound_samples());
+                    let tail = if rescued {
+                        Some(stop_tail.take())
+                    } else {
+                        pending
+                    };
+                    if let Some(tail) = tail {
+                        processed_samples.extend_from_slice(&tail);
+                        if let Some(chunk) = chunk_state.as_mut() {
+                            chunk.push_speech(&tail);
                         }
                     }
+                    if vad.is_some() {
+                        let since_cut = chunk_state.as_ref().map(|c| {
+                            (
+                                c.seg_in_samples * 1000 / 16_000,
+                                c.seg_samples * 1000 / 16_000,
+                            )
+                        });
+                        log::info!(
+                            "Stop: {} the last {tail_ms} ms the speech detector had rejected \
+                             ({sound_ms} ms of it sound, highest speech probability {max_prob:.2}){}",
+                            if rescued { "kept" } else { "did not keep" },
+                            since_cut
+                                .map(|(heard, kept)| format!(
+                                    "; since the last cut {heard} ms heard, {kept} ms kept"
+                                ))
+                                .unwrap_or_default()
+                        );
+                    }
+                    stop_tail.reset();
 
                     // Hand off the final transcription segment (the tail speech),
                     // so the last bit transcribes too.
@@ -1686,6 +1841,7 @@ fn run_consumer(
                     }
                     processed_samples.clear();
                     segment_start_idx = 0;
+                    stop_tail.reset();
                 }
                 Cmd::Pause => {
                     if recording && !paused {
@@ -1701,6 +1857,8 @@ fn run_consumer(
                                 }
                             }
                         }
+                        // A stop after the pause must not reach back across it.
+                        stop_tail.reset();
                         // ...and let a live preview settle on it: the utterance ended.
                         if segment_start_idx < processed_samples.len() {
                             if let Some(cb) = segment_cb.lock().unwrap().as_ref() {
@@ -1732,6 +1890,7 @@ fn run_consumer(
                         if let Some(v) = &vad {
                             v.lock().unwrap().reset();
                         }
+                        stop_tail.reset();
                     }
                 }
                 Cmd::Cut(from, to, done) => {
@@ -1754,6 +1913,80 @@ fn cut_kept(samples: &mut Vec<f32>, segment_start: &mut usize, from: usize, to: 
     if from < to {
         samples.drain(from..to);
         *segment_start = (*segment_start).min(from);
+    }
+}
+
+#[cfg(test)]
+mod stop_tail_tests {
+    use super::{STOP_TAIL_KEEP_SAMPLES, StopTail, keep_stop_tail, sound_threshold_db};
+
+    /// A 30 ms frame at `db` dBFS.
+    fn frame(db: f32) -> Vec<f32> {
+        vec![10f32.powf(db / 20.0); 480]
+    }
+
+    /// Feeds frames the detector rejected, tracking the take's floor as the
+    /// recorder does.
+    fn reject(tail: &mut StopTail, db: f32, n: usize) {
+        for _ in 0..n {
+            let f = frame(db);
+            tail.observe_level(super::level_dbfs(&f));
+            tail.rejected(&f, Some(0.05));
+        }
+    }
+
+    #[test]
+    fn speech_the_detector_rejected_before_stop_is_kept() {
+        // The 2.0.4 report: a pause, then ~2 s of speech at a normal level the
+        // detector never accepted, then stop.
+        let mut tail = StopTail::default();
+        reject(&mut tail, -75.0, 20); // the pause, near the room's floor
+        reject(&mut tail, -28.0, 66); // ~2 s of speech
+        assert!(keep_stop_tail(tail.sound_samples()));
+        let kept = tail.take();
+        assert_eq!(kept.len(), 86 * 480);
+        assert_eq!(tail.samples, 0);
+    }
+
+    #[test]
+    fn a_take_that_ends_in_silence_or_a_click_gets_nothing() {
+        let mut tail = StopTail::default();
+        reject(&mut tail, -75.0, 60); // 1.8 s of room noise
+        assert!(!keep_stop_tail(tail.sound_samples()));
+        reject(&mut tail, -20.0, 3); // a key click: 90 ms
+        assert!(!keep_stop_tail(tail.sound_samples()));
+    }
+
+    #[test]
+    fn a_noisy_room_raises_the_bar() {
+        // Floor at -45 dBFS: sound must reach -33 dBFS, not just -50.
+        assert_eq!(sound_threshold_db(-45.0), -33.0);
+        assert_eq!(sound_threshold_db(-90.0), -50.0);
+        assert_eq!(sound_threshold_db(f32::INFINITY), -50.0);
+        let mut tail = StopTail::default();
+        reject(&mut tail, -45.0, 30);
+        reject(&mut tail, -40.0, 30); // above -50 but within 12 dB of the floor
+        assert!(!keep_stop_tail(tail.sound_samples()));
+    }
+
+    #[test]
+    fn only_audio_after_the_last_kept_frame_and_at_most_three_seconds() {
+        let mut tail = StopTail::default();
+        reject(&mut tail, -28.0, 30);
+        tail.kept(); // the detector accepted speech: that was not a tail
+        assert_eq!(tail.samples, 0);
+        reject(&mut tail, -28.0, 200); // 6 s rejected
+        assert!(tail.samples <= STOP_TAIL_KEEP_SAMPLES);
+        assert!(tail.samples > STOP_TAIL_KEEP_SAMPLES - 480);
+    }
+
+    #[test]
+    fn reset_forgets_the_floor_too() {
+        let mut tail = StopTail::default();
+        reject(&mut tail, -90.0, 5);
+        tail.reset();
+        assert!(tail.floor_db.is_infinite());
+        assert_eq!(tail.samples, 0);
     }
 }
 

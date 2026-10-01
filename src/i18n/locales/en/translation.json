@@ -1996,18 +1996,6 @@
     "release": "Version {{version}}",
     "show": "Show me",
     "items": {
-      "silentUpdatesFixed": {
-        "title": "Silent updates install again",
-        "description": "An update installed in the background could fail while a speech model was loaded, and Handy then stayed on the old version. The installer now waits, up to a minute, until the running Handy no longer holds its program file before it replaces it."
-      },
-      "aboutPage": {
-        "title": "About in the sidebar",
-        "description": "About is its own page now, right after What's new, with Updates at the top: check for a new version, silent updates and their time. They are on General too."
-      },
-      "historyFirst": {
-        "title": "History first",
-        "description": "History is at the top of the sidebar, with a line under it, and the version number is back at the bottom left."
-      },
       "wingetUninstall": {
         "title": "Uninstalling with winget works",
         "description": "Uninstalling Handy with winget, or another tool that uninstalls quietly, now removes it. Before, it opened the uninstaller window and waited for a click, while winget reported success."
@@ -2015,6 +2003,10 @@
       "progressFinish": {
         "title": "The percentage reaches 100% when the text is ready",
         "description": "After a take, the Transcribing percentage on the pill now goes to 100% the moment the text is ready. Before, it could stop at about 70% and finish only after the text had already been pasted."
+      },
+      "endOfTakeKept": {
+        "title": "The end of a take is no longer lost",
+        "description": "The last seconds before you stop are kept, in the recording and the text, even if the speech detector had not accepted them yet. A long take also no longer loses the last word of a piece with Whisper."
       }
     },
     "installed": "Installed"

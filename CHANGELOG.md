@@ -1,5 +1,25 @@
 # Changelog
 
+## [2.0.5] - 2026-10-01
+
+A fix release: the end of a take is no longer lost.
+
+### Fixed
+
+- **The last seconds before you stop are kept.** A take stopped soon after a pause could lose its
+  last words, about 2 seconds, from both the saved recording and the text. Handy keeps only what
+  its speech detector accepts. After a pause, the detector needs two voiced frames in a row to
+  start keeping audio again, and it can misjudge speech at a normal level. Whatever it had not
+  accepted when you pressed stop was dropped. At stop, Handy now also keeps up to 3 seconds of
+  what the detector had rejected since it last kept anything, as long as it contains real sound.
+  A take that ends in silence or a key click gets nothing extra.
+- **The last word of a segment is no longer dropped with Whisper.** A long take is cut at pauses
+  and transcribed piece by piece. Whisper could leave out a piece's final word even though the
+  word was in the recording ("So dot" came out "So"). Each piece now gets a second of silence
+  after it before Whisper reads it, as the other engines already did.
+- Each stop now logs how much audio came in since the last cut, how much was kept, and what the
+  detector had rejected at the end, so a clipped take can be traced.
+
 ## [2.0.4] - 2026-10-01
 
 A fix release: the transcription percentage reaches 100% when the text is ready.

@@ -1996,18 +1996,6 @@
     "release": "Versão {{version}}",
     "show": "Mostrar",
     "items": {
-      "silentUpdatesFixed": {
-        "title": "As atualizações silenciosas voltam a ser instaladas",
-        "description": "Uma atualização instalada em segundo plano podia falhar enquanto um modelo de voz estava carregado, e o Handy ficava na versão antiga. Agora o instalador espera, até um minuto, que o Handy em execução deixe de usar o seu ficheiro de programa antes de o substituir."
-      },
-      "aboutPage": {
-        "title": "Sobre na barra lateral",
-        "description": "Sobre é agora uma página própria, logo depois de Novidades, com Atualizações no topo: procurar uma nova versão, as atualizações silenciosas e o seu horário. Continuam também em Geral."
-      },
-      "historyFirst": {
-        "title": "Histórico primeiro",
-        "description": "Histórico fica no topo da barra lateral, com uma linha por baixo, e o número da versão voltou ao canto inferior esquerdo."
-      },
       "wingetUninstall": {
         "title": "Desinstalar com o winget funciona",
         "description": "Desinstalar o Handy com o winget, ou outra ferramenta que desinstala em silêncio, agora remove-o. Antes, abria-se a janela do desinstalador à espera de um clique, enquanto o winget indicava sucesso."
@@ -2015,6 +2003,10 @@
       "progressFinish": {
         "title": "A percentagem chega a 100% quando o texto está pronto",
         "description": "Depois de uma gravação, a percentagem de transcrição na pílula chega agora a 100% no momento em que o texto fica pronto. Antes podia parar por volta dos 70% e só terminar depois de o texto já ter sido colado."
+      },
+      "endOfTakeKept": {
+        "title": "O fim de uma gravação já não se perde",
+        "description": "Os últimos segundos antes de parar são guardados, na gravação e no texto, mesmo que o detetor de voz ainda não os tivesse aceitado. Com o Whisper, uma gravação longa também já não perde a última palavra de um segmento."
       }
     },
     "installed": "Instalada"

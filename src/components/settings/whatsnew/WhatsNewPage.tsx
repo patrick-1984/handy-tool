@@ -37,20 +37,16 @@ interface Item {
  */
 const RELEASES: { version: string; items: Item[] }[] = [
   {
+    version: "2.0.5",
+    items: [{ key: "endOfTakeKept" }],
+  },
+  {
     version: "2.0.4",
     items: [{ key: "progressFinish" }],
   },
   {
     version: "2.0.3",
     items: [{ key: "wingetUninstall" }],
-  },
-  {
-    version: "2.0.2",
-    items: [
-      { key: "silentUpdatesFixed" },
-      { key: "aboutPage", section: "about" },
-      { key: "historyFirst", section: "history" },
-    ],
   },
 ];
 

@@ -1996,18 +1996,6 @@
     "release": "Versione {{version}}",
     "show": "Mostra",
     "items": {
-      "silentUpdatesFixed": {
-        "title": "Gli aggiornamenti silenziosi si installano di nuovo",
-        "description": "Un aggiornamento installato in background poteva fallire mentre era caricato un modello vocale, e Handy restava sulla versione precedente. Ora il programma di installazione attende, fino a un minuto, che l'Handy in esecuzione non usi più il suo file di programma prima di sostituirlo."
-      },
-      "aboutPage": {
-        "title": "Informazioni nella barra laterale",
-        "description": "Informazioni è ora una pagina a sé, subito dopo Novità, con Aggiornamenti in alto: cercare una nuova versione, gli aggiornamenti silenziosi e il loro orario. Restano anche in Generale."
-      },
-      "historyFirst": {
-        "title": "Cronologia per prima",
-        "description": "Cronologia è in cima alla barra laterale, con una linea sotto, e il numero di versione è tornato in basso a sinistra."
-      },
       "wingetUninstall": {
         "title": "La disinstallazione con winget funziona",
         "description": "Disinstallare Handy con winget, o con un altro strumento che disinstalla in modo silenzioso, ora lo rimuove. Prima si apriva la finestra del programma di disinstallazione in attesa di un clic, mentre winget segnalava il successo."
@@ -2015,6 +2003,10 @@
       "progressFinish": {
         "title": "La percentuale arriva al 100% quando il testo è pronto",
         "description": "Dopo una registrazione, la percentuale di trascrizione sulla pillola arriva ora al 100% appena il testo è pronto. Prima poteva fermarsi intorno al 70% e completarsi solo dopo che il testo era già stato incollato."
+      },
+      "endOfTakeKept": {
+        "title": "La fine di una registrazione non va più persa",
+        "description": "Gli ultimi secondi prima dello stop vengono conservati, nella registrazione e nel testo, anche se il rilevatore vocale non li aveva ancora accettati. Con Whisper, una registrazione lunga non perde più nemmeno l'ultima parola di un segmento."
       }
     },
     "installed": "Installata"

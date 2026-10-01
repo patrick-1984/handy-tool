@@ -1516,19 +1516,16 @@ impl TranscriptionManager {
             // estimates for chunks still waiting their turn.
             let audio_secs = audio.len() as f32 / 16_000.0;
 
-            // Pad trailing silence for engines that drop final tokens when the
-            // audio ends abruptly (tail segment at stop, ~45 s hard cuts, live
-            // 3 s timer cuts). Whisper gets its audio untouched.
-            let audio = match &engine {
-                LoadedEngine::Whisper(_) => audio,
-                _ => {
-                    debug!(
-                        "Padding {} samples of trailing silence for non-Whisper engine",
-                        TRAILING_SILENCE_PAD_SAMPLES
-                    );
-                    pad_trailing_silence(audio, TRAILING_SILENCE_PAD_SAMPLES)
-                }
-            };
+            // Pad trailing silence: engines drop final tokens when the audio
+            // ends abruptly (tail segment at stop, ~45 s hard cuts, live 3 s
+            // timer cuts). Whisper too, since 2.0.5: a segment cut at a short
+            // pause lost its last word ("So dot" came out "So") although the
+            // word was in the recording.
+            debug!(
+                "Padding {} samples of trailing silence",
+                TRAILING_SILENCE_PAD_SAMPLES
+            );
+            let audio = pad_trailing_silence(audio, TRAILING_SILENCE_PAD_SAMPLES);
 
             // Publish this call for the overlay's progress percentage, and time it
             // to keep the model's timings current.

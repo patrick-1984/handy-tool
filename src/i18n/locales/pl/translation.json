@@ -1996,18 +1996,6 @@
     "release": "Wersja {{version}}",
     "show": "Pokaż",
     "items": {
-      "silentUpdatesFixed": {
-        "title": "Ciche aktualizacje znów się instalują",
-        "description": "Aktualizacja instalowana w tle mogła się nie udać, gdy był wczytany model mowy, i Handy zostawał przy starej wersji. Instalator czeka teraz do minuty, aż działający Handy przestanie używać pliku programu, i dopiero wtedy go zastępuje."
-      },
-      "aboutPage": {
-        "title": "O programie na pasku bocznym",
-        "description": "O programie to teraz osobna strona, zaraz po Co nowego, a na górze Aktualizacje: sprawdzanie nowej wersji, ciche aktualizacje i ich godzina. Zostają też na stronie Ogólne."
-      },
-      "historyFirst": {
-        "title": "Historia na początku",
-        "description": "Historia jest na górze paska bocznego, z linią pod spodem, a numer wersji wrócił w lewy dolny róg."
-      },
       "wingetUninstall": {
         "title": "Odinstalowanie przez winget działa",
         "description": "Odinstalowanie Handy przez winget lub inne narzędzie, które odinstalowuje po cichu, teraz go usuwa. Wcześniej otwierało się okno deinstalatora i czekało na kliknięcie, a winget zgłaszał powodzenie."
@@ -2015,6 +2003,10 @@
       "progressFinish": {
         "title": "Procent dochodzi do 100%, gdy tekst jest gotowy",
         "description": "Po nagraniu procent transkrypcji na pigułce dochodzi teraz do 100% w chwili, gdy tekst jest gotowy. Wcześniej mógł stanąć na około 70% i dojść do końca dopiero po wklejeniu tekstu."
+      },
+      "endOfTakeKept": {
+        "title": "Koniec nagrania już nie ginie",
+        "description": "Ostatnie sekundy przed zatrzymaniem zostają w nagraniu i w tekście, nawet jeśli wykrywacz mowy jeszcze ich nie przyjął. Z Whisperem długie nagranie nie gubi już też ostatniego słowa fragmentu."
       }
     },
     "installed": "Zainstalowana"

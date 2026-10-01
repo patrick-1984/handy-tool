@@ -1996,18 +1996,6 @@
     "release": "Sürüm {{version}}",
     "show": "Göster",
     "items": {
-      "silentUpdatesFixed": {
-        "title": "Sessiz güncellemeler yeniden yükleniyor",
-        "description": "Bir konuşma modeli yüklüyken arka planda yüklenen güncelleme başarısız olabiliyor ve Handy eski sürümde kalıyordu. Yükleyici artık program dosyasını değiştirmeden önce, çalışan Handy dosyayı bırakana kadar bir dakikaya kadar bekliyor."
-      },
-      "aboutPage": {
-        "title": "Kenar çubuğunda Hakkında",
-        "description": "Hakkında artık Yenilikler öğesinin hemen ardından gelen ayrı bir sayfa; en üstte Güncellemeler var: yeni sürüm kontrolü, sessiz güncellemeler ve saatleri. Bunlar Genel sayfasında da duruyor."
-      },
-      "historyFirst": {
-        "title": "Geçmiş en başta",
-        "description": "Geçmiş kenar çubuğunun en üstünde, altında bir çizgiyle; sürüm numarası da yeniden sol altta."
-      },
       "wingetUninstall": {
         "title": "winget ile kaldırma çalışıyor",
         "description": "Handy'yi winget veya sessizce kaldıran başka bir araçla kaldırmak artık onu siliyor. Önceden kaldırma penceresi açılıp bir tıklama bekliyor, winget ise başarılı olduğunu bildiriyordu."
@@ -2015,6 +2003,10 @@
       "progressFinish": {
         "title": "Metin hazır olduğunda yüzde 100'e ulaşır",
         "description": "Kayıttan sonra durum göstergesindeki yazıya dökme yüzdesi artık metin hazır olduğu anda %100'e ulaşıyor. Önceden %70 civarında durup ancak metin yapıştırıldıktan sonra tamamlanabiliyordu."
+      },
+      "endOfTakeKept": {
+        "title": "Kaydın sonu artık kaybolmuyor",
+        "description": "Durdurmadan önceki son saniyeler, konuşma algılayıcı henüz kabul etmemiş olsa bile kayıtta ve metinde kalıyor. Whisper ile uzun bir kayıt artık bir bölümün son sözcüğünü de kaybetmiyor."
       }
     },
     "installed": "Yüklü"

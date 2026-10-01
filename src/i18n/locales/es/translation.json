@@ -1996,18 +1996,6 @@
     "release": "Versión {{version}}",
     "show": "Mostrar",
     "items": {
-      "silentUpdatesFixed": {
-        "title": "Las actualizaciones silenciosas vuelven a instalarse",
-        "description": "Una actualización instalada en segundo plano podía fallar mientras había un modelo de voz cargado, y Handy se quedaba en la versión anterior. Ahora el instalador espera, hasta un minuto, a que el Handy en ejecución deje de usar su archivo de programa antes de sustituirlo."
-      },
-      "aboutPage": {
-        "title": "Acerca de en la barra lateral",
-        "description": "Acerca de es ahora una página propia, justo después de Novedades, con Actualizaciones arriba: buscar una versión nueva, las actualizaciones silenciosas y su hora. También siguen en General."
-      },
-      "historyFirst": {
-        "title": "Historial primero",
-        "description": "Historial está arriba en la barra lateral, con una línea debajo, y el número de versión vuelve a verse abajo a la izquierda."
-      },
       "wingetUninstall": {
         "title": "Desinstalar con winget funciona",
         "description": "Desinstalar Handy con winget, u otra herramienta que desinstala en silencio, ahora lo elimina. Antes se abría la ventana del desinstalador y esperaba un clic, mientras winget informaba de éxito."
@@ -2015,6 +2003,10 @@
       "progressFinish": {
         "title": "El porcentaje llega al 100 % cuando el texto está listo",
         "description": "Tras una grabación, el porcentaje de transcripción de la píldora llega ahora al 100 % en cuanto el texto está listo. Antes podía quedarse en torno al 70 % y completarse solo después de pegar el texto."
+      },
+      "endOfTakeKept": {
+        "title": "El final de una grabación ya no se pierde",
+        "description": "Los últimos segundos antes de detener se conservan en la grabación y en el texto, aunque el detector de voz aún no los hubiera aceptado. Con Whisper, una grabación larga tampoco pierde ya la última palabra de cada fragmento."
       }
     },
     "installed": "Instalada"

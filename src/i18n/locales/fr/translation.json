@@ -1996,18 +1996,6 @@
     "release": "Version {{version}}",
     "show": "Montrer",
     "items": {
-      "silentUpdatesFixed": {
-        "title": "Les mises à jour silencieuses s'installent à nouveau",
-        "description": "Une mise à jour installée en arrière-plan pouvait échouer pendant qu'un modèle vocal était chargé, et Handy restait alors sur l'ancienne version. L'installateur attend désormais, jusqu'à une minute, que le Handy en cours d'exécution n'utilise plus son fichier programme avant de le remplacer."
-      },
-      "aboutPage": {
-        "title": "À propos dans la barre latérale",
-        "description": "À propos est maintenant une page à part, juste après Nouveautés, avec Mises à jour en haut : chercher une nouvelle version, les mises à jour silencieuses et leur heure. Elles restent aussi dans Général."
-      },
-      "historyFirst": {
-        "title": "Historique en premier",
-        "description": "Historique est en haut de la barre latérale, avec une ligne en dessous, et le numéro de version est de retour en bas à gauche."
-      },
       "wingetUninstall": {
         "title": "La désinstallation avec winget fonctionne",
         "description": "Désinstaller Handy avec winget, ou un autre outil qui désinstalle en silence, le supprime désormais. Avant, la fenêtre du programme de désinstallation s'ouvrait et attendait un clic, pendant que winget annonçait un succès."
@@ -2015,6 +2003,10 @@
       "progressFinish": {
         "title": "Le pourcentage atteint 100 % dès que le texte est prêt",
         "description": "Après une prise, le pourcentage de transcription sur la pastille passe désormais à 100 % dès que le texte est prêt. Avant, il pouvait rester vers 70 % et ne se terminer qu'une fois le texte déjà collé."
+      },
+      "endOfTakeKept": {
+        "title": "La fin d'une prise n'est plus perdue",
+        "description": "Les dernières secondes avant l'arrêt sont conservées, dans l'enregistrement et le texte, même si le détecteur de parole ne les avait pas encore acceptées. Avec Whisper, une longue prise ne perd plus non plus le dernier mot d'un segment."
       }
     },
     "installed": "Installée"

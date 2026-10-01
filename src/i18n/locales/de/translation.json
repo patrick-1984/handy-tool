@@ -1996,18 +1996,6 @@
     "release": "Version {{version}}",
     "show": "Zeigen",
     "items": {
-      "silentUpdatesFixed": {
-        "title": "Stille Updates werden wieder installiert",
-        "description": "Ein im Hintergrund installiertes Update konnte scheitern, solange ein Sprachmodell geladen war, und Handy blieb dann auf der alten Version. Der Installer wartet jetzt bis zu einer Minute, bis das laufende Handy seine Programmdatei nicht mehr belegt, bevor er sie ersetzt."
-      },
-      "aboutPage": {
-        "title": "Info in der Seitenleiste",
-        "description": "Info ist jetzt eine eigene Seite direkt nach Neuigkeiten, oben mit Aktualisierungen: nach einer neuen Version suchen, stille Updates und ihre Uhrzeit. Sie sind auch unter Allgemein."
-      },
-      "historyFirst": {
-        "title": "Verlauf zuerst",
-        "description": "Verlauf steht oben in der Seitenleiste, mit einer Linie darunter, und die Versionsnummer ist wieder unten links."
-      },
       "wingetUninstall": {
         "title": "Deinstallieren mit winget funktioniert",
         "description": "Handy mit winget oder einem anderen Werkzeug, das still deinstalliert, zu deinstallieren, entfernt es jetzt. Vorher öffnete sich das Deinstallationsfenster und wartete auf einen Klick, während winget Erfolg meldete."
@@ -2015,6 +2003,10 @@
       "progressFinish": {
         "title": "Die Prozentzahl erreicht 100 %, sobald der Text fertig ist",
         "description": "Nach einer Aufnahme springt die Transkriptions-Prozentzahl auf der Pille jetzt auf 100 %, sobald der Text fertig ist. Vorher konnte sie bei etwa 70 % stehen bleiben und erst vollständig werden, nachdem der Text schon eingefügt war."
+      },
+      "endOfTakeKept": {
+        "title": "Das Ende einer Aufnahme geht nicht mehr verloren",
+        "description": "Die letzten Sekunden vor dem Stoppen bleiben in Aufnahme und Text erhalten, auch wenn die Spracherkennung sie noch nicht angenommen hatte. Mit Whisper verliert eine lange Aufnahme außerdem nicht mehr das letzte Wort eines Abschnitts."
       }
     },
     "installed": "Installiert"

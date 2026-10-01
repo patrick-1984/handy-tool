@@ -1996,18 +1996,6 @@
     "release": "Phiên bản {{version}}",
     "show": "Hiện cho tôi",
     "items": {
-      "silentUpdatesFixed": {
-        "title": "Cập nhật im lặng lại được cài đặt",
-        "description": "Bản cập nhật cài trong nền có thể thất bại khi một mô hình giọng nói đã được nạp vào bộ nhớ, và Handy vẫn ở phiên bản cũ. Giờ trình cài đặt sẽ đợi tối đa một phút cho đến khi Handy đang chạy không còn giữ tệp chương trình rồi mới thay thế nó."
-      },
-      "aboutPage": {
-        "title": "Giới thiệu trên thanh bên",
-        "description": "Giới thiệu giờ là một trang riêng ngay sau Có gì mới, với Bản cập nhật ở trên cùng: kiểm tra phiên bản mới, cập nhật im lặng và thời gian của chúng. Chúng vẫn có trong trang Chung."
-      },
-      "historyFirst": {
-        "title": "Lịch sử lên đầu",
-        "description": "Lịch sử nằm trên cùng thanh bên, có một đường kẻ bên dưới, và số phiên bản đã trở lại ở góc dưới bên trái."
-      },
       "wingetUninstall": {
         "title": "Gỡ cài đặt bằng winget hoạt động",
         "description": "Gỡ Handy bằng winget, hoặc một công cụ gỡ cài đặt im lặng khác, giờ sẽ thực sự xóa nó. Trước đây cửa sổ gỡ cài đặt mở ra và chờ một cú nhấp, trong khi winget báo thành công."
@@ -2015,6 +2003,10 @@
       "progressFinish": {
         "title": "Phần trăm đạt 100% khi văn bản sẵn sàng",
         "description": "Sau mỗi lần ghi, phần trăm chép lời trên thanh trạng thái giờ lên 100% ngay khi văn bản sẵn sàng. Trước đây nó có thể dừng ở khoảng 70% và chỉ hoàn tất sau khi văn bản đã được dán."
+      },
+      "endOfTakeKept": {
+        "title": "Phần cuối của bản ghi không còn bị mất",
+        "description": "Vài giây cuối trước khi dừng giờ được giữ lại trong bản ghi và văn bản, kể cả khi bộ phát hiện giọng nói chưa chấp nhận. Với Whisper, bản ghi dài cũng không còn mất từ cuối của mỗi đoạn."
       }
     },
     "installed": "Đã cài"
