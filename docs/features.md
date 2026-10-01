@@ -1682,12 +1682,13 @@ speed follows published speed comparisons, checked on a laptop.
 two are missing. It reads as "this model is worse than Whisper".
 **What Handy does.** Transducer-style models — Parakeet, Moonshine, SenseVoice — need trailing
 acoustic context to emit their final tokens, and the audio ends mid-word when you release the
-key. Handy pads one second of silence onto the audio for exactly those engines before decoding.
-Whisper, NPU and remote engines are byte-identical to before, because they do not have the
-problem. The result: every engine keeps the end of your sentence, and the model comparison you
-make is about quality rather than about who got cut off.
+key. Handy pads one second of silence onto the audio for those engines before decoding. Whisper
+gets it too since 2.0.5, after it was seen leaving out the last word of a piece that was cut at a
+pause. NPU and remote engines are unchanged. The result: the end of your sentence is far less
+likely to go missing, and the model comparison you make is about quality rather than about who
+got cut off.
 **Where.** No control — this is always active.
-**Since.** 0.24.0.
+**Since.** 0.24.0; Whisper since 2.0.5.
 
 ### GPU acceleration, including integrated graphics
 

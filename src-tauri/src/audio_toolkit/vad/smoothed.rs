@@ -149,6 +149,9 @@ impl VoiceActivityDetector for SmoothedVad {
             .filter(|(_, emitted)| !*emitted)
             .flat_map(|(f, _)| f.iter().copied())
             .collect();
+        // Older buffered frames count as handled too: a later onset releasing
+        // them would put them AFTER the newer audio returned here, out of order.
+        // (Every caller resets the detector after a flush anyway.)
         for (_, emitted) in self.frame_buffer.iter_mut() {
             *emitted = true;
         }
@@ -206,6 +209,24 @@ mod tests {
             }
         }
         assert_eq!(out, (0..8).map(|i| i as f32).collect::<Vec<_>>());
+    }
+
+    #[test]
+    fn audio_never_comes_out_of_order_after_a_flush() {
+        // Noise 0, unconfirmed onset 1, flush (returns 1), then speech 2, 3.
+        let script = vec![false, true, true, true];
+        let mut vad = SmoothedVad::new(Box::new(ScriptedVad { script, i: 0 }), 4, 2, 2);
+        let mut out = Vec::new();
+        for i in 0..2 {
+            assert!(!vad.push_frame(&[i as f32]).unwrap().is_speech());
+        }
+        out.extend(vad.flush().expect("onset frame 1"));
+        for i in 2..4 {
+            if let VadFrame::Speech(buf) = vad.push_frame(&[i as f32]).unwrap() {
+                out.extend_from_slice(buf);
+            }
+        }
+        assert_eq!(out, vec![1.0, 2.0, 3.0]);
     }
 
     #[test]
