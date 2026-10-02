@@ -181,6 +181,8 @@ pub fn unregister_shortcut(app: &AppHandle, binding: ShortcutBinding) -> Result<
         .lock()
         .map(|mut held| held.remove(&binding.id).is_some())
         .unwrap_or(false);
+    // Shortcut Keeper stops keeping it now, even if unregistering fails below.
+    crate::remote_keys::notify_bindings_changed();
     if super::is_take_binding(&binding.id) && !held {
         return Ok(());
     }
@@ -206,7 +208,6 @@ pub fn unregister_shortcut(app: &AppHandle, binding: ShortcutBinding) -> Result<
         error_msg
     })?;
 
-    crate::remote_keys::notify_bindings_changed();
     Ok(())
 }
 

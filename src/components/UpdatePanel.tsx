@@ -15,14 +15,13 @@ export const UpdatePanel: React.FC<{
 }> = ({ id, status, onClose }) => {
   const { t } = useTranslation();
   const [checking, setChecking] = useState(false);
-  const [noNewVersion, setNoNewVersion] = useState(false);
+  // The last check (here, on General, or the daily one) found nothing newer.
+  const noNewVersion = status?.state === "idle" && !!status.last_checked_at;
 
   const updateNow = async (): Promise<void> => {
     setChecking(true);
-    setNoNewVersion(false);
     try {
-      const result = await commands.checkForUpdates();
-      setNoNewVersion(result.status === "ok" && result.data.state === "idle");
+      await commands.checkForUpdates();
     } finally {
       setChecking(false);
     }
