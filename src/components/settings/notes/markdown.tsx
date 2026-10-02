@@ -50,13 +50,20 @@ const splitRow = (line: string): string[] =>
     .split("|")
     .map((cell) => cell.trim());
 
+/** A header row followed by a delimiter row with as many cells (GFM). */
+const startsTable = (line: string, next: string | undefined) =>
+  isTableRow(line) &&
+  next !== undefined &&
+  TABLE_SEPARATOR.test(next) &&
+  splitRow(next).length === splitRow(line).length;
+
 const startsBlock = (line: string, next: string | undefined) =>
   HEADING.test(line) ||
   RULE.test(line) ||
   FENCE.test(line) ||
   QUOTE.test(line) ||
   LIST_ITEM.test(line) ||
-  (isTableRow(line) && next !== undefined && TABLE_SEPARATOR.test(next));
+  startsTable(line, next);
 
 /** Indent width with tabs counted as four spaces. */
 const indentOf = (raw: string) => raw.replace(/\t/g, "    ").length;
@@ -109,7 +116,17 @@ const parseList = (lines: string[]): ListNode => {
     return [node, i];
   };
 
-  return build(0, entries[0].indent)[0];
+  // Items before the list's least-indented ones (a list that starts
+  // indented) are not nested under anything: every run that stops at a
+  // shallower item continues the same list.
+  const [list, end] = build(0, entries[0].indent);
+  let i = end;
+  while (i < entries.length) {
+    const [more, next] = build(i, entries[i].indent);
+    list.items.push(...more.items);
+    i = next;
+  }
+  return list;
 };
 
 export const parseMarkdown = (markdown: string): Block[] => {
@@ -165,7 +182,7 @@ export const parseMarkdown = (markdown: string): Block[] => {
       continue;
     }
 
-    if (isTableRow(line) && TABLE_SEPARATOR.test(lines[i + 1] ?? "")) {
+    if (startsTable(line, lines[i + 1])) {
       const header = splitRow(line);
       const rows: string[][] = [];
       i += 2;
@@ -199,9 +216,17 @@ export const parseMarkdown = (markdown: string): Block[] => {
       while (i < lines.length) {
         const current = lines[i];
         if (current.trim() === "") {
-          // A blank line inside a list continues it only if more items follow.
+          // A blank line inside a list continues it only if more items, or
+          // an indented paragraph of the last item, follow.
           const next = lines[i + 1];
-          if (next !== undefined && LIST_ITEM.test(next) && !otherKind(next)) {
+          const continues =
+            next !== undefined &&
+            ((LIST_ITEM.test(next) && !otherKind(next)) ||
+              (!LIST_ITEM.test(next) &&
+                next.trim() !== "" &&
+                indentOf(/^\s*/.exec(next)![0]) > baseIndent &&
+                !startsBlock(next.trim(), lines[i + 2])));
+          if (continues) {
             i++;
             continue;
           }
