@@ -137,6 +137,14 @@ static MIGRATIONS: &[M] = &[
     // Notes the model cut short at its output-length limit, so the UI can say
     // so instead of showing a note that ends mid-sentence as if complete.
     M::up("ALTER TABLE notes ADD COLUMN truncated BOOLEAN NOT NULL DEFAULT 0;"),
+    // What a note cost to write, for comparing models: the tokens the
+    // provider reported (NULL when it reported none) and how long the model
+    // call took.
+    M::up(
+        "ALTER TABLE notes ADD COLUMN prompt_tokens INTEGER NULL;
+        ALTER TABLE notes ADD COLUMN completion_tokens INTEGER NULL;
+        ALTER TABLE notes ADD COLUMN duration_ms INTEGER NULL;",
+    ),
 ];
 
 /// Totals carried forward from history rows that retention has deleted, so
@@ -194,6 +202,13 @@ pub struct Note {
     pub cost_usd: Option<f64>,
     /// The model stopped at its output-length limit: the note is cut short.
     pub truncated: bool,
+    /// Input tokens the provider reported for the call, when it did.
+    pub prompt_tokens: Option<u32>,
+    /// Output tokens the provider reported for the call, when it did.
+    pub completion_tokens: Option<u32>,
+    /// How long the model call took, in milliseconds (`None` for notes made
+    /// before this was recorded).
+    pub duration_ms: Option<u32>,
     /// Whether the source history entry still exists.
     pub source_exists: bool,
 }
@@ -208,11 +223,15 @@ pub struct NewNote<'a> {
     pub with_speakers: bool,
     pub cost_usd: Option<f64>,
     pub truncated: bool,
+    pub prompt_tokens: Option<u32>,
+    pub completion_tokens: Option<u32>,
+    pub duration_ms: Option<u32>,
 }
 
 const NOTE_COLUMNS: &str =
     "n.id, n.history_id, n.timestamp, n.source_text, n.note_text, n.skill_name, n.model,
-     n.with_speakers, n.cost_usd, n.truncated,
+     n.with_speakers, n.cost_usd, n.truncated, n.prompt_tokens, n.completion_tokens,
+     n.duration_ms,
      EXISTS(SELECT 1 FROM transcription_history h WHERE h.id = n.history_id) AS source_exists";
 
 pub struct HistoryManager {
@@ -1156,6 +1175,9 @@ impl HistoryManager {
             with_speakers: row.get("with_speakers")?,
             cost_usd: row.get("cost_usd")?,
             truncated: row.get("truncated")?,
+            prompt_tokens: row.get("prompt_tokens")?,
+            completion_tokens: row.get("completion_tokens")?,
+            duration_ms: row.get("duration_ms")?,
             source_exists: row.get("source_exists")?,
         })
     }
@@ -1175,8 +1197,8 @@ impl HistoryManager {
     /// Returns the saved note and whether its source entry was newly starred.
     fn save_note_with_conn(conn: &Connection, note: &NewNote<'_>) -> Result<(Note, bool)> {
         conn.execute(
-            "INSERT INTO notes (history_id, timestamp, source_text, note_text, skill_name, model, with_speakers, cost_usd, truncated)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+            "INSERT INTO notes (history_id, timestamp, source_text, note_text, skill_name, model, with_speakers, cost_usd, truncated, prompt_tokens, completion_tokens, duration_ms)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
             params![
                 note.history_id,
                 Utc::now().timestamp(),
@@ -1186,7 +1208,10 @@ impl HistoryManager {
                 note.model,
                 note.with_speakers,
                 note.cost_usd,
-                note.truncated
+                note.truncated,
+                note.prompt_tokens,
+                note.completion_tokens,
+                note.duration_ms
             ],
         )?;
         let note_id = conn.last_insert_rowid();
@@ -1324,6 +1349,9 @@ mod tests {
             with_speakers: false,
             cost_usd: None,
             truncated: false,
+            prompt_tokens: None,
+            completion_tokens: None,
+            duration_ms: None,
         }
     }
 
@@ -1512,7 +1540,7 @@ mod tests {
         // A database at the previous version (before the notes table) keeps its
         // rows and gains the notes table.
         let mut conn = Connection::open_in_memory().expect("open in-memory db");
-        let before = Migrations::new(MIGRATIONS[..MIGRATIONS.len() - 2].to_vec());
+        let before = Migrations::new(MIGRATIONS[..MIGRATIONS.len() - 3].to_vec());
         before.to_latest(&mut conn).expect("apply older migrations");
         insert_entry(&conn, 100, "kept", None);
 
@@ -1523,5 +1551,58 @@ mod tests {
             HistoryManager::save_note_with_conn(&conn, &new_note(Some(1), "kept", "note"))
                 .expect("save note");
         assert!(note.source_exists);
+    }
+
+    #[test]
+    fn save_note_keeps_usage_and_time() {
+        let conn = setup_conn_with_notes();
+        let (note, _) = HistoryManager::save_note_with_conn(
+            &conn,
+            &NewNote {
+                model: "openai/gpt-6-luna",
+                cost_usd: Some(0.00042),
+                prompt_tokens: Some(1834),
+                completion_tokens: Some(412),
+                duration_ms: Some(3120),
+                ..new_note(None, "a meeting", "# Note")
+            },
+        )
+        .expect("save note");
+        assert_eq!(note.prompt_tokens, Some(1834));
+        assert_eq!(note.completion_tokens, Some(412));
+        assert_eq!(note.duration_ms, Some(3120));
+        assert_eq!(note.cost_usd, Some(0.00042));
+
+        let listed = &HistoryManager::get_notes_with_conn(&conn).expect("list")[0];
+        assert_eq!(listed.prompt_tokens, Some(1834));
+        assert_eq!(listed.completion_tokens, Some(412));
+        assert_eq!(listed.duration_ms, Some(3120));
+    }
+
+    #[test]
+    fn usage_migration_keeps_notes_made_before_it() {
+        // A database with the notes table but without the usage columns:
+        // its notes stay, with unknown tokens and time.
+        let mut conn = Connection::open_in_memory().expect("open in-memory db");
+        Migrations::new(MIGRATIONS[..MIGRATIONS.len() - 1].to_vec())
+            .to_latest(&mut conn)
+            .expect("apply older migrations");
+        conn.execute(
+            "INSERT INTO notes (history_id, timestamp, source_text, note_text, skill_name, model, with_speakers, cost_usd, truncated)
+             VALUES (NULL, 100, 'old source', 'old note', NULL, 'google/gemini-2.5-flash', 0, 0.001, 0)",
+            [],
+        )
+        .expect("insert an old note");
+
+        Migrations::new(MIGRATIONS.to_vec())
+            .to_latest(&mut conn)
+            .expect("apply the usage migration");
+        let notes = HistoryManager::get_notes_with_conn(&conn).expect("list notes");
+        assert_eq!(notes.len(), 1);
+        assert_eq!(notes[0].note_text, "old note");
+        assert_eq!(notes[0].cost_usd, Some(0.001));
+        assert_eq!(notes[0].prompt_tokens, None);
+        assert_eq!(notes[0].completion_tokens, None);
+        assert_eq!(notes[0].duration_ms, None);
     }
 }

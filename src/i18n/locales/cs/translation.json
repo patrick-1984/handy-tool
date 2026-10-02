@@ -1440,7 +1440,6 @@
         "sourceLabel": "Zdroj této poznámky"
       },
       "openSettings": "Nastavení poznámek",
-      "defaultSkill": "Výchozí pokyny",
       "speakersBadge": "S mluvčími",
       "cutShort": "Model dosáhl limitu délky, proto tato poznámka končí předčasně.",
       "copy": "Kopírovat poznámku (Markdown)",
@@ -1449,22 +1448,41 @@
       "deleteError": "Poznámku se nepodařilo smazat. Zkuste to znovu.",
       "showMore": "Zobrazit více",
       "showLess": "Zobrazit méně",
-      "skillPicker": "Dovednost pro poznámky",
+      "skillPicker": "Dovednosti pro poznámky",
+      "skillPickerNone": "Žádné dovednosti",
+      "skillPickerCount": "Dovednosti: {{count}}",
+      "instructions": {
+        "title": "Pokyny",
+        "description": "Co model dostane, když píše poznámku: vaše vlastní pokyny, zapnuté dovednosti a jazyk poznámky.",
+        "custom": {
+          "title": "Vaše pokyny",
+          "description": "Vaše vlastní pokyny pro každou poznámku, například: použij odrážky a skonči seznamem úkolů. Posílají se před zapnutými dovednostmi a mají přednost, když dovednost říká něco jiného. Když není zapnutá žádná dovednost, použijí se samotné; když je prázdné i toto pole, poznámky se řídí výchozími pokyny.",
+          "placeholder": "Například: Nejvýš jedna stránka a na konci úkoly s tím, kdo je za který odpovědný."
+        }
+      },
+      "language": {
+        "title": "Jazyk poznámky",
+        "description": "Jazyk, ve kterém se poznámky píší. „Stejný jako přepis“ píše každou poznámku v jazyce, kterým se mluvilo; nebo vyberte jeden jazyk pro všechny poznámky. Má přednost před jazykem, ve kterém jsou napsané vaše pokyny a dovednosti, takže polská a anglická dovednost mohou být zapnuté současně.",
+        "sameAsTranscript": "Stejný jako přepis"
+      },
       "skills": {
         "title": "Dovednosti",
-        "description": "Dovednost říká modelu, jak má psát vaše poznámky, třeba zápis z porady nebo studijní shrnutí. Importujte jich, kolik chcete, a vyberte tu, kterou použít; zůstanou, dokud je neodeberete.",
+        "description": "Dovednost říká modelu, jak psát vaše poznámky, například zápis ze schůzky nebo studijní shrnutí, v libovolném jazyce. Importujte jich, kolik chcete, a zapněte jednu nebo několik; zůstanou, dokud je neodstraníte.",
         "active": {
-          "title": "Dovednost",
-          "description": "Dovednost, se kterou se píšou nové poznámky. Výchozí pokyny: přehledná, strukturovaná poznámka v Markdownu v jazyce přepisu, která zachová všechna fakta, rozhodnutí a úkoly."
+          "title": "Zapnuté dovednosti",
+          "description": "Dovednosti, podle kterých se píší nové poznámky. Zapnutých může být víc najednou: každá se posílá pod svým názvem, v pořadí tohoto seznamu, po vašich pokynech."
         },
-        "defaultDescription": "Poznámky se řídí výchozími pokyny: přehledná, strukturovaná poznámka v Markdownu ve stejném jazyce jako přepis.",
+        "defaultDescription": "Žádná dovednost není zapnutá a pole Vaše pokyny je prázdné, takže se poznámky řídí výchozími pokyny: přehledná strukturovaná poznámka v Markdownu, která zachová každý fakt, rozhodnutí a úkol.",
+        "none": "Zatím nejsou importované žádné dovednosti.",
+        "activeSummary": "Zapnuté dovednosti: {{count}}. Poznámky se řídí vašimi pokyny (pokud nějaké jsou) a pak každou zapnutou dovedností.",
+        "onlyOwnInstructions": "Žádná dovednost není zapnutá, takže se poznámky řídí jen vašimi pokyny.",
         "fileCount": "Soubory: {{count}}",
         "truncated": "Tato dovednost je velmi dlouhá, proto se modelu posílá jen prvních 200 kB.",
         "importFile": "Importovat soubor…",
         "importFolder": "Importovat složku…",
         "importHint": "Soubor .md nebo .txt, složka nebo archiv .zip či .skill (SKILL.md s volitelnými referenčními soubory). Handy si dovednost zkopíruje do své datové složky.",
         "fileFilter": "Dovednosti",
-        "imported": "Dovednost „{{name}}“ byla importována a vybrána.",
+        "imported": "Dovednost „{{name}}“ byla importována a zapnuta.",
         "importError": "Dovednost se nepodařilo importovat: {{error}}",
         "remove": "Odebrat dovednost",
         "removeError": "Dovednost se nepodařilo odebrat."
@@ -1484,10 +1502,24 @@
         },
         "model": {
           "title": "Model",
-          "description": "Model, který píše poznámky, například google/gemini-2.5-flash. Nechte prázdné, chcete-li použít model poskytovatele.",
+          "description": "Model, který píše poznámky, vybraný ze všech modelů poskytovatele nebo zadaný ručně. U OpenRouteru má každý model cenu za 1 mil. vstupních / výstupních tokenů a skupina „Doporučené pro poznámky (levné)“ ukazuje dobré vícejazyčné modely alespoň 10krát levnější než Claude Opus 5.5. Nechte prázdné, chcete-li použít model poskytovatele.",
           "placeholder": "Model poskytovatele"
         },
         "manage": "Spravovat poskytovatele LLM"
+      },
+      "modelPicker": {
+        "search": "Hledat modely",
+        "priceHeader": "Cena za 1 mil. tokenů: vstup / výstup",
+        "noPrices": "Ceny modelů tohoto poskytovatele nejsou známé.",
+        "sort": "Řadit:",
+        "sortPrice": "Cena",
+        "sortName": "Název",
+        "recommended": "Doporučené pro poznámky (levné)",
+        "cheaper": "≈{{times}}x levnější než Opus 5.5",
+        "all": "Všechny modely ({{count}})",
+        "priceVaries": "Cena se mění",
+        "free": "Zdarma",
+        "selectedPrice": "Za 1 mil. tokenů (vstup / výstup):"
       },
       "speakers": {
         "title": "Rozpoznávání mluvčích",
@@ -1517,6 +1549,30 @@
         "empty": "Zatím žádné poznámky. Použijte „Vytvořit poznámku“ u nahrávky v sekci Historie, nebo ji napište na kartě „Ruční poznámka“.",
         "goToTranscript": "Přejít na přepis",
         "sourceDeleted": "Zdrojový přepis byl smazán"
+      },
+      "usage": {
+        "costUnknown": "cena neznámá",
+        "costTitle": "Kolik stálo napsání této poznámky",
+        "tokens": "tokeny: {{input}} vstup / {{output}} výstup",
+        "timeTitle": "Jak dlouho modelu trvalo napsat tuto poznámku",
+        "modelTitle": "Model, který tuto poznámku napsal"
+      },
+      "compare": {
+        "tryAnother": "Zkusit jiný model",
+        "pick": "Napsat tuto poznámku znovu modelem:",
+        "placeholder": "Vyberte model",
+        "write": "Napsat poznámku",
+        "generating": "Píšu poznámku modelem {{model}}…",
+        "error": "Poznámku se nepodařilo napsat modelem {{model}}:",
+        "title": "Porovnat modely",
+        "filter": "Zobrazit",
+        "allModels": "Všechny modely",
+        "model": "Model",
+        "notes": "Poznámky",
+        "averageCost": "Prům. cena",
+        "averageTime": "Prům. čas",
+        "totalCost": "Celkem",
+        "hint": "Cena je částka, kterou účtoval OpenRouter, nebo odhad podle cen nastavených u poskytovatele; jinak je neznámá. Tlačítkem „Zkusit jiný model“ u poznámky ji necháte napsat znovu jiným modelem hned vedle."
       },
       "manual": {
         "title": "Text, ze kterého vznikne poznámka",

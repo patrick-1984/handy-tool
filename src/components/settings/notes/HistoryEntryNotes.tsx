@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Download,
@@ -20,10 +20,14 @@ import {
   CopyNoteButton,
   DeleteNoteButton,
   NoteCard,
+  NoteGroup,
   NoteMeta,
   SpeakersBadge,
+  TryAnotherModelButton,
+  TryAnotherModelForm,
   noteDate,
 } from "./NoteParts";
+import { groupNotesBySource } from "@/lib/noteModels";
 import { translateNoteError } from "./noteErrors";
 import { SpeakerDownloadProgress } from "./SpeakerDetectionSettings";
 
@@ -254,33 +258,42 @@ const JobCard: React.FC<{ historyId: number; job: HistoryNoteJob }> = ({
 
 const InlineNote: React.FC<{ note: Note }> = ({ note }) => {
   const { i18n } = useTranslation();
+  const [trying, setTrying] = useState(false);
+  const comparing = useNotesStore(
+    (state) => state.modelJobs[note.id]?.status === "generating",
+  );
   return (
     <NoteCard
       meta={
         <>
           {note.with_speakers && <SpeakersBadge />}
           <span
-            className="text-xs text-text-secondary whitespace-nowrap"
+            className="text-xs text-text-secondary truncate"
             title={noteDate(note.timestamp, i18n.language)}
           >
             {noteDate(note.timestamp, i18n.language)}
           </span>
-          <span className="text-xs text-text-secondary" aria-hidden>
-            ·
-          </span>
-          <NoteMeta note={note} />
         </>
       }
       actions={
         <>
+          <TryAnotherModelButton
+            active={trying}
+            disabled={comparing}
+            onClick={() => setTrying((value) => !value)}
+          />
           <CopyNoteButton markdown={note.note_text} />
           <DeleteNoteButton noteId={note.id} />
           <NoteSettingsLink />
         </>
       }
     >
+      <NoteMeta note={note} />
       <CutShortNotice note={note} />
       <CollapsibleNote markdown={note.note_text} />
+      {trying && (
+        <TryAnotherModelForm note={note} onClose={() => setTrying(false)} />
+      )}
     </NoteCard>
   );
 };
@@ -300,8 +313,12 @@ export const HistoryEntryNotes: React.FC<{ historyId: number }> = ({
   return (
     <div className="flex flex-col gap-2">
       {job && <JobCard historyId={historyId} job={job} />}
-      {notes?.map((note) => (
-        <InlineNote key={note.id} note={note} />
+      {groupNotesBySource(notes ?? []).map((group) => (
+        <NoteGroup
+          key={group[0].id}
+          notes={group}
+          renderNote={(note) => <InlineNote note={note} />}
+        />
       ))}
     </div>
   );

@@ -1440,7 +1440,6 @@
         "sourceLabel": "Source de cette note"
       },
       "openSettings": "Paramètres des notes",
-      "defaultSkill": "Instructions par défaut",
       "speakersBadge": "Avec locuteurs",
       "cutShort": "Le modèle a atteint sa limite de longueur : cette note s'arrête avant la fin.",
       "copy": "Copier la note (Markdown)",
@@ -1449,22 +1448,41 @@
       "deleteError": "Impossible de supprimer la note. Veuillez réessayer.",
       "showMore": "Afficher plus",
       "showLess": "Afficher moins",
-      "skillPicker": "Skill de note",
+      "skillPicker": "Skills de notes",
+      "skillPickerNone": "Aucune skill",
+      "skillPickerCount": "{{count}} skills",
+      "instructions": {
+        "title": "Instructions",
+        "description": "Ce que reçoit le modèle quand il rédige une note : vos propres instructions, les skills activées et la langue de la note.",
+        "custom": {
+          "title": "Vos instructions",
+          "description": "Vos propres instructions pour chaque note, par exemple : utilise des puces et termine par les actions à faire. Elles sont envoyées avant les skills activées et l'emportent quand une skill dit autre chose. Sans skill activée, elles sont utilisées seules ; si ce champ est vide lui aussi, les notes suivent les instructions par défaut.",
+          "placeholder": "Par exemple : Pas plus d'une page, et termine par les actions avec la personne responsable de chacune."
+        }
+      },
+      "language": {
+        "title": "Langue de la note",
+        "description": "La langue dans laquelle les notes sont rédigées. « Comme la transcription » rédige chaque note dans la langue parlée ; ou choisissez une langue pour toutes les notes. Ce réglage l'emporte sur la langue de vos instructions et de vos skills : une skill en polonais et une skill en anglais peuvent être activées ensemble.",
+        "sameAsTranscript": "Comme la transcription"
+      },
       "skills": {
         "title": "Skills",
-        "description": "Une skill indique au modèle comment rédiger vos notes, par exemple un compte rendu de réunion ou une fiche de révision. Importez-en autant que vous voulez et choisissez celle à utiliser ; elles restent jusqu'à ce que vous les supprimiez.",
+        "description": "Une skill indique au modèle comment rédiger vos notes, par exemple un compte rendu de réunion ou une fiche de révision, dans n'importe quelle langue. Importez-en autant que vous voulez et activez-en une ou plusieurs ; elles restent jusqu'à ce que vous les supprimiez.",
         "active": {
-          "title": "Skill",
-          "description": "La skill utilisée pour rédiger les nouvelles notes. Instructions par défaut : une note Markdown claire et structurée, dans la langue de la transcription, qui garde chaque fait, décision et action."
+          "title": "Skills actives",
+          "description": "Les skills avec lesquelles les nouvelles notes sont rédigées. Plusieurs peuvent être activées à la fois : chacune est envoyée sous son nom, dans l'ordre de cette liste, après vos instructions."
         },
-        "defaultDescription": "Les notes suivent les instructions par défaut : une note Markdown claire et structurée, dans la même langue que la transcription.",
+        "defaultDescription": "Aucune skill n'est activée et « Vos instructions » est vide : les notes suivent donc les instructions par défaut, une note Markdown claire et structurée qui garde chaque fait, décision et action.",
+        "none": "Aucune skill importée pour l'instant.",
+        "activeSummary": "Skills activées : {{count}}. Les notes suivent vos instructions, s'il y en a, puis chaque skill activée.",
+        "onlyOwnInstructions": "Aucune skill n'est activée : les notes suivent uniquement vos instructions.",
         "fileCount": "Fichiers : {{count}}",
         "truncated": "Cette skill est très longue : seuls ses 200 premiers Ko sont envoyés au modèle.",
         "importFile": "Importer un fichier…",
         "importFolder": "Importer un dossier…",
         "importHint": "Un fichier .md ou .txt, un dossier, ou une archive .zip ou .skill (un SKILL.md avec des fichiers de référence facultatifs). Handy copie la skill dans son propre dossier de données.",
         "fileFilter": "Skills",
-        "imported": "Skill « {{name}} » importée et sélectionnée.",
+        "imported": "Skill « {{name}} » importée et activée.",
         "importError": "Impossible d'importer la skill : {{error}}",
         "remove": "Supprimer la skill",
         "removeError": "Impossible de supprimer la skill."
@@ -1484,10 +1502,24 @@
         },
         "model": {
           "title": "Modèle",
-          "description": "Le modèle qui rédige les notes, par exemple google/gemini-2.5-flash. Laissez vide pour utiliser le modèle du fournisseur.",
+          "description": "Le modèle qui rédige les notes, choisi parmi tous les modèles du fournisseur ou saisi. Pour OpenRouter, chaque modèle affiche son prix par million de tokens en entrée / sortie, et « Recommandés pour les notes (économiques) » liste de bons modèles multilingues au moins 10 fois moins chers que Claude Opus 5.5. Laissez vide pour utiliser le modèle du fournisseur.",
           "placeholder": "Le modèle du fournisseur"
         },
         "manage": "Gérer les fournisseurs LLM"
+      },
+      "modelPicker": {
+        "search": "Rechercher des modèles",
+        "priceHeader": "Prix par million de tokens : entrée / sortie",
+        "noPrices": "Les prix des modèles de ce fournisseur ne sont pas connus.",
+        "sort": "Trier :",
+        "sortPrice": "Prix",
+        "sortName": "Nom",
+        "recommended": "Recommandés pour les notes (économiques)",
+        "cheaper": "≈{{times}}x moins cher qu'Opus 5.5",
+        "all": "Tous les modèles ({{count}})",
+        "priceVaries": "Prix variable",
+        "free": "Gratuit",
+        "selectedPrice": "Par million de tokens (entrée / sortie) :"
       },
       "speakers": {
         "title": "Détection des locuteurs",
@@ -1517,6 +1549,30 @@
         "empty": "Aucune note pour l'instant. Utilisez « Créer une note » sur un enregistrement de l'Historique, ou rédigez-en une dans l'onglet « Note manuelle ».",
         "goToTranscript": "Aller à la transcription",
         "sourceDeleted": "La transcription source a été supprimée"
+      },
+      "usage": {
+        "costUnknown": "coût inconnu",
+        "costTitle": "Ce qu'a coûté la rédaction de cette note",
+        "tokens": "{{input}} en entrée / {{output}} en sortie (tokens)",
+        "timeTitle": "Le temps mis par le modèle pour rédiger cette note",
+        "modelTitle": "Le modèle qui a rédigé cette note"
+      },
+      "compare": {
+        "tryAnother": "Essayer un autre modèle",
+        "pick": "Rédiger à nouveau cette note avec :",
+        "placeholder": "Choisir un modèle",
+        "write": "Rédiger la note",
+        "generating": "Rédaction de la note avec {{model}}…",
+        "error": "Impossible de rédiger la note avec {{model}} :",
+        "title": "Comparer les modèles",
+        "filter": "Afficher",
+        "allModels": "Tous les modèles",
+        "model": "Modèle",
+        "notes": "Notes",
+        "averageCost": "Coût moyen",
+        "averageTime": "Temps moyen",
+        "totalCost": "Coût total",
+        "hint": "Le coût est le montant facturé par OpenRouter, ou une estimation d'après les prix définis pour le fournisseur ; sinon il est inconnu. Utilisez « Essayer un autre modèle » sur une note pour la rédiger à nouveau avec un autre modèle, juste à côté."
       },
       "manual": {
         "title": "Texte à transformer en note",

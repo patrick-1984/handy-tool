@@ -1663,7 +1663,6 @@
         "sourceLabel": "Source of this note"
       },
       "openSettings": "Note settings",
-      "defaultSkill": "Default instructions",
       "speakersBadge": "With speakers",
       "cutShort": "The model reached its length limit, so this note ends early.",
       "copy": "Copy note (Markdown)",
@@ -1672,22 +1671,41 @@
       "deleteError": "Couldn't delete the note. Please try again.",
       "showMore": "Show more",
       "showLess": "Show less",
-      "skillPicker": "Note skill",
+      "skillPicker": "Note skills",
+      "skillPickerNone": "No skills",
+      "skillPickerCount": "{{count}} skills",
+      "instructions": {
+        "title": "Instructions",
+        "description": "What the model is told when it writes a note: your own instructions, the skills that are on, and the language of the note.",
+        "custom": {
+          "title": "Your instructions",
+          "description": "Your own instructions for every note, for example: use bullet points and end with the action items. They are sent before the skills that are on and win where a skill says otherwise. With no skill on, they are used alone; when this is empty too, notes follow the default instructions.",
+          "placeholder": "For example: Keep it under one page and end with the action items and who owns each one."
+        }
+      },
+      "language": {
+        "title": "Note language",
+        "description": "The language notes are written in. Same as the transcript writes each note in the language that was spoken; or pick one language for every note. This wins over the language your instructions and skills are written in, so a Polish skill and an English skill can be on together.",
+        "sameAsTranscript": "Same as the transcript"
+      },
       "skills": {
         "title": "Skills",
-        "description": "A skill tells the model how to write your notes, for example meeting minutes or a study summary. Import as many as you like and pick the one to use; they stay until you remove them.",
+        "description": "A skill tells the model how to write your notes, for example meeting minutes or a study summary, in any language. Import as many as you like and turn on one or more; they stay until you remove them.",
         "active": {
-          "title": "Skill",
-          "description": "The skill new notes are written with. Default instructions: a clear, structured Markdown note in the transcript's language that keeps every fact, decision and action item."
+          "title": "Active skills",
+          "description": "The skills new notes are written with. Several can be on at once: each is sent under its own name, in this list's order, after Your instructions."
         },
-        "defaultDescription": "Notes follow the default instructions: a clear, structured Markdown note in the same language as the transcript.",
+        "defaultDescription": "No skill is on and Your instructions is empty, so notes follow the default instructions: a clear, structured Markdown note that keeps every fact, decision and action item.",
+        "none": "No skills imported yet.",
+        "activeSummary": "Skills on: {{count}}. Notes follow Your instructions, if any, and then each skill that is on.",
+        "onlyOwnInstructions": "No skill is on, so notes follow Your instructions alone.",
         "fileCount": "Files: {{count}}",
         "truncated": "This skill is very long, so only its first 200 KB are sent to the model.",
         "importFile": "Import file…",
         "importFolder": "Import folder…",
         "importHint": "A .md or .txt file, a folder, or a .zip or .skill archive (a SKILL.md with optional reference files). Handy copies the skill into its own data folder.",
         "fileFilter": "Skills",
-        "imported": "Skill \"{{name}}\" imported and selected.",
+        "imported": "Skill \"{{name}}\" imported and turned on.",
         "importError": "Couldn't import the skill: {{error}}",
         "remove": "Remove skill",
         "removeError": "Couldn't remove the skill."
@@ -1707,10 +1725,24 @@
         },
         "model": {
           "title": "Model",
-          "description": "The model that writes notes, for example google/gemini-2.5-flash. Leave it empty to use the provider's own model.",
+          "description": "The model that writes notes, picked from all the models the provider lists or typed. For OpenRouter each model shows its price per 1M input / output tokens, and Recommended for notes (cheap) lists good multilingual models at least 10 times cheaper than Claude Opus 5.5. Leave it empty to use the provider's own model.",
           "placeholder": "The provider's model"
         },
         "manage": "Manage LLM providers"
+      },
+      "modelPicker": {
+        "search": "Search models",
+        "priceHeader": "Price per 1M tokens: input / output",
+        "noPrices": "No prices are known for this provider's models.",
+        "sort": "Sort:",
+        "sortPrice": "Price",
+        "sortName": "Name",
+        "recommended": "Recommended for notes (cheap)",
+        "cheaper": "≈{{times}}x cheaper than Opus 5.5",
+        "all": "All models ({{count}})",
+        "priceVaries": "Price varies",
+        "free": "Free",
+        "selectedPrice": "Per 1M tokens (input / output):"
       },
       "speakers": {
         "title": "Speaker detection",
@@ -1740,6 +1772,30 @@
         "empty": "No notes yet. Use Make note on a recording in History, or write one on the Manual note tab.",
         "goToTranscript": "Go to transcript",
         "sourceDeleted": "Source transcript was deleted"
+      },
+      "usage": {
+        "costUnknown": "cost unknown",
+        "costTitle": "What writing this note cost",
+        "tokens": "{{input}} in / {{output}} out tokens",
+        "timeTitle": "How long the model took to write this note",
+        "modelTitle": "The model that wrote this note"
+      },
+      "compare": {
+        "tryAnother": "Try another model",
+        "pick": "Write this note again with:",
+        "placeholder": "Pick a model",
+        "write": "Write note",
+        "generating": "Writing the note with {{model}}…",
+        "error": "Couldn't write the note with {{model}}:",
+        "title": "Compare models",
+        "filter": "Show",
+        "allModels": "All models",
+        "model": "Model",
+        "notes": "Notes",
+        "averageCost": "Avg. cost",
+        "averageTime": "Avg. time",
+        "totalCost": "Total cost",
+        "hint": "Cost is what OpenRouter charged, or an estimate from the prices set for the provider; otherwise it is unknown. Use Try another model on a note to write it again with another model, right next to it."
       },
       "manual": {
         "title": "Text to turn into a note",

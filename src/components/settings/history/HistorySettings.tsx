@@ -34,7 +34,7 @@ import { PreserveTranscriptions } from "../PreserveTranscriptions";
 import { HistoryLimit } from "../HistoryLimit";
 import { RecordingRetentionPeriodSelector } from "../RecordingRetentionPeriod";
 import { ICON_BUTTON } from "../../ui/controlClasses";
-import { isHistoryJobBusy, useNotesStore } from "@/stores/notesStore";
+import { isHistoryEntryBusy, useNotesStore } from "@/stores/notesStore";
 import { HistoryEntryNotes } from "../notes/HistoryEntryNotes";
 import { NoteSkillPicker } from "../notes/NoteSkillPicker";
 
@@ -584,7 +584,7 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
   const { t, i18n } = useTranslation();
   const [showCopied, setShowCopied] = useState(false);
   const noteBusy = useNotesStore((state) =>
-    isHistoryJobBusy(state.historyJobs[entry.id]),
+    isHistoryEntryBusy(state, entry.id),
   );
   const generateNote = useNotesStore((state) => state.generateHistoryNote);
   const makeNoteWithSpeakers = useNotesStore(

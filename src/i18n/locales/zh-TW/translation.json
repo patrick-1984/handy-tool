@@ -1440,7 +1440,6 @@
         "sourceLabel": "此筆記的來源"
       },
       "openSettings": "筆記設定",
-      "defaultSkill": "預設指示",
       "speakersBadge": "含說話者",
       "cutShort": "模型已達到長度上限，因此這則筆記提前結束。",
       "copy": "複製筆記（Markdown）",
@@ -1450,21 +1449,40 @@
       "showMore": "顯示更多",
       "showLess": "收起",
       "skillPicker": "筆記技能",
+      "skillPickerNone": "無技能",
+      "skillPickerCount": "{{count}} 個技能",
+      "instructions": {
+        "title": "指示",
+        "description": "模型撰寫筆記時收到的內容:你自己的指示、已開啟的技能以及筆記語言。",
+        "custom": {
+          "title": "你的指示",
+          "description": "適用於每篇筆記的你自己的指示,例如:使用項目符號,最後列出待辦事項。它們會在已開啟的技能之前送出,與技能衝突時以它們為準。沒有開啟任何技能時只使用這些指示;如果這裡也是空的,筆記會依照預設指示撰寫。",
+          "placeholder": "例如:不超過一頁,最後列出待辦事項及每項的負責人。"
+        }
+      },
+      "language": {
+        "title": "筆記語言",
+        "description": "撰寫筆記所用的語言。「與轉錄相同」會用說話時的語言撰寫每篇筆記;也可以為所有筆記選擇一種語言。此設定優先於指示和技能本身所用的語言,因此可以同時開啟波蘭語技能和英語技能。",
+        "sameAsTranscript": "與轉錄相同"
+      },
       "skills": {
         "title": "技能",
-        "description": "技能會告訴模型如何撰寫筆記，例如會議紀錄或學習摘要。可以匯入任意數量的技能並選擇要使用的那一個；在你移除之前都會保留。",
+        "description": "技能會告訴模型如何撰寫你的筆記,例如會議記錄或學習摘要,可以用任何語言撰寫。想匯入多少都可以,並開啟一個或多個;在你移除之前會一直保留。",
         "active": {
-          "title": "技能",
-          "description": "用於撰寫新筆記的技能。預設指示：使用與轉錄相同的語言，產生清楚、有條理的 Markdown 筆記，保留所有事實、決定與待辦事項。"
+          "title": "已開啟的技能",
+          "description": "撰寫新筆記時使用的技能。可以同時開啟多個:每個技能以其名稱、依此清單的順序,在你的指示之後送出。"
         },
-        "defaultDescription": "筆記遵循預設指示：與轉錄語言相同、清楚且有條理的 Markdown 筆記。",
+        "defaultDescription": "沒有開啟任何技能,且「你的指示」是空的,因此筆記會依照預設指示撰寫:一篇清楚、有條理的 Markdown 筆記,保留每個事實、決定和待辦事項。",
+        "none": "尚未匯入任何技能。",
+        "activeSummary": "已開啟的技能:{{count}} 個。筆記會先依照你的指示(如有),再依照每個已開啟的技能。",
+        "onlyOwnInstructions": "沒有開啟任何技能,因此筆記只依照你的指示。",
         "fileCount": "檔案：{{count}}",
         "truncated": "此技能很長，因此只有前 200 KB 會傳送給模型。",
         "importFile": "匯入檔案…",
         "importFolder": "匯入資料夾…",
         "importHint": ".md 或 .txt 檔案、資料夾，或 .zip / .skill 壓縮檔（一個 SKILL.md 及選用的參考檔案）。Handy 會把技能複製到自己的資料資料夾。",
         "fileFilter": "技能",
-        "imported": "已匯入並選擇技能「{{name}}」。",
+        "imported": "已匯入並開啟技能「{{name}}」。",
         "importError": "無法匯入技能：{{error}}",
         "remove": "移除技能",
         "removeError": "無法移除技能。"
@@ -1484,10 +1502,24 @@
         },
         "model": {
           "title": "模型",
-          "description": "撰寫筆記的模型，例如 google/gemini-2.5-flash。留空則使用供應商自己的模型。",
+          "description": "撰寫筆記的模型,可從供應商列出的所有模型中選擇,也可直接輸入。對於 OpenRouter,每個模型都會顯示每 100 萬輸入 / 輸出 token 的價格,「推薦用於筆記(便宜)」列出比 Claude Opus 5.5 至少便宜 10 倍的優質多語言模型。留空則使用供應商自己的模型。",
           "placeholder": "供應商的模型"
         },
         "manage": "管理 LLM 供應商"
+      },
+      "modelPicker": {
+        "search": "搜尋模型",
+        "priceHeader": "每 100 萬 token 價格:輸入 / 輸出",
+        "noPrices": "此供應商的模型價格未知。",
+        "sort": "排序:",
+        "sortPrice": "價格",
+        "sortName": "名稱",
+        "recommended": "推薦用於筆記(便宜)",
+        "cheaper": "比 Opus 5.5 便宜約 {{times}} 倍",
+        "all": "所有模型({{count}})",
+        "priceVaries": "價格不固定",
+        "free": "免費",
+        "selectedPrice": "每 100 萬 token(輸入 / 輸出):"
       },
       "speakers": {
         "title": "說話者辨識",
@@ -1517,6 +1549,30 @@
         "empty": "還沒有筆記。在歷史紀錄中的錄音上使用「產生筆記」，或在「手動筆記」分頁中撰寫。",
         "goToTranscript": "前往轉錄",
         "sourceDeleted": "來源轉錄已被刪除"
+      },
+      "usage": {
+        "costUnknown": "費用未知",
+        "costTitle": "撰寫這篇筆記的費用",
+        "tokens": "token:輸入 {{input}} / 輸出 {{output}}",
+        "timeTitle": "模型撰寫這篇筆記所花的時間",
+        "modelTitle": "撰寫這篇筆記的模型"
+      },
+      "compare": {
+        "tryAnother": "試試其他模型",
+        "pick": "用以下模型重新撰寫這篇筆記:",
+        "placeholder": "選擇模型",
+        "write": "撰寫筆記",
+        "generating": "正在用 {{model}} 撰寫筆記…",
+        "error": "無法用 {{model}} 撰寫筆記:",
+        "title": "比較模型",
+        "filter": "顯示",
+        "allModels": "所有模型",
+        "model": "模型",
+        "notes": "筆記",
+        "averageCost": "平均費用",
+        "averageTime": "平均時間",
+        "totalCost": "總費用",
+        "hint": "費用是 OpenRouter 實際收取的金額,或根據為供應商設定的價格估算的金額;否則為未知。在筆記上使用「試試其他模型」,即可用另一個模型重新撰寫,並顯示在旁邊。"
       },
       "manual": {
         "title": "要產生筆記的文字",

@@ -1440,7 +1440,6 @@
         "sourceLabel": "Źródło tej notatki"
       },
       "openSettings": "Ustawienia notatek",
-      "defaultSkill": "Domyślne instrukcje",
       "speakersBadge": "Z mówcami",
       "cutShort": "Model osiągnął limit długości, więc ta notatka urywa się przed końcem.",
       "copy": "Kopiuj notatkę (Markdown)",
@@ -1449,22 +1448,41 @@
       "deleteError": "Nie udało się usunąć notatki. Spróbuj ponownie.",
       "showMore": "Pokaż więcej",
       "showLess": "Pokaż mniej",
-      "skillPicker": "Umiejętność notatek",
+      "skillPicker": "Umiejętności notatek",
+      "skillPickerNone": "Brak umiejętności",
+      "skillPickerCount": "Umiejętności: {{count}}",
+      "instructions": {
+        "title": "Instrukcje",
+        "description": "Co model dostaje, gdy pisze notatkę: Twoje własne instrukcje, włączone umiejętności i język notatki.",
+        "custom": {
+          "title": "Twoje instrukcje",
+          "description": "Twoje własne instrukcje do każdej notatki, na przykład: używaj punktorów i zakończ listą zadań. Są wysyłane przed włączonymi umiejętnościami i mają pierwszeństwo, gdy umiejętność mówi coś innego. Gdy żadna umiejętność nie jest włączona, są używane same; gdy i to pole jest puste, notatki powstają według domyślnych instrukcji.",
+          "placeholder": "Na przykład: Zmieść się na jednej stronie i zakończ listą zadań z osobami odpowiedzialnymi."
+        }
+      },
+      "language": {
+        "title": "Język notatki",
+        "description": "Język, w którym powstają notatki. „Taki jak transkrypcja” pisze każdą notatkę w języku, w którym mówiono; możesz też wybrać jeden język dla wszystkich notatek. To ustawienie ma pierwszeństwo przed językiem, w którym napisano Twoje instrukcje i umiejętności, więc polska i angielska umiejętność mogą być włączone jednocześnie.",
+        "sameAsTranscript": "Taki jak transkrypcja"
+      },
       "skills": {
         "title": "Umiejętności",
-        "description": "Umiejętność mówi modelowi, jak ma pisać Twoje notatki, na przykład protokół ze spotkania albo streszczenie do nauki. Zaimportuj ich tyle, ile chcesz, i wybierz tę, której chcesz używać; zostają, dopóki ich nie usuniesz.",
+        "description": "Umiejętność mówi modelowi, jak pisać notatki, na przykład protokół ze spotkania albo podsumowanie do nauki, w dowolnym języku. Zaimportuj ich tyle, ile chcesz, i włącz jedną lub kilka; zostają, dopóki ich nie usuniesz.",
         "active": {
-          "title": "Umiejętność",
-          "description": "Umiejętność, według której powstają nowe notatki. Domyślne instrukcje: przejrzysta, uporządkowana notatka w Markdownie, w języku transkrypcji, zachowująca wszystkie fakty, decyzje i zadania."
+          "title": "Włączone umiejętności",
+          "description": "Umiejętności, według których powstają nowe notatki. Kilka może być włączonych naraz: każda jest wysyłana pod własną nazwą, w kolejności z tej listy, po Twoich instrukcjach."
         },
-        "defaultDescription": "Notatki powstają według domyślnych instrukcji: przejrzysta, uporządkowana notatka w Markdownie, w tym samym języku co transkrypcja.",
+        "defaultDescription": "Żadna umiejętność nie jest włączona, a pole Twoje instrukcje jest puste, więc notatki powstają według domyślnych instrukcji: przejrzysta, uporządkowana notatka w Markdownie, która zachowuje każdy fakt, decyzję i zadanie.",
+        "none": "Nie zaimportowano jeszcze żadnej umiejętności.",
+        "activeSummary": "Włączone umiejętności: {{count}}. Notatki powstają według Twoich instrukcji (jeśli są), a potem według każdej włączonej umiejętności.",
+        "onlyOwnInstructions": "Żadna umiejętność nie jest włączona, więc notatki powstają tylko według Twoich instrukcji.",
         "fileCount": "Pliki: {{count}}",
         "truncated": "Ta umiejętność jest bardzo długa, więc do modelu trafia tylko jej pierwsze 200 KB.",
         "importFile": "Importuj plik…",
         "importFolder": "Importuj folder…",
         "importHint": "Plik .md lub .txt, folder albo archiwum .zip lub .skill (SKILL.md z opcjonalnymi plikami pomocniczymi). Handy kopiuje umiejętność do własnego folderu danych.",
         "fileFilter": "Umiejętności",
-        "imported": "Zaimportowano i wybrano umiejętność „{{name}}”.",
+        "imported": "Zaimportowano i włączono umiejętność „{{name}}”.",
         "importError": "Nie udało się zaimportować umiejętności: {{error}}",
         "remove": "Usuń umiejętność",
         "removeError": "Nie udało się usunąć umiejętności."
@@ -1484,10 +1502,24 @@
         },
         "model": {
           "title": "Model",
-          "description": "Model, który pisze notatki, na przykład google/gemini-2.5-flash. Zostaw puste, aby użyć modelu ustawionego u dostawcy.",
+          "description": "Model, który pisze notatki, wybrany z pełnej listy modeli dostawcy albo wpisany ręcznie. W OpenRouter każdy model ma cenę za 1 mln tokenów wejściowych / wyjściowych, a grupa „Polecane do notatek (tanie)” pokazuje dobre wielojęzyczne modele co najmniej 10 razy tańsze od Claude Opus 5.5. Zostaw puste, aby użyć modelu dostawcy.",
           "placeholder": "Model dostawcy"
         },
         "manage": "Zarządzaj dostawcami LLM"
+      },
+      "modelPicker": {
+        "search": "Szukaj modeli",
+        "priceHeader": "Cena za 1 mln tokenów: wejście / wyjście",
+        "noPrices": "Ceny modeli tego dostawcy nie są znane.",
+        "sort": "Sortuj:",
+        "sortPrice": "Cena",
+        "sortName": "Nazwa",
+        "recommended": "Polecane do notatek (tanie)",
+        "cheaper": "≈{{times}}x taniej niż Opus 5.5",
+        "all": "Wszystkie modele ({{count}})",
+        "priceVaries": "Cena zmienna",
+        "free": "Bezpłatny",
+        "selectedPrice": "Za 1 mln tokenów (wejście / wyjście):"
       },
       "speakers": {
         "title": "Rozpoznawanie mówców",
@@ -1517,6 +1549,30 @@
         "empty": "Nie ma jeszcze notatek. Użyj „Utwórz notatkę” przy nagraniu w sekcji Historia albo napisz notatkę na karcie „Notatka ręczna”.",
         "goToTranscript": "Przejdź do transkrypcji",
         "sourceDeleted": "Transkrypcja źródłowa została usunięta"
+      },
+      "usage": {
+        "costUnknown": "koszt nieznany",
+        "costTitle": "Ile kosztowało napisanie tej notatki",
+        "tokens": "tokeny: {{input}} wej. / {{output}} wyj.",
+        "timeTitle": "Ile czasu model pisał tę notatkę",
+        "modelTitle": "Model, który napisał tę notatkę"
+      },
+      "compare": {
+        "tryAnother": "Wypróbuj inny model",
+        "pick": "Napisz tę notatkę ponownie modelem:",
+        "placeholder": "Wybierz model",
+        "write": "Napisz notatkę",
+        "generating": "Piszę notatkę modelem {{model}}…",
+        "error": "Nie udało się napisać notatki modelem {{model}}:",
+        "title": "Porównaj modele",
+        "filter": "Pokaż",
+        "allModels": "Wszystkie modele",
+        "model": "Model",
+        "notes": "Notatki",
+        "averageCost": "Śr. koszt",
+        "averageTime": "Śr. czas",
+        "totalCost": "Koszt łącznie",
+        "hint": "Koszt to kwota pobrana przez OpenRouter albo szacunek na podstawie cen ustawionych dla dostawcy; w innym przypadku jest nieznany. Użyj „Wypróbuj inny model” przy notatce, aby napisać ją ponownie innym modelem, tuż obok."
       },
       "manual": {
         "title": "Tekst do zamiany w notatkę",

@@ -276,8 +276,11 @@ const settingUpdaters: {
   note_provider_ref: (value) =>
     commands.changeNoteProviderRefSetting(value as string),
   note_model: (value) => commands.changeNoteModelSetting(value as string),
-  note_skill_id: (value) =>
-    commands.changeNoteSkillSetting((value as string | null) ?? null),
+  note_skill_ids: (value) =>
+    commands.changeNoteSkillIdsSetting((value as string[] | undefined) ?? []),
+  note_custom_instructions: (value) =>
+    commands.changeNoteCustomInstructionsSetting(value as string),
+  note_language: (value) => commands.changeNoteLanguageSetting(value as string),
   jumper_persist: (value) =>
     commands.changeJumperPersistSetting(value as boolean),
   model_unload_custom_seconds: (value) =>

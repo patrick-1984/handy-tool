@@ -1440,7 +1440,6 @@
         "sourceLabel": "Origen de esta nota"
       },
       "openSettings": "Ajustes de notas",
-      "defaultSkill": "Instrucciones predeterminadas",
       "speakersBadge": "Con hablantes",
       "cutShort": "El modelo alcanzó su límite de longitud, así que esta nota termina antes de tiempo.",
       "copy": "Copiar nota (Markdown)",
@@ -1449,22 +1448,41 @@
       "deleteError": "No se pudo eliminar la nota. Inténtalo de nuevo.",
       "showMore": "Mostrar más",
       "showLess": "Mostrar menos",
-      "skillPicker": "Skill de notas",
+      "skillPicker": "Skills de notas",
+      "skillPickerNone": "Sin skills",
+      "skillPickerCount": "{{count}} skills",
+      "instructions": {
+        "title": "Instrucciones",
+        "description": "Lo que recibe el modelo al escribir una nota: tus propias instrucciones, las skills activadas y el idioma de la nota.",
+        "custom": {
+          "title": "Tus instrucciones",
+          "description": "Tus propias instrucciones para cada nota, por ejemplo: usa viñetas y termina con las tareas pendientes. Se envían antes de las skills activadas y prevalecen cuando una skill dice otra cosa. Sin ninguna skill activada se usan solas; si este campo también está vacío, las notas siguen las instrucciones predeterminadas.",
+          "placeholder": "Por ejemplo: Que no pase de una página y termina con las tareas y quién se encarga de cada una."
+        }
+      },
+      "language": {
+        "title": "Idioma de la nota",
+        "description": "El idioma en que se escriben las notas. «Igual que la transcripción» escribe cada nota en el idioma hablado; o elige un idioma para todas las notas. Prevalece sobre el idioma en que están escritas tus instrucciones y skills, así que una skill en polaco y otra en inglés pueden estar activadas a la vez.",
+        "sameAsTranscript": "Igual que la transcripción"
+      },
       "skills": {
         "title": "Skills",
-        "description": "Una skill indica al modelo cómo escribir tus notas, por ejemplo un acta de reunión o un resumen de estudio. Importa todas las que quieras y elige cuál usar; se quedan hasta que las quites.",
+        "description": "Una skill le dice al modelo cómo escribir tus notas, por ejemplo un acta de reunión o un resumen de estudio, en cualquier idioma. Importa tantas como quieras y activa una o varias; se quedan hasta que las elimines.",
         "active": {
-          "title": "Skill",
-          "description": "La skill con la que se escriben las notas nuevas. Instrucciones predeterminadas: una nota clara y estructurada en Markdown, en el idioma de la transcripción, que conserva cada dato, decisión y tarea."
+          "title": "Skills activas",
+          "description": "Las skills con las que se escriben las notas nuevas. Pueden estar activadas varias a la vez: cada una se envía con su nombre, en el orden de esta lista, después de tus instrucciones."
         },
-        "defaultDescription": "Las notas siguen las instrucciones predeterminadas: una nota clara y estructurada en Markdown, en el mismo idioma que la transcripción.",
+        "defaultDescription": "No hay ninguna skill activada y «Tus instrucciones» está vacío, así que las notas siguen las instrucciones predeterminadas: una nota en Markdown clara y estructurada que conserva cada dato, decisión y tarea.",
+        "none": "Todavía no has importado ninguna skill.",
+        "activeSummary": "Skills activadas: {{count}}. Las notas siguen tus instrucciones, si las hay, y luego cada skill activada.",
+        "onlyOwnInstructions": "No hay ninguna skill activada, así que las notas siguen solo tus instrucciones.",
         "fileCount": "Archivos: {{count}}",
         "truncated": "Esta skill es muy larga, así que solo se envían al modelo sus primeros 200 KB.",
         "importFile": "Importar archivo…",
         "importFolder": "Importar carpeta…",
         "importHint": "Un archivo .md o .txt, una carpeta o un archivo .zip o .skill (un SKILL.md con archivos de referencia opcionales). Handy copia la skill en su propia carpeta de datos.",
         "fileFilter": "Skills",
-        "imported": "Skill «{{name}}» importada y seleccionada.",
+        "imported": "Skill «{{name}}» importada y activada.",
         "importError": "No se pudo importar la skill: {{error}}",
         "remove": "Quitar skill",
         "removeError": "No se pudo quitar la skill."
@@ -1484,10 +1502,24 @@
         },
         "model": {
           "title": "Modelo",
-          "description": "El modelo que escribe las notas, por ejemplo google/gemini-2.5-flash. Déjalo vacío para usar el modelo del propio proveedor.",
+          "description": "El modelo que escribe las notas, elegido de todos los modelos del proveedor o escrito a mano. En OpenRouter cada modelo muestra su precio por 1 M de tokens de entrada / salida, y «Recomendados para notas (baratos)» muestra buenos modelos multilingües al menos 10 veces más baratos que Claude Opus 5.5. Déjalo vacío para usar el modelo del proveedor.",
           "placeholder": "El modelo del proveedor"
         },
         "manage": "Gestionar proveedores LLM"
+      },
+      "modelPicker": {
+        "search": "Buscar modelos",
+        "priceHeader": "Precio por 1 M de tokens: entrada / salida",
+        "noPrices": "No se conocen los precios de los modelos de este proveedor.",
+        "sort": "Ordenar:",
+        "sortPrice": "Precio",
+        "sortName": "Nombre",
+        "recommended": "Recomendados para notas (baratos)",
+        "cheaper": "≈{{times}}x más barato que Opus 5.5",
+        "all": "Todos los modelos ({{count}})",
+        "priceVaries": "Precio variable",
+        "free": "Gratis",
+        "selectedPrice": "Por 1 M de tokens (entrada / salida):"
       },
       "speakers": {
         "title": "Detección de hablantes",
@@ -1517,6 +1549,30 @@
         "empty": "Aún no hay notas. Usa «Crear nota» en una grabación del Historial o escribe una en la pestaña «Nota manual».",
         "goToTranscript": "Ir a la transcripción",
         "sourceDeleted": "Se eliminó la transcripción de origen"
+      },
+      "usage": {
+        "costUnknown": "coste desconocido",
+        "costTitle": "Lo que costó escribir esta nota",
+        "tokens": "{{input}} entrada / {{output}} salida tokens",
+        "timeTitle": "Cuánto tardó el modelo en escribir esta nota",
+        "modelTitle": "El modelo que escribió esta nota"
+      },
+      "compare": {
+        "tryAnother": "Probar otro modelo",
+        "pick": "Escribir esta nota de nuevo con:",
+        "placeholder": "Elige un modelo",
+        "write": "Escribir nota",
+        "generating": "Escribiendo la nota con {{model}}…",
+        "error": "No se pudo escribir la nota con {{model}}:",
+        "title": "Comparar modelos",
+        "filter": "Mostrar",
+        "allModels": "Todos los modelos",
+        "model": "Modelo",
+        "notes": "Notas",
+        "averageCost": "Coste medio",
+        "averageTime": "Tiempo medio",
+        "totalCost": "Coste total",
+        "hint": "El coste es lo que cobró OpenRouter o una estimación con los precios configurados para el proveedor; si no, es desconocido. Usa «Probar otro modelo» en una nota para escribirla de nuevo con otro modelo, justo al lado."
       },
       "manual": {
         "title": "Texto para convertir en nota",
