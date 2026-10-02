@@ -1,9 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { open } from "@tauri-apps/plugin-dialog";
-import { BookOpen, BrainCircuit, FileUp, FolderUp, Trash2 } from "lucide-react";
+import {
+  BookOpen,
+  BrainCircuit,
+  FileUp,
+  FolderUp,
+  MessageSquareText,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
-import { commands, type LlmProvider } from "@/bindings";
+import { commands, type LlmProvider, type NoteSkill } from "@/bindings";
+import { LANGUAGE_METADATA } from "@/i18n/languages";
 import { useSettings } from "@/hooks/useSettings";
 import { useNavStore } from "@/stores/navStore";
 import {
@@ -16,20 +24,81 @@ import { Dropdown, type DropdownOption } from "../../ui/Dropdown";
 import { SettingContainer } from "../../ui/SettingContainer";
 import { SettingsGroup } from "../../ui/SettingsGroup";
 import { ICON_BUTTON, TEXT_FIELD } from "../../ui/controlClasses";
-import { SearchableModelSelect } from "../SearchableModelSelect";
+import { Textarea } from "../../ui/Textarea";
+import { NoteModelSelect } from "./NoteModelSelect";
 import { translateNoteError } from "./noteErrors";
 import { SpeakerDetectionSettings } from "./SpeakerDetectionSettings";
 
 const SKILL_FILE_EXTENSIONS = ["md", "markdown", "txt", "zip", "skill"];
 
-/** The default instructions, then the imported skills. */
-export const useNoteSkillOptions = (): DropdownOption[] => {
+/** Turn one skill on or off; the active list keeps the skills list's order. */
+export const toggleSkillIds = (
+  skills: NoteSkill[],
+  activeIds: string[],
+  id: string,
+  on: boolean,
+): string[] => {
+  const next = new Set(activeIds.filter((a) => a !== id));
+  if (on) next.add(id);
+  return skills.map((skill) => skill.id).filter((sid) => next.has(sid));
+};
+
+/** "Your instructions" and the note language. */
+const InstructionsGroup: React.FC = () => {
   const { t } = useTranslation();
-  const skills = useNotesStore((state) => state.skills);
-  return [
-    { value: "", label: t("settings.notes.defaultSkill") },
-    ...skills.map((skill) => ({ value: skill.id, label: skill.name })),
+  const { settings, updateSetting } = useSettings();
+  const saved = settings?.note_custom_instructions ?? "";
+  const [text, setText] = useState(saved);
+  useEffect(() => setText(saved), [saved]);
+
+  const languageOptions: DropdownOption[] = [
+    { value: "", label: t("settings.notes.language.sameAsTranscript") },
+    ...Object.entries(LANGUAGE_METADATA)
+      .sort(
+        ([, a], [, b]) => (a.priority ?? Infinity) - (b.priority ?? Infinity),
+      )
+      .map(([code, meta]) => ({ value: code, label: meta.nativeName })),
   ];
+
+  return (
+    <SettingsGroup
+      icon={MessageSquareText}
+      title={t("settings.notes.instructions.title")}
+      description={t("settings.notes.instructions.description")}
+    >
+      <SettingContainer
+        title={t("settings.notes.instructions.custom.title")}
+        description={t("settings.notes.instructions.custom.description")}
+        descriptionMode="tooltip"
+        layout="stacked"
+        grouped={true}
+      >
+        <Textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onBlur={() => {
+            if (text !== saved)
+              void updateSetting("note_custom_instructions", text);
+          }}
+          placeholder={t("settings.notes.instructions.custom.placeholder")}
+          className="w-full min-h-[110px] select-text"
+        />
+      </SettingContainer>
+      <SettingContainer
+        title={t("settings.notes.language.title")}
+        description={t("settings.notes.language.description")}
+        descriptionMode="tooltip"
+        grouped={true}
+      >
+        <Dropdown
+          className="min-w-[240px]"
+          options={languageOptions}
+          selectedValue={settings?.note_language ?? ""}
+          onSelect={(value) => void updateSetting("note_language", value)}
+        />
+      </SettingContainer>
+    </SettingsGroup>
+  );
 };
 
 const SkillsGroup: React.FC = () => {
@@ -37,15 +106,13 @@ const SkillsGroup: React.FC = () => {
   const { settings, updateSetting, refreshSettings } = useSettings();
   const skills = useNotesStore((state) => state.skills);
   const loadSkills = useNotesStore((state) => state.loadSkills);
-  const options = useNoteSkillOptions();
   const [importing, setImporting] = useState(false);
 
   useEffect(() => {
     void loadSkills();
   }, [loadSkills]);
 
-  const selectedId = settings?.note_skill_id ?? "";
-  const selected = skills.find((skill) => skill.id === selectedId);
+  const activeIds = settings?.note_skill_ids ?? [];
 
   const importSkill = async (directory: boolean) => {
     const picked = await open(
@@ -88,10 +155,9 @@ const SkillsGroup: React.FC = () => {
     }
   };
 
-  const removeSkill = async () => {
-    if (!selected) return;
+  const removeSkill = async (skill: NoteSkill) => {
     try {
-      const result = await commands.deleteNoteSkill(selected.id);
+      const result = await commands.deleteNoteSkill(skill.id);
       if (result.status !== "ok") throw new Error(result.error);
       await Promise.all([loadSkills(), refreshSettings()]);
     } catch (error) {
@@ -110,42 +176,83 @@ const SkillsGroup: React.FC = () => {
         title={t("settings.notes.skills.active.title")}
         description={t("settings.notes.skills.active.description")}
         descriptionMode="tooltip"
+        layout="stacked"
         grouped={true}
       >
-        <div className="flex items-center gap-1">
-          <Dropdown
-            className="min-w-[240px]"
-            options={options}
-            selectedValue={selected ? selected.id : ""}
-            onSelect={(value) => updateSetting("note_skill_id", value || null)}
-            disabled={importing}
-          />
-          {selected && (
-            <button
-              type="button"
-              onClick={removeSkill}
-              className={`${ICON_BUTTON} hover:!bg-err-bg hover:!text-err-text`}
-              title={t("settings.notes.skills.remove")}
-            >
-              <Trash2 width={16} height={16} />
-            </button>
-          )}
-        </div>
+        {skills.length === 0 ? (
+          <p className="text-[13px] text-text-secondary">
+            {t("settings.notes.skills.none")}
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-1">
+            {skills.map((skill) => {
+              const on = activeIds.includes(skill.id);
+              return (
+                <li
+                  key={skill.id}
+                  className="flex items-start gap-2.5 rounded-md px-1 py-1 hover:bg-hover"
+                >
+                  <input
+                    id={`note-skill-${skill.id}`}
+                    type="checkbox"
+                    checked={on}
+                    disabled={importing}
+                    onChange={(e) =>
+                      void updateSetting(
+                        "note_skill_ids",
+                        toggleSkillIds(
+                          skills,
+                          activeIds,
+                          skill.id,
+                          e.target.checked,
+                        ),
+                      )
+                    }
+                    className="mt-0.5 w-4 h-4 shrink-0 accent-accent cursor-pointer"
+                  />
+                  <label
+                    htmlFor={`note-skill-${skill.id}`}
+                    className="min-w-0 flex-1 cursor-pointer"
+                  >
+                    <span className="block text-sm break-words">
+                      {skill.name}
+                    </span>
+                    <span className="block text-xs text-text-secondary break-words">
+                      {skill.description ??
+                        t("settings.notes.skills.fileCount", {
+                          count: skill.file_count,
+                        })}
+                    </span>
+                    {skill.truncated && (
+                      <span className="block text-xs text-warn-text">
+                        {t("settings.notes.skills.truncated")}
+                      </span>
+                    )}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => void removeSkill(skill)}
+                    className={`${ICON_BUTTON} hover:!bg-err-bg hover:!text-err-text`}
+                    title={t("settings.notes.skills.remove")}
+                  >
+                    <Trash2 width={16} height={16} />
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </SettingContainer>
       <div className="px-4 py-3 flex flex-col gap-2">
         <p className="text-[13px] text-text-secondary break-words">
-          {selected
-            ? (selected.description ??
-              t("settings.notes.skills.fileCount", {
-                count: selected.file_count,
-              }))
-            : t("settings.notes.skills.defaultDescription")}
+          {activeIds.length > 0
+            ? t("settings.notes.skills.activeSummary", {
+                count: activeIds.length,
+              })
+            : (settings?.note_custom_instructions ?? "").trim() !== ""
+              ? t("settings.notes.skills.onlyOwnInstructions")
+              : t("settings.notes.skills.defaultDescription")}
         </p>
-        {selected?.truncated && (
-          <p className="text-[13px] text-warn-text">
-            {t("settings.notes.skills.truncated")}
-          </p>
-        )}
         <div className="flex flex-wrap gap-2">
           <Button
             variant="secondary"
@@ -265,14 +372,15 @@ const ProviderGroup: React.FC = () => {
         descriptionMode="tooltip"
         grouped={true}
       >
-        <SearchableModelSelect
+        <NoteModelSelect
           value={settings?.note_model ?? ""}
-          providerId={provider?.id ?? null}
+          provider={provider}
           onCommit={(value) => updateSetting("note_model", value.trim())}
           placeholder={
             provider?.model || t("settings.notes.provider.model.placeholder")
           }
           className="w-[320px]"
+          showSelectedPrice
         />
       </SettingContainer>
       <div className="px-4 py-2.5">
@@ -289,11 +397,13 @@ const ProviderGroup: React.FC = () => {
 };
 
 /**
- * Notes › Settings: the skill, the provider and model, then speaker
- * detection for "Make note with speakers".
+ * Notes › Settings: your instructions and the note language, the skills,
+ * the provider and model, then speaker detection for "Make note with
+ * speakers".
  */
 export const NoteSettingsTab: React.FC = () => (
   <div className="space-y-6">
+    <InstructionsGroup />
     <SkillsGroup />
     <ProviderGroup />
     <SpeakerDetectionSettings />

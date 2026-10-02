@@ -4,17 +4,34 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
+  Columns2,
   Copy,
+  Loader2,
   NotebookPen,
+  RotateCcw,
   Scissors,
+  Settings2,
+  Sparkles,
   Trash2,
   UsersRound,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { Note } from "@/bindings";
-import { useNotesStore } from "@/stores/notesStore";
+import { useSettings } from "@/hooks/useSettings";
+import { formatCost, formatDuration } from "@/lib/noteModels";
+import { useNavStore } from "@/stores/navStore";
+import {
+  SETUP_ERRORS,
+  noteProvider,
+  useNotesStore,
+  type ModelJob,
+} from "@/stores/notesStore";
+import { Button } from "../../ui/Button";
 import { ICON_BUTTON } from "../../ui/controlClasses";
 import { Markdown } from "./markdown";
+import { NoteModelSelect } from "./NoteModelSelect";
+import { translateNoteError } from "./noteErrors";
 
 /**
  * The tinted "Note" card: the accent colour marks everything that is a note
@@ -53,19 +70,233 @@ export const noteDate = (timestamp: number, locale: string): string => {
   }).format(date);
 };
 
-/** "Skill · model · $cost": what wrote the note. */
+/**
+ * What wrote the note and what it took: model, cost, tokens in / out,
+ * generation time, and the skills it followed.
+ */
 export const NoteMeta: React.FC<{ note: Note }> = ({ note }) => {
-  const { t } = useTranslation();
-  const parts = [
-    note.skill_name ?? t("settings.notes.defaultSkill"),
-    note.model,
-    ...(note.cost_usd != null ? [`$${note.cost_usd.toFixed(4)}`] : []),
+  const { t, i18n } = useTranslation();
+  const count = (n: number | null) =>
+    n === null ? "–" : new Intl.NumberFormat(i18n.language).format(n);
+  const cost = formatCost(note.cost_usd);
+  const items: { key: string; text: string; title?: string }[] = [
+    {
+      key: "cost",
+      text: cost ?? t("settings.notes.usage.costUnknown"),
+      title: t("settings.notes.usage.costTitle"),
+    },
   ];
-  const text = parts.join(" · ");
+  if (note.prompt_tokens !== null || note.completion_tokens !== null) {
+    items.push({
+      key: "tokens",
+      text: t("settings.notes.usage.tokens", {
+        input: count(note.prompt_tokens),
+        output: count(note.completion_tokens),
+      }),
+    });
+  }
+  if (note.duration_ms !== null) {
+    items.push({
+      key: "time",
+      text: formatDuration(note.duration_ms, i18n.language),
+      title: t("settings.notes.usage.timeTitle"),
+    });
+  }
+  if (note.skill_name) {
+    items.push({ key: "skills", text: note.skill_name });
+  }
   return (
-    <span className="text-xs text-text-secondary truncate" title={text}>
-      {text}
-    </span>
+    <p className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-text-secondary min-w-0">
+      <span
+        className="font-medium text-text break-all"
+        title={t("settings.notes.usage.modelTitle")}
+      >
+        {note.model}
+      </span>
+      {items.map((item) => (
+        <React.Fragment key={item.key}>
+          <span aria-hidden>·</span>
+          <span
+            className={`tabular-nums ${item.key === "skills" ? "break-words" : "whitespace-nowrap"}`}
+            title={item.title}
+          >
+            {item.text}
+          </span>
+        </React.Fragment>
+      ))}
+    </p>
+  );
+};
+
+/** Opens "Try another model" on a note. */
+export const TryAnotherModelButton: React.FC<{
+  active: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+}> = ({ active, disabled, onClick }) => {
+  const { t } = useTranslation();
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-pressed={active}
+      className={`${ICON_BUTTON} ${active ? "bg-active text-text" : ""}`}
+      title={t("settings.notes.compare.tryAnother")}
+    >
+      <Columns2 width={16} height={16} />
+    </button>
+  );
+};
+
+/**
+ * "Try another model": pick a model (the same picker as Note settings) and
+ * write a note from the same text with it, shown next to this one.
+ */
+export const TryAnotherModelForm: React.FC<{
+  note: Note;
+  onClose: () => void;
+}> = ({ note, onClose }) => {
+  const { t } = useTranslation();
+  const { settings } = useSettings();
+  const provider = noteProvider(settings);
+  const tryAnotherModel = useNotesStore((state) => state.tryAnotherModel);
+  const [model, setModel] = useState("");
+
+  const start = () => {
+    if (model.trim() === "") return;
+    void tryAnotherModel(note, model);
+    onClose();
+  };
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 border-t border-accent/20 pt-2">
+      <span className="text-xs text-text-secondary">
+        {t("settings.notes.compare.pick")}
+      </span>
+      <NoteModelSelect
+        value={model}
+        provider={provider}
+        onCommit={setModel}
+        onChangeText={setModel}
+        placeholder={t("settings.notes.compare.placeholder")}
+        className="w-[240px] max-w-full"
+      />
+      <Button
+        variant="primary"
+        size="sm"
+        onClick={start}
+        disabled={model.trim() === ""}
+      >
+        <Sparkles className="w-3.5 h-3.5" />
+        {t("settings.notes.compare.write")}
+      </Button>
+      <button
+        type="button"
+        onClick={onClose}
+        className={ICON_BUTTON}
+        title={t("settings.notes.inline.dismiss")}
+      >
+        <X width={16} height={16} />
+      </button>
+    </div>
+  );
+};
+
+/** A "Try another model" note being written, or why it failed. */
+const ModelJobCard: React.FC<{ note: Note; job: ModelJob }> = ({
+  note,
+  job,
+}) => {
+  const { t } = useTranslation();
+  const tryAnotherModel = useNotesStore((state) => state.tryAnotherModel);
+  const dismiss = useNotesStore((state) => state.dismissModelJob);
+  const openNotes = useNavStore((state) => state.openNotes);
+
+  if (job.status === "generating") {
+    return (
+      <NoteCard>
+        <p className="flex items-center gap-2 text-sm text-text-secondary">
+          <Loader2 className="w-4 h-4 animate-spin text-accent shrink-0" />
+          {t("settings.notes.compare.generating", { model: job.model })}
+        </p>
+      </NoteCard>
+    );
+  }
+  return (
+    <NoteCard
+      actions={
+        <button
+          type="button"
+          onClick={() => dismiss(note.id)}
+          className={ICON_BUTTON}
+          title={t("settings.notes.inline.dismiss")}
+        >
+          <X width={16} height={16} />
+        </button>
+      }
+    >
+      <p className="text-sm text-err-text select-text break-words">
+        <span className="font-medium">
+          {t("settings.notes.compare.error", { model: job.model })}
+        </span>{" "}
+        {translateNoteError(job.error, t)}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => void tryAnotherModel(note, job.model)}
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+          {t("settings.notes.inline.retry")}
+        </Button>
+        {SETUP_ERRORS.has(job.error) && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => openNotes("settings")}
+          >
+            <Settings2 className="w-3.5 h-3.5" />
+            {t("settings.notes.openSettings")}
+          </Button>
+        )}
+      </div>
+    </NoteCard>
+  );
+};
+
+/**
+ * Notes made from the same text, side by side so they can be compared (a
+ * note from "Try another model" next to the one it started from), plus any
+ * "Try another model" job for them. One note alone takes the full width.
+ */
+export const NoteGroup: React.FC<{
+  notes: Note[];
+  renderNote: (note: Note) => React.ReactNode;
+}> = ({ notes, renderNote }) => {
+  const modelJobs = useNotesStore((state) => state.modelJobs);
+  const jobs = notes.flatMap((note) =>
+    modelJobs[note.id] ? [{ note, job: modelJobs[note.id] }] : [],
+  );
+  const cells = notes.length + jobs.length;
+  return (
+    <div className="@container">
+      <div
+        className={`grid gap-2 items-start ${cells > 1 ? "@xl:grid-cols-2" : ""}`}
+      >
+        {notes.map((note) => (
+          <div key={note.id} className="min-w-0">
+            {renderNote(note)}
+          </div>
+        ))}
+        {jobs.map(({ note, job }) => (
+          <div key={`job-${note.id}`} className="min-w-0">
+            <ModelJobCard note={note} job={job} />
+          </div>
+        ))}
+      </div>
+    </div>
   );
 };
 

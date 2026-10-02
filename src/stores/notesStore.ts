@@ -38,6 +38,30 @@ export const isHistoryJobBusy = (job: HistoryNoteJob | undefined): boolean =>
   job?.status === "generating" ||
   (job?.status === "speakerModels" && job.downloading);
 
+/**
+ * "Try another model": a note being written from the same text as an
+ * existing note with another model, shown next to that note. Keyed by the
+ * existing note's id; `historyId` is its source entry (null for pasted
+ * text).
+ */
+export type ModelJob = { model: string; historyId: number | null } & (
+  | { status: "generating" }
+  | { status: "error"; error: string }
+);
+
+/**
+ * Whether any note job runs on a History entry (Make note, with speakers,
+ * or Try another model), so the entry's note buttons stay disabled.
+ */
+export const isHistoryEntryBusy = (
+  state: Pick<NotesStore, "historyJobs" | "modelJobs">,
+  historyId: number,
+): boolean =>
+  isHistoryJobBusy(state.historyJobs[historyId]) ||
+  Object.values(state.modelJobs).some(
+    (job) => job.historyId === historyId && job.status === "generating",
+  );
+
 /** Error code of a speaker transcription without the speaker models. */
 const MODELS_MISSING_ERROR = "speakers_models_missing";
 
@@ -111,6 +135,8 @@ interface NotesStore {
   /** Notes per History entry id, newest first, for the inline cards. */
   historyNotes: Record<number, Note[]>;
   historyJobs: Record<number, HistoryNoteJob>;
+  /** "Try another model" jobs, by the id of the note they start from. */
+  modelJobs: Record<number, ModelJob>;
 
   skills: NoteSkill[];
 
@@ -140,6 +166,13 @@ interface NotesStore {
   /** Download the speaker models from an entry's card, then continue. */
   downloadSpeakerModelsForHistory: (historyId: number) => Promise<void>;
   dismissHistoryJob: (historyId: number) => void;
+  /**
+   * "Try another model": write a note from `note`'s text (same source
+   * entry, same speakers flag, current instructions and skills) with
+   * `model`, to show next to it.
+   */
+  tryAnotherModel: (note: Note, model: string) => Promise<void>;
+  dismissModelJob: (noteId: number) => void;
   /**
    * Load the notes of History entries whose notes aren't loaded yet.
    * Resolves once the notes of all `historyIds` are in the store (or their
@@ -179,6 +212,7 @@ export const useNotesStore = create<NotesStore>()((set, get) => ({
   notesLoading: false,
   historyNotes: {},
   historyJobs: {},
+  modelJobs: {},
   skills: [],
 
   setManualText: (text) => set({ manualText: text }),
@@ -189,7 +223,7 @@ export const useNotesStore = create<NotesStore>()((set, get) => ({
 
     set({ manualGenerating: true, manualError: null, manualResult: null });
     try {
-      const result = await commands.generateNote(manualText, null, false);
+      const result = await commands.generateNote(manualText, null, false, null);
       if (result.status === "ok") {
         set((state) => ({
           manualResult: result.data,
@@ -218,7 +252,12 @@ export const useNotesStore = create<NotesStore>()((set, get) => ({
 
     setJob({ status: "generating", withSpeakers });
     try {
-      const result = await commands.generateNote(text, historyId, withSpeakers);
+      const result = await commands.generateNote(
+        text,
+        historyId,
+        withSpeakers,
+        null,
+      );
       if (result.status === "ok") {
         const note = result.data;
         set((state) => ({
@@ -324,6 +363,53 @@ export const useNotesStore = create<NotesStore>()((set, get) => ({
       historyJobs: withoutKey(state.historyJobs, historyId),
     })),
 
+  tryAnotherModel: async (note, model) => {
+    const chosen = model.trim();
+    if (chosen === "" || get().modelJobs[note.id]?.status === "generating") {
+      return;
+    }
+    // Keep the source entry only while it exists, as "Make note" does.
+    const historyId = note.source_exists ? note.history_id : null;
+    const setJob = (job: ModelJob) =>
+      set((state) => ({ modelJobs: { ...state.modelJobs, [note.id]: job } }));
+
+    setJob({ status: "generating", model: chosen, historyId });
+    let error: string;
+    try {
+      const result = await commands.generateNote(
+        note.source_text,
+        historyId,
+        note.with_speakers,
+        chosen,
+      );
+      if (result.status === "ok") {
+        const created = result.data;
+        set((state) => ({
+          modelJobs: withoutKey(state.modelJobs, note.id),
+          notes: mergeNotes([created], state.notes),
+          historyNotes:
+            created.history_id !== null
+              ? {
+                  ...state.historyNotes,
+                  [created.history_id]: mergeNotes(
+                    [created],
+                    state.historyNotes[created.history_id] ?? [],
+                  ),
+                }
+              : state.historyNotes,
+        }));
+        return;
+      }
+      error = result.error;
+    } catch (e) {
+      error = String(e);
+    }
+    setJob({ status: "error", model: chosen, historyId, error });
+  },
+
+  dismissModelJob: (noteId) =>
+    set((state) => ({ modelJobs: withoutKey(state.modelJobs, noteId) })),
+
   loadNotesForHistory: async (historyIds) => {
     const waiting = new Set<Promise<void>>();
     for (const id of historyIds) {
@@ -428,11 +514,11 @@ export const useNotesStore = create<NotesStore>()((set, get) => ({
         return;
       }
       set({ skills: result.data });
-      // The backend drops a selected skill that no longer exists; pick up
-      // that change so the pickers and the backend agree.
+      // The backend drops active skills that no longer exist; pick up that
+      // change so the pickers and the backend agree.
       const settingsStore = useSettingsStore.getState();
-      const selectedId = settingsStore.settings?.note_skill_id;
-      if (selectedId && !result.data.some((s) => s.id === selectedId)) {
+      const activeIds = settingsStore.settings?.note_skill_ids ?? [];
+      if (activeIds.some((id) => !result.data.some((s) => s.id === id))) {
         await settingsStore.refreshSettings();
       }
     } catch (error) {

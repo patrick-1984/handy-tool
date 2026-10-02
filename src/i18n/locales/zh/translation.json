@@ -1505,7 +1505,6 @@
         "sourceLabel": "此笔记的来源"
       },
       "openSettings": "笔记设置",
-      "defaultSkill": "默认说明",
       "speakersBadge": "含说话人",
       "cutShort": "模型已达到长度上限，因此这条笔记提前结束。",
       "copy": "复制笔记（Markdown）",
@@ -1515,21 +1514,40 @@
       "showMore": "显示更多",
       "showLess": "收起",
       "skillPicker": "笔记技能",
+      "skillPickerNone": "无技能",
+      "skillPickerCount": "{{count}} 个技能",
+      "instructions": {
+        "title": "指令",
+        "description": "模型写笔记时收到的内容:你自己的指令、已开启的技能以及笔记语言。",
+        "custom": {
+          "title": "你的指令",
+          "description": "适用于每篇笔记的你自己的指令,例如:使用项目符号,最后列出待办事项。它们会在已开启的技能之前发送,与技能冲突时以它们为准。没有开启任何技能时只使用这些指令;如果这里也为空,笔记按默认指令编写。",
+          "placeholder": "例如:不超过一页,最后列出待办事项及每项的负责人。"
+        }
+      },
+      "language": {
+        "title": "笔记语言",
+        "description": "编写笔记所用的语言。“与转录相同”会用说话时的语言写每篇笔记;也可以为所有笔记选择一种语言。此设置优先于指令和技能本身所用的语言,因此可以同时开启波兰语技能和英语技能。",
+        "sameAsTranscript": "与转录相同"
+      },
       "skills": {
         "title": "技能",
-        "description": "技能告诉模型如何撰写笔记，例如会议纪要或学习摘要。可以导入任意数量的技能并选择要使用的那个；在你删除之前它们会一直保留。",
+        "description": "技能告诉模型如何写你的笔记,例如会议纪要或学习总结,可以用任何语言编写。想导入多少都可以,并开启一个或多个;在你删除之前会一直保留。",
         "active": {
-          "title": "技能",
-          "description": "用于撰写新笔记的技能。默认说明：使用与转录相同的语言，生成清晰、有条理的 Markdown 笔记，保留所有事实、决定和待办事项。"
+          "title": "已开启的技能",
+          "description": "编写新笔记时使用的技能。可以同时开启多个:每个技能以其名称、按此列表的顺序,在你的指令之后发送。"
         },
-        "defaultDescription": "笔记遵循默认说明：与转录语言相同的清晰、有条理的 Markdown 笔记。",
+        "defaultDescription": "没有开启任何技能,且“你的指令”为空,因此笔记按默认指令编写:一篇清晰、结构化的 Markdown 笔记,保留每个事实、决定和待办事项。",
+        "none": "尚未导入任何技能。",
+        "activeSummary": "已开启的技能:{{count}} 个。笔记先遵循你的指令(如有),再遵循每个已开启的技能。",
+        "onlyOwnInstructions": "没有开启任何技能,因此笔记只遵循你的指令。",
         "fileCount": "文件：{{count}}",
         "truncated": "此技能很长，因此只有前 200 KB 会发送给模型。",
         "importFile": "导入文件…",
         "importFolder": "导入文件夹…",
         "importHint": ".md 或 .txt 文件、文件夹，或 .zip / .skill 压缩包（一个 SKILL.md 及可选的参考文件）。Handy 会把技能复制到自己的数据文件夹。",
         "fileFilter": "技能",
-        "imported": "已导入并选择技能“{{name}}”。",
+        "imported": "已导入并开启技能“{{name}}”。",
         "importError": "无法导入技能：{{error}}",
         "remove": "删除技能",
         "removeError": "无法删除技能。"
@@ -1549,10 +1567,24 @@
         },
         "model": {
           "title": "模型",
-          "description": "撰写笔记的模型，例如 google/gemini-2.5-flash。留空则使用提供商自己的模型。",
+          "description": "编写笔记的模型,可从提供商列出的所有模型中选择,也可直接输入。对于 OpenRouter,每个模型都会显示每 100 万输入 / 输出 token 的价格,“推荐用于笔记(便宜)”列出比 Claude Opus 5.5 至少便宜 10 倍的优质多语言模型。留空则使用提供商自己的模型。",
           "placeholder": "提供商的模型"
         },
         "manage": "管理 LLM 提供商"
+      },
+      "modelPicker": {
+        "search": "搜索模型",
+        "priceHeader": "每 100 万 token 价格:输入 / 输出",
+        "noPrices": "此提供商的模型价格未知。",
+        "sort": "排序:",
+        "sortPrice": "价格",
+        "sortName": "名称",
+        "recommended": "推荐用于笔记(便宜)",
+        "cheaper": "比 Opus 5.5 便宜约 {{times}} 倍",
+        "all": "所有模型({{count}})",
+        "priceVaries": "价格不固定",
+        "free": "免费",
+        "selectedPrice": "每 100 万 token(输入 / 输出):"
       },
       "speakers": {
         "title": "说话人识别",
@@ -1582,6 +1614,30 @@
         "empty": "还没有笔记。在历史记录中的录音上使用“生成笔记”，或在“手动笔记”标签页中撰写。",
         "goToTranscript": "转到转录",
         "sourceDeleted": "源转录已被删除"
+      },
+      "usage": {
+        "costUnknown": "费用未知",
+        "costTitle": "编写这篇笔记的费用",
+        "tokens": "token:输入 {{input}} / 输出 {{output}}",
+        "timeTitle": "模型编写这篇笔记所用的时间",
+        "modelTitle": "编写这篇笔记的模型"
+      },
+      "compare": {
+        "tryAnother": "试试其他模型",
+        "pick": "用以下模型重新编写这篇笔记:",
+        "placeholder": "选择模型",
+        "write": "编写笔记",
+        "generating": "正在用 {{model}} 编写笔记…",
+        "error": "无法用 {{model}} 编写笔记:",
+        "title": "比较模型",
+        "filter": "显示",
+        "allModels": "所有模型",
+        "model": "模型",
+        "notes": "笔记",
+        "averageCost": "平均费用",
+        "averageTime": "平均时间",
+        "totalCost": "总费用",
+        "hint": "费用是 OpenRouter 实际收取的金额,或根据为提供商设置的价格估算的金额;否则为未知。在笔记上使用“试试其他模型”,即可用另一个模型重新编写,并显示在旁边。"
       },
       "manual": {
         "title": "要生成笔记的文本",

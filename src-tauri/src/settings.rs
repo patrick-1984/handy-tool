@@ -1524,15 +1524,44 @@ pub struct AppSettings {
     /// Notes: the model notes are written with. Empty = the provider's model.
     #[serde(default = "default_note_model")]
     pub note_model: String,
-    /// Notes: the imported skill notes are written with (a folder name under
-    /// `{app_data}/skills`). `None` = the built-in instructions.
-    #[serde(default)]
+    /// DEPRECATED: the single skill notes were written with before several
+    /// could be active at once. Kept ONLY as the migration source for
+    /// `note_skill_ids` (see `ensure_notes_v2`); `skip_serializing` so it is
+    /// dropped from the store after migration.
+    #[serde(default, skip_serializing)]
     pub note_skill_id: Option<String>,
+    /// Notes: the imported skills notes are written with (folder names under
+    /// `{app_data}/skills`). Several can be active; they are sent in the
+    /// skills list's order. Empty = only `note_custom_instructions`, or the
+    /// built-in instructions when that is empty too.
+    #[serde(default)]
+    pub note_skill_ids: Vec<String>,
+    /// Notes: the user's own instructions ("Your instructions"), sent before
+    /// the active skills. Empty = none.
+    #[serde(default)]
+    pub note_custom_instructions: String,
+    /// Notes: the language notes are written in, as an app UI language code
+    /// (`en`, `pl`, `zh-TW`...). Empty = the transcript's language.
+    #[serde(default)]
+    pub note_language: String,
+    /// One-time migration marker for notes v2 (several skills, the cheaper
+    /// default model). Absent in older stores → `false` → runs once; fresh
+    /// installs get `true`.
+    #[serde(default)]
+    pub notes_v2_migrated: bool,
 }
 
+/// The default note model: about 40x cheaper than Claude Opus 5.5 on
+/// OpenRouter ($0.10 / $0.50 per 1M input / output tokens, October 2026)
+/// and multilingual.
 pub fn default_note_model() -> String {
-    "google/gemini-2.5-flash".to_string()
+    "openai/gpt-6-luna".to_string()
 }
+
+/// The note model shipped before notes v2. It misses the "10x cheaper than
+/// Opus" bar on output ($2.50 per 1M), so `ensure_notes_v2` moves stores that
+/// still hold it to `default_note_model`.
+const PREVIOUS_DEFAULT_NOTE_MODEL: &str = "google/gemini-2.5-flash";
 
 fn default_translator_priority() -> TranslatorPriority {
     TranslatorPriority::LiveFirst
@@ -2205,6 +2234,28 @@ fn ensure_custom_asr_config(settings: &mut AppSettings) -> bool {
     true
 }
 
+/// One-time notes v2 migration: the single selected skill (`note_skill_id`)
+/// becomes the first entry of `note_skill_ids`, and a note model still at the
+/// previous default moves to the new, cheaper default. A model the user
+/// picked themselves is kept. Reads the `skip_serializing` `note_skill_id`,
+/// so it must run before any store write.
+fn ensure_notes_v2(settings: &mut AppSettings) -> bool {
+    if settings.notes_v2_migrated {
+        return false;
+    }
+    if let Some(id) = settings.note_skill_id.take()
+        && !id.trim().is_empty()
+        && !settings.note_skill_ids.contains(&id)
+    {
+        settings.note_skill_ids.insert(0, id);
+    }
+    if settings.note_model.trim() == PREVIOUS_DEFAULT_NOTE_MODEL {
+        settings.note_model = default_note_model();
+    }
+    settings.notes_v2_migrated = true;
+    true
+}
+
 fn ensure_llm_defaults(settings: &mut AppSettings) -> bool {
     let mut changed = false;
 
@@ -2852,6 +2903,11 @@ pub fn get_default_settings() -> AppSettings {
         note_provider_ref: String::new(),
         note_model: default_note_model(),
         note_skill_id: None,
+        note_skill_ids: Vec::new(),
+        note_custom_instructions: String::new(),
+        note_language: String::new(),
+        // Fresh installs already have the notes v2 settings.
+        notes_v2_migrated: true,
     }
 }
 
@@ -2996,7 +3052,8 @@ pub fn load_or_create_app_settings(app: &AppHandle) -> AppSettings {
     let bindings_updated = ensure_default_bindings(&mut settings);
     let jumper_updated = ensure_jumper_v2(&mut settings);
     let llm_updated = ensure_llm_defaults(&mut settings);
-    if asr_updated || bindings_updated || jumper_updated || llm_updated {
+    let notes_updated = ensure_notes_v2(&mut settings);
+    if asr_updated || bindings_updated || jumper_updated || llm_updated || notes_updated {
         store.set("settings", serde_json::to_value(&settings).unwrap());
     }
 
@@ -3030,7 +3087,13 @@ pub fn get_settings(app: &AppHandle) -> AppSettings {
     let asr_updated = ensure_custom_asr_config(&mut settings);
     let jumper_updated = ensure_jumper_v2(&mut settings);
     let bindings_updated = ensure_default_bindings(&mut settings);
-    if ensure_llm_defaults(&mut settings) || bindings_updated || jumper_updated || asr_updated {
+    let notes_updated = ensure_notes_v2(&mut settings);
+    if ensure_llm_defaults(&mut settings)
+        || bindings_updated
+        || jumper_updated
+        || asr_updated
+        || notes_updated
+    {
         store.set("settings", serde_json::to_value(&settings).unwrap());
     }
 
@@ -3150,6 +3213,70 @@ pub fn get_recording_retention_period(app: &AppHandle) -> RecordingRetentionPeri
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// A store saved before notes v2: one selected skill, the old default model.
+    fn pre_notes_v2_store(note_model: &str, note_skill_id: Option<&str>) -> AppSettings {
+        let mut value = serde_json::to_value(get_default_settings()).expect("serialize");
+        let object = value.as_object_mut().expect("settings object");
+        for key in [
+            "note_skill_ids",
+            "note_custom_instructions",
+            "note_language",
+            "notes_v2_migrated",
+        ] {
+            object.remove(key);
+        }
+        object.insert("note_model".into(), serde_json::json!(note_model));
+        object.insert("note_skill_id".into(), serde_json::json!(note_skill_id));
+        serde_json::from_value(value).expect("deserialize")
+    }
+
+    #[test]
+    fn notes_v2_moves_the_selected_skill_into_the_list() {
+        let mut settings = pre_notes_v2_store("google/gemini-2.5-flash", Some("meeting"));
+        assert!(!settings.notes_v2_migrated);
+        assert!(settings.note_skill_ids.is_empty());
+
+        assert!(ensure_notes_v2(&mut settings));
+        assert_eq!(settings.note_skill_ids, vec!["meeting".to_string()]);
+        assert_eq!(settings.note_skill_id, None);
+        assert!(settings.notes_v2_migrated);
+        assert_eq!(settings.note_custom_instructions, "");
+        assert_eq!(settings.note_language, "");
+
+        // Runs once: a later change is never undone.
+        settings.note_skill_ids.clear();
+        assert!(!ensure_notes_v2(&mut settings));
+        assert!(settings.note_skill_ids.is_empty());
+
+        // The old field is never written back to the store.
+        let stored = serde_json::to_value(&settings).expect("serialize");
+        assert!(stored.get("note_skill_id").is_none());
+        assert_eq!(stored["note_skill_ids"], serde_json::json!([]));
+    }
+
+    #[test]
+    fn notes_v2_moves_only_the_untouched_default_model() {
+        let mut untouched = pre_notes_v2_store("google/gemini-2.5-flash", None);
+        assert!(ensure_notes_v2(&mut untouched));
+        assert_eq!(untouched.note_model, "openai/gpt-6-luna");
+        assert_eq!(untouched.note_model, default_note_model());
+        assert!(untouched.note_skill_ids.is_empty());
+
+        for chosen in ["anthropic/claude-haiku-4.5", ""] {
+            let mut settings = pre_notes_v2_store(chosen, None);
+            assert!(ensure_notes_v2(&mut settings));
+            assert_eq!(settings.note_model, chosen);
+        }
+    }
+
+    #[test]
+    fn fresh_installs_need_no_notes_v2_migration() {
+        let mut settings = get_default_settings();
+        assert!(!ensure_notes_v2(&mut settings));
+        assert_eq!(settings.note_model, "openai/gpt-6-luna");
+        assert!(settings.note_skill_ids.is_empty());
+    }
 
     #[test]
     fn ensure_default_bindings_backfills_missing_and_never_touches_a_saved_chord() {

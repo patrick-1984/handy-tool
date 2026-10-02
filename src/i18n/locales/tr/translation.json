@@ -1505,7 +1505,6 @@
         "sourceLabel": "Bu notun kaynağı"
       },
       "openSettings": "Not ayarları",
-      "defaultSkill": "Varsayılan talimatlar",
       "speakersBadge": "Konuşmacılı",
       "cutShort": "Model uzunluk sınırına ulaştığı için bu not erken bitiyor.",
       "copy": "Notu kopyala (Markdown)",
@@ -1514,22 +1513,41 @@
       "deleteError": "Not silinemedi. Lütfen tekrar deneyin.",
       "showMore": "Daha fazla göster",
       "showLess": "Daha az göster",
-      "skillPicker": "Not becerisi",
+      "skillPicker": "Not becerileri",
+      "skillPickerNone": "Beceri yok",
+      "skillPickerCount": "{{count}} beceri",
+      "instructions": {
+        "title": "Talimatlar",
+        "description": "Model bir not yazarken neyi alır: kendi talimatlarınız, açık olan beceriler ve notun dili.",
+        "custom": {
+          "title": "Talimatlarınız",
+          "description": "Her not için kendi talimatlarınız, örneğin: madde işaretleri kullan ve yapılacaklarla bitir. Açık becerilerden önce gönderilir ve bir beceri farklı bir şey söylediğinde öncelik onlardadır. Hiçbir beceri açık değilse tek başına kullanılır; bu alan da boşsa notlar varsayılan talimatlara göre yazılır.",
+          "placeholder": "Örneğin: En fazla bir sayfa olsun, sonunda yapılacaklar ve her birinin sorumlusu yer alsın."
+        }
+      },
+      "language": {
+        "title": "Not dili",
+        "description": "Notların yazıldığı dil. \"Transkriptle aynı\" her notu konuşulan dilde yazar; ya da tüm notlar için tek bir dil seçin. Bu, talimatlarınızın ve becerilerinizin yazıldığı dilden önce gelir; böylece Lehçe bir beceri ile İngilizce bir beceri birlikte açık olabilir.",
+        "sameAsTranscript": "Transkriptle aynı"
+      },
       "skills": {
         "title": "Beceriler",
-        "description": "Beceri, modele notlarınızı nasıl yazacağını söyler; örneğin bir toplantı tutanağı ya da ders özeti. İstediğiniz kadar içe aktarın ve kullanılacak olanı seçin; siz kaldırana kadar kalırlar.",
+        "description": "Beceri, modele notlarınızı nasıl yazacağını söyler; örneğin toplantı tutanağı veya ders özeti, herhangi bir dilde. İstediğiniz kadar içe aktarın ve bir ya da birkaçını açın; siz kaldırana kadar kalırlar.",
         "active": {
-          "title": "Beceri",
-          "description": "Yeni notların yazıldığı beceri. Varsayılan talimatlar: transkripsiyonun dilinde, her bilgiyi, kararı ve görevi koruyan açık ve düzenli bir Markdown notu."
+          "title": "Etkin beceriler",
+          "description": "Yeni notların yazıldığı beceriler. Aynı anda birkaçı açık olabilir: her biri kendi adıyla, bu listedeki sırayla, talimatlarınızdan sonra gönderilir."
         },
-        "defaultDescription": "Notlar varsayılan talimatları izler: transkripsiyonla aynı dilde, açık ve düzenli bir Markdown notu.",
+        "defaultDescription": "Hiçbir beceri açık değil ve Talimatlarınız boş; bu yüzden notlar varsayılan talimatlara göre yazılır: her bilgiyi, kararı ve yapılacak işi koruyan açık, düzenli bir Markdown notu.",
+        "none": "Henüz içe aktarılmış beceri yok.",
+        "activeSummary": "Açık beceriler: {{count}}. Notlar varsa talimatlarınıza, ardından açık olan her beceriye göre yazılır.",
+        "onlyOwnInstructions": "Hiçbir beceri açık değil; bu yüzden notlar yalnızca talimatlarınıza göre yazılır.",
         "fileCount": "Dosya: {{count}}",
         "truncated": "Bu beceri çok uzun, bu yüzden modele yalnızca ilk 200 KB'ı gönderilir.",
         "importFile": "Dosya içe aktar…",
         "importFolder": "Klasör içe aktar…",
         "importHint": "Bir .md veya .txt dosyası, bir klasör ya da bir .zip veya .skill arşivi (isteğe bağlı başvuru dosyalarıyla bir SKILL.md). Handy beceriyi kendi veri klasörüne kopyalar.",
         "fileFilter": "Beceriler",
-        "imported": "\"{{name}}\" becerisi içe aktarıldı ve seçildi.",
+        "imported": "\"{{name}}\" becerisi içe aktarıldı ve açıldı.",
         "importError": "Beceri içe aktarılamadı: {{error}}",
         "remove": "Beceriyi kaldır",
         "removeError": "Beceri kaldırılamadı."
@@ -1549,10 +1567,24 @@
         },
         "model": {
           "title": "Model",
-          "description": "Notları yazan model, örneğin google/gemini-2.5-flash. Sağlayıcının kendi modelini kullanmak için boş bırakın.",
+          "description": "Notları yazan model; sağlayıcının tüm modellerinden seçilir veya yazılır. OpenRouter'da her modelin 1M giriş / çıkış token başına fiyatı gösterilir ve \"Notlar için önerilen (ucuz)\" grubu, Claude Opus 5.5'ten en az 10 kat ucuz, iyi çok dilli modelleri listeler. Sağlayıcının kendi modelini kullanmak için boş bırakın.",
           "placeholder": "Sağlayıcının modeli"
         },
         "manage": "LLM sağlayıcılarını yönet"
+      },
+      "modelPicker": {
+        "search": "Model ara",
+        "priceHeader": "1M token başına fiyat: giriş / çıkış",
+        "noPrices": "Bu sağlayıcının modellerinin fiyatları bilinmiyor.",
+        "sort": "Sırala:",
+        "sortPrice": "Fiyat",
+        "sortName": "Ad",
+        "recommended": "Notlar için önerilen (ucuz)",
+        "cheaper": "Opus 5.5'ten ≈{{times}} kat ucuz",
+        "all": "Tüm modeller ({{count}})",
+        "priceVaries": "Fiyat değişken",
+        "free": "Ücretsiz",
+        "selectedPrice": "1M token başına (giriş / çıkış):"
       },
       "speakers": {
         "title": "Konuşmacı algılama",
@@ -1582,6 +1614,30 @@
         "empty": "Henüz not yok. Geçmiş bölümündeki bir kayıtta \"Not oluştur\" seçeneğini kullanın ya da \"Elle not\" sekmesinde bir not yazın.",
         "goToTranscript": "Transkripsiyona git",
         "sourceDeleted": "Kaynak transkripsiyon silindi"
+      },
+      "usage": {
+        "costUnknown": "maliyet bilinmiyor",
+        "costTitle": "Bu notu yazmanın maliyeti",
+        "tokens": "{{input}} giriş / {{output}} çıkış token",
+        "timeTitle": "Modelin bu notu yazması ne kadar sürdü",
+        "modelTitle": "Bu notu yazan model"
+      },
+      "compare": {
+        "tryAnother": "Başka bir model dene",
+        "pick": "Bu notu yeniden şununla yaz:",
+        "placeholder": "Bir model seçin",
+        "write": "Notu yaz",
+        "generating": "Not {{model}} ile yazılıyor…",
+        "error": "Not {{model}} ile yazılamadı:",
+        "title": "Modelleri karşılaştır",
+        "filter": "Göster",
+        "allModels": "Tüm modeller",
+        "model": "Model",
+        "notes": "Notlar",
+        "averageCost": "Ort. maliyet",
+        "averageTime": "Ort. süre",
+        "totalCost": "Toplam maliyet",
+        "hint": "Maliyet, OpenRouter'ın aldığı ücret ya da sağlayıcı için ayarlanan fiyatlardan bir tahmindir; aksi halde bilinmez. Bir notu başka bir modelle hemen yanında yeniden yazmak için nottaki \"Başka bir model dene\"yi kullanın."
       },
       "manual": {
         "title": "Nota dönüştürülecek metin",

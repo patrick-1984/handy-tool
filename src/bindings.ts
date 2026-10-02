@@ -1013,14 +1013,16 @@ export const commands = {
     }
   },
 /**
- * Write a Markdown note from `text` with the selected skill, provider and
- * model, and save it. `history_id` is the History entry the text came from
- * (it is starred so retention keeps it); `with_speakers` marks a note made
- * from a speaker-labelled transcript.
+ * Write a Markdown note from `text` with "Your instructions", the active
+ * skills, the note language, provider and model, and save it. `history_id`
+ * is the History entry the text came from (it is starred so retention
+ * keeps it); `with_speakers` marks a note made from a speaker-labelled
+ * transcript; `model` overrides the note model for this one note ("Try
+ * another model").
  */
-async generateNote(text: string, historyId: number | null, withSpeakers: boolean) : Promise<Result<Note, string>> {
+async generateNote(text: string, historyId: number | null, withSpeakers: boolean, model: string | null) : Promise<Result<Note, string>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("generate_note", { text, historyId, withSpeakers }) };
+    return { status: "ok", data: await TAURI_INVOKE("generate_note", { text, historyId, withSpeakers, model }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -1089,11 +1091,35 @@ async deleteNoteSkill(id: string) : Promise<Result<null, string>> {
 }
 },
 /**
- * Select the skill notes are written with; `None` = the built-in instructions.
+ * The skills notes are written with (several can be active); empty = only
+ * "Your instructions", or the built-in instructions.
  */
-async changeNoteSkillSetting(id: string | null) : Promise<Result<null, string>> {
+async changeNoteSkillIdsSetting(ids: string[]) : Promise<Result<null, string>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("change_note_skill_setting", { id }) };
+    return { status: "ok", data: await TAURI_INVOKE("change_note_skill_ids_setting", { ids }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * "Your instructions": sent with every note, before the active skills.
+ */
+async changeNoteCustomInstructionsSetting(instructions: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_note_custom_instructions_setting", { instructions }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * The language notes are written in: an app UI language code, or empty for
+ * the transcript's language.
+ */
+async changeNoteLanguageSetting(language: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_note_language_setting", { language }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -3550,10 +3576,28 @@ note_provider_ref?: string;
  */
 note_model?: string; 
 /**
- * Notes: the imported skill notes are written with (a folder name under
- * `{app_data}/skills`). `None` = the built-in instructions.
+ * Notes: the imported skills notes are written with (folder names under
+ * `{app_data}/skills`). Several can be active; they are sent in the
+ * skills list's order. Empty = only `note_custom_instructions`, or the
+ * built-in instructions when that is empty too.
  */
-note_skill_id?: string | null;
+note_skill_ids?: string[]; 
+/**
+ * Notes: the user's own instructions ("Your instructions"), sent before
+ * the active skills. Empty = none.
+ */
+note_custom_instructions?: string; 
+/**
+ * Notes: the language notes are written in, as an app UI language code
+ * (`en`, `pl`, `zh-TW`...). Empty = the transcript's language.
+ */
+note_language?: string; 
+/**
+ * One-time migration marker for notes v2 (several skills, the cheaper
+ * default model). Absent in older stores → `false` → runs once; fresh
+ * installs get `true`.
+ */
+notes_v2_migrated?: boolean;
   jumper_persist?: boolean;
   jumper_saved_slots?: (SavedJumpSlot | null)[];
 };
@@ -4078,6 +4122,19 @@ cost_usd: number | null;
  * The model stopped at its output-length limit: the note is cut short.
  */
 truncated: boolean; 
+/**
+ * Input tokens the provider reported for the call, when it did.
+ */
+prompt_tokens: number | null; 
+/**
+ * Output tokens the provider reported for the call, when it did.
+ */
+completion_tokens: number | null; 
+/**
+ * How long the model call took, in milliseconds (`None` for notes made
+ * before this was recorded).
+ */
+duration_ms: number | null; 
 /**
  * Whether the source history entry still exists.
  */
