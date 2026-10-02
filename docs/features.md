@@ -676,7 +676,7 @@ controls and post-processing's own controls while it is off never show up.
 **The situation.** The sidebar had grown to seventeen entries in two groups, and some settings
 were in two places at once — History settings on both History and Advanced, the Cancel shortcut
 on Debug and Shortcuts.
-**What Handy does.** The sidebar starts with **History**, under a line of its own, then the pages
+**What Handy does.** The sidebar starts with **History** and **Notes**, under a line of their own, then the pages
 used most — General, Setups, Transcription, Shortcuts, Models, Files and Jumper — then **More
 Tools** (Keyboard Typer, Token Count, Model Testing, Current Audio), What's new and **About**
 (the version, the update controls, credits), and at the bottom **Advanced settings**
@@ -688,7 +688,7 @@ post-processing provider and prompt appear under the Post-processing switch, and
 rows are gone. The update controls are the one exception: they are on About and on General.
 **Where.** `Advanced settings` and `More Tools`.
 **Since.** 1.10.0. Until 2.0.1 More Tools and Advanced settings were one **More** entry, and
-Transcription was its Output tab. History first and About as a page since 2.0.2.
+Transcription was its Output tab. History first and About as a page since 2.0.2; Notes since 2.1.0.
 
 ### What's new, one click from each setting
 
@@ -1441,7 +1441,7 @@ button that opens them. Making a note also marks the entry as saved, so automati
 removes the transcript behind a note. Only the text is sent, never the audio, and only when you
 press the button.
 **Where.** `History › Recordings › Make note`.
-**Since.** The release after 2.0.5.
+**Since.** 2.1.0.
 
 <!-- prov: notes inline | src: src/components/settings/history/HistorySettings.tsx; src/components/settings/notes/HistoryEntryNotes.tsx; src/stores/notesStore.ts; src-tauri/src/commands/notes.rs; src-tauri/src/managers/history.rs -->
 
@@ -1464,7 +1464,7 @@ recording, live text and normal transcription never run them. With API or OpenRo
 transcription selected, that service transcribes the recording, one speaker turn at a time.
 **Where.** `History › Recordings › Make note with speakers` and
 `Notes › Settings › Speaker detection › Speaker models`.
-**Since.** The release after 2.0.5.
+**Since.** 2.1.0.
 
 <!-- prov: notes with speakers | src: src-tauri/src/diarization/mod.rs; src-tauri/src/diarization/align.rs; src-tauri/src/diarization/models.rs; src-tauri/src/commands/speakers.rs; src-tauri/src/managers/transcription.rs; src/stores/notesStore.ts; src/components/settings/notes/HistoryEntryNotes.tsx; src/components/settings/notes/SpeakerDetectionSettings.tsx -->
 
@@ -1484,7 +1484,7 @@ transcript's language that keeps every fact, decision and action item. Skills ar
 backup.
 **Where.** `Notes › Settings › Skills › Skill`, `Notes › Settings › Skills › Import file…` and
 `Notes › Settings › Skills › Import folder…`.
-**Since.** The release after 2.0.5.
+**Since.** 2.1.0.
 
 <!-- prov: note skills | src: src-tauri/src/note_skills.rs; src-tauri/src/commands/notes.rs; src/components/settings/notes/NoteSettingsTab.tsx -->
 
@@ -1501,7 +1501,7 @@ a guard against instructions hidden inside it, and the cost is kept with the not
 provider reports or prices it.
 **Where.** `Notes › Settings › Provider and model › Provider`, `Notes › Settings › Provider and model › API key`
 and `Notes › Settings › Provider and model › Model`.
-**Since.** The release after 2.0.5.
+**Since.** 2.1.0.
 
 <!-- prov: note provider | src: src-tauri/src/commands/notes.rs; src-tauri/src/model_testing.rs; src-tauri/src/settings.rs; src/components/settings/notes/NoteSettingsTab.tsx -->
 
@@ -1510,11 +1510,11 @@ and `Notes › Settings › Provider and model › Model`.
 <a id="every-note-in-one-place"></a>
 **The situation.** You remember writing a note last week but not which recording it came from.
 **What Handy does.** The Saved notes tab lists every note, newest first, with its date, skill and
-model. Go to transcript opens History on the source recording, clears the search, scrolls to it and marks it
-as the source of the note. When the recording was deleted, the note stays and the button says the
+model, and a With speakers badge on notes made with speakers. Go to transcript opens History on
+the source recording, clears the search, scrolls to it and marks it as the source of the note. When the recording was deleted, the note stays and the button says the
 source transcript was deleted.
 **Where.** `Notes › Saved notes › Go to transcript`.
-**Since.** The release after 2.0.5.
+**Since.** 2.1.0.
 
 <!-- prov: saved notes | src: src/components/settings/notes/SavedNotes.tsx; src/components/settings/history/HistorySettings.tsx; src/stores/navStore.ts -->
 
@@ -1526,7 +1526,9 @@ another tool, or notes you typed.
 **What Handy does.** Paste or type it on the Manual note tab and generate a note with the same
 skill and model. The note is saved to Saved notes without a source recording.
 **Where.** `Notes › Manual note › Generate note`.
-**Since.** The release after 2.0.5.
+**Since.** 2.1.0.
+
+<!-- prov: manual note | src: src/components/settings/notes/ManualNote.tsx; src-tauri/src/commands/notes.rs -->
 
 ---
 
