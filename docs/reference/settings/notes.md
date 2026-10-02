@@ -4,11 +4,27 @@ Open `Notes`. The page has three tabs: Settings, Saved notes and Manual note. Un
 
 ## Settings
 
-### Skill
+### Your instructions
 
-`Notes › Settings › Skills › Skill`
+`Notes › Settings › Instructions › Your instructions`
 
-The skill new notes are written with: Default instructions, or one of the imported skills. A trash button next to it removes the selected skill and its copied files. **Default:** Default instructions.
+A text box for your own instructions, sent with every note before the skills that are on; where a skill says otherwise, these win. With no skill on they are used alone, and when the box is empty too, notes follow the default instructions. Saved when you leave the box. **Default:** empty.
+
+Catalog: [Notes written your way, with a skill](../../features.md#notes-written-your-way-with-a-skill).
+
+### Note language
+
+`Notes › Settings › Instructions › Note language`
+
+The language notes are written in: Same as the transcript, or one of the app's languages, listed by their own names (English, Polski, Deutsch…). The rule is the last thing the model is told, so it wins over the language your instructions and skills are written in. **Default:** Same as the transcript.
+
+Catalog: [Notes in the language you want, whatever the skill is written in](../../features.md#notes-in-the-language-you-want).
+
+### Active skills
+
+`Notes › Settings › Skills › Active skills`
+
+The imported skills, each with a checkbox and a trash button; every skill that is checked is used, in the list's order, each under its own name after Your instructions. The trash button removes a skill and its copied files. A line under the list says how many skills are on, or what notes follow when none is. **Default:** no skills on.
 
 Catalog: [Notes written your way, with a skill](../../features.md#notes-written-your-way-with-a-skill).
 
@@ -16,7 +32,7 @@ Catalog: [Notes written your way, with a skill](../../features.md#notes-written-
 
 `Notes › Settings › Skills › Import file…`
 
-Imports a skill from a `.md`, `.markdown` or `.txt` file, or a `.zip` or `.skill` archive, and selects it. **Default:** not applicable; this is an action.
+Imports a skill from a `.md`, `.markdown` or `.txt` file, or a `.zip` or `.skill` archive, and turns it on alongside the skills already on. **Default:** not applicable; this is an action.
 
 Catalog: [Notes written your way, with a skill](../../features.md#notes-written-your-way-with-a-skill).
 
@@ -24,7 +40,7 @@ Catalog: [Notes written your way, with a skill](../../features.md#notes-written-
 
 `Notes › Settings › Skills › Import folder…`
 
-Imports a skill from a folder (its text files, `SKILL.md` first) and selects it. **Default:** not applicable; this is an action.
+Imports a skill from a folder (its text files, `SKILL.md` first) and turns it on alongside the skills already on. **Default:** not applicable; this is an action.
 
 Catalog: [Notes written your way, with a skill](../../features.md#notes-written-your-way-with-a-skill).
 
@@ -48,7 +64,7 @@ Catalog: [Choose which model writes your notes](../../features.md#choose-which-m
 
 `Notes › Settings › Provider and model › Model`
 
-The model that writes notes, picked from the provider's live model list or typed. Empty uses the provider's own model. Picking a provider of another kind in Provider resets it: to empty (the new provider's own model), or to the default when the new provider is an OpenRouter one without a model. **Default:** `google/gemini-2.5-flash`.
+The model that writes notes, picked from every model the provider lists or typed. The list has a search box and sorts by price (input plus output, cheapest first) or by name. For an OpenRouter provider each model shows its price per 1M input / output tokens, and the list starts with Recommended for notes (cheap): good multilingual models whose input and output prices are both at most a tenth of Claude Opus 5.5's, each with a "≈Nx cheaper than Opus 5.5" badge. Anthropic and Gemini models show OpenRouter's price for the same model where it has one; other providers show no prices. The chosen model's price is shown under the field. Empty uses the provider's own model. Picking a provider of another kind in Provider resets it: to empty (the new provider's own model), or to the default when the new provider is an OpenRouter one without a model. **Default:** `openai/gpt-6-luna`. Settings that still had the earlier default, `google/gemini-2.5-flash`, move to it once.
 
 Catalog: [Choose which model writes your notes](../../features.md#choose-which-model-writes-your-notes).
 
@@ -68,6 +84,22 @@ Catalog: [A note that says who said what](../../features.md#a-note-that-says-who
 
 ## Saved notes
 
+### Compare models
+
+`Notes › Saved notes › Compare models`
+
+A table at the top of the tab: for each model, how many notes it wrote, their average cost, average generation time and total cost, cheapest first. Costs that are not known are left out of the averages, and a model with none shows cost unknown. Clicking a row, or picking a model in Show next to the title, lists only that model's notes; All models lists them all again. **Default:** All models.
+
+Catalog: [Compare models on the same text, with cost and time](../../features.md#compare-models-on-the-same-text).
+
+### Try another model
+
+`Notes › Saved notes › Try another model`
+
+An icon button on every note. It opens a model picker (the same list as Model, with prices) and Write note, which writes a new note from the same text with that model, using the current instructions, skills and language. The new note appears next to the one it started from. **Default:** not applicable; this is a per-note action.
+
+Catalog: [Compare models on the same text, with cost and time](../../features.md#compare-models-on-the-same-text).
+
 ### Go to transcript
 
 `Notes › Saved notes › Go to transcript`
@@ -82,6 +114,6 @@ Catalog: [Every note in one place, one click from its transcript](../../features
 
 `Notes › Manual note › Generate note`
 
-Writes a note from the pasted or typed text with the selected skill and model, and saves it without a source recording. Disabled until there is text and the note settings are complete. **Default:** not applicable; this is an action.
+Writes a note from the pasted or typed text with your instructions, the skills that are on, the note language and the model, and saves it without a source recording. Disabled until there is text and the note settings are complete. **Default:** not applicable; this is an action.
 
 Catalog: [A note from any text](../../features.md#a-note-from-any-text).
