@@ -132,6 +132,17 @@ The limits are material:
 
 With sensitive clipboard data, worst cases are loss of the old clipboard, capture of the transcript, or—especially over a slow remote session—delivery of the old secret instead. See [The honest limits of clipboard safety](features.md#the-honest-limits-of-clipboard-safety).
 
+## Shortcut Keeper watches the keyboard only inside Remote Desktop
+
+Shortcut Keeper (Windows, off by default) installs a low-level keyboard hook, the mechanism
+accessibility tools and key remappers use, and only while a Remote Desktop Connection or Windows
+App session has the keyboard. The hook looks at each key event to recognise the shortcuts you
+ticked with `Keep on this PC`; it passes everything else on unchanged and keeps no record of it.
+Nothing is written to settings, logs or files, and nothing leaves the machine: the logs name only
+which shortcut was kept, never the keys you typed. With the switch off, or with no session in
+front, no hook is installed. Security software may still notice that a keyboard hook exists while
+it runs.
+
 ## Password-field refusal has a narrow boundary
 
 Password protection belongs only to Windows Jumper anchor capture and anchored delivery. Handy refuses its own window, classic Win32 password edits, and browser/Electron/WinUI fields when UI Automation definitively reports a password field. It checks an anchored target again and parks the transcript if the foreground window or control changed.

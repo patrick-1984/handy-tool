@@ -83,3 +83,24 @@ pub fn handle_shortcut_event(
         action.stop(app, binding_id, hotkey_string);
     }
 }
+
+/// A press Shortcut Keeper kept on this PC (only press-triggered shortcuts take
+/// part; their release does nothing). A transcribe press carries the guard into
+/// the coordinator's queue, which drops it if the session lost the keyboard
+/// while it waited.
+pub(crate) fn handle_kept_press(
+    app: &AppHandle,
+    binding_id: &str,
+    hotkey_string: &str,
+    guard: crate::remote_keys::RemoteGuard,
+) {
+    if is_transcribe_binding(binding_id) {
+        if let Some(coordinator) = app.try_state::<TranscriptionCoordinator>() {
+            coordinator.send_kept_input(binding_id, hotkey_string, guard);
+        } else {
+            warn!("TranscriptionCoordinator is not initialized");
+        }
+        return;
+    }
+    handle_shortcut_event(app, binding_id, hotkey_string, true);
+}

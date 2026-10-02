@@ -18,6 +18,7 @@ mod mcp;
 mod model_testing;
 mod overlay;
 mod portable;
+mod remote_keys;
 mod settings;
 mod shortcut;
 mod signal_handle;
@@ -410,6 +411,10 @@ pub fn run(cli_args: CliArgs) {
         shortcut::reset_binding,
         shortcut::change_ptt_setting,
         shortcut::change_altgr_warning_setting,
+        remote_keys::change_remote_keys_setting,
+        remote_keys::set_remote_local_binding,
+        remote_keys::get_remote_key_support,
+        remote_keys::get_remote_keys_status,
         shortcut::change_audio_feedback_setting,
         shortcut::change_audio_feedback_volume_setting,
         shortcut::change_sound_theme_setting,

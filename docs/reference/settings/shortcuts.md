@@ -4,6 +4,22 @@ Open `Shortcuts`. Every row here is the same control as on the feature page that
 changing a shortcut in either place changes both. For the default chords, see
 [the shortcut reference](../shortcuts.md).
 
+### Shortcut Keeper
+
+`Shortcuts › Shortcut Keeper › Keep chosen shortcuts on this PC in Remote Desktop`
+
+While a Remote Desktop Connection or Windows App session has the keyboard, the shortcuts ticked
+with `Keep on this PC` run Handy Tool on this PC instead of reaching the remote; every other key
+still goes to the remote. With the switch on, every row on this page gets a `Keep on this PC`
+box. A box is greyed out with a warning naming the reason when that shortcut cannot be kept
+(it acts on the key release, uses the Windows key or Alt without Ctrl, is reserved by Windows,
+or uses a key outside the supported set), and a ticked one shows a warning when keeping it has a
+side effect in the remote. A status line below the switch says whether a session has the
+keyboard now. It needs the default keyboard implementation; after the other one ran, restart
+Handy Tool. _{Windows only}_ **Default:** Off, and no shortcut ticked.
+
+Catalog: [Your shortcuts work inside a Remote Desktop session](../../features.md#your-shortcuts-work-inside-a-remote-desktop-session).
+
 ### Dictation
 
 `Shortcuts › Dictation`

@@ -37,16 +37,25 @@ interface Item {
  */
 const RELEASES: { version: string; items: Item[] }[] = [
   {
+    version: "2.1.0",
+    items: [
+      {
+        key: "shortcutKeeper",
+        section: "shortcuts",
+        titleKeys: ["settings.shortcuts.keeper.label"],
+        windowsOnly: true,
+      },
+      { key: "updateIndicator" },
+      { key: "hotkeyRelease" },
+    ],
+  },
+  {
     version: "2.0.5",
     items: [{ key: "endOfTakeKept" }],
   },
   {
     version: "2.0.4",
     items: [{ key: "progressFinish" }],
-  },
-  {
-    version: "2.0.3",
-    items: [{ key: "wingetUninstall" }],
   },
 ];
 

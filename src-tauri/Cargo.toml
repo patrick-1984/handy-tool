@@ -1,6 +1,6 @@
 [package]
 name = "handy"
-version = "2.0.5"
+version = "2.1.0"
 description = "Handy"
 authors = ["pr"]
 edition = "2024"
@@ -123,6 +123,9 @@ windows = { version = "0.61.3", features = [
   # check (GetThreadDpiAwarenessContext/GetAwarenessFromDpiAwarenessContext).
   "Win32_Graphics_Gdi",
   "Win32_UI_HiDpi",
+  # Shortcut Keeper (remote_keys.rs): GetModuleHandleW, so the keyboard hook
+  # names Handy's own module instead of a null one.
+  "Win32_System_LibraryLoader",
 ] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
@@ -137,6 +140,9 @@ gtk = "0.18"
 [patch.crates-io]
 whisper-rs = { path = "../whisper-rs-local" }
 whisper-rs-sys = { path = "../whisper-rs-local/sys" }
+# Vendored global-hotkey 0.7.0 (used by tauri-plugin-global-shortcut): its
+# Windows key-release wait no longer spins a CPU core while a shortcut is held.
+global-hotkey = { path = "../global-hotkey-local" }
 
 [dev-dependencies]
 tempfile = "3"

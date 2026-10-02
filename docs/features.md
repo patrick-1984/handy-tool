@@ -681,7 +681,9 @@ Tools** (Keyboard Typer, Token Count, Model Testing, Current Audio), What's new 
 (the version, the update controls, credits), and at the bottom **Advanced settings**
 (Transcription providers, LLM providers, Post-processing, MCP & CLI, Backup, Debug). More Tools
 and Advanced settings show their pages as tabs and each reopens the tab you used last. The
-version you are running is shown at the bottom-left.
+version you are running is shown at the bottom-left; a small arrow beside it means a newer
+version is available, and clicking the version opens a panel above it with `Update now` (the same
+check as `Check now`), the update found, or "No new version".
 Every setting has one home: History's settings sit at the bottom of History, the
 post-processing provider and prompt appear under the Post-processing switch, and the duplicate
 rows are gone. The update controls are the one exception: they are on About and on General.
@@ -1179,6 +1181,34 @@ class contains one of your match strings — case-insensitive, seeded with `msrd
 rather than guess at it.
 **Where.** `Jumper › Remote desktop detection › Remote match strings` _{Windows only}_.
 **Since.** 0.56.0.
+
+### Your shortcuts work inside a Remote Desktop session
+
+<a id="your-shortcuts-work-inside-a-remote-desktop-session"></a>
+**The situation.** You work in a full-screen Remote Desktop session, press your Transcribe
+shortcut, and nothing happens on this PC: the session took the keys and sent them to the remote
+computer.
+**What Handy does.** Remote Desktop Connection and the Windows App install their own keyboard hook
+while their session has the keyboard (in full screen, or when Windows key combinations go to the
+remote computer) and pass every key to the remote. With Shortcut Keeper on, Handy puts its own
+hook in front of theirs, and only while a session's input window has the keyboard. A fresh press
+of a shortcut you ticked with `Keep on this PC` runs Handy on this PC, and its repeats and its
+release are kept from the remote too. Every other key, Ctrl+C, Ctrl+V and Alt+Tab included,
+still goes to the remote. Only physical presses count: macro tools, key remappers and Handy's own
+paste are passed through untouched.
+**Limits.** Windows only, with the default keyboard implementation. Press shortcuts only:
+Push-to-Talk, Undo Last Word and Paste Last Transcription act on the key release and cannot be
+kept yet. Not Citrix: use Citrix Workspace's own setting for Windows key combinations instead.
+Shortcuts with the Windows key, or with Alt but no Ctrl, cannot be kept, because the remote would
+still see the leftover modifier and open its Start menu or menu bar; Ctrl+Alt+Delete and
+Windows+L always belong to Windows. A shortcut with Ctrl+Shift is marked with a warning: the
+remote still sees Ctrl and Shift on their own, which switches its keyboard layout if that is the
+layout hotkey there. A session running as administrator keeps Handy out. If the client puts its
+hook back in front of Handy's, keys go to the remote again until you click outside the session
+and back in.
+**Where.** `Shortcuts › Shortcut Keeper › Keep chosen shortcuts on this PC in Remote Desktop`,
+then `Keep on this PC` on each shortcut's row _{Windows only}_.
+**Since.** 2.1.0.
 
 ### Your dictation stays out of the remote machine's clipboard (retired)
 
@@ -2522,7 +2552,10 @@ waits for you. Switch silent installation on and the update is applied inside a 
 — 04:00 local time by default, moved by up to 30 minutes each day so every copy does not call at
 the same instant. Releases are signed and the signature is verified before anything is applied. A
 portable copy refuses to update itself in place and tells you to download the new portable
-release instead. `Check now` runs the same check on demand. An update installed in the background
+release instead. `Check now` runs the same check on demand, and so does `Update now` in the
+panel that opens from the version at the bottom-left of the sidebar; while update checks are on,
+an arrow next to that version shows that a newer version is available (since 2.1.0). An update
+installed in the background
 waits, up to a minute, until the running Handy's program file is no longer in use before the
 installer's own check (before 2.0.2 silent updates made while a speech model was loaded gave up,
 most likely because Handy was still closing), and the installer writes the outcome to

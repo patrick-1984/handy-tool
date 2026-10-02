@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { getVersion } from "@tauri-apps/api/app";
 import { useTranslation } from "react-i18next";
 import {
@@ -7,6 +7,7 @@ import {
   Bot,
   BrainCircuit,
   Captions,
+  CircleArrowUp,
   FileAudio,
   Gift,
   FlaskConical,
@@ -33,6 +34,8 @@ import {
   WHATS_NEW_SEEN_KEY,
 } from "./settings/whatsnew/WhatsNewPage";
 import { UpdateBanner } from "./UpdateBanner";
+import { UpdatePanel } from "./UpdatePanel";
+import { useUpdaterStatus } from "../hooks/useUpdaterStatus";
 import { SidebarSearch } from "./SidebarSearch";
 import { useSettings } from "../hooks/useSettings";
 import { useNavStore } from "../stores/navStore";
@@ -295,6 +298,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
     window.addEventListener(WHATS_NEW_SEEN_EVENT, check);
     return () => window.removeEventListener(WHATS_NEW_SEEN_EVENT, check);
   }, []);
+  // The version opens a panel with the update status; an arrow beside it shows
+  // a newer version is known (only while update checks are on).
+  const [updaterStatus, refreshUpdaterStatus] = useUpdaterStatus();
+  const [updatePanelOpen, setUpdatePanelOpen] = useState(false);
+  const versionButton = useRef<HTMLButtonElement>(null);
+  const closeUpdatePanel = () => {
+    setUpdatePanelOpen(false);
+    versionButton.current?.focus();
+  };
+  // Escape closes the panel even when the focused button has just gone (an
+  // update check replaces it), and gives focus back to the version.
+  useEffect(() => {
+    if (!updatePanelOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setUpdatePanelOpen(false);
+        versionButton.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [updatePanelOpen]);
+  const updateIndicator =
+    (settings?.automatic_update_checks ?? true) &&
+    ["available", "downloading", "ready_to_restart"].includes(
+      updaterStatus?.state ?? "",
+    );
 
   const availableSections = Object.entries(SECTIONS_CONFIG)
     .filter(([_, config]) => config.enabled(settings))
@@ -438,13 +468,45 @@ export const Sidebar: React.FC<SidebarProps> = ({
           ))}
           <div className="mx-2 my-1 border-t border-border" />
           {renderGroup("more-settings")}
-          <UpdateBanner />
+          <UpdateBanner suppressStatus={updatePanelOpen} />
         </div>
       </div>
       {appVersion && (
-        <div className="mt-auto w-full shrink-0 px-2.5 pt-3 pb-2 text-[11px] leading-4 text-text-secondary tabular-nums select-text">
-          {/* eslint-disable-next-line i18next/no-literal-string */}
-          <span>v{appVersion}</span>
+        <div className="mt-auto w-full shrink-0 px-2.5 pt-3 pb-2 text-[11px] leading-4 text-text-secondary tabular-nums">
+          {updatePanelOpen && (
+            <UpdatePanel
+              id="sidebar-update-panel"
+              status={updaterStatus}
+              onClose={closeUpdatePanel}
+            />
+          )}
+          <button
+            ref={versionButton}
+            type="button"
+            aria-expanded={updatePanelOpen}
+            aria-controls="sidebar-update-panel"
+            onClick={() => {
+              if (updatePanelOpen) {
+                setUpdatePanelOpen(false);
+              } else {
+                refreshUpdaterStatus();
+                setUpdatePanelOpen(true);
+              }
+            }}
+            className="inline-flex items-center gap-1 rounded hover:text-text cursor-pointer"
+          >
+            {/* eslint-disable-next-line i18next/no-literal-string */}
+            <span>v{appVersion}</span>
+            {updateIndicator && (
+              <>
+                <CircleArrowUp
+                  className="h-3 w-3 text-accent-text"
+                  aria-hidden
+                />
+                <span className="sr-only">{t("sidebar.update.indicator")}</span>
+              </>
+            )}
+          </button>
         </div>
       )}
       {/* Drag handle: resize the sidebar; width persists across launches. */}

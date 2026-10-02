@@ -74,7 +74,9 @@
       "pipelineBusy": "A recording or transcription is in progress. The update can install when Handy Tool is idle.",
       "installWhenIdle": "Install when idle",
       "installRestartNow": "Install and restart now",
-      "enableAutomatic": "Turn on automatic updates"
+      "enableAutomatic": "Turn on automatic updates",
+      "noNewVersion": "No new version: you have the latest Handy Tool.",
+      "indicator": "Update available"
     },
     "unread": "unread",
     "transcriptionProviders": "Transcription providers",
@@ -126,7 +128,8 @@
       "transcribe": "Press once to start, again to stop.",
       "ptt": "Hold while you speak.",
       "cancel": "Stops a recording without typing anything.",
-      "more": "More shortcuts (Transcribe & Submit, pause, undo last word, …) are on the Shortcuts page."
+      "more": "More shortcuts (Transcribe & Submit, pause, undo last word, …) are on the Shortcuts page.",
+      "remote": "Working in Remote Desktop? Shortcut Keeper on the Shortcuts page keeps the shortcuts you choose on this PC."
     },
     "microphone": {
       "title": "Which microphone?",
@@ -868,6 +871,36 @@
         "label": "Warn about AltGr shortcuts",
         "description": "**Shows an amber warning next to shortcuts that AltGr also types with.** Windows reports AltGr as Ctrl+Alt, so a shortcut like Ctrl+Alt+O fires when you type ó with AltGr, and the character never arrives. On Windows it warns only when one of your keyboards types something with AltGr on that key (or AltGr+Shift, for a chord with Shift), and names the language the keyboard belongs to.\n\n**Default:** On. Switch it off if you never type characters with AltGr.",
         "turnOff": "Turn off this warning"
+      },
+      "keeper": {
+        "title": "Shortcut Keeper",
+        "summary": "Keeps the shortcuts you tick on this PC while a Remote Desktop session has the keyboard, so they run Handy Tool here instead of reaching the remote. All other keys go to the remote as before.",
+        "label": "Keep chosen shortcuts on this PC in Remote Desktop",
+        "description": "**Remote Desktop takes every key while its session has the keyboard** (in full screen, or when Windows key combinations go to the remote computer), so Handy Tool's shortcuts stop working there. With this on, the shortcuts you tick with Keep on this PC run Handy Tool here. Every other key, Ctrl+C, Ctrl+V and Alt+Tab included, still goes to the remote.\n\n**Works with:** Remote Desktop Connection (mstsc) and the Windows App. Not with Citrix: use Citrix Workspace's own setting for Windows key combinations instead.\n\n**Press shortcuts only:** push-to-talk, Undo last word and Paste last transcription act on the key release and cannot be kept yet.\n\n**Best effort:** if a kept shortcut stops working, click outside the session and back in.\n\n**Privacy:** Handy Tool watches the keyboard only while a Remote Desktop session is in front, reacts only to the shortcuts you ticked, and never stores, logs or sends what you type.\n\n**Default:** Off.",
+        "status": {
+          "off": "Off.",
+          "waiting": "On. Waiting for a Remote Desktop session to have the keyboard.",
+          "active": "Active: a Remote Desktop session has the keyboard, and the ticked shortcuts stay on this PC.",
+          "higher_integrity": "This Remote Desktop session runs as administrator, so Windows keeps Handy Tool out of it. Start the Remote Desktop client without administrator rights to use Shortcut Keeper.",
+          "needs_restart": "Restart Handy Tool to use Shortcut Keeper: the other keyboard implementation ran in this session.",
+          "unavailable": "Works only with the default keyboard implementation (Tauri), set in the debug settings (Ctrl+Shift+D)."
+        },
+        "checkbox": "Keep on this PC",
+        "checkboxHint": "Ticked: this shortcut runs Handy Tool on this PC while a Remote Desktop session has the keyboard.",
+        "turnOnFirst": "Switch on Shortcut Keeper at the top of this page first.",
+        "reasons": {
+          "needs_release": "Acts on the key release, which Shortcut Keeper cannot handle yet.",
+          "unbound": "No keys are set for this shortcut.",
+          "win_key": "Shortcuts with the Windows key cannot be kept: the remote would still see the Windows key and open its Start menu.",
+          "alt_only": "Alt shortcuts without Ctrl cannot be kept: the remote would still see Alt and open its menu bar. Add Ctrl to the shortcut.",
+          "modifier_only": "Needs a main key besides the modifier keys.",
+          "unknown_key": "This key cannot be kept. Use a letter, digit, F-key, Space, Enter, Tab, Escape, Backspace, Insert, Delete, Home, End, Page Up, Page Down or an arrow key.",
+          "ctrl_alt_del": "Windows always handles Ctrl+Alt+Delete itself.",
+          "win_l": "Windows always handles Windows+L (lock) itself.",
+          "rdp_combo": "Remote Desktop itself uses Ctrl+Alt+Home (connection bar) and Ctrl+Alt+End (Ctrl+Alt+Delete inside the session). Kept on this PC, the remote no longer gets it.",
+          "layout_switch": "The remote still sees Ctrl and Shift without a key, which switches its keyboard layout if Ctrl+Shift is set for that there.",
+          "ctrl_space": "Ctrl+Space switches the input method on Chinese, Japanese and Korean setups. Kept on this PC, the remote no longer gets it."
+        }
       }
     },
     "models": {
@@ -1996,9 +2029,17 @@
     "release": "Version {{version}}",
     "show": "Show me",
     "items": {
-      "wingetUninstall": {
-        "title": "Uninstalling with winget works",
-        "description": "Uninstalling Handy with winget, or another tool that uninstalls quietly, now removes it. Before, it opened the uninstaller window and waited for a click, while winget reported success."
+      "shortcutKeeper": {
+        "title": "Shortcut Keeper: your shortcuts work in Remote Desktop",
+        "description": "On Windows, switch on Shortcut Keeper on the Shortcuts page and tick Keep on this PC next to a shortcut: while a Remote Desktop Connection or Windows App session has the keyboard, that shortcut runs Handy Tool on this PC instead of reaching the remote. Every other key still goes to the remote."
+      },
+      "updateIndicator": {
+        "title": "The version shows when an update is available",
+        "description": "A small arrow next to the version at the bottom left means a newer version is available. Click the version to check for updates with Update now, or to install one that was found."
+      },
+      "hotkeyRelease": {
+        "title": "Holding a shortcut no longer keeps a processor core busy",
+        "description": "On Windows, while you held a shortcut (push-to-talk, for example), Handy Tool checked nonstop whether you had let go, which kept one processor core fully busy. It now checks every 10 ms."
       },
       "progressFinish": {
         "title": "The percentage reaches 100% when the text is ready",

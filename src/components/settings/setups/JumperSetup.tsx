@@ -320,6 +320,9 @@ export const JumperSetup: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               </SettingsGroup>
             );
           })}
+          <p className="text-[13px] text-text-secondary">
+            {t("setup.shortcuts.remote")}
+          </p>
         </SetupFrame>
       );
     }

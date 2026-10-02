@@ -62,7 +62,9 @@
       "pipelineBusy": "È in corso una registrazione o trascrizione. L'aggiornamento potrà essere installato quando Handy Tool sarà inattivo.",
       "installWhenIdle": "Installa quando inattivo",
       "installRestartNow": "Installa e riavvia ora",
-      "enableAutomatic": "Attiva gli aggiornamenti automatici"
+      "enableAutomatic": "Attiva gli aggiornamenti automatici",
+      "noNewVersion": "Nessuna nuova versione: hai già l'ultima versione di Handy Tool.",
+      "indicator": "Aggiornamento disponibile"
     },
     "unread": "non letto",
     "transcriptionProviders": "Provider di trascrizione",
@@ -114,7 +116,8 @@
       "transcribe": "Premi una volta per iniziare e di nuovo per finire.",
       "ptt": "Tieni premuto mentre parli.",
       "cancel": "Ferma una registrazione senza scrivere nulla.",
-      "more": "Altre scorciatoie (Trascrivi e invia, pausa, annulla l'ultima parola, …) sono nella pagina Scorciatoie."
+      "more": "Altre scorciatoie (Trascrivi e invia, pausa, annulla l'ultima parola, …) sono nella pagina Scorciatoie.",
+      "remote": "Lavori in Desktop remoto? Shortcut Keeper nella pagina Scorciatoie mantiene su questo PC le scorciatoie che scegli."
     },
     "microphone": {
       "title": "Quale microfono?",
@@ -873,6 +876,36 @@
         "label": "Avvisa delle scorciatoie con AltGr",
         "description": "**Mostra un avviso ambra accanto alle scorciatoie con cui AltGr digita anche un carattere.** Windows segnala AltGr come Ctrl+Alt, quindi una scorciatoia come Ctrl+Alt+O scatta quando digiti ó con AltGr, e il carattere non arriva mai. Su Windows avvisa solo quando una delle tue tastiere digita qualcosa con AltGr su quel tasto (o AltGr+Shift, per una combinazione con Shift), e indica il nome della lingua a cui appartiene la tastiera.\n\n**Predefinito:** Attivo. Disattivalo se non digiti mai caratteri con AltGr.",
         "turnOff": "Disattiva questo avviso"
+      },
+      "keeper": {
+        "title": "Shortcut Keeper",
+        "summary": "Mantiene su questo PC le scorciatoie che selezioni mentre una sessione di Desktop remoto ha la tastiera, così controllano Handy Tool qui invece di arrivare al computer remoto. Tutti gli altri tasti vanno al computer remoto come prima.",
+        "label": "Mantieni su questo PC le scorciatoie scelte in Desktop remoto",
+        "description": "**Desktop remoto prende ogni tasto finché la sua sessione ha la tastiera** (a schermo intero, o quando le combinazioni di tasti di Windows vanno al computer remoto), quindi lì le scorciatoie di Handy Tool smettono di funzionare. Con questa opzione attiva, le scorciatoie che selezioni con Mantieni su questo PC controllano Handy Tool qui. Ogni altro tasto, Ctrl+C, Ctrl+V e Alt+Tab compresi, va ancora al computer remoto.\n\n**Funziona con:** Connessione Desktop remoto (mstsc) e la Windows App. Non con Citrix: usa invece l'impostazione di Citrix Workspace per le combinazioni di tasti di Windows.\n\n**Solo scorciatoie a pressione:** Premi per Parlare, Annulla l'ultima parola e Paste last transcription agiscono al rilascio del tasto e non si possono ancora mantenere.\n\n**Senza garanzia:** se una scorciatoia mantenuta smette di funzionare, fai clic fuori dalla sessione e poi di nuovo dentro.\n\n**Privacy:** Handy Tool osserva la tastiera solo mentre una sessione di Desktop remoto è in primo piano, reagisce solo alle scorciatoie che hai selezionato e non salva, registra né invia mai ciò che digiti.\n\n**Predefinito:** Disattivato.",
+        "status": {
+          "off": "Disattivato.",
+          "waiting": "Attivato. In attesa che una sessione di Desktop remoto abbia la tastiera.",
+          "active": "Attivo: una sessione di Desktop remoto ha la tastiera e le scorciatoie selezionate restano su questo PC.",
+          "higher_integrity": "Questa sessione di Desktop remoto è eseguita come amministratore, quindi Windows ne tiene fuori Handy Tool. Avvia il client Desktop remoto senza diritti di amministratore per usare Shortcut Keeper.",
+          "needs_restart": "Riavvia Handy Tool per usare Shortcut Keeper: in questa sessione era in uso l'altra implementazione della tastiera.",
+          "unavailable": "Funziona solo con l'implementazione della tastiera predefinita (Tauri), da scegliere nelle impostazioni di debug (Ctrl+Shift+D)."
+        },
+        "checkbox": "Mantieni su questo PC",
+        "checkboxHint": "Selezionata: questa scorciatoia controlla Handy Tool su questo PC mentre una sessione di Desktop remoto ha la tastiera.",
+        "turnOnFirst": "Prima attiva Shortcut Keeper in cima a questa pagina.",
+        "reasons": {
+          "needs_release": "Agisce al rilascio del tasto, cosa che Shortcut Keeper non sa ancora gestire.",
+          "unbound": "Per questa scorciatoia non è impostato alcun tasto.",
+          "win_key": "Le scorciatoie con il tasto Windows non si possono mantenere: il computer remoto vedrebbe comunque il tasto Windows e aprirebbe il suo menu Start.",
+          "alt_only": "Le scorciatoie con Alt senza Ctrl non si possono mantenere: il computer remoto vedrebbe comunque Alt e aprirebbe la sua barra dei menu. Aggiungi Ctrl alla scorciatoia.",
+          "modifier_only": "Serve un tasto principale oltre ai modificatori.",
+          "unknown_key": "Questo tasto non si può mantenere. Usa una lettera, una cifra, un tasto F, Spazio, Invio, Tab, Esc, Backspace, Ins, Canc, Home, Fine, Pag su, Pag giù o un tasto freccia.",
+          "ctrl_alt_del": "Windows gestisce sempre da sé Ctrl+Alt+Canc.",
+          "win_l": "Windows gestisce sempre da sé Windows+L (blocco).",
+          "rdp_combo": "Lo stesso Desktop remoto usa Ctrl+Alt+Home (barra di connessione) e Ctrl+Alt+Fine (Ctrl+Alt+Canc nella sessione). Se la mantieni su questo PC, il computer remoto non la riceve più.",
+          "layout_switch": "Il computer remoto vede comunque Ctrl e Shift senza un altro tasto, e questo cambia lì il layout della tastiera se Ctrl+Shift è impostato per farlo.",
+          "ctrl_space": "Ctrl+Spazio cambia il metodo di input nelle configurazioni in cinese, giapponese e coreano. Se la mantieni su questo PC, il computer remoto non la riceve più."
+        }
       }
     },
     "sound": {
@@ -1996,9 +2029,17 @@
     "release": "Versione {{version}}",
     "show": "Mostra",
     "items": {
-      "wingetUninstall": {
-        "title": "La disinstallazione con winget funziona",
-        "description": "Disinstallare Handy con winget, o con un altro strumento che disinstalla in modo silenzioso, ora lo rimuove. Prima si apriva la finestra del programma di disinstallazione in attesa di un clic, mentre winget segnalava il successo."
+      "shortcutKeeper": {
+        "title": "Shortcut Keeper: le tue scorciatoie funzionano in Desktop remoto",
+        "description": "Su Windows, attiva Shortcut Keeper nella pagina Scorciatoie e seleziona Mantieni su questo PC accanto a una scorciatoia: mentre una sessione di Connessione Desktop remoto o della Windows App ha la tastiera, quella scorciatoia controlla Handy Tool su questo PC invece di arrivare al computer remoto. Ogni altro tasto va ancora al computer remoto."
+      },
+      "updateIndicator": {
+        "title": "La versione indica quando è disponibile un aggiornamento",
+        "description": "Una piccola freccia accanto alla versione, in basso a sinistra, indica che è disponibile una versione più recente. Fai clic sulla versione per cercare aggiornamenti con Aggiorna ora o per installare quello trovato."
+      },
+      "hotkeyRelease": {
+        "title": "Tenere premuta una scorciatoia non tiene più occupato un core del processore",
+        "description": "Su Windows, mentre tenevi premuta una scorciatoia (per esempio Premi per Parlare), Handy Tool controllava senza sosta se l'avevi rilasciata, tenendo un core del processore completamente occupato. Ora controlla ogni 10 ms."
       },
       "progressFinish": {
         "title": "La percentuale arriva al 100% quando il testo è pronto",

@@ -131,6 +131,7 @@ pub fn init_shortcuts(app: &AppHandle) {
     match user_settings.keyboard_implementation {
         KeyboardImplementation::Tauri => {
             tauri_impl::init_shortcuts(app);
+            crate::remote_keys::start_if_enabled(app);
         }
         KeyboardImplementation::HandyKeys => {
             if let Err(e) = handy_keys::init_shortcuts(app) {
@@ -149,6 +150,21 @@ pub fn init_shortcuts(app: &AppHandle) {
             }
         }
     }
+}
+
+/// (binding id, chord) of every shortcut the default (Tauri) backend holds now.
+pub(crate) fn registered_tauri_bindings() -> Vec<(String, String)> {
+    tauri_impl::registered_bindings()
+}
+
+/// A press Shortcut Keeper kept on this PC during a Remote Desktop session.
+pub(crate) fn handle_kept_press(
+    app: &AppHandle,
+    binding_id: &str,
+    hotkey_string: &str,
+    guard: crate::remote_keys::RemoteGuard,
+) {
+    handler::handle_kept_press(app, binding_id, hotkey_string, guard);
 }
 
 /// Bindings that exist only while a take (or a Keyboard Typer session) runs:
@@ -725,6 +741,9 @@ pub fn change_keyboard_implementation_setting(
     let mut settings = settings::get_settings(&app);
     settings.keyboard_implementation = new_impl;
     settings::write_settings(&app, settings);
+    // Shortcut Keeper works with the Tauri backend only (and not after the
+    // other one ran this session).
+    crate::remote_keys::notify_bindings_changed();
 
     // Initialize new implementation if needed (HandyKeys needs state)
     if new_impl == KeyboardImplementation::HandyKeys {

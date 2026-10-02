@@ -62,7 +62,9 @@
       "pipelineBusy": "正在錄音或轉錄。Handy Tool 閒置後即可安裝更新。",
       "installWhenIdle": "閒置時安裝",
       "installRestartNow": "立即安裝並重新啟動",
-      "enableAutomatic": "開啟自動更新"
+      "enableAutomatic": "開啟自動更新",
+      "noNewVersion": "沒有新版本：你使用的已是最新的 Handy Tool。",
+      "indicator": "有可用的更新"
     },
     "unread": "未讀",
     "transcriptionProviders": "轉錄供應商",
@@ -114,7 +116,8 @@
       "transcribe": "按一次開始，再按一次結束。",
       "ptt": "說話時按住。",
       "cancel": "停止錄音，不輸入任何內容。",
-      "more": "更多快捷鍵（轉錄並送出、暫停、復原上一個字詞等）在「快捷鍵」頁面。"
+      "more": "更多快捷鍵（轉錄並送出、暫停、復原上一個字詞等）在「快捷鍵」頁面。",
+      "remote": "在遠端桌面中工作？「快捷鍵」頁面上的快捷鍵保留器會將你選擇的快捷鍵保留在這台電腦上。"
     },
     "microphone": {
       "title": "使用哪個麥克風？",
@@ -856,6 +859,36 @@
         "label": "提醒 AltGr 快捷鍵",
         "description": "**在也會用 AltGr 輸入的快捷鍵旁顯示琥珀色警告。** Windows 會將 AltGr 回報為 Ctrl+Alt,因此像 Ctrl+Alt+O 這樣的快捷鍵,會在您用 AltGr 輸入 ó 時被觸發,導致該字元無法輸入。在 Windows 上,只有當您的某個鍵盤會用該按鍵上的 AltGr(或搭配 Shift 的快捷鍵則是 AltGr+Shift)輸入字元時才會警告,並會顯示該鍵盤所屬的語言名稱。\n\n**預設值:** 開啟。如果您從未用 AltGr 輸入字元,可以關閉此功能。",
         "turnOff": "關閉此警告"
+      },
+      "keeper": {
+        "title": "快捷鍵保留器",
+        "summary": "當遠端桌面工作階段占用鍵盤時，將你勾選的快捷鍵保留在這台電腦上，讓它們在這裡操作 Handy Tool，而不是送到遠端電腦。其他所有按鍵照常送到遠端電腦。",
+        "label": "在遠端桌面中將所選快捷鍵保留在這台電腦上",
+        "description": "**遠端桌面工作階段占用鍵盤時，遠端桌面會接收所有按鍵**（全螢幕時，或 Windows 組合鍵設定為送到遠端電腦時），因此 Handy Tool 的快捷鍵在那裡會失效。開啟後，你用「保留在這台電腦上」勾選的快捷鍵會在這裡操作 Handy Tool。其他所有按鍵，包括 Ctrl+C、Ctrl+V 和 Alt+Tab，仍會送到遠端電腦。\n\n**適用於：** 遠端桌面連線 (mstsc) 和 Windows App。不適用於 Citrix：請改用 Citrix Workspace 本身的 Windows 組合鍵設定。\n\n**僅限按下即觸發的快捷鍵：** 「按住說話」、「復原最後一個字詞」和「重新貼上最新轉錄」在放開按鍵時才會作用，目前無法保留。\n\n**不保證一定有效：** 如果某個保留的快捷鍵失效，請在工作階段外點一下，再點回工作階段內。\n\n**隱私：** Handy Tool 只在遠端桌面工作階段位於前景時監看鍵盤，只回應你勾選的快捷鍵，絕不儲存、記錄或傳送你輸入的內容。\n\n**預設：** 關閉。",
+        "status": {
+          "off": "關閉。",
+          "waiting": "已開啟。正在等待遠端桌面工作階段占用鍵盤。",
+          "active": "作用中：遠端桌面工作階段正在占用鍵盤，勾選的快捷鍵保留在這台電腦上。",
+          "higher_integrity": "此遠端桌面工作階段以系統管理員身分執行，因此 Windows 不讓 Handy Tool 介入。請在沒有系統管理員權限的情況下啟動遠端桌面用戶端，以使用快捷鍵保留器。",
+          "needs_restart": "請重新啟動 Handy Tool 以使用快捷鍵保留器：本次執行中使用的是另一種鍵盤實作。",
+          "unavailable": "僅適用於預設的鍵盤實作（Tauri），可在偵錯設定（Ctrl+Shift+D）中設定。"
+        },
+        "checkbox": "保留在這台電腦上",
+        "checkboxHint": "已勾選：遠端桌面工作階段占用鍵盤時，此快捷鍵會在這台電腦上操作 Handy Tool。",
+        "turnOnFirst": "請先在本頁頂端開啟快捷鍵保留器。",
+        "reasons": {
+          "needs_release": "在放開按鍵時才會作用，快捷鍵保留器目前無法處理。",
+          "unbound": "此快捷鍵未設定按鍵。",
+          "win_key": "含 Windows 鍵的快捷鍵無法保留：遠端電腦仍會收到 Windows 鍵並開啟其開始功能表。",
+          "alt_only": "不含 Ctrl 的 Alt 快捷鍵無法保留：遠端電腦仍會收到 Alt 並開啟其功能表列。請在快捷鍵中加入 Ctrl。",
+          "modifier_only": "除了輔助鍵之外，還需要一個主要按鍵。",
+          "unknown_key": "此按鍵無法保留。請使用字母、數字、F 鍵、Space、Enter、Tab、Escape、Backspace、Insert、Delete、Home、End、Page Up、Page Down 或方向鍵。",
+          "ctrl_alt_del": "Ctrl+Alt+Delete 一律由 Windows 自行處理。",
+          "win_l": "Windows+L（鎖定）一律由 Windows 自行處理。",
+          "rdp_combo": "遠端桌面本身會使用 Ctrl+Alt+Home（連線列）和 Ctrl+Alt+End（工作階段內的 Ctrl+Alt+Delete）。保留在這台電腦上後，遠端電腦就不會再收到它。",
+          "layout_switch": "遠端電腦仍會收到不帶其他按鍵的 Ctrl 和 Shift；如果那邊將 Ctrl+Shift 設為切換鍵盤配置，配置就會被切換。",
+          "ctrl_space": "在中文、日文和韓文環境中，Ctrl+Space 用於切換輸入法。保留在這台電腦上後，遠端電腦就不會再收到它。"
+        }
       }
     },
     "models": {
@@ -1996,9 +2029,17 @@
     "release": "版本 {{version}}",
     "show": "顯示",
     "items": {
-      "wingetUninstall": {
-        "title": "使用 winget 解除安裝已可正常運作",
-        "description": "使用 winget 或其他以靜默方式解除安裝的工具解除安裝 Handy，現在會真正將它移除。之前會開啟解除安裝程式視窗並等待點選，而 winget 卻顯示成功。"
+      "shortcutKeeper": {
+        "title": "快捷鍵保留器：快捷鍵在遠端桌面中也能用",
+        "description": "在 Windows 上，於「快捷鍵」頁面開啟快捷鍵保留器，並勾選快捷鍵旁的「保留在這台電腦上」：當遠端桌面連線或 Windows App 工作階段占用鍵盤時，該快捷鍵會在這台電腦上操作 Handy Tool，而不是送到遠端電腦。其他所有按鍵仍會送到遠端電腦。"
+      },
+      "updateIndicator": {
+        "title": "有可用更新時，版本號會提示",
+        "description": "左下角版本號旁出現小箭頭，表示有較新的版本可用。點選版本號，即可透過「立即更新」檢查更新，或安裝已找到的更新。"
+      },
+      "hotkeyRelease": {
+        "title": "按住快捷鍵時不再占滿一個處理器核心",
+        "description": "在 Windows 上，按住快捷鍵（例如按住說話）時，Handy Tool 會不停檢查你是否已放開，導致一個處理器核心被完全占滿。現在改為每 10 毫秒檢查一次。"
       },
       "progressFinish": {
         "title": "文字就緒時百分比即達 100%",

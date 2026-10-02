@@ -11,14 +11,28 @@ use crate::settings::{self, ShortcutBinding, get_settings};
 
 use super::handler::handle_shortcut_event;
 
-/// Take-only bindings (Cancel, Pause, Undo word) this backend holds right now,
-/// kept by register_shortcut / unregister_shortcut so every path (take start and
-/// end, a chord changed mid-take) agrees. Unregistering goes by chord, so
-/// unregistering one whose registration failed — its chord taken by another
-/// binding — would remove that other binding's shortcut.
-static REGISTERED_TAKE_BINDINGS: once_cell::sync::Lazy<
-    std::sync::Mutex<std::collections::HashSet<String>>,
-> = once_cell::sync::Lazy::new(|| std::sync::Mutex::new(std::collections::HashSet::new()));
+/// Every binding this backend holds right now, with the chord it holds, kept by
+/// register_shortcut / unregister_shortcut so every path (init, rebinding, take
+/// start and end, a chord changed mid-take) agrees. Shortcut Keeper keeps only
+/// these. For the take-only bindings (Cancel, Pause, Undo word) it also guards
+/// unregistering: that goes by chord, so unregistering one whose registration
+/// failed — its chord taken by another binding — would remove that other
+/// binding's shortcut.
+static REGISTERED: once_cell::sync::Lazy<
+    std::sync::Mutex<std::collections::HashMap<String, String>>,
+> = once_cell::sync::Lazy::new(|| std::sync::Mutex::new(std::collections::HashMap::new()));
+
+/// (binding id, chord) of every binding this backend holds right now.
+pub(crate) fn registered_bindings() -> Vec<(String, String)> {
+    REGISTERED
+        .lock()
+        .map(|held| {
+            held.iter()
+                .map(|(id, chord)| (id.clone(), chord.clone()))
+                .collect()
+        })
+        .unwrap_or_default()
+}
 
 /// Initialize shortcuts using Tauri's global-shortcut plugin
 pub fn init_shortcuts(app: &AppHandle) {
@@ -144,11 +158,10 @@ pub fn register_shortcut(app: &AppHandle, binding: ShortcutBinding) -> Result<()
             error_msg
         })?;
 
-    if super::is_take_binding(&binding.id) {
-        if let Ok(mut held) = REGISTERED_TAKE_BINDINGS.lock() {
-            held.insert(binding.id.clone());
-        }
+    if let Ok(mut held) = REGISTERED.lock() {
+        held.insert(binding.id.clone(), binding.current_binding.clone());
     }
+    crate::remote_keys::notify_bindings_changed();
     Ok(())
 }
 
@@ -158,17 +171,18 @@ pub fn unregister_shortcut(app: &AppHandle, binding: ShortcutBinding) -> Result<
     if super::is_unbound(&binding.current_binding) {
         return Ok(());
     }
-    // A take-only binding this backend does not hold (its registration failed,
-    // or no take is running) must not unregister its chord: another binding may
-    // own it.
-    if super::is_take_binding(&binding.id) {
-        let held = REGISTERED_TAKE_BINDINGS
-            .lock()
-            .map(|mut held| held.remove(&binding.id))
-            .unwrap_or(false);
-        if !held {
-            return Ok(());
-        }
+    // Ownership goes first, before the chord is released: a newer
+    // registration of this binding (a take starting while the last one's
+    // cleanup still runs) can only succeed after that, so its entry is never
+    // the one removed here. A take-only binding this backend does not hold (its
+    // registration failed, or no take is running) must not unregister its
+    // chord: another binding may own it.
+    let held = REGISTERED
+        .lock()
+        .map(|mut held| held.remove(&binding.id).is_some())
+        .unwrap_or(false);
+    if super::is_take_binding(&binding.id) && !held {
+        return Ok(());
     }
 
     let shortcut = match binding.current_binding.parse::<Shortcut>() {
@@ -192,6 +206,7 @@ pub fn unregister_shortcut(app: &AppHandle, binding: ShortcutBinding) -> Result<
         error_msg
     })?;
 
+    crate::remote_keys::notify_bindings_changed();
     Ok(())
 }
 

@@ -9,6 +9,7 @@ import { ShortcutRegistrationFailures } from "../ShortcutRegistrationFailures";
 import { useShortcutConflicts } from "../ShortcutConflictWarning";
 import { useSettings } from "../../../hooks/useSettings";
 import { useOsType } from "../../../hooks/useOsType";
+import { ShortcutKeeperGroup, ShortcutKeeperProvider } from "./ShortcutKeeper";
 
 const JUMPER_SLOTS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -26,7 +27,7 @@ export const ShortcutsSettings: React.FC = () => {
   const pauseEnabled = getSetting("pause_button_enabled") ?? false;
   const undoWordEnabled = getSetting("undo_word_enabled") ?? false;
 
-  return (
+  const page = (
     <div className="w-full space-y-6">
       {conflicts.size > 0 && (
         <section className="rounded-lg border border-err-border bg-err-bg p-4">
@@ -39,6 +40,9 @@ export const ShortcutsSettings: React.FC = () => {
         </section>
       )}
       <ShortcutRegistrationFailures />
+      {/* Shortcut Keeper is Windows-only: its "Keep on this PC" boxes appear
+          on this page's rows only (inside the provider). */}
+      {osType === "windows" && <ShortcutKeeperGroup />}
       <SettingsGroup
         icon={Mic}
         title={t("settings.shortcuts.groups.dictation")}
@@ -99,5 +103,10 @@ export const ShortcutsSettings: React.FC = () => {
         />
       </SettingsGroup>
     </div>
+  );
+  return osType === "windows" ? (
+    <ShortcutKeeperProvider>{page}</ShortcutKeeperProvider>
+  ) : (
+    page
   );
 };

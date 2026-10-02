@@ -3952,5 +3952,22 @@
     "gating": "none",
     "file": "src/components/settings/shortcuts/ShortcutsSettings.tsx",
     "notes": "The AltGr warning icon's tooltip has a button that jumps here."
+  },
+  {
+    "page": "Shortcuts",
+    "pageKey": "sidebar.shortcuts",
+    "sidebarGroup": "Sidebar",
+    "tab": null,
+    "tabKey": null,
+    "group": "Shortcut Keeper",
+    "groupKey": "settings.shortcuts.keeper.title",
+    "control": "Keep chosen shortcuts on this PC in Remote Desktop",
+    "titleKey": "settings.shortcuts.keeper.label",
+    "descKey": "settings.shortcuts.keeper.description",
+    "type": "toggle",
+    "options": [],
+    "gating": "windows",
+    "file": "src/components/settings/shortcuts/ShortcutKeeper.tsx",
+    "notes": "Default off. Each shortcut row on this page then gets a Keep on this PC box (press-only shortcuts; Tauri backend only)."
   }
 ]

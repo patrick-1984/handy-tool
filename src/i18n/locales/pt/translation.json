@@ -62,7 +62,9 @@
       "pipelineBusy": "Há uma gravação ou transcrição em andamento. A atualização poderá ser instalada quando o Handy Tool estiver ocioso.",
       "installWhenIdle": "Instalar quando estiver ocioso",
       "installRestartNow": "Instalar e reiniciar agora",
-      "enableAutomatic": "Ativar atualizações automáticas"
+      "enableAutomatic": "Ativar atualizações automáticas",
+      "noNewVersion": "Nenhuma versão nova: você já tem o Handy Tool mais recente.",
+      "indicator": "Atualização disponível"
     },
     "unread": "não lido",
     "transcriptionProviders": "Provedores de transcrição",
@@ -114,7 +116,8 @@
       "transcribe": "Pressione uma vez para começar e outra para parar.",
       "ptt": "Segure enquanto fala.",
       "cancel": "Para uma gravação sem digitar nada.",
-      "more": "Mais atalhos (Transcrever e enviar, pausa, desfazer última palavra, …) estão na página Atalhos."
+      "more": "Mais atalhos (Transcrever e enviar, pausa, desfazer última palavra, …) estão na página Atalhos.",
+      "remote": "Trabalha na Área de Trabalho Remota? O Guardião de Atalhos, na página Atalhos, mantém neste PC os atalhos que você escolher."
     },
     "microphone": {
       "title": "Qual microfone?",
@@ -856,6 +859,36 @@
         "label": "Avisar sobre atalhos com AltGr",
         "description": "**Mostra um aviso âmbar ao lado de atalhos que o AltGr também digita.** O Windows trata o AltGr como Ctrl+Alt, então um atalho como Ctrl+Alt+O dispara quando você digita ó com AltGr, e o caractere nunca chega. No Windows, ele avisa só quando um dos seus teclados digita algo com AltGr nessa tecla (ou AltGr+Shift, para uma combinação com Shift), e nomeia o idioma ao qual o teclado pertence.\n\n**Padrão:** Ligado. Desative se você nunca digita caracteres com AltGr.",
         "turnOff": "Desativar este aviso"
+      },
+      "keeper": {
+        "title": "Guardião de Atalhos",
+        "summary": "Mantém neste PC os atalhos que você marcar enquanto uma sessão de Área de Trabalho Remota tem o teclado, para que acionem o Handy Tool aqui em vez de chegarem ao computador remoto. Todas as outras teclas vão para o computador remoto como antes.",
+        "label": "Manter os atalhos escolhidos neste PC na Área de Trabalho Remota",
+        "description": "**A Área de Trabalho Remota fica com todas as teclas enquanto a sessão dela tem o teclado** (em tela cheia, ou quando as combinações de teclas do Windows vão para o computador remoto), então os atalhos do Handy Tool param de funcionar ali. Com isto ativado, os atalhos que você marcar com Manter neste PC acionam o Handy Tool aqui. Todas as outras teclas, incluindo Ctrl+C, Ctrl+V e Alt+Tab, continuam indo para o computador remoto.\n\n**Funciona com:** Conexão de Área de Trabalho Remota (mstsc) e o Windows App. Não com Citrix: use em vez disso a configuração do próprio Citrix Workspace para combinações de teclas do Windows.\n\n**Só atalhos de pressionar:** Pressionar para Falar, Desfazer a última palavra e Paste last transcription agem ao soltar a tecla e ainda não podem ser mantidos.\n\n**Sem garantia:** se um atalho mantido parar de funcionar, clique fora da sessão e depois dentro dela de novo.\n\n**Privacidade:** o Handy Tool observa o teclado só enquanto uma sessão de Área de Trabalho Remota está em primeiro plano, reage só aos atalhos que você marcou e nunca guarda, registra nem envia o que você digita.\n\n**Padrão:** Desativado.",
+        "status": {
+          "off": "Desativado.",
+          "waiting": "Ativado. Aguardando uma sessão de Área de Trabalho Remota ter o teclado.",
+          "active": "Ativo: uma sessão de Área de Trabalho Remota tem o teclado, e os atalhos marcados ficam neste PC.",
+          "higher_integrity": "Esta sessão de Área de Trabalho Remota é executada como administrador, então o Windows mantém o Handy Tool fora dela. Inicie o cliente de Área de Trabalho Remota sem direitos de administrador para usar o Guardião de Atalhos.",
+          "needs_restart": "Reinicie o Handy Tool para usar o Guardião de Atalhos: a outra implementação de teclado foi executada nesta sessão.",
+          "unavailable": "Funciona só com a implementação de teclado padrão (Tauri), definida nas configurações de depuração (Ctrl+Shift+D)."
+        },
+        "checkbox": "Manter neste PC",
+        "checkboxHint": "Marcado: este atalho aciona o Handy Tool neste PC enquanto uma sessão de Área de Trabalho Remota tem o teclado.",
+        "turnOnFirst": "Primeiro, ative o Guardião de Atalhos no topo desta página.",
+        "reasons": {
+          "needs_release": "Age ao soltar a tecla, o que o Guardião de Atalhos ainda não consegue tratar.",
+          "unbound": "Nenhuma tecla definida para este atalho.",
+          "win_key": "Atalhos com a tecla Windows não podem ser mantidos: o computador remoto ainda veria a tecla Windows e abriria o menu Iniciar dele.",
+          "alt_only": "Atalhos com Alt sem Ctrl não podem ser mantidos: o computador remoto ainda veria o Alt e abriria a barra de menus dele. Adicione Ctrl ao atalho.",
+          "modifier_only": "Precisa de uma tecla principal além das teclas modificadoras.",
+          "unknown_key": "Esta tecla não pode ser mantida. Use uma letra, um dígito, uma tecla F, Space, Enter, Tab, Escape, Backspace, Insert, Delete, Home, End, Page Up, Page Down ou uma tecla de seta.",
+          "ctrl_alt_del": "O Windows sempre trata Ctrl+Alt+Delete por conta própria.",
+          "win_l": "O Windows sempre trata Windows+L (bloquear) por conta própria.",
+          "rdp_combo": "A própria Área de Trabalho Remota usa Ctrl+Alt+Home (barra de conexão) e Ctrl+Alt+End (Ctrl+Alt+Delete dentro da sessão). Mantido neste PC, ele deixa de chegar ao computador remoto.",
+          "layout_switch": "O computador remoto ainda vê Ctrl e Shift sem outra tecla, o que troca o layout do teclado lá se Ctrl+Shift estiver configurado para isso.",
+          "ctrl_space": "Ctrl+Space troca o método de entrada em configurações em chinês, japonês e coreano. Mantido neste PC, ele deixa de chegar ao computador remoto."
+        }
       }
     },
     "models": {
@@ -1996,9 +2029,17 @@
     "release": "Versão {{version}}",
     "show": "Mostrar",
     "items": {
-      "wingetUninstall": {
-        "title": "Desinstalar com o winget funciona",
-        "description": "Desinstalar o Handy com o winget, ou outra ferramenta que desinstala em silêncio, agora remove-o. Antes, abria-se a janela do desinstalador à espera de um clique, enquanto o winget indicava sucesso."
+      "shortcutKeeper": {
+        "title": "Guardião de Atalhos: seus atalhos funcionam na Área de Trabalho Remota",
+        "description": "No Windows, ative o Guardião de Atalhos na página Atalhos e marque Manter neste PC ao lado de um atalho: enquanto uma sessão da Conexão de Área de Trabalho Remota ou do Windows App tem o teclado, esse atalho aciona o Handy Tool neste PC em vez de chegar ao computador remoto. Todas as outras teclas continuam indo para o computador remoto."
+      },
+      "updateIndicator": {
+        "title": "A versão mostra quando há uma atualização disponível",
+        "description": "Uma pequena seta ao lado da versão, no canto inferior esquerdo, indica que há uma versão mais nova disponível. Clique na versão para procurar atualizações com Atualizar agora ou para instalar uma que tenha sido encontrada."
+      },
+      "hotkeyRelease": {
+        "title": "Manter um atalho pressionado não ocupa mais um núcleo do processador",
+        "description": "No Windows, enquanto você mantinha um atalho pressionado (Pressionar para Falar, por exemplo), o Handy Tool verificava sem parar se você já o tinha soltado, o que mantinha um núcleo do processador totalmente ocupado. Agora ele verifica a cada 10 ms."
       },
       "progressFinish": {
         "title": "A percentagem chega a 100% quando o texto está pronto",

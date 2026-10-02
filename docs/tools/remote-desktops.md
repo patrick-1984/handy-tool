@@ -13,6 +13,7 @@ Tune remote delivery only after the same flow works in a local application. Your
 - [Your remote session pastes the right thing](../features.md#your-remote-session-pastes-the-right-thing)
 - [Separate timing for remote desktops and local apps](../features.md#separate-timing-for-remote-desktops-and-local-apps)
 - [Handy knows which of your windows is a remote session](../features.md#handy-knows-which-of-your-windows-is-a-remote-session)
+- [Your shortcuts work inside a Remote Desktop session](../features.md#your-shortcuts-work-inside-a-remote-desktop-session)
 - [Your dictation stays out of the remote machine's clipboard](../features.md#your-dictation-stays-out-of-the-remote-machines-clipboard)
 - [Type it instead, when the console refuses a paste](../features.md#type-it-instead-when-the-console-refuses-a-paste)
 - [The paste is swallowed right after a jump](../features.md#the-paste-is-swallowed-right-after-a-jump)
@@ -38,3 +39,4 @@ Tune remote delivery only after the same flow works in a local application. Your
 4. The sending flow shares the paste delay from step 2; Transcribe & Submit has no separate one.
 5. Delay its submit separately at `Transcription › Transcribe & Submit › Submit delay before Enter (Windows) = 600 ms` _{Windows only}_.
 6. Test with harmless text, then shorten or lengthen one delay at a time until the target is reliable.
+7. If your shortcuts stop working while a full-screen session has the keyboard, switch on `Shortcuts › Shortcut Keeper › Keep chosen shortcuts on this PC in Remote Desktop` and tick `Keep on this PC` next to the shortcuts you use there _{Windows only}_.

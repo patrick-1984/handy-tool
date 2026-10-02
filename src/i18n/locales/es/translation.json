@@ -62,7 +62,9 @@
       "pipelineBusy": "Hay una grabación o transcripción en curso. La actualización puede instalarse cuando Handy Tool esté inactivo.",
       "installWhenIdle": "Instalar cuando esté inactivo",
       "installRestartNow": "Instalar y reiniciar ahora",
-      "enableAutomatic": "Activar actualizaciones automáticas"
+      "enableAutomatic": "Activar actualizaciones automáticas",
+      "noNewVersion": "No hay una versión nueva: tienes el Handy Tool más reciente.",
+      "indicator": "Actualización disponible"
     },
     "unread": "sin leer",
     "transcriptionProviders": "Proveedores de transcripción",
@@ -114,7 +116,8 @@
       "transcribe": "Pulsa una vez para empezar y otra para terminar.",
       "ptt": "Mantén pulsado mientras hablas.",
       "cancel": "Detiene una grabación sin escribir nada.",
-      "more": "Hay más atajos (Transcribir y enviar, pausa, deshacer última palabra, …) en la página Atajos."
+      "more": "Hay más atajos (Transcribir y enviar, pausa, deshacer última palabra, …) en la página Atajos.",
+      "remote": "¿Trabajas en Escritorio remoto? Shortcut Keeper, en la página Atajos, mantiene en este PC los atajos que elijas."
     },
     "microphone": {
       "title": "¿Qué micrófono?",
@@ -873,6 +876,36 @@
         "label": "Avisar de atajos con AltGr",
         "description": "**Muestra un aviso ámbar junto a los atajos con los que AltGr también escribe.** Windows interpreta AltGr como Ctrl+Alt, así que un atajo como Ctrl+Alt+O se activa al escribir ó con AltGr y el carácter nunca llega. En Windows solo avisa cuando una de tus distribuciones de teclado escribe algo con AltGr en esa tecla (o AltGr+Shift, para una combinación con Shift), y nombra el idioma al que pertenece esa distribución.\n\n**Predeterminado:** Activado. Desactívalo si nunca escribes caracteres con AltGr.",
         "turnOff": "Desactivar este aviso"
+      },
+      "keeper": {
+        "title": "Shortcut Keeper",
+        "summary": "Mantiene en este PC los atajos que marques mientras una sesión de Escritorio remoto tiene el teclado, para que controlen Handy Tool aquí en lugar de llegar al equipo remoto. Todas las demás teclas van al equipo remoto como antes.",
+        "label": "Mantener los atajos elegidos en este PC en Escritorio remoto",
+        "description": "**Escritorio remoto se queda con todas las teclas mientras su sesión tiene el teclado** (en pantalla completa, o cuando las combinaciones de teclas de Windows van al equipo remoto), así que los atajos de Handy Tool dejan de funcionar ahí. Con esto activado, los atajos que marques con Mantener en este PC controlan Handy Tool aquí. Todas las demás teclas, incluidas Ctrl+C, Ctrl+V y Alt+Tab, siguen yendo al equipo remoto.\n\n**Funciona con:** Conexión a Escritorio remoto (mstsc) y la Windows App. No con Citrix: usa en su lugar el ajuste propio de Citrix Workspace para las combinaciones de teclas de Windows.\n\n**Solo atajos de pulsación:** Presionar para Hablar, Deshacer la última palabra y 'Paste last transcription' actúan al soltar la tecla y todavía no se pueden mantener.\n\n**Sin garantía:** si un atajo mantenido deja de funcionar, haz clic fuera de la sesión y luego otra vez dentro.\n\n**Privacidad:** Handy Tool vigila el teclado solo mientras una sesión de Escritorio remoto está en primer plano, reacciona solo a los atajos que marcaste y nunca guarda, registra ni envía lo que escribes.\n\n**Predeterminado:** Desactivado.",
+        "status": {
+          "off": "Desactivado.",
+          "waiting": "Activado. Esperando a que una sesión de Escritorio remoto tenga el teclado.",
+          "active": "Activo: una sesión de Escritorio remoto tiene el teclado y los atajos marcados se quedan en este PC.",
+          "higher_integrity": "Esta sesión de Escritorio remoto se ejecuta como administrador, así que Windows deja fuera a Handy Tool. Inicia el cliente de Escritorio remoto sin derechos de administrador para usar Shortcut Keeper.",
+          "needs_restart": "Reinicia Handy Tool para usar Shortcut Keeper: en esta sesión se ejecutó la otra implementación de teclado.",
+          "unavailable": "Solo funciona con la implementación de teclado predeterminada (Tauri), que se elige en los ajustes de depuración (Ctrl+Shift+D)."
+        },
+        "checkbox": "Mantener en este PC",
+        "checkboxHint": "Marcado: este atajo controla Handy Tool en este PC mientras una sesión de Escritorio remoto tiene el teclado.",
+        "turnOnFirst": "Primero activa Shortcut Keeper en la parte superior de esta página.",
+        "reasons": {
+          "needs_release": "Actúa al soltar la tecla, algo que Shortcut Keeper aún no puede manejar.",
+          "unbound": "No hay teclas asignadas a este atajo.",
+          "win_key": "Los atajos con la tecla Windows no se pueden mantener: el equipo remoto seguiría viendo la tecla Windows y abriría su menú Inicio.",
+          "alt_only": "Los atajos con Alt sin Ctrl no se pueden mantener: el equipo remoto seguiría viendo Alt y abriría su barra de menús. Añade Ctrl al atajo.",
+          "modifier_only": "Necesita una tecla principal además de los modificadores.",
+          "unknown_key": "Esta tecla no se puede mantener. Usa una letra, un dígito, una tecla F, Espacio, Enter, Tab, Esc, Retroceso, Insert, Supr, Inicio, Fin, Re Pág, Av Pág o una tecla de flecha.",
+          "ctrl_alt_del": "Windows siempre gestiona Ctrl+Alt+Supr por sí mismo.",
+          "win_l": "Windows siempre gestiona Windows+L (bloquear) por sí mismo.",
+          "rdp_combo": "El propio Escritorio remoto usa Ctrl+Alt+Inicio (barra de conexión) y Ctrl+Alt+Fin (Ctrl+Alt+Supr dentro de la sesión). Si se mantiene en este PC, el equipo remoto ya no lo recibe.",
+          "layout_switch": "El equipo remoto sigue viendo Ctrl y Shift sin otra tecla, lo que allí cambia la distribución del teclado si Ctrl+Shift está configurado para eso.",
+          "ctrl_space": "Ctrl+Espacio cambia el método de entrada en configuraciones en chino, japonés y coreano. Si se mantiene en este PC, el equipo remoto ya no lo recibe."
+        }
       }
     },
     "sound": {
@@ -1996,9 +2029,17 @@
     "release": "Versión {{version}}",
     "show": "Mostrar",
     "items": {
-      "wingetUninstall": {
-        "title": "Desinstalar con winget funciona",
-        "description": "Desinstalar Handy con winget, u otra herramienta que desinstala en silencio, ahora lo elimina. Antes se abría la ventana del desinstalador y esperaba un clic, mientras winget informaba de éxito."
+      "shortcutKeeper": {
+        "title": "Shortcut Keeper: tus atajos funcionan en Escritorio remoto",
+        "description": "En Windows, activa Shortcut Keeper en la página Atajos y marca Mantener en este PC junto a un atajo: mientras una sesión de Conexión a Escritorio remoto o de la Windows App tiene el teclado, ese atajo controla Handy Tool en este PC en lugar de llegar al equipo remoto. Todas las demás teclas siguen yendo al equipo remoto."
+      },
+      "updateIndicator": {
+        "title": "La versión indica cuándo hay una actualización disponible",
+        "description": "Una pequeña flecha junto a la versión, abajo a la izquierda, indica que hay una versión más reciente. Haz clic en la versión para buscar actualizaciones con Actualizar ahora o para instalar la que se haya encontrado."
+      },
+      "hotkeyRelease": {
+        "title": "Mantener pulsado un atajo ya no ocupa un núcleo del procesador",
+        "description": "En Windows, mientras mantenías pulsado un atajo (Presionar para Hablar, por ejemplo), Handy Tool comprobaba sin parar si lo habías soltado, lo que mantenía un núcleo del procesador totalmente ocupado. Ahora lo comprueba cada 10 ms."
       },
       "progressFinish": {
         "title": "El porcentaje llega al 100 % cuando el texto está listo",

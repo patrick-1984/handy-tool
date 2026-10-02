@@ -62,7 +62,9 @@
       "pipelineBusy": "Đang ghi âm hoặc phiên âm. Có thể cài bản cập nhật khi Handy Tool rảnh.",
       "installWhenIdle": "Cài khi rảnh",
       "installRestartNow": "Cài và khởi động lại ngay",
-      "enableAutomatic": "Bật cập nhật tự động"
+      "enableAutomatic": "Bật cập nhật tự động",
+      "noNewVersion": "Không có phiên bản mới: bạn đang dùng Handy Tool mới nhất.",
+      "indicator": "Có bản cập nhật"
     },
     "unread": "chưa đọc",
     "transcriptionProviders": "Nhà cung cấp phiên âm",
@@ -114,7 +116,8 @@
       "transcribe": "Nhấn một lần để bắt đầu, nhấn lần nữa để dừng.",
       "ptt": "Giữ trong khi nói.",
       "cancel": "Dừng ghi âm mà không gõ gì.",
-      "more": "Các phím tắt khác (Chép lời và gửi, tạm dừng, hoàn tác từ cuối, …) nằm trong trang Phím tắt."
+      "more": "Các phím tắt khác (Chép lời và gửi, tạm dừng, hoàn tác từ cuối, …) nằm trong trang Phím tắt.",
+      "remote": "Đang làm việc trong Máy tính Từ xa? Shortcut Keeper ở trang Phím tắt giữ các phím tắt bạn chọn trên máy tính này."
     },
     "microphone": {
       "title": "Micrô nào?",
@@ -873,6 +876,36 @@
         "label": "Cảnh báo phím tắt AltGr",
         "description": "**Hiển thị cảnh báo màu hổ phách cạnh các phím tắt mà AltGr cũng gõ được.** Windows báo AltGr là Ctrl+Alt, nên phím tắt như Ctrl+Alt+O sẽ kích hoạt khi bạn gõ ký tự ó bằng AltGr, và ký tự đó không bao giờ xuất hiện. Trên Windows, nó chỉ cảnh báo khi một trong các bàn phím của bạn gõ ra ký tự bằng AltGr trên phím đó (hoặc AltGr+Shift, đối với tổ hợp có Shift), và nêu tên ngôn ngữ mà bàn phím đó thuộc về.\n\n**Mặc định:** Bật. Hãy tắt nếu bạn không bao giờ gõ ký tự bằng AltGr.",
         "turnOff": "Tắt cảnh báo này"
+      },
+      "keeper": {
+        "title": "Shortcut Keeper",
+        "summary": "Giữ các phím tắt bạn đánh dấu trên máy tính này khi một phiên Máy tính Từ xa đang giữ bàn phím, để chúng điều khiển Handy Tool tại đây thay vì đi tới máy từ xa. Mọi phím khác vẫn đi tới máy từ xa như trước.",
+        "label": "Giữ các phím tắt đã chọn trên máy tính này trong Máy tính Từ xa",
+        "description": "**Máy tính Từ xa nhận mọi phím khi phiên của nó đang giữ bàn phím** (ở chế độ toàn màn hình, hoặc khi tổ hợp phím Windows được gửi tới máy từ xa), nên các phím tắt của Handy Tool không còn hoạt động ở đó. Khi bật tùy chọn này, các phím tắt bạn đánh dấu bằng Giữ trên máy tính này sẽ điều khiển Handy Tool tại đây. Mọi phím khác, kể cả Ctrl+C, Ctrl+V và Alt+Tab, vẫn đi tới máy từ xa.\n\n**Hoạt động với:** Kết nối Máy tính Từ xa (mstsc) và Windows App. Không hoạt động với Citrix: hãy dùng cài đặt riêng của Citrix Workspace cho tổ hợp phím Windows.\n\n**Chỉ phím tắt kích hoạt khi nhấn:** nhấn để nói, Hoàn tác từ cuối và Dán bản phiên âm gần nhất hoạt động khi nhả phím nên chưa thể giữ lại.\n\n**Không bảo đảm:** nếu một phím tắt đã giữ ngừng hoạt động, hãy bấm ra ngoài phiên rồi bấm lại vào trong.\n\n**Quyền riêng tư:** Handy Tool chỉ theo dõi bàn phím khi một phiên Máy tính Từ xa ở phía trước, chỉ phản ứng với các phím tắt bạn đã đánh dấu, và không bao giờ lưu, ghi nhật ký hay gửi đi những gì bạn gõ.\n\n**Mặc định:** Tắt.",
+        "status": {
+          "off": "Tắt.",
+          "waiting": "Bật. Đang chờ một phiên Máy tính Từ xa giữ bàn phím.",
+          "active": "Đang hoạt động: một phiên Máy tính Từ xa đang giữ bàn phím, và các phím tắt đã đánh dấu vẫn ở trên máy tính này.",
+          "higher_integrity": "Phiên Máy tính Từ xa này chạy với quyền quản trị viên, nên Windows không cho Handy Tool can thiệp. Hãy khởi động ứng dụng khách Máy tính Từ xa mà không dùng quyền quản trị viên để dùng Shortcut Keeper.",
+          "needs_restart": "Hãy khởi động lại Handy Tool để dùng Shortcut Keeper: phiên này đã chạy kiểu triển khai bàn phím còn lại.",
+          "unavailable": "Chỉ hoạt động với kiểu triển khai bàn phím mặc định (Tauri), đặt trong cài đặt gỡ lỗi (Ctrl+Shift+D)."
+        },
+        "checkbox": "Giữ trên máy tính này",
+        "checkboxHint": "Đã đánh dấu: phím tắt này điều khiển Handy Tool trên máy tính này khi một phiên Máy tính Từ xa đang giữ bàn phím.",
+        "turnOnFirst": "Trước tiên hãy bật Shortcut Keeper ở đầu trang này.",
+        "reasons": {
+          "needs_release": "Hoạt động khi nhả phím, điều mà Shortcut Keeper chưa xử lý được.",
+          "unbound": "Chưa đặt phím nào cho phím tắt này.",
+          "win_key": "Không thể giữ phím tắt có phím Windows: máy từ xa vẫn thấy phím Windows và mở menu Start của nó.",
+          "alt_only": "Không thể giữ phím tắt Alt không có Ctrl: máy từ xa vẫn thấy Alt và mở thanh menu của nó. Hãy thêm Ctrl vào phím tắt.",
+          "modifier_only": "Cần một phím chính ngoài các phím bổ trợ.",
+          "unknown_key": "Không thể giữ phím này. Hãy dùng một chữ cái, chữ số, phím F, Space, Enter, Tab, Escape, Backspace, Insert, Delete, Home, End, Page Up, Page Down hoặc một phím mũi tên.",
+          "ctrl_alt_del": "Windows luôn tự xử lý Ctrl+Alt+Delete.",
+          "win_l": "Windows luôn tự xử lý Windows+L (khóa máy).",
+          "rdp_combo": "Bản thân Máy tính Từ xa dùng Ctrl+Alt+Home (thanh kết nối) và Ctrl+Alt+End (Ctrl+Alt+Delete bên trong phiên). Nếu giữ trên máy tính này, máy từ xa sẽ không nhận được tổ hợp đó nữa.",
+          "layout_switch": "Máy từ xa vẫn thấy Ctrl và Shift mà không kèm phím nào khác, điều này sẽ chuyển bố cục bàn phím ở đó nếu Ctrl+Shift được đặt cho việc đó.",
+          "ctrl_space": "Ctrl+Space chuyển phương thức nhập trên các thiết lập tiếng Trung, tiếng Nhật và tiếng Hàn. Nếu giữ trên máy tính này, máy từ xa sẽ không nhận được tổ hợp đó nữa."
+        }
       }
     },
     "sound": {
@@ -1996,9 +2029,17 @@
     "release": "Phiên bản {{version}}",
     "show": "Hiện cho tôi",
     "items": {
-      "wingetUninstall": {
-        "title": "Gỡ cài đặt bằng winget hoạt động",
-        "description": "Gỡ Handy bằng winget, hoặc một công cụ gỡ cài đặt im lặng khác, giờ sẽ thực sự xóa nó. Trước đây cửa sổ gỡ cài đặt mở ra và chờ một cú nhấp, trong khi winget báo thành công."
+      "shortcutKeeper": {
+        "title": "Shortcut Keeper: phím tắt của bạn hoạt động trong Máy tính Từ xa",
+        "description": "Trên Windows, hãy bật Shortcut Keeper ở trang Phím tắt và đánh dấu Giữ trên máy tính này cạnh một phím tắt: khi một phiên Kết nối Máy tính Từ xa hoặc Windows App đang giữ bàn phím, phím tắt đó điều khiển Handy Tool trên máy tính này thay vì đi tới máy từ xa. Mọi phím khác vẫn đi tới máy từ xa."
+      },
+      "updateIndicator": {
+        "title": "Phiên bản cho biết khi có bản cập nhật",
+        "description": "Một mũi tên nhỏ cạnh số phiên bản ở góc dưới bên trái nghĩa là đã có phiên bản mới hơn. Bấm vào số phiên bản để kiểm tra bản cập nhật bằng Cập nhật ngay, hoặc để cài bản đã tìm thấy."
+      },
+      "hotkeyRelease": {
+        "title": "Giữ một phím tắt không còn làm bận một nhân bộ xử lý",
+        "description": "Trên Windows, khi bạn giữ một phím tắt (ví dụ nhấn để nói), Handy Tool liên tục kiểm tra xem bạn đã nhả phím chưa, khiến một nhân bộ xử lý luôn bận hoàn toàn. Giờ nó kiểm tra mỗi 10 ms."
       },
       "progressFinish": {
         "title": "Phần trăm đạt 100% khi văn bản sẵn sàng",

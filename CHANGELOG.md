@@ -1,5 +1,41 @@
 # Changelog
 
+## [2.1.0] - 2026-10-02
+
+Shortcut Keeper: your shortcuts work inside Remote Desktop. The version shows when an update is
+available.
+
+### Added
+
+- **Shortcut Keeper (Windows).** Remote Desktop Connection and the Windows App take every key while
+  their session has the keyboard (in full screen, or when Windows key combinations go to the
+  remote computer), so Handy's shortcuts did nothing there. Switch on
+  `Shortcuts › Shortcut Keeper` and tick `Keep on this PC` next to a shortcut: while a session has
+  the keyboard, that shortcut runs Handy on this PC, and every other key still goes to the remote.
+  Handy installs a keyboard hook for this only while a session's input window has the keyboard,
+  and only physical presses of the ticked shortcuts are taken; macro tools, remappers and Handy's
+  own paste pass through. It keeps press shortcuts only (Push-to-Talk, Undo Last Word and Paste
+  Last Transcription act on the release), not Citrix, not shortcuts with the Windows key or Alt
+  without Ctrl, and not a session running as administrator. Each row names why a shortcut cannot
+  be kept. It is best effort: if the client takes the keys back, click outside the session and
+  back in. Off by default.
+- **An update arrow by the version.** While update checks are on, a small arrow next to the version
+  at the bottom left of the sidebar shows that a newer version is available. Clicking the version
+  opens a panel above it: `Update now` runs the same check as `Check now`, then shows the update to
+  install or "No new version".
+
+### Fixed
+
+- **Holding a shortcut no longer keeps a processor core busy (Windows).** While a shortcut was held
+  (push-to-talk, for example), the shortcut library Handy uses checked nonstop whether the key had
+  been released, which kept one processor core fully busy for as long as you held it. It now checks
+  every 10 ms, and it tests only whether the key is down. Handy now carries its own copy of that
+  library (global-hotkey 0.7.0, MIT or Apache-2.0) with this one change.
+- "Restart and install" no longer stays greyed out after a scheduled update's waiting time ran out:
+  it can always be clicked, and the update still installs only once Handy is idle.
+- On macOS and Linux, an available update offers the download instead of an install button that
+  could only fail there.
+
 ## [2.0.5] - 2026-10-02
 
 A fix release: the end of a take is kept more reliably.

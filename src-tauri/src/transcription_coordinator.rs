@@ -29,6 +29,9 @@ enum Command {
         /// the previously-uninstrumented shortcut→coordinator latency gap
         /// (the existing timing only started AFTER dequeue).
         enqueued_at: Instant,
+        /// Set for a press Shortcut Keeper kept on this PC: dropped at
+        /// dequeue if that Remote Desktop session lost the keyboard meanwhile.
+        kept: Option<crate::remote_keys::RemoteGuard>,
     },
     Cancel {
         recording_was_active: bool,
@@ -141,7 +144,14 @@ impl TranscriptionCoordinator {
                             hotkey_string,
                             is_pressed,
                             enqueued_at,
+                            kept,
                         } => {
+                            if kept.is_some_and(|guard| !crate::remote_keys::guard_valid(guard)) {
+                                debug!(
+                                    "Shortcut Keeper: dropped a queued '{binding_id}' press, the session lost the keyboard"
+                                );
+                                continue;
+                            }
                             if update_reserved && is_pressed && is_transcribe_binding(&binding_id) {
                                 debug!(
                                     "Ignoring recording request while an update owns the pipeline reservation"
@@ -534,6 +544,26 @@ impl TranscriptionCoordinator {
     /// Send a keyboard/signal input event for a transcribe binding.
     /// PTT behavior is derived from the binding_id (transcribe_ptt = PTT mode).
     pub fn send_input(&self, binding_id: &str, hotkey_string: &str, is_pressed: bool) {
+        self.queue_input(binding_id, hotkey_string, is_pressed, None);
+    }
+
+    /// A press Shortcut Keeper kept on this PC during a Remote Desktop session.
+    pub fn send_kept_input(
+        &self,
+        binding_id: &str,
+        hotkey_string: &str,
+        guard: crate::remote_keys::RemoteGuard,
+    ) {
+        self.queue_input(binding_id, hotkey_string, true, Some(guard));
+    }
+
+    fn queue_input(
+        &self,
+        binding_id: &str,
+        hotkey_string: &str,
+        is_pressed: bool,
+        kept: Option<crate::remote_keys::RemoteGuard>,
+    ) {
         if is_pressed && is_transcribe_binding(binding_id) && update_pending() {
             debug!("Rejecting recording request while an update is waiting to install");
             return;
@@ -545,6 +575,7 @@ impl TranscriptionCoordinator {
                 hotkey_string: hotkey_string.to_string(),
                 is_pressed,
                 enqueued_at: Instant::now(),
+                kept,
             })
             .is_err()
         {

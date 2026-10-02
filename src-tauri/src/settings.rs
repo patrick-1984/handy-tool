@@ -1057,6 +1057,13 @@ pub struct AppSettings {
     /// as Ctrl+Alt).
     #[serde(default = "default_true")]
     pub altgr_warning_enabled: bool,
+    /// Shortcut Keeper (Windows): keep the shortcuts in `remote_local_bindings`
+    /// on this PC while a Remote Desktop session has the keyboard.
+    #[serde(default)]
+    pub remote_keys_enabled: bool,
+    /// Binding ids Shortcut Keeper keeps on this PC.
+    #[serde(default)]
+    pub remote_local_bindings: Vec<String>,
     #[serde(default)]
     pub selected_microphone: Option<String>,
     #[serde(default)]
@@ -2688,6 +2695,8 @@ pub fn get_default_settings() -> AppSettings {
         live_text_lines: default_live_text_lines(),
         live_text_after_stop: false,
         altgr_warning_enabled: true,
+        remote_keys_enabled: false,
+        remote_local_bindings: Vec::new(),
         selected_microphone: None,
         clamshell_microphone: None,
         selected_output_device: None,

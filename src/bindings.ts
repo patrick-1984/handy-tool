@@ -2482,6 +2482,48 @@ export const commands = {
     }
   },
   /**
+   * Switch Shortcut Keeper on or off.
+   */
+  async changeRemoteKeysSetting(enabled: boolean): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_remote_keys_setting", { enabled }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * Keep one shortcut on this PC in Remote Desktop, or let it go to the remote.
+   */
+  async setRemoteLocalBinding(
+    id: string,
+    local: boolean,
+  ): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("set_remote_local_binding", { id, local }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * For every shortcut: can it be kept on this PC, and if not, why.
+   */
+  async getRemoteKeySupport(): Promise<
+    Partial<{ [key in string]: KeepSupport }>
+  > {
+    return await TAURI_INVOKE("get_remote_key_support");
+  },
+  async getRemoteKeysStatus(): Promise<RemoteKeysStatus> {
+    return await TAURI_INVOKE("get_remote_keys_status");
+  },
+  /**
    * Whether the live text box fades out after you stop talking.
    */
   async changeLiveTextFadeSetting(enabled: boolean): Promise<Result<null, string>> {
@@ -3123,6 +3165,15 @@ export type AppSettings = {
    * as Ctrl+Alt).
    */
   altgr_warning_enabled?: boolean;
+  /**
+   * Shortcut Keeper (Windows): keep the shortcuts in `remote_local_bindings`
+   * on this PC while a Remote Desktop session has the keyboard.
+   */
+  remote_keys_enabled?: boolean;
+  /**
+   * Binding ids Shortcut Keeper keeps on this PC.
+   */
+  remote_local_bindings?: string[];
   selected_microphone?: string | null;
   clamshell_microphone?: string | null;
   selected_output_device?: string | null;
@@ -3368,6 +3419,51 @@ export type JumperPasteDelay =
   | "ms1000"
   | "ms1500"
   | "ms2000";
+export type KeepCategory =
+  | "ok"
+  /**
+   * Works, with something to know (shown with a warning).
+   */
+  | "warn"
+  /**
+   * Windows never lets an app have it.
+   */
+  | "reserved"
+  /**
+   * Not in this version.
+   */
+  | "unsupported";
+/**
+ * Whether a shortcut can be kept on this PC, and why not (`code` names the
+ * reason for the UI; empty when it simply works).
+ */
+export type KeepSupport = { category: KeepCategory; code: string };
+export type RemoteKeysState =
+  /**
+   * The switch is off.
+   */
+  | "off"
+  /**
+   * Not on this system or keyboard backend.
+   */
+  | "unavailable"
+  /**
+   * The other keyboard backend ran this session.
+   */
+  | "needs_restart"
+  /**
+   * On; no Remote Desktop session has the keyboard.
+   */
+  | "waiting"
+  /**
+   * A Remote Desktop session has the keyboard and the kept shortcuts work.
+   */
+  | "active"
+  /**
+   * The session runs as administrator; Windows keeps Handy out of it.
+   */
+  | "higher_integrity";
+export type RemoteKeysStatus = { enabled: boolean; state: RemoteKeysState };
 export type RegistrationFailure = {
   id: string;
   binding: string;

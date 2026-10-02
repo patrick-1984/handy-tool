@@ -62,7 +62,9 @@
       "pipelineBusy": "Trwa nagrywanie lub transkrypcja. Aktualizację można zainstalować, gdy Handy Tool będzie bezczynny.",
       "installWhenIdle": "Zainstaluj po zakończeniu",
       "installRestartNow": "Zainstaluj i uruchom ponownie",
-      "enableAutomatic": "Włącz automatyczne aktualizacje"
+      "enableAutomatic": "Włącz automatyczne aktualizacje",
+      "noNewVersion": "Brak nowej wersji: masz najnowszy Handy Tool.",
+      "indicator": "Dostępna aktualizacja"
     },
     "unread": "nieprzeczytane",
     "transcriptionProviders": "Dostawcy transkrypcji",
@@ -114,7 +116,8 @@
       "transcribe": "Naciśnij raz, aby zacząć, i drugi raz, aby skończyć.",
       "ptt": "Przytrzymaj, gdy mówisz.",
       "cancel": "Zatrzymuje nagrywanie bez wpisywania tekstu.",
-      "more": "Więcej skrótów (Transkrybuj i wyślij, pauza, cofnij ostatnie słowo, …) jest na stronie Skróty."
+      "more": "Więcej skrótów (Transkrybuj i wyślij, pauza, cofnij ostatnie słowo, …) jest na stronie Skróty.",
+      "remote": "Pracujesz w Pulpicie zdalnym? Strażnik skrótów na stronie Skróty zachowuje wybrane przez Ciebie skróty na tym komputerze."
     },
     "microphone": {
       "title": "Który mikrofon?",
@@ -873,6 +876,36 @@
         "label": "Ostrzegaj przed skrótami z AltGr",
         "description": "**Pokazuje bursztynowe ostrzeżenie obok skrótów, które można też wpisać klawiszem AltGr.** Windows zgłasza AltGr jako Ctrl+Alt, więc skrót taki jak Ctrl+Alt+O uruchamia się, gdy wpisujesz ó przez AltGr, a znak nigdy się nie pojawia. Na Windows ostrzega tylko wtedy, gdy jedna z Twoich klawiatur wpisuje coś przez AltGr na tym klawiszu (albo AltGr+Shift, dla kombinacji z Shift), i podaje nazwę języka, do którego należy ta klawiatura.\n\n**Domyślnie:** Włączone. Wyłącz, jeśli nie wpisujesz znaków przez AltGr.",
         "turnOff": "Wyłącz to ostrzeżenie"
+      },
+      "keeper": {
+        "title": "Strażnik skrótów",
+        "summary": "Zatrzymuje zaznaczone przez Ciebie skróty na tym komputerze, gdy klawiaturę ma sesja Pulpitu zdalnego, więc sterują one Handy Tool tutaj, zamiast trafiać do komputera zdalnego. Wszystkie inne klawisze trafiają do komputera zdalnego jak dotąd.",
+        "label": "Zachowaj wybrane skróty na tym komputerze w Pulpicie zdalnym",
+        "description": "**Pulpit zdalny przejmuje każdy klawisz, gdy jego sesja ma klawiaturę** (na pełnym ekranie albo gdy kombinacje klawiszy Windows trafiają do komputera zdalnego), więc skróty Handy Tool przestają tam działać. Gdy to jest włączone, skróty zaznaczone opcją Zachowaj na tym komputerze sterują Handy Tool tutaj. Każdy inny klawisz, w tym Ctrl+C, Ctrl+V i Alt+Tab, nadal trafia do komputera zdalnego.\n\n**Działa z:** aplikacjami Podłączanie pulpitu zdalnego (mstsc) i Windows App. Nie działa z klientem Citrix: zamiast tego użyj własnego ustawienia Citrix Workspace dla kombinacji klawiszy Windows.\n\n**Tylko skróty na naciśnięcie:** Push-to-Talk, Cofnij ostatnie słowo i Wklej ostatnią transkrypcję działają przy puszczeniu klawisza i nie można ich jeszcze zachować.\n\n**Bez gwarancji:** jeśli zachowany skrót przestanie działać, kliknij poza sesją, a potem z powrotem w nią.\n\n**Prywatność:** Handy Tool obserwuje klawiaturę tylko wtedy, gdy sesja Pulpitu zdalnego jest na pierwszym planie, reaguje tylko na zaznaczone przez Ciebie skróty i nigdy nie zapisuje, nie rejestruje ani nie wysyła tego, co piszesz.\n\n**Domyślnie:** Wyłączone.",
+        "status": {
+          "off": "Wyłączone.",
+          "waiting": "Włączone. Czeka, aż sesja Pulpitu zdalnego przejmie klawiaturę.",
+          "active": "Aktywne: sesja Pulpitu zdalnego ma klawiaturę, a zaznaczone skróty zostają na tym komputerze.",
+          "higher_integrity": "Ta sesja Pulpitu zdalnego działa jako administrator, więc Windows nie dopuszcza do niej Handy Tool. Uruchom klienta Pulpitu zdalnego bez uprawnień administratora, aby używać Strażnika skrótów.",
+          "needs_restart": "Uruchom ponownie Handy Tool, aby używać Strażnika skrótów: w tej sesji działała druga implementacja klawiatury.",
+          "unavailable": "Działa tylko z domyślną implementacją klawiatury (Tauri), ustawianą w ustawieniach debugowania (Ctrl+Shift+D)."
+        },
+        "checkbox": "Zachowaj na tym komputerze",
+        "checkboxHint": "Zaznaczone: ten skrót steruje Handy Tool na tym komputerze, gdy klawiaturę ma sesja Pulpitu zdalnego.",
+        "turnOnFirst": "Najpierw włącz Strażnika skrótów na górze tej strony.",
+        "reasons": {
+          "needs_release": "Działa przy puszczeniu klawisza, czego Strażnik skrótów jeszcze nie obsługuje.",
+          "unbound": "Dla tego skrótu nie ustawiono żadnych klawiszy.",
+          "win_key": "Skrótów z klawiszem Windows nie można zachować: komputer zdalny i tak zobaczyłby klawisz Windows i otworzył swoje menu Start.",
+          "alt_only": "Skrótów z Alt bez Ctrl nie można zachować: komputer zdalny i tak zobaczyłby Alt i otworzył swój pasek menu. Dodaj Ctrl do skrótu.",
+          "modifier_only": "Oprócz modyfikatorów potrzebny jest klawisz główny.",
+          "unknown_key": "Tego klawisza nie można zachować. Użyj litery, cyfry, klawisza F, Space, Enter, Tab, Escape, Backspace, Insert, Delete, Home, End, Page Up, Page Down albo strzałki.",
+          "ctrl_alt_del": "Ctrl+Alt+Delete Windows zawsze obsługuje sam.",
+          "win_l": "Windows+L (blokadę) Windows zawsze obsługuje sam.",
+          "rdp_combo": "Sam Pulpit zdalny używa Ctrl+Alt+Home (pasek połączenia) i Ctrl+Alt+End (Ctrl+Alt+Delete wewnątrz sesji). Zachowany na tym komputerze nie dotrze już do komputera zdalnego.",
+          "layout_switch": "Komputer zdalny nadal widzi Ctrl i Shift bez innego klawisza, co przełącza tam układ klawiatury, jeśli Ctrl+Shift jest do tego ustawione.",
+          "ctrl_space": "Ctrl+Space przełącza metodę wprowadzania w konfiguracjach chińskich, japońskich i koreańskich. Zachowany na tym komputerze nie dotrze już do komputera zdalnego."
+        }
       }
     },
     "sound": {
@@ -1996,9 +2029,17 @@
     "release": "Wersja {{version}}",
     "show": "Pokaż",
     "items": {
-      "wingetUninstall": {
-        "title": "Odinstalowanie przez winget działa",
-        "description": "Odinstalowanie Handy przez winget lub inne narzędzie, które odinstalowuje po cichu, teraz go usuwa. Wcześniej otwierało się okno deinstalatora i czekało na kliknięcie, a winget zgłaszał powodzenie."
+      "shortcutKeeper": {
+        "title": "Strażnik skrótów: Twoje skróty działają w Pulpicie zdalnym",
+        "description": "W Windows włącz Strażnika skrótów na stronie Skróty i zaznacz Zachowaj na tym komputerze przy skrócie: gdy klawiaturę ma sesja aplikacji Podłączanie pulpitu zdalnego lub Windows App, ten skrót steruje Handy Tool na tym komputerze, zamiast trafiać do komputera zdalnego. Każdy inny klawisz nadal trafia do komputera zdalnego."
+      },
+      "updateIndicator": {
+        "title": "Wersja pokazuje, kiedy jest dostępna aktualizacja",
+        "description": "Mała strzałka obok wersji w lewym dolnym rogu oznacza, że dostępna jest nowsza wersja. Kliknij wersję, aby sprawdzić aktualizacje przyciskiem Aktualizuj teraz albo zainstalować znalezioną."
+      },
+      "hotkeyRelease": {
+        "title": "Przytrzymany skrót nie zajmuje już rdzenia procesora",
+        "description": "W Windows, gdy skrót był przytrzymany (na przykład Push-to-Talk), Handy Tool bez przerwy sprawdzał, czy został już puszczony, przez co jeden rdzeń procesora był w pełni zajęty. Teraz sprawdza co 10 ms."
       },
       "progressFinish": {
         "title": "Procent dochodzi do 100%, gdy tekst jest gotowy",

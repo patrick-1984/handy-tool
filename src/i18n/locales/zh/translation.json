@@ -62,7 +62,9 @@
       "pipelineBusy": "正在录音或转写。Handy Tool 空闲后即可安装更新。",
       "installWhenIdle": "空闲时安装",
       "installRestartNow": "立即安装并重启",
-      "enableAutomatic": "开启自动更新"
+      "enableAutomatic": "开启自动更新",
+      "noNewVersion": "没有新版本：你使用的已是最新的 Handy Tool。",
+      "indicator": "有可用更新"
     },
     "unread": "未读",
     "transcriptionProviders": "转录提供商",
@@ -114,7 +116,8 @@
       "transcribe": "按一次开始，再按一次结束。",
       "ptt": "说话时按住。",
       "cancel": "停止录音，不输入任何内容。",
-      "more": "更多快捷键（转录并发送、暂停、撤销上一个词等）在“快捷键”页面。"
+      "more": "更多快捷键（转录并发送、暂停、撤销上一个词等）在“快捷键”页面。",
+      "remote": "在远程桌面中工作？“快捷键”页面上的快捷键保留器会将你选择的快捷键保留在这台电脑上。"
     },
     "microphone": {
       "title": "使用哪个麦克风？",
@@ -873,6 +876,36 @@
         "label": "提醒 AltGr 快捷键",
         "description": "**在 AltGr 也能输入字符的快捷键旁显示黄色警告。** Windows 将 AltGr 报告为 Ctrl+Alt，因此像 Ctrl+Alt+O 这样的快捷键会在你用 AltGr 输入 ó 时触发，而字符始终无法输入。在 Windows 上，只有当你某个键盘在该按键上用 AltGr（或搭配 Shift 的组合键则用 AltGr+Shift）输入字符时才会警告，并会指出该键盘所属的语言。\n\n**默认：** 开启。如果你从不用 AltGr 输入字符，可以将其关闭。",
         "turnOff": "关闭此警告"
+      },
+      "keeper": {
+        "title": "快捷键保留器",
+        "summary": "当远程桌面会话占用键盘时，将你勾选的快捷键保留在这台电脑上，让它们在这里操作 Handy Tool，而不是发送到远程电脑。其他所有按键照常发送到远程电脑。",
+        "label": "在远程桌面中将所选快捷键保留在这台电脑上",
+        "description": "**远程桌面会话占用键盘时，远程桌面会接收所有按键**（全屏时，或 Windows 组合键设置为发送到远程电脑时），因此 Handy Tool 的快捷键在那里会失效。开启后，你用“保留在这台电脑上”勾选的快捷键会在这里操作 Handy Tool。其他所有按键，包括 Ctrl+C、Ctrl+V 和 Alt+Tab，仍会发送到远程电脑。\n\n**适用于：** 远程桌面连接 (mstsc) 和 Windows App。不适用于 Citrix：请改用 Citrix Workspace 自带的 Windows 组合键设置。\n\n**仅限按下即触发的快捷键：** “按住说话”、“撤销最后一个词”和“重新粘贴最近转录”在松开按键时才起作用，暂时无法保留。\n\n**不保证总是有效：** 如果某个保留的快捷键失效，请在会话外点击一下，再点回会话内。\n\n**隐私：** Handy Tool 仅在远程桌面会话位于前台时监视键盘，只响应你勾选的快捷键，绝不存储、记录或发送你输入的内容。\n\n**默认：** 关闭。",
+        "status": {
+          "off": "关闭。",
+          "waiting": "已开启。正在等待远程桌面会话占用键盘。",
+          "active": "生效中：远程桌面会话正在占用键盘，勾选的快捷键保留在这台电脑上。",
+          "higher_integrity": "此远程桌面会话以管理员身份运行，因此 Windows 不允许 Handy Tool 介入。请以非管理员权限启动远程桌面客户端，以使用快捷键保留器。",
+          "needs_restart": "请重启 Handy Tool 以使用快捷键保留器：本次运行中使用的是另一种键盘实现。",
+          "unavailable": "仅适用于默认的键盘实现（Tauri），可在调试设置（Ctrl+Shift+D）中设置。"
+        },
+        "checkbox": "保留在这台电脑上",
+        "checkboxHint": "已勾选：远程桌面会话占用键盘时，此快捷键会在这台电脑上操作 Handy Tool。",
+        "turnOnFirst": "请先在本页顶部开启快捷键保留器。",
+        "reasons": {
+          "needs_release": "在松开按键时起作用，快捷键保留器暂时无法处理。",
+          "unbound": "此快捷键未设置按键。",
+          "win_key": "含 Windows 键的快捷键无法保留：远程电脑仍会收到 Windows 键并打开其开始菜单。",
+          "alt_only": "不含 Ctrl 的 Alt 快捷键无法保留：远程电脑仍会收到 Alt 并打开其菜单栏。请在快捷键中加入 Ctrl。",
+          "modifier_only": "除修饰键外还需要一个主键。",
+          "unknown_key": "此按键无法保留。请使用字母、数字、F 键、Space、Enter、Tab、Escape、Backspace、Insert、Delete、Home、End、Page Up、Page Down 或方向键。",
+          "ctrl_alt_del": "Ctrl+Alt+Delete 始终由 Windows 自己处理。",
+          "win_l": "Windows+L（锁定）始终由 Windows 自己处理。",
+          "rdp_combo": "远程桌面自身使用 Ctrl+Alt+Home（连接栏）和 Ctrl+Alt+End（会话内的 Ctrl+Alt+Delete）。保留在这台电脑上后，远程电脑将不再收到它。",
+          "layout_switch": "远程电脑仍会收到不带其他按键的 Ctrl 和 Shift；如果那边将 Ctrl+Shift 设为切换键盘布局，布局就会被切换。",
+          "ctrl_space": "在中文、日文和韩文环境中，Ctrl+Space 用于切换输入法。保留在这台电脑上后，远程电脑将不再收到它。"
+        }
       }
     },
     "sound": {
@@ -1996,9 +2029,17 @@
     "release": "版本 {{version}}",
     "show": "显示",
     "items": {
-      "wingetUninstall": {
-        "title": "使用 winget 卸载已可正常工作",
-        "description": "使用 winget 或其他静默卸载的工具卸载 Handy，现在会真正将其移除。之前会打开卸载程序窗口并等待点击，而 winget 却显示成功。"
+      "shortcutKeeper": {
+        "title": "快捷键保留器：快捷键在远程桌面中也能用",
+        "description": "在 Windows 上，于“快捷键”页面开启快捷键保留器，并勾选快捷键旁的“保留在这台电脑上”：当远程桌面连接或 Windows App 会话占用键盘时，该快捷键会在这台电脑上操作 Handy Tool，而不是发送到远程电脑。其他所有按键仍会发送到远程电脑。"
+      },
+      "updateIndicator": {
+        "title": "有可用更新时，版本号会提示",
+        "description": "左下角版本号旁出现小箭头，表示有更新的版本可用。点击版本号，可通过“立即更新”检查更新，或安装已找到的更新。"
+      },
+      "hotkeyRelease": {
+        "title": "按住快捷键时不再占满一个处理器核心",
+        "description": "在 Windows 上，按住快捷键（例如按住说话）时，Handy Tool 会不停地检查你是否已松开，导致一个处理器核心被完全占满。现在改为每 10 毫秒检查一次。"
       },
       "progressFinish": {
         "title": "文字就绪时百分比即达 100%",

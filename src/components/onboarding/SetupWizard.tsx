@@ -543,6 +543,11 @@ const SetupWizard: React.FC<SetupWizardProps> = ({ onDone }) => {
             <p className="text-[13px] text-text-secondary">
               {t("setup.shortcuts.more")}
             </p>
+            {osType === "windows" && (
+              <p className="text-[13px] text-text-secondary">
+                {t("setup.shortcuts.remote")}
+              </p>
+            )}
           </div>
         );
       }

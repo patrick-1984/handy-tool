@@ -12,6 +12,7 @@ import { ShortcutChip } from "./ShortcutChip";
 import { AltGrWarning } from "./AltGrWarning";
 import { SingleKeyWarning } from "./SingleKeyWarning";
 import { ShortcutConflictWarning } from "./ShortcutConflictWarning";
+import { KeepLocalCheckbox } from "./shortcuts/ShortcutKeeper";
 import { SettingContainer } from "../ui/SettingContainer";
 import { useSettings } from "../../hooks/useSettings";
 import { useOsType } from "../../hooks/useOsType";
@@ -402,6 +403,7 @@ export const GlobalShortcutInput: React.FC<GlobalShortcutInputProps> = ({
             className="h-6 w-6"
           />
         </ShortcutChip>
+        <KeepLocalCheckbox shortcutId={shortcutId} />
       </div>
     </SettingContainer>
   );

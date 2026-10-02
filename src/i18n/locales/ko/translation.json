@@ -62,7 +62,9 @@
       "pipelineBusy": "녹음 또는 받아쓰기가 진행 중입니다. Handy Tool이 유휴 상태가 되면 업데이트를 설치할 수 있습니다.",
       "installWhenIdle": "유휴 상태일 때 설치",
       "installRestartNow": "지금 설치하고 다시 시작",
-      "enableAutomatic": "자동 업데이트 켜기"
+      "enableAutomatic": "자동 업데이트 켜기",
+      "noNewVersion": "새 버전이 없습니다. 최신 Handy Tool을 사용 중입니다.",
+      "indicator": "업데이트 있음"
     },
     "unread": "읽지 않음",
     "transcriptionProviders": "전사 제공자",
@@ -114,7 +116,8 @@
       "transcribe": "한 번 누르면 시작, 다시 누르면 끝납니다.",
       "ptt": "말하는 동안 누르고 있으세요.",
       "cancel": "아무것도 입력하지 않고 녹음을 멈춥니다.",
-      "more": "다른 단축키(받아쓰기 후 전송, 일시정지, 마지막 단어 취소 등)는 단축키 페이지에 있습니다."
+      "more": "다른 단축키(받아쓰기 후 전송, 일시정지, 마지막 단어 취소 등)는 단축키 페이지에 있습니다.",
+      "remote": "원격 데스크톱에서 작업하시나요? 단축키 페이지의 단축키 키퍼가 선택한 단축키를 이 PC에 유지합니다."
     },
     "microphone": {
       "title": "어떤 마이크를 쓰나요?",
@@ -856,6 +859,36 @@
         "label": "AltGr 단축키 경고",
         "description": "**AltGr로도 입력할 수 있는 단축키 옆에 호박색 경고를 표시합니다.** Windows는 AltGr을 Ctrl+Alt로 인식하므로 Ctrl+Alt+O 같은 단축키는 AltGr로 ó를 입력할 때 실행되고 문자는 입력되지 않습니다. Windows에서는 사용 중인 키보드 중 하나가 그 키에서 AltGr로(Shift가 포함된 조합이면 AltGr+Shift로) 무언가를 입력할 때만 경고하며, 해당 키보드가 속한 언어의 이름도 표시합니다.\n\n**기본값:** 켬. AltGr로 문자를 입력하지 않는다면 끄세요.",
         "turnOff": "이 경고 끄기"
+      },
+      "keeper": {
+        "title": "단축키 키퍼",
+        "summary": "원격 데스크톱 세션이 키보드를 사용하는 동안 체크한 단축키를 이 PC에 유지해, 원격 컴퓨터로 보내지 않고 여기서 Handy Tool을 실행합니다. 다른 모든 키는 이전처럼 원격 컴퓨터로 갑니다.",
+        "label": "원격 데스크톱에서 선택한 단축키를 이 PC에서 유지",
+        "description": "**원격 데스크톱은 세션이 키보드를 사용하는 동안 모든 키를 가져갑니다**(전체 화면일 때나 Windows 키 조합이 원격 컴퓨터로 가도록 설정된 경우). 그래서 그곳에서는 Handy Tool의 단축키가 작동하지 않습니다. 이 기능을 켜면 '이 PC에서 유지'로 체크한 단축키가 여기서 Handy Tool을 실행합니다. Ctrl+C, Ctrl+V, Alt+Tab을 포함한 다른 모든 키는 계속 원격 컴퓨터로 갑니다.\n\n**지원:** 원격 데스크톱 연결 (mstsc)과 Windows App. Citrix는 지원하지 않습니다. 대신 Windows 키 조합에 대한 Citrix Workspace 자체 설정을 사용하세요.\n\n**누를 때 작동하는 단축키만:** 푸시-투-토크, 마지막 단어 취소, 마지막 전사 붙여넣기는 키를 놓을 때 작동하므로 아직 유지할 수 없습니다.\n\n**보장되지 않음:** 유지한 단축키가 작동하지 않으면 세션 밖을 클릭한 뒤 다시 세션 안을 클릭하세요.\n\n**개인정보:** Handy Tool은 원격 데스크톱 세션이 앞에 있을 때만 키보드를 지켜보고, 체크한 단축키에만 반응하며, 입력한 내용을 저장, 기록, 전송하지 않습니다.\n\n**기본값:** 끔.",
+        "status": {
+          "off": "끔.",
+          "waiting": "켬. 원격 데스크톱 세션이 키보드를 사용하기를 기다리는 중입니다.",
+          "active": "활성: 원격 데스크톱 세션이 키보드를 사용 중이며, 체크한 단축키는 이 PC에 유지됩니다.",
+          "higher_integrity": "이 원격 데스크톱 세션은 관리자 권한으로 실행 중이라 Windows가 Handy Tool의 접근을 막습니다. 단축키 키퍼를 사용하려면 원격 데스크톱 클라이언트를 관리자 권한 없이 시작하세요.",
+          "needs_restart": "단축키 키퍼를 사용하려면 Handy Tool을 다시 시작하세요. 이번 실행에서는 다른 키보드 구현이 사용되었습니다.",
+          "unavailable": "디버그 설정(Ctrl+Shift+D)에서 지정하는 기본 키보드 구현(Tauri)에서만 작동합니다."
+        },
+        "checkbox": "이 PC에서 유지",
+        "checkboxHint": "체크됨: 원격 데스크톱 세션이 키보드를 사용하는 동안 이 단축키는 이 PC에서 Handy Tool을 실행합니다.",
+        "turnOnFirst": "먼저 이 페이지 상단에서 단축키 키퍼를 켜세요.",
+        "reasons": {
+          "needs_release": "키를 놓을 때 작동하는데, 단축키 키퍼는 아직 이를 처리할 수 없습니다.",
+          "unbound": "이 단축키에 설정된 키가 없습니다.",
+          "win_key": "Windows 키가 포함된 단축키는 유지할 수 없습니다. 원격 컴퓨터에도 Windows 키가 전달되어 시작 메뉴가 열립니다.",
+          "alt_only": "Ctrl 없는 Alt 단축키는 유지할 수 없습니다. 원격 컴퓨터에도 Alt가 전달되어 메뉴 모음이 열립니다. 단축키에 Ctrl을 추가하세요.",
+          "modifier_only": "보조 키 외에 기본 키가 필요합니다.",
+          "unknown_key": "이 키는 유지할 수 없습니다. 문자, 숫자, F 키, Space, Enter, Tab, Escape, Backspace, Insert, Delete, Home, End, Page Up, Page Down 또는 화살표 키를 사용하세요.",
+          "ctrl_alt_del": "Ctrl+Alt+Delete는 항상 Windows가 직접 처리합니다.",
+          "win_l": "Windows+L(잠금)은 항상 Windows가 직접 처리합니다.",
+          "rdp_combo": "원격 데스크톱 자체가 Ctrl+Alt+Home(연결 표시줄)과 Ctrl+Alt+End(세션 안의 Ctrl+Alt+Delete)를 사용합니다. 이 PC에서 유지하면 원격 컴퓨터는 더 이상 이 조합을 받지 못합니다.",
+          "layout_switch": "원격 컴퓨터에는 다른 키 없이 Ctrl과 Shift가 전달되므로, 그쪽에서 Ctrl+Shift가 키보드 레이아웃 전환으로 설정되어 있으면 레이아웃이 바뀝니다.",
+          "ctrl_space": "Ctrl+Space는 중국어, 일본어, 한국어 환경에서 입력 방법을 전환합니다. 이 PC에서 유지하면 원격 컴퓨터는 더 이상 이 조합을 받지 못합니다."
+        }
       }
     },
     "sound": {
@@ -1996,9 +2029,17 @@
     "release": "버전 {{version}}",
     "show": "보기",
     "items": {
-      "wingetUninstall": {
-        "title": "winget으로 정상적으로 제거할 수 있습니다",
-        "description": "winget 또는 자동 모드로 제거하는 다른 도구로 Handy를 제거하면 이제 실제로 제거됩니다. 이전에는 제거 프로그램 창이 열려 클릭을 기다리는 동안 winget은 성공했다고 표시했습니다."
+      "shortcutKeeper": {
+        "title": "단축키 키퍼: 원격 데스크톱에서도 단축키가 작동합니다",
+        "description": "Windows에서 단축키 페이지의 단축키 키퍼를 켜고 단축키 옆의 '이 PC에서 유지'를 체크하세요. 원격 데스크톱 연결 또는 Windows App 세션이 키보드를 사용하는 동안 그 단축키는 원격 컴퓨터로 가지 않고 이 PC에서 Handy Tool을 실행합니다. 다른 모든 키는 계속 원격 컴퓨터로 갑니다."
+      },
+      "updateIndicator": {
+        "title": "업데이트가 있으면 버전에 표시됩니다",
+        "description": "왼쪽 아래 버전 옆의 작은 화살표는 새 버전이 있다는 뜻입니다. 버전을 클릭하면 지금 업데이트로 업데이트를 확인하거나, 찾은 업데이트를 설치할 수 있습니다."
+      },
+      "hotkeyRelease": {
+        "title": "단축키를 누르고 있어도 더 이상 프로세서 코어를 점유하지 않습니다",
+        "description": "Windows에서 단축키를 누르고 있는 동안(예: 푸시-투-토크) Handy Tool이 키를 놓았는지 쉬지 않고 확인해 프로세서 코어 하나가 완전히 점유되었습니다. 이제는 10ms마다 확인합니다."
       },
       "progressFinish": {
         "title": "텍스트가 준비되면 퍼센트가 100%가 됩니다",

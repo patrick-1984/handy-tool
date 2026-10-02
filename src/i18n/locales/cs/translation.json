@@ -62,7 +62,9 @@
       "pipelineBusy": "Probíhá nahrávání nebo přepis. Aktualizaci lze nainstalovat, až bude Handy Tool nečinný.",
       "installWhenIdle": "Nainstalovat při nečinnosti",
       "installRestartNow": "Nainstalovat a restartovat",
-      "enableAutomatic": "Zapnout automatické aktualizace"
+      "enableAutomatic": "Zapnout automatické aktualizace",
+      "noNewVersion": "Žádná nová verze: máte nejnovější Handy Tool.",
+      "indicator": "K dispozici je aktualizace"
     },
     "unread": "nepřečteno",
     "transcriptionProviders": "Poskytovatelé přepisu",
@@ -114,7 +116,8 @@
       "transcribe": "Stiskněte jednou pro začátek a znovu pro konec.",
       "ptt": "Držte, dokud mluvíte.",
       "cancel": "Zastaví nahrávání, aniž by se cokoli napsalo.",
-      "more": "Další zkratky (Přepsat a odeslat, pauza, vrátit poslední slovo, …) jsou na stránce Zkratky."
+      "more": "Další zkratky (Přepsat a odeslat, pauza, vrátit poslední slovo, …) jsou na stránce Zkratky.",
+      "remote": "Pracujete ve Vzdálené ploše? Strážce zkratek na stránce Zkratky ponechá vybrané zkratky na tomto počítači."
     },
     "microphone": {
       "title": "Který mikrofon?",
@@ -873,6 +876,36 @@
         "label": "Upozorňovat na zkratky s AltGr",
         "description": "**Zobrazí jantarové upozornění u zkratek, které lze napsat i klávesou AltGr.** Windows hlásí AltGr jako Ctrl+Alt, takže zkratka jako Ctrl+Alt+O se spustí, když napíšete ó přes AltGr, a znak se nikdy nedoručí. Na Windows upozorní jen tehdy, když některá z vašich klávesnic na té klávese píše znak přes AltGr (nebo AltGr+Shift u kombinace se Shiftem), a pojmenuje jazyk, ke kterému klávesnice patří.\n\n**Výchozí:** Zapnuto. Vypněte, pokud znaky přes AltGr nepíšete.",
         "turnOff": "Vypnout toto upozornění"
+      },
+      "keeper": {
+        "title": "Strážce zkratek",
+        "summary": "Ponechá zkratky, které zaškrtnete, na tomto počítači, zatímco klávesnici má relace Vzdálené plochy, takže ovládají Handy Tool zde, místo aby došly do vzdáleného počítače. Všechny ostatní klávesy jdou do vzdáleného počítače jako dosud.",
+        "label": "Ponechat vybrané zkratky ve Vzdálené ploše na tomto počítači",
+        "description": "**Vzdálená plocha zabírá každou klávesu, dokud má její relace klávesnici** (na celé obrazovce nebo když kombinace kláves Windows jdou do vzdáleného počítače), takže zkratky Handy Tool tam přestanou fungovat. Když je toto zapnuto, zkratky zaškrtnuté volbou Ponechat na tomto počítači ovládají Handy Tool zde. Každá jiná klávesa, včetně Ctrl+C, Ctrl+V a Alt+Tab, jde dál do vzdáleného počítače.\n\n**Funguje s:** aplikacemi Připojení ke vzdálené ploše (mstsc) a Windows App. Ne s klientem Citrix: místo toho použijte vlastní nastavení Citrix Workspace pro kombinace kláves Windows.\n\n**Jen zkratky na stisk:** Stisk a mluv, Vrátit poslední slovo a Vložit poslední přepis reagují na uvolnění klávesy a zatím je nelze ponechat.\n\n**Bez záruky:** pokud ponechaná zkratka přestane fungovat, klikněte mimo relaci a pak zpět do ní.\n\n**Soukromí:** Handy Tool sleduje klávesnici jen tehdy, když je relace Vzdálené plochy v popředí, reaguje jen na zkratky, které jste zaškrtli, a nikdy neukládá, nezaznamenává ani neodesílá, co píšete.\n\n**Výchozí:** Vypnuto.",
+        "status": {
+          "off": "Vypnuto.",
+          "waiting": "Zapnuto. Čeká se, až bude mít klávesnici relace Vzdálené plochy.",
+          "active": "Aktivní: klávesnici má relace Vzdálené plochy a zaškrtnuté zkratky zůstávají na tomto počítači.",
+          "higher_integrity": "Tato relace Vzdálené plochy běží jako správce, takže k ní Windows Handy Tool nepustí. Chcete-li používat Strážce zkratek, spusťte klienta Vzdálené plochy bez oprávnění správce.",
+          "needs_restart": "Chcete-li používat Strážce zkratek, restartujte Handy Tool: v této relaci běžela druhá implementace klávesnice.",
+          "unavailable": "Funguje jen s výchozí implementací klávesnice (Tauri), kterou nastavíte v nastavení ladění (Ctrl+Shift+D)."
+        },
+        "checkbox": "Ponechat na tomto počítači",
+        "checkboxHint": "Zaškrtnuto: tato zkratka ovládá Handy Tool na tomto počítači, zatímco klávesnici má relace Vzdálené plochy.",
+        "turnOnFirst": "Nejprve zapněte Strážce zkratek nahoře na této stránce.",
+        "reasons": {
+          "needs_release": "Reaguje na uvolnění klávesy, což Strážce zkratek zatím neumí.",
+          "unbound": "Pro tuto zkratku nejsou nastavené žádné klávesy.",
+          "win_key": "Zkratky s klávesou Windows nelze ponechat: vzdálený počítač by klávesu Windows stejně viděl a otevřel svou nabídku Start.",
+          "alt_only": "Zkratky s Alt bez Ctrl nelze ponechat: vzdálený počítač by Alt stejně viděl a otevřel svůj panel nabídek. Přidejte do zkratky Ctrl.",
+          "modifier_only": "Kromě modifikátorů potřebuje hlavní klávesu.",
+          "unknown_key": "Tuto klávesu nelze ponechat. Použijte písmeno, číslici, klávesu F, Space, Enter, Tab, Escape, Backspace, Insert, Delete, Home, End, Page Up, Page Down nebo šipku.",
+          "ctrl_alt_del": "Ctrl+Alt+Delete vždy zpracuje sám systém Windows.",
+          "win_l": "Windows+L (zamknutí) vždy zpracuje sám systém Windows.",
+          "rdp_combo": "Vzdálená plocha sama používá Ctrl+Alt+Home (panel připojení) a Ctrl+Alt+End (Ctrl+Alt+Delete uvnitř relace). Když ji ponecháte na tomto počítači, vzdálený počítač ji už nedostane.",
+          "layout_switch": "Vzdálený počítač stále uvidí Ctrl a Shift bez další klávesy, což tam přepne rozložení klávesnice, pokud je k tomu nastavena kombinace Ctrl+Shift.",
+          "ctrl_space": "Ctrl+Space přepíná metodu zadávání v čínském, japonském a korejském nastavení. Když ji ponecháte na tomto počítači, vzdálený počítač ji už nedostane."
+        }
       }
     },
     "sound": {
@@ -1996,9 +2029,17 @@
     "release": "Verze {{version}}",
     "show": "Ukázat",
     "items": {
-      "wingetUninstall": {
-        "title": "Odinstalace přes winget funguje",
-        "description": "Odinstalace Handy přes winget nebo jiný nástroj, který odinstalovává tiše, ho teď odstraní. Dříve se otevřelo okno odinstalátoru a čekalo na kliknutí, zatímco winget hlásil úspěch."
+      "shortcutKeeper": {
+        "title": "Strážce zkratek: vaše zkratky fungují ve Vzdálené ploše",
+        "description": "Ve Windows zapněte Strážce zkratek na stránce Zkratky a u zkratky zaškrtněte Ponechat na tomto počítači: dokud má klávesnici relace Připojení ke vzdálené ploše nebo Windows App, ovládá tato zkratka Handy Tool na tomto počítači, místo aby došla do vzdáleného počítače. Každá jiná klávesa jde dál do vzdáleného počítače."
+      },
+      "updateIndicator": {
+        "title": "Verze ukazuje, kdy je k dispozici aktualizace",
+        "description": "Malá šipka vedle verze vlevo dole znamená, že je k dispozici novější verze. Kliknutím na verzi vyhledáte aktualizace tlačítkem Aktualizovat nyní nebo nainstalujete nalezenou aktualizaci."
+      },
+      "hotkeyRelease": {
+        "title": "Podržená zkratka už nevytěžuje jádro procesoru",
+        "description": "Ve Windows Handy Tool při podržení zkratky (například Stisk a mluv) neustále kontroloval, zda jste ji pustili, a jedno jádro procesoru tak bylo plně vytížené. Nyní kontroluje každých 10 ms."
       },
       "progressFinish": {
         "title": "Procento dosáhne 100 %, jakmile je text hotový",

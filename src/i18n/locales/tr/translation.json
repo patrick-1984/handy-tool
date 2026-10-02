@@ -62,7 +62,9 @@
       "pipelineBusy": "Kayıt veya yazıya dökme işlemi sürüyor. Güncelleme Handy Tool boştayken kurulabilir.",
       "installWhenIdle": "Boştayken kur",
       "installRestartNow": "Şimdi kur ve yeniden başlat",
-      "enableAutomatic": "Otomatik güncellemeleri aç"
+      "enableAutomatic": "Otomatik güncellemeleri aç",
+      "noNewVersion": "Yeni sürüm yok: en son Handy Tool sizde.",
+      "indicator": "Güncelleme mevcut"
     },
     "unread": "okunmadı",
     "transcriptionProviders": "Transkripsiyon sağlayıcıları",
@@ -114,7 +116,8 @@
       "transcribe": "Başlamak için bir kez, bitirmek için tekrar basın.",
       "ptt": "Konuşurken basılı tutun.",
       "cancel": "Hiçbir şey yazmadan kaydı durdurur.",
-      "more": "Diğer kısayollar (Yazıya dök ve gönder, duraklat, son kelimeyi geri al, …) Kısayollar sayfasında."
+      "more": "Diğer kısayollar (Yazıya dök ve gönder, duraklat, son kelimeyi geri al, …) Kısayollar sayfasında.",
+      "remote": "Uzak Masaüstü'nde mi çalışıyorsunuz? Kısayollar sayfasındaki Kısayol Koruyucu, seçtiğiniz kısayolları bu bilgisayarda tutar."
     },
     "microphone": {
       "title": "Hangi mikrofon?",
@@ -873,6 +876,36 @@
         "label": "AltGr kısayolları için uyar",
         "description": "**AltGr ile de yazılabilen kısayolların yanında kehribar rengi bir uyarı gösterir.** Windows AltGr'yi Ctrl+Alt olarak bildirir; bu yüzden Ctrl+Alt+O gibi bir kısayol AltGr ile ó yazarken tetiklenir ve karakter hiç gelmez. Windows'ta yalnızca klavyelerinizden biri o tuşta (Shift'li bir kombinasyon için AltGr+Shift ile) AltGr ile bir şey yazıyorsa uyarır ve klavyenin ait olduğu dili adlandırır.\n\n**Varsayılan:** Açık. AltGr ile karakter yazmıyorsanız kapatın.",
         "turnOff": "Bu uyarıyı kapat"
+      },
+      "keeper": {
+        "title": "Kısayol Koruyucu",
+        "summary": "İşaretlediğiniz kısayolları, klavye bir Uzak Masaüstü oturumundayken bu bilgisayarda tutar; böylece uzak bilgisayara ulaşmak yerine burada Handy Tool'u çalıştırırlar. Diğer tüm tuşlar eskisi gibi uzak bilgisayara gider.",
+        "label": "Seçilen kısayolları Uzak Masaüstü'nde bu bilgisayarda tut",
+        "description": "**Klavye bir Uzak Masaüstü oturumundayken Uzak Masaüstü her tuşu alır** (tam ekranda veya Windows tuş birleşimleri uzak bilgisayara gönderildiğinde), bu yüzden Handy Tool'un kısayolları orada çalışmaz. Bu açıkken, Bu bilgisayarda tut seçeneğiyle işaretlediğiniz kısayollar burada Handy Tool'u çalıştırır. Ctrl+C, Ctrl+V ve Alt+Tab dahil diğer tüm tuşlar yine uzak bilgisayara gider.\n\n**Şunlarla çalışır:** Uzak Masaüstü Bağlantısı (mstsc) ve Windows App. Citrix ile çalışmaz: bunun yerine Citrix Workspace'in Windows tuş birleşimleri için kendi ayarını kullanın.\n\n**Yalnızca basınca çalışan kısayollar:** Bas Konuş, Son kelimeyi geri al ve Son Transkripsiyonu Yapıştır tuş bırakıldığında çalışır ve henüz tutulamaz.\n\n**Garanti yok:** tutulan bir kısayol çalışmayı bırakırsa oturumun dışına, sonra yeniden içine tıklayın.\n\n**Gizlilik:** Handy Tool klavyeyi yalnızca bir Uzak Masaüstü oturumu öndeyken izler, yalnızca işaretlediğiniz kısayollara tepki verir ve yazdıklarınızı asla saklamaz, günlüğe kaydetmez veya göndermez.\n\n**Varsayılan:** Kapalı.",
+        "status": {
+          "off": "Kapalı.",
+          "waiting": "Açık. Klavyenin bir Uzak Masaüstü oturumuna geçmesi bekleniyor.",
+          "active": "Etkin: klavye bir Uzak Masaüstü oturumunda ve işaretli kısayollar bu bilgisayarda kalıyor.",
+          "higher_integrity": "Bu Uzak Masaüstü oturumu yönetici olarak çalışıyor, bu yüzden Windows Handy Tool'u ondan uzak tutuyor. Kısayol Koruyucu'yu kullanmak için Uzak Masaüstü istemcisini yönetici hakları olmadan başlatın.",
+          "needs_restart": "Kısayol Koruyucu'yu kullanmak için Handy Tool'u yeniden başlatın: bu oturumda diğer klavye altyapısı çalıştı.",
+          "unavailable": "Yalnızca hata ayıklama ayarlarında (Ctrl+Shift+D) seçilen varsayılan klavye altyapısıyla (Tauri) çalışır."
+        },
+        "checkbox": "Bu bilgisayarda tut",
+        "checkboxHint": "İşaretli: klavye bir Uzak Masaüstü oturumundayken bu kısayol bu bilgisayarda Handy Tool'u çalıştırır.",
+        "turnOnFirst": "Önce bu sayfanın üst kısmından Kısayol Koruyucu'yu açın.",
+        "reasons": {
+          "needs_release": "Tuş bırakıldığında çalışır; Kısayol Koruyucu bunu henüz işleyemez.",
+          "unbound": "Bu kısayol için tuş ayarlanmamış.",
+          "win_key": "Windows tuşlu kısayollar tutulamaz: uzak bilgisayar Windows tuşunu yine görür ve Başlat menüsünü açar.",
+          "alt_only": "Ctrl'siz Alt kısayolları tutulamaz: uzak bilgisayar Alt'ı yine görür ve menü çubuğunu açar. Kısayola Ctrl ekleyin.",
+          "modifier_only": "Değiştirici tuşların yanında bir ana tuş gerekir.",
+          "unknown_key": "Bu tuş tutulamaz. Bir harf, rakam, F tuşu, Space, Enter, Tab, Escape, Backspace, Insert, Delete, Home, End, Page Up, Page Down veya bir ok tuşu kullanın.",
+          "ctrl_alt_del": "Ctrl+Alt+Delete'i Windows her zaman kendisi işler.",
+          "win_l": "Windows+L'yi (kilitleme) Windows her zaman kendisi işler.",
+          "rdp_combo": "Uzak Masaüstü'nün kendisi Ctrl+Alt+Home (bağlantı çubuğu) ve Ctrl+Alt+End (oturum içinde Ctrl+Alt+Delete) kullanır. Bu bilgisayarda tutulursa uzak bilgisayar artık onu almaz.",
+          "layout_switch": "Uzak bilgisayar Ctrl ve Shift'i başka bir tuş olmadan yine görür; orada Ctrl+Shift bu iş için ayarlıysa bu, klavye düzenini değiştirir.",
+          "ctrl_space": "Ctrl+Space, Çince, Japonca ve Korece kurulumlarda giriş yöntemini değiştirir. Bu bilgisayarda tutulursa uzak bilgisayar artık onu almaz."
+        }
       }
     },
     "sound": {
@@ -1996,9 +2029,17 @@
     "release": "Sürüm {{version}}",
     "show": "Göster",
     "items": {
-      "wingetUninstall": {
-        "title": "winget ile kaldırma çalışıyor",
-        "description": "Handy'yi winget veya sessizce kaldıran başka bir araçla kaldırmak artık onu siliyor. Önceden kaldırma penceresi açılıp bir tıklama bekliyor, winget ise başarılı olduğunu bildiriyordu."
+      "shortcutKeeper": {
+        "title": "Kısayol Koruyucu: kısayollarınız Uzak Masaüstü'nde çalışır",
+        "description": "Windows'ta Kısayollar sayfasında Kısayol Koruyucu'yu açın ve bir kısayolun yanındaki Bu bilgisayarda tut kutusunu işaretleyin: klavye bir Uzak Masaüstü Bağlantısı veya Windows App oturumundayken o kısayol, uzak bilgisayara ulaşmak yerine bu bilgisayarda Handy Tool'u çalıştırır. Diğer tüm tuşlar yine uzak bilgisayara gider."
+      },
+      "updateIndicator": {
+        "title": "Güncelleme olduğunda sürüm bunu gösterir",
+        "description": "Sol alttaki sürümün yanındaki küçük ok, daha yeni bir sürüm olduğunu gösterir. Şimdi güncelle ile güncellemeleri denetlemek veya bulunan bir güncellemeyi yüklemek için sürüme tıklayın."
+      },
+      "hotkeyRelease": {
+        "title": "Bir kısayolu basılı tutmak artık bir işlemci çekirdeğini meşgul etmiyor",
+        "description": "Windows'ta bir kısayolu basılı tuttuğunuzda (örneğin Bas Konuş), Handy Tool bırakıp bırakmadığınızı durmadan denetliyordu ve bu, bir işlemci çekirdeğini tamamen meşgul ediyordu. Artık her 10 ms'de bir denetliyor."
       },
       "progressFinish": {
         "title": "Metin hazır olduğunda yüzde 100'e ulaşır",
