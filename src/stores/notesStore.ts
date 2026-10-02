@@ -12,8 +12,21 @@ import { useSettingsStore } from "./settingsStore";
  * A note being made for a History entry, shown inline under the entry.
  * `text` is what the note is made from, so Try again can resend it;
  * `withSpeakers` marks a note made from a speaker-labelled transcript.
+ * `fallbackText` is the entry's own text, for a normal note when speaker
+ * detection can't run.
  */
 export type HistoryNoteJob =
+  /** "Make note with speakers": transcribing the recording with labels. */
+  | { status: "identifying" }
+  /** The speaker models must be downloaded first. */
+  | {
+      status: "speakerModels";
+      downloading: boolean;
+      error: string | null;
+      fallbackText: string;
+    }
+  /** Speaker detection failed; `error` is an error code or message. */
+  | { status: "speakersError"; error: string; fallbackText: string }
   | { status: "generating"; withSpeakers: boolean }
   /** The provider, its key or the model is missing; `error` is its code. */
   | { status: "needsSetup"; error: string; text: string; withSpeakers: boolean }
@@ -21,7 +34,12 @@ export type HistoryNoteJob =
 
 /** Whether a job is running, so the entry's note buttons stay disabled. */
 export const isHistoryJobBusy = (job: HistoryNoteJob | undefined): boolean =>
-  job?.status === "generating";
+  job?.status === "identifying" ||
+  job?.status === "generating" ||
+  (job?.status === "speakerModels" && job.downloading);
+
+/** Error code of a speaker transcription without the speaker models. */
+const MODELS_MISSING_ERROR = "speakers_models_missing";
 
 /** Error codes that mean the note settings are incomplete. */
 export const SETUP_ERRORS = new Set([
@@ -109,6 +127,18 @@ interface NotesStore {
     text: string,
     withSpeakers?: boolean,
   ) => Promise<void>;
+  /**
+   * "Make note with speakers": transcribe the entry's recording with speaker
+   * labels, then make the note from that. Asks for the speaker model
+   * download first when it is missing. `fallbackText` is the entry's text,
+   * offered as a normal note if speaker detection fails.
+   */
+  makeHistoryNoteWithSpeakers: (
+    historyId: number,
+    fallbackText: string,
+  ) => Promise<void>;
+  /** Download the speaker models from an entry's card, then continue. */
+  downloadSpeakerModelsForHistory: (historyId: number) => Promise<void>;
   dismissHistoryJob: (historyId: number) => void;
   /** Load the notes of History entries whose notes aren't loaded yet. */
   loadNotesForHistory: (historyIds: number[]) => Promise<void>;
@@ -170,7 +200,10 @@ export const useNotesStore = create<NotesStore>()((set, get) => ({
   },
 
   generateHistoryNote: async (historyId, text, withSpeakers = false) => {
-    if (isHistoryJobBusy(get().historyJobs[historyId])) return;
+    const current = get().historyJobs[historyId];
+    // "Make note with speakers" continues here from its identifying step.
+    const continuesSpeakers = withSpeakers && current?.status === "identifying";
+    if (isHistoryJobBusy(current) && !continuesSpeakers) return;
 
     const setJob = (job: HistoryNoteJob) =>
       set((state) => ({
@@ -206,6 +239,78 @@ export const useNotesStore = create<NotesStore>()((set, get) => ({
     } catch (error) {
       setJob({ status: "error", error: String(error), text, withSpeakers });
     }
+  },
+
+  makeHistoryNoteWithSpeakers: async (historyId, fallbackText) => {
+    if (isHistoryJobBusy(get().historyJobs[historyId])) return;
+
+    const setJob = (job: HistoryNoteJob) =>
+      set((state) => ({
+        historyJobs: { ...state.historyJobs, [historyId]: job },
+      }));
+    setJob({ status: "identifying" });
+    try {
+      const result =
+        await commands.transcribeHistoryEntryWithSpeakers(historyId);
+      if (result.status === "ok") {
+        await get().generateHistoryNote(historyId, result.data, true);
+      } else if (result.error === MODELS_MISSING_ERROR) {
+        setJob({
+          status: "speakerModels",
+          downloading: false,
+          error: null,
+          fallbackText,
+        });
+      } else {
+        setJob({ status: "speakersError", error: result.error, fallbackText });
+      }
+    } catch (error) {
+      setJob({ status: "speakersError", error: String(error), fallbackText });
+    }
+  },
+
+  downloadSpeakerModelsForHistory: async (historyId) => {
+    const job = get().historyJobs[historyId];
+    if (job?.status !== "speakerModels" || job.downloading) return;
+    const { fallbackText } = job;
+
+    // Update the card only while it is still showing (not dismissed or
+    // replaced by another note).
+    const updateCard = (downloading: boolean, error: string | null) =>
+      set((state) =>
+        state.historyJobs[historyId]?.status === "speakerModels"
+          ? {
+              historyJobs: {
+                ...state.historyJobs,
+                [historyId]: {
+                  status: "speakerModels",
+                  downloading,
+                  error,
+                  fallbackText,
+                },
+              },
+            }
+          : {},
+      );
+
+    updateCard(true, null);
+    let error: string | null = null;
+    try {
+      const result = await commands.downloadSpeakerModels();
+      if (result.status !== "ok") error = result.error;
+    } catch (e) {
+      error = String(e);
+    }
+    if (get().historyJobs[historyId]?.status !== "speakerModels") return;
+    if (error !== null) {
+      updateCard(false, error);
+      return;
+    }
+    // Downloaded: continue with the note.
+    set((state) => ({
+      historyJobs: withoutKey(state.historyJobs, historyId),
+    }));
+    await get().makeHistoryNoteWithSpeakers(historyId, fallbackText);
   },
 
   dismissHistoryJob: (historyId) =>

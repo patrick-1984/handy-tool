@@ -18,6 +18,7 @@ import { SettingsGroup } from "../../ui/SettingsGroup";
 import { ICON_BUTTON, TEXT_FIELD } from "../../ui/controlClasses";
 import { SearchableModelSelect } from "../SearchableModelSelect";
 import { translateNoteError } from "./noteErrors";
+import { SpeakerDetectionSettings } from "./SpeakerDetectionSettings";
 
 const SKILL_FILE_EXTENSIONS = ["md", "markdown", "txt", "zip", "skill"];
 
@@ -280,10 +281,14 @@ const ProviderGroup: React.FC = () => {
   );
 };
 
-/** Notes › Settings: the skill, then the provider and model. */
+/**
+ * Notes › Settings: the skill, the provider and model, then speaker
+ * detection for "Make note with speakers".
+ */
 export const NoteSettingsTab: React.FC = () => (
   <div className="space-y-6">
     <SkillsGroup />
     <ProviderGroup />
+    <SpeakerDetectionSettings />
   </div>
 );

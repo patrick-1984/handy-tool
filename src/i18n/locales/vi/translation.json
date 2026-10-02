@@ -1497,6 +1497,7 @@
       "inline": {
         "label": "Ghi chú",
         "makeNote": "Tạo ghi chú",
+        "makeNoteWithSpeakers": "Tạo ghi chú có người nói",
         "generating": "Đang viết ghi chú…",
         "retry": "Thử lại",
         "dismiss": "Đóng",
@@ -1552,6 +1553,29 @@
         },
         "manage": "Quản lý nhà cung cấp LLM"
       },
+      "speakers": {
+        "title": "Nhận diện người nói",
+        "description": "Chỉ dùng cho \"Tạo ghi chú có người nói\" trong Lịch sử: xác định ai đang nói trong bản ghi và gắn nhãn [Person 1], [Person 2], v.v. Chạy ngoại tuyến trên máy tính này nên bản ghi không bao giờ rời khỏi máy.",
+        "models": {
+          "title": "Mô hình người nói",
+          "description": "Hai mô hình (32 MB) tải một lần từ Hugging Face và GitHub: pyannote segmentation 3.0 (MIT) và WeSpeaker ResNet34 (CC BY 4.0), bản xuất của sherpa-onnx. Xóa chúng để giải phóng dung lượng; bạn có thể tải lại bất cứ lúc nào."
+        },
+        "ready": "Sẵn sàng",
+        "notDownloaded": "Chưa tải",
+        "failed": "Tải xuống thất bại",
+        "download": "Tải xuống (32 MB)",
+        "delete": "Xóa",
+        "deleteError": "Không thể xóa mô hình người nói: {{error}}",
+        "downloading": "Đang tải… {{percent}}%",
+        "verifying": "Đang kiểm tra bản tải…",
+        "starting": "Đang bắt đầu tải…",
+        "needsDownload": "Nhận diện người nói cần tải xuống một lần 32 MB.",
+        "needsDownloadHint": "Các mô hình chạy ngoại tuyến trên máy tính này và chỉ dùng cho \"Tạo ghi chú có người nói\". Ghi chú sẽ tiếp tục ngay khi tải xong.",
+        "downloadError": "Tải xuống thất bại: {{error}}",
+        "identifying": "Đang nhận diện người nói…",
+        "error": "Không thể nhận diện người nói:",
+        "normalNote": "Tạo ghi chú thường"
+      },
       "saved": {
         "loading": "Đang tải ghi chú…",
         "empty": "Chưa có ghi chú. Dùng \"Tạo ghi chú\" trên một bản ghi trong Lịch sử, hoặc viết ở thẻ \"Ghi chú thủ công\".",
@@ -1571,6 +1595,13 @@
         "missingApiKey": "Thêm khóa API của nhà cung cấp trong Cài đặt ghi chú.",
         "missingModel": "Chọn mô hình cho ghi chú trong Cài đặt ghi chú.",
         "emptyNote": "Mô hình trả về ghi chú trống. Hãy thử lại hoặc chọn mô hình khác.",
+        "speakersModelsMissing": "Chưa tải mô hình người nói. Hãy tải trong Cài đặt ghi chú.",
+        "speakersModelsInUse": "\"Tạo ghi chú có người nói\" đang dùng mô hình người nói. Hãy thử lại khi xong.",
+        "speakersModelsDownloading": "Mô hình người nói đang được tải. Hãy thử lại khi tải xong.",
+        "speakersNoRecording": "Mục này không còn bản ghi nên không thể nhận diện người nói.",
+        "speakersNoSpeech": "Không tìm thấy giọng nói trong bản ghi.",
+        "speakersNoModel": "Trước tiên hãy tải và chọn một mô hình chép lời trong trang Mô hình.",
+        "speakersFailed": "Mô hình người nói gặp lỗi với bản ghi này.",
         "skillMissing": "Kỹ năng đã chọn không còn nữa. Hãy chọn kỹ năng khác trong Cài đặt ghi chú.",
         "skillEmpty": "Kỹ năng không có hướng dẫn đọc được (Markdown hoặc văn bản).",
         "skillUnsupported": "Không thể nhập loại tệp này. Hãy dùng .md, .txt, .zip hoặc .skill.",
@@ -1672,6 +1703,11 @@
           "title": "Handy",
           "description": "Ứng dụng phiên âm giọng nói thành văn bản mã nguồn mở nguyên bản mà dự án này được xây dựng dựa trên",
           "details": "Handy Tool là một bản fork của Handy, được tạo bởi CJ Pais (github.com/cjpais/Handy, handy.computer). Nó được tiếp quản tại phiên bản gốc v0.8.1 (tháng 3 năm 2026) và đã được phát triển tiếp một cách độc lập bởi Patrick R. Xin cảm ơn rất nhiều CJ và những người đóng góp cho Handy vì nền tảng mà dự án này đứng trên đó."
+        },
+        "speakers": {
+          "title": "Mô hình nhận diện người nói",
+          "description": "Các mô hình người nói dùng cho \"Tạo ghi chú có người nói\"",
+          "details": "\"Tạo ghi chú có người nói\" dùng pyannote segmentation 3.0 của Hervé Bredin và pyannote.audio (Giấy phép MIT) cùng mô hình WeSpeaker ResNet34 VoxCeleb của cộng đồng WeNet (CC BY 4.0), ở bản ONNX do dự án sherpa-onnx (k2-fsa) phát hành. Chúng được tải khi cần, không đi kèm ứng dụng. Cảm ơn các tác giả."
         }
       }
     },

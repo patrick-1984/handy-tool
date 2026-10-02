@@ -1,9 +1,17 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Loader2, RotateCcw, Settings2, X } from "lucide-react";
+import {
+  Download,
+  Loader2,
+  NotebookPen,
+  RotateCcw,
+  Settings2,
+  X,
+} from "lucide-react";
 import type { Note } from "@/bindings";
 import { useNavStore } from "@/stores/navStore";
 import { useNotesStore, type HistoryNoteJob } from "@/stores/notesStore";
+import { useSpeakerModelStatus } from "@/hooks/useSpeakerModelStatus";
 import { Button } from "../../ui/Button";
 import { ICON_BUTTON } from "../../ui/controlClasses";
 import {
@@ -16,6 +24,7 @@ import {
   noteDate,
 } from "./NoteParts";
 import { translateNoteError } from "./noteErrors";
+import { SpeakerDownloadProgress } from "./SpeakerDetectionSettings";
 
 /** A small text link to Notes › Settings. */
 export const NoteSettingsLink: React.FC = () => {
@@ -59,13 +68,135 @@ export const NoteProgressCard: React.FC<{ children: React.ReactNode }> = ({
   </NoteCard>
 );
 
+/** "Make a normal note" from the entry's own text. */
+const NormalNoteButton: React.FC<{ historyId: number; text: string }> = ({
+  historyId,
+  text,
+}) => {
+  const { t } = useTranslation();
+  const generate = useNotesStore((state) => state.generateHistoryNote);
+  return (
+    <Button
+      variant="secondary"
+      size="sm"
+      onClick={() => void generate(historyId, text)}
+      disabled={text.trim() === ""}
+    >
+      <NotebookPen className="w-3.5 h-3.5" />
+      {t("settings.notes.speakers.normalNote")}
+    </Button>
+  );
+};
+
+/** The speaker models are missing: download them here, then continue. */
+const SpeakerModelsCard: React.FC<{
+  historyId: number;
+  job: Extract<HistoryNoteJob, { status: "speakerModels" }>;
+}> = ({ historyId, job }) => {
+  const { t } = useTranslation();
+  const status = useSpeakerModelStatus();
+  const download = useNotesStore(
+    (state) => state.downloadSpeakerModelsForHistory,
+  );
+  const inProgress =
+    status?.state === "downloading" || status?.state === "verifying";
+
+  return (
+    <NoteCard
+      actions={
+        job.downloading ? undefined : <DismissButton historyId={historyId} />
+      }
+    >
+      <p className="text-sm">{t("settings.notes.speakers.needsDownload")}</p>
+      <p className="text-xs text-text-secondary">
+        {t("settings.notes.speakers.needsDownloadHint")}
+      </p>
+      {job.downloading && status && inProgress ? (
+        <SpeakerDownloadProgress status={status} />
+      ) : job.downloading ? (
+        <p className="flex items-center gap-2 text-xs text-text-secondary">
+          <Loader2 className="w-3.5 h-3.5 animate-spin text-accent" />
+          {t("settings.notes.speakers.starting")}
+        </p>
+      ) : (
+        <>
+          {job.error && (
+            <p className="text-sm text-err-text select-text break-words">
+              {t("settings.notes.speakers.downloadError", {
+                error: translateNoteError(job.error, t),
+              })}
+            </p>
+          )}
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => void download(historyId)}
+            >
+              <Download className="w-3.5 h-3.5" />
+              {t("settings.notes.speakers.download")}
+            </Button>
+            <NormalNoteButton historyId={historyId} text={job.fallbackText} />
+          </div>
+        </>
+      )}
+    </NoteCard>
+  );
+};
+
 const JobCard: React.FC<{ historyId: number; job: HistoryNoteJob }> = ({
   historyId,
   job,
 }) => {
   const { t } = useTranslation();
   const generate = useNotesStore((state) => state.generateHistoryNote);
+  const makeWithSpeakers = useNotesStore(
+    (state) => state.makeHistoryNoteWithSpeakers,
+  );
   const openNotes = useNavStore((state) => state.openNotes);
+
+  if (job.status === "identifying") {
+    return (
+      <NoteProgressCard>
+        {t("settings.notes.speakers.identifying")}
+      </NoteProgressCard>
+    );
+  }
+
+  if (job.status === "speakerModels") {
+    return <SpeakerModelsCard historyId={historyId} job={job} />;
+  }
+
+  if (job.status === "speakersError") {
+    return (
+      <NoteCard
+        actions={
+          <>
+            <NoteSettingsLink />
+            <DismissButton historyId={historyId} />
+          </>
+        }
+      >
+        <p className="text-sm text-err-text select-text break-words">
+          <span className="font-medium">
+            {t("settings.notes.speakers.error")}
+          </span>{" "}
+          {translateNoteError(job.error, t)}
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => void makeWithSpeakers(historyId, job.fallbackText)}
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            {t("settings.notes.inline.retry")}
+          </Button>
+          <NormalNoteButton historyId={historyId} text={job.fallbackText} />
+        </div>
+      </NoteCard>
+    );
+  }
 
   if (job.status === "generating") {
     return (

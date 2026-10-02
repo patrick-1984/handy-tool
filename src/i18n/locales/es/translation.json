@@ -1497,6 +1497,7 @@
       "inline": {
         "label": "Nota",
         "makeNote": "Crear nota",
+        "makeNoteWithSpeakers": "Crear nota con hablantes",
         "generating": "Escribiendo tu nota…",
         "retry": "Reintentar",
         "dismiss": "Cerrar",
@@ -1552,6 +1553,29 @@
         },
         "manage": "Gestionar proveedores LLM"
       },
+      "speakers": {
+        "title": "Detección de hablantes",
+        "description": "Solo la usa «Crear nota con hablantes» en el Historial: averigua quién habla en una grabación y etiqueta a los hablantes como [Person 1], [Person 2], etc. Funciona sin conexión en este equipo, así que la grabación nunca sale de él.",
+        "models": {
+          "title": "Modelos de hablantes",
+          "description": "Dos modelos (32 MB) que se descargan una sola vez de Hugging Face y GitHub: pyannote segmentation 3.0 (MIT) y WeSpeaker ResNet34 (CC BY 4.0), en la exportación de sherpa-onnx. Elimínalos para liberar espacio; puedes volver a descargarlos cuando quieras."
+        },
+        "ready": "Listo",
+        "notDownloaded": "No descargado",
+        "failed": "Error en la descarga",
+        "download": "Descargar (32 MB)",
+        "delete": "Eliminar",
+        "deleteError": "No se pudieron eliminar los modelos de hablantes: {{error}}",
+        "downloading": "Descargando… {{percent}} %",
+        "verifying": "Comprobando la descarga…",
+        "starting": "Iniciando la descarga…",
+        "needsDownload": "La detección de hablantes necesita una descarga única de 32 MB.",
+        "needsDownloadHint": "Los modelos funcionan sin conexión en este equipo y solo se usan para «Crear nota con hablantes». Tu nota continúa en cuanto se descarguen.",
+        "downloadError": "La descarga falló: {{error}}",
+        "identifying": "Identificando hablantes…",
+        "error": "No se pudo identificar a los hablantes:",
+        "normalNote": "Crear una nota normal"
+      },
       "saved": {
         "loading": "Cargando notas…",
         "empty": "Aún no hay notas. Usa «Crear nota» en una grabación del Historial o escribe una en la pestaña «Nota manual».",
@@ -1571,6 +1595,13 @@
         "missingApiKey": "Añade la clave de API del proveedor en Ajustes de notas.",
         "missingModel": "Elige un modelo para las notas en Ajustes de notas.",
         "emptyNote": "El modelo devolvió una nota vacía. Inténtalo de nuevo o elige otro modelo.",
+        "speakersModelsMissing": "Los modelos de hablantes no están descargados. Descárgalos en Ajustes de notas.",
+        "speakersModelsInUse": "«Crear nota con hablantes» está usando los modelos de hablantes. Inténtalo de nuevo cuando termine.",
+        "speakersModelsDownloading": "Los modelos de hablantes se están descargando. Inténtalo de nuevo cuando termine la descarga.",
+        "speakersNoRecording": "Esta entrada ya no tiene grabación, así que no se pueden identificar los hablantes.",
+        "speakersNoSpeech": "No se encontró voz en la grabación.",
+        "speakersNoModel": "Primero descarga y selecciona un modelo de transcripción en la página Modelos.",
+        "speakersFailed": "Los modelos de hablantes fallaron con esta grabación.",
         "skillMissing": "La skill seleccionada ya no existe. Elige otra en Ajustes de notas.",
         "skillEmpty": "La skill no tiene instrucciones legibles (Markdown o texto).",
         "skillUnsupported": "Este tipo de archivo no se puede importar. Usa .md, .txt, .zip o .skill.",
@@ -1672,6 +1703,11 @@
           "title": "Handy",
           "description": "La app original de código abierto de voz a texto sobre la que se construye este proyecto",
           "details": "Handy Tool es un fork de Handy, creado por CJ Pais (github.com/cjpais/Handy, handy.computer). Se tomó a partir de la versión original v0.8.1 (marzo de 2026) y ha sido desarrollado de forma independiente por Patrick R. Muchas gracias a CJ y a los colaboradores de Handy por la base sobre la que se sostiene este proyecto."
+        },
+        "speakers": {
+          "title": "Modelos de detección de hablantes",
+          "description": "Los modelos de hablantes de «Crear nota con hablantes»",
+          "details": "«Crear nota con hablantes» usa pyannote segmentation 3.0 de Hervé Bredin y pyannote.audio (licencia MIT) y el modelo WeSpeaker ResNet34 VoxCeleb de la comunidad WeNet (CC BY 4.0), en las versiones ONNX publicadas por el proyecto sherpa-onnx (k2-fsa). Se descargan cuando hacen falta, no vienen incluidos. Gracias a sus autores."
         }
       }
     },

@@ -13,6 +13,14 @@ const NOTE_ERROR_KEYS: Record<string, string> = {
   skill_unsupported: "settings.notes.errors.skillUnsupported",
   skill_too_large: "settings.notes.errors.skillTooLarge",
   skill_unsafe_path: "settings.notes.errors.skillUnsafePath",
+  speakers_models_missing: "settings.notes.errors.speakersModelsMissing",
+  speakers_models_in_use: "settings.notes.errors.speakersModelsInUse",
+  speakers_models_downloading:
+    "settings.notes.errors.speakersModelsDownloading",
+  speakers_no_recording: "settings.notes.errors.speakersNoRecording",
+  speakers_no_speech: "settings.notes.errors.speakersNoSpeech",
+  speakers_no_model: "settings.notes.errors.speakersNoModel",
+  speakers_failed: "settings.notes.errors.speakersFailed",
 };
 
 /**

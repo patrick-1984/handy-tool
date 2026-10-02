@@ -3,6 +3,7 @@ pub mod files;
 pub mod history;
 pub mod models;
 pub mod notes;
+pub mod speakers;
 pub mod transcription;
 pub mod translator;
 

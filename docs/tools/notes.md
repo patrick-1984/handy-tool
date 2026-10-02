@@ -11,6 +11,7 @@ Dictate or record as usual. When a take deserves more than a transcript, make a 
 ## What it can do
 
 - [Turn a recording into a note](../features.md#turn-a-recording-into-a-note)
+- [A note that says who said what](../features.md#a-note-that-says-who-said-what)
 - [Notes written your way, with a skill](../features.md#notes-written-your-way-with-a-skill)
 - [Choose which model writes your notes](../features.md#choose-which-model-writes-your-notes)
 - [Every note in one place, one click from its transcript](../features.md#every-note-in-one-place)
@@ -34,3 +35,4 @@ Dictate or record as usual. When a take deserves more than a transcript, make a 
 3. Keep or change the model at `Notes › Settings › Provider and model › Model`.
 4. Optionally import a skill with `Notes › Settings › Skills › Import file…` and pick it at `Notes › Settings › Skills › Skill`.
 5. Press `History › Recordings › Make note` on a recording and read the note under it.
+6. For a meeting, press `History › Recordings › Make note with speakers` instead; the first time, download the speaker models from the card under the entry (or at `Notes › Settings › Speaker detection › Speaker models`).

@@ -73,11 +73,20 @@ fn resolve_note_provider(settings: &AppSettings) -> Result<LlmProvider, &'static
     Ok(provider)
 }
 
-fn build_note_system_prompt(instructions: &str) -> String {
+/// Added for "Make note with speakers", whose transcript is labelled.
+const SPEAKERS_RULE: &str = "The transcript labels who is speaking as [Person 1], [Person 2] and so on. Keep these labels when you attribute statements, decisions or action items to someone, unless the transcript makes their real names clear.";
+
+fn build_note_system_prompt(instructions: &str, with_speakers: bool) -> String {
+    let speakers = if with_speakers {
+        format!("{}\n\n", SPEAKERS_RULE)
+    } else {
+        String::new()
+    };
     format!(
-        "{}\n\n{}\n\n{}",
+        "{}\n\n{}\n\n{}{}",
         instructions.trim(),
         MARKDOWN_RULE,
+        speakers,
         NOTE_DATA_GUARD
     )
 }
@@ -122,7 +131,7 @@ pub async fn generate_note(
         }
         None => (None, DEFAULT_NOTE_INSTRUCTIONS.to_string()),
     };
-    let system_prompt = build_note_system_prompt(&instructions);
+    let system_prompt = build_note_system_prompt(&instructions, with_speakers);
 
     // Star the source before the slow model call, so retention can't delete
     // it meanwhile. If it is already gone, the note is saved without one.
@@ -395,9 +404,13 @@ mod tests {
 
     #[test]
     fn system_prompt_ends_with_markdown_rule_and_guard() {
-        let prompt = build_note_system_prompt("  Summarise.\n");
+        let prompt = build_note_system_prompt("  Summarise.\n", false);
         assert!(prompt.starts_with("Summarise.\n\n"));
         assert!(prompt.contains(MARKDOWN_RULE));
+        assert!(prompt.ends_with(NOTE_DATA_GUARD));
+        assert!(!prompt.contains(SPEAKERS_RULE));
+        let prompt = build_note_system_prompt("Summarise.", true);
+        assert!(prompt.contains(SPEAKERS_RULE));
         assert!(prompt.ends_with(NOTE_DATA_GUARD));
     }
 

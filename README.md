@@ -191,3 +191,5 @@ It exists because of an escalation. “I type too slowly. My brain is faster tha
 ## License and lineage
 
 Handy Tool is released under the [MIT License](LICENSE). It began as a fork of [cjpais/Handy](https://github.com/cjpais/Handy), created by CJ Pais, and is now developed independently. That upstream project and its contributors provided the foundation this repository builds on.
+
+Make note with speakers downloads two third-party models on demand: pyannote segmentation 3.0 by Hervé Bredin and pyannote.audio (MIT License) and the WeSpeaker ResNet34 VoxCeleb model by the WeNet community (CC BY 4.0), both in the ONNX versions published by the [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) project.

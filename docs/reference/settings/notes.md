@@ -58,6 +58,14 @@ Catalog: [Choose which model writes your notes](../../features.md#choose-which-m
 
 Opens `Advanced settings › LLM providers`. **Default:** not applicable; this is an action.
 
+### Speaker models
+
+`Notes › Settings › Speaker detection › Speaker models`
+
+The two speaker models used only by `History › Recordings › Make note with speakers`: Not downloaded with a Download (32 MB) button, a progress bar while they download, and Ready with a Delete button once they are in place. Delete is refused while a note with speakers is being made. **Default:** not downloaded.
+
+Catalog: [A note that says who said what](../../features.md#a-note-that-says-who-said-what).
+
 ## Saved notes
 
 ### Go to transcript

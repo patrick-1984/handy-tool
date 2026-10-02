@@ -1497,6 +1497,7 @@
       "inline": {
         "label": "Notatka",
         "makeNote": "Utwórz notatkę",
+        "makeNoteWithSpeakers": "Utwórz notatkę z mówcami",
         "generating": "Piszę notatkę…",
         "retry": "Spróbuj ponownie",
         "dismiss": "Zamknij",
@@ -1552,6 +1553,29 @@
         },
         "manage": "Zarządzaj dostawcami LLM"
       },
+      "speakers": {
+        "title": "Rozpoznawanie mówców",
+        "description": "Używane tylko przez „Utwórz notatkę z mówcami” w Historii: ustala, kto mówi w nagraniu, i oznacza mówców jako [Person 1], [Person 2] i tak dalej. Działa offline na tym komputerze, więc nagranie nigdy go nie opuszcza.",
+        "models": {
+          "title": "Modele mówców",
+          "description": "Dwa modele (32 MB) pobierane jednorazowo z Hugging Face i GitHuba: pyannote segmentation 3.0 (MIT) i WeSpeaker ResNet34 (CC BY 4.0) w wersjach przygotowanych przez sherpa-onnx. Usuń je, aby zwolnić miejsce; w każdej chwili możesz pobrać je ponownie."
+        },
+        "ready": "Gotowe",
+        "notDownloaded": "Nie pobrano",
+        "failed": "Pobieranie nie powiodło się",
+        "download": "Pobierz (32 MB)",
+        "delete": "Usuń",
+        "deleteError": "Nie udało się usunąć modeli mówców: {{error}}",
+        "downloading": "Pobieranie… {{percent}}%",
+        "verifying": "Sprawdzanie pobranych plików…",
+        "starting": "Rozpoczynanie pobierania…",
+        "needsDownload": "Rozpoznawanie mówców wymaga jednorazowego pobrania 32 MB.",
+        "needsDownloadHint": "Modele działają offline na tym komputerze i są używane tylko przez „Utwórz notatkę z mówcami”. Notatka powstanie, gdy tylko się pobiorą.",
+        "downloadError": "Pobieranie nie powiodło się: {{error}}",
+        "identifying": "Rozpoznaję mówców…",
+        "error": "Nie udało się rozpoznać mówców:",
+        "normalNote": "Utwórz zwykłą notatkę"
+      },
       "saved": {
         "loading": "Wczytuję notatki…",
         "empty": "Nie ma jeszcze notatek. Użyj „Utwórz notatkę” przy nagraniu w sekcji Historia albo napisz notatkę na karcie „Notatka ręczna”.",
@@ -1571,6 +1595,13 @@
         "missingApiKey": "Dodaj klucz API dostawcy w ustawieniach notatek.",
         "missingModel": "Wybierz model notatek w ustawieniach notatek.",
         "emptyNote": "Model zwrócił pustą notatkę. Spróbuj ponownie lub wybierz inny model.",
+        "speakersModelsMissing": "Modele mówców nie są pobrane. Pobierz je w ustawieniach notatek.",
+        "speakersModelsInUse": "Modele mówców są właśnie używane przez „Utwórz notatkę z mówcami”. Spróbuj ponownie, gdy skończy.",
+        "speakersModelsDownloading": "Modele mówców są właśnie pobierane. Spróbuj ponownie po zakończeniu pobierania.",
+        "speakersNoRecording": "Ten wpis nie ma już nagrania, więc nie da się rozpoznać mówców.",
+        "speakersNoSpeech": "W nagraniu nie znaleziono mowy.",
+        "speakersNoModel": "Najpierw pobierz i wybierz model transkrypcji na stronie Modele.",
+        "speakersFailed": "Modele mówców nie poradziły sobie z tym nagraniem.",
         "skillMissing": "Wybrana umiejętność już nie istnieje. Wybierz inną w ustawieniach notatek.",
         "skillEmpty": "Umiejętność nie zawiera czytelnych instrukcji (Markdown ani tekstu).",
         "skillUnsupported": "Tego typu pliku nie można zaimportować. Użyj .md, .txt, .zip lub .skill.",
@@ -1672,6 +1703,11 @@
           "title": "Handy",
           "description": "Oryginalna aplikacja open-source do rozpoznawania mowy, na której oparty jest ten projekt",
           "details": "Handy Tool jest forkiem Handy, stworzonego przez CJ Pais (github.com/cjpais/Handy, handy.computer). Projekt przejęto na etapie wersji v0.8.1 projektu źródłowego (marzec 2026) i jest dalej rozwijany niezależnie przez Patricka R. Ogromne podziękowania dla CJ i współtwórców Handy za fundament, na którym stoi ten projekt."
+        },
+        "speakers": {
+          "title": "Modele rozpoznawania mówców",
+          "description": "Modele mówców, z których korzysta „Utwórz notatkę z mówcami”",
+          "details": "„Utwórz notatkę z mówcami” korzysta z pyannote segmentation 3.0 autorstwa Hervé Bredina i pyannote.audio (licencja MIT) oraz modelu WeSpeaker ResNet34 VoxCeleb społeczności WeNet (CC BY 4.0), w wersjach ONNX opublikowanych przez projekt sherpa-onnx (k2-fsa). Są pobierane na żądanie, a nie dołączane do aplikacji. Dziękujemy ich autorom."
         }
       }
     },

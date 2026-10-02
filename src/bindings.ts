@@ -1121,6 +1121,59 @@ async changeNoteModelSetting(model: string) : Promise<Result<null, string>> {
     else return { status: "error", error: e  as any };
 }
 },
+/**
+ * Whether the speaker models are present, downloading, or failed.
+ */
+async getSpeakerModelStatus() : Promise<SpeakerModelStatus> {
+    return await TAURI_INVOKE("get_speaker_model_status");
+},
+/**
+ * Download (or resume) the speaker models. Progress arrives as
+ * `speaker-model-status` events; returns once the download has finished.
+ */
+async downloadSpeakerModels() : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("download_speaker_models") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Delete the downloaded speaker models to free space; they can be
+ * downloaded again at any time. Refused with `speakers_models_in_use`
+ * while "Make note with speakers" runs and `speakers_models_downloading`
+ * during a download.
+ */
+async deleteSpeakerModels() : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("delete_speaker_models") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Transcribe a History entry's recording with speaker labels
+ * (`[Person N]: …`) for a note with speakers, with the selected
+ * transcription model. With one speaker the text comes back without
+ * labels. The entry's stored text is left as it is.
+ * 
+ * Runs one at a time: a second call waits for the first. The entry is
+ * starred, as for any note, so the retention cleanup keeps it.
+ * 
+ * Error codes: `speakers_models_missing`, `speakers_no_recording`,
+ * `speakers_no_speech`, `speakers_no_model`, `speakers_failed` (the speaker
+ * models failed); transcription errors are returned as they come.
+ */
+async transcribeHistoryEntryWithSpeakers(id: number) : Promise<Result<string, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("transcribe_history_entry_with_speakers", { id }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
   async changeAnchorActionSetting(
     key: string,
     action: string,
@@ -3798,6 +3851,12 @@ export type HistoryEntry = {
    * Human label of the engine/model that produced this transcription.
    */
   model_used?: string | null;
+  /**
+   * Set when retention deliberately deleted this row's audio while keeping the
+   * transcript. `None` means the audio was never purged on purpose, so a missing
+   * file is a fault rather than policy - the UI must distinguish the two.
+   */
+  audio_purged_at?: number | null;
 };
 /**
  * Result of changing keyboard implementation
@@ -4085,6 +4144,12 @@ export type ShortcutBinding = {
   current_binding: string;
 };
 export type SoundTheme = "marimba" | "pop" | "custom";
+export type SpeakerModelState = "missing" | "downloading" | "verifying" | "ready" | "failed";
+/**
+ * Download state of the speaker models; also emitted as
+ * [`STATUS_EVENT`] while a download runs.
+ */
+export type SpeakerModelStatus = { state: SpeakerModelState; downloaded: number; total: number; error: string | null };
 /**
  * How the pill shows the transcription's progress: a line along its bottom, or
  * a glowing light running round its edge.

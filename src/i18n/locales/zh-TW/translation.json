@@ -1497,6 +1497,7 @@
       "inline": {
         "label": "筆記",
         "makeNote": "產生筆記",
+        "makeNoteWithSpeakers": "產生含說話者的筆記",
         "generating": "正在撰寫筆記…",
         "retry": "重試",
         "dismiss": "關閉",
@@ -1552,6 +1553,29 @@
         },
         "manage": "管理 LLM 供應商"
       },
+      "speakers": {
+        "title": "說話者辨識",
+        "description": "僅用於歷史紀錄中的「產生含說話者的筆記」：辨識錄音中是誰在說話，並標示為[Person 1]、[Person 2]等。在這台電腦上離線執行，錄音不會離開本機。",
+        "models": {
+          "title": "說話者模型",
+          "description": "從 Hugging Face 和 GitHub 一次性下載的兩個模型（32 MB）：pyannote segmentation 3.0（MIT）和 WeSpeaker ResNet34（CC BY 4.0），皆為 sherpa-onnx 匯出版本。可刪除以釋放空間，隨時可以重新下載。"
+        },
+        "ready": "已就緒",
+        "notDownloaded": "未下載",
+        "failed": "下載失敗",
+        "download": "下載（32 MB）",
+        "delete": "刪除",
+        "deleteError": "無法刪除說話者模型：{{error}}",
+        "downloading": "正在下載… {{percent}}%",
+        "verifying": "正在驗證下載…",
+        "starting": "正在開始下載…",
+        "needsDownload": "說話者辨識需要一次性下載 32 MB。",
+        "needsDownloadHint": "模型在這台電腦上離線執行，僅用於「產生含說話者的筆記」。下載完成後會繼續產生筆記。",
+        "downloadError": "下載失敗：{{error}}",
+        "identifying": "正在辨識說話者…",
+        "error": "無法辨識說話者：",
+        "normalNote": "產生一般筆記"
+      },
       "saved": {
         "loading": "正在載入筆記…",
         "empty": "還沒有筆記。在歷史紀錄中的錄音上使用「產生筆記」，或在「手動筆記」分頁中撰寫。",
@@ -1571,6 +1595,13 @@
         "missingApiKey": "請在筆記設定中新增供應商的 API 金鑰。",
         "missingModel": "請在筆記設定中選擇用於筆記的模型。",
         "emptyNote": "模型傳回了空白筆記。請再試一次或選擇其他模型。",
+        "speakersModelsMissing": "說話者模型尚未下載。請在筆記設定中下載。",
+        "speakersModelsInUse": "「產生含說話者的筆記」正在使用說話者模型。請在完成後重試。",
+        "speakersModelsDownloading": "說話者模型正在下載。請在下載完成後重試。",
+        "speakersNoRecording": "此項目已沒有錄音，無法辨識說話者。",
+        "speakersNoSpeech": "錄音中沒有找到語音。",
+        "speakersNoModel": "請先在「模型」頁面下載並選擇一個轉錄模型。",
+        "speakersFailed": "說話者模型處理此錄音失敗。",
         "skillMissing": "所選技能已不存在，請在筆記設定中選擇其他技能。",
         "skillEmpty": "此技能沒有可讀的指示（Markdown 或文字）。",
         "skillUnsupported": "無法匯入此類型的檔案。請使用 .md、.txt、.zip 或 .skill。",
@@ -1672,6 +1703,11 @@
           "title": "Handy",
           "description": "本專案所基於的原始開源語音轉文字應用程式",
           "details": "Handy Tool 是 Handy 的分支專案,由 CJ Pais 建立(github.com/cjpais/Handy、handy.computer)。此專案於上游 v0.8.1(2026 年 3 月)後接手,並由 Patrick R. 獨立持續開發。非常感謝 CJ 與 Handy 貢獻者們為本專案打下的基礎"
+        },
+        "speakers": {
+          "title": "說話者辨識模型",
+          "description": "「產生含說話者的筆記」所用的說話者模型",
+          "details": "「產生含說話者的筆記」使用 Hervé Bredin 與 pyannote.audio 的 pyannote segmentation 3.0（MIT 授權）以及 WeNet 社群的 WeSpeaker ResNet34 VoxCeleb 模型（CC BY 4.0），採用 sherpa-onnx 專案（k2-fsa）發布的 ONNX 版本。模型依需要下載，不隨應用程式附帶。感謝它們的作者。"
         }
       }
     },

@@ -76,6 +76,11 @@ flate2 = "1.0"
 # Note skills imported from .zip/.skill archives. Extraction only, through the
 # flate2 backend already in the tree, so no new crate enters the lockfile.
 zip = { version = "4.6.1", default-features = false, features = ["deflate-flate2"] }
+# Speaker detection for "Make note with speakers": the same ONNX Runtime build
+# transcribe-rs and vad-rs already link (same version and features), and the
+# sha256 check of the downloaded speaker models. Both are already in the tree.
+ort = "=2.0.0-rc.10"
+sha2 = "0.10.9"
 transcribe-rs = { path = "../transcribe-rs-local", features = ["whisper", "parakeet", "moonshine", "sense_voice"] }
 handy-keys = "0.2.1"
 ferrous-opencc = "0.2.3"
