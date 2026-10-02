@@ -122,6 +122,52 @@ const OpenRecordingsButton: React.FC<OpenRecordingsButtonProps> = ({
 /** Entries drawn at a time on the Recordings tab. */
 const HISTORY_PAGE = 20;
 
+/**
+ * Scroll a History entry to the middle of the view, and keep it there while
+ * the list above it still changes height (notes, "Show more" rows and players
+ * drawn after the first layout). Stops at the user's first scroll, click or
+ * key, once the list has not changed for a moment, or after a few seconds.
+ * Returns a function that stops it early.
+ */
+const keepEntryCentered = (
+  id: number,
+  list: HTMLElement | null,
+): (() => void) => {
+  const center = (behavior: ScrollBehavior) =>
+    document
+      .getElementById(`history-entry-${id}`)
+      ?.scrollIntoView({ behavior, block: "center" });
+  center("smooth");
+  if (!list) return () => {};
+
+  const userEvents = ["wheel", "touchstart", "pointerdown", "keydown"];
+  let quiet = 0;
+  const stop = () => {
+    observer.disconnect();
+    window.clearTimeout(quiet);
+    window.clearTimeout(limit);
+    userEvents.forEach((type) => window.removeEventListener(type, stop, true));
+  };
+  const settle = () => {
+    window.clearTimeout(quiet);
+    quiet = window.setTimeout(stop, 600);
+  };
+  let first = true;
+  const observer = new ResizeObserver(() => {
+    // The first call only reports the size the list already has.
+    if (first) {
+      first = false;
+    } else {
+      center("auto");
+    }
+    settle();
+  });
+  observer.observe(list);
+  const limit = window.setTimeout(stop, 4000);
+  userEvents.forEach((type) => window.addEventListener(type, stop, true));
+  return stop;
+};
+
 export const HistorySettings: React.FC = () => {
   const { t } = useTranslation();
   const tab = useNavStore((state) => state.historyTab);
@@ -198,6 +244,9 @@ export const HistorySettings: React.FC = () => {
   const focusHistoryId = useNavStore((state) => state.focusHistoryId);
   const clearFocusHistoryId = useNavStore((state) => state.clearFocusHistoryId);
   const [sourceId, setSourceId] = useState<number | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const stopCenteringRef = useRef<(() => void) | null>(null);
+  useEffect(() => () => stopCenteringRef.current?.(), []);
   useEffect(() => {
     if (focusHistoryId === null || loading) return;
     if (searchInput !== "" || matcher !== null) {
@@ -217,10 +266,15 @@ export const HistorySettings: React.FC = () => {
     }
     setSourceId(focusHistoryId);
     clearFocusHistoryId();
-    requestAnimationFrame(() =>
-      document
-        .getElementById(`history-entry-${focusHistoryId}`)
-        ?.scrollIntoView({ behavior: "smooth", block: "center" }),
+    // The notes of the entries drawn above it come in afterwards and push it
+    // down: scroll once they are in, and keep it centered while the list
+    // still settles.
+    const target = focusHistoryId;
+    void loadNotesForHistory(shownEntries.map((entry) => entry.id)).then(() =>
+      requestAnimationFrame(() => {
+        stopCenteringRef.current?.();
+        stopCenteringRef.current = keepEntryCentered(target, listRef.current);
+      }),
     );
   }, [
     focusHistoryId,
@@ -229,6 +283,8 @@ export const HistorySettings: React.FC = () => {
     matcher,
     historyEntries,
     shownCount,
+    shownEntries,
+    loadNotesForHistory,
     clearFocusHistoryId,
   ]);
 
@@ -364,7 +420,7 @@ export const HistorySettings: React.FC = () => {
     );
   } else {
     body = (
-      <div className="flex flex-col gap-3">
+      <div ref={listRef} className="flex flex-col gap-3">
         {shownEntries.map((entry) => (
           <HistoryEntryComponent
             key={entry.id}

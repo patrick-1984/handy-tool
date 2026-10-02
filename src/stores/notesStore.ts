@@ -140,7 +140,11 @@ interface NotesStore {
   /** Download the speaker models from an entry's card, then continue. */
   downloadSpeakerModelsForHistory: (historyId: number) => Promise<void>;
   dismissHistoryJob: (historyId: number) => void;
-  /** Load the notes of History entries whose notes aren't loaded yet. */
+  /**
+   * Load the notes of History entries whose notes aren't loaded yet.
+   * Resolves once the notes of all `historyIds` are in the store (or their
+   * request failed), including requests already under way.
+   */
   loadNotesForHistory: (historyIds: number[]) => Promise<void>;
 
   loadNotes: () => Promise<void>;
@@ -163,6 +167,8 @@ const withoutKey = <T>(record: Record<number, T>, key: number) => {
 
 /** History entry ids whose notes were requested, so each loads once. */
 const requestedHistoryIds = new Set<number>();
+/** The request still loading each History entry's notes. */
+const pendingHistoryLoads = new Map<number, Promise<void>>();
 
 export const useNotesStore = create<NotesStore>()((set, get) => ({
   manualText: "",
@@ -319,33 +325,25 @@ export const useNotesStore = create<NotesStore>()((set, get) => ({
     })),
 
   loadNotesForHistory: async (historyIds) => {
-    const ids = historyIds.filter((id) => !requestedHistoryIds.has(id));
-    if (ids.length === 0) return;
-    ids.forEach((id) => requestedHistoryIds.add(id));
-
-    try {
-      const result = await commands.getNotesForHistoryIds(ids);
-      if (result.status !== "ok") throw new Error(result.error);
-      const fetched = new Map<number, Note[]>();
-      for (const note of result.data) {
-        if (note.history_id === null) continue;
-        fetched.set(note.history_id, [
-          ...(fetched.get(note.history_id) ?? []),
-          note,
-        ]);
-      }
-      set((state) => {
-        const historyNotes = { ...state.historyNotes };
-        for (const [id, notes] of fetched) {
-          // Keep notes generated while the request was running.
-          historyNotes[id] = mergeNotes(notes, historyNotes[id] ?? []);
-        }
-        return { historyNotes };
-      });
-    } catch (error) {
-      console.error("Failed to load notes for history:", error);
-      ids.forEach((id) => requestedHistoryIds.delete(id));
+    const waiting = new Set<Promise<void>>();
+    for (const id of historyIds) {
+      const pending = pendingHistoryLoads.get(id);
+      if (pending) waiting.add(pending);
     }
+    const ids = historyIds.filter((id) => !requestedHistoryIds.has(id));
+    if (ids.length > 0) {
+      ids.forEach((id) => requestedHistoryIds.add(id));
+      const request = fetchHistoryNotes(ids).finally(() => {
+        for (const id of ids) {
+          if (pendingHistoryLoads.get(id) === request) {
+            pendingHistoryLoads.delete(id);
+          }
+        }
+      });
+      ids.forEach((id) => pendingHistoryLoads.set(id, request));
+      waiting.add(request);
+    }
+    await Promise.all(waiting);
   },
 
   loadNotes: async () => {
@@ -459,3 +457,30 @@ useSettingsStore.subscribe((state) => {
     return { historyJobs: jobs };
   });
 });
+
+/** Fetch the notes of History entries into the store. */
+async function fetchHistoryNotes(ids: number[]): Promise<void> {
+  try {
+    const result = await commands.getNotesForHistoryIds(ids);
+    if (result.status !== "ok") throw new Error(result.error);
+    const fetched = new Map<number, Note[]>();
+    for (const note of result.data) {
+      if (note.history_id === null) continue;
+      fetched.set(note.history_id, [
+        ...(fetched.get(note.history_id) ?? []),
+        note,
+      ]);
+    }
+    useNotesStore.setState((state) => {
+      const historyNotes = { ...state.historyNotes };
+      for (const [id, notes] of fetched) {
+        // Keep notes generated while the request was running.
+        historyNotes[id] = mergeNotes(notes, historyNotes[id] ?? []);
+      }
+      return { historyNotes };
+    });
+  } catch (error) {
+    console.error("Failed to load notes for history:", error);
+    ids.forEach((id) => requestedHistoryIds.delete(id));
+  }
+}
