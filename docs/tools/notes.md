@@ -35,7 +35,7 @@ Dictate or record as usual. When a take deserves more than a transcript, make a 
 1. Choose the provider at `Notes › Settings › Provider and model › Provider`.
 2. Paste its key at `Notes › Settings › Provider and model › API key`.
 3. Keep or change the model at `Notes › Settings › Provider and model › Model`; Recommended for notes (cheap) at the top of the list shows the cheap models worth trying.
-4. Optionally write your own rules at `Notes › Settings › Instructions › Your instructions`, import one or more skills with `Notes › Settings › Skills › Import file…` and tick the ones to use at `Notes › Settings › Skills › Active skills`, and pick the language at `Notes › Settings › Instructions › Note language`.
+4. Optionally write your own rules at `Notes › Settings › Instructions › Your instructions`, import one or more skills with `Notes › Settings › Skills › Import file…` and tick the ones to use at `Notes › Settings › Skills › Active skills`, and pick the language of the note at `History › Recordings › Output language` (or `Notes › Manual note › Output language`; it is one setting). Same as the transcript keeps the language that was spoken, even when a skill is written in another language.
 5. Press `History › Recordings › Make note` on a recording and read the note under it.
 6. For a meeting, press `History › Recordings › Make note with speakers` instead; the first time, download the speaker models from the card under the entry (or at `Notes › Settings › Speaker detection › Speaker models`).
 7. To find the cheapest model that still writes a good note, use `History › Recordings › Try another model` on a note and compare the two side by side, then check `Notes › Saved notes › Compare models`.

@@ -13,8 +13,10 @@ import {
   DeleteNoteButton,
   NoteBody,
   NoteCard,
+  NoteMeta,
 } from "./NoteParts";
 import { translateNoteError } from "./noteErrors";
+import { OutputLanguagePicker } from "./OutputLanguagePicker";
 
 /** Notes › Manual note: any pasted or typed text into a note. */
 export const ManualNote: React.FC = () => {
@@ -54,6 +56,7 @@ export const ManualNote: React.FC = () => {
             )}
             {t("settings.notes.manual.generate")}
           </Button>
+          <OutputLanguagePicker disabled={generating} />
           {problem && (
             <>
               <p className="text-[13px] text-text-secondary">
@@ -106,6 +109,7 @@ export const ManualNote: React.FC = () => {
             </>
           }
         >
+          <NoteMeta note={result} />
           <CutShortNotice note={result} />
           <NoteBody markdown={result.note_text} />
         </NoteCard>

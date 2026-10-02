@@ -1741,7 +1741,7 @@
       "skillPickerCount": "{{count}} skills",
       "instructions": {
         "title": "Instructions",
-        "description": "What the model is told when it writes a note: your own instructions, the skills that are on, and the language of the note.",
+        "description": "What the model is told when it writes a note: your own instructions and the skills that are on.",
         "custom": {
           "title": "Your instructions",
           "description": "Your own instructions for every note, for example: use bullet points and end with the action items. They are sent before the skills that are on and win where a skill says otherwise. With no skill on, they are used alone; when this is empty too, notes follow the default instructions.",
@@ -1749,8 +1749,8 @@
         }
       },
       "language": {
-        "title": "Note language",
-        "description": "The language notes are written in. Same as the transcript writes each note in the language that was spoken; or pick one language for every note. This wins over the language your instructions and skills are written in, so a Polish skill and an English skill can be on together.",
+        "title": "Output language",
+        "description": "The language the note is written in. Same as the transcript keeps the language that was spoken, even when your skills or instructions are written in another language.",
         "sameAsTranscript": "Same as the transcript"
       },
       "skills": {

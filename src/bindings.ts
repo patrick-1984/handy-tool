@@ -4136,6 +4136,11 @@ completion_tokens: number | null;
  */
 duration_ms: number | null; 
 /**
+ * The output language picked for the note (an app language code);
+ * `None` = the transcript's own language.
+ */
+language: string | null; 
+/**
  * Whether the source history entry still exists.
  */
 source_exists: boolean }

@@ -1518,7 +1518,7 @@
       "skillPickerCount": "Dovednosti: {{count}}",
       "instructions": {
         "title": "Pokyny",
-        "description": "Co model dostane, když píše poznámku: vaše vlastní pokyny, zapnuté dovednosti a jazyk poznámky.",
+        "description": "Co model dostane, když píše poznámku: vaše vlastní pokyny a zapnuté dovednosti.",
         "custom": {
           "title": "Vaše pokyny",
           "description": "Vaše vlastní pokyny pro každou poznámku, například: použij odrážky a skonči seznamem úkolů. Posílají se před zapnutými dovednostmi a mají přednost, když dovednost říká něco jiného. Když není zapnutá žádná dovednost, použijí se samotné; když je prázdné i toto pole, poznámky se řídí výchozími pokyny.",
@@ -1526,8 +1526,8 @@
         }
       },
       "language": {
-        "title": "Jazyk poznámky",
-        "description": "Jazyk, ve kterém se poznámky píší. „Stejný jako přepis“ píše každou poznámku v jazyce, kterým se mluvilo; nebo vyberte jeden jazyk pro všechny poznámky. Má přednost před jazykem, ve kterém jsou napsané vaše pokyny a dovednosti, takže polská a anglická dovednost mohou být zapnuté současně.",
+        "title": "Jazyk výstupu",
+        "description": "Jazyk, ve kterém se poznámka napíše. „Stejný jako přepis“ zachová jazyk, kterým se mluvilo, i když jsou vaše dovednosti nebo pokyny napsané v jiném jazyce.",
         "sameAsTranscript": "Stejný jako přepis"
       },
       "skills": {

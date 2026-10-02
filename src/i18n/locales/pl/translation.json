@@ -1518,7 +1518,7 @@
       "skillPickerCount": "Umiejętności: {{count}}",
       "instructions": {
         "title": "Instrukcje",
-        "description": "Co model dostaje, gdy pisze notatkę: Twoje własne instrukcje, włączone umiejętności i język notatki.",
+        "description": "Co model dostaje, gdy pisze notatkę: Twoje własne instrukcje i włączone umiejętności.",
         "custom": {
           "title": "Twoje instrukcje",
           "description": "Twoje własne instrukcje do każdej notatki, na przykład: używaj punktorów i zakończ listą zadań. Są wysyłane przed włączonymi umiejętnościami i mają pierwszeństwo, gdy umiejętność mówi coś innego. Gdy żadna umiejętność nie jest włączona, są używane same; gdy i to pole jest puste, notatki powstają według domyślnych instrukcji.",
@@ -1527,7 +1527,7 @@
       },
       "language": {
         "title": "Język notatki",
-        "description": "Język, w którym powstają notatki. „Taki jak transkrypcja” pisze każdą notatkę w języku, w którym mówiono; możesz też wybrać jeden język dla wszystkich notatek. To ustawienie ma pierwszeństwo przed językiem, w którym napisano Twoje instrukcje i umiejętności, więc polska i angielska umiejętność mogą być włączone jednocześnie.",
+        "description": "Język, w którym powstaje notatka. „Taki jak transkrypcja” zachowuje język, w którym mówiono, nawet jeśli Twoje umiejętności lub instrukcje są napisane w innym języku.",
         "sameAsTranscript": "Taki jak transkrypcja"
       },
       "skills": {

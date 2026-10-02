@@ -1518,7 +1518,7 @@
       "skillPickerCount": "{{count}} skills",
       "instructions": {
         "title": "Instructions",
-        "description": "Ce que reçoit le modèle quand il rédige une note : vos propres instructions, les skills activées et la langue de la note.",
+        "description": "Ce que reçoit le modèle quand il rédige une note : vos propres instructions et les skills activées.",
         "custom": {
           "title": "Vos instructions",
           "description": "Vos propres instructions pour chaque note, par exemple : utilise des puces et termine par les actions à faire. Elles sont envoyées avant les skills activées et l'emportent quand une skill dit autre chose. Sans skill activée, elles sont utilisées seules ; si ce champ est vide lui aussi, les notes suivent les instructions par défaut.",
@@ -1526,8 +1526,8 @@
         }
       },
       "language": {
-        "title": "Langue de la note",
-        "description": "La langue dans laquelle les notes sont rédigées. « Comme la transcription » rédige chaque note dans la langue parlée ; ou choisissez une langue pour toutes les notes. Ce réglage l'emporte sur la langue de vos instructions et de vos skills : une skill en polonais et une skill en anglais peuvent être activées ensemble.",
+        "title": "Langue de sortie",
+        "description": "La langue dans laquelle la note est rédigée. « Comme la transcription » garde la langue parlée, même si vos skills ou vos instructions sont écrites dans une autre langue.",
         "sameAsTranscript": "Comme la transcription"
       },
       "skills": {

@@ -12,14 +12,6 @@ A text box for your own instructions, sent with every note before the skills tha
 
 Catalog: [Notes written your way, with a skill](../../features.md#notes-written-your-way-with-a-skill).
 
-### Note language
-
-`Notes › Settings › Instructions › Note language`
-
-The language notes are written in: Same as the transcript, or one of the app's languages, listed by their own names (English, Polski, Deutsch…). The rule is the last thing the model is told, so it wins over the language your instructions and skills are written in. **Default:** Same as the transcript.
-
-Catalog: [Notes in the language you want, whatever the skill is written in](../../features.md#notes-in-the-language-you-want).
-
 ### Active skills
 
 `Notes › Settings › Skills › Active skills`
@@ -96,7 +88,7 @@ Catalog: [Compare models on the same text, with cost and time](../../features.md
 
 `Notes › Saved notes › Try another model`
 
-An icon button on every note. It opens a model picker (the same list as Model, with prices) and Write note, which writes a new note from the same text with that model. It uses your current instructions, skills and note language, not the ones the first note was written with, so change none of them between the two notes when you compare models; the picker says so, and shows both skill lists when they differ. The new note appears next to the one it started from. It is disabled while Make note or Make note with speakers runs on the note's recording. **Default:** not applicable; this is a per-note action.
+An icon button on every note. It opens a model picker (the same list as Model, with prices) and Write note, which writes a new note from the same text with that model. It uses your current instructions, skills and output language, not the ones the first note was written with, so change none of them between the two notes when you compare models; the picker says so, and shows both skill lists when they differ. The new note appears next to the one it started from. It is disabled while Make note or Make note with speakers runs on the note's recording. **Default:** not applicable; this is a per-note action.
 
 Catalog: [Compare models on the same text, with cost and time](../../features.md#compare-models-on-the-same-text).
 
@@ -114,6 +106,14 @@ Catalog: [Every note in one place, one click from its transcript](../../features
 
 `Notes › Manual note › Generate note`
 
-Writes a note from the pasted or typed text with your instructions, the skills that are on, the note language and the model, and saves it without a source recording. Disabled until there is text and the note settings are complete. **Default:** not applicable; this is an action.
+Writes a note from the pasted or typed text with your instructions, the skills that are on, the output language and the model, and saves it without a source recording. Disabled until there is text and the note settings are complete. **Default:** not applicable; this is an action.
 
 Catalog: [A note from any text](../../features.md#a-note-from-any-text).
+
+### Output language
+
+`Notes › Manual note › Output language`
+
+The language new notes are written in: Same as the transcript, or one of the app's languages, listed by their own names (English, Polski, Deutsch…). A dropdown next to Generate note, disabled while a note is being written. It is the same setting as `History › Recordings › Output language`. It is the last thing the model is told, and it says the skills and instructions may be in another language, so an English skill on a Polish recording still gives a Polish note. A note written in a picked language shows that language on its meta line, next to the model and cost; Same as the transcript shows nothing there. **Default:** Same as the transcript.
+
+Catalog: [Notes in the language you want, whatever the skill is written in](../../features.md#notes-in-the-language-you-want).
