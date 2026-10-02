@@ -3955,6 +3955,10 @@ with_speakers: boolean;
  */
 cost_usd: number | null; 
 /**
+ * The model stopped at its output-length limit: the note is cut short.
+ */
+truncated: boolean; 
+/**
  * Whether the source history entry still exists.
  */
 source_exists: boolean }

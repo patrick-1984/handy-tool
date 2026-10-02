@@ -58,6 +58,10 @@ pub struct ChatOutcome {
     /// false when it is estimated from the configured per-million rates.
     pub cost_is_real: bool,
     pub elapsed_ms: u32,
+    /// The model stopped at its output-length limit, so `content` is cut
+    /// short. Used by notes; not sent to the model-testing screen.
+    #[serde(skip)]
+    pub truncated: bool,
 }
 
 #[derive(Serialize, Clone, Type)]
@@ -128,14 +132,41 @@ struct RawChat {
     input_tokens: Option<u32>,
     output_tokens: Option<u32>,
     real_cost: Option<f64>,
+    /// Stopped at the output-length limit (`finish_reason: length`,
+    /// `stop_reason: max_tokens`, `finishReason: MAX_TOKENS`).
+    truncated: bool,
 }
 
-/// Optional per-request extras: reasoning ("thinking") on/off and an attached
-/// image (a `data:<mime>;base64,...` URL) for vision-capable runner models.
+/// Optional per-request extras: reasoning ("thinking") on/off, an attached
+/// image (a `data:<mime>;base64,...` URL) for vision-capable runner models,
+/// and room for a long reply (notes of long recordings).
 #[derive(Clone, Copy)]
 struct ChatExtras<'a> {
     thinking: Option<bool>,
     image: Option<&'a str>,
+    long_output: bool,
+}
+
+/// Anthropic needs `max_tokens` on every request. Model testing keeps the
+/// usual 4096; a long reply gets as much as the model generation allows
+/// (Claude 3.5: 8192, 3 Haiku/Opus: 4096, 3.7 and 4+: well over 16k).
+fn anthropic_max_tokens(model: &str, long_output: bool) -> u32 {
+    if !long_output {
+        return 4096;
+    }
+    let m = model.to_ascii_lowercase();
+    let nums: Vec<u32> = m
+        .split(|c: char| !c.is_ascii_digit())
+        .filter(|s| !s.is_empty())
+        .filter_map(|s| s.parse::<u32>().ok())
+        .collect();
+    match (nums.first(), nums.get(1)) {
+        (Some(3), Some(5)) => 8192,
+        (Some(3), Some(7)) => 16384,
+        (Some(&major), _) if major < 4 => 4096,
+        // 4+, or no parseable version (alias/custom): a current model.
+        _ => 16384,
+    }
 }
 
 /// Split a `data:<mime>;base64,<payload>` URL into (mime, base64 payload).
@@ -251,6 +282,7 @@ async fn chat_openai_compatible(
         .as_str()
         .unwrap_or("")
         .to_string();
+    let truncated = value["choices"][0]["finish_reason"].as_str() == Some("length");
     let input_tokens = value["usage"]["prompt_tokens"].as_u64().map(|n| n as u32);
     let output_tokens = value["usage"]["completion_tokens"]
         .as_u64()
@@ -269,6 +301,7 @@ async fn chat_openai_compatible(
         input_tokens,
         output_tokens,
         real_cost,
+        truncated,
     })
 }
 
@@ -294,7 +327,7 @@ async fn chat_anthropic(
     };
     let mut body = json!({
         "model": provider.model,
-        "max_tokens": 4096,
+        "max_tokens": anthropic_max_tokens(&provider.model, extras.long_output),
         "messages": [{"role": "user", "content": user_content}],
     });
     if let Some(sys) = system {
@@ -352,12 +385,14 @@ async fn chat_anthropic(
         .unwrap_or_default();
     let input_tokens = value["usage"]["input_tokens"].as_u64().map(|n| n as u32);
     let output_tokens = value["usage"]["output_tokens"].as_u64().map(|n| n as u32);
+    let truncated = value["stop_reason"].as_str() == Some("max_tokens");
 
     Ok(RawChat {
         content,
         input_tokens,
         output_tokens,
         real_cost: None,
+        truncated,
     })
 }
 
@@ -432,12 +467,14 @@ async fn chat_gemini(
     let output_tokens = value["usageMetadata"]["candidatesTokenCount"]
         .as_u64()
         .map(|n| n as u32);
+    let truncated = value["candidates"][0]["finishReason"].as_str() == Some("MAX_TOKENS");
 
     Ok(RawChat {
         content,
         input_tokens,
         output_tokens,
         real_cost: None,
+        truncated,
     })
 }
 
@@ -477,6 +514,7 @@ async fn chat_with_provider(
                 cost_usd,
                 cost_is_real,
                 elapsed_ms,
+                truncated: raw.truncated,
             }
         }
         Err(error) => {
@@ -493,6 +531,7 @@ async fn chat_with_provider(
                 cost_usd: None,
                 cost_is_real: false,
                 elapsed_ms,
+                truncated: false,
             }
         }
     }
@@ -500,7 +539,7 @@ async fn chat_with_provider(
 
 /// One chat call for other features (notes): the same multi-kind client,
 /// timeouts and cost accounting as model testing, with the model's default
-/// reasoning and no image.
+/// reasoning, no image and room for a long reply.
 pub(crate) async fn chat(
     provider: &LlmProvider,
     system: Option<&str>,
@@ -510,6 +549,7 @@ pub(crate) async fn chat(
     let extras = ChatExtras {
         thinking: None,
         image: None,
+        long_output: true,
     };
     chat_with_provider(provider, system, prompt, temperature, extras).await
 }
@@ -597,6 +637,7 @@ pub async fn run_model_test(
             let extras = ChatExtras {
                 thinking,
                 image: image_data_url.as_deref(),
+                long_output: false,
             };
             let mut outs = Vec::with_capacity(providers.len());
             for provider in providers {
@@ -741,6 +782,26 @@ mod tests {
     fn unknown_ids_default_to_adaptive() {
         assert!(anthropic_is_adaptive("my-custom-alias"));
         assert!(anthropic_is_adaptive(""));
+    }
+
+    #[test]
+    fn long_replies_get_the_model_generations_output_limit() {
+        assert_eq!(anthropic_max_tokens("claude-haiku-4-5", false), 4096);
+        assert_eq!(anthropic_max_tokens("claude-haiku-4-5", true), 16384);
+        assert_eq!(
+            anthropic_max_tokens("claude-sonnet-4-20250514", true),
+            16384
+        );
+        assert_eq!(
+            anthropic_max_tokens("claude-3-7-sonnet-latest", true),
+            16384
+        );
+        assert_eq!(
+            anthropic_max_tokens("claude-3-5-haiku-20241022", true),
+            8192
+        );
+        assert_eq!(anthropic_max_tokens("claude-3-haiku-20240307", true), 4096);
+        assert_eq!(anthropic_max_tokens("my-alias", true), 16384);
     }
 
     #[test]

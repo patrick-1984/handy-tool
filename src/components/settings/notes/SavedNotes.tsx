@@ -7,6 +7,7 @@ import { useNotesStore } from "@/stores/notesStore";
 import { Button } from "../../ui/Button";
 import {
   CollapsibleNote,
+  CutShortNotice,
   CopyNoteButton,
   DeleteNoteButton,
   NoteMeta,
@@ -35,6 +36,7 @@ const SavedNote: React.FC<{ note: Note }> = ({ note }) => {
           <DeleteNoteButton noteId={note.id} />
         </div>
       </div>
+      <CutShortNotice note={note} />
       <CollapsibleNote
         markdown={note.note_text}
         footer={

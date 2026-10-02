@@ -1442,6 +1442,7 @@
       "openSettings": "Paramètres des notes",
       "defaultSkill": "Instructions par défaut",
       "speakersBadge": "Avec locuteurs",
+      "cutShort": "Le modèle a atteint sa limite de longueur : cette note s'arrête avant la fin.",
       "copy": "Copier la note (Markdown)",
       "copyError": "Impossible de copier la note.",
       "delete": "Supprimer la note",

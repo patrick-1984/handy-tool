@@ -16,6 +16,7 @@ import { Button } from "../../ui/Button";
 import { ICON_BUTTON } from "../../ui/controlClasses";
 import {
   CollapsibleNote,
+  CutShortNotice,
   CopyNoteButton,
   DeleteNoteButton,
   NoteCard,
@@ -278,6 +279,7 @@ const InlineNote: React.FC<{ note: Note }> = ({ note }) => {
         </>
       }
     >
+      <CutShortNotice note={note} />
       <CollapsibleNote markdown={note.note_text} />
     </NoteCard>
   );

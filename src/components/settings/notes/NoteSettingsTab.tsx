@@ -208,8 +208,15 @@ const ApiKeyField: React.FC<{ provider: LlmProvider }> = ({ provider }) => {
 
 const ProviderGroup: React.FC = () => {
   const { t } = useTranslation();
-  const { settings, updateSetting } = useSettings();
+  const { settings, updateSetting, refreshSettings } = useSettings();
   const navigateTo = useNavStore((state) => state.navigateTo);
+
+  // Switching to a provider of another kind also resets the note model
+  // (backend), so reload the settings to show it.
+  const selectProvider = async (id: string) => {
+    await updateSetting("note_provider_ref", id);
+    await refreshSettings();
+  };
 
   const providers = settings?.llm_providers ?? [];
   const provider = noteProvider(settings);
@@ -237,7 +244,7 @@ const ProviderGroup: React.FC = () => {
         <Dropdown
           selectedValue={provider?.id ?? null}
           options={options}
-          onSelect={(value) => updateSetting("note_provider_ref", value ?? "")}
+          onSelect={(value) => void selectProvider(value ?? "")}
           placeholder={t("settings.notes.provider.provider.placeholder")}
           className="min-w-[320px]"
         />

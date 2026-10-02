@@ -134,6 +134,9 @@ static MIGRATIONS: &[M] = &[
         );
         CREATE INDEX IF NOT EXISTS idx_notes_history_id ON notes(history_id);",
     ),
+    // Notes the model cut short at its output-length limit, so the UI can say
+    // so instead of showing a note that ends mid-sentence as if complete.
+    M::up("ALTER TABLE notes ADD COLUMN truncated BOOLEAN NOT NULL DEFAULT 0;"),
 ];
 
 /// Totals carried forward from history rows that retention has deleted, so
@@ -189,6 +192,8 @@ pub struct Note {
     pub with_speakers: bool,
     /// USD cost of the LLM call, when known.
     pub cost_usd: Option<f64>,
+    /// The model stopped at its output-length limit: the note is cut short.
+    pub truncated: bool,
     /// Whether the source history entry still exists.
     pub source_exists: bool,
 }
@@ -202,11 +207,12 @@ pub struct NewNote<'a> {
     pub model: &'a str,
     pub with_speakers: bool,
     pub cost_usd: Option<f64>,
+    pub truncated: bool,
 }
 
 const NOTE_COLUMNS: &str =
     "n.id, n.history_id, n.timestamp, n.source_text, n.note_text, n.skill_name, n.model,
-     n.with_speakers, n.cost_usd,
+     n.with_speakers, n.cost_usd, n.truncated,
      EXISTS(SELECT 1 FROM transcription_history h WHERE h.id = n.history_id) AS source_exists";
 
 pub struct HistoryManager {
@@ -1149,6 +1155,7 @@ impl HistoryManager {
             model: row.get("model")?,
             with_speakers: row.get("with_speakers")?,
             cost_usd: row.get("cost_usd")?,
+            truncated: row.get("truncated")?,
             source_exists: row.get("source_exists")?,
         })
     }
@@ -1170,8 +1177,8 @@ impl HistoryManager {
     /// Returns the saved note and whether its source entry was newly starred.
     fn save_note_with_conn(conn: &Connection, note: &NewNote<'_>) -> Result<(Note, bool)> {
         conn.execute(
-            "INSERT INTO notes (history_id, timestamp, source_text, note_text, skill_name, model, with_speakers, cost_usd)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+            "INSERT INTO notes (history_id, timestamp, source_text, note_text, skill_name, model, with_speakers, cost_usd, truncated)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
             params![
                 note.history_id,
                 Utc::now().timestamp(),
@@ -1180,7 +1187,8 @@ impl HistoryManager {
                 note.skill_name,
                 note.model,
                 note.with_speakers,
-                note.cost_usd
+                note.cost_usd,
+                note.truncated
             ],
         )?;
         let note_id = conn.last_insert_rowid();
@@ -1317,6 +1325,7 @@ mod tests {
             model: "m",
             with_speakers: false,
             cost_usd: None,
+            truncated: false,
         }
     }
 
@@ -1385,6 +1394,7 @@ mod tests {
         assert_eq!(note.model, "google/gemini-2.5-flash");
         assert_eq!(note.cost_usd, Some(0.0012));
         assert!(!note.with_speakers);
+        assert!(!note.truncated);
         assert!(note.source_exists);
 
         // An already-starred source is not reported as newly starred.
@@ -1414,6 +1424,21 @@ mod tests {
             .map(|n| n.with_speakers)
             .collect();
         assert_eq!(flags, vec![true, false]);
+    }
+
+    #[test]
+    fn save_note_keeps_the_cut_short_flag() {
+        let conn = setup_conn_with_notes();
+        let (note, _) = HistoryManager::save_note_with_conn(
+            &conn,
+            &NewNote {
+                truncated: true,
+                ..new_note(None, "a long meeting", "# Note that ends mid")
+            },
+        )
+        .expect("save cut-short note");
+        assert!(note.truncated);
+        assert!(HistoryManager::get_notes_with_conn(&conn).expect("list")[0].truncated);
     }
 
     #[test]
@@ -1489,7 +1514,7 @@ mod tests {
         // A database at the previous version (before the notes table) keeps its
         // rows and gains the notes table.
         let mut conn = Connection::open_in_memory().expect("open in-memory db");
-        let before = Migrations::new(MIGRATIONS[..MIGRATIONS.len() - 1].to_vec());
+        let before = Migrations::new(MIGRATIONS[..MIGRATIONS.len() - 2].to_vec());
         before.to_latest(&mut conn).expect("apply older migrations");
         insert_entry(&conn, 100, "kept", None);
 

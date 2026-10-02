@@ -1442,6 +1442,7 @@
       "openSettings": "Cài đặt ghi chú",
       "defaultSkill": "Hướng dẫn mặc định",
       "speakersBadge": "Có người nói",
+      "cutShort": "Mô hình đã chạm giới hạn độ dài nên ghi chú này kết thúc sớm.",
       "copy": "Sao chép ghi chú (Markdown)",
       "copyError": "Không thể sao chép ghi chú.",
       "delete": "Xóa ghi chú",

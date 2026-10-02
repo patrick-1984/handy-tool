@@ -8,7 +8,7 @@
 use crate::managers::history::{HistoryManager, NewNote, Note};
 use crate::note_skills::{self, NoteSkill};
 use crate::settings::{self, AppSettings, LlmProvider};
-use log::debug;
+use log::{debug, warn};
 use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::{AppHandle, State};
@@ -175,6 +175,14 @@ pub async fn generate_note(
     if note_text.is_empty() {
         return Err(ERR_EMPTY_NOTE.to_string());
     }
+    // Kept rather than thrown away (it cost money and is mostly there), but
+    // flagged so the note is shown as cut short.
+    if outcome.truncated {
+        warn!(
+            "The note from '{}' was cut short at the model's output limit",
+            provider.model
+        );
+    }
 
     history_manager
         .save_note(&NewNote {
@@ -185,6 +193,7 @@ pub async fn generate_note(
             model: &provider.model,
             with_speakers,
             cost_usd: outcome.cost_usd,
+            truncated: outcome.truncated,
         })
         .map_err(|e| e.to_string())
 }
@@ -288,17 +297,38 @@ pub fn change_note_skill_setting(app: AppHandle, id: Option<String>) -> Result<(
     Ok(())
 }
 
-/// Empty = the first enabled OpenRouter provider.
+/// Empty = the first enabled OpenRouter provider. Switching to a provider of
+/// another kind clears the note model, so the new provider's own model is
+/// used: model ids are specific to an API (the default
+/// `google/gemini-2.5-flash` is an OpenRouter id that Anthropic, Gemini or a
+/// local server would reject).
 #[tauri::command]
 #[specta::specta]
 pub fn change_note_provider_ref_setting(app: AppHandle, id: String) -> Result<(), String> {
     let mut settings = settings::get_settings(&app);
+    set_note_provider_ref(&mut settings, &id)?;
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
+fn set_note_provider_ref(settings: &mut AppSettings, id: &str) -> Result<(), String> {
     let id = id.trim();
     if !id.is_empty() && settings.llm_provider(id).is_none() {
         return Err(format!("Unknown provider: {}", id));
     }
+    let old_kind = settings.note_provider().map(|p| p.kind.clone());
     settings.note_provider_ref = id.to_string();
-    settings::write_settings(&app, settings);
+    let Some(new) = settings.note_provider() else {
+        return Ok(());
+    };
+    if old_kind.as_deref() != Some(new.kind.as_str()) {
+        // OpenRouter slots ship without a model: they get the default again.
+        settings.note_model = if new.kind == "openrouter" && new.model.trim().is_empty() {
+            settings::default_note_model()
+        } else {
+            String::new()
+        };
+    }
     Ok(())
 }
 
@@ -383,6 +413,51 @@ mod tests {
             resolve_note_provider(&settings).err(),
             Some(ERR_MISSING_PROVIDER)
         );
+    }
+
+    #[test]
+    fn switching_provider_kind_drops_a_model_id_of_another_api() {
+        let mut settings = settings_with_key("sk-test");
+        let openrouter = settings.note_provider().expect("provider").id.clone();
+        let other_openrouter = settings
+            .llm_providers
+            .iter()
+            .filter(|p| p.kind == "openrouter")
+            .find(|p| p.id != openrouter)
+            .expect("a second OpenRouter slot")
+            .id
+            .clone();
+        let anthropic = settings
+            .llm_providers
+            .iter()
+            .find(|p| p.kind == "anthropic")
+            .expect("an Anthropic provider")
+            .id
+            .clone();
+
+        // Same kind: the note model stays.
+        settings.note_model = "openai/gpt-4o-mini".to_string();
+        set_note_provider_ref(&mut settings, &other_openrouter).expect("select");
+        assert_eq!(settings.note_model, "openai/gpt-4o-mini");
+
+        // Another API: its own model is used.
+        for provider in settings.llm_providers.iter_mut() {
+            if provider.id == anthropic {
+                provider.api_key = "sk-ant-test".to_string();
+            }
+        }
+        set_note_provider_ref(&mut settings, &anthropic).expect("select");
+        assert_eq!(settings.note_model, "");
+        let provider = resolve_note_provider(&settings).expect("provider");
+        assert_eq!(provider.kind, "anthropic");
+        assert!(!provider.model.is_empty());
+
+        // Back to an OpenRouter slot without a model: the default again.
+        set_note_provider_ref(&mut settings, &openrouter).expect("select");
+        assert_eq!(settings.note_model, settings::default_note_model());
+
+        assert!(set_note_provider_ref(&mut settings, "gone").is_err());
+        assert_eq!(settings.note_provider_ref, openrouter);
     }
 
     #[test]

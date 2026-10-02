@@ -1442,6 +1442,7 @@
       "openSettings": "笔记设置",
       "defaultSkill": "默认说明",
       "speakersBadge": "含说话人",
+      "cutShort": "模型已达到长度上限，因此这条笔记提前结束。",
       "copy": "复制笔记（Markdown）",
       "copyError": "无法复制笔记。",
       "delete": "删除笔记",

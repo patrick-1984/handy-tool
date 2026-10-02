@@ -1442,6 +1442,7 @@
       "openSettings": "Configurações de notas",
       "defaultSkill": "Instruções padrão",
       "speakersBadge": "Com falantes",
+      "cutShort": "O modelo atingiu o limite de comprimento, por isso esta nota termina antes do fim.",
       "copy": "Copiar nota (Markdown)",
       "copyError": "Não foi possível copiar a nota.",
       "delete": "Excluir nota",
