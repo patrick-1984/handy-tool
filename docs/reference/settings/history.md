@@ -10,6 +10,14 @@ Turns skills on and off for new notes, right from the list: a compact button tha
 
 Catalog: [Notes written your way, with a skill](../../features.md#notes-written-your-way-with-a-skill).
 
+### Output language
+
+`History › Recordings › Output language`
+
+The language new notes are written in: Same as the transcript, or one of the app's languages, listed by their own names (English, Polski, Deutsch…). A dropdown in the toolbar next to Note skills, always shown. It is the same setting as `Notes › Manual note › Output language`. It is the last thing the model is told, and it says the skills and instructions may be in another language, so an English skill on a Polish recording still gives a Polish note. A note written in a picked language shows that language on its meta line, next to the model and cost; Same as the transcript shows nothing there. **Default:** Same as the transcript.
+
+Catalog: [Notes in the language you want, whatever the skill is written in](../../features.md#notes-in-the-language-you-want).
+
 ### Open Recordings Folder
 
 `History › Recordings › Open Recordings Folder`
@@ -38,7 +46,7 @@ Catalog: [Copy or delete a single entry](../../features.md#copy-or-delete-a-sing
 
 `History › Recordings › Make note`
 
-Writes a note from the entry's transcription with your instructions, the skills that are on, the note language, provider and model chosen on `Notes › Settings`, shows it under the entry with its model, cost, tokens and generation time, and marks the entry as saved. Disabled while that entry's note is being written. **Default:** not applicable; this is a per-row action.
+Writes a note from the entry's transcription with your instructions, the skills that are on and the provider and model chosen on `Notes › Settings`, in the language picked at Output language, shows it under the entry with its model, cost, tokens and generation time, and marks the entry as saved. Disabled while that entry's note is being written. **Default:** not applicable; this is a per-row action.
 
 Catalog: [Turn a recording into a note](../../features.md#turn-a-recording-into-a-note).
 
@@ -70,7 +78,7 @@ Catalog: [Copy or delete a single entry](../../features.md#copy-or-delete-a-sing
 
 `History › Recordings › Try another model`
 
-An icon button on each note under an entry. It opens a model picker with prices and Write note, which writes a new note from the same text with that model, using your current instructions, skills and note language (the picker says so, and shows both skill lists when they differ); the new note appears next to the original, side by side, so the two can be compared. Make note and Make note with speakers stay disabled while it runs, and it stays disabled while they run. **Default:** not applicable; this is a per-note action.
+An icon button on each note under an entry. It opens a model picker with prices and Write note, which writes a new note from the same text with that model, using your current instructions, skills and output language (the picker says so, and shows both skill lists when they differ); the new note appears next to the original, side by side, so the two can be compared. Make note and Make note with speakers stay disabled while it runs, and it stays disabled while they run. **Default:** not applicable; this is a per-note action.
 
 Catalog: [Compare models on the same text, with cost and time](../../features.md#compare-models-on-the-same-text).
 

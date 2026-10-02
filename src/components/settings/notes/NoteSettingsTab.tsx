@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { commands, type LlmProvider, type NoteSkill } from "@/bindings";
-import { LANGUAGE_METADATA } from "@/i18n/languages";
 import { useSettings } from "@/hooks/useSettings";
 import { useNavStore } from "@/stores/navStore";
 import {
@@ -20,7 +19,7 @@ import {
   useNotesStore,
 } from "@/stores/notesStore";
 import { Button } from "../../ui/Button";
-import { Dropdown, type DropdownOption } from "../../ui/Dropdown";
+import { Dropdown } from "../../ui/Dropdown";
 import { SettingContainer } from "../../ui/SettingContainer";
 import { SettingsGroup } from "../../ui/SettingsGroup";
 import { ICON_BUTTON, TEXT_FIELD } from "../../ui/controlClasses";
@@ -43,22 +42,13 @@ export const toggleSkillIds = (
   return skills.map((skill) => skill.id).filter((sid) => next.has(sid));
 };
 
-/** "Your instructions" and the note language. */
+/** "Your instructions". The note language is picked where notes are made. */
 const InstructionsGroup: React.FC = () => {
   const { t } = useTranslation();
   const { settings, updateSetting } = useSettings();
   const saved = settings?.note_custom_instructions ?? "";
   const [text, setText] = useState(saved);
   useEffect(() => setText(saved), [saved]);
-
-  const languageOptions: DropdownOption[] = [
-    { value: "", label: t("settings.notes.language.sameAsTranscript") },
-    ...Object.entries(LANGUAGE_METADATA)
-      .sort(
-        ([, a], [, b]) => (a.priority ?? Infinity) - (b.priority ?? Infinity),
-      )
-      .map(([code, meta]) => ({ value: code, label: meta.nativeName })),
-  ];
 
   return (
     <SettingsGroup
@@ -82,19 +72,6 @@ const InstructionsGroup: React.FC = () => {
           }}
           placeholder={t("settings.notes.instructions.custom.placeholder")}
           className="w-full min-h-[110px] select-text"
-        />
-      </SettingContainer>
-      <SettingContainer
-        title={t("settings.notes.language.title")}
-        description={t("settings.notes.language.description")}
-        descriptionMode="tooltip"
-        grouped={true}
-      >
-        <Dropdown
-          className="min-w-[240px]"
-          options={languageOptions}
-          selectedValue={settings?.note_language ?? ""}
-          onSelect={(value) => void updateSetting("note_language", value)}
         />
       </SettingContainer>
     </SettingsGroup>

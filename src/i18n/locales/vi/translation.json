@@ -1453,7 +1453,7 @@
       "skillPickerCount": "{{count}} kỹ năng",
       "instructions": {
         "title": "Hướng dẫn",
-        "description": "Những gì mô hình nhận được khi viết ghi chú: hướng dẫn của riêng bạn, các kỹ năng đang bật và ngôn ngữ của ghi chú.",
+        "description": "Những gì mô hình nhận được khi viết ghi chú: hướng dẫn của riêng bạn và các kỹ năng đang bật.",
         "custom": {
           "title": "Hướng dẫn của bạn",
           "description": "Hướng dẫn của riêng bạn cho mọi ghi chú, ví dụ: dùng gạch đầu dòng và kết thúc bằng các việc cần làm. Chúng được gửi trước các kỹ năng đang bật và được ưu tiên khi kỹ năng nói khác. Khi không có kỹ năng nào bật, chỉ dùng hướng dẫn này; nếu ô này cũng trống, ghi chú theo hướng dẫn mặc định.",
@@ -1461,8 +1461,8 @@
         }
       },
       "language": {
-        "title": "Ngôn ngữ ghi chú",
-        "description": "Ngôn ngữ dùng để viết ghi chú. \"Giống bản chép lời\" viết mỗi ghi chú bằng ngôn ngữ đã nói; hoặc chọn một ngôn ngữ cho mọi ghi chú. Thiết lập này được ưu tiên hơn ngôn ngữ của hướng dẫn và kỹ năng, nên có thể bật cùng lúc một kỹ năng tiếng Ba Lan và một kỹ năng tiếng Anh.",
+        "title": "Ngôn ngữ đầu ra",
+        "description": "Ngôn ngữ dùng để viết ghi chú. \"Giống bản chép lời\" giữ nguyên ngôn ngữ đã nói, kể cả khi kỹ năng hoặc hướng dẫn của bạn được viết bằng ngôn ngữ khác.",
         "sameAsTranscript": "Giống bản chép lời"
       },
       "skills": {

@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import type { Note } from "@/bindings";
 import { useSettings } from "@/hooks/useSettings";
 import { formatCost, formatDuration } from "@/lib/noteModels";
+import { noteLanguageName } from "./OutputLanguagePicker";
 import { useNavStore } from "@/stores/navStore";
 import {
   SETUP_ERRORS,
@@ -105,6 +106,14 @@ export const NoteMeta: React.FC<{ note: Note }> = ({ note }) => {
   }
   if (note.skill_name) {
     items.push({ key: "skills", text: note.skill_name });
+  }
+  // Only a picked language; "Same as the transcript" is the quiet default.
+  if (note.language) {
+    items.push({
+      key: "language",
+      text: noteLanguageName(note.language),
+      title: t("settings.notes.language.title"),
+    });
   }
   return (
     <p className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-text-secondary min-w-0">

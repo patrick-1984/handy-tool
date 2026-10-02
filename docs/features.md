@@ -1501,14 +1501,17 @@ import is capped at 50 MB. Skills are not part of a backup.
 **The situation.** Your meeting template is in Polish, a colleague's summary skill is in English,
 and the call itself may have been in either language.
 **What Handy does.** Skills and your instructions can be written in any language, and several can
-be on together. The language of the note is set separately: Same as the transcript writes each note
-in the language that was spoken, or you pick one of the app's languages for every note. That rule is
-the very last thing the model is told, so it wins over the language a skill happens to be written
-in or a "write in English" line inside it.
-**Where.** `Notes › Settings › Instructions › Note language`.
+be on together. The language of the note is picked right where you make notes, with Output language
+next to Note skills in History and next to Generate note on Manual note: Same as the transcript (the
+default) writes each note in the language that was spoken, or you pick one of the app's languages.
+That rule is the very last thing the model is told, and it says outright that the skills may be in
+another language, so an English skill on a Polish recording still gives a Polish note, and a "write
+in English" line inside a skill does not win either. A note written in a picked language shows that
+language next to its model and cost.
+**Where.** `History › Recordings › Output language`; `Notes › Manual note › Output language`.
 **Since.** The release after 2.0.5.
 
-<!-- prov: note language | src: src-tauri/src/commands/notes.rs; src-tauri/src/settings.rs; src/components/settings/notes/NoteSettingsTab.tsx -->
+<!-- prov: note language | src: src-tauri/src/commands/notes.rs; src-tauri/src/settings.rs; src-tauri/src/managers/history.rs; src/components/settings/notes/OutputLanguagePicker.tsx; src/components/settings/notes/NoteParts.tsx -->
 
 ### Choose which model writes your notes
 
@@ -1547,7 +1550,7 @@ charged, or an estimate from the prices set for the provider; otherwise cost unk
 sent and received when the provider reports them, and how long the model took. Try another model on
 any note writes a new note from the same text with a model you pick from the same priced list, and
 puts it right next to the first one, side by side, under the same recording. It uses your current
-instructions, skills and note language, so keep those unchanged while you compare; the picker
+instructions, skills and output language, so keep those unchanged while you compare; the picker
 reminds you, and shows both skill lists when they differ. On Saved notes, Compare models sums it
 up per model: number of notes, average cost, average time and total cost, cheapest first, and
 narrows the list to one model's notes, each still next to the notes it is compared with. Gemini's

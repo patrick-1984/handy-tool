@@ -145,6 +145,9 @@ static MIGRATIONS: &[M] = &[
         ALTER TABLE notes ADD COLUMN completion_tokens INTEGER NULL;
         ALTER TABLE notes ADD COLUMN duration_ms INTEGER NULL;",
     ),
+    // The output language a note was written in, when one was picked (an
+    // app language code); NULL = the transcript's own language.
+    M::up("ALTER TABLE notes ADD COLUMN language TEXT NULL;"),
 ];
 
 /// Totals carried forward from history rows that retention has deleted, so
@@ -209,6 +212,9 @@ pub struct Note {
     /// How long the model call took, in milliseconds (`None` for notes made
     /// before this was recorded).
     pub duration_ms: Option<u32>,
+    /// The output language picked for the note (an app language code);
+    /// `None` = the transcript's own language.
+    pub language: Option<String>,
     /// Whether the source history entry still exists.
     pub source_exists: bool,
 }
@@ -226,12 +232,13 @@ pub struct NewNote<'a> {
     pub prompt_tokens: Option<u32>,
     pub completion_tokens: Option<u32>,
     pub duration_ms: Option<u32>,
+    pub language: Option<&'a str>,
 }
 
 const NOTE_COLUMNS: &str =
     "n.id, n.history_id, n.timestamp, n.source_text, n.note_text, n.skill_name, n.model,
      n.with_speakers, n.cost_usd, n.truncated, n.prompt_tokens, n.completion_tokens,
-     n.duration_ms,
+     n.duration_ms, n.language,
      EXISTS(SELECT 1 FROM transcription_history h WHERE h.id = n.history_id) AS source_exists";
 
 pub struct HistoryManager {
@@ -1178,6 +1185,7 @@ impl HistoryManager {
             prompt_tokens: row.get("prompt_tokens")?,
             completion_tokens: row.get("completion_tokens")?,
             duration_ms: row.get("duration_ms")?,
+            language: row.get("language")?,
             source_exists: row.get("source_exists")?,
         })
     }
@@ -1197,8 +1205,8 @@ impl HistoryManager {
     /// Returns the saved note and whether its source entry was newly starred.
     fn save_note_with_conn(conn: &Connection, note: &NewNote<'_>) -> Result<(Note, bool)> {
         conn.execute(
-            "INSERT INTO notes (history_id, timestamp, source_text, note_text, skill_name, model, with_speakers, cost_usd, truncated, prompt_tokens, completion_tokens, duration_ms)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
+            "INSERT INTO notes (history_id, timestamp, source_text, note_text, skill_name, model, with_speakers, cost_usd, truncated, prompt_tokens, completion_tokens, duration_ms, language)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)",
             params![
                 note.history_id,
                 Utc::now().timestamp(),
@@ -1211,7 +1219,8 @@ impl HistoryManager {
                 note.truncated,
                 note.prompt_tokens,
                 note.completion_tokens,
-                note.duration_ms
+                note.duration_ms,
+                note.language
             ],
         )?;
         let note_id = conn.last_insert_rowid();
@@ -1352,6 +1361,7 @@ mod tests {
             prompt_tokens: None,
             completion_tokens: None,
             duration_ms: None,
+            language: None,
         }
     }
 
@@ -1584,7 +1594,7 @@ mod tests {
         // A database with the notes table but without the usage columns:
         // its notes stay, with unknown tokens and time.
         let mut conn = Connection::open_in_memory().expect("open in-memory db");
-        Migrations::new(MIGRATIONS[..MIGRATIONS.len() - 1].to_vec())
+        Migrations::new(MIGRATIONS[..MIGRATIONS.len() - 2].to_vec())
             .to_latest(&mut conn)
             .expect("apply older migrations");
         conn.execute(
@@ -1604,5 +1614,26 @@ mod tests {
         assert_eq!(notes[0].prompt_tokens, None);
         assert_eq!(notes[0].completion_tokens, None);
         assert_eq!(notes[0].duration_ms, None);
+        assert_eq!(notes[0].language, None);
+    }
+
+    #[test]
+    fn save_note_keeps_the_output_language() {
+        let conn = setup_conn_with_notes();
+        let (note, _) = HistoryManager::save_note_with_conn(
+            &conn,
+            &NewNote {
+                language: Some("pl"),
+                ..new_note(None, "a meeting", "# Notatka")
+            },
+        )
+        .expect("save note");
+        assert_eq!(note.language.as_deref(), Some("pl"));
+        let (same, _) =
+            HistoryManager::save_note_with_conn(&conn, &new_note(None, "a talk", "# Note"))
+                .expect("save note");
+        assert_eq!(same.language, None);
+        let listed = HistoryManager::get_notes_with_conn(&conn).expect("list");
+        assert!(listed.iter().any(|n| n.language.as_deref() == Some("pl")));
     }
 }

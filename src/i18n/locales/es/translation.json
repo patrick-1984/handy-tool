@@ -1453,7 +1453,7 @@
       "skillPickerCount": "{{count}} skills",
       "instructions": {
         "title": "Instrucciones",
-        "description": "Lo que recibe el modelo al escribir una nota: tus propias instrucciones, las skills activadas y el idioma de la nota.",
+        "description": "Lo que recibe el modelo al escribir una nota: tus propias instrucciones y las skills activadas.",
         "custom": {
           "title": "Tus instrucciones",
           "description": "Tus propias instrucciones para cada nota, por ejemplo: usa viñetas y termina con las tareas pendientes. Se envían antes de las skills activadas y prevalecen cuando una skill dice otra cosa. Sin ninguna skill activada se usan solas; si este campo también está vacío, las notas siguen las instrucciones predeterminadas.",
@@ -1461,8 +1461,8 @@
         }
       },
       "language": {
-        "title": "Idioma de la nota",
-        "description": "El idioma en que se escriben las notas. «Igual que la transcripción» escribe cada nota en el idioma hablado; o elige un idioma para todas las notas. Prevalece sobre el idioma en que están escritas tus instrucciones y skills, así que una skill en polaco y otra en inglés pueden estar activadas a la vez.",
+        "title": "Idioma de salida",
+        "description": "El idioma en que se escribe la nota. «Igual que la transcripción» mantiene el idioma en que se habló, aunque tus skills o instrucciones estén escritas en otro idioma.",
         "sameAsTranscript": "Igual que la transcripción"
       },
       "skills": {

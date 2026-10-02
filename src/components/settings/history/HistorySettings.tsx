@@ -37,6 +37,7 @@ import { ICON_BUTTON } from "../../ui/controlClasses";
 import { isHistoryEntryBusy, useNotesStore } from "@/stores/notesStore";
 import { HistoryEntryNotes } from "../notes/HistoryEntryNotes";
 import { NoteSkillPicker } from "../notes/NoteSkillPicker";
+import { OutputLanguagePicker } from "../notes/OutputLanguagePicker";
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
 /** A take's length as a clock reads it: "0:18", "12:05", "1:02:07". */
@@ -464,8 +465,9 @@ export const HistorySettings: React.FC = () => {
       </div>
       {tab === "recordings" && (
         <div className="space-y-2">
-          <div className="flex items-center justify-end gap-3">
+          <div className="flex flex-wrap items-center justify-end gap-3">
             <NoteSkillPicker />
+            <OutputLanguagePicker />
             <OpenRecordingsButton
               onClick={openRecordingsFolder}
               label={t("settings.history.openFolder")}

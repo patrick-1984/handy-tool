@@ -1453,7 +1453,7 @@
       "skillPickerCount": "{{count}} beceri",
       "instructions": {
         "title": "Talimatlar",
-        "description": "Model bir not yazarken neyi alır: kendi talimatlarınız, açık olan beceriler ve notun dili.",
+        "description": "Model bir not yazarken neyi alır: kendi talimatlarınız ve açık olan beceriler.",
         "custom": {
           "title": "Talimatlarınız",
           "description": "Her not için kendi talimatlarınız, örneğin: madde işaretleri kullan ve yapılacaklarla bitir. Açık becerilerden önce gönderilir ve bir beceri farklı bir şey söylediğinde öncelik onlardadır. Hiçbir beceri açık değilse tek başına kullanılır; bu alan da boşsa notlar varsayılan talimatlara göre yazılır.",
@@ -1461,8 +1461,8 @@
         }
       },
       "language": {
-        "title": "Not dili",
-        "description": "Notların yazıldığı dil. \"Transkriptle aynı\" her notu konuşulan dilde yazar; ya da tüm notlar için tek bir dil seçin. Bu, talimatlarınızın ve becerilerinizin yazıldığı dilden önce gelir; böylece Lehçe bir beceri ile İngilizce bir beceri birlikte açık olabilir.",
+        "title": "Çıktı dili",
+        "description": "Notun yazıldığı dil. \"Transkriptle aynı\", becerileriniz veya talimatlarınız başka bir dilde yazılmış olsa bile konuşulan dili korur.",
         "sameAsTranscript": "Transkriptle aynı"
       },
       "skills": {

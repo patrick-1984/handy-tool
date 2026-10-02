@@ -79,20 +79,28 @@ const NOTE_LANGUAGES: &[(&str, &str)] = &[
 
 /// Skills and instructions may be written in any language; this says which
 /// one the note is written in. It ends the system prompt, so it wins over
-/// the wording of a skill ("Write in English", or simply a Polish skill).
+/// the wording of a skill ("Write in English", or simply an English skill
+/// on a Polish transcript): the model must not drift into the skill's
+/// language.
 fn language_rule(note_language: &str) -> String {
-    const ANY_WORDING: &str = "The instructions above may be written in other languages, and a skill may name a language of its own; neither changes the language of the note. Keep names and quoted terms as they are.";
-    match NOTE_LANGUAGES
-        .iter()
-        .find(|(code, _)| *code == note_language.trim())
-    {
-        Some((_, name)) => format!(
-            "Language: write the whole note in {name}, whatever language the transcript is in. {ANY_WORDING}"
+    const ANY_WORDING: &str = "The skills and instructions above may be written in another language, or name a language of their own; that does not change the output language. Keep names and quoted terms as they are.";
+    match note_language_name(note_language) {
+        Some(name) => format!(
+            "Language: Write the note in {name}, whatever language the transcript is in. {ANY_WORDING}"
         ),
         None => format!(
-            "Language: write the note in the same language as the transcript (if it mixes languages, the one used most). {ANY_WORDING}"
+            "Language: Write the note in the same language as the transcript (if it mixes languages, the one used most), even if the instructions are in another language. {ANY_WORDING}"
         ),
     }
+}
+
+/// The English name of a note language code; `None` for "same as the
+/// transcript" (empty) or an unknown code.
+fn note_language_name(note_language: &str) -> Option<&'static str> {
+    NOTE_LANGUAGES
+        .iter()
+        .find(|(code, _)| *code == note_language.trim())
+        .map(|(_, name)| *name)
 }
 
 /// A skill's name and instructions, as sent to the model.
@@ -336,6 +344,9 @@ pub async fn generate_note(
             prompt_tokens: outcome.input_tokens,
             completion_tokens: outcome.output_tokens,
             duration_ms: Some(outcome.elapsed_ms),
+            // Kept only when a language was picked, for the note's meta line.
+            language: note_language_name(&settings.note_language)
+                .map(|_| settings.note_language.trim()),
         })
         .map_err(|e| e.to_string())
 }
@@ -690,8 +701,10 @@ mod tests {
     fn language_rule_names_the_chosen_language() {
         let same = language_rule("");
         assert!(same.contains("same language as the transcript"));
+        assert!(same.contains("even if the instructions are in another language"));
         let polish = language_rule("pl");
-        assert!(polish.contains("write the whole note in Polish"));
+        assert!(polish.contains("Write the note in Polish"));
+        assert!(polish.contains("that does not change the output language"));
         assert!(!polish.contains("same language as the transcript"));
         assert!(language_rule("zh-TW").contains("Traditional Chinese"));
         // An unknown code falls back to the transcript's language.

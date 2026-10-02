@@ -1453,7 +1453,7 @@
       "skillPickerCount": "{{count}} Skills",
       "instructions": {
         "title": "Anweisungen",
-        "description": "Was das Modell beim Schreiben einer Notiz erhält: deine eigenen Anweisungen, die eingeschalteten Skills und die Sprache der Notiz.",
+        "description": "Was das Modell beim Schreiben einer Notiz erhält: deine eigenen Anweisungen und die eingeschalteten Skills.",
         "custom": {
           "title": "Deine Anweisungen",
           "description": "Deine eigenen Anweisungen für jede Notiz, zum Beispiel: Aufzählungspunkte verwenden und mit den Aufgaben enden. Sie werden vor den eingeschalteten Skills gesendet und gelten vorrangig, wenn ein Skill etwas anderes sagt. Ist kein Skill eingeschaltet, werden sie allein verwendet; ist auch dieses Feld leer, folgen Notizen den Standardanweisungen.",
@@ -1461,8 +1461,8 @@
         }
       },
       "language": {
-        "title": "Sprache der Notiz",
-        "description": "Die Sprache, in der Notizen geschrieben werden. „Wie das Transkript“ schreibt jede Notiz in der gesprochenen Sprache; oder wähle eine Sprache für alle Notizen. Das gilt vor der Sprache, in der deine Anweisungen und Skills geschrieben sind, sodass ein polnischer und ein englischer Skill zusammen eingeschaltet sein können.",
+        "title": "Ausgabesprache",
+        "description": "Die Sprache, in der die Notiz geschrieben wird. „Wie das Transkript“ behält die gesprochene Sprache bei, auch wenn deine Skills oder Anweisungen in einer anderen Sprache geschrieben sind.",
         "sameAsTranscript": "Wie das Transkript"
       },
       "skills": {
