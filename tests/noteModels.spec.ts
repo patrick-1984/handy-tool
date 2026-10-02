@@ -197,16 +197,50 @@ test.describe("model comparison", () => {
 
   test("notes from the same text sit together, the original first", () => {
     const groups = groupNotesBySource([
-      note({ id: 5, history_id: 7, source_text: "meeting", model: "b" }),
-      note({ id: 4, history_id: 8, source_text: "other" }),
-      note({ id: 3, history_id: 7, source_text: "meeting", model: "a" }),
+      note({
+        id: 5,
+        history_id: 7,
+        source_exists: true,
+        source_text: "meeting",
+        model: "b",
+      }),
+      note({ id: 4, history_id: 8, source_exists: true, source_text: "other" }),
+      note({
+        id: 3,
+        history_id: 7,
+        source_exists: true,
+        source_text: "meeting",
+        model: "a",
+      }),
       note({
         id: 2,
         history_id: 7,
+        source_exists: true,
         source_text: "[Person 1]: meeting",
         with_speakers: true,
       }),
     ]);
     expect(groups.map((g) => g.map((n) => n.id))).toEqual([[3, 5], [4], [2]]);
+  });
+
+  test("a note of a deleted source sits next to the one written from it", () => {
+    const groups = groupNotesBySource([
+      // Written with Try another model after the entry was deleted.
+      note({ id: 9, history_id: null, source_text: "meeting", model: "b" }),
+      note({ id: 8, history_id: 3, source_exists: true, source_text: "x" }),
+      // Its entry (7) is gone; the note keeps the old id.
+      note({ id: 6, history_id: 7, source_text: "meeting", model: "a" }),
+    ]);
+    expect(groups.map((g) => g.map((n) => n.id))).toEqual([[6, 9], [8]]);
+  });
+});
+
+test.describe("note numbers in the UI language", () => {
+  test("costs, prices and ratios follow the locale", () => {
+    expect(formatCost(0.0012, "pl")).toBe("0,0012\u00a0USD");
+    expect(formatPricePerMillion(0.5, "pl")).toBe("0,50\u00a0USD");
+    expect(formatPricePerMillion(0.028, "de")).toBe("0,028\u00a0$");
+    expect(formatTimes(6.66, "pl")).toBe("6,7");
+    expect(formatCost(0.0012, "en")).toBe("$0.0012");
   });
 });

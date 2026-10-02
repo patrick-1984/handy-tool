@@ -64,7 +64,7 @@ Catalog: [Choose which model writes your notes](../../features.md#choose-which-m
 
 `Notes › Settings › Provider and model › Model`
 
-The model that writes notes, picked from every model the provider lists or typed. The list has a search box and sorts by price (input plus output, cheapest first) or by name. For an OpenRouter provider each model shows its price per 1M input / output tokens, and the list starts with Recommended for notes (cheap): good multilingual models whose input and output prices are both at most a tenth of Claude Opus 5.5's, each with a "≈Nx cheaper than Opus 5.5" badge. Anthropic and Gemini models show OpenRouter's price for the same model where it has one; other providers show no prices. The chosen model's price is shown under the field. Empty uses the provider's own model. Picking a provider of another kind in Provider resets it: to empty (the new provider's own model), or to the default when the new provider is an OpenRouter one without a model. **Default:** `openai/gpt-6-luna`. Settings that still had the earlier default, `google/gemini-2.5-flash`, move to it once.
+The model that writes notes, picked from every model the provider lists or typed. For an OpenRouter provider with a key, the list holds the models that key may use (OpenRouter filters it by the account's provider preferences, privacy settings and guardrails); without a key, or when that list can't be fetched, it is OpenRouter's full catalogue. The list has a search box and sorts by price (input plus output, cheapest first) or by name. For an OpenRouter provider each model shows its price per 1M input / output tokens, and the list starts with Recommended for notes (cheap): good multilingual models whose input and output prices are both at most a tenth of Claude Opus 5.5's, each with a "≈Nx cheaper than Opus 5.5" badge. Anthropic and Gemini models show OpenRouter's price for the same model where it has one; other providers show no prices. The chosen model's price is shown under the field. Empty uses the provider's own model. Picking a provider of another kind in Provider resets it: to empty (the new provider's own model), or to the default when the new provider is an OpenRouter one without a model. **Default:** `openai/gpt-6-luna`. Settings that still had the earlier default, `google/gemini-2.5-flash`, move to it once.
 
 Catalog: [Choose which model writes your notes](../../features.md#choose-which-model-writes-your-notes).
 
@@ -88,7 +88,7 @@ Catalog: [A note that says who said what](../../features.md#a-note-that-says-who
 
 `Notes › Saved notes › Compare models`
 
-A table at the top of the tab: for each model, how many notes it wrote, their average cost, average generation time and total cost, cheapest first. Costs that are not known are left out of the averages, and a model with none shows cost unknown. Clicking a row, or picking a model in Show next to the title, lists only that model's notes; All models lists them all again. **Default:** All models.
+A table at the top of the tab: for each model, how many notes it wrote, their average cost, average generation time and total cost, cheapest first. Costs that are not known are left out of the averages, and a model with none shows cost unknown. Clicking a row, or picking a model in Show next to the title, lists only that model's notes, each with the notes of the same text written by other models next to it; All models lists them all again. **Default:** All models.
 
 Catalog: [Compare models on the same text, with cost and time](../../features.md#compare-models-on-the-same-text).
 
@@ -96,7 +96,7 @@ Catalog: [Compare models on the same text, with cost and time](../../features.md
 
 `Notes › Saved notes › Try another model`
 
-An icon button on every note. It opens a model picker (the same list as Model, with prices) and Write note, which writes a new note from the same text with that model, using the current instructions, skills and language. The new note appears next to the one it started from. **Default:** not applicable; this is a per-note action.
+An icon button on every note. It opens a model picker (the same list as Model, with prices) and Write note, which writes a new note from the same text with that model. It uses your current instructions, skills and note language, not the ones the first note was written with, so change none of them between the two notes when you compare models; the picker says so, and shows both skill lists when they differ. The new note appears next to the one it started from. It is disabled while Make note or Make note with speakers runs on the note's recording. **Default:** not applicable; this is a per-note action.
 
 Catalog: [Compare models on the same text, with cost and time](../../features.md#compare-models-on-the-same-text).
 

@@ -70,7 +70,7 @@ Catalog: [Copy or delete a single entry](../../features.md#copy-or-delete-a-sing
 
 `History › Recordings › Try another model`
 
-An icon button on each note under an entry. It opens a model picker with prices and Write note, which writes a new note from the same text with that model; the new note appears next to the original, side by side, so the two can be compared. Make note and Make note with speakers stay disabled while it runs. **Default:** not applicable; this is a per-note action.
+An icon button on each note under an entry. It opens a model picker with prices and Write note, which writes a new note from the same text with that model, using your current instructions, skills and note language (the picker says so, and shows both skill lists when they differ); the new note appears next to the original, side by side, so the two can be compared. Make note and Make note with speakers stay disabled while it runs, and it stays disabled while they run. **Default:** not applicable; this is a per-note action.
 
 Catalog: [Compare models on the same text, with cost and time](../../features.md#compare-models-on-the-same-text).
 

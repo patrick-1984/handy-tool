@@ -396,6 +396,19 @@ async fn chat_anthropic(
     })
 }
 
+/// Output tokens Gemini bills: the reply plus the thinking tokens
+/// (`thoughtsTokenCount`), which are billed as output but not counted in
+/// `candidatesTokenCount`. None only when neither is reported.
+fn gemini_output_tokens(usage: &Value) -> Option<u32> {
+    let candidates = usage["candidatesTokenCount"].as_u64();
+    let thoughts = usage["thoughtsTokenCount"].as_u64();
+    if candidates.is_none() && thoughts.is_none() {
+        return None;
+    }
+    let total = candidates.unwrap_or(0) + thoughts.unwrap_or(0);
+    Some(total.min(u32::MAX as u64) as u32)
+}
+
 async fn chat_gemini(
     provider: &LlmProvider,
     system: Option<&str>,
@@ -464,9 +477,7 @@ async fn chat_gemini(
     let input_tokens = value["usageMetadata"]["promptTokenCount"]
         .as_u64()
         .map(|n| n as u32);
-    let output_tokens = value["usageMetadata"]["candidatesTokenCount"]
-        .as_u64()
-        .map(|n| n as u32);
+    let output_tokens = gemini_output_tokens(&value["usageMetadata"]);
     let truncated = value["candidates"][0]["finishReason"].as_str() == Some("MAX_TOKENS");
 
     Ok(RawChat {
@@ -802,6 +813,29 @@ mod tests {
         );
         assert_eq!(anthropic_max_tokens("claude-3-haiku-20240307", true), 4096);
         assert_eq!(anthropic_max_tokens("my-alias", true), 16384);
+    }
+
+    #[test]
+    fn gemini_output_tokens_include_thinking() {
+        let usage = json!({
+            "promptTokenCount": 120,
+            "candidatesTokenCount": 300,
+            "thoughtsTokenCount": 850,
+        });
+        assert_eq!(gemini_output_tokens(&usage), Some(1150));
+        assert_eq!(
+            gemini_output_tokens(&json!({ "candidatesTokenCount": 300 })),
+            Some(300)
+        );
+        assert_eq!(
+            gemini_output_tokens(&json!({ "thoughtsTokenCount": 40 })),
+            Some(40)
+        );
+        assert_eq!(
+            gemini_output_tokens(&json!({ "promptTokenCount": 5 })),
+            None
+        );
+        assert_eq!(gemini_output_tokens(&Value::Null), None);
     }
 
     #[test]

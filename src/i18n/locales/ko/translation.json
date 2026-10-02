@@ -1564,6 +1564,8 @@
         "write": "노트 쓰기",
         "generating": "{{model}}(으)로 노트를 쓰는 중…",
         "error": "{{model}}(으)로 노트를 쓰지 못했습니다:",
+        "currentSettings": "현재 지침, 스킬, 노트 언어를 사용합니다.",
+        "skillsChanged": "당시 스킬: {{before}} · 현재: {{now}}",
         "title": "모델 비교",
         "filter": "표시",
         "allModels": "전체 모델",

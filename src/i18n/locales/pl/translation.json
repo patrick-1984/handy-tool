@@ -1564,6 +1564,8 @@
         "write": "Napisz notatkę",
         "generating": "Piszę notatkę modelem {{model}}…",
         "error": "Nie udało się napisać notatki modelem {{model}}:",
+        "currentSettings": "Używa Twoich obecnych instrukcji, umiejętności i języka notatki.",
+        "skillsChanged": "Umiejętności wtedy: {{before}} · teraz: {{now}}",
         "title": "Porównaj modele",
         "filter": "Pokaż",
         "allModels": "Wszystkie modele",

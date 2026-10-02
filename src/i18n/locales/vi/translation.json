@@ -1564,6 +1564,8 @@
         "write": "Viết ghi chú",
         "generating": "Đang viết ghi chú bằng {{model}}…",
         "error": "Không thể viết ghi chú bằng {{model}}:",
+        "currentSettings": "Dùng hướng dẫn, kỹ năng và ngôn ngữ ghi chú hiện tại của bạn.",
+        "skillsChanged": "Kỹ năng lúc đó: {{before}} · bây giờ: {{now}}",
         "title": "So sánh mô hình",
         "filter": "Hiển thị",
         "allModels": "Tất cả mô hình",
