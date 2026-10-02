@@ -2705,7 +2705,6 @@ mod timing_tests {
                         audio,
                         Some(super::ParakeetInferenceParams {
                             timestamp_granularity: super::TimestampGranularity::Word,
-                            ..Default::default()
                         }),
                     ),
                     RsTiming::Words,

@@ -1166,10 +1166,8 @@ impl HistoryManager {
         let conn = self.get_connection()?;
         let (note, starred) = Self::save_note_with_conn(&conn, new_note)?;
         debug!("Saved note with id {}", note.id);
-        if starred {
-            if let Err(e) = self.app_handle.emit("history-updated", ()) {
-                error!("Failed to emit history-updated event: {}", e);
-            }
+        if starred && let Err(e) = self.app_handle.emit("history-updated", ()) {
+            error!("Failed to emit history-updated event: {}", e);
         }
         Ok(note)
     }
