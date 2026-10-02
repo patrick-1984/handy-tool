@@ -1,6 +1,6 @@
 # Changelog
 
-## [2.0.5] - 2026-10-01
+## [2.0.5] - 2026-10-02
 
 A fix release: the end of a take is kept more reliably.
 
