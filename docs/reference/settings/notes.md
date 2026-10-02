@@ -40,7 +40,7 @@ Catalog: [Choose which model writes your notes](../../features.md#choose-which-m
 
 `Notes › Settings › Provider and model › API key`
 
-The selected provider's API key. It edits the same registry entry as `Advanced settings › LLM providers`. **Default:** empty.
+The selected provider's API key, shown once a provider is selected. It edits the same registry entry as `Advanced settings › LLM providers`. **Default:** empty.
 
 Catalog: [Choose which model writes your notes](../../features.md#choose-which-model-writes-your-notes).
 
