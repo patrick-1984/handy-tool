@@ -1564,7 +1564,7 @@
         "write": "Notiz schreiben",
         "generating": "Notiz wird mit {{model}} geschrieben…",
         "error": "Notiz mit {{model}} konnte nicht geschrieben werden:",
-        "currentSettings": "Verwendet deine aktuellen Anweisungen, Skills und Notizsprache.",
+        "currentSettings": "Verwendet deine aktuellen Anweisungen, Skills und Ausgabesprache.",
         "skillsChanged": "Skills damals: {{before}} · jetzt: {{now}}",
         "title": "Modelle vergleichen",
         "filter": "Anzeigen",

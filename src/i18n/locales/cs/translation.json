@@ -1564,7 +1564,7 @@
         "write": "Napsat poznámku",
         "generating": "Píšu poznámku modelem {{model}}…",
         "error": "Poznámku se nepodařilo napsat modelem {{model}}:",
-        "currentSettings": "Použije vaše současné pokyny, dovednosti a jazyk poznámky.",
+        "currentSettings": "Použije vaše současné pokyny, dovednosti a jazyk výstupu.",
         "skillsChanged": "Dovednosti tehdy: {{before}} · nyní: {{now}}",
         "title": "Porovnat modely",
         "filter": "Zobrazit",

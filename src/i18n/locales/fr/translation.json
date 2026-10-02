@@ -1564,7 +1564,7 @@
         "write": "Rédiger la note",
         "generating": "Rédaction de la note avec {{model}}…",
         "error": "Impossible de rédiger la note avec {{model}} :",
-        "currentSettings": "Utilise vos instructions, skills et langue de note actuelles.",
+        "currentSettings": "Utilise vos instructions, skills et langue de sortie actuelles.",
         "skillsChanged": "Skills alors : {{before}} · maintenant : {{now}}",
         "title": "Comparer les modèles",
         "filter": "Afficher",

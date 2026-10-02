@@ -1564,7 +1564,7 @@
         "write": "ノートを書く",
         "generating": "{{model}} でノートを書いています…",
         "error": "{{model}} でノートを書けませんでした:",
-        "currentSettings": "現在の指示、スキル、ノートの言語を使います。",
+        "currentSettings": "現在の指示、スキル、出力言語を使います。",
         "skillsChanged": "当時のスキル: {{before}} · 現在: {{now}}",
         "title": "モデルを比較",
         "filter": "表示",
