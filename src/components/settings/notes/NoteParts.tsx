@@ -23,6 +23,7 @@ import { formatCost, formatDuration } from "@/lib/noteModels";
 import { useNavStore } from "@/stores/navStore";
 import {
   SETUP_ERRORS,
+  isHistoryEntryBusy,
   noteProvider,
   useNotesStore,
   type ModelJob,
@@ -78,7 +79,7 @@ export const NoteMeta: React.FC<{ note: Note }> = ({ note }) => {
   const { t, i18n } = useTranslation();
   const count = (n: number | null) =>
     n === null ? "–" : new Intl.NumberFormat(i18n.language).format(n);
-  const cost = formatCost(note.cost_usd);
+  const cost = formatCost(note.cost_usd, i18n.language);
   const items: { key: string; text: string; title?: string }[] = [
     {
       key: "cost",
@@ -161,10 +162,31 @@ export const TryAnotherModelForm: React.FC<{
   const { settings } = useSettings();
   const provider = noteProvider(settings);
   const tryAnotherModel = useNotesStore((state) => state.tryAnotherModel);
+  const loadSkills = useNotesStore((state) => state.loadSkills);
+  const skills = useNotesStore((state) => state.skills);
+  const busy = useNotesStore(
+    (state) =>
+      note.history_id !== null && isHistoryEntryBusy(state, note.history_id),
+  );
   const [model, setModel] = useState("");
 
+  useEffect(() => {
+    void loadSkills();
+  }, [loadSkills]);
+
+  // The new note is written with the instructions, skills and note language
+  // set now, not the ones this note was written with. Only the skill names
+  // are stored with a note, so say when those differ.
+  const activeIds = settings?.note_skill_ids ?? [];
+  const currentSkills = skills
+    .filter((skill) => activeIds.includes(skill.id))
+    .map((skill) => skill.name)
+    .join(", ");
+  const skillsChanged = (note.skill_name ?? "") !== currentSkills;
+  const noSkills = t("settings.notes.skillPickerNone");
+
   const start = () => {
-    if (model.trim() === "") return;
+    if (model.trim() === "" || busy) return;
     void tryAnotherModel(note, model);
     onClose();
   };
@@ -186,7 +208,7 @@ export const TryAnotherModelForm: React.FC<{
         variant="primary"
         size="sm"
         onClick={start}
-        disabled={model.trim() === ""}
+        disabled={model.trim() === "" || busy}
       >
         <Sparkles className="w-3.5 h-3.5" />
         {t("settings.notes.compare.write")}
@@ -199,6 +221,18 @@ export const TryAnotherModelForm: React.FC<{
       >
         <X width={16} height={16} />
       </button>
+      <p className="basis-full text-xs text-text-secondary">
+        {t("settings.notes.compare.currentSettings")}
+        {skillsChanged && (
+          <>
+            {" "}
+            {t("settings.notes.compare.skillsChanged", {
+              before: note.skill_name || noSkills,
+              now: currentSkills || noSkills,
+            })}
+          </>
+        )}
+      </p>
     </div>
   );
 };

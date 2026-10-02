@@ -1557,7 +1557,8 @@ and most notes don't need an expensive model.
 post-processing and Model Testing. Until you pick one, the first enabled OpenRouter provider is
 used. The provider's API key can be entered right on the Notes page and is the same key the LLM
 providers tab shows. The model list shows every model the provider offers, with a search box and
-sorting by price or name. For OpenRouter, each model shows its price per 1M input and output tokens
+sorting by price or name; for OpenRouter that is the models your key may use, as filtered by your
+OpenRouter account's provider preferences, privacy settings and guardrails. For OpenRouter, each model shows its price per 1M input and output tokens
 from OpenRouter's live price list, and the list opens with Recommended for notes (cheap): a short
 list of good multilingual models whose input and output prices are both at most a tenth of Claude
 Opus 5.5's, worked out from the live prices and marked with how many times cheaper they are. The
@@ -1572,7 +1573,7 @@ and marked as cut short.
 and `Notes › Settings › Provider and model › Model`.
 **Since.** The release after 2.0.5.
 
-<!-- prov: note provider | src: src-tauri/src/commands/notes.rs; src-tauri/src/model_testing.rs; src-tauri/src/settings.rs; src/components/settings/notes/NoteSettingsTab.tsx; src/components/settings/notes/NoteModelSelect.tsx; src/lib/noteModels.ts; src/lib/openrouterPrices.ts -->
+<!-- prov: note provider | src: src-tauri/src/commands/notes.rs; src-tauri/src/model_testing.rs; src-tauri/src/token_count.rs; src-tauri/src/settings.rs; src/components/settings/notes/NoteSettingsTab.tsx; src/components/settings/notes/NoteModelSelect.tsx; src/lib/noteModels.ts; src/lib/openrouterPrices.ts -->
 
 ### Compare models on the same text, with cost and time
 
@@ -1583,9 +1584,12 @@ know is to see two notes of the same meeting next to each other, with what each 
 charged, or an estimate from the prices set for the provider; otherwise cost unknown), the tokens
 sent and received when the provider reports them, and how long the model took. Try another model on
 any note writes a new note from the same text with a model you pick from the same priced list, and
-puts it right next to the first one, side by side, under the same recording. On Saved notes,
-Compare models sums it up per model: number of notes, average cost, average time and total cost,
-cheapest first, and narrows the list to one model's notes.
+puts it right next to the first one, side by side, under the same recording. It uses your current
+instructions, skills and note language, so keep those unchanged while you compare; the picker
+reminds you, and shows both skill lists when they differ. On Saved notes, Compare models sums it
+up per model: number of notes, average cost, average time and total cost, cheapest first, and
+narrows the list to one model's notes, each still next to the notes it is compared with. Gemini's
+thinking tokens count as tokens received, as Google bills them.
 **Where.** `History › Recordings › Try another model`, `Notes › Saved notes › Try another model`
 and `Notes › Saved notes › Compare models`.
 **Since.** The release after 2.0.5.

@@ -10,7 +10,11 @@ import {
 } from "lucide-react";
 import type { Note } from "@/bindings";
 import { useNavStore } from "@/stores/navStore";
-import { useNotesStore, type HistoryNoteJob } from "@/stores/notesStore";
+import {
+  isHistoryEntryBusy,
+  useNotesStore,
+  type HistoryNoteJob,
+} from "@/stores/notesStore";
 import { useSpeakerModelStatus } from "@/hooks/useSpeakerModelStatus";
 import { Button } from "../../ui/Button";
 import { ICON_BUTTON } from "../../ui/controlClasses";
@@ -259,8 +263,12 @@ const JobCard: React.FC<{ historyId: number; job: HistoryNoteJob }> = ({
 const InlineNote: React.FC<{ note: Note }> = ({ note }) => {
   const { i18n } = useTranslation();
   const [trying, setTrying] = useState(false);
-  const comparing = useNotesStore(
-    (state) => state.modelJobs[note.id]?.status === "generating",
+  // Off while any note job runs on this entry (Make note, with speakers, or
+  // Try another model), like the entry's Make note buttons.
+  const busy = useNotesStore(
+    (state) =>
+      state.modelJobs[note.id]?.status === "generating" ||
+      (note.history_id !== null && isHistoryEntryBusy(state, note.history_id)),
   );
   return (
     <NoteCard
@@ -279,7 +287,7 @@ const InlineNote: React.FC<{ note: Note }> = ({ note }) => {
         <>
           <TryAnotherModelButton
             active={trying}
-            disabled={comparing}
+            disabled={busy}
             onClick={() => setTrying((value) => !value)}
           />
           <CopyNoteButton markdown={note.note_text} />

@@ -368,6 +368,13 @@ export const useNotesStore = create<NotesStore>()((set, get) => ({
     if (chosen === "" || get().modelJobs[note.id]?.status === "generating") {
       return;
     }
+    // One note job at a time per History entry, as for Make note.
+    if (
+      note.history_id !== null &&
+      isHistoryEntryBusy(get(), note.history_id)
+    ) {
+      return;
+    }
     // Keep the source entry only while it exists, as "Make note" does.
     const historyId = note.source_exists ? note.history_id : null;
     const setJob = (job: ModelJob) =>

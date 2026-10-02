@@ -122,31 +122,53 @@ export const recommendNoteModels = (
   );
 };
 
-/** "40", "13", "6.7": how many times cheaper, rounded for a badge. */
-export const formatTimes = (times: number): string =>
-  times >= 10 ? String(Math.round(times)) : String(Math.round(times * 10) / 10);
+/** "40", "13", "6.7" (in the UI language): how many times cheaper. */
+export const formatTimes = (times: number, locale = "en"): string =>
+  new Intl.NumberFormat(locale, {
+    maximumFractionDigits: times >= 10 ? 0 : 1,
+  }).format(times);
+
+/** US dollars in the UI language with the given fraction digits. */
+const usd = (n: number, locale: string, min: number, max: number): string =>
+  new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: min,
+    maximumFractionDigits: max,
+  }).format(n);
 
 /** Dollars with enough digits to tell cheap models apart: 4, 0.50, 0.028. */
-const formatDollars = (n: number): string => {
-  if (n === 0) return "0";
+const formatDollars = (n: number, locale: string): string => {
+  if (n === 0) return usd(0, locale, 0, 0);
   // 0.09999999999999999 (a per-token string times a million) is $0.10.
-  if (Number(n.toFixed(4)) >= 0.1) return n.toFixed(2);
+  if (Number(n.toFixed(4)) >= 0.1) return usd(n, locale, 2, 2);
   // Two significant digits, without trailing zeros.
   const digits = Math.min(10, 1 - Math.floor(Math.log10(n)));
-  return n.toFixed(digits).replace(/0+$/, "");
+  return usd(n, locale, 0, digits);
 };
 
-/** A per-1M price: "$0.10", "$0.028"; null when it varies. */
-export const formatPricePerMillion = (n: number): string | null =>
-  n < 0 ? null : `$${formatDollars(n)}`;
+/**
+ * A per-1M price in the UI language: "$0.10", "$0.028" ("0,10 USD" in
+ * Polish); null when it varies.
+ */
+export const formatPricePerMillion = (
+  n: number,
+  locale = "en",
+): string | null => (n < 0 ? null : formatDollars(n, locale));
 
-/** What a note cost: "$0.0012"; null when unknown. */
-export const formatCost = (usd: number | null | undefined): string | null => {
-  if (usd == null || !Number.isFinite(usd) || usd < 0) return null;
-  if (usd === 0) return "$0";
-  if (usd >= 1) return `$${usd.toFixed(2)}`;
-  if (usd >= 0.0001) return `$${usd.toFixed(4)}`;
-  return `$${formatDollars(usd)}`;
+/**
+ * What a note cost, in the UI language: "$0.0012" ("0,0012 USD" in
+ * Polish); null when unknown.
+ */
+export const formatCost = (
+  cost: number | null | undefined,
+  locale = "en",
+): string | null => {
+  if (cost == null || !Number.isFinite(cost) || cost < 0) return null;
+  if (cost === 0) return usd(0, locale, 0, 0);
+  if (cost >= 1) return usd(cost, locale, 2, 2);
+  if (cost >= 0.0001) return usd(cost, locale, 4, 4);
+  return formatDollars(cost, locale);
 };
 
 /** "3.2 s" / "850 ms" in the UI language. */
@@ -242,13 +264,16 @@ export const summarizeByModel = (notes: readonly Note[]): ModelSummary[] => {
 /**
  * Notes made from the same text (same source entry, same speakers flag),
  * so a note from "Try another model" sits next to the one it is compared
- * with. Groups come newest first (by their newest note); inside a group the
+ * with. A note whose source entry was deleted keeps its old `history_id`,
+ * while a note written from it afterwards has none, so a deleted source
+ * groups by the text alone, like pasted text. Groups come newest first (by their newest note); inside a group the
  * oldest note comes first, so the original stays on the left.
  */
 export const groupNotesBySource = (notes: readonly Note[]): Note[][] => {
   const groups = new Map<string, Note[]>();
   for (const note of notes) {
-    const key = `${note.history_id ?? "manual"}|${note.with_speakers ? 1 : 0}|${note.source_text}`;
+    const source = note.source_exists ? note.history_id : null;
+    const key = `${source ?? "manual"}|${note.with_speakers ? 1 : 0}|${note.source_text}`;
     const group = groups.get(key);
     if (group) group.push(note);
     else groups.set(key, [note]);

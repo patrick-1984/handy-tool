@@ -1852,6 +1852,8 @@
         "write": "Write note",
         "generating": "Writing the note with {{model}}…",
         "error": "Couldn't write the note with {{model}}:",
+        "currentSettings": "Uses your current instructions, skills and note language.",
+        "skillsChanged": "Skills then: {{before}} · now: {{now}}",
         "title": "Compare models",
         "filter": "Show",
         "allModels": "All models",

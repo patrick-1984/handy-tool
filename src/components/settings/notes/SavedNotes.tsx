@@ -9,7 +9,7 @@ import {
   summarizeByModel,
 } from "@/lib/noteModels";
 import { useNavStore } from "@/stores/navStore";
-import { useNotesStore } from "@/stores/notesStore";
+import { isHistoryEntryBusy, useNotesStore } from "@/stores/notesStore";
 import { Button } from "../../ui/Button";
 import { Dropdown } from "../../ui/Dropdown";
 import {
@@ -29,8 +29,12 @@ const SavedNote: React.FC<{ note: Note }> = ({ note }) => {
   const { t, i18n } = useTranslation();
   const goToHistoryEntry = useNavStore((state) => state.goToHistoryEntry);
   const [trying, setTrying] = useState(false);
-  const comparing = useNotesStore(
-    (state) => state.modelJobs[note.id]?.status === "generating",
+  // Like the entry's other note buttons: off while any note job runs on
+  // the source entry (Make note, with speakers, or Try another model).
+  const busy = useNotesStore(
+    (state) =>
+      state.modelJobs[note.id]?.status === "generating" ||
+      (note.history_id !== null && isHistoryEntryBusy(state, note.history_id)),
   );
 
   return (
@@ -48,7 +52,7 @@ const SavedNote: React.FC<{ note: Note }> = ({ note }) => {
         <div className="flex items-center gap-0.5 shrink-0">
           <TryAnotherModelButton
             active={trying}
-            disabled={comparing}
+            disabled={busy}
             onClick={() => setTrying((value) => !value)}
           />
           <CopyNoteButton markdown={note.note_text} />
@@ -155,7 +159,7 @@ const CompareModels: React.FC<{
                 <td className="py-1.5 pe-3 text-text break-all">{s.model}</td>
                 <td className="py-1.5 px-2 text-end">{s.notes}</td>
                 <td className="py-1.5 px-2 text-end whitespace-nowrap">
-                  {formatCost(s.averageCost) ?? unknown}
+                  {formatCost(s.averageCost, i18n.language) ?? unknown}
                 </td>
                 <td className="py-1.5 px-2 text-end whitespace-nowrap">
                   {s.averageMs !== null
@@ -163,7 +167,7 @@ const CompareModels: React.FC<{
                     : "–"}
                 </td>
                 <td className="py-1.5 ps-2 text-end whitespace-nowrap">
-                  {formatCost(s.totalCost) ?? unknown}
+                  {formatCost(s.totalCost, i18n.language) ?? unknown}
                 </td>
               </tr>
             ))}
@@ -196,15 +200,17 @@ export const SavedNotes: React.FC = () => {
   // A filtered model whose notes are all gone shows everything again.
   const activeFilter =
     filter !== "" && notes.some((note) => note.model === filter) ? filter : "";
-  const groups = useMemo(
-    () =>
-      groupNotesBySource(
-        activeFilter === ""
-          ? notes
-          : notes.filter((note) => note.model === activeFilter),
-      ),
-    [notes, activeFilter],
-  );
+  // Filter whole groups, not notes: a group stays when any of its notes is
+  // by the chosen model, so a note written with Try another model still
+  // shows next to the one it is compared with.
+  const groups = useMemo(() => {
+    const all = groupNotesBySource(notes);
+    return activeFilter === ""
+      ? all
+      : all.filter((group) =>
+          group.some((note) => note.model === activeFilter),
+        );
+  }, [notes, activeFilter]);
 
   if (notes.length === 0) {
     return (

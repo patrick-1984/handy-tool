@@ -101,7 +101,9 @@ const useModelCatalogue = (provider: LlmProvider | null) => {
       }
       throw new Error(result.error);
     } catch {
-      // OpenRouter's catalogue lists the same models, so fall back to it.
+      // For OpenRouter the provider's list is the models this key may use
+      // (`/models/user`); when it can't be fetched, fall back to the full
+      // public catalogue already cached for the prices.
       const catalogue =
         kind === "openrouter" ? await getOpenRouterPrices() : [];
       if (catalogue.length > 0) {
@@ -120,9 +122,9 @@ const useModelCatalogue = (provider: LlmProvider | null) => {
 
 /** "$0.10 / $0.50", or "price varies". */
 const PriceLabel: React.FC<{ price: ModelPrice }> = ({ price }) => {
-  const { t } = useTranslation();
-  const input = formatPricePerMillion(price.input);
-  const output = formatPricePerMillion(price.output);
+  const { t, i18n } = useTranslation();
+  const input = formatPricePerMillion(price.input, i18n.language);
+  const output = formatPricePerMillion(price.output, i18n.language);
   if (input === null || output === null) {
     return <>{t("settings.notes.modelPicker.priceVaries")}</>;
   }
@@ -138,10 +140,12 @@ const PriceLabel: React.FC<{ price: ModelPrice }> = ({ price }) => {
 
 /** "≈40x cheaper than Opus 5.5". */
 const CheaperBadge: React.FC<{ times: number }> = ({ times }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   return (
     <span className="shrink-0 rounded-full border border-ok-text/40 px-1.5 py-px text-[11px] font-medium text-ok-text whitespace-nowrap">
-      {t("settings.notes.modelPicker.cheaper", { times: formatTimes(times) })}
+      {t("settings.notes.modelPicker.cheaper", {
+        times: formatTimes(times, i18n.language),
+      })}
     </span>
   );
 };

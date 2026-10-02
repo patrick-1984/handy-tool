@@ -1629,6 +1629,8 @@
         "write": "Escribir nota",
         "generating": "Escribiendo la nota con {{model}}…",
         "error": "No se pudo escribir la nota con {{model}}:",
+        "currentSettings": "Usa tus instrucciones, skills e idioma de nota actuales.",
+        "skillsChanged": "Skills entonces: {{before}} · ahora: {{now}}",
         "title": "Comparar modelos",
         "filter": "Mostrar",
         "allModels": "Todos los modelos",
