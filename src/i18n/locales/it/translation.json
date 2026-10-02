@@ -1629,7 +1629,7 @@
         "write": "Scrivi nota",
         "generating": "Scrittura della nota con {{model}}…",
         "error": "Impossibile scrivere la nota con {{model}}:",
-        "currentSettings": "Usa le tue istruzioni, skill e lingua della nota attuali.",
+        "currentSettings": "Usa le tue istruzioni, skill e lingua di output attuali.",
         "skillsChanged": "Skill allora: {{before}} · ora: {{now}}",
         "title": "Confronta modelli",
         "filter": "Mostra",

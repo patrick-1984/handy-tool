@@ -374,7 +374,7 @@ const ProviderGroup: React.FC = () => {
 };
 
 /**
- * Notes › Settings: your instructions and the note language, the skills,
+ * Notes › Settings: your instructions, the skills,
  * the provider and model, then speaker detection for "Make note with
  * speakers".
  */
