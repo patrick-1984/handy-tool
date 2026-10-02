@@ -6,6 +6,7 @@ import {
   ChevronUp,
   Copy,
   NotebookPen,
+  Scissors,
   Trash2,
   UsersRound,
 } from "lucide-react";
@@ -76,6 +77,18 @@ export const SpeakersBadge: React.FC = () => {
       <UsersRound className="w-3 h-3" aria-hidden />
       {t("settings.notes.speakersBadge")}
     </span>
+  );
+};
+
+/** Says a note ends early because the model hit its length limit. */
+export const CutShortNotice: React.FC<{ note: Note }> = ({ note }) => {
+  const { t } = useTranslation();
+  if (!note.truncated) return null;
+  return (
+    <p className="flex items-center gap-1.5 text-xs text-warn-text">
+      <Scissors className="w-3.5 h-3.5 shrink-0" aria-hidden />
+      {t("settings.notes.cutShort")}
+    </p>
   );
 };
 

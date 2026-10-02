@@ -1730,6 +1730,7 @@
       "openSettings": "Note settings",
       "defaultSkill": "Default instructions",
       "speakersBadge": "With speakers",
+      "cutShort": "The model reached its length limit, so this note ends early.",
       "copy": "Copy note (Markdown)",
       "copyError": "Couldn't copy the note.",
       "delete": "Delete note",

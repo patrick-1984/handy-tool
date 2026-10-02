@@ -1507,6 +1507,7 @@
       "openSettings": "Nastavení poznámek",
       "defaultSkill": "Výchozí pokyny",
       "speakersBadge": "S mluvčími",
+      "cutShort": "Model dosáhl limitu délky, proto tato poznámka končí předčasně.",
       "copy": "Kopírovat poznámku (Markdown)",
       "copyError": "Poznámku se nepodařilo zkopírovat.",
       "delete": "Smazat poznámku",

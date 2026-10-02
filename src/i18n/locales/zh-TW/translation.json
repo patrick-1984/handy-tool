@@ -1507,6 +1507,7 @@
       "openSettings": "筆記設定",
       "defaultSkill": "預設指示",
       "speakersBadge": "含說話者",
+      "cutShort": "模型已達到長度上限，因此這則筆記提前結束。",
       "copy": "複製筆記（Markdown）",
       "copyError": "無法複製筆記。",
       "delete": "刪除筆記",

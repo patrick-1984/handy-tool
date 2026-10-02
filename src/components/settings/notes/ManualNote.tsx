@@ -9,6 +9,7 @@ import { Button } from "../../ui/Button";
 import { Textarea } from "../../ui/Textarea";
 import {
   CopyNoteButton,
+  CutShortNotice,
   DeleteNoteButton,
   NoteBody,
   NoteCard,
@@ -105,6 +106,7 @@ export const ManualNote: React.FC = () => {
             </>
           }
         >
+          <CutShortNotice note={result} />
           <NoteBody markdown={result.note_text} />
         </NoteCard>
       )}

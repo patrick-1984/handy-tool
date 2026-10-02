@@ -1507,6 +1507,7 @@
       "openSettings": "Notiz-Einstellungen",
       "defaultSkill": "Standardanweisungen",
       "speakersBadge": "Mit Sprechern",
+      "cutShort": "Das Modell hat seine Längengrenze erreicht, daher endet diese Notiz vorzeitig.",
       "copy": "Notiz kopieren (Markdown)",
       "copyError": "Die Notiz konnte nicht kopiert werden.",
       "delete": "Notiz löschen",

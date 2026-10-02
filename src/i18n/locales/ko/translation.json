@@ -1507,6 +1507,7 @@
       "openSettings": "노트 설정",
       "defaultSkill": "기본 지침",
       "speakersBadge": "화자 포함",
+      "cutShort": "모델이 길이 제한에 도달하여 이 노트가 중간에 끝납니다.",
       "copy": "노트 복사 (Markdown)",
       "copyError": "노트를 복사하지 못했습니다.",
       "delete": "노트 삭제",

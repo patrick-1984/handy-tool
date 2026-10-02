@@ -1507,6 +1507,7 @@
       "openSettings": "ノートの設定",
       "defaultSkill": "既定の指示",
       "speakersBadge": "話者付き",
+      "cutShort": "モデルが長さの上限に達したため、このノートは途中で終わっています。",
       "copy": "ノートをコピー (Markdown)",
       "copyError": "ノートをコピーできませんでした。",
       "delete": "ノートを削除",

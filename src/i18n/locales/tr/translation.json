@@ -1507,6 +1507,7 @@
       "openSettings": "Not ayarları",
       "defaultSkill": "Varsayılan talimatlar",
       "speakersBadge": "Konuşmacılı",
+      "cutShort": "Model uzunluk sınırına ulaştığı için bu not erken bitiyor.",
       "copy": "Notu kopyala (Markdown)",
       "copyError": "Not kopyalanamadı.",
       "delete": "Notu sil",

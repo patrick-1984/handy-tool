@@ -1507,6 +1507,7 @@
       "openSettings": "Ustawienia notatek",
       "defaultSkill": "Domyślne instrukcje",
       "speakersBadge": "Z mówcami",
+      "cutShort": "Model osiągnął limit długości, więc ta notatka urywa się przed końcem.",
       "copy": "Kopiuj notatkę (Markdown)",
       "copyError": "Nie udało się skopiować notatki.",
       "delete": "Usuń notatkę",
