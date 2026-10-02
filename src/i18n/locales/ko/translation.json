@@ -11,6 +11,7 @@
     "shortcuts": "단축키",
     "models": "모델",
     "history": "히스토리",
+    "notes": "노트",
     "files": "파일",
     "debug": "디버그",
     "about": "정보",
@@ -1485,6 +1486,96 @@
         "regexBadge": ".*",
         "regexActive": "쿼리가 정규식으로 처리되고 있습니다",
         "noMatches": "검색과 일치하는 항목이 없습니다."
+      }
+    },
+    "notes": {
+      "tabs": {
+        "settings": "설정",
+        "saved": "저장된 노트",
+        "manual": "직접 만들기"
+      },
+      "inline": {
+        "label": "노트",
+        "makeNote": "노트 만들기",
+        "generating": "노트를 작성하는 중…",
+        "retry": "다시 시도",
+        "dismiss": "닫기",
+        "error": "노트를 작성하지 못했습니다:",
+        "sourceLabel": "이 노트의 원본"
+      },
+      "openSettings": "노트 설정",
+      "defaultSkill": "기본 지침",
+      "speakersBadge": "화자 포함",
+      "copy": "노트 복사 (Markdown)",
+      "copyError": "노트를 복사하지 못했습니다.",
+      "delete": "노트 삭제",
+      "deleteError": "노트를 삭제하지 못했습니다. 다시 시도하세요.",
+      "showMore": "더 보기",
+      "showLess": "간단히 보기",
+      "skillPicker": "노트 스킬",
+      "skills": {
+        "title": "스킬",
+        "description": "스킬은 회의록이나 학습 요약처럼 노트를 어떻게 쓸지 모델에 알려 줍니다. 원하는 만큼 가져와서 사용할 스킬을 고르세요. 제거할 때까지 유지됩니다.",
+        "active": {
+          "title": "스킬",
+          "description": "새 노트를 작성할 때 사용할 스킬입니다. 기본 지침: 녹음 내용과 같은 언어로, 모든 사실·결정·할 일을 담은 명확하고 구조화된 Markdown 노트입니다."
+        },
+        "defaultDescription": "노트는 기본 지침을 따릅니다: 녹음 내용과 같은 언어의 명확하고 구조화된 Markdown 노트입니다.",
+        "fileCount": "파일: {{count}}개",
+        "truncated": "이 스킬은 매우 길어서 처음 200KB만 모델에 전송됩니다.",
+        "importFile": "파일 가져오기…",
+        "importFolder": "폴더 가져오기…",
+        "importHint": ".md 또는 .txt 파일, 폴더, 또는 .zip / .skill 압축 파일(SKILL.md와 선택적 참고 파일). Handy는 스킬을 자체 데이터 폴더에 복사합니다.",
+        "fileFilter": "스킬",
+        "imported": "스킬 \"{{name}}\"을(를) 가져와 선택했습니다.",
+        "importError": "스킬을 가져오지 못했습니다: {{error}}",
+        "remove": "스킬 제거",
+        "removeError": "스킬을 제거하지 못했습니다."
+      },
+      "provider": {
+        "title": "제공자 및 모델",
+        "description": "노트는 LLM 제공자의 모델이 작성합니다. 녹음 내용은 해당 제공자에게 전송됩니다.",
+        "provider": {
+          "title": "제공자",
+          "description": "노트를 작성할 등록된 LLM 제공자입니다. 선택하기 전까지 Handy는 활성화된 첫 번째 OpenRouter 제공자를 사용합니다.",
+          "placeholder": "제공자 선택"
+        },
+        "apiKey": {
+          "title": "API 키",
+          "description": "선택한 제공자의 API 키입니다. 고급 설정 › LLM 제공자의 키와 같으므로 여기서 바꾸면 그곳도 바뀝니다.",
+          "placeholder": "API 키 붙여넣기"
+        },
+        "model": {
+          "title": "모델",
+          "description": "노트를 작성할 모델입니다(예: google/gemini-2.5-flash). 비워 두면 제공자의 모델을 사용합니다.",
+          "placeholder": "제공자의 모델"
+        },
+        "manage": "LLM 제공자 관리"
+      },
+      "saved": {
+        "loading": "노트를 불러오는 중…",
+        "empty": "아직 노트가 없습니다. 히스토리의 녹음에서 \"노트 만들기\"를 사용하거나 \"직접 만들기\" 탭에서 작성하세요.",
+        "goToTranscript": "녹음 내용으로 이동",
+        "sourceDeleted": "원본 녹음 내용이 삭제되었습니다"
+      },
+      "manual": {
+        "title": "노트로 만들 텍스트",
+        "placeholder": "녹음 내용을 붙여넣거나 입력하세요…",
+        "generate": "노트 생성",
+        "savedHint": "저장된 노트에 저장됨"
+      },
+      "errors": {
+        "emptyTranscript": "노트를 만들 텍스트가 없습니다.",
+        "missingProvider": "노트 설정에서 노트용 제공자를 선택하세요.",
+        "unsupportedProvider": "이 제공자는 노트를 작성할 수 없습니다. 노트 설정에서 다른 제공자를 선택하세요.",
+        "missingApiKey": "노트 설정에서 제공자의 API 키를 추가하세요.",
+        "missingModel": "노트 설정에서 노트용 모델을 선택하세요.",
+        "emptyNote": "모델이 빈 노트를 반환했습니다. 다시 시도하거나 다른 모델을 선택하세요.",
+        "skillMissing": "선택한 스킬이 없습니다. 노트 설정에서 다른 스킬을 선택하세요.",
+        "skillEmpty": "스킬에 읽을 수 있는 지침(Markdown 또는 텍스트)이 없습니다.",
+        "skillUnsupported": "이 파일 형식은 가져올 수 없습니다. .md, .txt, .zip 또는 .skill을 사용하세요.",
+        "skillTooLarge": "스킬이 50MB보다 큽니다.",
+        "skillUnsafePath": "압축 파일에 안전하지 않은 파일 경로가 있어 가져오지 않았습니다."
       }
     },
     "debug": {

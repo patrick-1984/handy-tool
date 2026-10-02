@@ -11,6 +11,7 @@
     "shortcuts": "Raccourcis",
     "models": "Modèles",
     "history": "Historique",
+    "notes": "Notes",
     "files": "Fichiers",
     "debug": "Débogage",
     "about": "À propos",
@@ -1485,6 +1486,96 @@
         "regexBadge": ".*",
         "regexActive": "La requête est traitée comme une expression régulière",
         "noMatches": "Aucune entrée ne correspond à votre recherche."
+      }
+    },
+    "notes": {
+      "tabs": {
+        "settings": "Paramètres",
+        "saved": "Notes enregistrées",
+        "manual": "Note manuelle"
+      },
+      "inline": {
+        "label": "Note",
+        "makeNote": "Créer une note",
+        "generating": "Rédaction de votre note…",
+        "retry": "Réessayer",
+        "dismiss": "Fermer",
+        "error": "Impossible de rédiger la note :",
+        "sourceLabel": "Source de cette note"
+      },
+      "openSettings": "Paramètres des notes",
+      "defaultSkill": "Instructions par défaut",
+      "speakersBadge": "Avec locuteurs",
+      "copy": "Copier la note (Markdown)",
+      "copyError": "Impossible de copier la note.",
+      "delete": "Supprimer la note",
+      "deleteError": "Impossible de supprimer la note. Veuillez réessayer.",
+      "showMore": "Afficher plus",
+      "showLess": "Afficher moins",
+      "skillPicker": "Skill de note",
+      "skills": {
+        "title": "Skills",
+        "description": "Une skill indique au modèle comment rédiger vos notes, par exemple un compte rendu de réunion ou une fiche de révision. Importez-en autant que vous voulez et choisissez celle à utiliser ; elles restent jusqu'à ce que vous les supprimiez.",
+        "active": {
+          "title": "Skill",
+          "description": "La skill utilisée pour rédiger les nouvelles notes. Instructions par défaut : une note Markdown claire et structurée, dans la langue de la transcription, qui garde chaque fait, décision et action."
+        },
+        "defaultDescription": "Les notes suivent les instructions par défaut : une note Markdown claire et structurée, dans la même langue que la transcription.",
+        "fileCount": "Fichiers : {{count}}",
+        "truncated": "Cette skill est très longue : seuls ses 200 premiers Ko sont envoyés au modèle.",
+        "importFile": "Importer un fichier…",
+        "importFolder": "Importer un dossier…",
+        "importHint": "Un fichier .md ou .txt, un dossier, ou une archive .zip ou .skill (un SKILL.md avec des fichiers de référence facultatifs). Handy copie la skill dans son propre dossier de données.",
+        "fileFilter": "Skills",
+        "imported": "Skill « {{name}} » importée et sélectionnée.",
+        "importError": "Impossible d'importer la skill : {{error}}",
+        "remove": "Supprimer la skill",
+        "removeError": "Impossible de supprimer la skill."
+      },
+      "provider": {
+        "title": "Fournisseur et modèle",
+        "description": "Les notes sont rédigées par un modèle de l'un de vos fournisseurs LLM. La transcription est envoyée à ce fournisseur.",
+        "provider": {
+          "title": "Fournisseur",
+          "description": "Le fournisseur LLM enregistré qui rédige les notes. Tant que vous n'en choisissez pas, Handy utilise le premier fournisseur OpenRouter activé.",
+          "placeholder": "Choisir un fournisseur"
+        },
+        "apiKey": {
+          "title": "Clé API",
+          "description": "La clé API du fournisseur choisi. C'est la même clé que dans Paramètres avancés › Fournisseurs LLM : la modifier ici la modifie aussi là-bas.",
+          "placeholder": "Collez la clé API"
+        },
+        "model": {
+          "title": "Modèle",
+          "description": "Le modèle qui rédige les notes, par exemple google/gemini-2.5-flash. Laissez vide pour utiliser le modèle du fournisseur.",
+          "placeholder": "Le modèle du fournisseur"
+        },
+        "manage": "Gérer les fournisseurs LLM"
+      },
+      "saved": {
+        "loading": "Chargement des notes…",
+        "empty": "Aucune note pour l'instant. Utilisez « Créer une note » sur un enregistrement de l'Historique, ou rédigez-en une dans l'onglet « Note manuelle ».",
+        "goToTranscript": "Aller à la transcription",
+        "sourceDeleted": "La transcription source a été supprimée"
+      },
+      "manual": {
+        "title": "Texte à transformer en note",
+        "placeholder": "Collez ou saisissez une transcription…",
+        "generate": "Générer la note",
+        "savedHint": "Enregistrée dans Notes enregistrées"
+      },
+      "errors": {
+        "emptyTranscript": "Il n'y a aucun texte à transformer en note.",
+        "missingProvider": "Choisissez un fournisseur pour les notes dans les paramètres des notes.",
+        "unsupportedProvider": "Ce fournisseur ne peut pas rédiger de notes. Choisissez-en un autre dans les paramètres des notes.",
+        "missingApiKey": "Ajoutez la clé API du fournisseur dans les paramètres des notes.",
+        "missingModel": "Choisissez un modèle pour les notes dans les paramètres des notes.",
+        "emptyNote": "Le modèle a renvoyé une note vide. Réessayez ou choisissez un autre modèle.",
+        "skillMissing": "La skill sélectionnée n'existe plus. Choisissez-en une autre dans les paramètres des notes.",
+        "skillEmpty": "La skill ne contient aucune instruction lisible (Markdown ou texte).",
+        "skillUnsupported": "Ce type de fichier ne peut pas être importé. Utilisez .md, .txt, .zip ou .skill.",
+        "skillTooLarge": "La skill dépasse 50 Mo.",
+        "skillUnsafePath": "L'archive contient des chemins de fichiers non sûrs, elle n'a donc pas été importée."
       }
     },
     "debug": {

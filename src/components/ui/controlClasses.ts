@@ -16,3 +16,7 @@ const FIELD =
 export const TEXT_FIELD = `h-8 px-2.5 ${FIELD} ${DISABLED}`;
 
 export const TEXT_AREA = `px-3 py-2 ${FIELD} ${DISABLED}`;
+
+/** Small icon buttons without a frame (History's Copy, Star, Delete; notes). */
+export const ICON_BUTTON =
+  "inline-flex items-center justify-center h-7 w-7 rounded-md text-text-secondary hover:bg-hover hover:text-text transition-colors cursor-pointer disabled:text-dis-text disabled:cursor-not-allowed disabled:hover:bg-transparent";

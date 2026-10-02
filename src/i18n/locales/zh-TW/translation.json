@@ -11,6 +11,7 @@
     "shortcuts": "快捷鍵",
     "models": "模型",
     "history": "歷史紀錄",
+    "notes": "筆記",
     "files": "檔案",
     "debug": "偵錯",
     "about": "關於",
@@ -1485,6 +1486,96 @@
         "regexBadge": ".*",
         "regexActive": "查詢字串將視為正規表達式處理",
         "noMatches": "沒有符合搜尋條件的項目"
+      }
+    },
+    "notes": {
+      "tabs": {
+        "settings": "設定",
+        "saved": "已儲存的筆記",
+        "manual": "手動筆記"
+      },
+      "inline": {
+        "label": "筆記",
+        "makeNote": "產生筆記",
+        "generating": "正在撰寫筆記…",
+        "retry": "重試",
+        "dismiss": "關閉",
+        "error": "無法撰寫筆記：",
+        "sourceLabel": "此筆記的來源"
+      },
+      "openSettings": "筆記設定",
+      "defaultSkill": "預設指示",
+      "speakersBadge": "含說話者",
+      "copy": "複製筆記（Markdown）",
+      "copyError": "無法複製筆記。",
+      "delete": "刪除筆記",
+      "deleteError": "無法刪除筆記，請再試一次。",
+      "showMore": "顯示更多",
+      "showLess": "收起",
+      "skillPicker": "筆記技能",
+      "skills": {
+        "title": "技能",
+        "description": "技能會告訴模型如何撰寫筆記，例如會議紀錄或學習摘要。可以匯入任意數量的技能並選擇要使用的那一個；在你移除之前都會保留。",
+        "active": {
+          "title": "技能",
+          "description": "用於撰寫新筆記的技能。預設指示：使用與轉錄相同的語言，產生清楚、有條理的 Markdown 筆記，保留所有事實、決定與待辦事項。"
+        },
+        "defaultDescription": "筆記遵循預設指示：與轉錄語言相同、清楚且有條理的 Markdown 筆記。",
+        "fileCount": "檔案：{{count}}",
+        "truncated": "此技能很長，因此只有前 200 KB 會傳送給模型。",
+        "importFile": "匯入檔案…",
+        "importFolder": "匯入資料夾…",
+        "importHint": ".md 或 .txt 檔案、資料夾，或 .zip / .skill 壓縮檔（一個 SKILL.md 及選用的參考檔案）。Handy 會把技能複製到自己的資料資料夾。",
+        "fileFilter": "技能",
+        "imported": "已匯入並選擇技能「{{name}}」。",
+        "importError": "無法匯入技能：{{error}}",
+        "remove": "移除技能",
+        "removeError": "無法移除技能。"
+      },
+      "provider": {
+        "title": "供應商與模型",
+        "description": "筆記由你的 LLM 供應商中的模型撰寫。轉錄內容會傳送給該供應商。",
+        "provider": {
+          "title": "供應商",
+          "description": "用於撰寫筆記的已註冊 LLM 供應商。在你選擇之前，Handy 會使用第一個已啟用的 OpenRouter 供應商。",
+          "placeholder": "選擇供應商"
+        },
+        "apiKey": {
+          "title": "API 金鑰",
+          "description": "所選供應商的 API 金鑰。它與 進階設定 › LLM 供應商 中的金鑰相同，在這裡修改也會同時修改那裡。",
+          "placeholder": "貼上 API 金鑰"
+        },
+        "model": {
+          "title": "模型",
+          "description": "撰寫筆記的模型，例如 google/gemini-2.5-flash。留空則使用供應商自己的模型。",
+          "placeholder": "供應商的模型"
+        },
+        "manage": "管理 LLM 供應商"
+      },
+      "saved": {
+        "loading": "正在載入筆記…",
+        "empty": "還沒有筆記。在歷史紀錄中的錄音上使用「產生筆記」，或在「手動筆記」分頁中撰寫。",
+        "goToTranscript": "前往轉錄",
+        "sourceDeleted": "來源轉錄已被刪除"
+      },
+      "manual": {
+        "title": "要產生筆記的文字",
+        "placeholder": "貼上或輸入轉錄內容…",
+        "generate": "產生筆記",
+        "savedHint": "已儲存到已儲存的筆記"
+      },
+      "errors": {
+        "emptyTranscript": "沒有可產生筆記的文字。",
+        "missingProvider": "請在筆記設定中選擇用於筆記的供應商。",
+        "unsupportedProvider": "此供應商無法撰寫筆記，請在筆記設定中選擇其他供應商。",
+        "missingApiKey": "請在筆記設定中新增供應商的 API 金鑰。",
+        "missingModel": "請在筆記設定中選擇用於筆記的模型。",
+        "emptyNote": "模型傳回了空白筆記。請再試一次或選擇其他模型。",
+        "skillMissing": "所選技能已不存在，請在筆記設定中選擇其他技能。",
+        "skillEmpty": "此技能沒有可讀的指示（Markdown 或文字）。",
+        "skillUnsupported": "無法匯入此類型的檔案。請使用 .md、.txt、.zip 或 .skill。",
+        "skillTooLarge": "技能大於 50 MB。",
+        "skillUnsafePath": "壓縮檔包含不安全的檔案路徑，因此未匯入。"
       }
     },
     "debug": {

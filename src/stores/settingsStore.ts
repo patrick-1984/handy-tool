@@ -277,6 +277,11 @@ const settingUpdaters: {
   file_keep_audio: (value) =>
     commands.changeFileKeepAudioSetting(value as boolean),
   files_folder: (value) => commands.changeFilesFolderSetting(value as string),
+  note_provider_ref: (value) =>
+    commands.changeNoteProviderRefSetting(value as string),
+  note_model: (value) => commands.changeNoteModelSetting(value as string),
+  note_skill_id: (value) =>
+    commands.changeNoteSkillSetting((value as string | null) ?? null),
   jumper_persist: (value) =>
     commands.changeJumperPersistSetting(value as boolean),
   model_unload_custom_seconds: (value) =>

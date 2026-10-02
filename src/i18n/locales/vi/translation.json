@@ -11,6 +11,7 @@
     "shortcuts": "Phím tắt",
     "models": "Mô hình",
     "history": "Lịch sử",
+    "notes": "Ghi chú",
     "files": "File",
     "debug": "Gỡ lỗi",
     "about": "Giới thiệu",
@@ -1485,6 +1486,96 @@
         "regexBadge": ".*",
         "regexActive": "Truy vấn đang được xử lý như một biểu thức chính quy",
         "noMatches": "Không có mục nào khớp với tìm kiếm của bạn."
+      }
+    },
+    "notes": {
+      "tabs": {
+        "settings": "Cài đặt",
+        "saved": "Ghi chú đã lưu",
+        "manual": "Ghi chú thủ công"
+      },
+      "inline": {
+        "label": "Ghi chú",
+        "makeNote": "Tạo ghi chú",
+        "generating": "Đang viết ghi chú…",
+        "retry": "Thử lại",
+        "dismiss": "Đóng",
+        "error": "Không thể viết ghi chú:",
+        "sourceLabel": "Nguồn của ghi chú này"
+      },
+      "openSettings": "Cài đặt ghi chú",
+      "defaultSkill": "Hướng dẫn mặc định",
+      "speakersBadge": "Có người nói",
+      "copy": "Sao chép ghi chú (Markdown)",
+      "copyError": "Không thể sao chép ghi chú.",
+      "delete": "Xóa ghi chú",
+      "deleteError": "Không thể xóa ghi chú. Vui lòng thử lại.",
+      "showMore": "Xem thêm",
+      "showLess": "Thu gọn",
+      "skillPicker": "Kỹ năng ghi chú",
+      "skills": {
+        "title": "Kỹ năng",
+        "description": "Kỹ năng cho mô hình biết cách viết ghi chú, ví dụ biên bản họp hoặc tóm tắt bài học. Nhập bao nhiêu tùy ý và chọn kỹ năng để dùng; chúng được giữ cho đến khi bạn xóa.",
+        "active": {
+          "title": "Kỹ năng",
+          "description": "Kỹ năng dùng để viết ghi chú mới. Hướng dẫn mặc định: một ghi chú Markdown rõ ràng, có cấu trúc, cùng ngôn ngữ với bản phiên âm, giữ lại mọi dữ kiện, quyết định và việc cần làm."
+        },
+        "defaultDescription": "Ghi chú theo hướng dẫn mặc định: một ghi chú Markdown rõ ràng, có cấu trúc, cùng ngôn ngữ với bản phiên âm.",
+        "fileCount": "Tệp: {{count}}",
+        "truncated": "Kỹ năng này rất dài nên chỉ 200 KB đầu tiên được gửi đến mô hình.",
+        "importFile": "Nhập tệp…",
+        "importFolder": "Nhập thư mục…",
+        "importHint": "Tệp .md hoặc .txt, một thư mục, hoặc tệp nén .zip hay .skill (một SKILL.md kèm tệp tham khảo tùy chọn). Handy sao chép kỹ năng vào thư mục dữ liệu của mình.",
+        "fileFilter": "Kỹ năng",
+        "imported": "Đã nhập và chọn kỹ năng \"{{name}}\".",
+        "importError": "Không thể nhập kỹ năng: {{error}}",
+        "remove": "Xóa kỹ năng",
+        "removeError": "Không thể xóa kỹ năng."
+      },
+      "provider": {
+        "title": "Nhà cung cấp và mô hình",
+        "description": "Ghi chú được viết bởi một mô hình từ nhà cung cấp LLM của bạn. Bản phiên âm được gửi đến nhà cung cấp đó.",
+        "provider": {
+          "title": "Nhà cung cấp",
+          "description": "Nhà cung cấp LLM đã đăng ký dùng để viết ghi chú. Cho đến khi bạn chọn, Handy dùng nhà cung cấp OpenRouter đầu tiên đang bật.",
+          "placeholder": "Chọn nhà cung cấp"
+        },
+        "apiKey": {
+          "title": "Khóa API",
+          "description": "Khóa API của nhà cung cấp đã chọn. Đây là cùng khóa trong Cài đặt nâng cao › Nhà cung cấp LLM, nên đổi ở đây cũng đổi ở đó.",
+          "placeholder": "Dán khóa API"
+        },
+        "model": {
+          "title": "Mô hình",
+          "description": "Mô hình viết ghi chú, ví dụ google/gemini-2.5-flash. Để trống để dùng mô hình của nhà cung cấp.",
+          "placeholder": "Mô hình của nhà cung cấp"
+        },
+        "manage": "Quản lý nhà cung cấp LLM"
+      },
+      "saved": {
+        "loading": "Đang tải ghi chú…",
+        "empty": "Chưa có ghi chú. Dùng \"Tạo ghi chú\" trên một bản ghi trong Lịch sử, hoặc viết ở thẻ \"Ghi chú thủ công\".",
+        "goToTranscript": "Đi tới bản phiên âm",
+        "sourceDeleted": "Bản phiên âm nguồn đã bị xóa"
+      },
+      "manual": {
+        "title": "Văn bản để tạo ghi chú",
+        "placeholder": "Dán hoặc nhập bản phiên âm…",
+        "generate": "Tạo ghi chú",
+        "savedHint": "Đã lưu vào Ghi chú đã lưu"
+      },
+      "errors": {
+        "emptyTranscript": "Không có văn bản để tạo ghi chú.",
+        "missingProvider": "Chọn nhà cung cấp cho ghi chú trong Cài đặt ghi chú.",
+        "unsupportedProvider": "Nhà cung cấp này không thể viết ghi chú. Hãy chọn nhà cung cấp khác trong Cài đặt ghi chú.",
+        "missingApiKey": "Thêm khóa API của nhà cung cấp trong Cài đặt ghi chú.",
+        "missingModel": "Chọn mô hình cho ghi chú trong Cài đặt ghi chú.",
+        "emptyNote": "Mô hình trả về ghi chú trống. Hãy thử lại hoặc chọn mô hình khác.",
+        "skillMissing": "Kỹ năng đã chọn không còn nữa. Hãy chọn kỹ năng khác trong Cài đặt ghi chú.",
+        "skillEmpty": "Kỹ năng không có hướng dẫn đọc được (Markdown hoặc văn bản).",
+        "skillUnsupported": "Không thể nhập loại tệp này. Hãy dùng .md, .txt, .zip hoặc .skill.",
+        "skillTooLarge": "Kỹ năng lớn hơn 50 MB.",
+        "skillUnsafePath": "Tệp nén chứa đường dẫn không an toàn nên không được nhập."
       }
     },
     "debug": {

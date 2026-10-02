@@ -5,6 +5,7 @@ This shelf mirrors the Windows 2.0.2 sidebar, with its Advanced settings and Mor
 ## Sidebar
 
 - [History](history.md) — saved transcription rows, the recordings folder, and retention.
+- [Notes](notes.md) — note skills, the provider and model that write notes, saved notes, and manual notes.
 - [General](general.md) — shortcuts, model-specific choices, transcription, re-paste, sound, the app itself (appearance, the overlay's look), and updates.
 - [Setups](setups.md) — the guided setups, starting with the first-start one.
 - [Shortcuts](shortcuts.md) — every shortcut on one page, with duplicates flagged.

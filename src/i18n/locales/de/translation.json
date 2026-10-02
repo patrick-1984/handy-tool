@@ -11,6 +11,7 @@
     "shortcuts": "Tastenkürzel",
     "models": "Modelle",
     "history": "Verlauf",
+    "notes": "Notizen",
     "files": "Dateien",
     "debug": "Debug",
     "about": "Info",
@@ -1485,6 +1486,96 @@
         "regexBadge": ".*",
         "regexActive": "Die Anfrage wird als regulärer Ausdruck interpretiert",
         "noMatches": "Keine Einträge entsprechen deiner Suche."
+      }
+    },
+    "notes": {
+      "tabs": {
+        "settings": "Einstellungen",
+        "saved": "Gespeicherte Notizen",
+        "manual": "Manuelle Notiz"
+      },
+      "inline": {
+        "label": "Notiz",
+        "makeNote": "Notiz erstellen",
+        "generating": "Deine Notiz wird geschrieben…",
+        "retry": "Erneut versuchen",
+        "dismiss": "Schließen",
+        "error": "Die Notiz konnte nicht geschrieben werden:",
+        "sourceLabel": "Quelle dieser Notiz"
+      },
+      "openSettings": "Notiz-Einstellungen",
+      "defaultSkill": "Standardanweisungen",
+      "speakersBadge": "Mit Sprechern",
+      "copy": "Notiz kopieren (Markdown)",
+      "copyError": "Die Notiz konnte nicht kopiert werden.",
+      "delete": "Notiz löschen",
+      "deleteError": "Die Notiz konnte nicht gelöscht werden. Bitte versuche es erneut.",
+      "showMore": "Mehr anzeigen",
+      "showLess": "Weniger anzeigen",
+      "skillPicker": "Notiz-Skill",
+      "skills": {
+        "title": "Skills",
+        "description": "Ein Skill sagt dem Modell, wie es deine Notizen schreiben soll, zum Beispiel als Besprechungsprotokoll oder Lernzusammenfassung. Importiere beliebig viele und wähle den gewünschten; sie bleiben, bis du sie entfernst.",
+        "active": {
+          "title": "Skill",
+          "description": "Der Skill, mit dem neue Notizen geschrieben werden. Standardanweisungen: eine klare, gegliederte Markdown-Notiz in der Sprache der Transkription, die alle Fakten, Entscheidungen und Aufgaben enthält."
+        },
+        "defaultDescription": "Notizen folgen den Standardanweisungen: eine klare, gegliederte Markdown-Notiz in derselben Sprache wie die Transkription.",
+        "fileCount": "Dateien: {{count}}",
+        "truncated": "Dieser Skill ist sehr lang, deshalb werden nur die ersten 200 KB an das Modell gesendet.",
+        "importFile": "Datei importieren…",
+        "importFolder": "Ordner importieren…",
+        "importHint": "Eine .md- oder .txt-Datei, ein Ordner oder ein .zip- bzw. .skill-Archiv (eine SKILL.md mit optionalen Referenzdateien). Handy kopiert den Skill in seinen eigenen Datenordner.",
+        "fileFilter": "Skills",
+        "imported": "Skill „{{name}}“ importiert und ausgewählt.",
+        "importError": "Der Skill konnte nicht importiert werden: {{error}}",
+        "remove": "Skill entfernen",
+        "removeError": "Der Skill konnte nicht entfernt werden."
+      },
+      "provider": {
+        "title": "Anbieter und Modell",
+        "description": "Notizen schreibt ein Modell eines deiner LLM-Anbieter. Die Transkription wird an diesen Anbieter gesendet.",
+        "provider": {
+          "title": "Anbieter",
+          "description": "Der registrierte LLM-Anbieter, der Notizen schreibt. Bis du einen wählst, nutzt Handy den ersten aktivierten OpenRouter-Anbieter.",
+          "placeholder": "Anbieter auswählen"
+        },
+        "apiKey": {
+          "title": "API-Schlüssel",
+          "description": "Der API-Schlüssel des gewählten Anbieters. Es ist derselbe Schlüssel wie unter Erweiterte Einstellungen › LLM-Anbieter; änderst du ihn hier, ändert er sich auch dort.",
+          "placeholder": "API-Schlüssel einfügen"
+        },
+        "model": {
+          "title": "Modell",
+          "description": "Das Modell, das Notizen schreibt, zum Beispiel google/gemini-2.5-flash. Leer lassen, um das Modell des Anbieters zu verwenden.",
+          "placeholder": "Modell des Anbieters"
+        },
+        "manage": "LLM-Anbieter verwalten"
+      },
+      "saved": {
+        "loading": "Notizen werden geladen…",
+        "empty": "Noch keine Notizen. Nutze „Notiz erstellen“ bei einer Aufnahme im Verlauf oder schreibe eine im Tab „Manuelle Notiz“.",
+        "goToTranscript": "Zur Transkription",
+        "sourceDeleted": "Die Quell-Transkription wurde gelöscht"
+      },
+      "manual": {
+        "title": "Text für die Notiz",
+        "placeholder": "Transkription einfügen oder eingeben…",
+        "generate": "Notiz erstellen",
+        "savedHint": "Gespeichert unter Gespeicherte Notizen"
+      },
+      "errors": {
+        "emptyTranscript": "Es gibt keinen Text für eine Notiz.",
+        "missingProvider": "Wähle in den Notiz-Einstellungen einen Anbieter für Notizen.",
+        "unsupportedProvider": "Dieser Anbieter kann keine Notizen schreiben. Wähle in den Notiz-Einstellungen einen anderen.",
+        "missingApiKey": "Trage in den Notiz-Einstellungen den API-Schlüssel des Anbieters ein.",
+        "missingModel": "Wähle in den Notiz-Einstellungen ein Modell für Notizen.",
+        "emptyNote": "Das Modell hat eine leere Notiz geliefert. Versuche es erneut oder wähle ein anderes Modell.",
+        "skillMissing": "Der gewählte Skill ist nicht mehr vorhanden. Wähle in den Notiz-Einstellungen einen anderen.",
+        "skillEmpty": "Der Skill enthält keine lesbaren Anweisungen (Markdown oder Text).",
+        "skillUnsupported": "Dieser Dateityp kann nicht importiert werden. Verwende .md, .txt, .zip oder .skill.",
+        "skillTooLarge": "Der Skill ist größer als 50 MB.",
+        "skillUnsafePath": "Das Archiv enthält unsichere Dateipfade und wurde deshalb nicht importiert."
       }
     },
     "debug": {

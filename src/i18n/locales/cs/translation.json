@@ -11,6 +11,7 @@
     "shortcuts": "Zkratky",
     "models": "Modely",
     "history": "Historie",
+    "notes": "Poznámky",
     "files": "Soubory",
     "debug": "Ladění",
     "about": "O aplikaci",
@@ -1485,6 +1486,96 @@
         "regexBadge": ".*",
         "regexActive": "Dotaz je zpracován jako regulární výraz",
         "noMatches": "Žádné záznamy neodpovídají vašemu vyhledávání."
+      }
+    },
+    "notes": {
+      "tabs": {
+        "settings": "Nastavení",
+        "saved": "Uložené poznámky",
+        "manual": "Ruční poznámka"
+      },
+      "inline": {
+        "label": "Poznámka",
+        "makeNote": "Vytvořit poznámku",
+        "generating": "Píšu vaši poznámku…",
+        "retry": "Zkusit znovu",
+        "dismiss": "Zavřít",
+        "error": "Poznámku se nepodařilo napsat:",
+        "sourceLabel": "Zdroj této poznámky"
+      },
+      "openSettings": "Nastavení poznámek",
+      "defaultSkill": "Výchozí pokyny",
+      "speakersBadge": "S mluvčími",
+      "copy": "Kopírovat poznámku (Markdown)",
+      "copyError": "Poznámku se nepodařilo zkopírovat.",
+      "delete": "Smazat poznámku",
+      "deleteError": "Poznámku se nepodařilo smazat. Zkuste to znovu.",
+      "showMore": "Zobrazit více",
+      "showLess": "Zobrazit méně",
+      "skillPicker": "Dovednost pro poznámky",
+      "skills": {
+        "title": "Dovednosti",
+        "description": "Dovednost říká modelu, jak má psát vaše poznámky, třeba zápis z porady nebo studijní shrnutí. Importujte jich, kolik chcete, a vyberte tu, kterou použít; zůstanou, dokud je neodeberete.",
+        "active": {
+          "title": "Dovednost",
+          "description": "Dovednost, se kterou se píšou nové poznámky. Výchozí pokyny: přehledná, strukturovaná poznámka v Markdownu v jazyce přepisu, která zachová všechna fakta, rozhodnutí a úkoly."
+        },
+        "defaultDescription": "Poznámky se řídí výchozími pokyny: přehledná, strukturovaná poznámka v Markdownu ve stejném jazyce jako přepis.",
+        "fileCount": "Soubory: {{count}}",
+        "truncated": "Tato dovednost je velmi dlouhá, proto se modelu posílá jen prvních 200 kB.",
+        "importFile": "Importovat soubor…",
+        "importFolder": "Importovat složku…",
+        "importHint": "Soubor .md nebo .txt, složka nebo archiv .zip či .skill (SKILL.md s volitelnými referenčními soubory). Handy si dovednost zkopíruje do své datové složky.",
+        "fileFilter": "Dovednosti",
+        "imported": "Dovednost „{{name}}“ byla importována a vybrána.",
+        "importError": "Dovednost se nepodařilo importovat: {{error}}",
+        "remove": "Odebrat dovednost",
+        "removeError": "Dovednost se nepodařilo odebrat."
+      },
+      "provider": {
+        "title": "Poskytovatel a model",
+        "description": "Poznámky píše model od některého z vašich poskytovatelů LLM. Přepis se odešle tomuto poskytovateli.",
+        "provider": {
+          "title": "Poskytovatel",
+          "description": "Registrovaný poskytovatel LLM, který píše poznámky. Dokud žádného nevyberete, použije Handy prvního zapnutého poskytovatele OpenRouter.",
+          "placeholder": "Vyberte poskytovatele"
+        },
+        "apiKey": {
+          "title": "Klíč API",
+          "description": "Klíč API vybraného poskytovatele. Je to stejný klíč jako v Pokročilá nastavení › Poskytovatelé LLM, takže když ho změníte tady, změní se i tam.",
+          "placeholder": "Vložte klíč API"
+        },
+        "model": {
+          "title": "Model",
+          "description": "Model, který píše poznámky, například google/gemini-2.5-flash. Nechte prázdné, chcete-li použít model poskytovatele.",
+          "placeholder": "Model poskytovatele"
+        },
+        "manage": "Spravovat poskytovatele LLM"
+      },
+      "saved": {
+        "loading": "Načítám poznámky…",
+        "empty": "Zatím žádné poznámky. Použijte „Vytvořit poznámku“ u nahrávky v sekci Historie, nebo ji napište na kartě „Ruční poznámka“.",
+        "goToTranscript": "Přejít na přepis",
+        "sourceDeleted": "Zdrojový přepis byl smazán"
+      },
+      "manual": {
+        "title": "Text, ze kterého vznikne poznámka",
+        "placeholder": "Vložte nebo napište přepis…",
+        "generate": "Vytvořit poznámku",
+        "savedHint": "Uloženo do: Uložené poznámky"
+      },
+      "errors": {
+        "emptyTranscript": "Není z čeho vytvořit poznámku.",
+        "missingProvider": "Vyberte poskytovatele pro poznámky v Nastavení poznámek.",
+        "unsupportedProvider": "Tento poskytovatel neumí psát poznámky. Vyberte jiného v Nastavení poznámek.",
+        "missingApiKey": "Zadejte klíč API poskytovatele v Nastavení poznámek.",
+        "missingModel": "Vyberte model pro poznámky v Nastavení poznámek.",
+        "emptyNote": "Model vrátil prázdnou poznámku. Zkuste to znovu nebo vyberte jiný model.",
+        "skillMissing": "Vybraná dovednost už neexistuje. Vyberte jinou v Nastavení poznámek.",
+        "skillEmpty": "Dovednost neobsahuje čitelné pokyny (Markdown ani text).",
+        "skillUnsupported": "Tento typ souboru nelze importovat. Použijte .md, .txt, .zip nebo .skill.",
+        "skillTooLarge": "Dovednost je větší než 50 MB.",
+        "skillUnsafePath": "Archiv obsahuje nebezpečné cesty k souborům, proto nebyl importován."
       }
     },
     "debug": {

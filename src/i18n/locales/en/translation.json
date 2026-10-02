@@ -27,6 +27,7 @@
     "setups": "Setups",
     "transcription": "Transcription",
     "history": "History",
+    "notes": "Notes",
     "files": "Files",
     "debug": "Debug",
     "about": "About",
@@ -1709,6 +1710,96 @@
       "unsave": "Remove from saved",
       "delete": "Delete entry",
       "deleteError": "Failed to delete entry. Please try again."
+    },
+    "notes": {
+      "tabs": {
+        "settings": "Settings",
+        "saved": "Saved notes",
+        "manual": "Manual note"
+      },
+      "inline": {
+        "label": "Note",
+        "makeNote": "Make note",
+        "generating": "Writing your note…",
+        "retry": "Try again",
+        "dismiss": "Dismiss",
+        "error": "Couldn't write the note:",
+        "sourceLabel": "Source of this note"
+      },
+      "openSettings": "Note settings",
+      "defaultSkill": "Default instructions",
+      "speakersBadge": "With speakers",
+      "copy": "Copy note (Markdown)",
+      "copyError": "Couldn't copy the note.",
+      "delete": "Delete note",
+      "deleteError": "Couldn't delete the note. Please try again.",
+      "showMore": "Show more",
+      "showLess": "Show less",
+      "skillPicker": "Note skill",
+      "skills": {
+        "title": "Skills",
+        "description": "A skill tells the model how to write your notes, for example meeting minutes or a study summary. Import as many as you like and pick the one to use; they stay until you remove them.",
+        "active": {
+          "title": "Skill",
+          "description": "The skill new notes are written with. Default instructions: a clear, structured Markdown note in the transcript's language that keeps every fact, decision and action item."
+        },
+        "defaultDescription": "Notes follow the default instructions: a clear, structured Markdown note in the same language as the transcript.",
+        "fileCount": "Files: {{count}}",
+        "truncated": "This skill is very long, so only its first 200 KB are sent to the model.",
+        "importFile": "Import file…",
+        "importFolder": "Import folder…",
+        "importHint": "A .md or .txt file, a folder, or a .zip or .skill archive (a SKILL.md with optional reference files). Handy copies the skill into its own data folder.",
+        "fileFilter": "Skills",
+        "imported": "Skill \"{{name}}\" imported and selected.",
+        "importError": "Couldn't import the skill: {{error}}",
+        "remove": "Remove skill",
+        "removeError": "Couldn't remove the skill."
+      },
+      "provider": {
+        "title": "Provider and model",
+        "description": "Notes are written by a model from your LLM providers. The transcript is sent to that provider.",
+        "provider": {
+          "title": "Provider",
+          "description": "The registered LLM provider that writes notes. Until you choose one, Handy uses the first enabled OpenRouter provider.",
+          "placeholder": "Select a provider"
+        },
+        "apiKey": {
+          "title": "API key",
+          "description": "The selected provider's API key. It is the same key as in Advanced settings › LLM providers, so changing it here changes it there too.",
+          "placeholder": "Paste the API key"
+        },
+        "model": {
+          "title": "Model",
+          "description": "The model that writes notes, for example google/gemini-2.5-flash. Leave it empty to use the provider's own model.",
+          "placeholder": "The provider's model"
+        },
+        "manage": "Manage LLM providers"
+      },
+      "saved": {
+        "loading": "Loading notes…",
+        "empty": "No notes yet. Use Make note on a recording in History, or write one on the Manual note tab.",
+        "goToTranscript": "Go to transcript",
+        "sourceDeleted": "Source transcript was deleted"
+      },
+      "manual": {
+        "title": "Text to turn into a note",
+        "placeholder": "Paste or type a transcript…",
+        "generate": "Generate note",
+        "savedHint": "Saved to Saved notes"
+      },
+      "errors": {
+        "emptyTranscript": "There is no text to make a note from.",
+        "missingProvider": "Choose a provider for notes in Note settings.",
+        "unsupportedProvider": "This provider can't write notes. Choose another one in Note settings.",
+        "missingApiKey": "Add the provider's API key in Note settings.",
+        "missingModel": "Choose a model for notes in Note settings.",
+        "emptyNote": "The model returned an empty note. Try again or choose another model.",
+        "skillMissing": "The selected skill is gone. Choose another one in Note settings.",
+        "skillEmpty": "The skill has no readable instructions (Markdown or text).",
+        "skillUnsupported": "This file type can't be imported. Use .md, .txt, .zip or .skill.",
+        "skillTooLarge": "The skill is larger than 50 MB.",
+        "skillUnsafePath": "The archive contains unsafe file paths, so it was not imported."
+      }
     },
     "debug": {
       "title": "Debug",

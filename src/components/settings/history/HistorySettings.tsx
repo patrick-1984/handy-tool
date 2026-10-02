@@ -18,6 +18,7 @@ import {
   X,
   HardDrive,
   Clock,
+  NotebookPen,
 } from "lucide-react";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
@@ -31,6 +32,10 @@ import { CrashResilientRecording } from "../CrashResilientRecording";
 import { PreserveTranscriptions } from "../PreserveTranscriptions";
 import { HistoryLimit } from "../HistoryLimit";
 import { RecordingRetentionPeriodSelector } from "../RecordingRetentionPeriod";
+import { ICON_BUTTON } from "../../ui/controlClasses";
+import { isHistoryJobBusy, useNotesStore } from "@/stores/notesStore";
+import { HistoryEntryNotes } from "../notes/HistoryEntryNotes";
+import { NoteSkillPicker } from "../notes/NoteSkillPicker";
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
 /** A take's length as a clock reads it: "0:18", "12:05", "1:02:07". */
@@ -113,10 +118,6 @@ const OpenRecordingsButton: React.FC<OpenRecordingsButtonProps> = ({
   </Button>
 );
 
-/** Copy, star and delete on a recording: icon buttons without a frame. */
-const ICON_BUTTON =
-  "inline-flex items-center justify-center h-7 w-7 rounded-md text-text-secondary hover:bg-hover hover:text-text transition-colors cursor-pointer";
-
 /** Entries drawn at a time on the Recordings tab. */
 const HISTORY_PAGE = 20;
 
@@ -155,7 +156,12 @@ export const HistorySettings: React.FC = () => {
   // Drawing every entry at once (each with its own audio player) made the page
   // lag; draw a page at a time and add the next as the list nears its end.
   const [shownCount, setShownCount] = useState(HISTORY_PAGE);
-  useEffect(() => setShownCount(HISTORY_PAGE), [matcher]);
+  useEffect(() => {
+    // Not while "Go to transcript" is drawing the list down to its entry.
+    if (useNavStore.getState().focusHistoryId === null) {
+      setShownCount(HISTORY_PAGE);
+    }
+  }, [matcher]);
   const moreRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = moreRef.current;
@@ -171,6 +177,59 @@ export const HistorySettings: React.FC = () => {
     observer.observe(el);
     return () => observer.disconnect();
   }, [filteredEntries, shownCount, tab]);
+
+  const shownEntries = useMemo(
+    () => filteredEntries.slice(0, shownCount),
+    [filteredEntries, shownCount],
+  );
+
+  // Each shown entry's notes, under it.
+  const loadNotesForHistory = useNotesStore(
+    (state) => state.loadNotesForHistory,
+  );
+  useEffect(() => {
+    if (tab !== "recordings" || shownEntries.length === 0) return;
+    void loadNotesForHistory(shownEntries.map((entry) => entry.id));
+  }, [tab, shownEntries, loadNotesForHistory]);
+
+  // "Go to transcript" (Notes › Saved notes): clear the search, draw the list
+  // down to the entry, then scroll to it and mark it as the note's source.
+  const focusHistoryId = useNavStore((state) => state.focusHistoryId);
+  const clearFocusHistoryId = useNavStore((state) => state.clearFocusHistoryId);
+  const [sourceId, setSourceId] = useState<number | null>(null);
+  useEffect(() => {
+    if (focusHistoryId === null || loading) return;
+    if (searchInput !== "" || matcher !== null) {
+      // The list redraws unfiltered first; this runs again after.
+      setSearchInput("");
+      setDebouncedSearch("");
+      return;
+    }
+    const index = historyEntries.findIndex((e) => e.id === focusHistoryId);
+    if (index === -1) {
+      clearFocusHistoryId();
+      return;
+    }
+    if (index >= shownCount) {
+      setShownCount(index + 1);
+      return;
+    }
+    setSourceId(focusHistoryId);
+    clearFocusHistoryId();
+    requestAnimationFrame(() =>
+      document
+        .getElementById(`history-entry-${focusHistoryId}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" }),
+    );
+  }, [
+    focusHistoryId,
+    loading,
+    searchInput,
+    matcher,
+    historyEntries,
+    shownCount,
+    clearFocusHistoryId,
+  ]);
 
   const loadHistoryEntries = useCallback(async () => {
     try {
@@ -305,11 +364,12 @@ export const HistorySettings: React.FC = () => {
   } else {
     body = (
       <div className="flex flex-col gap-3">
-        {filteredEntries.slice(0, shownCount).map((entry) => (
+        {shownEntries.map((entry) => (
           <HistoryEntryComponent
             key={entry.id}
             entry={entry}
             matcher={matcher}
+            isNoteSource={entry.id === sourceId}
             onToggleSaved={() => toggleSaved(entry.id)}
             onCopyText={() => copyToClipboard(entry.transcription_text)}
             getAudioUrl={getAudioUrl}
@@ -347,7 +407,8 @@ export const HistorySettings: React.FC = () => {
       </div>
       {tab === "recordings" && (
         <div className="space-y-2">
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-end gap-3">
+            <NoteSkillPicker />
             <OpenRecordingsButton
               onClick={openRecordingsFolder}
               label={t("settings.history.openFolder")}
@@ -419,6 +480,8 @@ export const HistorySettings: React.FC = () => {
 interface HistoryEntryProps {
   entry: HistoryEntry;
   matcher: SearchMatcher | null;
+  /** Reached through "Go to transcript": outlined and labelled. */
+  isNoteSource: boolean;
   onToggleSaved: () => void;
   onCopyText: () => void;
   getAudioUrl: (fileName: string) => Promise<string | null>;
@@ -455,6 +518,7 @@ const HighlightedText: React.FC<{
 const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
   entry,
   matcher,
+  isNoteSource,
   onToggleSaved,
   onCopyText,
   getAudioUrl,
@@ -462,6 +526,10 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
 }) => {
   const { t, i18n } = useTranslation();
   const [showCopied, setShowCopied] = useState(false);
+  const noteBusy = useNotesStore((state) =>
+    isHistoryJobBusy(state.historyJobs[entry.id]),
+  );
+  const generateNote = useNotesStore((state) => state.generateHistoryNote);
 
   const handleLoadAudio = useCallback(
     () => getAudioUrl(entry.file_name),
@@ -486,7 +554,18 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
   const formattedDate = recordedAt(Number(entry.timestamp), i18n.language);
 
   return (
-    <div className="card px-4 py-3 flex flex-col gap-2.5">
+    <div
+      id={`history-entry-${entry.id}`}
+      className={`card px-4 py-3 flex flex-col gap-2.5 ${
+        isNoteSource ? "outline-2 outline-accent -outline-offset-1" : ""
+      }`}
+    >
+      {isNoteSource && (
+        <p className="flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.06em] text-accent-text">
+          <NotebookPen className="w-3.5 h-3.5" aria-hidden />
+          {t("settings.notes.inline.sourceLabel")}
+        </p>
+      )}
       <div className="flex justify-between items-center">
         <p className="flex flex-wrap items-center gap-x-1.5 text-[13px] text-text-secondary">
           <span className="font-semibold text-text">{formattedDate}</span>
@@ -518,6 +597,17 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
               <Copy width={16} height={16} />
             )}
           </button>
+          {/* The note is made from the text shown above (transcription_text). */}
+          <button
+            onClick={() =>
+              void generateNote(entry.id, entry.transcription_text)
+            }
+            disabled={noteBusy || entry.transcription_text.trim() === ""}
+            className={ICON_BUTTON}
+            title={t("settings.notes.inline.makeNote")}
+          >
+            <NotebookPen width={16} height={16} />
+          </button>
           <button
             onClick={onToggleSaved}
             className={`${ICON_BUTTON} ${entry.saved ? "!text-accent" : ""}`}
@@ -546,6 +636,7 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
         <HighlightedText text={entry.transcription_text} matcher={matcher} />
       </p>
       <AudioPlayer onLoadRequest={handleLoadAudio} className="w-full" />
+      <HistoryEntryNotes historyId={entry.id} />
     </div>
   );
 };
