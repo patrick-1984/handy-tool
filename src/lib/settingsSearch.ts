@@ -6,7 +6,7 @@ import {
   takeShortcutsAvailable,
   type OSType,
 } from "@/lib/utils/keyboard";
-import type { HistoryTab } from "@/stores/navStore";
+import type { HistoryTab, NotesTab } from "@/stores/navStore";
 
 /**
  * One searchable control. `title` is the translated title the control renders
@@ -16,6 +16,8 @@ export interface SearchEntry {
   section: string;
   /** For History: the tab the control is on. */
   historyTab?: HistoryTab;
+  /** For Notes: the tab the control is on. */
+  notesTab?: NotesTab;
   title: string;
   /** Where it lives, e.g. "Transcription › Paste last transcription". */
   where: string;
@@ -93,6 +95,10 @@ export const buildSearchIndex = (
       historyTab:
         e.pageKey === "sidebar.history" && e.tabKey
           ? (e.tabKey.split(".").pop() as HistoryTab)
+          : undefined,
+      notesTab:
+        e.pageKey === "sidebar.notes" && e.tabKey
+          ? (e.tabKey.split(".").pop() as NotesTab)
           : undefined,
       title,
       where,

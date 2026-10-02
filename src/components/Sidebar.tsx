@@ -15,6 +15,7 @@ import {
   Info,
   Keyboard,
   ListChecks,
+  NotebookPen,
   MoveUpRight,
   Plug,
   Settings as Gear,
@@ -32,6 +33,7 @@ import {
   WHATS_NEW_SEEN_EVENT,
   WHATS_NEW_SEEN_KEY,
 } from "./settings/whatsnew/WhatsNewPage";
+import { NotesPage } from "./settings/notes/NotesPage";
 import { UpdateBanner } from "./UpdateBanner";
 import { SidebarSearch } from "./SidebarSearch";
 import { useSettings } from "../hooks/useSettings";
@@ -80,11 +82,19 @@ interface SectionConfig {
 // Order within this object is the order in the sidebar and in each More row.
 export const SECTIONS_CONFIG = {
   // --- Sidebar ---
-  // First, with a divider under it: the takes you made.
+  // First, with a divider under them: the takes you made, and the notes made
+  // from them.
   history: {
     labelKey: "sidebar.history",
     icon: History,
     component: HistorySettings,
+    placement: "sidebar",
+    enabled: () => true,
+  },
+  notes: {
+    labelKey: "sidebar.notes",
+    icon: NotebookPen,
+    component: NotesPage,
     placement: "sidebar",
     enabled: () => true,
   },
@@ -430,7 +440,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 () => onSectionChange(section.id),
                 section.id === "whatsNew" && newsUnseen,
               )}
-              {section.id === "history" && (
+              {section.id === "notes" && (
                 <div className="mx-2 my-1 border-t border-border" />
               )}
               {section.id === "jumper" && renderGroup("more-tools")}

@@ -480,7 +480,7 @@ async fn chat_with_provider(
             }
         }
         Err(error) => {
-            warn!("Model test via '{}' failed: {}", provider.id, error);
+            warn!("Chat via '{}' failed: {}", provider.id, error);
             ChatOutcome {
                 provider_id: provider.id.clone(),
                 provider_name: provider.name.clone(),
@@ -496,6 +496,22 @@ async fn chat_with_provider(
             }
         }
     }
+}
+
+/// One chat call for other features (notes): the same multi-kind client,
+/// timeouts and cost accounting as model testing, with the model's default
+/// reasoning and no image.
+pub(crate) async fn chat(
+    provider: &LlmProvider,
+    system: Option<&str>,
+    prompt: &str,
+    temperature: f64,
+) -> ChatOutcome {
+    let extras = ChatExtras {
+        thinking: None,
+        image: None,
+    };
+    chat_with_provider(provider, system, prompt, temperature, extras).await
 }
 
 fn compute_cost(provider: &LlmProvider, raw: &RawChat) -> (Option<f64>, bool) {

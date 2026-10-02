@@ -23,6 +23,7 @@ Nine numbered rungs, in order. Each one is short, and each one ends at a point w
 - [Jumper](tools/jumper.md) — set up anchors and jump slots _{Windows only}_.
 - [Remote desktops](tools/remote-desktops.md) — tune the delivery timings used inside RDP and Citrix sessions.
 - [History and recovery](tools/history-and-recovery.md) — set retention, and find an earlier take.
+- [Notes](tools/notes.md) — turn a recording or pasted text into a note, with your own skill.
 - [Providers](tools/providers.md) — configure local engines and remote endpoints.
 - [Keyboard Typer](tools/keyboard-typer.md) — prepare text for keystroke delivery.
 - [Model Testing](tools/model-testing.md) — run one prompt across providers and read the report.

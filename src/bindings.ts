@@ -1012,6 +1012,115 @@ export const commands = {
       else return { status: "error", error: e as any };
     }
   },
+/**
+ * Write a Markdown note from `text` with the selected skill, provider and
+ * model, and save it. `history_id` is the History entry the text came from
+ * (it is starred so retention keeps it); `with_speakers` marks a note made
+ * from a speaker-labelled transcript.
+ */
+async generateNote(text: string, historyId: number | null, withSpeakers: boolean) : Promise<Result<Note, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("generate_note", { text, historyId, withSpeakers }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * All notes, newest first.
+ */
+async getNotes() : Promise<Result<Note[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_notes") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Notes made from the given History entries, newest first.
+ */
+async getNotesForHistoryIds(historyIds: number[]) : Promise<Result<Note[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_notes_for_history_ids", { historyIds }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async deleteNote(id: number) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("delete_note", { id }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * The imported skills, sorted by name. A selected skill whose folder is gone
+ * is cleared, so the setting matches the list.
+ */
+async getNoteSkills() : Promise<Result<NoteSkill[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_note_skills") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Import a skill from a .md/.txt file, a folder, or a .zip/.skill archive
+ * and make it the active skill.
+ */
+async importNoteSkill(path: string) : Promise<Result<NoteSkill, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("import_note_skill", { path }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async deleteNoteSkill(id: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("delete_note_skill", { id }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Select the skill notes are written with; `None` = the built-in instructions.
+ */
+async changeNoteSkillSetting(id: string | null) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_note_skill_setting", { id }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Empty = the first enabled OpenRouter provider.
+ */
+async changeNoteProviderRefSetting(id: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_note_provider_ref_setting", { id }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Empty = the provider's own model.
+ */
+async changeNoteModelSetting(model: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_note_model_setting", { model }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
   async changeAnchorActionSetting(
     key: string,
     action: string,
@@ -3302,6 +3411,21 @@ export type AppSettings = {
    * Where those go. Empty = `{app_data}/files`.
    */
   files_folder?: string;
+/**
+ * Notes: stable id (into `llm_providers`) of the provider notes are
+ * written with. Empty = the first enabled OpenRouter provider (see
+ * `note_provider`).
+ */
+note_provider_ref?: string; 
+/**
+ * Notes: the model notes are written with. Empty = the provider's model.
+ */
+note_model?: string; 
+/**
+ * Notes: the imported skill notes are written with (a folder name under
+ * `{app_data}/skills`). `None` = the built-in instructions.
+ */
+note_skill_id?: string | null;
   jumper_persist?: boolean;
   jumper_saved_slots?: (SavedJumpSlot | null)[];
 };
@@ -3751,6 +3875,43 @@ export type NamedText = {
    */
   image?: NamedImage | null;
 };
+/**
+ * A Markdown note generated from a transcript.
+ */
+export type Note = { id: number; 
+/**
+ * The history entry the transcript came from; `None` for pasted text.
+ */
+history_id: number | null; timestamp: number; source_text: string; note_text: string; 
+/**
+ * The skill the note was written with; `None` = the built-in instructions.
+ */
+skill_name: string | null; model: string; 
+/**
+ * Made from a speaker-labelled transcript ("Make note with speakers").
+ */
+with_speakers: boolean; 
+/**
+ * USD cost of the LLM call, when known.
+ */
+cost_usd: number | null; 
+/**
+ * Whether the source history entry still exists.
+ */
+source_exists: boolean }
+export type NoteSkill = { id: string; 
+/**
+ * Frontmatter `name`, else the imported file or folder name.
+ */
+name: string; description: string | null; 
+/**
+ * Number of readable text files that make up the instructions.
+ */
+file_count: number; 
+/**
+ * True when the instructions were cut to fit the size cap.
+ */
+truncated: boolean }
 /**
  * One OpenRouter model's pass-through pricing, normalized to USD per 1M tokens.
  */

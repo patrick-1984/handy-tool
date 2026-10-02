@@ -38,6 +38,7 @@ changelog; their entries say "the 0.3x series" rather than invent a number.
 | [Jumper](#section-jumper)                                | Mark a window and deliver your words back into it. _{Windows only}_    |
 | [Remote desktops](#section-remote-desktops)              | Making delivery land inside RDP and Citrix sessions.                   |
 | [History and recovery](#section-history)                 | Finding, replaying and recovering a take.                              |
+| [Notes](#section-notes)                                  | Turning a transcript into a note, with skills.                         |
 | [Providers and post-processing](#section-providers)      | Remote engines, LLM cleanup, cost and keys.                            |
 | [Models and engines](#section-models)                    | Choosing what transcribes, and on which chip.                          |
 | [Keyboard Typer](#section-keyboard-typer)                | Typing text into windows that refuse a paste.                          |
@@ -1417,6 +1418,92 @@ folder.
 `.opus` files with predictable names; nothing stops you using them elsewhere.
 **Where.** `History › Recordings › Open Recordings Folder`.
 **Since.** 0.10.0.
+
+---
+
+<a id="section-notes"></a>
+
+## Notes
+
+A transcript is what you said; a note is what you need from it.
+
+### Turn a recording into a note
+
+<a id="turn-a-recording-into-a-note"></a>
+**The situation.** A meeting or a long thought is in History as a wall of text, and you want the
+decisions, facts and action items as a tidy note.
+**What Handy does.** A Make note button on each recording sends the transcription shown in the
+entry to an LLM and puts the result right under it, in a tinted card labelled Note, formatted from
+Markdown. The card copies the raw Markdown or deletes the note, and every note made from the entry
+stays listed under it, newest first, with Show more for long ones. While the note is being written
+the card says so; a failure shows the reason with Try again, and missing note settings show a
+button that opens them. Making a note also marks the entry as saved, so automatic cleanup never
+removes the transcript behind a note. Only the text is sent, never the audio, and only when you
+press the button.
+**Where.** `History › Recordings › Make note`.
+**Since.** The release after 2.0.5.
+
+<!-- prov: notes inline | src: src/components/settings/history/HistorySettings.tsx; src/components/settings/notes/HistoryEntryNotes.tsx; src/stores/notesStore.ts; src-tauri/src/commands/notes.rs; src-tauri/src/managers/history.rs -->
+
+### Notes written your way, with a skill
+
+<a id="notes-written-your-way-with-a-skill"></a>
+**The situation.** You want meeting minutes in your team's template, or study notes in a fixed
+shape, not a generic summary.
+**What Handy does.** A skill is a set of instructions for the model. Import one from a `.md` or
+`.txt` file, a folder, or a `.zip` or `.skill` archive in the Claude style (a `SKILL.md` with
+optional name and description at the top, plus reference files). Handy copies its text files into
+a `skills` folder in its data folder, keeps as many skills as you import, and uses the one you
+pick until you choose another or remove it. Archives are unpacked safely: paths that would leave
+the skill's folder are refused, only text files are kept, and an import is capped at 50 MB.
+Without a skill, notes follow default instructions: a clear, structured Markdown note in the
+transcript's language that keeps every fact, decision and action item. Skills are not part of a
+backup.
+**Where.** `Notes › Settings › Skills › Skill`, `Notes › Settings › Skills › Import file…` and
+`Notes › Settings › Skills › Import folder…`.
+**Since.** The release after 2.0.5.
+
+<!-- prov: note skills | src: src-tauri/src/note_skills.rs; src-tauri/src/commands/notes.rs; src/components/settings/notes/NoteSettingsTab.tsx -->
+
+### Choose which model writes your notes
+
+<a id="choose-which-model-writes-your-notes"></a>
+**The situation.** Notes should come from a model you trust, on an account you already pay for.
+**What Handy does.** Notes use one of your registered LLM providers, the same registry as
+post-processing and Model Testing. Until you pick one, the first enabled OpenRouter provider is
+used. The provider's API key can be entered right on the Notes page and is the same key the LLM
+providers tab shows. The model defaults to `google/gemini-2.5-flash` and can be any model the
+provider lists; left empty, the provider's own model is used. The transcript is sent as data with
+a guard against instructions hidden inside it, and the cost is kept with the note when the
+provider reports or prices it.
+**Where.** `Notes › Settings › Provider and model › Provider`, `Notes › Settings › Provider and model › API key`
+and `Notes › Settings › Provider and model › Model`.
+**Since.** The release after 2.0.5.
+
+<!-- prov: note provider | src: src-tauri/src/commands/notes.rs; src-tauri/src/model_testing.rs; src-tauri/src/settings.rs; src/components/settings/notes/NoteSettingsTab.tsx -->
+
+### Every note in one place, one click from its transcript
+
+<a id="every-note-in-one-place"></a>
+**The situation.** You remember writing a note last week but not which recording it came from.
+**What Handy does.** The Saved notes tab lists every note, newest first, with its date, skill and
+model. Go to transcript opens History on the source recording, clears the search, scrolls to it and marks it
+as the source of the note. When the recording was deleted, the note stays and the button says the
+source transcript was deleted.
+**Where.** `Notes › Saved notes › Go to transcript`.
+**Since.** The release after 2.0.5.
+
+<!-- prov: saved notes | src: src/components/settings/notes/SavedNotes.tsx; src/components/settings/history/HistorySettings.tsx; src/stores/navStore.ts -->
+
+### A note from any text
+
+<a id="a-note-from-any-text"></a>
+**The situation.** The text you want summarized did not come from a recording: a transcript from
+another tool, or notes you typed.
+**What Handy does.** Paste or type it on the Manual note tab and generate a note with the same
+skill and model. The note is saved to Saved notes without a source recording.
+**Where.** `Notes › Manual note › Generate note`.
+**Since.** The release after 2.0.5.
 
 ---
 

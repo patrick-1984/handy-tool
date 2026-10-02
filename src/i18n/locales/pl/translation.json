@@ -11,6 +11,7 @@
     "shortcuts": "Skróty",
     "models": "Modele",
     "history": "Historia",
+    "notes": "Notatki",
     "files": "Pliki",
     "debug": "Debugowanie",
     "about": "O programie",
@@ -1421,6 +1422,96 @@
         "noMatches": "Brak wpisów pasujących do wyszukiwania."
       },
       "loadError": "Nie udało się wczytać historii: {{error}}"
+    },
+    "notes": {
+      "tabs": {
+        "settings": "Ustawienia",
+        "saved": "Zapisane notatki",
+        "manual": "Notatka ręczna"
+      },
+      "inline": {
+        "label": "Notatka",
+        "makeNote": "Utwórz notatkę",
+        "generating": "Piszę notatkę…",
+        "retry": "Spróbuj ponownie",
+        "dismiss": "Zamknij",
+        "error": "Nie udało się napisać notatki:",
+        "sourceLabel": "Źródło tej notatki"
+      },
+      "openSettings": "Ustawienia notatek",
+      "defaultSkill": "Domyślne instrukcje",
+      "speakersBadge": "Z mówcami",
+      "copy": "Kopiuj notatkę (Markdown)",
+      "copyError": "Nie udało się skopiować notatki.",
+      "delete": "Usuń notatkę",
+      "deleteError": "Nie udało się usunąć notatki. Spróbuj ponownie.",
+      "showMore": "Pokaż więcej",
+      "showLess": "Pokaż mniej",
+      "skillPicker": "Umiejętność notatek",
+      "skills": {
+        "title": "Umiejętności",
+        "description": "Umiejętność mówi modelowi, jak ma pisać Twoje notatki, na przykład protokół ze spotkania albo streszczenie do nauki. Zaimportuj ich tyle, ile chcesz, i wybierz tę, której chcesz używać; zostają, dopóki ich nie usuniesz.",
+        "active": {
+          "title": "Umiejętność",
+          "description": "Umiejętność, według której powstają nowe notatki. Domyślne instrukcje: przejrzysta, uporządkowana notatka w Markdownie, w języku transkrypcji, zachowująca wszystkie fakty, decyzje i zadania."
+        },
+        "defaultDescription": "Notatki powstają według domyślnych instrukcji: przejrzysta, uporządkowana notatka w Markdownie, w tym samym języku co transkrypcja.",
+        "fileCount": "Pliki: {{count}}",
+        "truncated": "Ta umiejętność jest bardzo długa, więc do modelu trafia tylko jej pierwsze 200 KB.",
+        "importFile": "Importuj plik…",
+        "importFolder": "Importuj folder…",
+        "importHint": "Plik .md lub .txt, folder albo archiwum .zip lub .skill (SKILL.md z opcjonalnymi plikami pomocniczymi). Handy kopiuje umiejętność do własnego folderu danych.",
+        "fileFilter": "Umiejętności",
+        "imported": "Zaimportowano i wybrano umiejętność „{{name}}”.",
+        "importError": "Nie udało się zaimportować umiejętności: {{error}}",
+        "remove": "Usuń umiejętność",
+        "removeError": "Nie udało się usunąć umiejętności."
+      },
+      "provider": {
+        "title": "Dostawca i model",
+        "description": "Notatki pisze model jednego z Twoich dostawców LLM. Transkrypcja jest wysyłana do tego dostawcy.",
+        "provider": {
+          "title": "Dostawca",
+          "description": "Zarejestrowany dostawca LLM, który pisze notatki. Dopóki żadnego nie wybierzesz, Handy używa pierwszego włączonego dostawcy OpenRouter.",
+          "placeholder": "Wybierz dostawcę"
+        },
+        "apiKey": {
+          "title": "Klucz API",
+          "description": "Klucz API wybranego dostawcy. To ten sam klucz co w Ustawienia zaawansowane › Dostawcy LLM, więc zmiana tutaj zmienia go również tam.",
+          "placeholder": "Wklej klucz API"
+        },
+        "model": {
+          "title": "Model",
+          "description": "Model, który pisze notatki, na przykład google/gemini-2.5-flash. Zostaw puste, aby użyć modelu ustawionego u dostawcy.",
+          "placeholder": "Model dostawcy"
+        },
+        "manage": "Zarządzaj dostawcami LLM"
+      },
+      "saved": {
+        "loading": "Wczytuję notatki…",
+        "empty": "Nie ma jeszcze notatek. Użyj „Utwórz notatkę” przy nagraniu w sekcji Historia albo napisz notatkę na karcie „Notatka ręczna”.",
+        "goToTranscript": "Przejdź do transkrypcji",
+        "sourceDeleted": "Transkrypcja źródłowa została usunięta"
+      },
+      "manual": {
+        "title": "Tekst do zamiany w notatkę",
+        "placeholder": "Wklej lub wpisz transkrypcję…",
+        "generate": "Wygeneruj notatkę",
+        "savedHint": "Zapisano w: Zapisane notatki"
+      },
+      "errors": {
+        "emptyTranscript": "Brak tekstu, z którego można utworzyć notatkę.",
+        "missingProvider": "Wybierz dostawcę notatek w ustawieniach notatek.",
+        "unsupportedProvider": "Ten dostawca nie potrafi pisać notatek. Wybierz innego w ustawieniach notatek.",
+        "missingApiKey": "Dodaj klucz API dostawcy w ustawieniach notatek.",
+        "missingModel": "Wybierz model notatek w ustawieniach notatek.",
+        "emptyNote": "Model zwrócił pustą notatkę. Spróbuj ponownie lub wybierz inny model.",
+        "skillMissing": "Wybrana umiejętność już nie istnieje. Wybierz inną w ustawieniach notatek.",
+        "skillEmpty": "Umiejętność nie zawiera czytelnych instrukcji (Markdown ani tekstu).",
+        "skillUnsupported": "Tego typu pliku nie można zaimportować. Użyj .md, .txt, .zip lub .skill.",
+        "skillTooLarge": "Umiejętność jest większa niż 50 MB.",
+        "skillUnsafePath": "Archiwum zawiera niebezpieczne ścieżki plików, więc nie zostało zaimportowane."
+      }
     },
     "debug": {
       "title": "Debugowanie",

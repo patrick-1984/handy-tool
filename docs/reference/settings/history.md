@@ -26,6 +26,14 @@ Copies the selected row's transcription. **Default:** not applicable; this is a 
 
 Catalog: [Copy or delete a single entry](../../features.md#copy-or-delete-a-single-entry).
 
+### Make note
+
+`History › Recordings › Make note`
+
+Writes a note from the entry's transcription with the skill, provider and model chosen on `Notes › Settings`, shows it under the entry, and marks the entry as saved. Disabled while that entry's note is being written. **Default:** not applicable; this is a per-row action.
+
+Catalog: [Turn a recording into a note](../../features.md#turn-a-recording-into-a-note).
+
 ### Save transcription
 
 `History › Recordings › Save transcription`

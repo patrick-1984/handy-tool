@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type { SidebarSection } from "@/components/Sidebar";
 
 export type HistoryTab = "recordings" | "statistics" | "settings";
+export type NotesTab = "settings" | "saved" | "manual";
 /** The feature setups that run on the Setups page. */
 export type FeatureSetup = "appearance" | "postProcessing" | "jumper";
 
@@ -19,6 +20,16 @@ interface NavStore {
   setHistoryTab: (tab: HistoryTab) => void;
   /** Open a page; for History, optionally on a given tab (search results). */
   navigateTo: (section: SidebarSection, historyTab?: HistoryTab) => void;
+  /** The Notes page's tab; null until one is picked (the page then chooses). */
+  notesTab: NotesTab | null;
+  setNotesTab: (tab: NotesTab) => void;
+  /** Open Notes on a given tab. */
+  openNotes: (tab: NotesTab) => void;
+  /** A History entry to scroll to and highlight ("Go to transcript"). */
+  focusHistoryId: number | null;
+  /** Open History › Recordings at that entry. */
+  goToHistoryEntry: (id: number) => void;
+  clearFocusHistoryId: () => void;
   /** A setup to start when the Setups page opens (from a button elsewhere). */
   pendingSetup: FeatureSetup | null;
   /** Open Setups and start that setup there. */
@@ -66,6 +77,22 @@ export const useNavStore = create<NavStore>()((set) => ({
     rememberPage(currentSection);
     set(historyTab ? { currentSection, historyTab } : { currentSection });
   },
+  notesTab: null,
+  setNotesTab: (notesTab) => set({ notesTab }),
+  openNotes: (notesTab) => {
+    rememberPage("notes");
+    set({ currentSection: "notes", notesTab });
+  },
+  focusHistoryId: null,
+  goToHistoryEntry: (focusHistoryId) => {
+    rememberPage("history");
+    set({
+      currentSection: "history",
+      historyTab: "recordings",
+      focusHistoryId,
+    });
+  },
+  clearFocusHistoryId: () => set({ focusHistoryId: null }),
   pendingSetup: null,
   startSetup: (pendingSetup) => {
     rememberPage("setups");

@@ -11,6 +11,7 @@
     "shortcuts": "Atalhos",
     "models": "Modelos",
     "history": "Histórico",
+    "notes": "Notas",
     "files": "Arquivos",
     "debug": "Depuração",
     "about": "Sobre",
@@ -1420,6 +1421,96 @@
         "regexBadge": ".*",
         "regexActive": "A consulta está sendo tratada como uma expressão regular",
         "noMatches": "Nenhuma entrada corresponde à sua busca."
+      }
+    },
+    "notes": {
+      "tabs": {
+        "settings": "Configurações",
+        "saved": "Notas salvas",
+        "manual": "Nota manual"
+      },
+      "inline": {
+        "label": "Nota",
+        "makeNote": "Criar nota",
+        "generating": "Escrevendo sua nota…",
+        "retry": "Tentar novamente",
+        "dismiss": "Fechar",
+        "error": "Não foi possível escrever a nota:",
+        "sourceLabel": "Origem desta nota"
+      },
+      "openSettings": "Configurações de notas",
+      "defaultSkill": "Instruções padrão",
+      "speakersBadge": "Com falantes",
+      "copy": "Copiar nota (Markdown)",
+      "copyError": "Não foi possível copiar a nota.",
+      "delete": "Excluir nota",
+      "deleteError": "Não foi possível excluir a nota. Tente novamente.",
+      "showMore": "Mostrar mais",
+      "showLess": "Mostrar menos",
+      "skillPicker": "Skill de notas",
+      "skills": {
+        "title": "Skills",
+        "description": "Uma skill diz ao modelo como escrever suas notas, por exemplo uma ata de reunião ou um resumo de estudo. Importe quantas quiser e escolha qual usar; elas ficam até você removê-las.",
+        "active": {
+          "title": "Skill",
+          "description": "A skill usada para escrever as novas notas. Instruções padrão: uma nota em Markdown clara e estruturada, no idioma da transcrição, que mantém cada fato, decisão e tarefa."
+        },
+        "defaultDescription": "As notas seguem as instruções padrão: uma nota em Markdown clara e estruturada, no mesmo idioma da transcrição.",
+        "fileCount": "Arquivos: {{count}}",
+        "truncated": "Esta skill é muito longa, então só os primeiros 200 KB são enviados ao modelo.",
+        "importFile": "Importar arquivo…",
+        "importFolder": "Importar pasta…",
+        "importHint": "Um arquivo .md ou .txt, uma pasta ou um arquivo .zip ou .skill (um SKILL.md com arquivos de referência opcionais). O Handy copia a skill para a própria pasta de dados.",
+        "fileFilter": "Skills",
+        "imported": "Skill \"{{name}}\" importada e selecionada.",
+        "importError": "Não foi possível importar a skill: {{error}}",
+        "remove": "Remover skill",
+        "removeError": "Não foi possível remover a skill."
+      },
+      "provider": {
+        "title": "Provedor e modelo",
+        "description": "As notas são escritas por um modelo de um dos seus provedores de LLM. A transcrição é enviada a esse provedor.",
+        "provider": {
+          "title": "Provedor",
+          "description": "O provedor de LLM registrado que escreve as notas. Até você escolher um, o Handy usa o primeiro provedor OpenRouter ativado.",
+          "placeholder": "Selecione um provedor"
+        },
+        "apiKey": {
+          "title": "Chave de API",
+          "description": "A chave de API do provedor escolhido. É a mesma chave de Configurações avançadas › Provedores de LLM, então alterá-la aqui também a altera lá.",
+          "placeholder": "Cole a chave de API"
+        },
+        "model": {
+          "title": "Modelo",
+          "description": "O modelo que escreve as notas, por exemplo google/gemini-2.5-flash. Deixe vazio para usar o modelo do próprio provedor.",
+          "placeholder": "O modelo do provedor"
+        },
+        "manage": "Gerenciar provedores de LLM"
+      },
+      "saved": {
+        "loading": "Carregando notas…",
+        "empty": "Ainda não há notas. Use \"Criar nota\" numa gravação do Histórico ou escreva uma na aba \"Nota manual\".",
+        "goToTranscript": "Ir para a transcrição",
+        "sourceDeleted": "A transcrição de origem foi excluída"
+      },
+      "manual": {
+        "title": "Texto para transformar em nota",
+        "placeholder": "Cole ou digite uma transcrição…",
+        "generate": "Gerar nota",
+        "savedHint": "Salva em Notas salvas"
+      },
+      "errors": {
+        "emptyTranscript": "Não há texto para criar uma nota.",
+        "missingProvider": "Escolha um provedor para as notas em Configurações de notas.",
+        "unsupportedProvider": "Este provedor não pode escrever notas. Escolha outro em Configurações de notas.",
+        "missingApiKey": "Adicione a chave de API do provedor em Configurações de notas.",
+        "missingModel": "Escolha um modelo para as notas em Configurações de notas.",
+        "emptyNote": "O modelo retornou uma nota vazia. Tente novamente ou escolha outro modelo.",
+        "skillMissing": "A skill selecionada não existe mais. Escolha outra em Configurações de notas.",
+        "skillEmpty": "A skill não tem instruções legíveis (Markdown ou texto).",
+        "skillUnsupported": "Este tipo de arquivo não pode ser importado. Use .md, .txt, .zip ou .skill.",
+        "skillTooLarge": "A skill tem mais de 50 MB.",
+        "skillUnsafePath": "O arquivo compactado contém caminhos inseguros, por isso não foi importado."
       }
     },
     "debug": {

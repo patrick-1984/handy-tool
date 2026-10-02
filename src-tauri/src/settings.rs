@@ -1505,6 +1505,22 @@ pub struct AppSettings {
     /// Where those go. Empty = `{app_data}/files`.
     #[serde(default)]
     pub files_folder: String,
+    /// Notes: stable id (into `llm_providers`) of the provider notes are
+    /// written with. Empty = the first enabled OpenRouter provider (see
+    /// `note_provider`).
+    #[serde(default)]
+    pub note_provider_ref: String,
+    /// Notes: the model notes are written with. Empty = the provider's model.
+    #[serde(default = "default_note_model")]
+    pub note_model: String,
+    /// Notes: the imported skill notes are written with (a folder name under
+    /// `{app_data}/skills`). `None` = the built-in instructions.
+    #[serde(default)]
+    pub note_skill_id: Option<String>,
+}
+
+pub fn default_note_model() -> String {
+    "google/gemini-2.5-flash".to_string()
 }
 
 fn default_translator_priority() -> TranslatorPriority {
@@ -2819,6 +2835,9 @@ pub fn get_default_settings() -> AppSettings {
         file_model: String::new(),
         file_keep_audio: false,
         files_folder: String::new(),
+        note_provider_ref: String::new(),
+        note_model: default_note_model(),
+        note_skill_id: None,
     }
 }
 
@@ -2826,6 +2845,19 @@ impl AppSettings {
     /// Look up a registered provider by its stable id.
     pub fn llm_provider(&self, id: &str) -> Option<&LlmProvider> {
         self.llm_providers.iter().find(|provider| provider.id == id)
+    }
+
+    /// The provider notes are written with: the chosen one, else the first
+    /// enabled OpenRouter provider, else the first OpenRouter provider.
+    pub fn note_provider(&self) -> Option<&LlmProvider> {
+        if !self.note_provider_ref.is_empty() {
+            return self.llm_provider(&self.note_provider_ref);
+        }
+        let mut openrouter = self.llm_providers.iter().filter(|p| p.kind == "openrouter");
+        openrouter
+            .clone()
+            .find(|p| p.enabled)
+            .or_else(|| openrouter.next())
     }
 
     /// The provider selected for post-processing, if configured and present.

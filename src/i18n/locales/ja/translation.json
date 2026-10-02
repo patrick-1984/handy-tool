@@ -11,6 +11,7 @@
     "shortcuts": "ショートカット",
     "models": "モデル",
     "history": "履歴",
+    "notes": "ノート",
     "files": "ファイル",
     "debug": "デバッグ",
     "about": "概要",
@@ -1420,6 +1421,96 @@
         "regexBadge": ".*",
         "regexActive": "クエリは正規表現として処理されています",
         "noMatches": "検索に一致するエントリーがありません。"
+      }
+    },
+    "notes": {
+      "tabs": {
+        "settings": "設定",
+        "saved": "保存したノート",
+        "manual": "手動ノート"
+      },
+      "inline": {
+        "label": "ノート",
+        "makeNote": "ノートを作成",
+        "generating": "ノートを作成中…",
+        "retry": "再試行",
+        "dismiss": "閉じる",
+        "error": "ノートを作成できませんでした:",
+        "sourceLabel": "このノートの元"
+      },
+      "openSettings": "ノートの設定",
+      "defaultSkill": "既定の指示",
+      "speakersBadge": "話者付き",
+      "copy": "ノートをコピー (Markdown)",
+      "copyError": "ノートをコピーできませんでした。",
+      "delete": "ノートを削除",
+      "deleteError": "ノートを削除できませんでした。もう一度お試しください。",
+      "showMore": "さらに表示",
+      "showLess": "表示を減らす",
+      "skillPicker": "ノートのスキル",
+      "skills": {
+        "title": "スキル",
+        "description": "スキルは、議事録や学習まとめなど、ノートの書き方をモデルに指示します。好きなだけインポートして使うものを選べます。削除するまで保持されます。",
+        "active": {
+          "title": "スキル",
+          "description": "新しいノートの作成に使うスキル。既定の指示では、文字起こしと同じ言語で、事実・決定事項・タスクをすべて残した、分かりやすく構成された Markdown ノートを作成します。"
+        },
+        "defaultDescription": "ノートは既定の指示に従います: 文字起こしと同じ言語の、分かりやすく構成された Markdown ノートです。",
+        "fileCount": "ファイル数: {{count}}",
+        "truncated": "このスキルは非常に長いため、最初の 200 KB だけがモデルに送られます。",
+        "importFile": "ファイルをインポート…",
+        "importFolder": "フォルダーをインポート…",
+        "importHint": ".md または .txt ファイル、フォルダー、または .zip / .skill アーカイブ (SKILL.md と任意の参照ファイル)。Handy はスキルを自分のデータフォルダーにコピーします。",
+        "fileFilter": "スキル",
+        "imported": "スキル「{{name}}」をインポートして選択しました。",
+        "importError": "スキルをインポートできませんでした: {{error}}",
+        "remove": "スキルを削除",
+        "removeError": "スキルを削除できませんでした。"
+      },
+      "provider": {
+        "title": "プロバイダーとモデル",
+        "description": "ノートは LLM プロバイダーのモデルが作成します。文字起こしはそのプロバイダーに送信されます。",
+        "provider": {
+          "title": "プロバイダー",
+          "description": "ノートを作成する登録済みの LLM プロバイダー。選択するまでは、有効になっている最初の OpenRouter プロバイダーを使います。",
+          "placeholder": "プロバイダーを選択"
+        },
+        "apiKey": {
+          "title": "API キー",
+          "description": "選択したプロバイダーの API キー。詳細設定 › LLMプロバイダー と同じキーなので、ここで変更するとそちらも変わります。",
+          "placeholder": "API キーを貼り付け"
+        },
+        "model": {
+          "title": "モデル",
+          "description": "ノートを作成するモデル (例: google/gemini-2.5-flash)。空欄にするとプロバイダー自身のモデルを使います。",
+          "placeholder": "プロバイダーのモデル"
+        },
+        "manage": "LLM プロバイダーを管理"
+      },
+      "saved": {
+        "loading": "ノートを読み込み中…",
+        "empty": "まだノートはありません。履歴の録音で「ノートを作成」を使うか、「手動ノート」タブで作成してください。",
+        "goToTranscript": "文字起こしへ移動",
+        "sourceDeleted": "元の文字起こしは削除されました"
+      },
+      "manual": {
+        "title": "ノートにするテキスト",
+        "placeholder": "文字起こしを貼り付けるか入力…",
+        "generate": "ノートを生成",
+        "savedHint": "保存したノートに保存しました"
+      },
+      "errors": {
+        "emptyTranscript": "ノートにするテキストがありません。",
+        "missingProvider": "ノートの設定でプロバイダーを選択してください。",
+        "unsupportedProvider": "このプロバイダーではノートを作成できません。ノートの設定で別のものを選択してください。",
+        "missingApiKey": "ノートの設定でプロバイダーの API キーを追加してください。",
+        "missingModel": "ノートの設定でモデルを選択してください。",
+        "emptyNote": "モデルが空のノートを返しました。もう一度試すか、別のモデルを選んでください。",
+        "skillMissing": "選択したスキルが見つかりません。ノートの設定で別のスキルを選んでください。",
+        "skillEmpty": "スキルに読み取れる指示 (Markdown またはテキスト) がありません。",
+        "skillUnsupported": "この種類のファイルはインポートできません。.md、.txt、.zip、.skill を使ってください。",
+        "skillTooLarge": "スキルが 50 MB を超えています。",
+        "skillUnsafePath": "アーカイブに安全でないファイルパスが含まれているため、インポートしませんでした。"
       }
     },
     "debug": {

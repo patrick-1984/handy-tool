@@ -11,6 +11,7 @@
     "shortcuts": "Kısayollar",
     "models": "Modeller",
     "history": "Geçmiş",
+    "notes": "Notlar",
     "files": "Dosyalar",
     "debug": "Hata Ayıklama",
     "about": "Hakkında",
@@ -1420,6 +1421,96 @@
         "regexBadge": ".*",
         "regexActive": "Sorgu düzenli ifade olarak değerlendiriliyor",
         "noMatches": "Aramanızla eşleşen kayıt yok."
+      }
+    },
+    "notes": {
+      "tabs": {
+        "settings": "Ayarlar",
+        "saved": "Kayıtlı notlar",
+        "manual": "Elle not"
+      },
+      "inline": {
+        "label": "Not",
+        "makeNote": "Not oluştur",
+        "generating": "Notunuz yazılıyor…",
+        "retry": "Tekrar dene",
+        "dismiss": "Kapat",
+        "error": "Not yazılamadı:",
+        "sourceLabel": "Bu notun kaynağı"
+      },
+      "openSettings": "Not ayarları",
+      "defaultSkill": "Varsayılan talimatlar",
+      "speakersBadge": "Konuşmacılı",
+      "copy": "Notu kopyala (Markdown)",
+      "copyError": "Not kopyalanamadı.",
+      "delete": "Notu sil",
+      "deleteError": "Not silinemedi. Lütfen tekrar deneyin.",
+      "showMore": "Daha fazla göster",
+      "showLess": "Daha az göster",
+      "skillPicker": "Not becerisi",
+      "skills": {
+        "title": "Beceriler",
+        "description": "Beceri, modele notlarınızı nasıl yazacağını söyler; örneğin bir toplantı tutanağı ya da ders özeti. İstediğiniz kadar içe aktarın ve kullanılacak olanı seçin; siz kaldırana kadar kalırlar.",
+        "active": {
+          "title": "Beceri",
+          "description": "Yeni notların yazıldığı beceri. Varsayılan talimatlar: transkripsiyonun dilinde, her bilgiyi, kararı ve görevi koruyan açık ve düzenli bir Markdown notu."
+        },
+        "defaultDescription": "Notlar varsayılan talimatları izler: transkripsiyonla aynı dilde, açık ve düzenli bir Markdown notu.",
+        "fileCount": "Dosya: {{count}}",
+        "truncated": "Bu beceri çok uzun, bu yüzden modele yalnızca ilk 200 KB'ı gönderilir.",
+        "importFile": "Dosya içe aktar…",
+        "importFolder": "Klasör içe aktar…",
+        "importHint": "Bir .md veya .txt dosyası, bir klasör ya da bir .zip veya .skill arşivi (isteğe bağlı başvuru dosyalarıyla bir SKILL.md). Handy beceriyi kendi veri klasörüne kopyalar.",
+        "fileFilter": "Beceriler",
+        "imported": "\"{{name}}\" becerisi içe aktarıldı ve seçildi.",
+        "importError": "Beceri içe aktarılamadı: {{error}}",
+        "remove": "Beceriyi kaldır",
+        "removeError": "Beceri kaldırılamadı."
+      },
+      "provider": {
+        "title": "Sağlayıcı ve model",
+        "description": "Notları LLM sağlayıcılarınızdan birinin modeli yazar. Transkripsiyon o sağlayıcıya gönderilir.",
+        "provider": {
+          "title": "Sağlayıcı",
+          "description": "Notları yazan kayıtlı LLM sağlayıcısı. Siz seçene kadar Handy etkin ilk OpenRouter sağlayıcısını kullanır.",
+          "placeholder": "Bir sağlayıcı seçin"
+        },
+        "apiKey": {
+          "title": "API anahtarı",
+          "description": "Seçili sağlayıcının API anahtarı. Gelişmiş ayarlar › LLM sağlayıcıları bölümündeki anahtarla aynıdır; burada değiştirirseniz orada da değişir.",
+          "placeholder": "API anahtarını yapıştırın"
+        },
+        "model": {
+          "title": "Model",
+          "description": "Notları yazan model, örneğin google/gemini-2.5-flash. Sağlayıcının kendi modelini kullanmak için boş bırakın.",
+          "placeholder": "Sağlayıcının modeli"
+        },
+        "manage": "LLM sağlayıcılarını yönet"
+      },
+      "saved": {
+        "loading": "Notlar yükleniyor…",
+        "empty": "Henüz not yok. Geçmiş bölümündeki bir kayıtta \"Not oluştur\" seçeneğini kullanın ya da \"Elle not\" sekmesinde bir not yazın.",
+        "goToTranscript": "Transkripsiyona git",
+        "sourceDeleted": "Kaynak transkripsiyon silindi"
+      },
+      "manual": {
+        "title": "Nota dönüştürülecek metin",
+        "placeholder": "Bir transkripsiyon yapıştırın veya yazın…",
+        "generate": "Not oluştur",
+        "savedHint": "Kayıtlı notlar bölümüne kaydedildi"
+      },
+      "errors": {
+        "emptyTranscript": "Not oluşturulacak metin yok.",
+        "missingProvider": "Not ayarlarından notlar için bir sağlayıcı seçin.",
+        "unsupportedProvider": "Bu sağlayıcı not yazamaz. Not ayarlarından başka birini seçin.",
+        "missingApiKey": "Not ayarlarından sağlayıcının API anahtarını ekleyin.",
+        "missingModel": "Not ayarlarından notlar için bir model seçin.",
+        "emptyNote": "Model boş bir not döndürdü. Tekrar deneyin veya başka bir model seçin.",
+        "skillMissing": "Seçili beceri artık yok. Not ayarlarından başka birini seçin.",
+        "skillEmpty": "Becerinin okunabilir talimatı yok (Markdown veya metin).",
+        "skillUnsupported": "Bu dosya türü içe aktarılamaz. .md, .txt, .zip veya .skill kullanın.",
+        "skillTooLarge": "Beceri 50 MB'tan büyük.",
+        "skillUnsafePath": "Arşiv güvenli olmayan dosya yolları içerdiği için içe aktarılmadı."
       }
     },
     "debug": {
