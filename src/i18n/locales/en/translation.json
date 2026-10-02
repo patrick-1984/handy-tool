@@ -1655,6 +1655,7 @@
       "inline": {
         "label": "Note",
         "makeNote": "Make note",
+        "makeNoteWithSpeakers": "Make note with speakers",
         "generating": "Writing your note…",
         "retry": "Try again",
         "dismiss": "Dismiss",
@@ -1710,6 +1711,29 @@
         },
         "manage": "Manage LLM providers"
       },
+      "speakers": {
+        "title": "Speaker detection",
+        "description": "Used only by Make note with speakers in History: it works out who is speaking in a recording and labels them [Person 1], [Person 2] and so on. It runs offline on this computer, so the recording never leaves it.",
+        "models": {
+          "title": "Speaker models",
+          "description": "Two models (32 MB) downloaded once from Hugging Face and GitHub: pyannote segmentation 3.0 (MIT) and WeSpeaker ResNet34 (CC BY 4.0), as exported by sherpa-onnx. Delete them to free space; you can download them again at any time."
+        },
+        "ready": "Ready",
+        "notDownloaded": "Not downloaded",
+        "failed": "Download failed",
+        "download": "Download (32 MB)",
+        "delete": "Delete",
+        "deleteError": "Couldn't delete the speaker models: {{error}}",
+        "downloading": "Downloading… {{percent}}%",
+        "verifying": "Checking the download…",
+        "starting": "Starting the download…",
+        "needsDownload": "Speaker detection needs a one-time 32 MB download.",
+        "needsDownloadHint": "The models run offline on this computer and are only used for Make note with speakers. Your note continues as soon as they are downloaded.",
+        "downloadError": "The download failed: {{error}}",
+        "identifying": "Identifying speakers…",
+        "error": "Couldn't identify the speakers:",
+        "normalNote": "Make a normal note"
+      },
       "saved": {
         "loading": "Loading notes…",
         "empty": "No notes yet. Use Make note on a recording in History, or write one on the Manual note tab.",
@@ -1729,6 +1753,13 @@
         "missingApiKey": "Add the provider's API key in Note settings.",
         "missingModel": "Choose a model for notes in Note settings.",
         "emptyNote": "The model returned an empty note. Try again or choose another model.",
+        "speakersModelsMissing": "The speaker models are not downloaded. Download them in Note settings.",
+        "speakersModelsInUse": "The speaker models are in use by Make note with speakers. Try again when it has finished.",
+        "speakersModelsDownloading": "The speaker models are being downloaded. Try again when the download has finished.",
+        "speakersNoRecording": "This entry no longer has a recording, so its speakers can't be identified.",
+        "speakersNoSpeech": "No speech was found in the recording.",
+        "speakersNoModel": "Download and select a transcription model on the Models page first.",
+        "speakersFailed": "The speaker models failed on this recording.",
         "skillMissing": "The selected skill is gone. Choose another one in Note settings.",
         "skillEmpty": "The skill has no readable instructions (Markdown or text).",
         "skillUnsupported": "This file type can't be imported. Use .md, .txt, .zip or .skill.",
@@ -1848,6 +1879,11 @@
           "title": "Whisper.cpp",
           "description": "High-performance inference of OpenAI's Whisper automatic speech recognition model",
           "details": "Handy Tool uses Whisper.cpp for fast, local speech-to-text processing. Thanks to the amazing work by Georgi Gerganov and contributors."
+        },
+        "speakers": {
+          "title": "Speaker detection models",
+          "description": "The speaker models behind Make note with speakers",
+          "details": "Make note with speakers uses pyannote segmentation 3.0 by Hervé Bredin and pyannote.audio (MIT License) and the WeSpeaker ResNet34 VoxCeleb model by the WeNet community (CC BY 4.0), in the ONNX versions published by the sherpa-onnx project (k2-fsa). They are downloaded on demand, not bundled. Thanks to their authors."
         }
       }
     },

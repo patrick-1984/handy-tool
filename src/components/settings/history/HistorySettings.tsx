@@ -19,6 +19,7 @@ import {
   HardDrive,
   Clock,
   NotebookPen,
+  UsersRound,
 } from "lucide-react";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
@@ -530,6 +531,11 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
     isHistoryJobBusy(state.historyJobs[entry.id]),
   );
   const generateNote = useNotesStore((state) => state.generateHistoryNote);
+  const makeNoteWithSpeakers = useNotesStore(
+    (state) => state.makeHistoryNoteWithSpeakers,
+  );
+  // Speaker detection listens to the recording, so it needs one.
+  const hasRecording = entry.file_name !== "" && entry.audio_purged_at == null;
 
   const handleLoadAudio = useCallback(
     () => getAudioUrl(entry.file_name),
@@ -608,6 +614,18 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
           >
             <NotebookPen width={16} height={16} />
           </button>
+          {hasRecording && (
+            <button
+              onClick={() =>
+                void makeNoteWithSpeakers(entry.id, entry.transcription_text)
+              }
+              disabled={noteBusy}
+              className={ICON_BUTTON}
+              title={t("settings.notes.inline.makeNoteWithSpeakers")}
+            >
+              <UsersRound width={16} height={16} />
+            </button>
+          )}
           <button
             onClick={onToggleSaved}
             className={`${ICON_BUTTON} ${entry.saved ? "!text-accent" : ""}`}
@@ -625,7 +643,8 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
           </button>
           <button
             onClick={handleDeleteEntry}
-            className={`${ICON_BUTTON} hover:!bg-err-bg hover:!text-err-text`}
+            disabled={noteBusy}
+            className={`${ICON_BUTTON} enabled:hover:!bg-err-bg enabled:hover:!text-err-text`}
             title={t("settings.history.delete")}
           >
             <Trash2 width={16} height={16} />

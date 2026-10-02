@@ -1445,6 +1445,29 @@ press the button.
 
 <!-- prov: notes inline | src: src/components/settings/history/HistorySettings.tsx; src/components/settings/notes/HistoryEntryNotes.tsx; src/stores/notesStore.ts; src-tauri/src/commands/notes.rs; src-tauri/src/managers/history.rs -->
 
+### A note that says who said what
+
+<a id="a-note-that-says-who-said-what"></a>
+**The situation.** The recording is a meeting or a call, and the note is only useful if it says who
+decided what and who took which action item.
+**What Handy does.** Make note with speakers, next to Make note on every recording that still has
+its audio, first works out who is speaking. Handy transcribes the recording once more with the
+selected transcription model, finds the voices with two speaker models that run offline on your
+computer, and labels the text `[Person 1]`, `[Person 2]` and so on, in the order people first
+speak; every transcribed word is kept, and with only one voice the text gets no labels. The labelled
+transcript then becomes a note like Make note does, and the note carries a With speakers badge.
+The entry's own text is never changed. The card under the entry says Identifying speakers… and
+then Writing your note…; if speaker detection fails, it offers Try again or a normal note from the
+entry's text. The speaker models are a one-time 32 MB download, offered in that card the first
+time and on the Notes page, where they can also be deleted. They are used for nothing else:
+recording, live text and normal transcription never run them. With API or OpenRouter
+transcription selected, that service transcribes the recording, one speaker turn at a time.
+**Where.** `History › Recordings › Make note with speakers` and
+`Notes › Settings › Speaker detection › Speaker models`.
+**Since.** The release after 2.0.5.
+
+<!-- prov: notes with speakers | src: src-tauri/src/diarization/mod.rs; src-tauri/src/diarization/align.rs; src-tauri/src/diarization/models.rs; src-tauri/src/commands/speakers.rs; src-tauri/src/managers/transcription.rs; src/stores/notesStore.ts; src/components/settings/notes/HistoryEntryNotes.tsx; src/components/settings/notes/SpeakerDetectionSettings.tsx -->
+
 ### Notes written your way, with a skill
 
 <a id="notes-written-your-way-with-a-skill"></a>

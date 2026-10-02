@@ -1432,6 +1432,7 @@
       "inline": {
         "label": "Not",
         "makeNote": "Not oluştur",
+        "makeNoteWithSpeakers": "Konuşmacılı not oluştur",
         "generating": "Notunuz yazılıyor…",
         "retry": "Tekrar dene",
         "dismiss": "Kapat",
@@ -1487,6 +1488,29 @@
         },
         "manage": "LLM sağlayıcılarını yönet"
       },
+      "speakers": {
+        "title": "Konuşmacı algılama",
+        "description": "Yalnızca Geçmiş'teki \"Konuşmacılı not oluştur\" tarafından kullanılır: bir kayıtta kimin konuştuğunu bulur ve konuşmacıları [Person 1], [Person 2] gibi etiketler. Bu bilgisayarda çevrimdışı çalışır, kayıt bilgisayardan hiç çıkmaz.",
+        "models": {
+          "title": "Konuşmacı modelleri",
+          "description": "Hugging Face ve GitHub'dan bir kez indirilen iki model (32 MB): pyannote segmentation 3.0 (MIT) ve WeSpeaker ResNet34 (CC BY 4.0), sherpa-onnx dışa aktarımıyla. Yer açmak için silebilir, istediğiniz zaman yeniden indirebilirsiniz."
+        },
+        "ready": "Hazır",
+        "notDownloaded": "İndirilmedi",
+        "failed": "İndirme başarısız",
+        "download": "İndir (32 MB)",
+        "delete": "Sil",
+        "deleteError": "Konuşmacı modelleri silinemedi: {{error}}",
+        "downloading": "İndiriliyor… %{{percent}}",
+        "verifying": "İndirme denetleniyor…",
+        "starting": "İndirme başlatılıyor…",
+        "needsDownload": "Konuşmacı algılama için bir kerelik 32 MB indirme gerekiyor.",
+        "needsDownloadHint": "Modeller bu bilgisayarda çevrimdışı çalışır ve yalnızca \"Konuşmacılı not oluştur\" için kullanılır. İndirildikleri anda notunuz devam eder.",
+        "downloadError": "İndirme başarısız oldu: {{error}}",
+        "identifying": "Konuşmacılar belirleniyor…",
+        "error": "Konuşmacılar belirlenemedi:",
+        "normalNote": "Normal not oluştur"
+      },
       "saved": {
         "loading": "Notlar yükleniyor…",
         "empty": "Henüz not yok. Geçmiş bölümündeki bir kayıtta \"Not oluştur\" seçeneğini kullanın ya da \"Elle not\" sekmesinde bir not yazın.",
@@ -1506,6 +1530,13 @@
         "missingApiKey": "Not ayarlarından sağlayıcının API anahtarını ekleyin.",
         "missingModel": "Not ayarlarından notlar için bir model seçin.",
         "emptyNote": "Model boş bir not döndürdü. Tekrar deneyin veya başka bir model seçin.",
+        "speakersModelsMissing": "Konuşmacı modelleri indirilmemiş. Not ayarlarından indirin.",
+        "speakersModelsInUse": "Konuşmacı modelleri şu anda \"Konuşmacılı not oluştur\" tarafından kullanılıyor. Bittiğinde tekrar deneyin.",
+        "speakersModelsDownloading": "Konuşmacı modelleri indiriliyor. İndirme bitince tekrar deneyin.",
+        "speakersNoRecording": "Bu girişin artık kaydı yok, bu yüzden konuşmacılar belirlenemiyor.",
+        "speakersNoSpeech": "Kayıtta konuşma bulunamadı.",
+        "speakersNoModel": "Önce Modeller sayfasından bir yazıya dökme modeli indirip seçin.",
+        "speakersFailed": "Konuşmacı modelleri bu kayıtta başarısız oldu.",
         "skillMissing": "Seçili beceri artık yok. Not ayarlarından başka birini seçin.",
         "skillEmpty": "Becerinin okunabilir talimatı yok (Markdown veya metin).",
         "skillUnsupported": "Bu dosya türü içe aktarılamaz. .md, .txt, .zip veya .skill kullanın.",
@@ -1607,6 +1638,11 @@
           "title": "Handy",
           "description": "Bu projenin üzerine inşa edildiği orijinal açık kaynaklı konuşmadan metne uygulaması",
           "details": "Handy Tool, CJ Pais tarafından oluşturulan Handy'nin (github.com/cjpais/Handy, handy.computer) bir çatalıdır. Üst kaynak v0.8.1 sürümünde (Mart 2026) devralınmış ve Patrick R. tarafından bağımsız olarak geliştirilmeye devam edilmiştir. Bu projenin üzerine kurulduğu temel için CJ'ye ve Handy katkıda bulunanlarına çok teşekkürler."
+        },
+        "speakers": {
+          "title": "Konuşmacı algılama modelleri",
+          "description": "\"Konuşmacılı not oluştur\"un kullandığı konuşmacı modelleri",
+          "details": "\"Konuşmacılı not oluştur\", Hervé Bredin ve pyannote.audio'nun pyannote segmentation 3.0 modelini (MIT Lisansı) ve WeNet topluluğunun WeSpeaker ResNet34 VoxCeleb modelini (CC BY 4.0), sherpa-onnx projesinin (k2-fsa) yayımladığı ONNX sürümleriyle kullanır. Uygulamayla gelmez, gerektiğinde indirilir. Yazarlarına teşekkürler."
         }
       }
     },

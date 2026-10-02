@@ -9,6 +9,7 @@ pub mod cli;
 mod cli_client;
 mod clipboard;
 mod commands;
+mod diarization;
 mod helpers;
 mod input;
 mod keyboard_layouts;
@@ -497,6 +498,10 @@ pub fn run(cli_args: CliArgs) {
         commands::notes::change_note_skill_setting,
         commands::notes::change_note_provider_ref_setting,
         commands::notes::change_note_model_setting,
+        commands::speakers::get_speaker_model_status,
+        commands::speakers::download_speaker_models,
+        commands::speakers::delete_speaker_models,
+        commands::speakers::transcribe_history_entry_with_speakers,
         shortcut::change_post_process_enabled_setting,
         shortcut::change_transcription_mode_setting,
         shortcut::change_transcription_mode_ptt_setting,

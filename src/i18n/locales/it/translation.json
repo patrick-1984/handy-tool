@@ -1432,6 +1432,7 @@
       "inline": {
         "label": "Nota",
         "makeNote": "Crea nota",
+        "makeNoteWithSpeakers": "Crea nota con parlanti",
         "generating": "Sto scrivendo la nota…",
         "retry": "Riprova",
         "dismiss": "Chiudi",
@@ -1487,6 +1488,29 @@
         },
         "manage": "Gestisci i provider LLM"
       },
+      "speakers": {
+        "title": "Rilevamento dei parlanti",
+        "description": "Usato solo da «Crea nota con parlanti» nella Cronologia: capisce chi parla in una registrazione e indica i parlanti come [Person 1], [Person 2] e così via. Funziona offline su questo computer, quindi la registrazione non lo lascia mai.",
+        "models": {
+          "title": "Modelli dei parlanti",
+          "description": "Due modelli (32 MB) scaricati una sola volta da Hugging Face e GitHub: pyannote segmentation 3.0 (MIT) e WeSpeaker ResNet34 (CC BY 4.0), nell'esportazione di sherpa-onnx. Eliminali per liberare spazio; puoi scaricarli di nuovo in qualsiasi momento."
+        },
+        "ready": "Pronto",
+        "notDownloaded": "Non scaricato",
+        "failed": "Download non riuscito",
+        "download": "Scarica (32 MB)",
+        "delete": "Elimina",
+        "deleteError": "Impossibile eliminare i modelli dei parlanti: {{error}}",
+        "downloading": "Download in corso… {{percent}}%",
+        "verifying": "Verifica del download…",
+        "starting": "Avvio del download…",
+        "needsDownload": "Il rilevamento dei parlanti richiede un download una tantum di 32 MB.",
+        "needsDownloadHint": "I modelli funzionano offline su questo computer e si usano solo per «Crea nota con parlanti». La nota prosegue appena sono scaricati.",
+        "downloadError": "Download non riuscito: {{error}}",
+        "identifying": "Identificazione dei parlanti…",
+        "error": "Impossibile identificare i parlanti:",
+        "normalNote": "Crea una nota normale"
+      },
       "saved": {
         "loading": "Caricamento delle note…",
         "empty": "Ancora nessuna nota. Usa \"Crea nota\" su una registrazione in Cronologia, oppure scrivine una nella scheda \"Nota manuale\".",
@@ -1506,6 +1530,13 @@
         "missingApiKey": "Aggiungi la chiave API del provider in Impostazioni note.",
         "missingModel": "Scegli un modello per le note in Impostazioni note.",
         "emptyNote": "Il modello ha restituito una nota vuota. Riprova o scegli un altro modello.",
+        "speakersModelsMissing": "I modelli dei parlanti non sono scaricati. Scaricali in Impostazioni note.",
+        "speakersModelsInUse": "I modelli dei parlanti sono in uso da «Crea nota con parlanti». Riprova quando ha finito.",
+        "speakersModelsDownloading": "I modelli dei parlanti sono in fase di download. Riprova al termine del download.",
+        "speakersNoRecording": "Questa voce non ha più una registrazione, quindi non è possibile identificare i parlanti.",
+        "speakersNoSpeech": "Nella registrazione non è stato trovato alcun parlato.",
+        "speakersNoModel": "Prima scarica e seleziona un modello di trascrizione nella pagina Modelli.",
+        "speakersFailed": "I modelli dei parlanti non sono riusciti a elaborare questa registrazione.",
         "skillMissing": "La skill selezionata non esiste più. Scegline un'altra in Impostazioni note.",
         "skillEmpty": "La skill non contiene istruzioni leggibili (Markdown o testo).",
         "skillUnsupported": "Questo tipo di file non può essere importato. Usa .md, .txt, .zip o .skill.",
@@ -1607,6 +1638,11 @@
           "title": "Handy",
           "description": "L'app open-source originale di riconoscimento vocale su cui si basa questo progetto",
           "details": "Handy Tool è un fork di Handy, creato da CJ Pais (github.com/cjpais/Handy, handy.computer). È stato rilevato dalla versione upstream v0.8.1 (marzo 2026) e da allora è stato sviluppato ulteriormente in modo indipendente da Patrick R. Un grande grazie a CJ e ai contributori di Handy per le basi su cui si fonda questo progetto."
+        },
+        "speakers": {
+          "title": "Modelli di rilevamento dei parlanti",
+          "description": "I modelli dei parlanti dietro «Crea nota con parlanti»",
+          "details": "«Crea nota con parlanti» usa pyannote segmentation 3.0 di Hervé Bredin e pyannote.audio (licenza MIT) e il modello WeSpeaker ResNet34 VoxCeleb della comunità WeNet (CC BY 4.0), nelle versioni ONNX pubblicate dal progetto sherpa-onnx (k2-fsa). Vengono scaricati su richiesta, non sono inclusi. Grazie ai loro autori."
         }
       }
     },

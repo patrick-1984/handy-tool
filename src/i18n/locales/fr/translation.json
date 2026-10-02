@@ -1432,6 +1432,7 @@
       "inline": {
         "label": "Note",
         "makeNote": "Créer une note",
+        "makeNoteWithSpeakers": "Créer une note avec locuteurs",
         "generating": "Rédaction de votre note…",
         "retry": "Réessayer",
         "dismiss": "Fermer",
@@ -1487,6 +1488,29 @@
         },
         "manage": "Gérer les fournisseurs LLM"
       },
+      "speakers": {
+        "title": "Détection des locuteurs",
+        "description": "Utilisée uniquement par « Créer une note avec locuteurs » dans l'Historique : elle détermine qui parle dans un enregistrement et nomme les locuteurs [Person 1], [Person 2], etc. Elle fonctionne hors ligne sur cet ordinateur ; l'enregistrement ne le quitte jamais.",
+        "models": {
+          "title": "Modèles de locuteurs",
+          "description": "Deux modèles (32 Mo) téléchargés une seule fois depuis Hugging Face et GitHub : pyannote segmentation 3.0 (MIT) et WeSpeaker ResNet34 (CC BY 4.0), dans l'export de sherpa-onnx. Supprimez-les pour libérer de l'espace ; vous pouvez les télécharger à nouveau à tout moment."
+        },
+        "ready": "Prêt",
+        "notDownloaded": "Non téléchargé",
+        "failed": "Échec du téléchargement",
+        "download": "Télécharger (32 Mo)",
+        "delete": "Supprimer",
+        "deleteError": "Impossible de supprimer les modèles de locuteurs : {{error}}",
+        "downloading": "Téléchargement… {{percent}} %",
+        "verifying": "Vérification du téléchargement…",
+        "starting": "Démarrage du téléchargement…",
+        "needsDownload": "La détection des locuteurs nécessite un téléchargement unique de 32 Mo.",
+        "needsDownloadHint": "Les modèles fonctionnent hors ligne sur cet ordinateur et ne servent qu'à « Créer une note avec locuteurs ». Votre note reprend dès qu'ils sont téléchargés.",
+        "downloadError": "Le téléchargement a échoué : {{error}}",
+        "identifying": "Identification des locuteurs…",
+        "error": "Impossible d'identifier les locuteurs :",
+        "normalNote": "Créer une note normale"
+      },
       "saved": {
         "loading": "Chargement des notes…",
         "empty": "Aucune note pour l'instant. Utilisez « Créer une note » sur un enregistrement de l'Historique, ou rédigez-en une dans l'onglet « Note manuelle ».",
@@ -1506,6 +1530,13 @@
         "missingApiKey": "Ajoutez la clé API du fournisseur dans les paramètres des notes.",
         "missingModel": "Choisissez un modèle pour les notes dans les paramètres des notes.",
         "emptyNote": "Le modèle a renvoyé une note vide. Réessayez ou choisissez un autre modèle.",
+        "speakersModelsMissing": "Les modèles de locuteurs ne sont pas téléchargés. Téléchargez-les dans les paramètres des notes.",
+        "speakersModelsInUse": "Les modèles de locuteurs sont utilisés par « Créer une note avec locuteurs ». Réessayez quand ce sera terminé.",
+        "speakersModelsDownloading": "Les modèles de locuteurs sont en cours de téléchargement. Réessayez une fois le téléchargement terminé.",
+        "speakersNoRecording": "Cette entrée n'a plus d'enregistrement, ses locuteurs ne peuvent donc pas être identifiés.",
+        "speakersNoSpeech": "Aucune parole n'a été trouvée dans l'enregistrement.",
+        "speakersNoModel": "Téléchargez et sélectionnez d'abord un modèle de transcription sur la page Modèles.",
+        "speakersFailed": "Les modèles de locuteurs ont échoué sur cet enregistrement.",
         "skillMissing": "La skill sélectionnée n'existe plus. Choisissez-en une autre dans les paramètres des notes.",
         "skillEmpty": "La skill ne contient aucune instruction lisible (Markdown ou texte).",
         "skillUnsupported": "Ce type de fichier ne peut pas être importé. Utilisez .md, .txt, .zip ou .skill.",
@@ -1607,6 +1638,11 @@
           "title": "Handy",
           "description": "L'application open source de reconnaissance vocale originale sur laquelle ce projet est basé",
           "details": "Handy Tool est un fork de Handy, créé par CJ Pais (github.com/cjpais/Handy, handy.computer). Il a été repris à partir de la version amont v0.8.1 (mars 2026) et a été développé indépendamment depuis par Patrick R. Un grand merci à CJ et aux contributeurs de Handy pour les bases sur lesquelles ce projet s'appuie."
+        },
+        "speakers": {
+          "title": "Modèles de détection des locuteurs",
+          "description": "Les modèles de locuteurs derrière « Créer une note avec locuteurs »",
+          "details": "« Créer une note avec locuteurs » utilise pyannote segmentation 3.0 de Hervé Bredin et pyannote.audio (licence MIT) et le modèle WeSpeaker ResNet34 VoxCeleb de la communauté WeNet (CC BY 4.0), dans les versions ONNX publiées par le projet sherpa-onnx (k2-fsa). Ils sont téléchargés à la demande et ne sont pas inclus. Merci à leurs auteurs."
         }
       }
     },

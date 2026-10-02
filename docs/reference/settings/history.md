@@ -34,6 +34,14 @@ Writes a note from the entry's transcription with the skill, provider and model 
 
 Catalog: [Turn a recording into a note](../../features.md#turn-a-recording-into-a-note).
 
+### Make note with speakers
+
+`History › Recordings › Make note with speakers`
+
+Labels who is speaking in the entry's recording with the selected transcription model and the speaker models, then writes a note from the labelled text like Make note and marks the entry as saved. Shown only while the entry still has its recording. Offers the speaker model download first when it is missing. Disabled, like Make note and Delete, while that entry's note is being made. **Default:** not applicable; this is a per-row action.
+
+Catalog: [A note that says who said what](../../features.md#a-note-that-says-who-said-what).
+
 ### Save transcription
 
 `History › Recordings › Save transcription`

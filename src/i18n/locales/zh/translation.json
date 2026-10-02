@@ -1432,6 +1432,7 @@
       "inline": {
         "label": "笔记",
         "makeNote": "生成笔记",
+        "makeNoteWithSpeakers": "生成含说话人的笔记",
         "generating": "正在撰写笔记…",
         "retry": "重试",
         "dismiss": "关闭",
@@ -1487,6 +1488,29 @@
         },
         "manage": "管理 LLM 提供商"
       },
+      "speakers": {
+        "title": "说话人识别",
+        "description": "仅用于历史记录中的“生成含说话人的笔记”：识别录音中是谁在说话，并标记为[Person 1]、[Person 2]等。在这台电脑上离线运行，录音不会离开本机。",
+        "models": {
+          "title": "说话人模型",
+          "description": "从 Hugging Face 和 GitHub 一次性下载的两个模型（32 MB）：pyannote segmentation 3.0（MIT）和 WeSpeaker ResNet34（CC BY 4.0），均为 sherpa-onnx 导出版本。可删除以释放空间，随时可以重新下载。"
+        },
+        "ready": "已就绪",
+        "notDownloaded": "未下载",
+        "failed": "下载失败",
+        "download": "下载（32 MB）",
+        "delete": "删除",
+        "deleteError": "无法删除说话人模型：{{error}}",
+        "downloading": "正在下载… {{percent}}%",
+        "verifying": "正在校验下载…",
+        "starting": "正在开始下载…",
+        "needsDownload": "说话人识别需要一次性下载 32 MB。",
+        "needsDownloadHint": "模型在这台电脑上离线运行，仅用于“生成含说话人的笔记”。下载完成后会继续生成笔记。",
+        "downloadError": "下载失败：{{error}}",
+        "identifying": "正在识别说话人…",
+        "error": "无法识别说话人：",
+        "normalNote": "生成普通笔记"
+      },
       "saved": {
         "loading": "正在加载笔记…",
         "empty": "还没有笔记。在历史记录中的录音上使用“生成笔记”，或在“手动笔记”标签页中撰写。",
@@ -1506,6 +1530,13 @@
         "missingApiKey": "请在笔记设置中添加提供商的 API 密钥。",
         "missingModel": "请在笔记设置中选择用于笔记的模型。",
         "emptyNote": "模型返回了空笔记。请重试或选择其他模型。",
+        "speakersModelsMissing": "说话人模型尚未下载。请在笔记设置中下载。",
+        "speakersModelsInUse": "“生成含说话人的笔记”正在使用说话人模型。请在完成后重试。",
+        "speakersModelsDownloading": "说话人模型正在下载。请在下载完成后重试。",
+        "speakersNoRecording": "此条目已没有录音，无法识别说话人。",
+        "speakersNoSpeech": "录音中没有找到语音。",
+        "speakersNoModel": "请先在“模型”页面下载并选择一个转录模型。",
+        "speakersFailed": "说话人模型处理此录音失败。",
         "skillMissing": "所选技能已不存在，请在笔记设置中选择其他技能。",
         "skillEmpty": "该技能没有可读的说明（Markdown 或文本）。",
         "skillUnsupported": "无法导入此类型的文件。请使用 .md、.txt、.zip 或 .skill。",
@@ -1607,6 +1638,11 @@
           "title": "Handy",
           "description": "本项目所基于的原始开源语音转文字应用",
           "details": "Handy Tool 是 Handy 的一个分支项目，Handy 由 CJ Pais 创建（github.com/cjpais/Handy，handy.computer）。本项目从上游 v0.8.1（2026 年 3 月）接手，并由 Patrick R. 独立继续开发。特别感谢 CJ 和 Handy 的贡献者们为本项目奠定的基础。"
+        },
+        "speakers": {
+          "title": "说话人识别模型",
+          "description": "“生成含说话人的笔记”所用的说话人模型",
+          "details": "“生成含说话人的笔记”使用 Hervé Bredin 与 pyannote.audio 的 pyannote segmentation 3.0（MIT 许可证）以及 WeNet 社区的 WeSpeaker ResNet34 VoxCeleb 模型（CC BY 4.0），采用 sherpa-onnx 项目（k2-fsa）发布的 ONNX 版本。模型按需下载，不随应用附带。感谢它们的作者。"
         }
       }
     },

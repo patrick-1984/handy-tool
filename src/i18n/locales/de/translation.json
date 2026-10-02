@@ -1432,6 +1432,7 @@
       "inline": {
         "label": "Notiz",
         "makeNote": "Notiz erstellen",
+        "makeNoteWithSpeakers": "Notiz mit Sprechern erstellen",
         "generating": "Deine Notiz wird geschrieben…",
         "retry": "Erneut versuchen",
         "dismiss": "Schließen",
@@ -1487,6 +1488,29 @@
         },
         "manage": "LLM-Anbieter verwalten"
       },
+      "speakers": {
+        "title": "Sprechererkennung",
+        "description": "Wird nur von „Notiz mit Sprechern erstellen“ im Verlauf verwendet: Sie erkennt, wer in einer Aufnahme spricht, und kennzeichnet die Sprecher als [Person 1], [Person 2] usw. Sie läuft offline auf diesem Computer, die Aufnahme verlässt ihn nie.",
+        "models": {
+          "title": "Sprechermodelle",
+          "description": "Zwei Modelle (32 MB), einmalig von Hugging Face und GitHub geladen: pyannote segmentation 3.0 (MIT) und WeSpeaker ResNet34 (CC BY 4.0), im Export von sherpa-onnx. Lösche sie, um Platz zu schaffen; du kannst sie jederzeit erneut herunterladen."
+        },
+        "ready": "Bereit",
+        "notDownloaded": "Nicht heruntergeladen",
+        "failed": "Download fehlgeschlagen",
+        "download": "Herunterladen (32 MB)",
+        "delete": "Löschen",
+        "deleteError": "Die Sprechermodelle konnten nicht gelöscht werden: {{error}}",
+        "downloading": "Wird heruntergeladen… {{percent}} %",
+        "verifying": "Download wird geprüft…",
+        "starting": "Download wird gestartet…",
+        "needsDownload": "Die Sprechererkennung braucht einen einmaligen Download von 32 MB.",
+        "needsDownloadHint": "Die Modelle laufen offline auf diesem Computer und werden nur für „Notiz mit Sprechern erstellen“ verwendet. Deine Notiz wird fortgesetzt, sobald sie geladen sind.",
+        "downloadError": "Der Download ist fehlgeschlagen: {{error}}",
+        "identifying": "Sprecher werden erkannt…",
+        "error": "Die Sprecher konnten nicht erkannt werden:",
+        "normalNote": "Normale Notiz erstellen"
+      },
       "saved": {
         "loading": "Notizen werden geladen…",
         "empty": "Noch keine Notizen. Nutze „Notiz erstellen“ bei einer Aufnahme im Verlauf oder schreibe eine im Tab „Manuelle Notiz“.",
@@ -1506,6 +1530,13 @@
         "missingApiKey": "Trage in den Notiz-Einstellungen den API-Schlüssel des Anbieters ein.",
         "missingModel": "Wähle in den Notiz-Einstellungen ein Modell für Notizen.",
         "emptyNote": "Das Modell hat eine leere Notiz geliefert. Versuche es erneut oder wähle ein anderes Modell.",
+        "speakersModelsMissing": "Die Sprechermodelle sind nicht heruntergeladen. Lade sie in den Notiz-Einstellungen herunter.",
+        "speakersModelsInUse": "Die Sprechermodelle werden gerade von „Notiz mit Sprechern erstellen“ verwendet. Versuche es erneut, wenn es fertig ist.",
+        "speakersModelsDownloading": "Die Sprechermodelle werden gerade heruntergeladen. Versuche es nach dem Download erneut.",
+        "speakersNoRecording": "Dieser Eintrag hat keine Aufnahme mehr, daher können die Sprecher nicht erkannt werden.",
+        "speakersNoSpeech": "In der Aufnahme wurde keine Sprache gefunden.",
+        "speakersNoModel": "Lade zuerst auf der Seite „Modelle“ ein Transkriptionsmodell herunter und wähle es aus.",
+        "speakersFailed": "Die Sprechermodelle sind bei dieser Aufnahme gescheitert.",
         "skillMissing": "Der gewählte Skill ist nicht mehr vorhanden. Wähle in den Notiz-Einstellungen einen anderen.",
         "skillEmpty": "Der Skill enthält keine lesbaren Anweisungen (Markdown oder Text).",
         "skillUnsupported": "Dieser Dateityp kann nicht importiert werden. Verwende .md, .txt, .zip oder .skill.",
@@ -1607,6 +1638,11 @@
           "title": "Handy",
           "description": "Die ursprüngliche Open-Source-Sprach-zu-Text-App, auf der dieses Projekt aufbaut",
           "details": "Handy Tool ist ein Fork von Handy, erstellt von CJ Pais (github.com/cjpais/Handy, handy.computer). Es wurde bei Upstream-Version v0.8.1 (März 2026) übernommen und wird seitdem eigenständig von Patrick R. weiterentwickelt. Vielen Dank an CJ und die Handy-Mitwirkenden für die Grundlage, auf der dieses Projekt aufbaut."
+        },
+        "speakers": {
+          "title": "Modelle zur Sprechererkennung",
+          "description": "Die Sprechermodelle hinter „Notiz mit Sprechern erstellen“",
+          "details": "„Notiz mit Sprechern erstellen“ verwendet pyannote segmentation 3.0 von Hervé Bredin und pyannote.audio (MIT-Lizenz) und das WeSpeaker-Modell ResNet34 VoxCeleb der WeNet-Community (CC BY 4.0), in den ONNX-Versionen des Projekts sherpa-onnx (k2-fsa). Sie werden bei Bedarf heruntergeladen, nicht mitgeliefert. Danke an ihre Autoren."
         }
       }
     },
