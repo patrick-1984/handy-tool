@@ -2,11 +2,11 @@
 
 Open `History`. The page has three tabs: Recordings (it opens on this one), Statistics and Settings. On Recordings, row actions repeat for every history entry and the search bar appears once entries exist. The tab bar stays in view while the list scrolls.
 
-### Note skill
+### Note skills
 
-`History › Recordings › Note skill`
+`History › Recordings › Note skills`
 
-Switches the skill new notes are written with, right from the list: Default instructions, or one of the imported skills. Shown only once a skill is imported. It is the same setting as `Notes › Settings › Skills › Skill`. **Default:** Default instructions.
+Turns skills on and off for new notes, right from the list: a compact button that names the skill that is on, says how many are on, or says No skills, and opens a small menu with a checkbox per imported skill. Shown only once a skill is imported. It is the same setting as `Notes › Settings › Skills › Active skills`. **Default:** no skills on.
 
 Catalog: [Notes written your way, with a skill](../../features.md#notes-written-your-way-with-a-skill).
 
@@ -38,7 +38,7 @@ Catalog: [Copy or delete a single entry](../../features.md#copy-or-delete-a-sing
 
 `History › Recordings › Make note`
 
-Writes a note from the entry's transcription with the skill, provider and model chosen on `Notes › Settings`, shows it under the entry, and marks the entry as saved. Disabled while that entry's note is being written. **Default:** not applicable; this is a per-row action.
+Writes a note from the entry's transcription with your instructions, the skills that are on, the note language, provider and model chosen on `Notes › Settings`, shows it under the entry with its model, cost, tokens and generation time, and marks the entry as saved. Disabled while that entry's note is being written. **Default:** not applicable; this is a per-row action.
 
 Catalog: [Turn a recording into a note](../../features.md#turn-a-recording-into-a-note).
 
@@ -65,6 +65,14 @@ Catalog: [Keep the ones that matter](../../features.md#keep-the-ones-that-matter
 Deletes the selected history row and its Handy-owned audio files. **Default:** not applicable; this is a per-row action.
 
 Catalog: [Copy or delete a single entry](../../features.md#copy-or-delete-a-single-entry).
+
+### Try another model
+
+`History › Recordings › Try another model`
+
+An icon button on each note under an entry. It opens a model picker with prices and Write note, which writes a new note from the same text with that model; the new note appears next to the original, side by side, so the two can be compared. Make note and Make note with speakers stay disabled while it runs. **Default:** not applicable; this is a per-note action.
+
+Catalog: [Compare models on the same text, with cost and time](../../features.md#compare-models-on-the-same-text).
 
 ## Statistics
 

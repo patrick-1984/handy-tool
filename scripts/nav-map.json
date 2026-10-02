@@ -7,14 +7,14 @@
     "tabKey": "settings.history.tabs.recordings",
     "group": "History",
     "groupKey": "settings.history.title",
-    "control": "Note skill",
+    "control": "Note skills",
     "titleKey": "settings.notes.skillPicker",
     "descKey": null,
-    "type": "dropdown",
+    "type": "multi-select",
     "options": [],
     "gating": "none",
     "file": "src/components/settings/notes/NoteSkillPicker.tsx",
-    "notes": "Toolbar dropdown before Open Recordings Folder, shown once a skill is imported; the string is the label beside it. Same setting as Notes › Settings › Skills › Skill (note_skill_id)."
+    "notes": "Toolbar button before Open Recordings Folder, shown once a skill is imported; the string is the label beside it. The button names the skill that is on, \"{{count}} skills\" (settings.notes.skillPickerCount) or \"No skills\" (settings.notes.skillPickerNone), and opens a menu with a checkbox per skill. Same setting as Notes › Settings › Skills › Active skills (note_skill_ids)."
   },
   {
     "page": "History",
@@ -134,6 +134,23 @@
     "gating": "none",
     "file": "src/components/settings/history/HistorySettings.tsx",
     "notes": "Per-row icon button; string is the hover title."
+  },
+  {
+    "page": "History",
+    "pageKey": "sidebar.history",
+    "sidebarGroup": "Sidebar",
+    "tab": "Recordings",
+    "tabKey": "settings.history.tabs.recordings",
+    "group": "History",
+    "groupKey": "settings.history.title",
+    "control": "Try another model",
+    "titleKey": "settings.notes.compare.tryAnother",
+    "descKey": null,
+    "type": "button",
+    "options": [],
+    "gating": "none",
+    "file": "src/components/settings/notes/NoteParts.tsx",
+    "notes": "Icon button on each note card under an entry; string is the hover title. Opens a model picker and \"Write note\" (settings.notes.compare.write); the new note appears next to the original."
   },
   {
     "page": "History",
@@ -3733,16 +3750,50 @@
     "sidebarGroup": "Sidebar",
     "tab": "Settings",
     "tabKey": "settings.notes.tabs.settings",
-    "group": "Skills",
-    "groupKey": "settings.notes.skills.title",
-    "control": "Skill",
-    "titleKey": "settings.notes.skills.active.title",
-    "descKey": "settings.notes.skills.active.description",
-    "type": "dropdown",
+    "group": "Instructions",
+    "groupKey": "settings.notes.instructions.title",
+    "control": "Your instructions",
+    "titleKey": "settings.notes.instructions.custom.title",
+    "descKey": "settings.notes.instructions.custom.description",
+    "type": "textarea",
     "options": [],
     "gating": "none",
     "file": "src/components/settings/notes/NoteSettingsTab.tsx",
-    "notes": "Default instructions first, then the imported skills by name. A trash button next to it removes the selected skill."
+    "notes": "Multi-line text box, saved on blur (note_custom_instructions). Sent before the active skills; alone when no skill is on."
+  },
+  {
+    "page": "Notes",
+    "pageKey": "sidebar.notes",
+    "sidebarGroup": "Sidebar",
+    "tab": "Settings",
+    "tabKey": "settings.notes.tabs.settings",
+    "group": "Instructions",
+    "groupKey": "settings.notes.instructions.title",
+    "control": "Note language",
+    "titleKey": "settings.notes.language.title",
+    "descKey": "settings.notes.language.description",
+    "type": "dropdown",
+    "options": ["Same as the transcript"],
+    "gating": "none",
+    "file": "src/components/settings/notes/NoteSettingsTab.tsx",
+    "notes": "First option \"Same as the transcript\" (value \"\"), then the app's UI languages by their own names (src/i18n/languages.ts). Setting note_language."
+  },
+  {
+    "page": "Notes",
+    "pageKey": "sidebar.notes",
+    "sidebarGroup": "Sidebar",
+    "tab": "Settings",
+    "tabKey": "settings.notes.tabs.settings",
+    "group": "Skills",
+    "groupKey": "settings.notes.skills.title",
+    "control": "Active skills",
+    "titleKey": "settings.notes.skills.active.title",
+    "descKey": "settings.notes.skills.active.description",
+    "type": "checkbox list",
+    "options": [],
+    "gating": "none",
+    "file": "src/components/settings/notes/NoteSettingsTab.tsx",
+    "notes": "One checkbox per imported skill (dynamic names) with a trash button that removes it; \"No skills imported yet.\" (settings.notes.skills.none) when empty. Setting note_skill_ids."
   },
   {
     "page": "Notes",
@@ -3759,7 +3810,7 @@
     "options": [],
     "gating": "none",
     "file": "src/components/settings/notes/NoteSettingsTab.tsx",
-    "notes": "Opens a file picker for .md, .markdown, .txt, .zip and .skill. The imported skill becomes the selected one."
+    "notes": "Opens a file picker for .md, .markdown, .txt, .zip and .skill. The imported skill is turned on alongside the others."
   },
   {
     "page": "Notes",
@@ -3776,7 +3827,7 @@
     "options": [],
     "gating": "none",
     "file": "src/components/settings/notes/NoteSettingsTab.tsx",
-    "notes": "Copies the folder's text files (SKILL.md plus reference files). The imported skill becomes the selected one."
+    "notes": "Copies the folder's text files (SKILL.md plus reference files). The imported skill is turned on alongside the others."
   },
   {
     "page": "Notes",
@@ -3827,7 +3878,7 @@
     "options": [],
     "gating": "none",
     "file": "src/components/settings/notes/NoteSettingsTab.tsx",
-    "notes": "Searchable model list fetched from the provider; free text allowed. Empty = the provider's model."
+    "notes": "Searchable list of every model the provider lists, sortable by price or name; for OpenRouter each row shows the price per 1M input / output tokens and the list opens with \"Recommended for notes (cheap)\" (settings.notes.modelPicker.recommended). The chosen model's price is shown under the field. Free text allowed; empty = the provider's model."
   },
   {
     "page": "Notes",
@@ -3862,6 +3913,40 @@
     "gating": "none",
     "file": "src/components/settings/notes/SpeakerDetectionSettings.tsx",
     "notes": "Status with Download (32 MB) while missing, a progress bar while downloading, and Delete once ready."
+  },
+  {
+    "page": "Notes",
+    "pageKey": "sidebar.notes",
+    "sidebarGroup": "Sidebar",
+    "tab": "Saved notes",
+    "tabKey": "settings.notes.tabs.saved",
+    "group": null,
+    "groupKey": null,
+    "control": "Compare models",
+    "titleKey": "settings.notes.compare.title",
+    "descKey": null,
+    "type": "table",
+    "options": ["All models"],
+    "gating": "none",
+    "file": "src/components/settings/notes/SavedNotes.tsx",
+    "notes": "Card at the top of the tab: per model, notes, average cost, average time and total cost. A \"Show\" (settings.notes.compare.filter) dropdown, first option \"All models\", filters the list; clicking a row does the same."
+  },
+  {
+    "page": "Notes",
+    "pageKey": "sidebar.notes",
+    "sidebarGroup": "Sidebar",
+    "tab": "Saved notes",
+    "tabKey": "settings.notes.tabs.saved",
+    "group": null,
+    "groupKey": null,
+    "control": "Try another model",
+    "titleKey": "settings.notes.compare.tryAnother",
+    "descKey": null,
+    "type": "button",
+    "options": [],
+    "gating": "none",
+    "file": "src/components/settings/notes/NoteParts.tsx",
+    "notes": "Icon button on every note; string is the hover title. Opens a model picker and \"Write note\" (settings.notes.compare.write); the new note appears next to the original."
   },
   {
     "page": "Notes",

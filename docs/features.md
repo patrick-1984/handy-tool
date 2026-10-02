@@ -1435,8 +1435,9 @@ A transcript is what you said; a note is what you need from it.
 decisions, facts and action items as a tidy note.
 **What Handy does.** A Make note button on each recording sends the transcription shown in the
 entry to an LLM and puts the result right under it, in a tinted card labelled Note, formatted from
-Markdown. The card copies the raw Markdown or deletes the note, and every note made from the entry
-stays listed under it, newest first, with Show more for long ones. While the note is being written
+Markdown, with the model, cost, tokens and time it took. The card copies the raw Markdown or deletes
+the note, and every note made from the entry stays listed under it, newest first, with Show more for
+long ones. While the note is being written
 the card says so; a failure shows the reason with Try again, and missing note settings show a
 button that opens them. Making a note also marks the entry as saved, so automatic cleanup never
 removes the transcript behind a note. Only the text is sent, never the audio, and only when you
@@ -1473,49 +1474,93 @@ transcription selected, that service transcribes the recording, one speaker turn
 
 <a id="notes-written-your-way-with-a-skill"></a>
 **The situation.** You want meeting minutes in your team's template, or study notes in a fixed
-shape, not a generic summary.
-**What Handy does.** A skill is a set of instructions for the model. Import one from a `.md` or
-`.txt` file, a folder, or a `.zip` or `.skill` archive in the Claude style (a `SKILL.md` with
-optional name and description at the top, plus reference files). Handy copies its text files into
-a `skills` folder in its data folder, keeps as many skills as you import, and uses the one you
-pick until you choose another or remove it. Archives are unpacked safely: paths that would leave
-the skill's folder are refused, only text files are kept, and an import is capped at 50 MB.
-Without a skill, notes follow default instructions: a clear, structured Markdown note in the
-transcript's language that keeps every fact, decision and action item. Skills are not part of a
-backup.
-**Where.** `Notes › Settings › Skills › Skill`, `Notes › Settings › Skills › Import file…` and
+shape, not a generic summary, and sometimes one template plus a few rules of your own.
+**What Handy does.** Two things tell the model how to write a note. Your instructions is a text
+box on the Notes page for your own rules, such as "keep it to one page and end with the action
+items". A skill is a set of instructions you import from a `.md` or `.txt` file, a folder, or a
+`.zip` or `.skill` archive in the Claude style (a `SKILL.md` with optional name and description at
+the top, plus reference files). Handy copies a skill's text files into a `skills` folder in its
+data folder and keeps as many skills as you import; each has a checkbox, so several can be on at
+once. The model gets your instructions first and then every skill that is on, each under a header
+with its name, in the list's order; where they disagree, your instructions win. With no skill on,
+your instructions are used alone, and with neither, notes follow default instructions: a clear,
+structured Markdown note that keeps every fact, decision and action item. Archives are unpacked
+safely: paths that would leave the skill's folder are refused, only text files are kept, and an
+import is capped at 50 MB. Skills are not part of a backup.
+**Where.** `Notes › Settings › Instructions › Your instructions`,
+`Notes › Settings › Skills › Active skills`, `Notes › Settings › Skills › Import file…` and
 `Notes › Settings › Skills › Import folder…`; once a skill is imported, also
-`History › Recordings › Note skill`.
+`History › Recordings › Note skills`.
 **Since.** The release after 2.0.5.
 
-<!-- prov: note skills | src: src-tauri/src/note_skills.rs; src-tauri/src/commands/notes.rs; src/components/settings/notes/NoteSettingsTab.tsx -->
+<!-- prov: note skills | src: src-tauri/src/note_skills.rs; src-tauri/src/commands/notes.rs; src-tauri/src/settings.rs; src/components/settings/notes/NoteSettingsTab.tsx; src/components/settings/notes/NoteSkillPicker.tsx -->
+
+### Notes in the language you want, whatever the skill is written in
+
+<a id="notes-in-the-language-you-want"></a>
+**The situation.** Your meeting template is in Polish, a colleague's summary skill is in English,
+and the call itself may have been in either language.
+**What Handy does.** Skills and your instructions can be written in any language, and several can
+be on together. The language of the note is set separately: Same as the transcript writes each note
+in the language that was spoken, or you pick one of the app's languages for every note. That rule is
+the very last thing the model is told, so it wins over the language a skill happens to be written
+in or a "write in English" line inside it.
+**Where.** `Notes › Settings › Instructions › Note language`.
+**Since.** The release after 2.0.5.
+
+<!-- prov: note language | src: src-tauri/src/commands/notes.rs; src-tauri/src/settings.rs; src/components/settings/notes/NoteSettingsTab.tsx -->
 
 ### Choose which model writes your notes
 
 <a id="choose-which-model-writes-your-notes"></a>
-**The situation.** Notes should come from a model you trust, on an account you already pay for.
+**The situation.** Notes should come from a model you trust, on an account you already pay for,
+and most notes don't need an expensive model.
 **What Handy does.** Notes use one of your registered LLM providers, the same registry as
 post-processing and Model Testing. Until you pick one, the first enabled OpenRouter provider is
 used. The provider's API key can be entered right on the Notes page and is the same key the LLM
-providers tab shows. The model defaults to `google/gemini-2.5-flash` and can be any model the
-provider lists; left empty, the provider's own model is used. Switching to a provider of another
+providers tab shows. The model list shows every model the provider offers, with a search box and
+sorting by price or name. For OpenRouter, each model shows its price per 1M input and output tokens
+from OpenRouter's live price list, and the list opens with Recommended for notes (cheap): a short
+list of good multilingual models whose input and output prices are both at most a tenth of Claude
+Opus 5.5's, worked out from the live prices and marked with how many times cheaper they are. The
+default model is `openai/gpt-6-luna`, about 40 times cheaper than Opus 5.5 on output; settings that
+still had the earlier default, `google/gemini-2.5-flash`, move to it once, while a model you picked
+yourself is kept. Left empty, the provider's own model is used. Switching to a provider of another
 kind (Anthropic, Gemini, an OpenAI-compatible server) clears the model, so that provider's own
 model is used instead of an id it would not know. The transcript is sent as data with a guard
-against instructions hidden inside it, and the cost is kept with the note when the provider
-reports or prices it. If the model stops at its length limit, the note is kept and marked as cut
-short.
+against instructions hidden inside it. If the model stops at its length limit, the note is kept
+and marked as cut short.
 **Where.** `Notes › Settings › Provider and model › Provider`, `Notes › Settings › Provider and model › API key`
 and `Notes › Settings › Provider and model › Model`.
 **Since.** The release after 2.0.5.
 
-<!-- prov: note provider | src: src-tauri/src/commands/notes.rs; src-tauri/src/model_testing.rs; src-tauri/src/settings.rs; src/components/settings/notes/NoteSettingsTab.tsx -->
+<!-- prov: note provider | src: src-tauri/src/commands/notes.rs; src-tauri/src/model_testing.rs; src-tauri/src/settings.rs; src/components/settings/notes/NoteSettingsTab.tsx; src/components/settings/notes/NoteModelSelect.tsx; src/lib/noteModels.ts; src/lib/openrouterPrices.ts -->
+
+### Compare models on the same text, with cost and time
+
+<a id="compare-models-on-the-same-text"></a>
+**The situation.** You want the cheapest model that still writes a good note, and the only way to
+know is to see two notes of the same meeting next to each other, with what each one cost.
+**What Handy does.** Every note shows the model that wrote it, what it cost (the amount OpenRouter
+charged, or an estimate from the prices set for the provider; otherwise cost unknown), the tokens
+sent and received when the provider reports them, and how long the model took. Try another model on
+any note writes a new note from the same text with a model you pick from the same priced list, and
+puts it right next to the first one, side by side, under the same recording. On Saved notes,
+Compare models sums it up per model: number of notes, average cost, average time and total cost,
+cheapest first, and narrows the list to one model's notes.
+**Where.** `History › Recordings › Try another model`, `Notes › Saved notes › Try another model`
+and `Notes › Saved notes › Compare models`.
+**Since.** The release after 2.0.5.
+
+<!-- prov: compare models | src: src/components/settings/notes/NoteParts.tsx; src/components/settings/notes/SavedNotes.tsx; src/lib/noteModels.ts; src/stores/notesStore.ts; src-tauri/src/commands/notes.rs; src-tauri/src/managers/history.rs -->
 
 ### Every note in one place, one click from its transcript
 
 <a id="every-note-in-one-place"></a>
 **The situation.** You remember writing a note last week but not which recording it came from.
-**What Handy does.** The Saved notes tab lists every note, newest first, with its date, skill and
-model, and a With speakers badge on notes made with speakers. Go to transcript opens History on
+**What Handy does.** The Saved notes tab lists every note, newest first, with its date, model,
+cost, tokens, generation time and skills, and a With speakers badge on notes made with speakers;
+notes made from the same text sit side by side. Go to transcript opens History on
 the source recording, clears the search, scrolls to it and marks it as the source of the note. When the recording was deleted, the note stays and the button says the
 source transcript was deleted.
 **Where.** `Notes › Saved notes › Go to transcript`.
@@ -1529,7 +1574,7 @@ source transcript was deleted.
 **The situation.** The text you want summarized did not come from a recording: a transcript from
 another tool, or notes you typed.
 **What Handy does.** Paste or type it on the Manual note tab and generate a note with the same
-skill and model. The note is saved to Saved notes without a source recording.
+instructions, skills, language and model. The note is saved to Saved notes without a source recording.
 **Where.** `Notes › Manual note › Generate note`.
 **Since.** The release after 2.0.5.
 
