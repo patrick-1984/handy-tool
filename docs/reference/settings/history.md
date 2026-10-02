@@ -2,6 +2,14 @@
 
 Open `History`. The page has three tabs: Recordings (it opens on this one), Statistics and Settings. On Recordings, row actions repeat for every history entry and the search bar appears once entries exist. The tab bar stays in view while the list scrolls.
 
+### Note skill
+
+`History › Recordings › Note skill`
+
+Switches the skill new notes are written with, right from the list: Default instructions, or one of the imported skills. Shown only once a skill is imported. It is the same setting as `Notes › Settings › Skills › Skill`. **Default:** Default instructions.
+
+Catalog: [Notes written your way, with a skill](../../features.md#notes-written-your-way-with-a-skill).
+
 ### Open Recordings Folder
 
 `History › Recordings › Open Recordings Folder`

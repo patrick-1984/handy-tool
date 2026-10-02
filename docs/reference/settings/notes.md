@@ -48,7 +48,7 @@ Catalog: [Choose which model writes your notes](../../features.md#choose-which-m
 
 `Notes › Settings › Provider and model › Model`
 
-The model that writes notes, picked from the provider's live model list or typed. Empty uses the provider's own model. **Default:** `google/gemini-2.5-flash`.
+The model that writes notes, picked from the provider's live model list or typed. Empty uses the provider's own model. Picking a provider of another kind in Provider resets it: to empty (the new provider's own model), or to the default when the new provider is an OpenRouter one without a model. **Default:** `google/gemini-2.5-flash`.
 
 Catalog: [Choose which model writes your notes](../../features.md#choose-which-model-writes-your-notes).
 
