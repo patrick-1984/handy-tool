@@ -18,8 +18,9 @@
 //!    transcribed again per speaker, a bounded number of times
 //!    ([`align::assign_segments`]).
 //!
-//!    In both, "once" means one pass in pieces of at most 40 s cut at pauses,
-//!    as the Files page does, with the times shifted back onto the
+//!    In both, "once" means one pass over recordings up to 40 s, or in
+//!    contiguous pieces of at most 30 s cut at pauses (the Files page's cuts,
+//!    but quiet stretches are kept), with the times shifted back onto the
 //!    recording's clock: most engines have no long-form mode, and dictation
 //!    waits for the engine only one piece at a time.
 //! 3. No timestamps (Moonshine, FLM, API and OpenRouter transcription):
@@ -61,22 +62,33 @@ pub use pipeline::Segment;
 pub const CLUSTER_THRESHOLD: f32 = 0.5;
 
 /// Recordings longer than this (samples, 40 s) are transcribed in pieces cut
-/// at pauses (`translator::split_speech_segments`, the same cut the Files
-/// page uses).
+/// at pauses ([`covering_pieces`]).
 const MAX_SINGLE_PASS_SAMPLES: usize = 40 * pipeline::SAMPLE_RATE;
 
 /// What the selected model can report about timing, which decides how
 /// speaker detection gives text to speakers.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TimingSupport {
-    /// No model loaded.
-    Unknown,
     /// Text only.
     None,
     /// Segment start/end times (Whisper).
     Segments,
     /// Word or token times (Parakeet, SenseVoice).
     Words,
+}
+
+impl TimingSupport {
+    /// The timing a model of this engine type reports. Taken from the model's
+    /// registry entry rather than the loaded engine, which dictation takes
+    /// out of its slot while it transcribes.
+    pub fn for_engine(engine: &crate::managers::model::EngineType) -> Self {
+        use crate::managers::model::EngineType;
+        match engine {
+            EngineType::Whisper => TimingSupport::Segments,
+            EngineType::Parakeet | EngineType::SenseVoice => TimingSupport::Words,
+            _ => TimingSupport::None,
+        }
+    }
 }
 
 /// A transcription with the timing the engine produced. Times are seconds
@@ -300,7 +312,7 @@ fn speaker_transcription(
     debug!("Speaker detection: model timing support {:?}", support);
     let timed = match support {
         TimingSupport::Segments | TimingSupport::Words => transcribe_in_pieces(t, samples)?,
-        TimingSupport::None | TimingSupport::Unknown => {
+        TimingSupport::None => {
             return per_turn_transcription(t, samples, diarize);
         }
     };
@@ -340,15 +352,15 @@ fn speaker_transcription(
     Ok(format_blocks(&timed, blocks))
 }
 
-/// One timed transcription of the whole recording, made of pieces of at most
-/// about [`MAX_SINGLE_PASS_SAMPLES`] cut at pauses, with every piece's times
-/// shifted to the recording's clock. The timing counts only if every piece
+/// One timed transcription of the whole recording, made of contiguous pieces
+/// cut at pauses that cover every sample ([`covering_pieces`]), with every
+/// piece's times shifted to the recording's clock. The timing counts only if every piece
 /// that produced text also produced timing.
 fn transcribe_in_pieces(t: &dyn SpeakerTranscriber, samples: &[f32]) -> Result<TimedTranscript> {
     if samples.len() <= MAX_SINGLE_PASS_SAMPLES {
         return t.transcribe_timed(samples);
     }
-    let ranges = crate::managers::translator::split_speech_segments(samples);
+    let ranges = covering_pieces(samples);
     debug!("Speaker detection: transcribing in {} pieces", ranges.len());
     let mut whole = TimedTranscript::default();
     let mut texts: Vec<String> = Vec::new();
@@ -381,6 +393,33 @@ fn transcribe_in_pieces(t: &dyn SpeakerTranscriber, samples: &[f32]) -> Result<T
     whole.words = words.filter(|w| !w.is_empty());
     whole.segments = segments.filter(|s| !s.is_empty());
     Ok(whole)
+}
+
+/// Contiguous pieces that together cover every sample of `samples`, cut at
+/// pauses. The cuts come from `translator::split_speech_segments`, but the
+/// audio it leaves out as quiet is not skipped: neighbouring pieces meet in
+/// the middle of every gap and the first and last reach the ends of the
+/// recording ([`turns::cover_audio`]). Its quiet threshold is relative to the
+/// loudest moment, so one loud bump would otherwise throw away normal speech.
+/// Pieces over [`turns::MAX_TURN`] are split again at their quietest point.
+fn covering_pieces(samples: &[f32]) -> Vec<std::ops::Range<usize>> {
+    let as_turn = |r: std::ops::Range<usize>| turns::Turn {
+        start: r.start,
+        end: r.end,
+        speaker: 0,
+    };
+    let mut pieces: Vec<turns::Turn> = crate::managers::translator::split_speech_segments(samples)
+        .into_iter()
+        .map(as_turn)
+        .collect();
+    pieces = turns::cover_audio(pieces, samples.len());
+    if pieces.is_empty() && !samples.is_empty() {
+        pieces.push(as_turn(0..samples.len()));
+    }
+    turns::split_long_turns(pieces, samples)
+        .into_iter()
+        .map(|t| t.start..t.end)
+        .collect()
 }
 
 /// Clean up every block like a normal transcription and label it. With a
@@ -436,10 +475,12 @@ mod tests {
     const SR: usize = pipeline::SAMPLE_RATE;
 
     /// A fake engine: every call is logged as (start, len) in samples of the
-    /// recording (found by the first sample's value, which is its index).
+    /// recording (found by the first sample's value, which is its index, or
+    /// by its address in `recording` when that is set).
     struct Fake {
         support: TimingSupport,
         calls: RefCell<Vec<(usize, usize)>>,
+        recording: Option<*const f32>,
     }
 
     impl Fake {
@@ -447,11 +488,16 @@ mod tests {
             Self {
                 support,
                 calls: RefCell::new(Vec::new()),
+                recording: None,
             }
         }
 
         fn log(&self, audio: &[f32]) -> (usize, usize) {
-            let call = (audio.first().map_or(0, |v| *v as usize), audio.len());
+            let start = match self.recording {
+                Some(base) => (audio.as_ptr() as usize - base as usize) / size_of::<f32>(),
+                None => audio.first().map_or(0, |v| *v as usize),
+            };
+            let call = (start, audio.len());
             self.calls.borrow_mut().push(call);
             call
         }
@@ -564,6 +610,59 @@ mod tests {
             assert_eq!(w.text, format!("w{}", w.start as usize), "{w:?}");
         }
         assert_eq!(timed.text.split(' ').count(), words.len());
+    }
+
+    #[test]
+    fn a_loud_moment_does_not_drop_quieter_speech() {
+        // 100 s of speech-level signal with one loud 50 ms bump at 50 s: the
+        // Files page's cut keeps only the bump, but every second must still
+        // be transcribed once.
+        let mut samples: Vec<f32> = (0..100 * SR)
+            .map(|i| 0.03 * (i as f32 * 0.07).sin())
+            .collect();
+        samples[50 * SR..50 * SR + SR / 20].fill(0.9);
+        let mut fake = Fake::new(TimingSupport::Words);
+        fake.recording = Some(samples.as_ptr());
+        let timed = transcribe_in_pieces(&fake, &samples).unwrap();
+        let mut calls = fake.calls.borrow().clone();
+        calls.sort_unstable();
+        assert_eq!(calls.first().map(|c| c.0), Some(0), "{calls:?}");
+        for pair in calls.windows(2) {
+            assert_eq!(pair[0].0 + pair[0].1, pair[1].0, "{calls:?}");
+        }
+        let last = calls.last().unwrap();
+        assert_eq!(last.0 + last.1, samples.len());
+        assert!(calls.iter().all(|(_, len)| *len <= 30 * SR), "{calls:?}");
+        // About one word per second, none lost (a piece loses at most the
+        // fraction of a second after its last whole second).
+        let words = timed.words.unwrap();
+        assert!(words.len() >= 100 - calls.len(), "{} words", words.len());
+
+        let text = speaker_transcription(&fake, &samples, &mut |_| {
+            Ok(vec![seg(0.0, 50.0, 0), seg(50.0, 100.0, 1)])
+        })
+        .unwrap();
+        assert!(text.split_whitespace().count() > 90, "{text}");
+    }
+
+    #[test]
+    fn timing_support_follows_the_engine_type() {
+        use crate::managers::model::EngineType;
+        assert_eq!(
+            TimingSupport::for_engine(&EngineType::Whisper),
+            TimingSupport::Segments
+        );
+        for engine in [EngineType::Parakeet, EngineType::SenseVoice] {
+            assert_eq!(TimingSupport::for_engine(&engine), TimingSupport::Words);
+        }
+        for engine in [
+            EngineType::Moonshine,
+            EngineType::MoonshineStreaming,
+            EngineType::ApiWhisper,
+            EngineType::OpenRouterWhisper,
+        ] {
+            assert_eq!(TimingSupport::for_engine(&engine), TimingSupport::None);
+        }
     }
 
     #[test]

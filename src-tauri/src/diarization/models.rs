@@ -164,8 +164,16 @@ pub async fn download(app: &AppHandle) -> Result<()> {
     if installed_paths(app).is_some() {
         return Ok(());
     }
-    DOWNLOADING.store(true, Ordering::Release);
     let dir = models_dir(app)?;
+    // Cleared on every way out, an error or a dropped future included.
+    struct Downloading;
+    impl Drop for Downloading {
+        fn drop(&mut self) {
+            DOWNLOADING.store(false, Ordering::Release);
+        }
+    }
+    DOWNLOADING.store(true, Ordering::Release);
+    let downloading = Downloading;
     // Replace any stale status (e.g. the last failure) right away: the first
     // progress event only comes once the server answers.
     let finished: u64 = FILES
@@ -195,7 +203,7 @@ pub async fn download(app: &AppHandle) -> Result<()> {
         )
     })
     .await;
-    DOWNLOADING.store(false, Ordering::Release);
+    drop(downloading);
     let total = total_size();
     match &result {
         Ok(()) => publish(

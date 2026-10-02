@@ -1,5 +1,5 @@
 use crate::audio_toolkit::{apply_custom_words, filter_transcription_output, pad_trailing_silence};
-use crate::diarization::{TimedText, TimedTranscript, TimingSupport, group_tokens};
+use crate::diarization::{TimedText, TimedTranscript, group_tokens};
 use crate::managers::model::{EngineType, ModelManager};
 use crate::settings::{
     AppSettings, ModelUnloadTimeout, get_settings, normalize_language_for_engine,
@@ -1334,20 +1334,6 @@ impl TranscriptionManager {
         let expected = get_settings(&self.app_handle).selected_model;
         self.transcribe_inner(&expected, audio, InnerOutput::LiveWords)
             .map(|(text, words, _)| (text, words))
-    }
-
-    /// What the loaded model can report about timing, for speaker detection
-    /// to pick how it gives text to speakers. `Unknown` when nothing is
-    /// loaded.
-    pub fn timing_support(&self) -> TimingSupport {
-        match self.lock_engine().engine.as_ref() {
-            Some(LoadedEngine::Whisper(_)) => TimingSupport::Segments,
-            Some(LoadedEngine::Parakeet(_)) | Some(LoadedEngine::SenseVoice(_)) => {
-                TimingSupport::Words
-            }
-            Some(_) => TimingSupport::None,
-            None => TimingSupport::Unknown,
-        }
     }
 
     /// Speaker detection: one engine call like

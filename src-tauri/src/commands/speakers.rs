@@ -54,6 +54,9 @@ struct SelectedModel<'a> {
     tm: &'a TranscriptionManager,
     model: String,
     external: bool,
+    /// From the model's registry entry, so a dictation call holding the
+    /// engine at that moment can't change the strategy.
+    timing: TimingSupport,
 }
 
 impl SelectedModel<'_> {
@@ -80,7 +83,7 @@ impl SelectedModel<'_> {
 
 impl SpeakerTranscriber for SelectedModel<'_> {
     fn timing_support(&self) -> TimingSupport {
-        self.tm.timing_support()
+        self.timing
     }
 
     fn transcribe_timed(&self, audio: &[f32]) -> anyhow::Result<TimedTranscript> {
@@ -148,6 +151,7 @@ pub async fn transcribe_history_entry_with_speakers(
 
     let tm = Arc::clone(&transcription_manager);
     let external = model_info.engine_type.is_external();
+    let timing = TimingSupport::for_engine(&model_info.engine_type);
     let text = tauri::async_runtime::spawn_blocking(move || {
         let samples = crate::audio_toolkit::audio::decode_audio_file(&audio_path)
             .map_err(|e| anyhow!("Failed to load audio: {e}"))?;
@@ -160,6 +164,7 @@ pub async fn transcribe_history_entry_with_speakers(
             tm: &tm,
             model,
             external,
+            timing,
         };
         let result = selected
             .ensure_loaded()

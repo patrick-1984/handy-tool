@@ -2,7 +2,7 @@
 // This file is copied over transcription.rs during CI tests.
 // Existing tests don't exercise transcription, so this is safe.
 
-use crate::diarization::{TimedTranscript, TimingSupport};
+use crate::diarization::TimedTranscript;
 use crate::managers::model::ModelManager;
 use anyhow::Result;
 use serde::Serialize;
@@ -104,10 +104,6 @@ impl TranscriptionManager {
         _audio: Vec<f32>,
     ) -> Result<(String, Option<Vec<(f32, String)>>)> {
         Ok((String::new(), None))
-    }
-
-    pub fn timing_support(&self) -> TimingSupport {
-        TimingSupport::Unknown
     }
 
     pub fn transcribe_with_timing_expecting(
