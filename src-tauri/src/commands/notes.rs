@@ -239,12 +239,12 @@ pub async fn get_note_skills(app: AppHandle) -> Result<Vec<NoteSkill>, String> {
         .map_err(|e| format!("Failed to list skills: {}", e))?;
 
     let mut settings = settings::get_settings(&app);
-    if let Some(id) = &settings.note_skill_id {
-        if !skills.iter().any(|skill| &skill.id == id) {
-            debug!("Clearing missing note skill '{}'", id);
-            settings.note_skill_id = None;
-            settings::write_settings(&app, settings);
-        }
+    if let Some(id) = &settings.note_skill_id
+        && !skills.iter().any(|skill| &skill.id == id)
+    {
+        debug!("Clearing missing note skill '{}'", id);
+        settings.note_skill_id = None;
+        settings::write_settings(&app, settings);
     }
 
     Ok(skills)

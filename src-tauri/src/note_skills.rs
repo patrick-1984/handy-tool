@@ -144,10 +144,10 @@ pub fn import_skill(skills_dir: &Path, source: &Path) -> Result<NoteSkill, Strin
         Ok(loaded.skill)
     });
 
-    if result.is_err() {
-        if let Err(e) = fs::remove_dir_all(&root) {
-            warn!("Failed to clean up partial skill import: {}", e);
-        }
+    if result.is_err()
+        && let Err(e) = fs::remove_dir_all(&root)
+    {
+        warn!("Failed to clean up partial skill import: {}", e);
     }
 
     result
@@ -472,15 +472,15 @@ fn build_skill(root: &Path, id: &str) -> Result<LoadedSkill, String> {
     // Only files that add text count; empty or binary files are skipped.
     let mut file_count: u32 = 0;
 
-    if let Some(main) = &main {
-        if let Some(text) = read_text(&root.join(main), MAX_INSTRUCTIONS_BYTES) {
-            let (parsed, body) = split_frontmatter(&text);
-            frontmatter = parsed;
-            let body = body.trim();
-            if !body.is_empty() {
-                file_count += 1;
-                truncated = !push_capped(&mut instructions, body);
-            }
+    if let Some(main) = &main
+        && let Some(text) = read_text(&root.join(main), MAX_INSTRUCTIONS_BYTES)
+    {
+        let (parsed, body) = split_frontmatter(&text);
+        frontmatter = parsed;
+        let body = body.trim();
+        if !body.is_empty() {
+            file_count += 1;
+            truncated = !push_capped(&mut instructions, body);
         }
     }
 
