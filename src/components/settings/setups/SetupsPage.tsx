@@ -1,12 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ArrowRight, Mic, MoveUpRight, Palette, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  Mic,
+  MonitorDot,
+  MoveUpRight,
+  Palette,
+  Sparkles,
+} from "lucide-react";
 import { SettingsGroup } from "../../ui/SettingsGroup";
 import { Button } from "../../ui/Button";
 import { runSetupAgain } from "../../../lib/runSetup";
 import { useOsType } from "../../../hooks/useOsType";
 import { JumperSetup } from "./JumperSetup";
 import { PostProcessingSetup } from "./PostProcessingSetup";
+import { RemoteDesktopSetup } from "./RemoteDesktopSetup";
 import { AppearanceSetup } from "./appearance/AppearanceSetup";
 import { useNavStore, type FeatureSetup } from "../../../stores/navStore";
 
@@ -34,6 +42,8 @@ export const SetupsPage: React.FC = () => {
   if (running === "jumper") return <JumperSetup onClose={close} />;
   if (running === "postProcessing")
     return <PostProcessingSetup onClose={close} />;
+  if (running === "remote" && osType === "windows")
+    return <RemoteDesktopSetup onClose={close} />;
 
   // A row: an icon tile, the name (and a tag), what it covers, and Start.
   // Secondary buttons: one list of three primary ones would compete.
@@ -89,6 +99,14 @@ export const SetupsPage: React.FC = () => {
             "jumper",
             MoveUpRight,
             () => setRunning("jumper"),
+            t("setup.catalog.windowsOnly"),
+          )}
+        {/* Shortcut Keeper is Windows-only too. */}
+        {osType === "windows" &&
+          card(
+            "remote",
+            MonitorDot,
+            () => setRunning("remote"),
             t("setup.catalog.windowsOnly"),
           )}
       </SettingsGroup>

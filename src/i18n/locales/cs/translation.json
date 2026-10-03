@@ -117,7 +117,7 @@
       "ptt": "Držte, dokud mluvíte.",
       "cancel": "Zastaví nahrávání, aniž by se cokoli napsalo.",
       "more": "Další zkratky (Přepsat a odeslat, pauza, vrátit poslední slovo, …) jsou na stránce Zkratky.",
-      "remote": "Pracujete ve Vzdálené ploše? Strážce zkratek na stránce Zkratky ponechá vybrané zkratky na tomto počítači."
+      "remote": "Pracujete ve Vzdálené ploše? Průvodce Vzdálenou plochou na stránce Průvodci ponechá vybrané zkratky na tomto počítači (Windows)."
     },
     "microphone": {
       "title": "Který mikrofon?",
@@ -152,6 +152,10 @@
       "jumper": {
         "title": "Jumper",
         "description": "Nechte Handy Tool vložit váš diktát do správného pole za vás: pamatuje si místa, kam píšete (chatovací okno, dokument, pole ve vzdálené relaci), text tam vloží automaticky, ať jste kdekoli, a klávesou se k nim vrátí."
+      },
+      "remote": {
+        "title": "Zkratky ve Vzdálené ploše",
+        "description": "Ať zkratky Handy Tool fungují i tehdy, když klávesnici má relace Vzdálené plochy: zapněte Strážce zkratek a vyberte, které zkratky zůstanou na tomto počítači; každá jiná klávesa jde dál do vzdáleného počítače."
       },
       "postProcessing": {
         "title": "Následné zpracování",
@@ -402,6 +406,30 @@
         "title": "Nastavení následného zpracování",
         "text": "Nechte AI uklidit nebo přetvořit to, co diktujete: krok za krokem vyberte, co má dělat a kterou AI, na konci se zkouškou."
       }
+    },
+    "remote": {
+      "name": "Zkratky ve Vzdálené ploše",
+      "intro": {
+        "title": "Vaše zkratky ve Vzdálené ploše",
+        "body": "Připojení ke vzdálené ploše a Windows App zabírají každou klávesu, dokud má jejich relace klávesnici, takže zkratky Handy Tool tam přestanou fungovat. Strážce zkratek ponechá vybrané zkratky na tomto počítači: ovládají Handy Tool zde a každá jiná klávesa, včetně Ctrl+C, Ctrl+V a Alt+Tab, jde dál do vzdáleného počítače. Jen Windows; ne Citrix."
+      },
+      "switch": {
+        "title": "Zapněte Strážce zkratek",
+        "body": "Sleduje klávesnici jen tehdy, když je relace Vzdálené plochy v popředí, a nikdy neukládá ani neodesílá, co píšete. Píšete čínsky, japonsky nebo korejsky? Uveďte to i tady."
+      },
+      "shortcuts": {
+        "title": "Vyberte, co zůstane na tomto počítači",
+        "body": "Zaškrtněte Ponechat na tomto počítači u zkratek, které používáte při práci v relaci. Vložit poslední přepis vloží text do relace, jakmile pustíte jeho klávesy.",
+        "more": "Každá další zkratka má stejné políčko na stránce Zkratky."
+      },
+      "try": {
+        "title": "Vyzkoušejte",
+        "body": "Klikněte do relace Vzdálené plochy, klidně na celé obrazovce, a stiskněte zaškrtnutou zkratku: ovládá Handy Tool zde. Řádek níže ukazuje Aktivní, dokud má relace klávesnici. Pokud zkratka přesto jde do vzdáleného počítače, klikněte mimo relaci a pak zpět do ní."
+      },
+      "done": {
+        "title": "Vaše zkratky jsou ponechané",
+        "body": "Které zkratky zůstanou na tomto počítači, můžete kdykoli změnit na stránce Zkratky v části Strážce zkratek."
+      }
     }
   },
   "onboarding": {
@@ -559,9 +587,9 @@
         "pressKeys": "Stiskněte klávesy...",
         "unset": "Žádná",
         "clear": "Odebrat zkratku",
-        "altGrConflict": "Windows hlásí AltGr jako Ctrl+Alt, takže se místo napsání znaků AltGr jako ą nebo ó spustí tato zkratka. Zvolte kombinaci bez Ctrl+Alt.",
-        "conflict": "Používá také: {{names}}. Funguje jen jedna z nich.",
-        "singleKey": "Tato samotná klávesa spouští zkratku všude, takže ji už nebudete moci psát. Přidejte modifikátor, například Ctrl nebo Alt.",
+        "altGrConflict": "Windows hlásí AltGr jako Ctrl+Alt, takže se tato zkratka může spustit, když píšete znaky AltGr jako ą nebo ó. Kombinace bez Ctrl+Alt tomu předejde.",
+        "conflict": "Nastaveno také pro: {{names}}. Najednou funguje jen jedna z nich; dejte jedné z nich jiné klávesy.",
+        "singleKey": "Tato samotná klávesa spouští zkratku v každé aplikaci, takže psaní této klávesy tam nemusí fungovat. Přidání Ctrl nebo Alt tomu předejde.",
         "bindings": {
           "transcribe": {
             "name": "Zkratka nahrávání/přepisu",
@@ -655,10 +683,10 @@
         },
         "badge": {
           "conflict": "Konflikt",
-          "risky": "Riskantní"
+          "risky": "Pozor"
         },
-        "altGrConflictLayout": "Klávesnice pro jazyky ({{layouts}}) zapisuje znak AltGr+{{key}}. Windows hlásí AltGr jako Ctrl+Alt, takže by se místo toho spustila tato zkratka. Zvolte kombinaci bez Ctrl+Alt.",
-        "altGrConflictSpace": "Klávesnice pro jazyky ({{layouts}}) zapisuje znaky přes AltGr a AltGr často zůstává stisknuté i pro mezeru za nimi. Windows hlásí AltGr jako Ctrl+Alt, takže by se místo té mezery spustila tato zkratka. Zvolte kombinaci bez Ctrl+Alt."
+        "altGrConflictLayout": "Klávesnice pro jazyky ({{layouts}}) zapisuje znak AltGr+{{key}}. Windows hlásí AltGr jako Ctrl+Alt, takže se při psaní toho znaku může místo něj spustit tato zkratka. Kombinace bez Ctrl+Alt tomu předejde.",
+        "altGrConflictSpace": "Klávesnice pro jazyky ({{layouts}}) zapisuje znaky přes AltGr a AltGr často zůstává stisknuté i pro mezeru za nimi. Windows hlásí AltGr jako Ctrl+Alt, takže tato mezera může místo toho spustit tuto zkratku. Kombinace bez Ctrl+Alt tomu předejde."
       },
       "pauseButton": {
         "label": "Tlačítko pozastavení",
@@ -870,18 +898,22 @@
       },
       "conflicts": {
         "title": "Některé zkratky používají stejné klávesy",
-        "description": "Kombinaci kláves může používat jen jedna akce, takže z každé dvojice funguje jen jedna. Změňte nebo zrušte jednu ze zkratek označených červeným varováním."
+        "description": "Na jedné kombinaci kláves může fungovat jen jedna akce, takže z každé dvojice funguje jen jedna. Dejte jedné ze zkratek označených Konflikt jiné klávesy, nebo ji zrušte."
       },
       "altGrWarning": {
-        "label": "Upozorňovat na zkratky s AltGr",
-        "description": "**Zobrazí jantarové upozornění u zkratek, které lze napsat i klávesou AltGr.** Windows hlásí AltGr jako Ctrl+Alt, takže zkratka jako Ctrl+Alt+O se spustí, když napíšete ó přes AltGr, a znak se nikdy nedoručí. Na Windows upozorní jen tehdy, když některá z vašich klávesnic na té klávese píše znak přes AltGr (nebo AltGr+Shift u kombinace se Shiftem), a pojmenuje jazyk, ke kterému klávesnice patří.\n\n**Výchozí:** Zapnuto. Vypněte, pokud znaky přes AltGr nepíšete.",
-        "turnOff": "Vypnout toto upozornění"
+        "label": "Zobrazovat upozornění u zkratek s AltGr",
+        "description": "**Zobrazí upozornění u zkratek, které může psát i klávesa AltGr.** Windows hlásí AltGr jako Ctrl+Alt, takže zkratka jako Ctrl+Alt+O se může spustit, když napíšete ó přes AltGr, a znak nemusí dorazit. Na Windows se upozornění zobrazí jen tehdy, když některá z vašich klávesnic na té klávese píše znak přes AltGr (nebo AltGr+Shift u kombinace se Shiftem), a pojmenuje jazyk, ke kterému klávesnice patří.\n\n**Výchozí:** Zapnuto. Vypněte, pokud znaky přes AltGr nepíšete.",
+        "turnOff": "Vypnout tato upozornění"
       },
       "keeper": {
         "title": "Strážce zkratek",
         "summary": "Ponechá zkratky, které zaškrtnete, na tomto počítači, zatímco klávesnici má relace Vzdálené plochy, takže ovládají Handy Tool zde, místo aby došly do vzdáleného počítače. Všechny ostatní klávesy jdou do vzdáleného počítače jako dosud.",
-        "label": "Ponechat vybrané zkratky ve Vzdálené ploše na tomto počítači",
-        "description": "**Vzdálená plocha zabírá každou klávesu, dokud má její relace klávesnici** (na celé obrazovce nebo když kombinace kláves Windows jdou do vzdáleného počítače), takže zkratky Handy Tool tam přestanou fungovat. Když je toto zapnuto, zkratky zaškrtnuté volbou Ponechat na tomto počítači ovládají Handy Tool zde. Každá jiná klávesa, včetně Ctrl+C, Ctrl+V a Alt+Tab, jde dál do vzdáleného počítače.\n\n**Funguje s:** aplikacemi Připojení ke vzdálené ploše (mstsc) a Windows App. Ne s klientem Citrix: místo toho použijte vlastní nastavení Citrix Workspace pro kombinace kláves Windows.\n\n**Jen zkratky na stisk:** Stisk a mluv, Vrátit poslední slovo a Vložit poslední přepis reagují na uvolnění klávesy a zatím je nelze ponechat.\n\n**Bez záruky:** pokud ponechaná zkratka přestane fungovat, klikněte mimo relaci a pak zpět do ní.\n\n**Soukromí:** Handy Tool sleduje klávesnici jen tehdy, když je relace Vzdálené plochy v popředí, reaguje jen na zkratky, které jste zaškrtli, a nikdy neukládá, nezaznamenává ani neodesílá, co píšete.\n\n**Výchozí:** Vypnuto.",
+        "label": "Ponechat vybrané zkratky ve Vzdálené ploše na tomto počítači (Windows)",
+        "description": "**Vzdálená plocha zabírá každou klávesu, dokud má její relace klávesnici** (na celé obrazovce nebo když kombinace kláves Windows jdou do vzdáleného počítače), takže zkratky Handy Tool tam přestanou fungovat. Když je toto zapnuto, zkratky zaškrtnuté volbou Ponechat na tomto počítači ovládají Handy Tool zde. Každá jiná klávesa, včetně Ctrl+C, Ctrl+V a Alt+Tab, jde dál do vzdáleného počítače.\n\n**Funguje s:** aplikacemi Připojení ke vzdálené ploše (mstsc) a Windows App ve Windows. Ne s klientem Citrix: místo toho použijte vlastní nastavení Citrix Workspace pro kombinace kláves Windows.\n\n**Zatím ne:** Stisk a mluv a Vrátit poslední slovo, které působí, dokud klávesu držíte. Vložit poslední přepis ponechat lze: vloží text do relace, když klávesy pustíte.\n\n**Bez záruky:** pokud ponechaná zkratka přestane fungovat, klikněte mimo relaci a pak zpět do ní.\n\n**Soukromí:** Handy Tool sleduje klávesnici jen tehdy, když je relace Vzdálené plochy v popředí, reaguje jen na zkratky, které jste zaškrtli, a nikdy neukládá, nezaznamenává ani neodesílá, co píšete.\n\n**Výchozí:** Vypnuto.",
+        "cjk": {
+          "label": "Píšu čínsky, japonsky nebo korejsky",
+          "description": "**Jen pak potřebujete poznámku o Ctrl+Space.** V čínském, japonském a korejském nastavení Ctrl+Space přepíná metodu zadávání; ponechaná Ctrl+Space kvůli tomu už do vzdáleného počítače nedorazí. Když toto zapnete, ponechaná Ctrl+Space tu poznámku zobrazí.\n\n**Výchozí:** Vypnuto."
+        },
         "status": {
           "off": "Vypnuto.",
           "waiting": "Zapnuto. Čeká se, až bude mít klávesnici relace Vzdálené plochy.",
@@ -894,7 +926,7 @@
         "checkboxHint": "Zaškrtnuto: tato zkratka ovládá Handy Tool na tomto počítači, zatímco klávesnici má relace Vzdálené plochy.",
         "turnOnFirst": "Nejprve zapněte Strážce zkratek nahoře na této stránce.",
         "reasons": {
-          "needs_release": "Reaguje na uvolnění klávesy, což Strážce zkratek zatím neumí.",
+          "needs_hold": "Působí, dokud klávesu držíte, což Strážce zkratek zatím neumí.",
           "unbound": "Pro tuto zkratku nejsou nastavené žádné klávesy.",
           "win_key": "Zkratky s klávesou Windows nelze ponechat: vzdálený počítač by klávesu Windows stejně viděl a otevřel svou nabídku Start.",
           "alt_only": "Zkratky s Alt bez Ctrl nelze ponechat: vzdálený počítač by Alt stejně viděl a otevřel svůj panel nabídek. Přidejte do zkratky Ctrl.",
@@ -2029,6 +2061,18 @@
     "release": "Verze {{version}}",
     "show": "Ukázat",
     "items": {
+      "updateIcon": {
+        "title": "Ikona aktualizace ukazuje, jak na tom jste",
+        "description": "Ikona vedle verze vlevo dole je nyní vidět vždy. Zelené zaškrtnutí znamená, že poslední kontrola nenašla nic novějšího, azurová šipka znamená, že je k dispozici aktualizace, a šedá šipka znamená, že není k dispozici žádný nedávný výsledek (kontrola ještě neproběhla nebo selhala): kliknutím na ni kontrolu spustíte. Kliknutím na verzi otevřete podrobnosti."
+      },
+      "keeperPasteLast": {
+        "title": "Vložit poslední přepis funguje ve Vzdálené ploše",
+        "description": "Strážce zkratek teď umí ponechat Vložit poslední přepis na tomto počítači: v relaci Vzdálené plochy vloží váš poslední přepis do relace, když pustíte jeho klávesy. Nový průvodce Vzdálenou plochou na stránce Průvodci vás provede výběrem zkratek, které chcete ponechat. Jen Windows."
+      },
+      "calmerHints": {
+        "title": "Klidnější upozornění u zkratek",
+        "description": "Zkratky, které nemusí fungovat všude, teď místo výstražného trojúhelníku ukazují otazník a ty, které potřebují jiné klávesy, vykřičník; štítek u upozornění na AltGr zní Pozor. Texty říkají, co nemusí fungovat a jak tomu předejít. Pokud nepíšete čínsky, japonsky ani korejsky, poznámka o Ctrl+Space se už nezobrazuje."
+      },
       "shortcutKeeper": {
         "title": "Strážce zkratek: vaše zkratky fungují ve Vzdálené ploše",
         "description": "Ve Windows zapněte Strážce zkratek na stránce Zkratky a u zkratky zaškrtněte Ponechat na tomto počítači: dokud má klávesnici relace Připojení ke vzdálené ploše nebo Windows App, ovládá tato zkratka Handy Tool na tomto počítači, místo aby došla do vzdáleného počítače. Každá jiná klávesa jde dál do vzdáleného počítače."
@@ -2040,10 +2084,6 @@
       "hotkeyRelease": {
         "title": "Podržená zkratka už nevytěžuje jádro procesoru",
         "description": "Ve Windows Handy Tool při podržení zkratky (například Stisk a mluv) neustále kontroloval, zda jste ji pustili, a jedno jádro procesoru tak bylo plně vytížené. Nyní kontroluje každých 10 ms."
-      },
-      "progressFinish": {
-        "title": "Procento dosáhne 100 %, jakmile je text hotový",
-        "description": "Po nahrávce teď procento přepisu na pilulce dosáhne 100 % ve chvíli, kdy je text hotový. Dříve se mohlo zastavit kolem 70 % a doběhnout až poté, co byl text vložen."
       },
       "endOfTakeKept": {
         "title": "Konec nahrávky se uchová spolehlivěji",

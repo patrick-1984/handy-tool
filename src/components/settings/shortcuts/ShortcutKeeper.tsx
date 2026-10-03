@@ -63,6 +63,9 @@ export const ShortcutKeeperProvider: React.FC<{
   );
 };
 
+/** Shortcut Keeper's current state (inside the provider), or undefined. */
+export const useKeeperState = () => useContext(KeeperContext)?.status?.state;
+
 /** The switch, what it does, and what it is doing now. */
 export const ShortcutKeeperGroup: React.FC = () => {
   const { t } = useTranslation();
@@ -74,6 +77,7 @@ export const ShortcutKeeperGroup: React.FC = () => {
     <SettingsGroup
       icon={MonitorDot}
       title={t("settings.shortcuts.keeper.title")}
+      tag={t("setup.catalog.windowsOnly")}
       description={t("settings.shortcuts.keeper.summary")}
     >
       <ToggleSwitch
@@ -86,15 +90,33 @@ export const ShortcutKeeperGroup: React.FC = () => {
         descriptionMode="tooltip"
         grouped={true}
       />
-      {state && (
-        <p
-          role="status"
-          className="px-4 py-2.5 text-xs leading-4 text-text-secondary"
-        >
-          {t(`settings.shortcuts.keeper.status.${state}`)}
-        </p>
-      )}
+      <ToggleSwitch
+        checked={getSetting("remote_keys_cjk_input") ?? false}
+        onChange={(value) => updateSetting("remote_keys_cjk_input", value)}
+        isUpdating={isUpdating("remote_keys_cjk_input")}
+        disabled={blocked || !(getSetting("remote_keys_enabled") ?? false)}
+        label={t("settings.shortcuts.keeper.cjk.label")}
+        description={t("settings.shortcuts.keeper.cjk.description")}
+        descriptionMode="tooltip"
+        grouped={true}
+      />
+      <KeeperStatus />
     </SettingsGroup>
+  );
+};
+
+/** What Shortcut Keeper is doing now (inside the provider). */
+export const KeeperStatus: React.FC = () => {
+  const { t } = useTranslation();
+  const state = useContext(KeeperContext)?.status?.state;
+  if (!state) return null;
+  return (
+    <p
+      role="status"
+      className="px-4 py-2.5 text-xs leading-4 text-text-secondary"
+    >
+      {t(`settings.shortcuts.keeper.status.${state}`)}
+    </p>
   );
 };
 
@@ -121,11 +143,16 @@ export const KeepLocalCheckbox: React.FC<{ shortcutId: string }> = ({
   const kept =
     possible &&
     (getSetting("remote_local_bindings") ?? []).includes(shortcutId);
+  // The input-method note only for those who said they type Chinese,
+  // Japanese or Korean.
+  const cjk = getSetting("remote_keys_cjk_input") ?? false;
+  const code =
+    support?.code === "ctrl_space" && !cjk ? "" : (support?.code ?? "");
   const reason =
-    on && available && support && support.code
-      ? t(`settings.shortcuts.keeper.reasons.${support.code}`)
+    on && available && code
+      ? t(`settings.shortcuts.keeper.reasons.${code}`)
       : null;
-  // A warning matters once the box is ticked; a "cannot" reason always.
+  // A note matters once the box is ticked; a "cannot" reason always.
   const showReason = reason && (!possible || kept);
 
   const toggle = async (local: boolean): Promise<void> => {
@@ -140,7 +167,9 @@ export const KeepLocalCheckbox: React.FC<{ shortcutId: string }> = ({
 
   return (
     <span className="flex items-center gap-1">
-      {showReason && <WarningIcon message={reason} />}
+      {showReason && (
+        <WarningIcon message={reason} kind={possible ? "maybe" : "change"} />
+      )}
       <label
         className={`flex items-center gap-1.5 text-xs whitespace-nowrap ${
           on && available && possible

@@ -1,12 +1,14 @@
 import React, { useRef, useState } from "react";
-import { AlertTriangle } from "lucide-react";
+import { CircleAlert, CircleHelp } from "lucide-react";
 import { Tooltip } from "./Tooltip";
 
 /** Long enough to move the mouse across the gap into the tooltip. */
 const CLOSE_DELAY_MS = 250;
 
 /**
- * A warning triangle that explains itself on hover or click. The whole square
+ * A hint that explains itself on hover or click: a question mark when
+ * something may not work, an exclamation mark when it needs a change to work.
+ * Both are amber - a risk of not working, not an alarm. The whole square
  * is the hover target — a bare icon only reacts on its thin strokes, so its
  * explanation was easy to miss — and the explanation uses the app's own tooltip
  * like the (i) icons, instead of the slow native one. With an `action`, the
@@ -16,11 +18,11 @@ export const WarningIcon: React.FC<{
   message: string;
   className?: string;
   action?: { label: string; onClick: () => void };
-  /** A word next to the triangle ("Conflict"): a badge, not colour alone. */
+  /** A word next to the icon ("Attention"): a badge, not colour alone. */
   label?: string;
-  /** Badge colours: amber for a risk, red for a real clash. */
-  tone?: "warn" | "error";
-}> = ({ message, className = "", action, label, tone = "warn" }) => {
+  /** "maybe" (?): it may not work. "change" (!): it needs a change to work. */
+  kind?: "maybe" | "change";
+}> = ({ message, className = "", action, label, kind = "maybe" }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLSpanElement>(null);
   const closeTimer = useRef<number | undefined>(undefined);
@@ -41,6 +43,7 @@ export const WarningIcon: React.FC<{
       setOpen(false);
     }
   };
+  const iconClass = `${label ? "h-3.5 w-3.5" : "h-4 w-4"} shrink-0 pointer-events-none`;
   return (
     <span
       ref={ref}
@@ -48,16 +51,18 @@ export const WarningIcon: React.FC<{
       aria-label={message}
       className={`inline-flex items-center justify-center cursor-help ${
         label
-          ? `gap-1 h-6 px-2 rounded-sm text-xs font-medium ${tone === "error" ? "bg-err-bg text-err-text" : "bg-warn-bg text-warn-text"}`
-          : "h-6 w-6"
+          ? "gap-1 h-6 px-2 rounded-sm text-xs font-medium bg-warn-bg text-warn-text"
+          : "h-6 w-6 text-warn-text"
       } ${className}`}
       onMouseEnter={show}
       onMouseLeave={hide}
       onClick={() => setOpen((o) => !o)}
     >
-      <AlertTriangle
-        className={`${label ? "h-3.5 w-3.5" : "h-4 w-4"} shrink-0 pointer-events-none`}
-      />
+      {kind === "change" ? (
+        <CircleAlert className={iconClass} />
+      ) : (
+        <CircleHelp className={iconClass} />
+      )}
       {label}
       {open && (
         <Tooltip targetRef={ref} position="top">

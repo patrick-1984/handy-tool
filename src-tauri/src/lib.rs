@@ -413,6 +413,7 @@ pub fn run(cli_args: CliArgs) {
         shortcut::change_altgr_warning_setting,
         remote_keys::change_remote_keys_setting,
         remote_keys::set_remote_local_binding,
+        remote_keys::change_remote_keys_cjk_input_setting,
         remote_keys::get_remote_key_support,
         remote_keys::get_remote_keys_status,
         shortcut::change_audio_feedback_setting,

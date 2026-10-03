@@ -117,7 +117,7 @@
       "ptt": "Konuşurken basılı tutun.",
       "cancel": "Hiçbir şey yazmadan kaydı durdurur.",
       "more": "Diğer kısayollar (Yazıya dök ve gönder, duraklat, son kelimeyi geri al, …) Kısayollar sayfasında.",
-      "remote": "Uzak Masaüstü'nde mi çalışıyorsunuz? Kısayollar sayfasındaki Kısayol Koruyucu, seçtiğiniz kısayolları bu bilgisayarda tutar."
+      "remote": "Uzak Masaüstü'nde mi çalışıyorsunuz? Kurulumlar sayfasındaki Uzak Masaüstü kurulumu, seçtiğiniz kısayolları bu bilgisayarda tutar (Windows)."
     },
     "microphone": {
       "title": "Hangi mikrofon?",
@@ -152,6 +152,10 @@
       "jumper": {
         "title": "Jumper",
         "description": "Handy Tool diktenizi sizin için doğru alana yapıştırsın: yazdığınız yerleri (bir sohbet kutusu, bir belge, uzak oturumdaki bir alan) hatırlar, nerede olursanız olun metni oraya otomatik olarak koyar ve bir tuşla oraya geri döner."
+      },
+      "remote": {
+        "title": "Uzak Masaüstü kısayolları",
+        "description": "Klavye bir Uzak Masaüstü oturumundayken Handy Tool'un kısayolları çalışmaya devam etsin: Kısayol Koruyucu'yu açın ve hangi kısayolların bu bilgisayarda kalacağını seçin; diğer tüm tuşlar yine uzak bilgisayara gider."
       },
       "postProcessing": {
         "title": "Son işleme",
@@ -402,6 +406,30 @@
         "title": "Son işleme kurulumu",
         "text": "Bir yapay zekâ dikte ettiğinizi temizlesin veya yeniden biçimlendirsin: ne yapacağını ve hangi yapay zekâyı kullanacağını adım adım seçin, sonunda bir denemeyle."
       }
+    },
+    "remote": {
+      "name": "Uzak Masaüstü kısayolları",
+      "intro": {
+        "title": "Uzak Masaüstü'nde kısayollarınız",
+        "body": "Klavye oturumlarındayken Uzak Masaüstü Bağlantısı ve Windows App her tuşu alır; bu yüzden Handy Tool'un kısayolları orada çalışmaz. Kısayol Koruyucu seçtiğiniz kısayolları bu bilgisayarda tutar: burada Handy Tool'u çalıştırırlar, Ctrl+C, Ctrl+V ve Alt+Tab dahil diğer tüm tuşlar ise yine uzak bilgisayara gider. Yalnızca Windows; Citrix değil."
+      },
+      "switch": {
+        "title": "Kısayol Koruyucu'yu açın",
+        "body": "Klavyeyi yalnızca bir Uzak Masaüstü oturumu öndeyken izler ve yazdıklarınızı asla saklamaz veya göndermez. Çince, Japonca veya Korece mi yazıyorsunuz? Bunu da burada belirtin."
+      },
+      "shortcuts": {
+        "title": "Bu bilgisayarda neyin kalacağını seçin",
+        "body": "Bir oturumda çalışırken kullandığınız kısayolların yanındaki Bu bilgisayarda tut kutusunu işaretleyin. Son Transkripsiyonu Yapıştır, tuşlarını bıraktığınız anda oturuma yapıştırır.",
+        "more": "Diğer tüm kısayollar için Kısayollar sayfasında aynı kutu vardır."
+      },
+      "try": {
+        "title": "Deneyin",
+        "body": "Uzak Masaüstü oturumunuzun içine tıklayın (isterseniz tam ekranda) ve işaretli bir kısayola basın: burada Handy Tool'u çalıştırır. Klavye oturumdayken aşağıdaki satırda Etkin yazar. Bir kısayol hâlâ uzak bilgisayara gidiyorsa oturumun dışına, sonra yeniden içine tıklayın."
+      },
+      "done": {
+        "title": "Kısayollarınız bu bilgisayarda tutuluyor",
+        "body": "Hangi kısayolların bu bilgisayarda kalacağını istediğiniz zaman Kısayollar sayfasında, Kısayol Koruyucu altında değiştirebilirsiniz."
+      }
     }
   },
   "onboarding": {
@@ -559,9 +587,9 @@
         "pressKeys": "Tuşlara basın...",
         "unset": "Yok",
         "clear": "Kısayolu kaldır",
-        "altGrConflict": "Windows, AltGr tuşunu Ctrl+Alt olarak bildirir; bu nedenle ą veya ó gibi AltGr karakterleri yazılmak yerine bu kısayol çalışır. Ctrl+Alt içermeyen bir kombinasyon seçin.",
-        "conflict": "Şunlar tarafından da kullanılıyor: {{names}}. Yalnızca biri çalışır.",
-        "singleKey": "Bu tuş tek başına kısayolu her yerde tetikler, bu yüzden artık onu yazamazsınız. Ctrl veya Alt gibi bir değiştirici tuş ekleyin.",
+        "altGrConflict": "Windows, AltGr tuşunu Ctrl+Alt olarak bildirir; bu nedenle ą veya ó gibi AltGr karakterlerini yazarken bu kısayol tetiklenebilir. Ctrl+Alt içermeyen bir kombinasyon bunu önler.",
+        "conflict": "Şunlar için de ayarlı: {{names}}. Aynı anda yalnızca biri çalışır; birine başka tuşlar atayın.",
+        "singleKey": "Bu tuş tek başına kısayolu her uygulamada tetikler, bu yüzden onu oralarda yazmak çalışmayabilir. Ctrl veya Alt eklemek bunu önler.",
         "bindings": {
           "transcribe": {
             "name": "Kayıt/Transkripsiyon Kısayolu",
@@ -655,10 +683,10 @@
         },
         "badge": {
           "conflict": "Çakışma",
-          "risky": "Riskli"
+          "risky": "Dikkat"
         },
-        "altGrConflictLayout": "{{layouts}} için kullandığınız bir klavye, AltGr+{{key}} ile bir karakter yazar. Windows AltGr'yi Ctrl+Alt olarak bildirir; bu yüzden bu kısayol onun yerine tetiklenir. Ctrl+Alt içermeyen bir kombinasyon seçin.",
-        "altGrConflictSpace": "{{layouts}} için kullandığınız bir klavye, karakterleri AltGr ile yazar ve AltGr genellikle bir karakterden sonraki boşluk için de basılı tutulur. Windows AltGr'yi Ctrl+Alt olarak bildirir; bu yüzden bu kısayol o boşluk yerine tetiklenir. Ctrl+Alt içermeyen bir kombinasyon seçin."
+        "altGrConflictLayout": "{{layouts}} için kullandığınız bir klavye, AltGr+{{key}} ile bir karakter yazar. Windows AltGr'yi Ctrl+Alt olarak bildirir; bu yüzden o karakteri yazarken onun yerine bu kısayol tetiklenebilir. Ctrl+Alt içermeyen bir kombinasyon bunu önler.",
+        "altGrConflictSpace": "{{layouts}} için kullandığınız bir klavye, karakterleri AltGr ile yazar ve AltGr genellikle bir karakterden sonraki boşluk için de basılı tutulur. Windows AltGr'yi Ctrl+Alt olarak bildirir; bu yüzden o boşluğun yerine bu kısayol tetiklenebilir. Ctrl+Alt içermeyen bir kombinasyon bunu önler."
       },
       "pauseButton": {
         "label": "Duraklatma düğmesi",
@@ -866,22 +894,26 @@
     "shortcuts": {
       "groups": {
         "dictation": "Dikte",
-        "warnings": "Uyarılar"
+        "warnings": "İpuçları"
       },
       "conflicts": {
         "title": "Bazı kısayollar aynı tuşları kullanıyor",
-        "description": "Bir tuş kombinasyonunu yalnızca bir eylem kullanabilir, bu yüzden her çiftten yalnızca biri çalışır. Kırmızı uyarıyla işaretlenen kısayollardan birini değiştirin veya temizleyin."
+        "description": "Bir tuş kombinasyonunda yalnızca bir eylem çalışabilir, bu yüzden her çiftten yalnızca biri çalışır. Çakışma olarak işaretlenen kısayollardan birine başka tuşlar atayın veya onu temizleyin."
       },
       "altGrWarning": {
-        "label": "AltGr kısayolları için uyar",
-        "description": "**AltGr ile de yazılabilen kısayolların yanında kehribar rengi bir uyarı gösterir.** Windows AltGr'yi Ctrl+Alt olarak bildirir; bu yüzden Ctrl+Alt+O gibi bir kısayol AltGr ile ó yazarken tetiklenir ve karakter hiç gelmez. Windows'ta yalnızca klavyelerinizden biri o tuşta (Shift'li bir kombinasyon için AltGr+Shift ile) AltGr ile bir şey yazıyorsa uyarır ve klavyenin ait olduğu dili adlandırır.\n\n**Varsayılan:** Açık. AltGr ile karakter yazmıyorsanız kapatın.",
-        "turnOff": "Bu uyarıyı kapat"
+        "label": "AltGr kısayolları için ipuçlarını göster",
+        "description": "**AltGr ile de yazılabilecek kısayolların yanında bir ipucu gösterir.** Windows AltGr'yi Ctrl+Alt olarak bildirir; bu yüzden Ctrl+Alt+O gibi bir kısayol AltGr ile ó yazarken tetiklenebilir ve karakter gelmeyebilir. Windows'ta ipucu yalnızca klavyelerinizden biri o tuşta (Shift'li bir kombinasyon için AltGr+Shift ile) AltGr ile bir şey yazıyorsa görünür ve klavyenin ait olduğu dili adlandırır.\n\n**Varsayılan:** Açık. AltGr ile karakter yazmıyorsanız kapatın.",
+        "turnOff": "Bu ipuçlarını kapat"
       },
       "keeper": {
         "title": "Kısayol Koruyucu",
         "summary": "İşaretlediğiniz kısayolları, klavye bir Uzak Masaüstü oturumundayken bu bilgisayarda tutar; böylece uzak bilgisayara ulaşmak yerine burada Handy Tool'u çalıştırırlar. Diğer tüm tuşlar eskisi gibi uzak bilgisayara gider.",
-        "label": "Seçilen kısayolları Uzak Masaüstü'nde bu bilgisayarda tut",
-        "description": "**Klavye bir Uzak Masaüstü oturumundayken Uzak Masaüstü her tuşu alır** (tam ekranda veya Windows tuş birleşimleri uzak bilgisayara gönderildiğinde), bu yüzden Handy Tool'un kısayolları orada çalışmaz. Bu açıkken, Bu bilgisayarda tut seçeneğiyle işaretlediğiniz kısayollar burada Handy Tool'u çalıştırır. Ctrl+C, Ctrl+V ve Alt+Tab dahil diğer tüm tuşlar yine uzak bilgisayara gider.\n\n**Şunlarla çalışır:** Uzak Masaüstü Bağlantısı (mstsc) ve Windows App. Citrix ile çalışmaz: bunun yerine Citrix Workspace'in Windows tuş birleşimleri için kendi ayarını kullanın.\n\n**Yalnızca basınca çalışan kısayollar:** Bas Konuş, Son kelimeyi geri al ve Son Transkripsiyonu Yapıştır tuş bırakıldığında çalışır ve henüz tutulamaz.\n\n**Garanti yok:** tutulan bir kısayol çalışmayı bırakırsa oturumun dışına, sonra yeniden içine tıklayın.\n\n**Gizlilik:** Handy Tool klavyeyi yalnızca bir Uzak Masaüstü oturumu öndeyken izler, yalnızca işaretlediğiniz kısayollara tepki verir ve yazdıklarınızı asla saklamaz, günlüğe kaydetmez veya göndermez.\n\n**Varsayılan:** Kapalı.",
+        "label": "Seçilen kısayolları Uzak Masaüstü'nde bu bilgisayarda tut (Windows)",
+        "description": "**Klavye bir Uzak Masaüstü oturumundayken Uzak Masaüstü her tuşu alır** (tam ekranda veya Windows tuş birleşimleri uzak bilgisayara gönderildiğinde), bu yüzden Handy Tool'un kısayolları orada çalışmaz. Bu açıkken, Bu bilgisayarda tut seçeneğiyle işaretlediğiniz kısayollar burada Handy Tool'u çalıştırır. Ctrl+C, Ctrl+V ve Alt+Tab dahil diğer tüm tuşlar yine uzak bilgisayara gider.\n\n**Şunlarla çalışır:** Windows'ta Uzak Masaüstü Bağlantısı (mstsc) ve Windows App. Citrix ile çalışmaz: bunun yerine Citrix Workspace'in Windows tuş birleşimleri için kendi ayarını kullanın.\n\n**Henüz değil:** Bas Konuş ve Son kelimeyi geri al; bunlar tuş basılı tutulurken çalışır. Son Transkripsiyonu Yapıştır tutulabilir: tuşları bıraktığınızda oturuma yapıştırır.\n\n**Garanti yok:** tutulan bir kısayol çalışmayı bırakırsa oturumun dışına, sonra yeniden içine tıklayın.\n\n**Gizlilik:** Handy Tool klavyeyi yalnızca bir Uzak Masaüstü oturumu öndeyken izler, yalnızca işaretlediğiniz kısayollara tepki verir ve yazdıklarınızı asla saklamaz, günlüğe kaydetmez veya göndermez.\n\n**Varsayılan:** Kapalı.",
+        "cjk": {
+          "label": "Çince, Japonca veya Korece yazıyorum",
+          "description": "**Ctrl+Space notu yalnızca bu durumda gerekir.** Çince, Japonca ve Korece kurulumlarda Ctrl+Space giriş yöntemini değiştirir; tutulan bir Ctrl+Space bunun için artık uzak bilgisayara ulaşmaz. Bunu açarsanız tutulan bir Ctrl+Space o notu gösterir.\n\n**Varsayılan:** Kapalı."
+        },
         "status": {
           "off": "Kapalı.",
           "waiting": "Açık. Klavyenin bir Uzak Masaüstü oturumuna geçmesi bekleniyor.",
@@ -894,7 +926,7 @@
         "checkboxHint": "İşaretli: klavye bir Uzak Masaüstü oturumundayken bu kısayol bu bilgisayarda Handy Tool'u çalıştırır.",
         "turnOnFirst": "Önce bu sayfanın üst kısmından Kısayol Koruyucu'yu açın.",
         "reasons": {
-          "needs_release": "Tuş bırakıldığında çalışır; Kısayol Koruyucu bunu henüz işleyemez.",
+          "needs_hold": "Tuş basılı tutulurken çalışır; Kısayol Koruyucu bunu henüz işleyemez.",
           "unbound": "Bu kısayol için tuş ayarlanmamış.",
           "win_key": "Windows tuşlu kısayollar tutulamaz: uzak bilgisayar Windows tuşunu yine görür ve Başlat menüsünü açar.",
           "alt_only": "Ctrl'siz Alt kısayolları tutulamaz: uzak bilgisayar Alt'ı yine görür ve menü çubuğunu açar. Kısayola Ctrl ekleyin.",
@@ -2029,6 +2061,18 @@
     "release": "Sürüm {{version}}",
     "show": "Göster",
     "items": {
+      "updateIcon": {
+        "title": "Güncelleme simgesi durumunuzu gösterir",
+        "description": "Sol alttaki sürümün yanındaki simge artık her zaman görünür. Yeşil onay işareti son denetimin daha yeni bir şey bulmadığını, camgöbeği ok bir güncelleme olduğunu, gri ok ise güncel bir sonuç olmadığını (henüz denetlenmedi ya da denetim başarısız oldu) gösterir: denetlemek için oka tıklayın. Sürüme tıklamak ayrıntıları açar."
+      },
+      "keeperPasteLast": {
+        "title": "Son Transkripsiyonu Yapıştır Uzak Masaüstü'nde çalışır",
+        "description": "Kısayol Koruyucu artık Son Transkripsiyonu Yapıştır'ı bu bilgisayarda tutabilir: bir Uzak Masaüstü oturumunda, tuşlarını bıraktığınızda son transkripsiyonunuzu oturuma yapıştırır. Kurulumlar sayfasındaki yeni Uzak Masaüstü kurulumu, tutulacak kısayolları seçerken size adım adım yol gösterir. Yalnızca Windows."
+      },
+      "calmerHints": {
+        "title": "Kısayolların yanında daha sakin ipuçları",
+        "description": "Her yerde çalışmayabilecek kısayollar artık uyarı üçgeni yerine soru işareti, başka tuşlara ihtiyaç duyanlar ise ünlem işareti gösterir; AltGr ipucu rozetinde Dikkat yazar. Metinler neyin çalışmayabileceğini ve bundan nasıl kaçınılacağını söyler. Çince, Japonca veya Korece yazmıyorsanız Ctrl+Space notu artık görünmez."
+      },
       "shortcutKeeper": {
         "title": "Kısayol Koruyucu: kısayollarınız Uzak Masaüstü'nde çalışır",
         "description": "Windows'ta Kısayollar sayfasında Kısayol Koruyucu'yu açın ve bir kısayolun yanındaki Bu bilgisayarda tut kutusunu işaretleyin: klavye bir Uzak Masaüstü Bağlantısı veya Windows App oturumundayken o kısayol, uzak bilgisayara ulaşmak yerine bu bilgisayarda Handy Tool'u çalıştırır. Diğer tüm tuşlar yine uzak bilgisayara gider."
@@ -2040,10 +2084,6 @@
       "hotkeyRelease": {
         "title": "Bir kısayolu basılı tutmak artık bir işlemci çekirdeğini meşgul etmiyor",
         "description": "Windows'ta bir kısayolu basılı tuttuğunuzda (örneğin Bas Konuş), Handy Tool bırakıp bırakmadığınızı durmadan denetliyordu ve bu, bir işlemci çekirdeğini tamamen meşgul ediyordu. Artık her 10 ms'de bir denetliyor."
-      },
-      "progressFinish": {
-        "title": "Metin hazır olduğunda yüzde 100'e ulaşır",
-        "description": "Kayıttan sonra durum göstergesindeki yazıya dökme yüzdesi artık metin hazır olduğu anda %100'e ulaşıyor. Önceden %70 civarında durup ancak metin yapıştırıldıktan sonra tamamlanabiliyordu."
       },
       "endOfTakeKept": {
         "title": "Kaydın sonu daha güvenilir şekilde korunuyor",

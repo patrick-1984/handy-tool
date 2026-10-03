@@ -117,7 +117,7 @@
       "ptt": "Mantén pulsado mientras hablas.",
       "cancel": "Detiene una grabación sin escribir nada.",
       "more": "Hay más atajos (Transcribir y enviar, pausa, deshacer última palabra, …) en la página Atajos.",
-      "remote": "¿Trabajas en Escritorio remoto? Shortcut Keeper, en la página Atajos, mantiene en este PC los atajos que elijas."
+      "remote": "¿Trabajas en Escritorio remoto? La configuración de Escritorio remoto, en la página Configuraciones, mantiene en este PC los atajos que elijas (Windows)."
     },
     "microphone": {
       "title": "¿Qué micrófono?",
@@ -152,6 +152,10 @@
       "jumper": {
         "title": "Jumper",
         "description": "Deja que Handy Tool pegue tu dictado en el campo correcto por ti: recuerda los lugares donde escribes (un chat, un documento, un campo en una sesión remota), lleva el texto allí automáticamente estés donde estés, y vuelve a ellos con una tecla."
+      },
+      "remote": {
+        "title": "Atajos en Escritorio remoto",
+        "description": "Haz que los atajos de Handy Tool sigan funcionando mientras una sesión de Escritorio remoto tiene el teclado: activa Shortcut Keeper y elige qué atajos se quedan en este PC; todas las demás teclas siguen yendo al equipo remoto."
       },
       "postProcessing": {
         "title": "Posprocesamiento",
@@ -402,6 +406,30 @@
         "title": "Configuración de posprocesamiento",
         "text": "Deja que una IA limpie o transforme lo que dictas: elige qué debe hacer y qué IA, paso a paso, con una prueba al final."
       }
+    },
+    "remote": {
+      "name": "Atajos en Escritorio remoto",
+      "intro": {
+        "title": "Tus atajos en Escritorio remoto",
+        "body": "Conexión a Escritorio remoto y la Windows App se quedan con todas las teclas mientras su sesión tiene el teclado, así que los atajos de Handy Tool dejan de funcionar ahí. Shortcut Keeper mantiene en este PC los atajos que elijas: controlan Handy Tool aquí, y todas las demás teclas, incluidas Ctrl+C, Ctrl+V y Alt+Tab, siguen yendo al equipo remoto. Solo Windows; no Citrix."
+      },
+      "switch": {
+        "title": "Activa Shortcut Keeper",
+        "body": "Vigila el teclado solo mientras una sesión de Escritorio remoto está en primer plano, y nunca guarda ni envía lo que escribes. ¿Escribes en chino, japonés o coreano? Indícalo aquí también."
+      },
+      "shortcuts": {
+        "title": "Elige qué se queda en este PC",
+        "body": "Marca Mantener en este PC junto a los atajos que usas mientras trabajas en una sesión. 'Paste last transcription' pega en la sesión en cuanto sueltas sus teclas.",
+        "more": "Todos los demás atajos tienen la misma casilla en la página Atajos."
+      },
+      "try": {
+        "title": "Pruébalo",
+        "body": "Haz clic en tu sesión de Escritorio remoto, en pantalla completa si quieres, y pulsa un atajo marcado: controla Handy Tool aquí. La línea de abajo indica Activo mientras la sesión tiene el teclado. Si un atajo sigue yendo al equipo remoto, haz clic fuera de la sesión y luego otra vez dentro."
+      },
+      "done": {
+        "title": "Tus atajos se mantienen",
+        "body": "Cambia cuando quieras qué atajos se quedan en este PC en la página Atajos, en Shortcut Keeper."
+      }
     }
   },
   "onboarding": {
@@ -559,9 +587,9 @@
         "pressKeys": "Presiona teclas...",
         "unset": "Ninguno",
         "clear": "Quitar atajo",
-        "altGrConflict": "Windows informa de AltGr como Ctrl+Alt, así que este atajo se activa en lugar de escribir caracteres AltGr como ą u ó. Elige una combinación sin Ctrl+Alt.",
-        "conflict": "También lo usa: {{names}}. Solo funcionará uno de ellos.",
-        "singleKey": "Esta tecla sola activa el atajo en todas partes, así que ya no podrás escribirla. Añade un modificador como Ctrl o Alt.",
+        "altGrConflict": "Windows informa de AltGr como Ctrl+Alt, así que este atajo puede activarse al escribir caracteres AltGr como ą u ó. Una combinación sin Ctrl+Alt lo evita.",
+        "conflict": "También asignado a: {{names}}. Solo uno de ellos funciona a la vez; asigna otras teclas a uno de ellos.",
+        "singleKey": "Esta tecla sola activa el atajo en todas las aplicaciones, así que puede que escribirla ahí no funcione. Añadir Ctrl o Alt lo evita.",
         "bindings": {
           "transcribe": {
             "name": "Atajo de Grabación/Transcripción",
@@ -655,10 +683,10 @@
         },
         "badge": {
           "conflict": "Conflicto",
-          "risky": "Arriesgado"
+          "risky": "Atención"
         },
-        "altGrConflictLayout": "Una distribución de teclado que usas para {{layouts}} escribe un carácter con AltGr+{{key}}. Windows informa de AltGr como Ctrl+Alt, así que este atajo se activaría en su lugar. Elige una combinación sin Ctrl+Alt.",
-        "altGrConflictSpace": "Una distribución de teclado que usas para {{layouts}} escribe caracteres con AltGr, y AltGr suele seguir pulsado para el espacio después de uno. Windows informa de AltGr como Ctrl+Alt, así que este atajo se activaría en lugar de ese espacio. Elige una combinación sin Ctrl+Alt."
+        "altGrConflictLayout": "Una distribución de teclado que usas para {{layouts}} escribe un carácter con AltGr+{{key}}. Windows informa de AltGr como Ctrl+Alt, así que al escribir ese carácter puede activarse este atajo en su lugar. Una combinación sin Ctrl+Alt lo evita.",
+        "altGrConflictSpace": "Una distribución de teclado que usas para {{layouts}} escribe caracteres con AltGr, y AltGr suele seguir pulsado para el espacio después de uno. Windows informa de AltGr como Ctrl+Alt, así que ese espacio puede activar este atajo en su lugar. Una combinación sin Ctrl+Alt lo evita."
       },
       "pauseButton": {
         "label": "Botón de pausa",
@@ -866,22 +894,26 @@
     "shortcuts": {
       "groups": {
         "dictation": "Dictado",
-        "warnings": "Avisos"
+        "warnings": "Sugerencias"
       },
       "conflicts": {
         "title": "Algunos atajos usan las mismas teclas",
-        "description": "Solo una acción puede usar una combinación de teclas, así que solo funciona uno de cada par. Cambia o quita uno de los atajos marcados con un aviso rojo."
+        "description": "Solo una acción puede funcionar con una combinación de teclas, así que solo funciona uno de cada par. Asigna otras teclas a uno de los atajos marcados con Conflicto, o quítalo."
       },
       "altGrWarning": {
-        "label": "Avisar de atajos con AltGr",
-        "description": "**Muestra un aviso ámbar junto a los atajos con los que AltGr también escribe.** Windows interpreta AltGr como Ctrl+Alt, así que un atajo como Ctrl+Alt+O se activa al escribir ó con AltGr y el carácter nunca llega. En Windows solo avisa cuando una de tus distribuciones de teclado escribe algo con AltGr en esa tecla (o AltGr+Shift, para una combinación con Shift), y nombra el idioma al que pertenece esa distribución.\n\n**Predeterminado:** Activado. Desactívalo si nunca escribes caracteres con AltGr.",
-        "turnOff": "Desactivar este aviso"
+        "label": "Mostrar sugerencias para atajos con AltGr",
+        "description": "**Muestra una sugerencia junto a los atajos con los que AltGr también puede escribir.** Windows interpreta AltGr como Ctrl+Alt, así que un atajo como Ctrl+Alt+O puede activarse al escribir ó con AltGr, y puede que el carácter no llegue. En Windows la sugerencia aparece solo cuando una de tus distribuciones de teclado escribe algo con AltGr en esa tecla (o AltGr+Shift, para una combinación con Shift), y nombra el idioma al que pertenece esa distribución.\n\n**Predeterminado:** Activado. Desactívalo si nunca escribes caracteres con AltGr.",
+        "turnOff": "Desactivar estas sugerencias"
       },
       "keeper": {
         "title": "Shortcut Keeper",
         "summary": "Mantiene en este PC los atajos que marques mientras una sesión de Escritorio remoto tiene el teclado, para que controlen Handy Tool aquí en lugar de llegar al equipo remoto. Todas las demás teclas van al equipo remoto como antes.",
-        "label": "Mantener los atajos elegidos en este PC en Escritorio remoto",
-        "description": "**Escritorio remoto se queda con todas las teclas mientras su sesión tiene el teclado** (en pantalla completa, o cuando las combinaciones de teclas de Windows van al equipo remoto), así que los atajos de Handy Tool dejan de funcionar ahí. Con esto activado, los atajos que marques con Mantener en este PC controlan Handy Tool aquí. Todas las demás teclas, incluidas Ctrl+C, Ctrl+V y Alt+Tab, siguen yendo al equipo remoto.\n\n**Funciona con:** Conexión a Escritorio remoto (mstsc) y la Windows App. No con Citrix: usa en su lugar el ajuste propio de Citrix Workspace para las combinaciones de teclas de Windows.\n\n**Solo atajos de pulsación:** Presionar para Hablar, Deshacer la última palabra y 'Paste last transcription' actúan al soltar la tecla y todavía no se pueden mantener.\n\n**Sin garantía:** si un atajo mantenido deja de funcionar, haz clic fuera de la sesión y luego otra vez dentro.\n\n**Privacidad:** Handy Tool vigila el teclado solo mientras una sesión de Escritorio remoto está en primer plano, reacciona solo a los atajos que marcaste y nunca guarda, registra ni envía lo que escribes.\n\n**Predeterminado:** Desactivado.",
+        "label": "Mantener los atajos elegidos en este PC en Escritorio remoto (Windows)",
+        "description": "**Escritorio remoto se queda con todas las teclas mientras su sesión tiene el teclado** (en pantalla completa, o cuando las combinaciones de teclas de Windows van al equipo remoto), así que los atajos de Handy Tool dejan de funcionar ahí. Con esto activado, los atajos que marques con Mantener en este PC controlan Handy Tool aquí. Todas las demás teclas, incluidas Ctrl+C, Ctrl+V y Alt+Tab, siguen yendo al equipo remoto.\n\n**Funciona con:** Conexión a Escritorio remoto (mstsc) y la Windows App, en Windows. No con Citrix: usa en su lugar el ajuste propio de Citrix Workspace para las combinaciones de teclas de Windows.\n\n**Todavía no:** Presionar para Hablar y Deshacer la última palabra, que actúan mientras se mantiene pulsada la tecla. 'Paste last transcription' sí se puede mantener: pega en la sesión cuando sueltas las teclas.\n\n**Sin garantía:** si un atajo mantenido deja de funcionar, haz clic fuera de la sesión y luego otra vez dentro.\n\n**Privacidad:** Handy Tool vigila el teclado solo mientras una sesión de Escritorio remoto está en primer plano, reacciona solo a los atajos que marcaste y nunca guarda, registra ni envía lo que escribes.\n\n**Predeterminado:** Desactivado.",
+        "cjk": {
+          "label": "Escribo en chino, japonés o coreano",
+          "description": "**Solo entonces necesitas la nota sobre Ctrl+Espacio.** En configuraciones en chino, japonés y coreano, Ctrl+Espacio cambia el método de entrada; un Ctrl+Espacio mantenido ya no llega al equipo remoto para eso. Activa esto y un Ctrl+Espacio mantenido mostrará esa nota.\n\n**Predeterminado:** Desactivado."
+        },
         "status": {
           "off": "Desactivado.",
           "waiting": "Activado. Esperando a que una sesión de Escritorio remoto tenga el teclado.",
@@ -894,7 +926,7 @@
         "checkboxHint": "Marcado: este atajo controla Handy Tool en este PC mientras una sesión de Escritorio remoto tiene el teclado.",
         "turnOnFirst": "Primero activa Shortcut Keeper en la parte superior de esta página.",
         "reasons": {
-          "needs_release": "Actúa al soltar la tecla, algo que Shortcut Keeper aún no puede manejar.",
+          "needs_hold": "Actúa mientras se mantiene pulsada la tecla, algo que Shortcut Keeper aún no puede manejar.",
           "unbound": "No hay teclas asignadas a este atajo.",
           "win_key": "Los atajos con la tecla Windows no se pueden mantener: el equipo remoto seguiría viendo la tecla Windows y abriría su menú Inicio.",
           "alt_only": "Los atajos con Alt sin Ctrl no se pueden mantener: el equipo remoto seguiría viendo Alt y abriría su barra de menús. Añade Ctrl al atajo.",
@@ -2029,6 +2061,18 @@
     "release": "Versión {{version}}",
     "show": "Mostrar",
     "items": {
+      "updateIcon": {
+        "title": "El icono de actualización muestra en qué punto estás",
+        "description": "El icono junto a la versión, abajo a la izquierda, ahora siempre está visible. Una marca verde indica que la última búsqueda no encontró nada más reciente, una flecha cian indica que hay una actualización disponible y una flecha gris indica que no hay un resultado reciente (aún no se ha buscado o la búsqueda falló): haz clic en ella para buscar actualizaciones. Al hacer clic en la versión se abren los detalles."
+      },
+      "keeperPasteLast": {
+        "title": "'Paste last transcription' funciona en Escritorio remoto",
+        "description": "Shortcut Keeper ahora puede mantener 'Paste last transcription' en este PC: dentro de una sesión de Escritorio remoto pega tu última transcripción en la sesión cuando sueltas sus teclas. Una nueva configuración de Escritorio remoto en la página Configuraciones te guía para elegir los atajos que quieres mantener. Solo Windows."
+      },
+      "calmerHints": {
+        "title": "Sugerencias más tranquilas junto a los atajos",
+        "description": "Los atajos que puede que no funcionen en todas partes ahora muestran un signo de interrogación, y los que necesitan otras teclas un signo de exclamación, en lugar de un triángulo de advertencia; la etiqueta de la sugerencia de AltGr dice Atención. Los textos dicen qué puede no funcionar y cómo evitarlo. Si no escribes en chino, japonés o coreano, la nota sobre Ctrl+Espacio ya no aparece."
+      },
       "shortcutKeeper": {
         "title": "Shortcut Keeper: tus atajos funcionan en Escritorio remoto",
         "description": "En Windows, activa Shortcut Keeper en la página Atajos y marca Mantener en este PC junto a un atajo: mientras una sesión de Conexión a Escritorio remoto o de la Windows App tiene el teclado, ese atajo controla Handy Tool en este PC en lugar de llegar al equipo remoto. Todas las demás teclas siguen yendo al equipo remoto."
@@ -2040,10 +2084,6 @@
       "hotkeyRelease": {
         "title": "Mantener pulsado un atajo ya no ocupa un núcleo del procesador",
         "description": "En Windows, mientras mantenías pulsado un atajo (Presionar para Hablar, por ejemplo), Handy Tool comprobaba sin parar si lo habías soltado, lo que mantenía un núcleo del procesador totalmente ocupado. Ahora lo comprueba cada 10 ms."
-      },
-      "progressFinish": {
-        "title": "El porcentaje llega al 100 % cuando el texto está listo",
-        "description": "Tras una grabación, el porcentaje de transcripción de la píldora llega ahora al 100 % en cuanto el texto está listo. Antes podía quedarse en torno al 70 % y completarse solo después de pegar el texto."
       },
       "endOfTakeKept": {
         "title": "El final de una grabación se conserva con más fiabilidad",

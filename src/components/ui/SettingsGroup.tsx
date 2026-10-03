@@ -7,17 +7,25 @@ interface SettingsGroupProps {
   /** Line icon before the title, in the sidebar's style, for visual memory. */
   icon?: LucideIcon;
   description?: string;
+  /** A small tag after the title ("Windows only"). */
+  tag?: string;
   children: React.ReactNode;
 }
 
 /** A section header: small caps in the secondary colour, with its icon. */
-export const SectionTitle: React.FC<{ title: string; icon?: LucideIcon }> = ({
-  title,
-  icon: Icon,
-}) => (
+export const SectionTitle: React.FC<{
+  title: string;
+  icon?: LucideIcon;
+  tag?: string;
+}> = ({ title, icon: Icon, tag }) => (
   <h2 className="flex items-center gap-2 text-xs leading-4 font-semibold text-text-secondary uppercase tracking-[0.06em]">
     {Icon && <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden />}
     {title}
+    {tag && (
+      <span className="inline-flex items-center h-5 px-1.5 rounded bg-surface2 border border-border text-xs font-normal normal-case tracking-normal">
+        {tag}
+      </span>
+    )}
   </h2>
 );
 
@@ -42,13 +50,14 @@ export const SettingsGroup: React.FC<SettingsGroupProps> = ({
   title,
   icon,
   description,
+  tag,
   children,
 }) => {
   return (
     <div className="space-y-2">
       {title && (
         <div className="px-0.5">
-          <SectionTitle title={title} icon={icon} />
+          <SectionTitle title={title} icon={icon} tag={tag} />
           {description && (
             <RichText
               text={description}

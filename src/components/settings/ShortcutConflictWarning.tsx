@@ -83,7 +83,7 @@ export const ShortcutConflictWarning: React.FC<{ shortcutId: string }> = ({
     <WarningIcon
       message={message}
       label={t("settings.general.shortcut.badge.conflict")}
-      tone="error"
+      kind="change"
     />
   );
 };

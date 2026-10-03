@@ -39,4 +39,4 @@ Tune remote delivery only after the same flow works in a local application. Your
 4. The sending flow shares the paste delay from step 2; Transcribe & Submit has no separate one.
 5. Delay its submit separately at `Transcription › Transcribe & Submit › Submit delay before Enter (Windows) = 600 ms` _{Windows only}_.
 6. Test with harmless text, then shorten or lengthen one delay at a time until the target is reliable.
-7. If your shortcuts stop working while a full-screen session has the keyboard, switch on `Shortcuts › Shortcut Keeper › Keep chosen shortcuts on this PC in Remote Desktop` and tick `Keep on this PC` next to the shortcuts you use there _{Windows only}_.
+7. If your shortcuts stop working while a full-screen session has the keyboard, switch on `Shortcuts › Shortcut Keeper › Keep chosen shortcuts on this PC in Remote Desktop (Windows)` and tick `Keep on this PC` next to the shortcuts you use there, or run `Setups › Remote Desktop shortcuts` _{Windows only}_.

@@ -2513,6 +2513,25 @@ export const commands = {
     }
   },
   /**
+   * Whether you type Chinese, Japanese or Korean (only then is Ctrl+Space's
+   * input-method note shown).
+   */
+  async changeRemoteKeysCjkInputSetting(
+    enabled: boolean,
+  ): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_remote_keys_cjk_input_setting", {
+          enabled,
+        }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
    * For every shortcut: can it be kept on this PC, and if not, why.
    */
   async getRemoteKeySupport(): Promise<
@@ -3174,6 +3193,11 @@ export type AppSettings = {
    * Binding ids Shortcut Keeper keeps on this PC.
    */
   remote_local_bindings?: string[];
+  /**
+   * You type Chinese, Japanese or Korean: Shortcut Keeper then notes that a
+   * kept Ctrl+Space no longer switches the input method in the remote.
+   */
+  remote_keys_cjk_input?: boolean;
   selected_microphone?: string | null;
   clamshell_microphone?: string | null;
   selected_output_device?: string | null;

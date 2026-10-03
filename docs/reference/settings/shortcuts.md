@@ -6,15 +6,16 @@ changing a shortcut in either place changes both. For the default chords, see
 
 ### Shortcut Keeper
 
-`Shortcuts › Shortcut Keeper › Keep chosen shortcuts on this PC in Remote Desktop`
+`Shortcuts › Shortcut Keeper › Keep chosen shortcuts on this PC in Remote Desktop (Windows)`
 
 While a Remote Desktop Connection or Windows App session has the keyboard, the shortcuts ticked
 with `Keep on this PC` run Handy Tool on this PC instead of reaching the remote; every other key
 still goes to the remote. With the switch on, every row on this page gets a `Keep on this PC`
-box. A box is greyed out with a warning naming the reason when that shortcut cannot be kept
-(it acts on the key release, uses the Windows key or Alt without Ctrl, is reserved by Windows,
-or uses a key outside the supported set), and a ticked one shows a warning when keeping it has a
-side effect in the remote. A status line below the switch says whether a session has the
+box. A box is greyed out with an exclamation mark naming the reason when that shortcut cannot be kept
+(it acts while the key is held, uses the Windows key or Alt without Ctrl, is reserved by Windows,
+or uses a key outside the supported set), and a ticked one shows a question mark when keeping it may have a
+side effect in the remote. `I type Chinese, Japanese or Korean` (default Off) decides whether a
+ticked Ctrl+Space shows its input-method note. A status line below the switch says whether a session has the
 keyboard now. It needs the default keyboard implementation; after the other one ran, restart
 Handy Tool. _{Windows only}_ **Default:** Off, and no shortcut ticked.
 
@@ -43,11 +44,11 @@ The Type Text shortcut.
 
 The four anchor shortcuts and the eighteen slot shortcuts. _{Windows only}_
 
-### Warn about AltGr shortcuts
+### Show hints for AltGr shortcuts
 
-`Shortcuts › Warnings › Warn about AltGr shortcuts`
+`Shortcuts › Hints › Show hints for AltGr shortcuts`
 
-Shows the amber warning next to a Ctrl+Alt shortcut that AltGr also types with (Windows reports AltGr as Ctrl+Alt). On Windows it warns only when one of your installed keyboards types a character with AltGr on that key (AltGr+Shift for a chord with Shift), and names the language Windows lists that keyboard under (e.g. "A keyboard you use for Polish (Poland) types a character with AltGr+O"); a US English keyboard has none, so no warning. A Ctrl+Alt+Space chord is flagged on any keyboard with AltGr characters, as AltGr is often still held for the space after one. Elsewhere every Ctrl+Alt letter is flagged. The warning's tooltip has a `Turn off this warning` button that jumps here. **Default:** On.
+Shows a hint (a question mark marked Attention) next to a Ctrl+Alt shortcut that AltGr also types with (Windows reports AltGr as Ctrl+Alt). On Windows it warns only when one of your installed keyboards types a character with AltGr on that key (AltGr+Shift for a chord with Shift), and names the language Windows lists that keyboard under (e.g. "A keyboard you use for Polish (Poland) types a character with AltGr+O"); a US English keyboard has none, so no hint. A Ctrl+Alt+Space chord is flagged on any keyboard with AltGr characters, as AltGr is often still held for the space after one. Elsewhere every Ctrl+Alt letter is flagged. The hint's tooltip has a `Turn off these hints` button that jumps here. **Default:** On.
 
 Catalog: [Your shortcuts don't eat the accented letters you type](../../features.md#shortcuts-dont-eat-accented-letters).
 
@@ -61,7 +62,7 @@ Catalog: [Turn off a shortcut you don't want](../../features.md#turn-off-a-short
 
 ### Conflicts
 
-When two actions share the same keys, both rows show a red warning naming the other action and a
+When two actions share the same keys, both rows show an exclamation mark marked Conflict naming the other action and a
 banner appears at the top of the page. Only one of the two works until one of them is changed or
 set to None.
 

@@ -103,6 +103,8 @@ const settingUpdaters: {
     commands.changeAltgrWarningSetting(value as boolean),
   remote_keys_enabled: (value) =>
     commands.changeRemoteKeysSetting(value as boolean),
+  remote_keys_cjk_input: (value) =>
+    commands.changeRemoteKeysCjkInputSetting(value as boolean),
   audio_feedback: (value) =>
     commands.changeAudioFeedbackSetting(value as boolean),
   audio_feedback_volume: (value) =>

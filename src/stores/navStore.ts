@@ -3,7 +3,11 @@ import type { SidebarSection } from "@/components/Sidebar";
 
 export type HistoryTab = "recordings" | "statistics" | "settings";
 /** The feature setups that run on the Setups page. */
-export type FeatureSetup = "appearance" | "postProcessing" | "jumper";
+export type FeatureSetup =
+  | "appearance"
+  | "postProcessing"
+  | "jumper"
+  | "remote";
 
 interface NavStore {
   currentSection: SidebarSection;

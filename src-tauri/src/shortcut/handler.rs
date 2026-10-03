@@ -84,8 +84,9 @@ pub fn handle_shortcut_event(
     }
 }
 
-/// A press Shortcut Keeper kept on this PC (only press-triggered shortcuts take
-/// part; their release does nothing). A transcribe press carries the guard into
+/// A press Shortcut Keeper kept on this PC (its release is swallowed; Paste last
+/// transcription runs on the release instead, see handle_kept_release in
+/// shortcut/mod.rs). A transcribe press carries the guard into
 /// the coordinator's queue, which drops it if the session lost the keyboard
 /// while it waited.
 pub(crate) fn handle_kept_press(

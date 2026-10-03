@@ -33,3 +33,11 @@ Catalog: [A guided setup for post-processing](../../features.md#a-guided-setup-f
 Windows only. The Jumper lets Handy Tool paste your dictation into the right text field for you (a chat, an email, a document, a remote session), even from another window. Runs on the page: what the Jumper is for (jump back with a key, have dictation land there, or both), whether to remember the mouse position too, `Show me the place` (a 5-second countdown, then the field in focus is remembered; `Add another place` fills the next slot), the places' Set and Jump shortcuts, and a test. "Land there" sets the finish-press jump of Record/Transcribe and Transcribe & Submit to Place 1; places are kept after a restart. Also started from the top of the `Jumper` page. **Default:** not run.
 
 Catalog: [A guided setup for the Jumper](../../features.md#a-guided-setup-for-the-jumper).
+
+### Remote Desktop shortcuts
+
+`Setups › Remote Desktop shortcuts`
+
+Windows only. Runs on the page: what Shortcut Keeper does, switching it on (with `I type Chinese, Japanese or Korean`), ticking `Keep on this PC` for Transcribe, Transcribe & Submit, Paste Last Transcription and Cancel, and a Try it step whose status line says Active while a Remote Desktop session has the keyboard. Every control is the one on the `Shortcuts` page. **Default:** not run.
+
+Catalog: [Your shortcuts work inside a Remote Desktop session](../../features.md#your-shortcuts-work-inside-a-remote-desktop-session).

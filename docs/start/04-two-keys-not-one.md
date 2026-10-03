@@ -6,7 +6,7 @@
 
 Sometimes you want the text so you can inspect it. Sometimes you already trust what you said, it is good enough, and moving your hand to Enter is wasted motion. Those are two intents, so they get two keys.
 
-Working in a full-screen Remote Desktop session? Its client takes every key, so switch on `Shortcuts › Shortcut Keeper › Keep chosen shortcuts on this PC in Remote Desktop` and tick `Keep on this PC` next to both shortcuts first. See [Remote desktops](../tools/remote-desktops.md).
+Working in a full-screen Remote Desktop session? Its client takes every key, so switch on `Shortcuts › Shortcut Keeper › Keep chosen shortcuts on this PC in Remote Desktop (Windows)` and tick `Keep on this PC` next to both shortcuts first. See [Remote desktops](../tools/remote-desktops.md).
 
 ## Rehearse both intents
 

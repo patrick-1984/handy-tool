@@ -129,7 +129,7 @@
       "ptt": "Hold while you speak.",
       "cancel": "Stops a recording without typing anything.",
       "more": "More shortcuts (Transcribe & Submit, pause, undo last word, …) are on the Shortcuts page.",
-      "remote": "Working in Remote Desktop? Shortcut Keeper on the Shortcuts page keeps the shortcuts you choose on this PC."
+      "remote": "Working in Remote Desktop? The Remote Desktop setup on the Setups page keeps the shortcuts you choose on this PC (Windows)."
     },
     "microphone": {
       "title": "Which microphone?",
@@ -164,6 +164,10 @@
       "jumper": {
         "title": "Jumper",
         "description": "Let Handy Tool paste your dictation into the right field for you: it remembers the places you type in (a chat box, a document, a field in a remote session), puts the text there automatically wherever you are, and jumps back to them with a key."
+      },
+      "remote": {
+        "title": "Remote Desktop shortcuts",
+        "description": "Keep Handy Tool's shortcuts working while a Remote Desktop session has the keyboard: switch on Shortcut Keeper and choose which shortcuts stay on this PC; every other key still goes to the remote."
       },
       "postProcessing": {
         "title": "Post-processing",
@@ -414,6 +418,30 @@
         "title": "Post-processing setup",
         "text": "Let an AI clean up or reshape what you dictate: pick what it should do and which AI, step by step, with a try at the end."
       }
+    },
+    "remote": {
+      "name": "Remote Desktop shortcuts",
+      "intro": {
+        "title": "Your shortcuts in Remote Desktop",
+        "body": "Remote Desktop Connection and the Windows App take every key while their session has the keyboard, so Handy Tool's shortcuts stop working there. Shortcut Keeper keeps the shortcuts you choose on this PC: they run Handy Tool here, and every other key, Ctrl+C, Ctrl+V and Alt+Tab included, still goes to the remote. Windows only; not Citrix."
+      },
+      "switch": {
+        "title": "Switch on Shortcut Keeper",
+        "body": "It watches the keyboard only while a Remote Desktop session is in front, and never stores or sends what you type. Type Chinese, Japanese or Korean? Say so here too."
+      },
+      "shortcuts": {
+        "title": "Choose what stays on this PC",
+        "body": "Tick Keep on this PC next to the shortcuts you use while working in a session. Paste last transcription pastes into the session once you let go of its keys.",
+        "more": "Every other shortcut has the same box on the Shortcuts page."
+      },
+      "try": {
+        "title": "Try it",
+        "body": "Click into your Remote Desktop session, full screen if you like, and press a ticked shortcut: it runs Handy Tool here. The line below says Active while the session has the keyboard. If a shortcut still goes to the remote, click outside the session and back in."
+      },
+      "done": {
+        "title": "Your shortcuts are kept",
+        "body": "Change which shortcuts stay on this PC any time on the Shortcuts page, under Shortcut Keeper."
+      }
     }
   },
   "onboarding": {
@@ -554,9 +582,9 @@
         "pressKeys": "Press keys...",
         "unset": "None",
         "clear": "Set to None",
-        "altGrConflict": "Windows reports AltGr as Ctrl+Alt, so this shortcut fires instead of typing AltGr characters such as ą or ó. Pick a chord without Ctrl+Alt.",
-        "conflict": "Also used by: {{names}}. Only one of them will work.",
-        "singleKey": "This key alone fires the shortcut everywhere, so you can no longer type it. Add a modifier such as Ctrl or Alt.",
+        "altGrConflict": "Windows reports AltGr as Ctrl+Alt, so this shortcut may fire when you type AltGr characters such as ą or ó. A chord without Ctrl+Alt avoids that.",
+        "conflict": "Also set for: {{names}}. Only one of them works at a time; give one of them other keys.",
+        "singleKey": "This key alone fires the shortcut in every app, so typing it there may not work. Adding Ctrl or Alt avoids that.",
         "bindings": {
           "transcribe": {
             "name": "Record/Transcribe Shortcut",
@@ -650,10 +678,10 @@
         },
         "badge": {
           "conflict": "Conflict",
-          "risky": "Risky"
+          "risky": "Attention"
         },
-        "altGrConflictLayout": "A keyboard you use for {{layouts}} types a character with AltGr+{{key}}. Windows reports AltGr as Ctrl+Alt, so this shortcut would fire instead. Pick a chord without Ctrl+Alt.",
-        "altGrConflictSpace": "A keyboard you use for {{layouts}} types characters with AltGr, and AltGr is often still held for the space after one. Windows reports AltGr as Ctrl+Alt, so this shortcut would fire instead of that space. Pick a chord without Ctrl+Alt."
+        "altGrConflictLayout": "A keyboard you use for {{layouts}} types a character with AltGr+{{key}}. Windows reports AltGr as Ctrl+Alt, so typing that character may fire this shortcut instead. A chord without Ctrl+Alt avoids that.",
+        "altGrConflictSpace": "A keyboard you use for {{layouts}} types characters with AltGr, and AltGr is often still held for the space after one. Windows reports AltGr as Ctrl+Alt, so that space may fire this shortcut instead. A chord without Ctrl+Alt avoids that."
       },
       "pauseButton": {
         "label": "Pause button",
@@ -861,22 +889,26 @@
     "shortcuts": {
       "groups": {
         "dictation": "Dictation",
-        "warnings": "Warnings"
+        "warnings": "Hints"
       },
       "conflicts": {
         "title": "Some shortcuts share the same keys",
-        "description": "Only one action can use a key combination, so only one of each pair works. Change or clear one of the shortcuts marked with a red warning."
+        "description": "Only one action can work on a key combination, so only one of each pair does. Give one of the shortcuts marked Conflict other keys, or clear it."
       },
       "altGrWarning": {
-        "label": "Warn about AltGr shortcuts",
-        "description": "**Shows an amber warning next to shortcuts that AltGr also types with.** Windows reports AltGr as Ctrl+Alt, so a shortcut like Ctrl+Alt+O fires when you type ó with AltGr, and the character never arrives. On Windows it warns only when one of your keyboards types something with AltGr on that key (or AltGr+Shift, for a chord with Shift), and names the language the keyboard belongs to.\n\n**Default:** On. Switch it off if you never type characters with AltGr.",
-        "turnOff": "Turn off this warning"
+        "label": "Show hints for AltGr shortcuts",
+        "description": "**Shows a hint next to shortcuts that AltGr may also type with.** Windows reports AltGr as Ctrl+Alt, so a shortcut like Ctrl+Alt+O may fire when you type ó with AltGr, and the character may not arrive. On Windows the hint appears only when one of your keyboards types something with AltGr on that key (or AltGr+Shift, for a chord with Shift), and names the language the keyboard belongs to.\n\n**Default:** On. Switch it off if you never type characters with AltGr.",
+        "turnOff": "Turn off these hints"
       },
       "keeper": {
         "title": "Shortcut Keeper",
         "summary": "Keeps the shortcuts you tick on this PC while a Remote Desktop session has the keyboard, so they run Handy Tool here instead of reaching the remote. All other keys go to the remote as before.",
-        "label": "Keep chosen shortcuts on this PC in Remote Desktop",
-        "description": "**Remote Desktop takes every key while its session has the keyboard** (in full screen, or when Windows key combinations go to the remote computer), so Handy Tool's shortcuts stop working there. With this on, the shortcuts you tick with Keep on this PC run Handy Tool here. Every other key, Ctrl+C, Ctrl+V and Alt+Tab included, still goes to the remote.\n\n**Works with:** Remote Desktop Connection (mstsc) and the Windows App. Not with Citrix: use Citrix Workspace's own setting for Windows key combinations instead.\n\n**Press shortcuts only:** push-to-talk, Undo last word and Paste last transcription act on the key release and cannot be kept yet.\n\n**Best effort:** if a kept shortcut stops working, click outside the session and back in.\n\n**Privacy:** Handy Tool watches the keyboard only while a Remote Desktop session is in front, reacts only to the shortcuts you ticked, and never stores, logs or sends what you type.\n\n**Default:** Off.",
+        "label": "Keep chosen shortcuts on this PC in Remote Desktop (Windows)",
+        "description": "**Remote Desktop takes every key while its session has the keyboard** (in full screen, or when Windows key combinations go to the remote computer), so Handy Tool's shortcuts stop working there. With this on, the shortcuts you tick with Keep on this PC run Handy Tool here. Every other key, Ctrl+C, Ctrl+V and Alt+Tab included, still goes to the remote.\n\n**Works with:** Remote Desktop Connection (mstsc) and the Windows App, on Windows. Not with Citrix: use Citrix Workspace's own setting for Windows key combinations instead.\n\n**Not yet:** push-to-talk and Undo last word, which act while the key is held. Paste last transcription can be kept: it pastes into the session when you let go of the keys.\n\n**Best effort:** if a kept shortcut stops working, click outside the session and back in.\n\n**Privacy:** Handy Tool watches the keyboard only while a Remote Desktop session is in front, reacts only to the shortcuts you ticked, and never stores, logs or sends what you type.\n\n**Default:** Off.",
+        "cjk": {
+          "label": "I type Chinese, Japanese or Korean",
+          "description": "**Only then do you need the Ctrl+Space note.** On Chinese, Japanese and Korean setups Ctrl+Space switches the input method; a kept Ctrl+Space no longer reaches the remote for that. Switch this on and a kept Ctrl+Space shows that note.\n\n**Default:** Off."
+        },
         "status": {
           "off": "Off.",
           "waiting": "On. Waiting for a Remote Desktop session to have the keyboard.",
@@ -889,7 +921,7 @@
         "checkboxHint": "Ticked: this shortcut runs Handy Tool on this PC while a Remote Desktop session has the keyboard.",
         "turnOnFirst": "Switch on Shortcut Keeper at the top of this page first.",
         "reasons": {
-          "needs_release": "Acts on the key release, which Shortcut Keeper cannot handle yet.",
+          "needs_hold": "Acts while the key is held, which Shortcut Keeper cannot handle yet.",
           "unbound": "No keys are set for this shortcut.",
           "win_key": "Shortcuts with the Windows key cannot be kept: the remote would still see the Windows key and open its Start menu.",
           "alt_only": "Alt shortcuts without Ctrl cannot be kept: the remote would still see Alt and open its menu bar. Add Ctrl to the shortcut.",
@@ -2029,6 +2061,18 @@
     "release": "Version {{version}}",
     "show": "Show me",
     "items": {
+      "updateIcon": {
+        "title": "The update icon shows where you stand",
+        "description": "The icon next to the version at the bottom left is always there now. A green check means the last check found nothing newer, a cyan arrow means an update is available, and a grey arrow means there is no recent result (not checked yet, or the check failed): click it to check. Clicking the version opens the details."
+      },
+      "keeperPasteLast": {
+        "title": "Paste last transcription works in Remote Desktop",
+        "description": "Shortcut Keeper can now keep Paste last transcription on this PC: inside a Remote Desktop session it pastes your last transcription into the session when you let go of its keys. A new Remote Desktop setup on the Setups page walks you through choosing the shortcuts to keep. Windows only."
+      },
+      "calmerHints": {
+        "title": "Calmer hints next to shortcuts",
+        "description": "Shortcuts that may not work everywhere now show a question mark, and ones that need other keys an exclamation mark, instead of a warning triangle; the AltGr hint badge says Attention. The texts say what may not work and how to avoid it. If you do not type Chinese, Japanese or Korean, the Ctrl+Space note no longer appears."
+      },
       "shortcutKeeper": {
         "title": "Shortcut Keeper: your shortcuts work in Remote Desktop",
         "description": "On Windows, switch on Shortcut Keeper on the Shortcuts page and tick Keep on this PC next to a shortcut: while a Remote Desktop Connection or Windows App session has the keyboard, that shortcut runs Handy Tool on this PC instead of reaching the remote. Every other key still goes to the remote."
@@ -2040,10 +2084,6 @@
       "hotkeyRelease": {
         "title": "Holding a shortcut no longer keeps a processor core busy",
         "description": "On Windows, while you held a shortcut (push-to-talk, for example), Handy Tool checked nonstop whether you had let go, which kept one processor core fully busy. It now checks every 10 ms."
-      },
-      "progressFinish": {
-        "title": "The percentage reaches 100% when the text is ready",
-        "description": "After a take, the Transcribing percentage on the pill now goes to 100% the moment the text is ready. Before, it could stop at about 70% and finish only after the text had already been pasted."
       },
       "endOfTakeKept": {
         "title": "The end of a take is kept more reliably",

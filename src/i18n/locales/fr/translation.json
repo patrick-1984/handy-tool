@@ -117,7 +117,7 @@
       "ptt": "Maintenez pendant que vous parlez.",
       "cancel": "Arrête un enregistrement sans rien taper.",
       "more": "D'autres raccourcis (Transcrire et envoyer, pause, annuler le dernier mot, …) se trouvent dans la page Raccourcis.",
-      "remote": "Vous travaillez dans Bureau à distance ? Shortcut Keeper, dans la page Raccourcis, garde sur ce PC les raccourcis que vous choisissez."
+      "remote": "Vous travaillez dans Bureau à distance ? La configuration Bureau à distance, dans la page Configurations, garde sur ce PC les raccourcis que vous choisissez (Windows)."
     },
     "microphone": {
       "title": "Quel micro ?",
@@ -152,6 +152,10 @@
       "jumper": {
         "title": "Jumper",
         "description": "Laissez Handy Tool coller votre dictée dans le bon champ pour vous : il retient les endroits où vous écrivez (une zone de discussion, un document, un champ dans une session à distance), y met le texte automatiquement où que vous soyez, et y revient d'une touche."
+      },
+      "remote": {
+        "title": "Raccourcis dans Bureau à distance",
+        "description": "Gardez les raccourcis de Handy Tool actifs pendant qu'une session Bureau à distance a le clavier : activez Shortcut Keeper et choisissez les raccourcis qui restent sur ce PC ; toutes les autres touches vont toujours à l'ordinateur distant."
       },
       "postProcessing": {
         "title": "Post-traitement",
@@ -402,6 +406,30 @@
         "title": "Configuration du post-traitement",
         "text": "Laissez une IA nettoyer ou remanier ce que vous dictez : choisissez ce qu'elle doit faire et quelle IA utiliser, étape par étape, avec un essai à la fin."
       }
+    },
+    "remote": {
+      "name": "Raccourcis dans Bureau à distance",
+      "intro": {
+        "title": "Vos raccourcis dans Bureau à distance",
+        "body": "Connexion Bureau à distance et Windows App prennent toutes les touches tant que leur session a le clavier, si bien que les raccourcis de Handy Tool n'y fonctionnent plus. Shortcut Keeper garde sur ce PC les raccourcis que vous choisissez : ils pilotent Handy Tool ici, et toutes les autres touches, y compris Ctrl+C, Ctrl+V et Alt+Tab, vont toujours à l'ordinateur distant. Windows uniquement ; pas Citrix."
+      },
+      "switch": {
+        "title": "Activez Shortcut Keeper",
+        "body": "Il n'observe le clavier que lorsqu'une session Bureau à distance est au premier plan, et n'enregistre ni n'envoie jamais ce que vous tapez. Vous écrivez en chinois, japonais ou coréen ? Indiquez-le aussi ici."
+      },
+      "shortcuts": {
+        "title": "Choisissez ce qui reste sur ce PC",
+        "body": "Cochez Garder sur ce PC à côté des raccourcis que vous utilisez quand vous travaillez dans une session. « Paste last transcription » colle dans la session dès que vous relâchez ses touches.",
+        "more": "Tous les autres raccourcis ont la même case dans la page Raccourcis."
+      },
+      "try": {
+        "title": "Essayez",
+        "body": "Cliquez dans votre session Bureau à distance, en plein écran si vous voulez, et appuyez sur un raccourci coché : il pilote Handy Tool ici. La ligne ci-dessous indique Actif tant que la session a le clavier. Si un raccourci va encore à l'ordinateur distant, cliquez hors de la session, puis de nouveau dedans."
+      },
+      "done": {
+        "title": "Vos raccourcis sont gardés",
+        "body": "Changez à tout moment les raccourcis qui restent sur ce PC dans la page Raccourcis, sous Shortcut Keeper."
+      }
     }
   },
   "onboarding": {
@@ -559,9 +587,9 @@
         "pressKeys": "Appuyez sur les touches...",
         "unset": "Aucun",
         "clear": "Supprimer le raccourci",
-        "altGrConflict": "Windows signale AltGr comme Ctrl+Alt : ce raccourci se déclenche donc au lieu de saisir des caractères AltGr comme ą ou ó. Choisissez une combinaison sans Ctrl+Alt.",
-        "conflict": "Également utilisé par : {{names}}. Un seul fonctionnera.",
-        "singleKey": "Cette touche seule déclenche le raccourci partout, vous ne pourrez donc plus la taper. Ajoutez un modificateur comme Ctrl ou Alt.",
+        "altGrConflict": "Windows signale AltGr comme Ctrl+Alt : ce raccourci peut donc se déclencher quand vous tapez des caractères AltGr comme ą ou ó. Une combinaison sans Ctrl+Alt l'évite.",
+        "conflict": "Également défini pour : {{names}}. Un seul fonctionne à la fois ; donnez d'autres touches à l'un d'eux.",
+        "singleKey": "Cette touche seule déclenche le raccourci dans toutes les applications, donc la taper risque de ne pas y fonctionner. Ajouter Ctrl ou Alt l'évite.",
         "bindings": {
           "transcribe": {
             "name": "Raccourci Enregistrement/Transcription",
@@ -655,10 +683,10 @@
         },
         "badge": {
           "conflict": "Conflit",
-          "risky": "Risqué"
+          "risky": "Attention"
         },
-        "altGrConflictLayout": "Un clavier que vous utilisez pour {{layouts}} tape un caractère avec AltGr+{{key}}. Windows signale AltGr comme Ctrl+Alt, donc ce raccourci se déclencherait à la place. Choisissez une combinaison sans Ctrl+Alt.",
-        "altGrConflictSpace": "Un clavier que vous utilisez pour {{layouts}} tape des caractères avec AltGr, et AltGr est souvent encore maintenu pour l'espace qui suit. Windows signale AltGr comme Ctrl+Alt, donc ce raccourci se déclencherait à la place de cet espace. Choisissez une combinaison sans Ctrl+Alt."
+        "altGrConflictLayout": "Un clavier que vous utilisez pour {{layouts}} tape un caractère avec AltGr+{{key}}. Windows signale AltGr comme Ctrl+Alt, donc taper ce caractère peut déclencher ce raccourci à la place. Une combinaison sans Ctrl+Alt l'évite.",
+        "altGrConflictSpace": "Un clavier que vous utilisez pour {{layouts}} tape des caractères avec AltGr, et AltGr est souvent encore maintenu pour l'espace qui suit. Windows signale AltGr comme Ctrl+Alt, donc cet espace peut déclencher ce raccourci à la place. Une combinaison sans Ctrl+Alt l'évite."
       },
       "pauseButton": {
         "label": "Bouton pause",
@@ -866,22 +894,26 @@
     "shortcuts": {
       "groups": {
         "dictation": "Dictée",
-        "warnings": "Avertissements"
+        "warnings": "Indications"
       },
       "conflicts": {
         "title": "Certains raccourcis utilisent les mêmes touches",
-        "description": "Une combinaison de touches ne peut déclencher qu'une seule action : un seul raccourci de chaque paire fonctionne. Modifiez ou effacez l'un des raccourcis signalés en rouge."
+        "description": "Une seule action peut fonctionner sur une combinaison de touches, donc un seul raccourci de chaque paire fonctionne. Donnez d'autres touches à l'un des raccourcis marqués Conflit, ou effacez-le."
       },
       "altGrWarning": {
-        "label": "Avertir des raccourcis AltGr",
-        "description": "**Affiche un avertissement ambré à côté des raccourcis qu'AltGr tape aussi.** Windows signale AltGr comme Ctrl+Alt, donc un raccourci comme Ctrl+Alt+O se déclenche quand vous tapez ó avec AltGr, et le caractère n'arrive jamais. Sur Windows, il n'avertit que quand un de vos claviers tape quelque chose avec AltGr sur cette touche (ou AltGr+Shift, pour une combinaison avec Shift), et indique la langue à laquelle appartient le clavier.\n\n**Par défaut :** Activé. Désactivez-le si vous ne tapez jamais de caractères avec AltGr.",
-        "turnOff": "Désactiver cet avertissement"
+        "label": "Afficher des indications pour les raccourcis AltGr",
+        "description": "**Affiche une indication à côté des raccourcis qu'AltGr peut aussi taper.** Windows signale AltGr comme Ctrl+Alt, donc un raccourci comme Ctrl+Alt+O peut se déclencher quand vous tapez ó avec AltGr, et le caractère risque de ne pas arriver. Sur Windows, l'indication n'apparaît que quand un de vos claviers tape quelque chose avec AltGr sur cette touche (ou AltGr+Shift, pour une combinaison avec Shift), et indique la langue à laquelle appartient le clavier.\n\n**Par défaut :** Activé. Désactivez-le si vous ne tapez jamais de caractères avec AltGr.",
+        "turnOff": "Désactiver ces indications"
       },
       "keeper": {
         "title": "Shortcut Keeper",
         "summary": "Garde sur ce PC les raccourcis que vous cochez pendant qu'une session Bureau à distance a le clavier, pour qu'ils pilotent Handy Tool ici au lieu d'atteindre l'ordinateur distant. Toutes les autres touches vont à l'ordinateur distant comme avant.",
-        "label": "Garder les raccourcis choisis sur ce PC dans Bureau à distance",
-        "description": "**Bureau à distance prend toutes les touches tant que sa session a le clavier** (en plein écran, ou quand les combinaisons de touches Windows vont à l'ordinateur distant), si bien que les raccourcis de Handy Tool n'y fonctionnent plus. Avec cette option, les raccourcis que vous cochez avec Garder sur ce PC pilotent Handy Tool ici. Toutes les autres touches, y compris Ctrl+C, Ctrl+V et Alt+Tab, vont toujours à l'ordinateur distant.\n\n**Fonctionne avec :** Connexion Bureau à distance (mstsc) et Windows App. Pas avec Citrix : utilisez plutôt le réglage propre à Citrix Workspace pour les combinaisons de touches Windows.\n\n**Raccourcis à l'appui uniquement :** Appuyer pour parler, Annuler le dernier mot et « Paste last transcription » agissent au relâchement de la touche et ne peuvent pas encore être gardés.\n\n**Sans garantie :** si un raccourci gardé cesse de fonctionner, cliquez hors de la session, puis de nouveau dedans.\n\n**Confidentialité :** Handy Tool n'observe le clavier que lorsqu'une session Bureau à distance est au premier plan, ne réagit qu'aux raccourcis que vous avez cochés et n'enregistre, ne journalise ni n'envoie jamais ce que vous tapez.\n\n**Par défaut :** Désactivé.",
+        "label": "Garder les raccourcis choisis sur ce PC dans Bureau à distance (Windows)",
+        "description": "**Bureau à distance prend toutes les touches tant que sa session a le clavier** (en plein écran, ou quand les combinaisons de touches Windows vont à l'ordinateur distant), si bien que les raccourcis de Handy Tool n'y fonctionnent plus. Avec cette option, les raccourcis que vous cochez avec Garder sur ce PC pilotent Handy Tool ici. Toutes les autres touches, y compris Ctrl+C, Ctrl+V et Alt+Tab, vont toujours à l'ordinateur distant.\n\n**Fonctionne avec :** Connexion Bureau à distance (mstsc) et Windows App, sur Windows. Pas avec Citrix : utilisez plutôt le réglage propre à Citrix Workspace pour les combinaisons de touches Windows.\n\n**Pas encore :** Appuyer pour parler et Annuler le dernier mot, qui agissent tant que la touche est maintenue. « Paste last transcription » peut être gardé : il colle dans la session quand vous relâchez les touches.\n\n**Sans garantie :** si un raccourci gardé cesse de fonctionner, cliquez hors de la session, puis de nouveau dedans.\n\n**Confidentialité :** Handy Tool n'observe le clavier que lorsqu'une session Bureau à distance est au premier plan, ne réagit qu'aux raccourcis que vous avez cochés et n'enregistre, ne journalise ni n'envoie jamais ce que vous tapez.\n\n**Par défaut :** Désactivé.",
+        "cjk": {
+          "label": "J'écris en chinois, japonais ou coréen",
+          "description": "**C'est seulement dans ce cas que la remarque sur Ctrl+Espace vous concerne.** Sur les configurations chinoises, japonaises et coréennes, Ctrl+Espace change de méthode d'entrée ; un Ctrl+Espace gardé n'atteint plus l'ordinateur distant pour cela. Activez cette option et un Ctrl+Espace gardé affichera cette remarque.\n\n**Par défaut :** Désactivé."
+        },
         "status": {
           "off": "Désactivé.",
           "waiting": "Activé. En attente d'une session Bureau à distance qui ait le clavier.",
@@ -894,7 +926,7 @@
         "checkboxHint": "Coché : ce raccourci pilote Handy Tool sur ce PC pendant qu'une session Bureau à distance a le clavier.",
         "turnOnFirst": "Activez d'abord Shortcut Keeper en haut de cette page.",
         "reasons": {
-          "needs_release": "Agit au relâchement de la touche, ce que Shortcut Keeper ne sait pas encore gérer.",
+          "needs_hold": "Agit tant que la touche est maintenue, ce que Shortcut Keeper ne sait pas encore gérer.",
           "unbound": "Aucune touche n'est définie pour ce raccourci.",
           "win_key": "Les raccourcis avec la touche Windows ne peuvent pas être gardés : l'ordinateur distant verrait quand même la touche Windows et ouvrirait son menu Démarrer.",
           "alt_only": "Les raccourcis Alt sans Ctrl ne peuvent pas être gardés : l'ordinateur distant verrait quand même Alt et ouvrirait sa barre de menus. Ajoutez Ctrl au raccourci.",
@@ -2029,6 +2061,18 @@
     "release": "Version {{version}}",
     "show": "Montrer",
     "items": {
+      "updateIcon": {
+        "title": "L'icône de mise à jour indique où vous en êtes",
+        "description": "L'icône à côté de la version, en bas à gauche, est désormais toujours visible. Une coche verte signifie que la dernière vérification n'a rien trouvé de plus récent, une flèche cyan signifie qu'une mise à jour est disponible, et une flèche grise signifie qu'il n'y a pas de résultat récent (pas encore vérifié, ou la vérification a échoué) : cliquez dessus pour vérifier. Cliquer sur la version ouvre les détails."
+      },
+      "keeperPasteLast": {
+        "title": "« Paste last transcription » fonctionne dans Bureau à distance",
+        "description": "Shortcut Keeper peut désormais garder « Paste last transcription » sur ce PC : dans une session Bureau à distance, il colle votre dernière transcription dans la session quand vous relâchez ses touches. Une nouvelle configuration Bureau à distance, dans la page Configurations, vous guide pour choisir les raccourcis à garder. Windows uniquement."
+      },
+      "calmerHints": {
+        "title": "Des indications plus calmes à côté des raccourcis",
+        "description": "Les raccourcis qui risquent de ne pas fonctionner partout affichent maintenant un point d'interrogation, et ceux qui ont besoin d'autres touches un point d'exclamation, au lieu d'un triangle d'avertissement ; le badge de l'indication AltGr affiche Attention. Les textes disent ce qui risque de ne pas fonctionner et comment l'éviter. Si vous n'écrivez pas en chinois, japonais ou coréen, la remarque sur Ctrl+Espace n'apparaît plus."
+      },
       "shortcutKeeper": {
         "title": "Shortcut Keeper : vos raccourcis fonctionnent dans Bureau à distance",
         "description": "Sur Windows, activez Shortcut Keeper dans la page Raccourcis et cochez Garder sur ce PC à côté d'un raccourci : tant qu'une session Connexion Bureau à distance ou Windows App a le clavier, ce raccourci pilote Handy Tool sur ce PC au lieu d'atteindre l'ordinateur distant. Toutes les autres touches vont toujours à l'ordinateur distant."
@@ -2040,10 +2084,6 @@
       "hotkeyRelease": {
         "title": "Maintenir un raccourci n'occupe plus un cœur du processeur",
         "description": "Sur Windows, pendant que vous mainteniez un raccourci (Appuyer pour parler, par exemple), Handy Tool vérifiait sans arrêt si vous l'aviez relâché, ce qui occupait entièrement un cœur du processeur. Il vérifie désormais toutes les 10 ms."
-      },
-      "progressFinish": {
-        "title": "Le pourcentage atteint 100 % dès que le texte est prêt",
-        "description": "Après une prise, le pourcentage de transcription sur la pastille passe désormais à 100 % dès que le texte est prêt. Avant, il pouvait rester vers 70 % et ne se terminer qu'une fois le texte déjà collé."
       },
       "endOfTakeKept": {
         "title": "La fin d'une prise est conservée de façon plus fiable",

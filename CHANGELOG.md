@@ -1,5 +1,39 @@
 # Changelog
 
+## [2.1.1] - 2026-10-03
+
+The update icon next to the version is always there, Paste Last works in Remote Desktop, and the
+hints next to shortcuts are calmer.
+
+### Changed
+
+- **The icon next to the version shows the update status.** In 2.1.0 the arrow appeared only when a
+  newer version was known, so an up-to-date install showed nothing. Now a green check box means the
+  last check found nothing newer, a cyan arrow means an update is available, and a grey arrow means
+  there is no recent result (not checked yet, or the check failed); clicking it then runs the
+  check. A check within the last day that
+  found nothing newer still counts after a restart. Hovering names the state, and clicking the
+  version opens the details panel as before.
+- **Paste Last Transcription can be kept in Remote Desktop (Windows).** Shortcut Keeper passes its
+  key release on too, so inside a session it pastes your last transcription into the session when
+  you let go of its keys. Push-to-Talk and Undo Last Word, which act while the key is held, still
+  cannot be kept.
+- **A Remote Desktop shortcuts setup (Windows).** `Setups › Remote Desktop shortcuts` switches on
+  Shortcut Keeper and lets you choose the shortcuts that stay on this PC. The Shortcut Keeper
+  switch now says "(Windows)".
+- **Calmer hints next to shortcuts.** A shortcut that may not work everywhere shows a question
+  mark, one that needs other keys an exclamation mark, both amber, instead of a warning triangle;
+  the badge says Attention instead of Risky and the texts say what may not work and how to avoid
+  it. The Warnings group on the Shortcuts page is now Hints, and its switch is `Show hints for
+AltGr shortcuts`. Shortcut Keeper's Ctrl+Space note appears only if you switch on `I type
+Chinese, Japanese or Korean`.
+
+### Fixed
+
+- With automatic update checks off, the result of a manual check no longer disappears within a
+  minute.
+- Checking again right after a failed check really checks instead of returning the old status.
+
 ## [2.1.0] - 2026-10-02
 
 Shortcut Keeper: your shortcuts work inside Remote Desktop. The version shows when an update is

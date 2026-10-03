@@ -117,7 +117,7 @@
       "ptt": "Giữ trong khi nói.",
       "cancel": "Dừng ghi âm mà không gõ gì.",
       "more": "Các phím tắt khác (Chép lời và gửi, tạm dừng, hoàn tác từ cuối, …) nằm trong trang Phím tắt.",
-      "remote": "Đang làm việc trong Máy tính Từ xa? Shortcut Keeper ở trang Phím tắt giữ các phím tắt bạn chọn trên máy tính này."
+      "remote": "Đang làm việc trong Máy tính Từ xa? Thiết lập Máy tính Từ xa ở trang Thiết lập giữ các phím tắt bạn chọn trên máy tính này (Windows)."
     },
     "microphone": {
       "title": "Micrô nào?",
@@ -152,6 +152,10 @@
       "jumper": {
         "title": "Jumper",
         "description": "Để Handy Tool tự động dán văn bản đọc chính tả của bạn vào đúng ô: nó ghi nhớ những chỗ bạn gõ (ô chat, tài liệu, một ô trong phiên từ xa), tự động đưa văn bản vào đó dù bạn đang ở đâu, và quay lại đó bằng một phím."
+      },
+      "remote": {
+        "title": "Phím tắt trong Máy tính Từ xa",
+        "description": "Giữ cho phím tắt của Handy Tool hoạt động khi một phiên Máy tính Từ xa đang giữ bàn phím: bật Shortcut Keeper và chọn những phím tắt ở lại trên máy tính này; mọi phím khác vẫn đi tới máy từ xa."
       },
       "postProcessing": {
         "title": "Hậu xử lý",
@@ -402,6 +406,30 @@
         "title": "Thiết lập hậu xử lý",
         "text": "Để một AI dọn dẹp hoặc định hình lại những gì bạn đọc: chọn nó nên làm gì và dùng AI nào, từng bước, có bài thử ở cuối."
       }
+    },
+    "remote": {
+      "name": "Phím tắt trong Máy tính Từ xa",
+      "intro": {
+        "title": "Phím tắt của bạn trong Máy tính Từ xa",
+        "body": "Kết nối Máy tính Từ xa và Windows App nhận mọi phím khi phiên của chúng đang giữ bàn phím, nên các phím tắt của Handy Tool không còn hoạt động ở đó. Shortcut Keeper giữ các phím tắt bạn chọn trên máy tính này: chúng điều khiển Handy Tool tại đây, còn mọi phím khác, kể cả Ctrl+C, Ctrl+V và Alt+Tab, vẫn đi tới máy từ xa. Chỉ Windows; không hỗ trợ Citrix."
+      },
+      "switch": {
+        "title": "Bật Shortcut Keeper",
+        "body": "Nó chỉ theo dõi bàn phím khi một phiên Máy tính Từ xa ở phía trước, và không bao giờ lưu hay gửi đi những gì bạn gõ. Bạn gõ tiếng Trung, tiếng Nhật hoặc tiếng Hàn? Hãy đánh dấu điều đó ở đây luôn."
+      },
+      "shortcuts": {
+        "title": "Chọn những gì ở lại trên máy tính này",
+        "body": "Đánh dấu Giữ trên máy tính này cạnh các phím tắt bạn dùng khi làm việc trong phiên. Dán bản phiên âm gần nhất sẽ dán vào phiên ngay khi bạn nhả các phím của nó.",
+        "more": "Mọi phím tắt khác đều có ô tương tự trong trang Phím tắt."
+      },
+      "try": {
+        "title": "Thử ngay",
+        "body": "Bấm vào phiên Máy tính Từ xa của bạn, ở chế độ toàn màn hình nếu muốn, rồi nhấn một phím tắt đã đánh dấu: nó điều khiển Handy Tool tại đây. Dòng bên dưới hiển thị Đang hoạt động khi phiên đang giữ bàn phím. Nếu một phím tắt vẫn đi tới máy từ xa, hãy bấm ra ngoài phiên rồi bấm lại vào trong."
+      },
+      "done": {
+        "title": "Phím tắt của bạn đã được giữ lại",
+        "body": "Bạn có thể đổi những phím tắt ở lại trên máy tính này bất cứ lúc nào trong trang Phím tắt, mục Shortcut Keeper."
+      }
     }
   },
   "onboarding": {
@@ -559,9 +587,9 @@
         "pressKeys": "Nhấn phím...",
         "unset": "Không có",
         "clear": "Bỏ phím tắt",
-        "altGrConflict": "Windows báo AltGr là Ctrl+Alt, nên phím tắt này sẽ kích hoạt thay vì gõ các ký tự AltGr như ą hoặc ó. Hãy chọn tổ hợp không có Ctrl+Alt.",
-        "conflict": "Cũng được dùng bởi: {{names}}. Chỉ một trong số đó hoạt động.",
-        "singleKey": "Chỉ riêng phím này đã kích hoạt phím tắt ở mọi nơi, nên bạn sẽ không gõ được phím đó nữa. Hãy thêm phím bổ trợ như Ctrl hoặc Alt.",
+        "altGrConflict": "Windows báo AltGr là Ctrl+Alt, nên phím tắt này có thể kích hoạt khi bạn gõ các ký tự AltGr như ą hoặc ó. Dùng tổ hợp không có Ctrl+Alt sẽ tránh được điều đó.",
+        "conflict": "Cũng được đặt cho: {{names}}. Mỗi lúc chỉ một trong số đó hoạt động; hãy gán phím khác cho một trong số đó.",
+        "singleKey": "Chỉ riêng phím này đã kích hoạt phím tắt trong mọi ứng dụng, nên gõ phím đó trong các ứng dụng có thể không được. Thêm Ctrl hoặc Alt sẽ tránh được điều đó.",
         "bindings": {
           "transcribe": {
             "name": "Phím tắt ghi âm/phiên âm",
@@ -655,10 +683,10 @@
         },
         "badge": {
           "conflict": "Xung đột",
-          "risky": "Rủi ro"
+          "risky": "Lưu ý"
         },
-        "altGrConflictLayout": "Bàn phím bạn dùng cho {{layouts}} gõ ra một ký tự bằng AltGr+{{key}}. Windows báo AltGr là Ctrl+Alt, nên phím tắt này sẽ kích hoạt thay vì gõ ký tự đó. Hãy chọn tổ hợp không có Ctrl+Alt.",
-        "altGrConflictSpace": "Bàn phím bạn dùng cho {{layouts}} gõ ký tự bằng AltGr, và AltGr thường vẫn được giữ khi gõ dấu cách sau ký tự đó. Windows báo AltGr là Ctrl+Alt, nên phím tắt này sẽ kích hoạt thay vì gõ dấu cách đó. Hãy chọn tổ hợp không có Ctrl+Alt."
+        "altGrConflictLayout": "Bàn phím bạn dùng cho {{layouts}} gõ ra một ký tự bằng AltGr+{{key}}. Windows báo AltGr là Ctrl+Alt, nên khi gõ ký tự đó, phím tắt này có thể kích hoạt thay vào đó. Dùng tổ hợp không có Ctrl+Alt sẽ tránh được điều đó.",
+        "altGrConflictSpace": "Bàn phím bạn dùng cho {{layouts}} gõ ký tự bằng AltGr, và AltGr thường vẫn được giữ khi gõ dấu cách sau ký tự đó. Windows báo AltGr là Ctrl+Alt, nên dấu cách đó có thể kích hoạt phím tắt này thay vào đó. Dùng tổ hợp không có Ctrl+Alt sẽ tránh được điều đó."
       },
       "pauseButton": {
         "label": "Nút tạm dừng",
@@ -866,22 +894,26 @@
     "shortcuts": {
       "groups": {
         "dictation": "Đọc chính tả",
-        "warnings": "Cảnh báo"
+        "warnings": "Gợi ý"
       },
       "conflicts": {
         "title": "Một số phím tắt dùng chung tổ hợp phím",
-        "description": "Mỗi tổ hợp phím chỉ dùng được cho một thao tác, nên mỗi cặp chỉ có một phím tắt hoạt động. Hãy đổi hoặc xóa một trong các phím tắt có cảnh báo màu đỏ."
+        "description": "Mỗi tổ hợp phím chỉ có thể hoạt động cho một thao tác, nên mỗi cặp chỉ có một phím tắt hoạt động. Hãy gán phím khác cho một trong các phím tắt được đánh dấu Xung đột, hoặc xóa phím tắt đó."
       },
       "altGrWarning": {
-        "label": "Cảnh báo phím tắt AltGr",
-        "description": "**Hiển thị cảnh báo màu hổ phách cạnh các phím tắt mà AltGr cũng gõ được.** Windows báo AltGr là Ctrl+Alt, nên phím tắt như Ctrl+Alt+O sẽ kích hoạt khi bạn gõ ký tự ó bằng AltGr, và ký tự đó không bao giờ xuất hiện. Trên Windows, nó chỉ cảnh báo khi một trong các bàn phím của bạn gõ ra ký tự bằng AltGr trên phím đó (hoặc AltGr+Shift, đối với tổ hợp có Shift), và nêu tên ngôn ngữ mà bàn phím đó thuộc về.\n\n**Mặc định:** Bật. Hãy tắt nếu bạn không bao giờ gõ ký tự bằng AltGr.",
-        "turnOff": "Tắt cảnh báo này"
+        "label": "Hiển thị gợi ý cho phím tắt AltGr",
+        "description": "**Hiển thị gợi ý cạnh các phím tắt mà AltGr cũng có thể gõ được.** Windows báo AltGr là Ctrl+Alt, nên phím tắt như Ctrl+Alt+O có thể kích hoạt khi bạn gõ ký tự ó bằng AltGr, và ký tự đó có thể không xuất hiện. Trên Windows, gợi ý chỉ hiện khi một trong các bàn phím của bạn gõ ra ký tự bằng AltGr trên phím đó (hoặc AltGr+Shift, đối với tổ hợp có Shift), và nêu tên ngôn ngữ mà bàn phím đó thuộc về.\n\n**Mặc định:** Bật. Hãy tắt nếu bạn không bao giờ gõ ký tự bằng AltGr.",
+        "turnOff": "Tắt các gợi ý này"
       },
       "keeper": {
         "title": "Shortcut Keeper",
         "summary": "Giữ các phím tắt bạn đánh dấu trên máy tính này khi một phiên Máy tính Từ xa đang giữ bàn phím, để chúng điều khiển Handy Tool tại đây thay vì đi tới máy từ xa. Mọi phím khác vẫn đi tới máy từ xa như trước.",
-        "label": "Giữ các phím tắt đã chọn trên máy tính này trong Máy tính Từ xa",
-        "description": "**Máy tính Từ xa nhận mọi phím khi phiên của nó đang giữ bàn phím** (ở chế độ toàn màn hình, hoặc khi tổ hợp phím Windows được gửi tới máy từ xa), nên các phím tắt của Handy Tool không còn hoạt động ở đó. Khi bật tùy chọn này, các phím tắt bạn đánh dấu bằng Giữ trên máy tính này sẽ điều khiển Handy Tool tại đây. Mọi phím khác, kể cả Ctrl+C, Ctrl+V và Alt+Tab, vẫn đi tới máy từ xa.\n\n**Hoạt động với:** Kết nối Máy tính Từ xa (mstsc) và Windows App. Không hoạt động với Citrix: hãy dùng cài đặt riêng của Citrix Workspace cho tổ hợp phím Windows.\n\n**Chỉ phím tắt kích hoạt khi nhấn:** nhấn để nói, Hoàn tác từ cuối và Dán bản phiên âm gần nhất hoạt động khi nhả phím nên chưa thể giữ lại.\n\n**Không bảo đảm:** nếu một phím tắt đã giữ ngừng hoạt động, hãy bấm ra ngoài phiên rồi bấm lại vào trong.\n\n**Quyền riêng tư:** Handy Tool chỉ theo dõi bàn phím khi một phiên Máy tính Từ xa ở phía trước, chỉ phản ứng với các phím tắt bạn đã đánh dấu, và không bao giờ lưu, ghi nhật ký hay gửi đi những gì bạn gõ.\n\n**Mặc định:** Tắt.",
+        "label": "Giữ các phím tắt đã chọn trên máy tính này trong Máy tính Từ xa (Windows)",
+        "description": "**Máy tính Từ xa nhận mọi phím khi phiên của nó đang giữ bàn phím** (ở chế độ toàn màn hình, hoặc khi tổ hợp phím Windows được gửi tới máy từ xa), nên các phím tắt của Handy Tool không còn hoạt động ở đó. Khi bật tùy chọn này, các phím tắt bạn đánh dấu bằng Giữ trên máy tính này sẽ điều khiển Handy Tool tại đây. Mọi phím khác, kể cả Ctrl+C, Ctrl+V và Alt+Tab, vẫn đi tới máy từ xa.\n\n**Hoạt động với:** Kết nối Máy tính Từ xa (mstsc) và Windows App, trên Windows. Không hoạt động với Citrix: hãy dùng cài đặt riêng của Citrix Workspace cho tổ hợp phím Windows.\n\n**Chưa hỗ trợ:** nhấn để nói và Hoàn tác từ cuối, vốn hoạt động trong khi giữ phím. Dán bản phiên âm gần nhất thì có thể giữ lại: nó dán vào phiên khi bạn nhả phím.\n\n**Không bảo đảm:** nếu một phím tắt đã giữ ngừng hoạt động, hãy bấm ra ngoài phiên rồi bấm lại vào trong.\n\n**Quyền riêng tư:** Handy Tool chỉ theo dõi bàn phím khi một phiên Máy tính Từ xa ở phía trước, chỉ phản ứng với các phím tắt bạn đã đánh dấu, và không bao giờ lưu, ghi nhật ký hay gửi đi những gì bạn gõ.\n\n**Mặc định:** Tắt.",
+        "cjk": {
+          "label": "Tôi gõ tiếng Trung, tiếng Nhật hoặc tiếng Hàn",
+          "description": "**Chỉ khi đó bạn mới cần ghi chú về Ctrl+Space.** Trên các thiết lập tiếng Trung, tiếng Nhật và tiếng Hàn, Ctrl+Space chuyển phương thức nhập; Ctrl+Space đã giữ trên máy tính này sẽ không còn tới máy từ xa cho việc đó nữa. Bật tùy chọn này thì Ctrl+Space đã giữ sẽ hiển thị ghi chú đó.\n\n**Mặc định:** Tắt."
+        },
         "status": {
           "off": "Tắt.",
           "waiting": "Bật. Đang chờ một phiên Máy tính Từ xa giữ bàn phím.",
@@ -894,7 +926,7 @@
         "checkboxHint": "Đã đánh dấu: phím tắt này điều khiển Handy Tool trên máy tính này khi một phiên Máy tính Từ xa đang giữ bàn phím.",
         "turnOnFirst": "Trước tiên hãy bật Shortcut Keeper ở đầu trang này.",
         "reasons": {
-          "needs_release": "Hoạt động khi nhả phím, điều mà Shortcut Keeper chưa xử lý được.",
+          "needs_hold": "Hoạt động trong khi giữ phím, điều mà Shortcut Keeper chưa xử lý được.",
           "unbound": "Chưa đặt phím nào cho phím tắt này.",
           "win_key": "Không thể giữ phím tắt có phím Windows: máy từ xa vẫn thấy phím Windows và mở menu Start của nó.",
           "alt_only": "Không thể giữ phím tắt Alt không có Ctrl: máy từ xa vẫn thấy Alt và mở thanh menu của nó. Hãy thêm Ctrl vào phím tắt.",
@@ -2029,6 +2061,18 @@
     "release": "Phiên bản {{version}}",
     "show": "Hiện cho tôi",
     "items": {
+      "updateIcon": {
+        "title": "Biểu tượng cập nhật cho biết tình trạng hiện tại",
+        "description": "Biểu tượng cạnh số phiên bản ở góc dưới bên trái giờ luôn hiển thị. Dấu tích xanh lá nghĩa là lần kiểm tra gần nhất không tìm thấy phiên bản mới hơn, mũi tên xanh lơ nghĩa là có bản cập nhật, còn mũi tên xám nghĩa là chưa có kết quả gần đây (chưa kiểm tra hoặc lần kiểm tra bị lỗi): bấm vào để kiểm tra. Bấm vào số phiên bản để mở chi tiết."
+      },
+      "keeperPasteLast": {
+        "title": "Dán bản phiên âm gần nhất hoạt động trong Máy tính Từ xa",
+        "description": "Shortcut Keeper giờ có thể giữ Dán bản phiên âm gần nhất trên máy tính này: trong một phiên Máy tính Từ xa, nó dán bản phiên âm gần nhất của bạn vào phiên khi bạn nhả các phím của nó. Một thiết lập Máy tính Từ xa mới ở trang Thiết lập sẽ hướng dẫn bạn chọn các phím tắt cần giữ. Chỉ Windows."
+      },
+      "calmerHints": {
+        "title": "Gợi ý nhẹ nhàng hơn cạnh phím tắt",
+        "description": "Các phím tắt có thể không hoạt động ở mọi nơi giờ hiển thị dấu hỏi, còn những phím tắt cần phím khác hiển thị dấu chấm than, thay vì tam giác cảnh báo; huy hiệu gợi ý AltGr ghi Lưu ý. Nội dung cho biết điều gì có thể không hoạt động và cách tránh. Nếu bạn không gõ tiếng Trung, tiếng Nhật hoặc tiếng Hàn, ghi chú về Ctrl+Space sẽ không còn xuất hiện."
+      },
       "shortcutKeeper": {
         "title": "Shortcut Keeper: phím tắt của bạn hoạt động trong Máy tính Từ xa",
         "description": "Trên Windows, hãy bật Shortcut Keeper ở trang Phím tắt và đánh dấu Giữ trên máy tính này cạnh một phím tắt: khi một phiên Kết nối Máy tính Từ xa hoặc Windows App đang giữ bàn phím, phím tắt đó điều khiển Handy Tool trên máy tính này thay vì đi tới máy từ xa. Mọi phím khác vẫn đi tới máy từ xa."
@@ -2040,10 +2084,6 @@
       "hotkeyRelease": {
         "title": "Giữ một phím tắt không còn làm bận một nhân bộ xử lý",
         "description": "Trên Windows, khi bạn giữ một phím tắt (ví dụ nhấn để nói), Handy Tool liên tục kiểm tra xem bạn đã nhả phím chưa, khiến một nhân bộ xử lý luôn bận hoàn toàn. Giờ nó kiểm tra mỗi 10 ms."
-      },
-      "progressFinish": {
-        "title": "Phần trăm đạt 100% khi văn bản sẵn sàng",
-        "description": "Sau mỗi lần ghi, phần trăm chép lời trên thanh trạng thái giờ lên 100% ngay khi văn bản sẵn sàng. Trước đây nó có thể dừng ở khoảng 70% và chỉ hoàn tất sau khi văn bản đã được dán."
       },
       "endOfTakeKept": {
         "title": "Phần cuối của bản ghi được giữ lại đáng tin cậy hơn",

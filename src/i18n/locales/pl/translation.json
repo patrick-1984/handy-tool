@@ -117,7 +117,7 @@
       "ptt": "Przytrzymaj, gdy mówisz.",
       "cancel": "Zatrzymuje nagrywanie bez wpisywania tekstu.",
       "more": "Więcej skrótów (Transkrybuj i wyślij, pauza, cofnij ostatnie słowo, …) jest na stronie Skróty.",
-      "remote": "Pracujesz w Pulpicie zdalnym? Strażnik skrótów na stronie Skróty zachowuje wybrane przez Ciebie skróty na tym komputerze."
+      "remote": "Pracujesz w Pulpicie zdalnym? Konfiguracja Pulpitu zdalnego na stronie Konfiguracje zachowuje wybrane przez Ciebie skróty na tym komputerze (Windows)."
     },
     "microphone": {
       "title": "Który mikrofon?",
@@ -152,6 +152,10 @@
       "jumper": {
         "title": "Jumper",
         "description": "Niech Handy Tool wklei dyktowany tekst prosto do właściwego pola: zapamiętuje miejsca, w których piszesz (okno czatu, dokument, pole w sesji zdalnej), wkleja tam tekst automatycznie, gdziekolwiek jesteś, i wraca do nich skrótem."
+      },
+      "remote": {
+        "title": "Skróty w Pulpicie zdalnym",
+        "description": "Niech skróty Handy Tool działają, gdy klawiaturę ma sesja Pulpitu zdalnego: włącz Strażnika skrótów i wybierz, które skróty zostają na tym komputerze; każdy inny klawisz nadal trafia do komputera zdalnego."
       },
       "postProcessing": {
         "title": "Postprocessing",
@@ -402,6 +406,30 @@
         "title": "Konfiguracja postprocessingu",
         "text": "Niech AI poprawi lub przekształci to, co dyktujesz: wybierz, co ma robić i które AI, krok po kroku, z próbą na koniec."
       }
+    },
+    "remote": {
+      "name": "Skróty w Pulpicie zdalnym",
+      "intro": {
+        "title": "Twoje skróty w Pulpicie zdalnym",
+        "body": "Podłączanie pulpitu zdalnego i Windows App przejmują każdy klawisz, gdy ich sesja ma klawiaturę, więc skróty Handy Tool przestają tam działać. Strażnik skrótów zachowuje wybrane przez Ciebie skróty na tym komputerze: sterują Handy Tool tutaj, a każdy inny klawisz, w tym Ctrl+C, Ctrl+V i Alt+Tab, nadal trafia do komputera zdalnego. Tylko Windows; nie Citrix."
+      },
+      "switch": {
+        "title": "Włącz Strażnika skrótów",
+        "body": "Obserwuje klawiaturę tylko wtedy, gdy sesja Pulpitu zdalnego jest na pierwszym planie, i nigdy nie zapisuje ani nie wysyła tego, co piszesz. Piszesz po chińsku, japońsku lub koreańsku? Zaznacz to też tutaj."
+      },
+      "shortcuts": {
+        "title": "Wybierz, co zostaje na tym komputerze",
+        "body": "Zaznacz Zachowaj na tym komputerze przy skrótach, których używasz podczas pracy w sesji. Wklej ostatnią transkrypcję wkleja do sesji, gdy tylko puścisz jej klawisze.",
+        "more": "Każdy inny skrót ma to samo pole na stronie Skróty."
+      },
+      "try": {
+        "title": "Wypróbuj",
+        "body": "Kliknij w sesję Pulpitu zdalnego, jeśli chcesz na pełnym ekranie, i naciśnij zaznaczony skrót: steruje Handy Tool tutaj. Wiersz poniżej pokazuje Aktywne, gdy sesja ma klawiaturę. Jeśli skrót nadal trafia do komputera zdalnego, kliknij poza sesją, a potem z powrotem w nią."
+      },
+      "done": {
+        "title": "Twoje skróty są zachowane",
+        "body": "Które skróty zostają na tym komputerze, zmienisz w dowolnej chwili na stronie Skróty, w sekcji Strażnik skrótów."
+      }
     }
   },
   "onboarding": {
@@ -559,9 +587,9 @@
         "pressKeys": "Naciśnij klawisze...",
         "unset": "Brak",
         "clear": "Usuń skrót",
-        "altGrConflict": "Windows zgłasza AltGr jako Ctrl+Alt, więc ten skrót uruchamia się zamiast wpisania znaków AltGr, takich jak ą czy ó. Wybierz kombinację bez Ctrl+Alt.",
-        "conflict": "Używany także przez: {{names}}. Zadziała tylko jeden z nich.",
-        "singleKey": "Sam ten klawisz uruchamia skrót wszędzie, więc nie będzie można go już wpisać. Dodaj modyfikator, np. Ctrl lub Alt.",
+        "altGrConflict": "Windows zgłasza AltGr jako Ctrl+Alt, więc ten skrót może się uruchomić, gdy wpisujesz znaki AltGr, takie jak ą czy ó. Kombinacja bez Ctrl+Alt pozwala tego uniknąć.",
+        "conflict": "Ustawiony także dla: {{names}}. Naraz działa tylko jeden z nich; przypisz jednemu z nich inne klawisze.",
+        "singleKey": "Sam ten klawisz uruchamia skrót w każdej aplikacji, więc wpisanie go tam może nie działać. Dodanie Ctrl lub Alt pozwala tego uniknąć.",
         "bindings": {
           "transcribe": {
             "name": "Skrót nagrywania/transkrypcji",
@@ -655,10 +683,10 @@
         },
         "badge": {
           "conflict": "Konflikt",
-          "risky": "Ryzykowny"
+          "risky": "Uwaga"
         },
-        "altGrConflictLayout": "Klawiatura, której używasz ({{layouts}}), wpisuje znak kombinacją AltGr+{{key}}. Windows zgłasza AltGr jako Ctrl+Alt, więc zamiast tego uruchomiłby się ten skrót. Wybierz kombinację bez Ctrl+Alt.",
-        "altGrConflictSpace": "Klawiatura, której używasz ({{layouts}}), wpisuje znaki kombinacją AltGr, a AltGr bywa nadal wciśnięty przy spacji po takim znaku. Windows zgłasza AltGr jako Ctrl+Alt, więc zamiast tej spacji uruchomiłby się ten skrót. Wybierz kombinację bez Ctrl+Alt."
+        "altGrConflictLayout": "Klawiatura, której używasz ({{layouts}}), wpisuje znak kombinacją AltGr+{{key}}. Windows zgłasza AltGr jako Ctrl+Alt, więc przy wpisywaniu tego znaku może zamiast niego uruchomić się ten skrót. Kombinacja bez Ctrl+Alt pozwala tego uniknąć.",
+        "altGrConflictSpace": "Klawiatura, której używasz ({{layouts}}), wpisuje znaki kombinacją AltGr, a AltGr bywa nadal wciśnięty przy spacji po takim znaku. Windows zgłasza AltGr jako Ctrl+Alt, więc zamiast tej spacji może uruchomić się ten skrót. Kombinacja bez Ctrl+Alt pozwala tego uniknąć."
       },
       "pauseButton": {
         "label": "Przycisk pauzy",
@@ -866,22 +894,26 @@
     "shortcuts": {
       "groups": {
         "dictation": "Dyktowanie",
-        "warnings": "Ostrzeżenia"
+        "warnings": "Podpowiedzi"
       },
       "conflicts": {
         "title": "Niektóre skróty używają tych samych klawiszy",
-        "description": "Kombinacji klawiszy może używać tylko jedna akcja, więc z każdej pary działa tylko jeden skrót. Zmień lub wyczyść jeden ze skrótów oznaczonych czerwonym ostrzeżeniem."
+        "description": "Na jednej kombinacji klawiszy może działać tylko jedna akcja, więc z każdej pary działa tylko jedna. Przypisz jednemu ze skrótów oznaczonych jako Konflikt inne klawisze albo go wyczyść."
       },
       "altGrWarning": {
-        "label": "Ostrzegaj przed skrótami z AltGr",
-        "description": "**Pokazuje bursztynowe ostrzeżenie obok skrótów, które można też wpisać klawiszem AltGr.** Windows zgłasza AltGr jako Ctrl+Alt, więc skrót taki jak Ctrl+Alt+O uruchamia się, gdy wpisujesz ó przez AltGr, a znak nigdy się nie pojawia. Na Windows ostrzega tylko wtedy, gdy jedna z Twoich klawiatur wpisuje coś przez AltGr na tym klawiszu (albo AltGr+Shift, dla kombinacji z Shift), i podaje nazwę języka, do którego należy ta klawiatura.\n\n**Domyślnie:** Włączone. Wyłącz, jeśli nie wpisujesz znaków przez AltGr.",
-        "turnOff": "Wyłącz to ostrzeżenie"
+        "label": "Pokazuj podpowiedzi przy skrótach z AltGr",
+        "description": "**Pokazuje podpowiedź obok skrótów, które mogą się pokrywać ze znakami wpisywanymi przez AltGr.** Windows zgłasza AltGr jako Ctrl+Alt, więc skrót taki jak Ctrl+Alt+O może się uruchomić, gdy wpisujesz ó przez AltGr, a znak może się nie pojawić. Na Windows podpowiedź pojawia się tylko wtedy, gdy jedna z Twoich klawiatur wpisuje coś przez AltGr na tym klawiszu (albo AltGr+Shift, dla kombinacji z Shift), i podaje nazwę języka, do którego należy ta klawiatura.\n\n**Domyślnie:** Włączone. Wyłącz, jeśli nie wpisujesz znaków przez AltGr.",
+        "turnOff": "Wyłącz te podpowiedzi"
       },
       "keeper": {
         "title": "Strażnik skrótów",
         "summary": "Zatrzymuje zaznaczone przez Ciebie skróty na tym komputerze, gdy klawiaturę ma sesja Pulpitu zdalnego, więc sterują one Handy Tool tutaj, zamiast trafiać do komputera zdalnego. Wszystkie inne klawisze trafiają do komputera zdalnego jak dotąd.",
-        "label": "Zachowaj wybrane skróty na tym komputerze w Pulpicie zdalnym",
-        "description": "**Pulpit zdalny przejmuje każdy klawisz, gdy jego sesja ma klawiaturę** (na pełnym ekranie albo gdy kombinacje klawiszy Windows trafiają do komputera zdalnego), więc skróty Handy Tool przestają tam działać. Gdy to jest włączone, skróty zaznaczone opcją Zachowaj na tym komputerze sterują Handy Tool tutaj. Każdy inny klawisz, w tym Ctrl+C, Ctrl+V i Alt+Tab, nadal trafia do komputera zdalnego.\n\n**Działa z:** aplikacjami Podłączanie pulpitu zdalnego (mstsc) i Windows App. Nie działa z klientem Citrix: zamiast tego użyj własnego ustawienia Citrix Workspace dla kombinacji klawiszy Windows.\n\n**Tylko skróty na naciśnięcie:** Push-to-Talk, Cofnij ostatnie słowo i Wklej ostatnią transkrypcję działają przy puszczeniu klawisza i nie można ich jeszcze zachować.\n\n**Bez gwarancji:** jeśli zachowany skrót przestanie działać, kliknij poza sesją, a potem z powrotem w nią.\n\n**Prywatność:** Handy Tool obserwuje klawiaturę tylko wtedy, gdy sesja Pulpitu zdalnego jest na pierwszym planie, reaguje tylko na zaznaczone przez Ciebie skróty i nigdy nie zapisuje, nie rejestruje ani nie wysyła tego, co piszesz.\n\n**Domyślnie:** Wyłączone.",
+        "label": "Zachowaj wybrane skróty na tym komputerze w Pulpicie zdalnym (Windows)",
+        "description": "**Pulpit zdalny przejmuje każdy klawisz, gdy jego sesja ma klawiaturę** (na pełnym ekranie albo gdy kombinacje klawiszy Windows trafiają do komputera zdalnego), więc skróty Handy Tool przestają tam działać. Gdy to jest włączone, skróty zaznaczone opcją Zachowaj na tym komputerze sterują Handy Tool tutaj. Każdy inny klawisz, w tym Ctrl+C, Ctrl+V i Alt+Tab, nadal trafia do komputera zdalnego.\n\n**Działa z:** aplikacjami Podłączanie pulpitu zdalnego (mstsc) i Windows App, w Windows. Nie działa z klientem Citrix: zamiast tego użyj własnego ustawienia Citrix Workspace dla kombinacji klawiszy Windows.\n\n**Jeszcze nie:** Push-to-Talk i Cofnij ostatnie słowo, które działają, gdy klawisz jest przytrzymany. Wklej ostatnią transkrypcję można zachować: wkleja do sesji, gdy puścisz klawisze.\n\n**Bez gwarancji:** jeśli zachowany skrót przestanie działać, kliknij poza sesją, a potem z powrotem w nią.\n\n**Prywatność:** Handy Tool obserwuje klawiaturę tylko wtedy, gdy sesja Pulpitu zdalnego jest na pierwszym planie, reaguje tylko na zaznaczone przez Ciebie skróty i nigdy nie zapisuje, nie rejestruje ani nie wysyła tego, co piszesz.\n\n**Domyślnie:** Wyłączone.",
+        "cjk": {
+          "label": "Piszę po chińsku, japońsku lub koreańsku",
+          "description": "**Tylko wtedy potrzebujesz informacji o Ctrl+Space.** W konfiguracjach chińskich, japońskich i koreańskich Ctrl+Space przełącza metodę wprowadzania; zachowany Ctrl+Space nie dotrze już w tym celu do komputera zdalnego. Gdy to włączysz, zachowany Ctrl+Space pokaże tę informację.\n\n**Domyślnie:** Wyłączone."
+        },
         "status": {
           "off": "Wyłączone.",
           "waiting": "Włączone. Czeka, aż sesja Pulpitu zdalnego przejmie klawiaturę.",
@@ -894,7 +926,7 @@
         "checkboxHint": "Zaznaczone: ten skrót steruje Handy Tool na tym komputerze, gdy klawiaturę ma sesja Pulpitu zdalnego.",
         "turnOnFirst": "Najpierw włącz Strażnika skrótów na górze tej strony.",
         "reasons": {
-          "needs_release": "Działa przy puszczeniu klawisza, czego Strażnik skrótów jeszcze nie obsługuje.",
+          "needs_hold": "Działa, gdy klawisz jest przytrzymany, czego Strażnik skrótów jeszcze nie obsługuje.",
           "unbound": "Dla tego skrótu nie ustawiono żadnych klawiszy.",
           "win_key": "Skrótów z klawiszem Windows nie można zachować: komputer zdalny i tak zobaczyłby klawisz Windows i otworzył swoje menu Start.",
           "alt_only": "Skrótów z Alt bez Ctrl nie można zachować: komputer zdalny i tak zobaczyłby Alt i otworzył swój pasek menu. Dodaj Ctrl do skrótu.",
@@ -2029,6 +2061,18 @@
     "release": "Wersja {{version}}",
     "show": "Pokaż",
     "items": {
+      "updateIcon": {
+        "title": "Ikona aktualizacji pokazuje, na czym stoisz",
+        "description": "Ikona obok wersji w lewym dolnym rogu jest teraz zawsze widoczna. Zielony znacznik wyboru oznacza, że ostatnie sprawdzenie nie znalazło nic nowszego, błękitna strzałka oznacza, że dostępna jest aktualizacja, a szara strzałka oznacza, że nie ma niedawnego wyniku (jeszcze nie sprawdzono lub sprawdzenie się nie powiodło): kliknij ją, aby sprawdzić. Kliknięcie wersji otwiera szczegóły."
+      },
+      "keeperPasteLast": {
+        "title": "Wklej ostatnią transkrypcję działa w Pulpicie zdalnym",
+        "description": "Strażnik skrótów może teraz zachować Wklej ostatnią transkrypcję na tym komputerze: w sesji Pulpitu zdalnego wkleja Twoją ostatnią transkrypcję do sesji, gdy puścisz jej klawisze. Nowa konfiguracja Pulpitu zdalnego na stronie Konfiguracje przeprowadzi Cię przez wybór skrótów do zachowania. Tylko Windows."
+      },
+      "calmerHints": {
+        "title": "Spokojniejsze podpowiedzi przy skrótach",
+        "description": "Skróty, które mogą nie działać wszędzie, pokazują teraz znak zapytania, a te, które potrzebują innych klawiszy, wykrzyknik, zamiast trójkąta ostrzegawczego; plakietka podpowiedzi AltGr mówi Uwaga. Teksty mówią, co może nie działać i jak tego uniknąć. Jeśli nie piszesz po chińsku, japońsku ani koreańsku, informacja o Ctrl+Space już się nie pojawia."
+      },
       "shortcutKeeper": {
         "title": "Strażnik skrótów: Twoje skróty działają w Pulpicie zdalnym",
         "description": "W Windows włącz Strażnika skrótów na stronie Skróty i zaznacz Zachowaj na tym komputerze przy skrócie: gdy klawiaturę ma sesja aplikacji Podłączanie pulpitu zdalnego lub Windows App, ten skrót steruje Handy Tool na tym komputerze, zamiast trafiać do komputera zdalnego. Każdy inny klawisz nadal trafia do komputera zdalnego."
@@ -2040,10 +2084,6 @@
       "hotkeyRelease": {
         "title": "Przytrzymany skrót nie zajmuje już rdzenia procesora",
         "description": "W Windows, gdy skrót był przytrzymany (na przykład Push-to-Talk), Handy Tool bez przerwy sprawdzał, czy został już puszczony, przez co jeden rdzeń procesora był w pełni zajęty. Teraz sprawdza co 10 ms."
-      },
-      "progressFinish": {
-        "title": "Procent dochodzi do 100%, gdy tekst jest gotowy",
-        "description": "Po nagraniu procent transkrypcji na pigułce dochodzi teraz do 100% w chwili, gdy tekst jest gotowy. Wcześniej mógł stanąć na około 70% i dojść do końca dopiero po wklejeniu tekstu."
       },
       "endOfTakeKept": {
         "title": "Koniec nagrania jest zachowywany pewniej",

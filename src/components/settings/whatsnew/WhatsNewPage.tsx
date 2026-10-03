@@ -37,6 +37,19 @@ interface Item {
  */
 const RELEASES: { version: string; items: Item[] }[] = [
   {
+    version: "2.1.1",
+    items: [
+      { key: "updateIcon" },
+      {
+        key: "keeperPasteLast",
+        section: "setups",
+        titleKeys: ["setup.catalog.remote.title"],
+        windowsOnly: true,
+      },
+      { key: "calmerHints" },
+    ],
+  },
+  {
     version: "2.1.0",
     items: [
       {
@@ -52,10 +65,6 @@ const RELEASES: { version: string; items: Item[] }[] = [
   {
     version: "2.0.5",
     items: [{ key: "endOfTakeKept" }],
-  },
-  {
-    version: "2.0.4",
-    items: [{ key: "progressFinish" }],
   },
 ];
 

@@ -89,10 +89,31 @@ struct UpdateManagerInner {
 impl UpdateManager {
     pub fn new(app: AppHandle) -> Self {
         let schedule = load_scheduler_state(&app);
+        // A check within the last day that found nothing newer than this
+        // version (or found exactly this one, now installed) still holds after
+        // a restart: start as "up to date" instead of "not checked".
+        let mut initial = UpdaterStatus::state("idle");
+        let running = app.package_info().version.to_string();
+        let recent = schedule
+            .last_successful_check_at
+            .as_deref()
+            .and_then(|value| chrono::DateTime::parse_from_rfc3339(value).ok())
+            .is_some_and(|last| {
+                Utc::now().signed_duration_since(last.with_timezone(&Utc))
+                    < ChronoDuration::hours(24)
+            });
+        if recent
+            && schedule
+                .last_seen_version
+                .as_deref()
+                .is_none_or(|seen| seen == running)
+        {
+            initial.last_checked_at = schedule.last_successful_check_at.clone();
+        }
         let manager = Self {
             inner: Arc::new(UpdateManagerInner {
                 app,
-                status: Arc::new(Mutex::new(UpdaterStatus::state("idle"))),
+                status: Arc::new(Mutex::new(initial)),
                 prepared: AsyncMutex::new(None),
                 operation: AsyncMutex::new(()),
                 last_operation_finished: Mutex::new(None),
@@ -254,14 +275,8 @@ impl UpdateManager {
                 status.last_checked_at = Some(now);
                 self.publish(status);
             }
-            Err(error) => {
-                *self
-                    .inner
-                    .last_operation_finished
-                    .lock()
-                    .unwrap_or_else(|poisoned| poisoned.into_inner()) = Some(Instant::now());
-                return Err(error);
-            }
+            // A failed check has no result to share: the next click checks.
+            Err(error) => return Err(error),
         }
         *self
             .inner
@@ -460,7 +475,13 @@ impl UpdateManager {
     async fn scheduler_tick(&self) {
         let settings = crate::settings::get_settings(&self.inner.app);
         if !settings.automatic_update_checks {
-            if self.inner.prepared.lock().await.is_none() {
+            // Only an unknown status becomes "disabled": a manual check's
+            // result, or one still running, stays.
+            let current = self.status();
+            if self.inner.prepared.lock().await.is_none()
+                && current.state == "idle"
+                && current.last_checked_at.is_none()
+            {
                 self.publish(UpdaterStatus::state("disabled"));
             }
             return;
@@ -577,9 +598,13 @@ impl UpdateManager {
         if manual {
             state.last_scheduled_attempt_date = Some(Local::now().date_naive().to_string());
         }
-        if let Some(version) = version {
-            state.last_seen_version = Some(version.to_string());
-        }
+        // The newest version the check knows of: the update it found, or (no
+        // update) the one running now.
+        state.last_seen_version = Some(
+            version
+                .map(str::to_string)
+                .unwrap_or_else(|| self.inner.app.package_info().version.to_string()),
+        );
         persist_scheduler_state(&self.inner.app, &state);
     }
 

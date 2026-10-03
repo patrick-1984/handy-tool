@@ -1,6 +1,6 @@
 import { takeShortcutsAvailable } from "../../../lib/utils/keyboard";
 import React from "react";
-import { Mic, Keyboard, Crosshair, AlertTriangle } from "lucide-react";
+import { Mic, Keyboard, Crosshair, CircleHelp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { SettingsGroup } from "../../ui/SettingsGroup";
 import { ToggleSwitch } from "../../ui/ToggleSwitch";
@@ -30,8 +30,8 @@ export const ShortcutsSettings: React.FC = () => {
   const page = (
     <div className="w-full space-y-6">
       {conflicts.size > 0 && (
-        <section className="rounded-lg border border-err-border bg-err-bg p-4">
-          <h3 className="text-sm font-semibold text-err-text">
+        <section className="rounded-lg border border-warn-border bg-warn-bg p-4">
+          <h3 className="text-sm font-semibold text-warn-text">
             {t("settings.shortcuts.conflicts.title")}
           </h3>
           <p className="mt-1 text-xs text-text-secondary">
@@ -89,7 +89,7 @@ export const ShortcutsSettings: React.FC = () => {
         </SettingsGroup>
       )}
       <SettingsGroup
-        icon={AlertTriangle}
+        icon={CircleHelp}
         title={t("settings.shortcuts.groups.warnings")}
       >
         <ToggleSwitch

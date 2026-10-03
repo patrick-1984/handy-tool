@@ -1064,6 +1064,10 @@ pub struct AppSettings {
     /// Binding ids Shortcut Keeper keeps on this PC.
     #[serde(default)]
     pub remote_local_bindings: Vec<String>,
+    /// You type Chinese, Japanese or Korean: Shortcut Keeper then notes that a
+    /// kept Ctrl+Space no longer switches the input method in the remote.
+    #[serde(default)]
+    pub remote_keys_cjk_input: bool,
     #[serde(default)]
     pub selected_microphone: Option<String>,
     #[serde(default)]
@@ -2697,6 +2701,7 @@ pub fn get_default_settings() -> AppSettings {
         altgr_warning_enabled: true,
         remote_keys_enabled: false,
         remote_local_bindings: Vec::new(),
+        remote_keys_cjk_input: false,
         selected_microphone: None,
         clamshell_microphone: None,
         selected_output_device: None,

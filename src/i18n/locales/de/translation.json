@@ -117,7 +117,7 @@
       "ptt": "Gedrückt halten, während du sprichst.",
       "cancel": "Beendet eine Aufnahme, ohne etwas zu tippen.",
       "more": "Weitere Tastenkürzel (Transkribieren & Senden, Pause, letztes Wort rückgängig, …) findest du auf der Seite Tastenkürzel.",
-      "remote": "Arbeitest du im Remotedesktop? Shortcut Keeper auf der Seite Tastenkürzel behält die Tastenkürzel, die du wählst, auf diesem PC."
+      "remote": "Arbeitest du im Remotedesktop? Die Remotedesktop-Einrichtung auf der Seite Einrichtungen behält die Tastenkürzel, die du wählst, auf diesem PC (Windows)."
     },
     "microphone": {
       "title": "Welches Mikrofon?",
@@ -152,6 +152,10 @@
       "jumper": {
         "title": "Jumper",
         "description": "Lass Handy Tool dein Diktat automatisch in das richtige Feld einfügen: Es merkt sich die Stellen, an denen du schreibst (ein Chatfeld, ein Dokument, ein Feld in einer Remotesitzung), fügt den Text dort automatisch ein, wo auch immer du bist, und springt per Taste dorthin zurück."
+      },
+      "remote": {
+        "title": "Remotedesktop-Tastenkürzel",
+        "description": "Damit die Tastenkürzel von Handy Tool weiter funktionieren, während eine Remotedesktop-Sitzung die Tastatur hat: Schalte Shortcut Keeper ein und wähle, welche Tastenkürzel auf diesem PC bleiben; jede andere Taste geht weiterhin an den Remotecomputer."
       },
       "postProcessing": {
         "title": "Nachbearbeitung",
@@ -402,6 +406,30 @@
         "title": "Nachbearbeitung einrichten",
         "text": "Lass eine KI dein Diktat aufräumen oder umformen: Wähle Schritt für Schritt, was sie tun soll und welche KI, mit einem Versuch am Ende."
       }
+    },
+    "remote": {
+      "name": "Remotedesktop-Tastenkürzel",
+      "intro": {
+        "title": "Deine Tastenkürzel im Remotedesktop",
+        "body": "Die Remotedesktopverbindung und die Windows App nehmen jede Taste, solange ihre Sitzung die Tastatur hat, daher funktionieren die Tastenkürzel von Handy Tool dort nicht mehr. Shortcut Keeper behält die Tastenkürzel, die du wählst, auf diesem PC: Sie steuern Handy Tool hier, und jede andere Taste, auch Strg+C, Strg+V und Alt+Tab, geht weiterhin an den Remotecomputer. Nur Windows; nicht Citrix."
+      },
+      "switch": {
+        "title": "Shortcut Keeper einschalten",
+        "body": "Shortcut Keeper beobachtet die Tastatur nur, solange eine Remotedesktop-Sitzung im Vordergrund ist, und speichert oder sendet nie, was du tippst. Du tippst Chinesisch, Japanisch oder Koreanisch? Gib das hier ebenfalls an."
+      },
+      "shortcuts": {
+        "title": "Wähle, was auf diesem PC bleibt",
+        "body": "Hake Auf diesem PC behalten neben den Tastenkürzeln an, die du beim Arbeiten in einer Sitzung nutzt. Das Tastenkürzel zum erneuten Einfügen der letzten Transkription fügt in die Sitzung ein, sobald du seine Tasten loslässt.",
+        "more": "Jedes andere Tastenkürzel hat dasselbe Kästchen auf der Seite Tastenkürzel."
+      },
+      "try": {
+        "title": "Ausprobieren",
+        "body": "Klicke in deine Remotedesktop-Sitzung, gern im Vollbild, und drücke ein angehaktes Tastenkürzel: Es steuert Handy Tool hier. Die Zeile darunter zeigt Aktiv, solange die Sitzung die Tastatur hat. Geht ein Tastenkürzel trotzdem an den Remotecomputer, klicke außerhalb der Sitzung und dann wieder hinein."
+      },
+      "done": {
+        "title": "Deine Tastenkürzel werden behalten",
+        "body": "Welche Tastenkürzel auf diesem PC bleiben, änderst du jederzeit auf der Seite Tastenkürzel unter Shortcut Keeper."
+      }
     }
   },
   "onboarding": {
@@ -559,9 +587,9 @@
         "pressKeys": "Tasten drücken...",
         "unset": "Keine",
         "clear": "Tastenkürzel entfernen",
-        "altGrConflict": "Windows meldet AltGr als Strg+Alt, daher wird dieses Kürzel ausgelöst, statt AltGr-Zeichen wie ą oder ó einzugeben. Wähle eine Kombination ohne Strg+Alt.",
-        "conflict": "Auch verwendet von: {{names}}. Nur eines davon funktioniert.",
-        "singleKey": "Diese Taste allein löst das Tastenkürzel überall aus, sodass Sie sie nicht mehr tippen können. Fügen Sie eine Zusatztaste wie Strg oder Alt hinzu.",
+        "altGrConflict": "Windows meldet AltGr als Strg+Alt, daher kann dieses Tastenkürzel auslösen, wenn du AltGr-Zeichen wie ą oder ó tippst. Eine Kombination ohne Strg+Alt vermeidet das.",
+        "conflict": "Auch festgelegt für: {{names}}. Es funktioniert immer nur eines davon; gib einem davon andere Tasten.",
+        "singleKey": "Diese Taste allein löst das Tastenkürzel in jeder App aus, daher lässt sie sich dort womöglich nicht tippen. Strg oder Alt dazu vermeidet das.",
         "bindings": {
           "transcribe": {
             "name": "Aufnahme-/Transkriptions-Tastenkürzel",
@@ -655,10 +683,10 @@
         },
         "badge": {
           "conflict": "Konflikt",
-          "risky": "Riskant"
+          "risky": "Beachten"
         },
-        "altGrConflictLayout": "Eine Tastatur, die du für {{layouts}} nutzt, tippt mit AltGr+{{key}} ein Zeichen. Windows meldet AltGr als Strg+Alt, daher würde stattdessen dieses Tastenkürzel auslösen. Wähle eine Tastenkombination ohne Strg+Alt.",
-        "altGrConflictSpace": "Eine Tastatur, die du für {{layouts}} nutzt, tippt Zeichen mit AltGr, und AltGr wird danach oft noch für die folgende Leertaste gehalten. Windows meldet AltGr als Strg+Alt, daher würde dieses Tastenkürzel statt der Leertaste auslösen. Wähle eine Tastenkombination ohne Strg+Alt."
+        "altGrConflictLayout": "Eine Tastatur, die du für {{layouts}} nutzt, tippt mit AltGr+{{key}} ein Zeichen. Windows meldet AltGr als Strg+Alt, daher kann beim Tippen dieses Zeichens stattdessen dieses Tastenkürzel auslösen. Eine Tastenkombination ohne Strg+Alt vermeidet das.",
+        "altGrConflictSpace": "Eine Tastatur, die du für {{layouts}} nutzt, tippt Zeichen mit AltGr, und AltGr wird danach oft noch für die folgende Leertaste gehalten. Windows meldet AltGr als Strg+Alt, daher kann diese Leertaste stattdessen dieses Tastenkürzel auslösen. Eine Tastenkombination ohne Strg+Alt vermeidet das."
       },
       "pauseButton": {
         "label": "Pausentaste",
@@ -866,22 +894,26 @@
     "shortcuts": {
       "groups": {
         "dictation": "Diktat",
-        "warnings": "Warnungen"
+        "warnings": "Hinweise"
       },
       "conflicts": {
         "title": "Einige Tastenkürzel verwenden dieselben Tasten",
-        "description": "Eine Tastenkombination kann nur eine Aktion auslösen, daher funktioniert von jedem Paar nur eine. Ändern oder entfernen Sie eines der rot markierten Tastenkürzel."
+        "description": "Auf einer Tastenkombination kann nur eine Aktion funktionieren, daher funktioniert von jedem Paar nur eine. Gib einem der mit Konflikt markierten Tastenkürzel andere Tasten oder entferne es."
       },
       "altGrWarning": {
-        "label": "Vor AltGr-Tastenkürzeln warnen",
-        "description": "**Zeigt eine Amber-Warnung neben Tastenkürzeln, die AltGr ebenfalls tippt.** Windows meldet AltGr als Strg+Alt, daher löst z. B. Strg+Alt+O aus, wenn du ó mit AltGr tippst, und das Zeichen kommt nie an. Unter Windows warnt sie nur, wenn eine deiner Tastaturen auf dieser Taste mit AltGr etwas tippt (oder AltGr+Umschalt, bei einer Kombination mit Umschalt), und nennt die Sprache, zu der die Tastatur gehört.\n\n**Standard:** An. Schalte sie aus, wenn du nie Zeichen mit AltGr tippst.",
-        "turnOff": "Diese Warnung ausschalten"
+        "label": "Hinweise zu AltGr-Tastenkürzeln zeigen",
+        "description": "**Zeigt einen Hinweis neben Tastenkürzeln, die AltGr womöglich ebenfalls tippt.** Windows meldet AltGr als Strg+Alt, daher kann z. B. Strg+Alt+O auslösen, wenn du ó mit AltGr tippst, und das Zeichen kommt womöglich nicht an. Unter Windows erscheint der Hinweis nur, wenn eine deiner Tastaturen auf dieser Taste mit AltGr etwas tippt (oder AltGr+Umschalt, bei einer Kombination mit Umschalt), und nennt die Sprache, zu der die Tastatur gehört.\n\n**Standard:** An. Schalte die Hinweise aus, wenn du nie Zeichen mit AltGr tippst.",
+        "turnOff": "Diese Hinweise ausschalten"
       },
       "keeper": {
         "title": "Shortcut Keeper",
         "summary": "Hält die Tastenkürzel, die du anhakst, auf diesem PC, während eine Remotedesktop-Sitzung die Tastatur hat. So steuern sie Handy Tool hier, statt beim Remotecomputer anzukommen. Alle anderen Tasten gehen wie bisher an den Remotecomputer.",
-        "label": "Gewählte Tastenkürzel im Remotedesktop auf diesem PC behalten",
-        "description": "**Remotedesktop nimmt jede Taste, solange seine Sitzung die Tastatur hat** (im Vollbild oder wenn Windows-Tastenkombinationen an den Remotecomputer gehen), daher funktionieren die Tastenkürzel von Handy Tool dort nicht mehr. Ist dies eingeschaltet, steuern die Tastenkürzel, die du mit Auf diesem PC behalten anhakst, Handy Tool hier. Jede andere Taste, auch Strg+C, Strg+V und Alt+Tab, geht weiterhin an den Remotecomputer.\n\n**Funktioniert mit:** Remotedesktopverbindung (mstsc) und der Windows App. Nicht mit Citrix: Nutze stattdessen die eigene Einstellung von Citrix Workspace für Windows-Tastenkombinationen.\n\n**Nur Tastenkürzel, die beim Drücken auslösen:** Push-to-Talk, Letztes Wort rückgängig und das erneute Einfügen der letzten Transkription reagieren auf das Loslassen der Taste und lassen sich noch nicht behalten.\n\n**Ohne Garantie:** Wenn ein behaltenes Tastenkürzel nicht mehr funktioniert, klicke außerhalb der Sitzung und dann wieder hinein.\n\n**Datenschutz:** Handy Tool beobachtet die Tastatur nur, solange eine Remotedesktop-Sitzung im Vordergrund ist, reagiert nur auf die Tastenkürzel, die du angehakt hast, und speichert, protokolliert oder sendet nie, was du tippst.\n\n**Standard:** Aus.",
+        "label": "Gewählte Tastenkürzel im Remotedesktop auf diesem PC behalten (Windows)",
+        "description": "**Remotedesktop nimmt jede Taste, solange seine Sitzung die Tastatur hat** (im Vollbild oder wenn Windows-Tastenkombinationen an den Remotecomputer gehen), daher funktionieren die Tastenkürzel von Handy Tool dort nicht mehr. Ist dies eingeschaltet, steuern die Tastenkürzel, die du mit Auf diesem PC behalten anhakst, Handy Tool hier. Jede andere Taste, auch Strg+C, Strg+V und Alt+Tab, geht weiterhin an den Remotecomputer.\n\n**Funktioniert mit:** Remotedesktopverbindung (mstsc) und der Windows App, unter Windows. Nicht mit Citrix: Nutze stattdessen die eigene Einstellung von Citrix Workspace für Windows-Tastenkombinationen.\n\n**Noch nicht:** Push-to-Talk und Letztes Wort rückgängig, die wirken, solange die Taste gehalten wird. Das erneute Einfügen der letzten Transkription lässt sich behalten: Es fügt in die Sitzung ein, wenn du die Tasten loslässt.\n\n**Ohne Garantie:** Wenn ein behaltenes Tastenkürzel nicht mehr funktioniert, klicke außerhalb der Sitzung und dann wieder hinein.\n\n**Datenschutz:** Handy Tool beobachtet die Tastatur nur, solange eine Remotedesktop-Sitzung im Vordergrund ist, reagiert nur auf die Tastenkürzel, die du angehakt hast, und speichert, protokolliert oder sendet nie, was du tippst.\n\n**Standard:** Aus.",
+        "cjk": {
+          "label": "Ich tippe Chinesisch, Japanisch oder Koreanisch",
+          "description": "**Nur dann brauchst du den Hinweis zu Strg+Leertaste.** Bei chinesischen, japanischen und koreanischen Einstellungen wechselt Strg+Leertaste die Eingabemethode; ein behaltenes Strg+Leertaste kommt dafür nicht mehr beim Remotecomputer an. Schalte dies ein, dann zeigt ein behaltenes Strg+Leertaste diesen Hinweis.\n\n**Standard:** Aus."
+        },
         "status": {
           "off": "Aus.",
           "waiting": "An. Wartet darauf, dass eine Remotedesktop-Sitzung die Tastatur hat.",
@@ -894,7 +926,7 @@
         "checkboxHint": "Angehakt: Dieses Tastenkürzel steuert Handy Tool auf diesem PC, während eine Remotedesktop-Sitzung die Tastatur hat.",
         "turnOnFirst": "Schalte zuerst Shortcut Keeper oben auf dieser Seite ein.",
         "reasons": {
-          "needs_release": "Reagiert auf das Loslassen der Taste, was Shortcut Keeper noch nicht kann.",
+          "needs_hold": "Wirkt, solange die Taste gehalten wird, was Shortcut Keeper noch nicht kann.",
           "unbound": "Für dieses Tastenkürzel sind keine Tasten festgelegt.",
           "win_key": "Tastenkürzel mit der Windows-Taste lassen sich nicht behalten: Der Remotecomputer würde die Windows-Taste trotzdem sehen und sein Startmenü öffnen.",
           "alt_only": "Alt-Tastenkürzel ohne Strg lassen sich nicht behalten: Der Remotecomputer würde Alt trotzdem sehen und seine Menüleiste öffnen. Füge dem Tastenkürzel Strg hinzu.",
@@ -2029,6 +2061,18 @@
     "release": "Version {{version}}",
     "show": "Zeigen",
     "items": {
+      "updateIcon": {
+        "title": "Das Update-Symbol zeigt deinen Stand",
+        "description": "Das Symbol neben der Version unten links ist jetzt immer sichtbar. Ein grüner Haken bedeutet, dass die letzte Prüfung nichts Neueres gefunden hat, ein cyanfarbener Pfeil bedeutet, dass ein Update verfügbar ist, und ein grauer Pfeil bedeutet, dass kein aktuelles Ergebnis vorliegt (noch nicht geprüft oder die Prüfung ist fehlgeschlagen): Klicke darauf, um zu prüfen. Ein Klick auf die Version öffnet die Details."
+      },
+      "keeperPasteLast": {
+        "title": "Erneutes Einfügen der letzten Transkription funktioniert im Remotedesktop",
+        "description": "Shortcut Keeper kann jetzt das Tastenkürzel zum erneuten Einfügen der letzten Transkription auf diesem PC behalten: In einer Remotedesktop-Sitzung fügt es deine letzte Transkription in die Sitzung ein, wenn du seine Tasten loslässt. Eine neue Remotedesktop-Einrichtung auf der Seite Einrichtungen führt dich durch die Wahl der Tastenkürzel, die du behalten willst. Nur Windows."
+      },
+      "calmerHints": {
+        "title": "Ruhigere Hinweise neben Tastenkürzeln",
+        "description": "Tastenkürzel, die womöglich nicht überall funktionieren, zeigen jetzt ein Fragezeichen und solche, die andere Tasten brauchen, ein Ausrufezeichen statt eines Warndreiecks; die Markierung beim AltGr-Hinweis lautet Beachten. Die Texte sagen, was womöglich nicht funktioniert und wie du es vermeidest. Wenn du nicht Chinesisch, Japanisch oder Koreanisch tippst, erscheint der Hinweis zu Strg+Leertaste nicht mehr."
+      },
       "shortcutKeeper": {
         "title": "Shortcut Keeper: Deine Tastenkürzel funktionieren im Remotedesktop",
         "description": "Schalte unter Windows Shortcut Keeper auf der Seite Tastenkürzel ein und hake neben einem Tastenkürzel Auf diesem PC behalten an: Solange eine Sitzung der Remotedesktopverbindung oder der Windows App die Tastatur hat, steuert dieses Tastenkürzel Handy Tool auf diesem PC, statt beim Remotecomputer anzukommen. Jede andere Taste geht weiterhin an den Remotecomputer."
@@ -2040,10 +2084,6 @@
       "hotkeyRelease": {
         "title": "Ein gehaltenes Tastenkürzel hält keinen Prozessorkern mehr beschäftigt",
         "description": "Unter Windows prüfte Handy Tool, während du ein Tastenkürzel gehalten hast (zum Beispiel Push-to-Talk), ununterbrochen, ob du losgelassen hattest. Das hielt einen Prozessorkern voll ausgelastet. Jetzt prüft es alle 10 ms."
-      },
-      "progressFinish": {
-        "title": "Die Prozentzahl erreicht 100 %, sobald der Text fertig ist",
-        "description": "Nach einer Aufnahme springt die Transkriptions-Prozentzahl auf der Pille jetzt auf 100 %, sobald der Text fertig ist. Vorher konnte sie bei etwa 70 % stehen bleiben und erst vollständig werden, nachdem der Text schon eingefügt war."
       },
       "endOfTakeKept": {
         "title": "Das Ende einer Aufnahme bleibt zuverlässiger erhalten",

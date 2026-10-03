@@ -617,20 +617,22 @@ character never arrives, and nothing in the interface says why.
 **What Handy does.** No default binding uses a chord AltGr can type a character with. The
 trigger shortcuts sit on Ctrl+Space, Ctrl+Shift+Space and the Ctrl+Shift function keys, all of
 which are identical on every layout; a test over the whole default set fails the build if one
-regresses. When _you_ pick a colliding chord by hand, an amber warning appears beside it naming
-the conflict, because the app cannot safely change a chord you chose. If you never type with
-AltGr, the warning's tooltip offers to turn it off and takes you to the switch. The one deliberate
+regresses. When _you_ pick a colliding chord by hand, a hint (a question mark marked Attention)
+appears beside it saying what may not work, because the app cannot safely change a chord you
+chose. If you never type with AltGr, the hint's tooltip offers to turn it off and takes you to the
+switch. The one deliberate
 exception is the Jumper's eighteen slot chords, which stay on `ctrl+alt+<digit>` and
 `ctrl+alt+shift+<digit>`: no common European layout puts a character on AltGr+digit, and no other
 free chord space of that size exists.
-**Where.** Every shortcut control; the warning appears next to the chord itself. Switch it off
-at `Shortcuts › Warnings › Warn about AltGr shortcuts = Off`.
+**Where.** Every shortcut control; the hint appears next to the chord itself. Switch it off
+at `Shortcuts › Hints › Show hints for AltGr shortcuts = Off`.
 **Applies to.** All platforms; AltGr is a Windows keyboard concept, so the collision itself is
 Windows-only.
 **Since.** 1.4.0. Push-to-Talk, Transcribe & Submit, Type Text, Paste Last and the four anchor
 keys moved off `ctrl+alt+<letter>` chords across earlier releases; 1.4.0 finished the job by
 moving Transcribe & Submit off `ctrl+alt+space` and adding the test and the warning. The
-switch since 1.11.0.
+switch since 1.11.0. Since 2.1.1 the warning triangle is a question mark and its badge says
+Attention: it is a risk of not working, not an alarm.
 
 ### Turn off a shortcut you don't want
 
@@ -649,11 +651,12 @@ With Cancel switched off, the overlay's X button still cancels a take.
 **The situation.** Shortcuts sit next to their features — General, Keyboard Typer, Jumper, Post
 Process, Debug — so checking whether two of them collide means visiting every page.
 **What Handy does.** One page lists them all, grouped by feature, and marks any two actions on the
-same keys with a red warning that names the other one. A duplicate is kept rather than refused,
+same keys with an exclamation mark marked Conflict that names the other one. A duplicate is kept rather than refused,
 but only one of the pair can work: with the default keyboard backend the second stays inactive
 and takes over by itself as soon as the first moves off the keys. The feature pages keep their
 own shortcut rows; both edit the same setting. A shortcut that is a single typing key with no
-modifier, such as `f`, gets an amber warning: it would fire every time you type that letter.
+modifier, such as `f`, gets a question mark marked Attention: it would fire every time you type
+that letter, so typing it may not work.
 **Where.** `Shortcuts`.
 **Since.** 1.7.0. The single-key warning since 1.9.0.
 
@@ -681,9 +684,12 @@ Tools** (Keyboard Typer, Token Count, Model Testing, Current Audio), What's new 
 (the version, the update controls, credits), and at the bottom **Advanced settings**
 (Transcription providers, LLM providers, Post-processing, MCP & CLI, Backup, Debug). More Tools
 and Advanced settings show their pages as tabs and each reopens the tab you used last. The
-version you are running is shown at the bottom-left; a small arrow beside it means a newer
-version is available, and clicking the version opens a panel above it with `Update now` (the same
-check as `Check now`), the update found, or "No new version".
+version you are running is shown at the bottom-left. The icon beside it shows the update status:
+a green check when the last check found nothing newer, a cyan arrow when a newer version is
+available, and a grey arrow when there is no recent result, not checked yet or the check failed
+(clicking it checks).
+Clicking the version opens a panel above it with `Update now` (the same check as `Check now`),
+the update found, or "No new version".
 Every setting has one home: History's settings sit at the bottom of History, the
 post-processing provider and prompt appear under the Post-processing switch, and the duplicate
 rows are gone. The update controls are the one exception: they are on About and on General.
@@ -1196,18 +1202,20 @@ of a shortcut you ticked with `Keep on this PC` runs Handy on this PC, and its r
 release are kept from the remote too. Every other key, Ctrl+C, Ctrl+V and Alt+Tab included,
 still goes to the remote. Only physical presses count: macro tools, key remappers and Handy's own
 paste are passed through untouched.
-**Limits.** Windows only, with the default keyboard implementation. Press shortcuts only:
-Push-to-Talk, Undo Last Word and Paste Last Transcription act on the key release and cannot be
-kept yet. Not Citrix: use Citrix Workspace's own setting for Windows key combinations instead.
+**Limits.** Windows only, with the default keyboard implementation. Push-to-Talk and Undo Last
+Word act while the key is held and cannot be kept yet. Paste Last Transcription can (since
+2.1.1): it pastes your last transcription into the session when you let go of its keys. Not Citrix: use Citrix Workspace's own setting for Windows key combinations instead.
 Shortcuts with the Windows key, or with Alt but no Ctrl, cannot be kept, because the remote would
 still see the leftover modifier and open its Start menu or menu bar; Ctrl+Alt+Delete and
-Windows+L always belong to Windows. A shortcut with Ctrl+Shift is marked with a warning: the
+Windows+L always belong to Windows. A ticked shortcut with Ctrl+Shift shows a question mark: the
 remote still sees Ctrl and Shift on their own, which switches its keyboard layout if that is the
-layout hotkey there. A session running as administrator keeps Handy out. If the client puts its
+layout hotkey there. A ticked Ctrl+Space shows its input-method note only if you switched on
+`I type Chinese, Japanese or Korean` (since 2.1.1). A session running as administrator keeps Handy out. If the client puts its
 hook back in front of Handy's, keys go to the remote again until you click outside the session
 and back in.
-**Where.** `Shortcuts › Shortcut Keeper › Keep chosen shortcuts on this PC in Remote Desktop`,
-then `Keep on this PC` on each shortcut's row _{Windows only}_.
+**Where.** `Shortcuts › Shortcut Keeper › Keep chosen shortcuts on this PC in Remote Desktop (Windows)`,
+then `Keep on this PC` on each shortcut's row _{Windows only}_. The `Remote Desktop shortcuts`
+setup on `Setups` walks through it.
 **Since.** 2.1.0.
 
 ### Your dictation stays out of the remote machine's clipboard (retired)
@@ -2553,8 +2561,10 @@ waits for you. Switch silent installation on and the update is applied inside a 
 the same instant. Releases are signed and the signature is verified before anything is applied. A
 portable copy refuses to update itself in place and tells you to download the new portable
 release instead. `Check now` runs the same check on demand, and so does `Update now` in the
-panel that opens from the version at the bottom-left of the sidebar; while update checks are on,
-an arrow next to that version shows that a newer version is available (since 2.1.0). An update
+panel that opens from the version at the bottom-left of the sidebar. The icon next to that
+version shows the status: a green check when you are up to date, a cyan arrow when an update is
+available, a grey arrow when there is no recent result (since 2.1.1; 2.1.0 showed
+only the arrow, and only with an update available). An update
 installed in the background
 waits, up to a minute, until the running Handy's program file is no longer in use before the
 installer's own check (before 2.0.2 silent updates made while a speech model was loaded gave up,

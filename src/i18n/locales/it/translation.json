@@ -117,7 +117,7 @@
       "ptt": "Tieni premuto mentre parli.",
       "cancel": "Ferma una registrazione senza scrivere nulla.",
       "more": "Altre scorciatoie (Trascrivi e invia, pausa, annulla l'ultima parola, …) sono nella pagina Scorciatoie.",
-      "remote": "Lavori in Desktop remoto? Shortcut Keeper nella pagina Scorciatoie mantiene su questo PC le scorciatoie che scegli."
+      "remote": "Lavori in Desktop remoto? La configurazione Desktop remoto nella pagina Configurazioni mantiene su questo PC le scorciatoie che scegli (Windows)."
     },
     "microphone": {
       "title": "Quale microfono?",
@@ -152,6 +152,10 @@
       "jumper": {
         "title": "Jumper",
         "description": "Lascia che Handy Tool incolli il tuo dettato nel campo giusto: ricorda i punti in cui scrivi (una chat, un documento, un campo in una sessione remota), ci mette il testo automaticamente ovunque tu sia, e torna lì con un tasto."
+      },
+      "remote": {
+        "title": "Scorciatoie in Desktop remoto",
+        "description": "Fai funzionare le scorciatoie di Handy Tool mentre una sessione di Desktop remoto ha la tastiera: attiva Shortcut Keeper e scegli quali scorciatoie restano su questo PC; ogni altro tasto va ancora al computer remoto."
       },
       "postProcessing": {
         "title": "Post-elaborazione",
@@ -402,6 +406,30 @@
         "title": "Configurazione post-elaborazione",
         "text": "Lascia che un'IA ripulisca o rielabori ciò che detti: scegli cosa deve fare e quale IA, passo dopo passo, con una prova alla fine."
       }
+    },
+    "remote": {
+      "name": "Scorciatoie in Desktop remoto",
+      "intro": {
+        "title": "Le tue scorciatoie in Desktop remoto",
+        "body": "Connessione Desktop remoto e la Windows App prendono ogni tasto finché la loro sessione ha la tastiera, quindi lì le scorciatoie di Handy Tool smettono di funzionare. Shortcut Keeper mantiene su questo PC le scorciatoie che scegli: controllano Handy Tool qui, e ogni altro tasto, Ctrl+C, Ctrl+V e Alt+Tab compresi, va ancora al computer remoto. Solo Windows; non Citrix."
+      },
+      "switch": {
+        "title": "Attiva Shortcut Keeper",
+        "body": "Osserva la tastiera solo mentre una sessione di Desktop remoto è in primo piano, e non salva né invia mai ciò che digiti. Scrivi in cinese, giapponese o coreano? Indicalo anche qui."
+      },
+      "shortcuts": {
+        "title": "Scegli cosa resta su questo PC",
+        "body": "Seleziona Mantieni su questo PC accanto alle scorciatoie che usi mentre lavori in una sessione. Paste last transcription incolla nella sessione appena rilasci i suoi tasti.",
+        "more": "Ogni altra scorciatoia ha la stessa casella nella pagina Scorciatoie."
+      },
+      "try": {
+        "title": "Provalo",
+        "body": "Fai clic nella tua sessione di Desktop remoto, a schermo intero se vuoi, e premi una scorciatoia selezionata: controlla Handy Tool qui. La riga qui sotto indica Attivo mentre la sessione ha la tastiera. Se una scorciatoia va ancora al computer remoto, fai clic fuori dalla sessione e poi di nuovo dentro."
+      },
+      "done": {
+        "title": "Le tue scorciatoie sono mantenute",
+        "body": "Cambia in qualsiasi momento quali scorciatoie restano su questo PC nella pagina Scorciatoie, sotto Shortcut Keeper."
+      }
     }
   },
   "onboarding": {
@@ -559,9 +587,9 @@
         "pressKeys": "Premi i tasti...",
         "unset": "Nessuna",
         "clear": "Rimuovi scorciatoia",
-        "altGrConflict": "Windows segnala AltGr come Ctrl+Alt, quindi questa scorciatoia si attiva invece di digitare caratteri AltGr come ą o ó. Scegli una combinazione senza Ctrl+Alt.",
-        "conflict": "Usata anche da: {{names}}. Ne funzionerà solo una.",
-        "singleKey": "Questo tasto da solo attiva la scorciatoia ovunque, quindi non potrai più digitarlo. Aggiungi un modificatore come Ctrl o Alt.",
+        "altGrConflict": "Windows segnala AltGr come Ctrl+Alt, quindi questa scorciatoia può attivarsi quando digiti caratteri AltGr come ą o ó. Una combinazione senza Ctrl+Alt lo evita.",
+        "conflict": "Impostata anche per: {{names}}. Ne funziona solo una alla volta; assegna altri tasti a una di esse.",
+        "singleKey": "Questo tasto da solo attiva la scorciatoia in ogni app, quindi digitarlo lì potrebbe non funzionare. Aggiungere Ctrl o Alt lo evita.",
         "bindings": {
           "transcribe": {
             "name": "Scorciatoia Registrazione/Trascrizione",
@@ -655,10 +683,10 @@
         },
         "badge": {
           "conflict": "Conflitto",
-          "risky": "Rischioso"
+          "risky": "Attenzione"
         },
-        "altGrConflictLayout": "Una tastiera che usi per {{layouts}} digita un carattere con AltGr+{{key}}. Windows segnala AltGr come Ctrl+Alt, quindi questa scorciatoia si attiverebbe al posto suo. Scegli una combinazione senza Ctrl+Alt.",
-        "altGrConflictSpace": "Una tastiera che usi per {{layouts}} digita caratteri con AltGr, e spesso AltGr resta premuto anche per lo spazio dopo uno di essi. Windows segnala AltGr come Ctrl+Alt, quindi questa scorciatoia si attiverebbe al posto di quello spazio. Scegli una combinazione senza Ctrl+Alt."
+        "altGrConflictLayout": "Una tastiera che usi per {{layouts}} digita un carattere con AltGr+{{key}}. Windows segnala AltGr come Ctrl+Alt, quindi digitando quel carattere può attivarsi invece questa scorciatoia. Una combinazione senza Ctrl+Alt lo evita.",
+        "altGrConflictSpace": "Una tastiera che usi per {{layouts}} digita caratteri con AltGr, e spesso AltGr resta premuto anche per lo spazio dopo uno di essi. Windows segnala AltGr come Ctrl+Alt, quindi quello spazio può attivare invece questa scorciatoia. Una combinazione senza Ctrl+Alt lo evita."
       },
       "pauseButton": {
         "label": "Pulsante pausa",
@@ -866,22 +894,26 @@
     "shortcuts": {
       "groups": {
         "dictation": "Dettatura",
-        "warnings": "Avvisi"
+        "warnings": "Suggerimenti"
       },
       "conflicts": {
         "title": "Alcune scorciatoie usano gli stessi tasti",
-        "description": "Una combinazione di tasti può attivare una sola azione, quindi funziona solo una scorciatoia per coppia. Modifica o rimuovi una delle scorciatoie segnalate in rosso."
+        "description": "Su una combinazione di tasti può funzionare una sola azione, quindi funziona solo una scorciatoia per coppia. Assegna altri tasti a una delle scorciatoie segnate con Conflitto, oppure rimuovila."
       },
       "altGrWarning": {
-        "label": "Avvisa delle scorciatoie con AltGr",
-        "description": "**Mostra un avviso ambra accanto alle scorciatoie con cui AltGr digita anche un carattere.** Windows segnala AltGr come Ctrl+Alt, quindi una scorciatoia come Ctrl+Alt+O scatta quando digiti ó con AltGr, e il carattere non arriva mai. Su Windows avvisa solo quando una delle tue tastiere digita qualcosa con AltGr su quel tasto (o AltGr+Shift, per una combinazione con Shift), e indica il nome della lingua a cui appartiene la tastiera.\n\n**Predefinito:** Attivo. Disattivalo se non digiti mai caratteri con AltGr.",
-        "turnOff": "Disattiva questo avviso"
+        "label": "Mostra suggerimenti per le scorciatoie con AltGr",
+        "description": "**Mostra un suggerimento accanto alle scorciatoie con cui AltGr può digitare anche un carattere.** Windows segnala AltGr come Ctrl+Alt, quindi una scorciatoia come Ctrl+Alt+O può scattare quando digiti ó con AltGr, e il carattere potrebbe non arrivare. Su Windows il suggerimento compare solo quando una delle tue tastiere digita qualcosa con AltGr su quel tasto (o AltGr+Shift, per una combinazione con Shift), e indica il nome della lingua a cui appartiene la tastiera.\n\n**Predefinito:** Attivo. Disattivalo se non digiti mai caratteri con AltGr.",
+        "turnOff": "Disattiva questi suggerimenti"
       },
       "keeper": {
         "title": "Shortcut Keeper",
         "summary": "Mantiene su questo PC le scorciatoie che selezioni mentre una sessione di Desktop remoto ha la tastiera, così controllano Handy Tool qui invece di arrivare al computer remoto. Tutti gli altri tasti vanno al computer remoto come prima.",
-        "label": "Mantieni su questo PC le scorciatoie scelte in Desktop remoto",
-        "description": "**Desktop remoto prende ogni tasto finché la sua sessione ha la tastiera** (a schermo intero, o quando le combinazioni di tasti di Windows vanno al computer remoto), quindi lì le scorciatoie di Handy Tool smettono di funzionare. Con questa opzione attiva, le scorciatoie che selezioni con Mantieni su questo PC controllano Handy Tool qui. Ogni altro tasto, Ctrl+C, Ctrl+V e Alt+Tab compresi, va ancora al computer remoto.\n\n**Funziona con:** Connessione Desktop remoto (mstsc) e la Windows App. Non con Citrix: usa invece l'impostazione di Citrix Workspace per le combinazioni di tasti di Windows.\n\n**Solo scorciatoie a pressione:** Premi per Parlare, Annulla l'ultima parola e Paste last transcription agiscono al rilascio del tasto e non si possono ancora mantenere.\n\n**Senza garanzia:** se una scorciatoia mantenuta smette di funzionare, fai clic fuori dalla sessione e poi di nuovo dentro.\n\n**Privacy:** Handy Tool osserva la tastiera solo mentre una sessione di Desktop remoto è in primo piano, reagisce solo alle scorciatoie che hai selezionato e non salva, registra né invia mai ciò che digiti.\n\n**Predefinito:** Disattivato.",
+        "label": "Mantieni su questo PC le scorciatoie scelte in Desktop remoto (Windows)",
+        "description": "**Desktop remoto prende ogni tasto finché la sua sessione ha la tastiera** (a schermo intero, o quando le combinazioni di tasti di Windows vanno al computer remoto), quindi lì le scorciatoie di Handy Tool smettono di funzionare. Con questa opzione attiva, le scorciatoie che selezioni con Mantieni su questo PC controllano Handy Tool qui. Ogni altro tasto, Ctrl+C, Ctrl+V e Alt+Tab compresi, va ancora al computer remoto.\n\n**Funziona con:** Connessione Desktop remoto (mstsc) e la Windows App, su Windows. Non con Citrix: usa invece l'impostazione di Citrix Workspace per le combinazioni di tasti di Windows.\n\n**Non ancora:** Premi per Parlare e Annulla l'ultima parola, che agiscono mentre il tasto è premuto. Paste last transcription si può mantenere: incolla nella sessione quando rilasci i tasti.\n\n**Senza garanzia:** se una scorciatoia mantenuta smette di funzionare, fai clic fuori dalla sessione e poi di nuovo dentro.\n\n**Privacy:** Handy Tool osserva la tastiera solo mentre una sessione di Desktop remoto è in primo piano, reagisce solo alle scorciatoie che hai selezionato e non salva, registra né invia mai ciò che digiti.\n\n**Predefinito:** Disattivato.",
+        "cjk": {
+          "label": "Scrivo in cinese, giapponese o coreano",
+          "description": "**Solo in quel caso ti serve la nota su Ctrl+Spazio.** Nelle configurazioni in cinese, giapponese e coreano Ctrl+Spazio cambia il metodo di input; un Ctrl+Spazio mantenuto non arriva più al computer remoto per farlo. Attiva questa opzione e un Ctrl+Spazio mantenuto mostrerà quella nota.\n\n**Predefinito:** Disattivato."
+        },
         "status": {
           "off": "Disattivato.",
           "waiting": "Attivato. In attesa che una sessione di Desktop remoto abbia la tastiera.",
@@ -894,7 +926,7 @@
         "checkboxHint": "Selezionata: questa scorciatoia controlla Handy Tool su questo PC mentre una sessione di Desktop remoto ha la tastiera.",
         "turnOnFirst": "Prima attiva Shortcut Keeper in cima a questa pagina.",
         "reasons": {
-          "needs_release": "Agisce al rilascio del tasto, cosa che Shortcut Keeper non sa ancora gestire.",
+          "needs_hold": "Agisce mentre il tasto è premuto, cosa che Shortcut Keeper non sa ancora gestire.",
           "unbound": "Per questa scorciatoia non è impostato alcun tasto.",
           "win_key": "Le scorciatoie con il tasto Windows non si possono mantenere: il computer remoto vedrebbe comunque il tasto Windows e aprirebbe il suo menu Start.",
           "alt_only": "Le scorciatoie con Alt senza Ctrl non si possono mantenere: il computer remoto vedrebbe comunque Alt e aprirebbe la sua barra dei menu. Aggiungi Ctrl alla scorciatoia.",
@@ -2029,6 +2061,18 @@
     "release": "Versione {{version}}",
     "show": "Mostra",
     "items": {
+      "updateIcon": {
+        "title": "L'icona di aggiornamento mostra a che punto sei",
+        "description": "L'icona accanto alla versione, in basso a sinistra, ora è sempre visibile. Un segno di spunta verde indica che l'ultimo controllo non ha trovato nulla di più recente, una freccia ciano indica che è disponibile un aggiornamento e una freccia grigia indica che non c'è un risultato recente (controllo non ancora eseguito o non riuscito): fai clic per controllare. Facendo clic sulla versione si aprono i dettagli."
+      },
+      "keeperPasteLast": {
+        "title": "Paste last transcription funziona in Desktop remoto",
+        "description": "Shortcut Keeper ora può mantenere Paste last transcription su questo PC: in una sessione di Desktop remoto incolla la tua ultima trascrizione nella sessione quando rilasci i suoi tasti. Una nuova configurazione Desktop remoto nella pagina Configurazioni ti guida nella scelta delle scorciatoie da mantenere. Solo Windows."
+      },
+      "calmerHints": {
+        "title": "Suggerimenti più tranquilli accanto alle scorciatoie",
+        "description": "Le scorciatoie che potrebbero non funzionare ovunque ora mostrano un punto interrogativo, e quelle che richiedono altri tasti un punto esclamativo, invece di un triangolo di avviso; il badge del suggerimento AltGr dice Attenzione. I testi dicono cosa potrebbe non funzionare e come evitarlo. Se non scrivi in cinese, giapponese o coreano, la nota su Ctrl+Spazio non compare più."
+      },
       "shortcutKeeper": {
         "title": "Shortcut Keeper: le tue scorciatoie funzionano in Desktop remoto",
         "description": "Su Windows, attiva Shortcut Keeper nella pagina Scorciatoie e seleziona Mantieni su questo PC accanto a una scorciatoia: mentre una sessione di Connessione Desktop remoto o della Windows App ha la tastiera, quella scorciatoia controlla Handy Tool su questo PC invece di arrivare al computer remoto. Ogni altro tasto va ancora al computer remoto."
@@ -2040,10 +2084,6 @@
       "hotkeyRelease": {
         "title": "Tenere premuta una scorciatoia non tiene più occupato un core del processore",
         "description": "Su Windows, mentre tenevi premuta una scorciatoia (per esempio Premi per Parlare), Handy Tool controllava senza sosta se l'avevi rilasciata, tenendo un core del processore completamente occupato. Ora controlla ogni 10 ms."
-      },
-      "progressFinish": {
-        "title": "La percentuale arriva al 100% quando il testo è pronto",
-        "description": "Dopo una registrazione, la percentuale di trascrizione sulla pillola arriva ora al 100% appena il testo è pronto. Prima poteva fermarsi intorno al 70% e completarsi solo dopo che il testo era già stato incollato."
       },
       "endOfTakeKept": {
         "title": "La fine di una registrazione si conserva in modo più affidabile",

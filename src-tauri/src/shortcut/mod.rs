@@ -167,6 +167,11 @@ pub(crate) fn handle_kept_press(
     handler::handle_kept_press(app, binding_id, hotkey_string, guard);
 }
 
+/// The release of a kept shortcut that acts on it (Paste last transcription).
+pub(crate) fn handle_kept_release(app: &AppHandle, binding_id: &str, hotkey_string: &str) {
+    handler::handle_shortcut_event(app, binding_id, hotkey_string, false);
+}
+
 /// Bindings that exist only while a take (or a Keyboard Typer session) runs:
 /// registered when it starts, removed when it ends, never at init. Their keys
 /// (Escape, Ctrl+Backspace) belong to other apps the rest of the time.

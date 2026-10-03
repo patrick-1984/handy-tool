@@ -19,8 +19,9 @@
 //! - Best effort: if the client re-hooks after us, keys go to the remote again
 //!   until focus leaves the session and comes back.
 //!
-//! Only press-triggered shortcuts take part. Their release does nothing, so a
-//! kept press is dispatched once and its release is simply swallowed.
+//! A kept shortcut runs once on its press and its release is swallowed, except
+//! Paste last transcription, which runs once on its (swallowed) release.
+//! Push-to-talk and Undo last word act while the key is held and cannot be kept.
 
 // The state machine and the candidate table are driven by the Windows watcher;
 // elsewhere only the classification is used.
@@ -179,8 +180,10 @@ fn keep(category: KeepCategory, code: &str) -> KeepSupport {
     }
 }
 
-/// Shortcuts that act on the press alone (their release does nothing).
-fn acts_on_press(id: &str) -> bool {
+/// Shortcuts that can be kept: those whose release does nothing, and Paste
+/// last transcription, which acts on the release alone (it pastes once the
+/// keys are up). Push-to-talk and Undo last word act while the key is held.
+fn keepable(id: &str) -> bool {
     matches!(
         id,
         "transcribe"
@@ -190,14 +193,20 @@ fn acts_on_press(id: &str) -> bool {
             | "pause"
             | "toggle_live_text_box"
             | "type_text"
+            | "paste_last"
     ) || crate::shortcut::is_jumper_binding(id)
+}
+
+/// Kept shortcuts that run on the key release instead of the press.
+pub(crate) fn acts_on_release(id: &str) -> bool {
+    id == "paste_last"
 }
 
 pub(crate) fn support(id: &str, chord: &str) -> KeepSupport {
     use KeepCategory::*;
-    if !acts_on_press(id) {
-        // Push-to-talk, Undo last word and Paste last act on the release.
-        return keep(Unsupported, "needs_release");
+    if !keepable(id) {
+        // Push-to-talk and Undo last word act while the key is held.
+        return keep(Unsupported, "needs_hold");
     }
     if crate::shortcut::is_unbound(chord) {
         return keep(Unsupported, "unbound");
@@ -571,6 +580,17 @@ pub fn set_remote_local_binding(app: AppHandle, id: String, local: bool) -> Resu
     Ok(())
 }
 
+/// Whether you type Chinese, Japanese or Korean (only then is Ctrl+Space's
+/// input-method note shown).
+#[tauri::command]
+#[specta::specta]
+pub fn change_remote_keys_cjk_input_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    settings.remote_keys_cjk_input = enabled;
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
 /// For every shortcut: can it be kept on this PC, and if not, why.
 #[tauri::command]
 #[specta::specta]
@@ -651,6 +671,8 @@ mod win {
         chord: Chord,
         id: Arc<str>,
         hotkey: Arc<str>,
+        /// Paste last transcription: dispatched when its key is released.
+        on_release: bool,
     }
 
     struct Press {
@@ -658,6 +680,8 @@ mod win {
         hwnd: isize,
         id: Arc<str>,
         hotkey: Arc<str>,
+        /// The key's release (for a shortcut that acts on it), not its press.
+        release: bool,
     }
 
     /// Lives on the watcher thread only: the hook and the WinEvent callbacks
@@ -678,6 +702,9 @@ mod win {
         tick_timer: usize,
         last_owned: Instant,
         reported: Option<RemoteKeysState>,
+        /// A kept key whose shortcut runs on its release: (key, the press
+        /// that will go out when it comes up).
+        release_pending: Option<(u8, Press)>,
     }
 
     thread_local! {
@@ -755,6 +782,7 @@ mod win {
                 tick_timer: 0,
                 last_owned: Instant::now(),
                 reported: None,
+                release_pending: None,
             })
         });
         THREAD_ID.store(unsafe { GetCurrentThreadId() }, Ordering::SeqCst);
@@ -799,6 +827,7 @@ mod win {
                 .into_iter()
                 .map(|(chord, id, hotkey)| Candidate {
                     chord,
+                    on_release: super::acts_on_release(&id),
                     id: id.into(),
                     hotkey: hotkey.into(),
                 })
@@ -899,6 +928,7 @@ mod win {
             if k.keys.owns_any() && k.last_owned.elapsed() > OWNED_TIMEOUT {
                 warn!("Shortcut Keeper: a kept key's release never arrived; letting it go");
                 k.keys.release_all_owned();
+                k.release_pending = None;
             }
             // A safety net for a focus change whose event never came.
             evaluate(k);
@@ -945,6 +975,7 @@ mod win {
             if k.tick_timer == 0 {
                 warn!("Shortcut Keeper: no timer, keyboard hook removed");
                 k.keys.release_all_owned();
+                k.release_pending = None;
                 unhook(k);
             }
         }
@@ -1057,6 +1088,7 @@ mod win {
                 table,
                 tx,
                 armed,
+                release_pending,
                 ..
             } = &mut *k;
             let armed = *armed;
@@ -1070,17 +1102,31 @@ mod win {
                 if focus_hwnd() != Some(hwnd) {
                     return false;
                 }
-                tx.try_send(Press {
+                let press = Press {
                     generation: CONTEXT_GEN.load(Ordering::SeqCst),
                     hwnd,
                     id: candidate.id.clone(),
                     hotkey: candidate.hotkey.clone(),
-                })
-                .is_ok()
+                    release: candidate.on_release,
+                };
+                if candidate.on_release {
+                    // Goes out when this key comes up (it is swallowed then).
+                    *release_pending = Some((chord.vk, press));
+                    return true;
+                }
+                tx.try_send(press).is_ok()
             })
         };
         if verdict != Verdict::Swallow {
             return false;
+        }
+        if !down
+            && k.release_pending
+                .as_ref()
+                .is_some_and(|(vk, _)| u32::from(*vk) == event.vkCode)
+            && let Some((_, press)) = k.release_pending.take()
+        {
+            let _ = k.tx.try_send(press);
         }
         k.last_owned = Instant::now();
         if !k.keys.owns_any() {
@@ -1109,7 +1155,11 @@ mod win {
                     return;
                 }
                 debug!("Shortcut Keeper: kept on this PC: {}", press.id);
-                crate::shortcut::handle_kept_press(&main_app, &press.id, &press.hotkey, guard);
+                if press.release {
+                    crate::shortcut::handle_kept_release(&main_app, &press.id, &press.hotkey);
+                } else {
+                    crate::shortcut::handle_kept_press(&main_app, &press.id, &press.hotkey, guard);
+                }
             });
         }
     }
@@ -1368,9 +1418,9 @@ mod tests {
         assert_eq!(s("transcribe", "ctrl+shift").code, "modifier_only");
         assert_eq!(s("transcribe", "ctrl+numpad 1").code, "unknown_key");
         assert_eq!(s("transcribe", "").code, "unbound");
-        assert_eq!(s("transcribe_ptt", "ctrl+f5").code, "needs_release");
-        assert_eq!(s("paste_last", "ctrl+f5").code, "needs_release");
-        assert_eq!(s("undo_word", "ctrl+backspace").code, "needs_release");
+        assert_eq!(s("transcribe_ptt", "ctrl+f5").code, "needs_hold");
+        assert_eq!(s("undo_word", "ctrl+backspace").code, "needs_hold");
+        assert_eq!(s("paste_last", "ctrl+alt+i").category, KeepCategory::Ok);
         assert_eq!(s("transcribe", "ctrl+f5").category, KeepCategory::Ok);
         assert_eq!(s("cancel", "escape").category, KeepCategory::Ok);
         assert_eq!(s("jump_slot_3", "ctrl+alt+3").category, KeepCategory::Ok);

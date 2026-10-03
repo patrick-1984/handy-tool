@@ -8,6 +8,7 @@ import {
   BrainCircuit,
   Captions,
   CircleArrowUp,
+  SquareCheck,
   FileAudio,
   Gift,
   FlaskConical,
@@ -35,6 +36,7 @@ import {
 } from "./settings/whatsnew/WhatsNewPage";
 import { UpdateBanner } from "./UpdateBanner";
 import { UpdatePanel } from "./UpdatePanel";
+import { commands } from "@/bindings";
 import { useUpdaterStatus } from "../hooks/useUpdaterStatus";
 import { SidebarSearch } from "./SidebarSearch";
 import { useSettings } from "../hooks/useSettings";
@@ -320,11 +322,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [updatePanelOpen]);
-  const updateIndicator =
-    (settings?.automatic_update_checks ?? true) &&
-    ["available", "downloading", "ready_to_restart"].includes(
-      updaterStatus?.state ?? "",
-    );
+  // The icon by the version: cyan arrow = an update is waiting, green check =
+  // the last check found nothing newer, grey arrow = not checked yet (a click
+  // checks).
+  const updateTone: "waiting" | "current" | "unknown" = [
+    "available",
+    "downloading",
+    "ready_to_restart",
+    "installing",
+  ].includes(updaterStatus?.state ?? "")
+    ? "waiting"
+    : updaterStatus?.state === "idle" && updaterStatus.last_checked_at
+      ? "current"
+      : "unknown";
+  const updateLabel =
+    updateTone === "waiting"
+      ? t("sidebar.update.indicator")
+      : updateTone === "current"
+        ? t("settings.general.updates.upToDate")
+        : updaterStatus?.state === "checking"
+          ? t("sidebar.update.checking")
+          : t("settings.general.updates.checkNow");
 
   const availableSections = Object.entries(SECTIONS_CONFIG)
     .filter(([_, config]) => config.enabled(settings))
@@ -491,21 +509,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
               } else {
                 refreshUpdaterStatus();
                 setUpdatePanelOpen(true);
+                // Grey: nothing known yet, so the click is the check.
+                if (
+                  updateTone === "unknown" &&
+                  updaterStatus?.state !== "checking"
+                ) {
+                  void commands.checkForUpdates();
+                }
               }
             }}
             className="inline-flex items-center gap-1 rounded hover:text-text cursor-pointer"
           >
             {/* eslint-disable-next-line i18next/no-literal-string */}
             <span>v{appVersion}</span>
-            {updateIndicator && (
-              <>
+            <span title={updateLabel} className="inline-flex">
+              {updateTone === "current" ? (
+                <SquareCheck className="h-3 w-3 text-ok-text" aria-hidden />
+              ) : (
                 <CircleArrowUp
-                  className="h-3 w-3 text-accent-text"
+                  className={`h-3 w-3 ${updateTone === "waiting" ? "text-accent-text" : ""}`}
                   aria-hidden
                 />
-                <span className="sr-only">{t("sidebar.update.indicator")}</span>
-              </>
-            )}
+              )}
+            </span>
+            <span className="sr-only">{updateLabel}</span>
           </button>
         </div>
       )}

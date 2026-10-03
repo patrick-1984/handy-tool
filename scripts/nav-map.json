@@ -2248,6 +2248,23 @@
     "notes": "Runs the Jumper setup on the page. Windows only. Added in 2.0.0."
   },
   {
+    "page": "Setups",
+    "pageKey": "sidebar.setups",
+    "sidebarGroup": "Sidebar",
+    "tab": null,
+    "tabKey": null,
+    "group": null,
+    "groupKey": null,
+    "control": "Remote Desktop shortcuts",
+    "titleKey": "setup.catalog.remote.title",
+    "descKey": "setup.catalog.remote.description",
+    "type": "button",
+    "options": [],
+    "gating": "windows",
+    "file": "src/components/settings/setups/SetupsPage.tsx",
+    "notes": "Runs the Remote Desktop (Shortcut Keeper) setup on the page. Windows only. Added in 2.1.1."
+  },
+  {
     "page": "Transcription",
     "pageKey": "sidebar.transcription",
     "sidebarGroup": "Sidebar",
@@ -3942,16 +3959,16 @@
     "sidebarGroup": "Sidebar",
     "tab": null,
     "tabKey": null,
-    "group": "Warnings",
+    "group": "Hints",
     "groupKey": "settings.shortcuts.groups.warnings",
-    "control": "Warn about AltGr shortcuts",
+    "control": "Show hints for AltGr shortcuts",
     "titleKey": "settings.shortcuts.altGrWarning.label",
     "descKey": "settings.shortcuts.altGrWarning.description",
     "type": "toggle",
     "options": [],
     "gating": "none",
     "file": "src/components/settings/shortcuts/ShortcutsSettings.tsx",
-    "notes": "The AltGr warning icon's tooltip has a button that jumps here."
+    "notes": "The AltGr hint's tooltip has a button that jumps here."
   },
   {
     "page": "Shortcuts",
@@ -3961,13 +3978,30 @@
     "tabKey": null,
     "group": "Shortcut Keeper",
     "groupKey": "settings.shortcuts.keeper.title",
-    "control": "Keep chosen shortcuts on this PC in Remote Desktop",
+    "control": "Keep chosen shortcuts on this PC in Remote Desktop (Windows)",
     "titleKey": "settings.shortcuts.keeper.label",
     "descKey": "settings.shortcuts.keeper.description",
     "type": "toggle",
     "options": [],
     "gating": "windows",
     "file": "src/components/settings/shortcuts/ShortcutKeeper.tsx",
-    "notes": "Default off. Each shortcut row on this page then gets a Keep on this PC box (press-only shortcuts; Tauri backend only)."
+    "notes": "Default off. Each shortcut row on this page then gets a Keep on this PC box (not push-to-talk or Undo last word; Tauri backend only)."
+  },
+  {
+    "page": "Shortcuts",
+    "pageKey": "sidebar.shortcuts",
+    "sidebarGroup": "Sidebar",
+    "tab": null,
+    "tabKey": null,
+    "group": "Shortcut Keeper",
+    "groupKey": "settings.shortcuts.keeper.title",
+    "control": "I type Chinese, Japanese or Korean",
+    "titleKey": "settings.shortcuts.keeper.cjk.label",
+    "descKey": "settings.shortcuts.keeper.cjk.description",
+    "type": "toggle",
+    "options": [],
+    "gating": "windows",
+    "file": "src/components/settings/shortcuts/ShortcutKeeper.tsx",
+    "notes": "Default off. Only when on does a kept Ctrl+Space show its input-method note."
   }
 ]
