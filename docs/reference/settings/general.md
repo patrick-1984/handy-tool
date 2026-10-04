@@ -164,7 +164,7 @@ Catalog: [Pick which GPU transcribes](../../features.md#pick-which-gpu-transcrib
 
 `General › Transcription › Custom Words`
 
-Edits the terms used by transcript word correction: type a word and press Enter to add it, or click the × on a word to remove it. Correction aggressiveness is controlled by [Word Correction Threshold](debug.md#word-correction-threshold). **Default:** empty list.
+Edits the terms used by transcript word correction: type a word and press Enter to add it, or click the × on a word to remove it. Several words separated by spaces, commas, semicolons or new lines are added together on Enter, and **Import from file** adds the words of a `.txt`, `.csv` or `.md` file the same way; duplicates and words over 50 characters are skipped and counted in one message. Above 12 words the list shows its first 12 and **Show all (N)**, which opens the whole list with a filter box. **Copy all** copies the words one per line, and **Remove all** clears the list after a confirmation. Correction aggressiveness is controlled by [Word Correction Threshold](debug.md#word-correction-threshold). **Default:** empty list.
 
 Catalog: [Names and jargon stop coming back mangled](../../features.md#names-and-jargon-stop-coming-back-mangled).
 
