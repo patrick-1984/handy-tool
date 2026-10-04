@@ -1124,7 +1124,21 @@
         "description": "Un elenco di nomi, prodotti e termini tecnici che il motore continua a sbagliare; dopo ogni trascrizione Handy trova parole simili per suono e le sostituisce con la tua grafia. Predefinito: vuoto. Aggiungi le parole intere man mano che le incontri, e se inizia a correggere cose che non intendevi, abbassa Soglia di Correzione Parole nella pagina Debug.",
         "placeholder": "Aggiungi una parola, poi premi Invio",
         "remove": "Rimuovi {{word}}",
-        "duplicate": "\"{{word}}\" esiste già"
+        "duplicate": "\"{{word}}\" esiste già",
+        "placeholderMulti": "Aggiungi parole separate da spazi, poi premi Invio",
+        "addedSummary": "Parole aggiunte: {{added}}",
+        "skippedSummary": "Saltate: {{skipped}} (duplicate o troppo lunghe)",
+        "copyAll": "Copia tutte",
+        "copied": "Parole copiate: {{count}}",
+        "showAll": "Mostra tutte ({{count}})",
+        "showLess": "Mostra meno",
+        "filter": "Filtra parole",
+        "noMatches": "Nessuna parola corrisponde",
+        "removeAll": "Rimuovi tutte",
+        "removeAllTitle": "Rimuovi tutte le parole personalizzate",
+        "removeAllMessage": "Rimuovere tutte le parole personalizzate ({{count}})? L'operazione non può essere annullata.",
+        "wordCount": "Parole: {{count}}",
+        "longListWarning": "Gli elenchi lunghi possono cambiare per errore parole comuni. Tieni solo le parole che vengono davvero riconosciute male."
       },
       "tokenCountProviders": {
         "hint": "Provider per la pagina Conteggio Token. Suggerimento: il modello serve solo a selezionare il tokenizzatore — scegli il modello più piccolo della famiglia che ti interessa (ad es. qwen3:0.6b conta come qwen3:8b ma si carica in una frazione del tempo). Gli endpoint di conteggio di Anthropic e Gemini sono gratuiti; i server locali vengono interrogati con una richiesta di prova da 1 token.",

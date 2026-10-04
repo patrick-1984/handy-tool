@@ -1124,7 +1124,21 @@
         "description": "Danh sách tên riêng, sản phẩm và thuật ngữ mà engine liên tục nhận sai; sau mỗi bản phiên âm Handy tìm các từ nghe giống và thay bằng cách viết của bạn. Mặc định: trống. Thêm nguyên từ khi gặp phải, và nếu nó bắt đầu sửa những thứ bạn không có ý đó, giảm Word Correction Threshold ở trang Debug.",
         "placeholder": "Thêm một từ rồi nhấn Enter",
         "remove": "Xóa {{word}}",
-        "duplicate": "\"{{word}}\" đã tồn tại"
+        "duplicate": "\"{{word}}\" đã tồn tại",
+        "placeholderMulti": "Thêm các từ cách nhau bằng dấu cách, rồi nhấn Enter",
+        "addedSummary": "Đã thêm từ: {{added}}",
+        "skippedSummary": "Đã bỏ qua: {{skipped}} (trùng lặp hoặc quá dài)",
+        "copyAll": "Sao chép tất cả",
+        "copied": "Đã sao chép từ: {{count}}",
+        "showAll": "Hiện tất cả ({{count}})",
+        "showLess": "Thu gọn",
+        "filter": "Lọc từ",
+        "noMatches": "Không có từ nào khớp",
+        "removeAll": "Xóa tất cả",
+        "removeAllTitle": "Xóa tất cả từ tùy chỉnh",
+        "removeAllMessage": "Xóa tất cả từ tùy chỉnh ({{count}})? Không thể hoàn tác.",
+        "wordCount": "Số từ: {{count}}",
+        "longListWarning": "Danh sách dài có thể vô tình thay đổi các từ thông thường. Chỉ giữ lại những từ thực sự bị nhận dạng sai."
       },
       "tokenCountProviders": {
         "hint": "Các nhà cung cấp cho trang Đếm Token. Mẹo: mô hình chỉ chọn tokenizer — hãy chọn mô hình nhỏ nhất trong dòng bạn quan tâm (ví dụ qwen3:0.6b đếm giống qwen3:8b nhưng tải nhanh hơn nhiều). Các điểm cuối đếm của Anthropic và Gemini là miễn phí; các máy chủ cục bộ được truy vấn bằng một thử nghiệm 1 token.",

@@ -1124,7 +1124,21 @@
         "description": "Lista nazw, produktów i żargonu, które silnik regularnie błędnie rozpoznaje; po każdej transkrypcji Handy wyszukuje podobnie brzmiące słowa i zastępuje je Twoim zapisem. Domyślnie: puste. Dodawaj całe słowa, gdy je napotkasz, a jeśli zacznie poprawiać coś, czego nie miałeś na myśli, zmniejsz Próg korekty słów na stronie Debugowanie.",
         "placeholder": "Dodaj słowo i naciśnij Enter",
         "remove": "Usuń {{word}}",
-        "duplicate": "\"{{word}}\" już istnieje"
+        "duplicate": "\"{{word}}\" już istnieje",
+        "placeholderMulti": "Dodaj słowa oddzielone spacjami i naciśnij Enter",
+        "addedSummary": "Dodano słów: {{added}}",
+        "skippedSummary": "Pominięto: {{skipped}} (duplikaty lub za długie)",
+        "copyAll": "Kopiuj wszystkie",
+        "copied": "Skopiowano słów: {{count}}",
+        "showAll": "Pokaż wszystkie ({{count}})",
+        "showLess": "Pokaż mniej",
+        "filter": "Filtruj słowa",
+        "noMatches": "Brak pasujących słów",
+        "removeAll": "Usuń wszystkie",
+        "removeAllTitle": "Usuń wszystkie własne słowa",
+        "removeAllMessage": "Usunąć wszystkie własne słowa ({{count}})? Tej operacji nie można cofnąć.",
+        "wordCount": "Słów: {{count}}",
+        "longListWarning": "Długie listy mogą przez pomyłkę zmieniać zwykłe słowa. Zostaw tylko te słowa, które naprawdę są źle rozpoznawane."
       },
       "tokenCountProviders": {
         "hint": "Dostawcy dla strony liczenia tokenów. Wskazówka: model wybiera jedynie tokenizer — wybierz najmniejszy model danej rodziny (np. qwen3:0.6b liczy tak samo jak qwen3:8b, ale ładuje się znacznie szybciej). Punkty liczenia Anthropic i Gemini są darmowe; serwery lokalne odpytywane są sondą 1 tokena.",

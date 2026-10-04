@@ -1124,7 +1124,21 @@
         "description": "Eine Liste von Namen, Produkten und Fachbegriffen, die die Engine immer wieder falsch versteht; nach jeder Transkription sucht Handy ähnlich klingende Wörter und ersetzt sie durch deine Schreibweise. Standard: leer. Füge ganze Wörter hinzu, sobald sie dir auffallen, und senke Wortkorrektur-Schwelle auf der Debug-Seite, wenn Dinge korrigiert werden, die du nicht gemeint hast.",
         "placeholder": "Wort eingeben, dann Enter drücken",
         "remove": "{{word}} entfernen",
-        "duplicate": "\"{{word}}\" existiert bereits"
+        "duplicate": "\"{{word}}\" existiert bereits",
+        "placeholderMulti": "Wörter durch Leerzeichen getrennt eingeben, dann Enter drücken",
+        "addedSummary": "Hinzugefügte Wörter: {{added}}",
+        "skippedSummary": "Übersprungen: {{skipped}} (doppelt oder zu lang)",
+        "copyAll": "Alle kopieren",
+        "copied": "Kopierte Wörter: {{count}}",
+        "showAll": "Alle anzeigen ({{count}})",
+        "showLess": "Weniger anzeigen",
+        "filter": "Wörter filtern",
+        "noMatches": "Keine passenden Wörter",
+        "removeAll": "Alle entfernen",
+        "removeAllTitle": "Alle eigenen Wörter entfernen",
+        "removeAllMessage": "Alle eigenen Wörter ({{count}}) entfernen? Das lässt sich nicht rückgängig machen.",
+        "wordCount": "Wörter: {{count}}",
+        "longListWarning": "Lange Listen können versehentlich gewöhnliche Wörter ändern. Behalte nur die Wörter, die tatsächlich falsch erkannt werden."
       },
       "tokenCountProviders": {
         "hint": "Anbieter für die Seite Token-Anzahl. Tipp: Das Modell bestimmt nur den Tokenizer — wähle das kleinste Modell der Familie, die dich interessiert (z. B. zählt qwen3:0.6b genauso wie qwen3:8b, lädt aber in einem Bruchteil der Zeit). Die Zähl-Endpunkte von Anthropic und Gemini sind kostenlos; lokale Server werden mit einer 1-Token-Anfrage abgefragt.",

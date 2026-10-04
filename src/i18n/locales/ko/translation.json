@@ -1124,7 +1124,21 @@
         "description": "엔진이 계속 잘못 인식하는 이름, 제품명, 전문 용어 목록입니다. 매 전사 후 Handy는 비슷한 소리의 단어를 찾아 사용자가 입력한 철자로 대신 바꿉니다. 기본값: 빈 목록. 문제가 생길 때마다 단어를 통째로 추가하고, 의도하지 않은 것까지 수정되기 시작하면 디버그 페이지의 단어 수정 임계값을 낮추세요.",
         "placeholder": "단어를 입력하고 Enter 키를 누르세요",
         "remove": "{{word}} 제거",
-        "duplicate": "\"{{word}}\"이(가) 이미 존재합니다"
+        "duplicate": "\"{{word}}\"이(가) 이미 존재합니다",
+        "placeholderMulti": "공백으로 구분해 단어를 입력한 뒤 Enter를 누르세요",
+        "addedSummary": "추가된 단어: {{added}}",
+        "skippedSummary": "건너뜀: {{skipped}} (중복 또는 너무 김)",
+        "copyAll": "모두 복사",
+        "copied": "복사된 단어: {{count}}",
+        "showAll": "모두 보기 ({{count}})",
+        "showLess": "접기",
+        "filter": "단어 필터",
+        "noMatches": "일치하는 단어가 없습니다",
+        "removeAll": "모두 제거",
+        "removeAllTitle": "사용자 단어 모두 제거",
+        "removeAllMessage": "사용자 단어 {{count}}개를 모두 제거할까요? 되돌릴 수 없습니다.",
+        "wordCount": "단어: {{count}}개",
+        "longListWarning": "목록이 길면 일반 단어가 실수로 바뀔 수 있습니다. 실제로 잘못 인식되는 단어만 남겨 두세요."
       },
       "tokenCountProviders": {
         "hint": "토큰 수 페이지용 제공자입니다. 팁: 모델은 토크나이저 선택에만 영향을 주므로, 관심 있는 계열에서 가장 작은 모델을 선택하세요(예: qwen3:0.6b는 qwen3:8b와 동일하게 토큰을 세지만 훨씬 빨리 로드됩니다). Anthropic과 Gemini 카운팅 엔드포인트는 무료이며, 로컬 서버는 1토큰 프로브로 조회됩니다.",
