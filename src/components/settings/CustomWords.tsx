@@ -90,7 +90,8 @@ export const CustomWords: React.FC<CustomWordsProps> = React.memo(
       const input = e.currentTarget;
       const start = input.selectionStart ?? newWord.length;
       const end = input.selectionEnd ?? newWord.length;
-      const flat = pasted.replace(/[\r\n\t]+/g, " ").trim();
+      // Keep the edge spaces so the paste never glues onto a word beside it.
+      const flat = pasted.replace(/[\r\n\t]+/g, " ");
       setNewWord(newWord.slice(0, start) + flat + newWord.slice(end));
     };
 

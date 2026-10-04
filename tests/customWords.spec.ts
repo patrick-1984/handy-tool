@@ -34,8 +34,24 @@ test.describe("custom words parsing", () => {
     const ok = "b".repeat(50);
     const result = parseCustomWords(`${long} ${ok} "" <&>`, []);
     expect(result.added).toEqual([ok]);
-    expect(result.skipped).toBe(3);
+    expect(result.skipped).toBe(1);
     expect(result.duplicates).toEqual([]);
+  });
+
+  test("ignores Markdown list markup", () => {
+    const result = parseCustomWords(
+      "# Words\n- Kubernetes\n* `Tauri`\n1. **OpenAI**\n2) C# - Node.js",
+      [],
+    );
+    expect(result.added).toEqual([
+      "Words",
+      "Kubernetes",
+      "Tauri",
+      "OpenAI",
+      "C#",
+      "Node.js",
+    ]);
+    expect(result.skipped).toBe(0);
   });
 
   test("keeps the old sanitizing rules", () => {
