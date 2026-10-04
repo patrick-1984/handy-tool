@@ -369,6 +369,8 @@ no default. Each overlay button also has a right-click menu: **T** switches the 
 between last words and whole text and opens its settings, **Pause** can hide itself, and
 **Cancel** chooses whether cancelling discards the take or keeps it in History only; each menu
 can open the button's shortcut in Settings.
+The sound bars have a right-click menu too, on Windows: see
+[Switch between your voice and the system audio without opening Settings](#switch-sound-source-without-settings).
 **Where.** `General › Pause button = On`; the shortcut is
 `Shortcuts › Dictation › Pause / Resume`.
 **Since.** 1.10.0. The right-click menus since 2.0.0.
@@ -607,6 +609,33 @@ _{Windows only}_, with `General › Sound › Playback device to capture` naming
 different audio backend, so the control is hidden rather than offered and silently recording
 nothing.
 **Since.** 1.6.0.
+
+<!-- prov: sound source shortcut and pill menu | src: src-tauri/src/managers/audio.rs; src-tauri/src/audio_toolkit/audio/recorder.rs; src-tauri/src/shortcut/mod.rs; src-tauri/src/overlay.rs; src/overlay/RecordingOverlay.tsx; src-tauri/src/settings.rs -->
+
+### Switch between your voice and the system audio without opening Settings
+
+<a id="switch-sound-source-without-settings"></a>
+**The situation.** Most of the time you record your own voice, but now and then you want the
+call or the video you are watching, or both — and changing Sound source meant a trip to Settings,
+often after the recording had already started.
+**What Handy does.** The Cycle Sound Source shortcut steps through Microphone, System audio and
+Microphone + system audio, and the recording overlay names the new source for about a second
+and a half — on its own when nothing is recording. Right-clicking the overlay's sound bars during
+a take opens a menu with the three sources, the current one ticked, plus the sound source settings
+and the shortcut. Both change the same setting the Settings page shows. During a take the change
+applies from that moment on: start on the microphone, switch to system audio without saying a
+word, and what plays from then on is recorded; switch back and your voice is heard again. What
+was already recorded stays, and nothing is lost or doubled at the switch: the take keeps the
+microphone as its clock and only leaves its sound out while System audio is chosen. A take that
+started with System audio alone cannot take the microphone in mid-way, so the overlay says the
+change applies from the next recording. While system audio is recorded, Mute While Recording does
+not mute your speakers. Clicking the overlay or using one of its menus hands the foreground back
+to the window you were dictating into, so the paste at stop still lands there. With
+Overlay Position set to None nothing is shown.
+**Where.** `Shortcuts › Dictation › Cycle Sound Source` _{Windows only}_ — no default key —
+with the choice itself at `General › Sound › Sound source`.
+**Applies to.** Windows only, like system audio itself.
+**Since.** The release after 2.1.1.
 
 ### Your shortcuts don't eat the accented letters you type
 

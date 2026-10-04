@@ -612,6 +612,10 @@
             "name": "Canlı metin kutusu aç/kapat",
             "description": "Kayıt çubuğundaki T düğmesi gibi canlı metin kutusunu açar veya kapatır. Varsayılan: Yok."
           },
+          "cycle_capture_source": {
+            "name": "Ses kaynağını değiştir",
+            "description": "Kayıtların neyi yakaladığını sırayla değiştirir: Mikrofon, Sistem sesi, Mikrofon + sistem sesi. Kayıt çubuğu yeni kaynağı kısa bir süre gösterir. Kayıt sırasında o kaydı o andan itibaren değiştirir; kayıt yalnızca sistem sesiyle başladıysa yeni kaynak bir sonraki kayıtta geçerli olur. Yalnızca Windows. Varsayılan: Yok."
+          },
           "transcribe_with_post_process": {
             "name": "Son İşlem Kısayolu",
             "description": "İsteğe bağlı: Transkripsiyonunuza her zaman AI son işleme uygulayan özel bir kısayol tuşu."
@@ -2064,9 +2068,17 @@
     "menu": {
       "changeShortcut": "Kısayolu değiştir…",
       "liveTextSettings": "Canlı metin kutusu ayarları…",
-      "hidePause": "Duraklatma düğmesini gizle"
+      "hidePause": "Duraklatma düğmesini gizle",
+      "soundSourceSettings": "Ses kaynağı ayarları…"
     },
-    "tooQuiet": "Çok sessiz — sesli konuş"
+    "tooQuiet": "Çok sessiz — sesli konuş",
+    "captureSource": {
+      "now": "Ses kaynağı",
+      "nextTake": "Bir sonraki kayıttan itibaren",
+      "microphone": "Mikrofon",
+      "systemAudio": "Sistem sesi",
+      "both": "Mikrofon + sistem"
+    }
   },
   "brand": {
     "name": "Handy",

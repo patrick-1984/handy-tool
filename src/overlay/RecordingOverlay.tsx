@@ -7,13 +7,14 @@ import {
 } from "@tauri-apps/api/menu";
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { AlertCircle, Lock, MicOff, X } from "lucide-react";
+import { AlertCircle, Lock, Mic, MicOff, Volume2, X } from "lucide-react";
 import "./RecordingOverlay.css";
 import { PauseGlyph, PlayGlyph, TGlyph } from "./glyphs";
 import { progressColorVars } from "./progressColor";
 import {
   commands,
   type CancelBehavior,
+  type CaptureSource,
   type LiveTextMode,
   type ProgressStyle,
 } from "@/bindings";
@@ -29,7 +30,24 @@ type OverlayState =
   | "processing"
   | "no-microphone"
   | "microphone-blocked"
-  | "microphone-error";
+  | "microphone-error"
+  // Shown with no take running, just for a sound source change.
+  | "notice";
+
+/** A sound source change from the shortcut or the menu, shown for a moment. */
+interface CaptureSourceNotice {
+  source: CaptureSource;
+  /** The take in progress keeps its source; the next one uses the new one. */
+  next_take: boolean;
+}
+const CAPTURE_NOTICE_MS = 1500;
+
+// The pill's own short names, so the change fits on it.
+const CAPTURE_SOURCE_LABELS: Record<CaptureSource, string> = {
+  microphone: "overlay.captureSource.microphone",
+  system_audio: "overlay.captureSource.systemAudio",
+  microphone_and_system_audio: "overlay.captureSource.both",
+};
 
 // Why a take could not start; each is shown briefly, then the overlay hides.
 const MICROPHONE_PROBLEMS: Partial<Record<OverlayState, string>> = {
@@ -115,6 +133,15 @@ const RecordingOverlay: React.FC = () => {
   const [liveTextBox, setLiveTextBox] = useState(false);
   // What the button under the mouse does, shown in the middle of the pill.
   const [hoverLabel, setHoverLabel] = useState<string | null>(null);
+  // A sound source change, shown for a moment: in the middle of a take's pill,
+  // over the whole pill when it appears just for the change.
+  const [notice, setNotice] = useState<CaptureSourceNotice | null>(null);
+  // A take's state is on the pill (set as its show arrives, cleared on hide): a
+  // notice-only show racing a take's start must not replace the take's state.
+  const takeShownRef = useRef(false);
+  const noticeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Shown on its own, the pill keeps the notice until it fades out.
+  const lastNoticeRef = useRef<CaptureSourceNotice | null>(null);
   const [levels, setLevels] = useState<number[]>(Array(BAR_BANDS).fill(0));
   const smoothedLevelsRef = useRef<number[]>(Array(BAR_BANDS).fill(0));
   const direction = getLanguageDirection(i18n.language);
@@ -123,9 +150,11 @@ const RecordingOverlay: React.FC = () => {
     const setupEventListeners = async () => {
       // Listen for show-overlay event from Rust
       const unlistenShow = await listen("show-overlay", async (event) => {
+        const overlayState = event.payload as OverlayState;
+        if (overlayState !== "notice") takeShownRef.current = true;
         // Sync language from settings each time overlay is shown
         await syncLanguageFromSettings();
-        const overlayState = event.payload as OverlayState;
+        if (overlayState === "notice" && takeShownRef.current) return;
         setState(overlayState);
         setHoverLabel(null);
         setMicLive(false);
@@ -161,6 +190,19 @@ const RecordingOverlay: React.FC = () => {
         (event) => setLiveTextBox(event.payload),
       );
 
+      const unlistenNotice = await listen<CaptureSourceNotice>(
+        "capture-source-notice",
+        (event) => {
+          lastNoticeRef.current = event.payload;
+          setNotice(event.payload);
+          if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current);
+          noticeTimerRef.current = setTimeout(
+            () => setNotice(null),
+            CAPTURE_NOTICE_MS,
+          );
+        },
+      );
+
       // Transcription progress after stop, only meaningful in "transcribing"
       const unlistenProgress = await listen<number>(
         "transcription-progress",
@@ -169,6 +211,7 @@ const RecordingOverlay: React.FC = () => {
 
       // Listen for hide-overlay event from Rust
       const unlistenHide = await listen("hide-overlay", () => {
+        takeShownRef.current = false;
         const shown = shownProgressRef.current;
         if (shown !== null && shown < 100) {
           setFinishing(true); // hides once the figure reaches 100%
@@ -203,6 +246,7 @@ const RecordingOverlay: React.FC = () => {
         unlistenHide();
         unlistenProgress();
         unlistenLiveTextBox();
+        unlistenNotice();
         unlistenLevel();
       };
     };
@@ -226,6 +270,29 @@ const RecordingOverlay: React.FC = () => {
     };
   }, []);
 
+  useEffect(() => {
+    // Windows: a click on the pill, and every right-click menu (the native menu
+    // brings its window to the front), can take the foreground from the app the
+    // user dictates into - the paste at stop would then miss it. Note that app
+    // while the pointer comes onto the pill (hovering never activates it) and
+    // hand the foreground back after a click; menus do it in popup().
+    if (osType !== "windows") return;
+    const note = () => {
+      commands.overlayNoteFocus();
+    };
+    const restore = (e: MouseEvent) => {
+      if (e.button === 0) commands.overlayRestoreFocus();
+    };
+    document.documentElement.addEventListener("mouseenter", note);
+    document.addEventListener("mousedown", note, true);
+    document.addEventListener("mouseup", restore);
+    return () => {
+      document.documentElement.removeEventListener("mouseenter", note);
+      document.removeEventListener("mousedown", note, true);
+      document.removeEventListener("mouseup", restore);
+    };
+  }, [osType]);
+
   // Hovering a button names it in the middle of the pill.
   const hoverProps = (label: string) => ({
     onMouseEnter: () => setHoverLabel(label),
@@ -237,7 +304,9 @@ const RecordingOverlay: React.FC = () => {
   const popup = async (entries: Promise<MenuEntry>[]) => {
     setHoverLabel(null);
     const menu = await Menu.new({ items: await Promise.all(entries) });
+    // On Windows this returns once the menu has closed.
     await menu.popup();
+    if (osType === "windows") commands.overlayRestoreFocus();
   };
   const openAt = (section: string, titleKey: string) => () => {
     commands.openSettingsAt(section, titleKey);
@@ -322,6 +391,68 @@ const RecordingOverlay: React.FC = () => {
         : []),
     ]);
   };
+  // The sound bars' menu: what takes record from (Windows only, like the
+  // setting). A change during a take applies to it at once where it can.
+  const soundSourceMenu = async () => {
+    const source = (await currentSettings())?.capture_source ?? "microphone";
+    const option = (value: CaptureSource, key: string) =>
+      CheckMenuItem.new({
+        text: t(key),
+        checked: source === value,
+        action: () => {
+          commands.chooseCaptureSource(value);
+        },
+      });
+    await popup([
+      MenuItem.new({
+        text: t("settings.advanced.captureSource.title"),
+        enabled: false,
+      }),
+      option(
+        "microphone",
+        "settings.advanced.captureSource.options.microphone",
+      ),
+      option(
+        "system_audio",
+        "settings.advanced.captureSource.options.systemAudio",
+      ),
+      option(
+        "microphone_and_system_audio",
+        "settings.advanced.captureSource.options.both",
+      ),
+      separator(),
+      MenuItem.new({
+        text: t("overlay.menu.soundSourceSettings"),
+        action: openAt("general", "settings.advanced.captureSource.title"),
+      }),
+      changeShortcut("cycle_capture_source"),
+    ]);
+  };
+  const shownNotice =
+    notice ?? (state === "notice" ? lastNoticeRef.current : null);
+  // On its own the notice takes the whole pill; during a take only the middle,
+  // so cancel, pause and T stay usable.
+  const noticeOnly = state === "notice";
+  const noticeView = shownNotice && (
+    <div className="capture-notice" role="status">
+      <span className="capture-notice-icons" aria-hidden>
+        {shownNotice.source !== "system_audio" && <Mic size={13} />}
+        {shownNotice.source !== "microphone" && <Volume2 size={13} />}
+      </span>
+      <span className="capture-notice-text">
+        <span className="capture-notice-caption">
+          {t(
+            shownNotice.next_take
+              ? "overlay.captureSource.nextTake"
+              : "overlay.captureSource.now",
+          )}
+        </span>
+        <span className="capture-notice-source">
+          {t(CAPTURE_SOURCE_LABELS[shownNotice.source])}
+        </span>
+      </span>
+    </div>
+  );
   const onMenu = (open: () => void) => (e: React.MouseEvent) => {
     e.preventDefault();
     open();
@@ -340,9 +471,13 @@ const RecordingOverlay: React.FC = () => {
         } as React.CSSProperties
       }
     >
-      <div className="recording-overlay">
+      <div
+        className={`recording-overlay ${noticeOnly && shownNotice ? "noticing" : ""}`}
+      >
+        {/* A sound source change on its own covers the pill. */}
+        {noticeOnly && noticeView}
         {/* A microphone problem takes the whole pill: no buttons then. */}
-        {!MICROPHONE_PROBLEMS[state] && (
+        {!MICROPHONE_PROBLEMS[state] && state !== "notice" && (
           <div className="overlay-float-btn">
             <button
               type="button"
@@ -360,7 +495,17 @@ const RecordingOverlay: React.FC = () => {
             </button>
           </div>
         )}
-        <div className="overlay-middle">
+        <div
+          className={`overlay-middle ${!noticeOnly && shownNotice ? "noticing" : ""}`}
+          onContextMenu={
+            osType === "windows" &&
+            (state === "recording" || state === "paused")
+              ? onMenu(soundSourceMenu)
+              : undefined
+          }
+        >
+          {/* During a take: in the middle for a moment, like a button's name. */}
+          {!noticeOnly && noticeView}
           {hoverLabel && (
             <div className="overlay-message hover-label">{hoverLabel}</div>
           )}

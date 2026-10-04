@@ -384,3 +384,64 @@
 .cancel-button.resume {
   background: var(--overlay-hover);
 }
+
+/* A sound source change (shortcut or menu). On its own: over the whole pill,
+   so the words fit. */
+.capture-notice {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 12px;
+}
+
+.recording-overlay.noticing > :not(.capture-notice) {
+  visibility: hidden;
+}
+
+/* During a take: in the middle only, in place of the bars or the words there,
+   so cancel, pause and T stay visible and clickable. */
+.overlay-middle .capture-notice {
+  position: static;
+  min-width: 0;
+  overflow: hidden;
+  gap: 4px;
+  padding: 0;
+}
+
+.overlay-middle.noticing > :not(.capture-notice) {
+  display: none;
+}
+
+.capture-notice-icons {
+  flex: none;
+  display: flex;
+  gap: 2px;
+  color: var(--overlay-bar);
+}
+
+.capture-notice-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.15;
+}
+
+.capture-notice-caption,
+.capture-notice-source {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.capture-notice-caption {
+  font-size: 9.5px;
+  opacity: 0.75;
+}
+
+.capture-notice-source {
+  font-size: 12px;
+  font-weight: 600;
+}

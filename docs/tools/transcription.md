@@ -21,6 +21,7 @@ Use ordinary transcription when you want the words in the field under your curso
 - [Dictation doesn't steal your clipboard](../features.md#dictation-doesnt-steal-your-clipboard)
 - [Names and jargon stop coming back mangled](../features.md#names-and-jargon-stop-coming-back-mangled)
 - [The next dictation doesn't run into the last one](../features.md#the-next-dictation-doesnt-run-into-the-last-one)
+- [Switch between your voice and the system audio without opening Settings](../features.md#switch-sound-source-without-settings)
 
 ## Settings that matter
 

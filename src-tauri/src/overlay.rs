@@ -41,6 +41,56 @@ pub fn is_own_helper_window(hwnd: isize) -> bool {
     )
 }
 
+/// The window the user worked in when the pointer came onto the pill, noted so a
+/// click or a right-click menu on the pill can hand the foreground back (see
+/// [`restore_focus_after_pill`]). 0 until noted; cleared when the pill hides, so
+/// only a window noted while the pill is up can be brought back.
+#[cfg(windows)]
+static FOCUS_BEFORE_PILL: std::sync::atomic::AtomicIsize = std::sync::atomic::AtomicIsize::new(0);
+
+/// The pointer came onto the pill, or pressed it: note the window in front -
+/// unless it already is the pill (or another helper window of ours), which keeps
+/// the window noted before. Hovering never activates the pill, so the window in
+/// front then is the one the user dictates into.
+pub fn note_focus_before_pill() {
+    #[cfg(windows)]
+    if let Some(hwnd) = crate::anchor::foreground_window_id() {
+        if !is_own_helper_window(hwnd) {
+            FOCUS_BEFORE_PILL.store(hwnd, Ordering::Relaxed);
+        }
+    }
+}
+
+/// After a click or a right-click menu on the pill: if that left one of Handy's
+/// helper windows in front, give the foreground back to the window noted when the
+/// pointer came onto the pill, so the next paste lands where the user dictates.
+///
+/// Needed even for a window that does not activate on clicks: the native menu
+/// (muda) calls SetForegroundWindow on the pill before TrackPopupMenu. Allowed
+/// by Windows because Handy's own window is then the foreground. Does nothing
+/// when the main window's handle is unknown or the noted window has closed.
+pub fn restore_focus_after_pill() {
+    #[cfg(windows)]
+    {
+        use windows::Win32::Foundation::HWND;
+        use windows::Win32::UI::WindowsAndMessaging::{IsWindow, SetForegroundWindow};
+        let noted = FOCUS_BEFORE_PILL.load(Ordering::Relaxed);
+        let ours_in_front = crate::anchor::foreground_window_id().is_some_and(is_own_helper_window);
+        let hwnd = HWND(noted as *mut core::ffi::c_void);
+        let alive = noted != 0 && unsafe { IsWindow(Some(hwnd)).as_bool() };
+        if should_restore_focus(noted, ours_in_front, alive) {
+            let restored = unsafe { SetForegroundWindow(hwnd).as_bool() };
+            log::debug!("Pill used: foreground handed back (restored={restored})");
+        }
+    }
+}
+
+/// The rule behind [`restore_focus_after_pill`], kept pure for testing.
+#[cfg_attr(not(windows), allow(dead_code))]
+fn should_restore_focus(noted: isize, ours_in_front: bool, noted_alive: bool) -> bool {
+    noted != 0 && ours_in_front && noted_alive
+}
+
 /// The rule behind [`is_own_helper_window`], kept pure for testing.
 #[cfg_attr(not(windows), allow(dead_code))]
 fn helper_decision(hwnd: isize, main_hwnd: isize, same_process: bool) -> bool {
@@ -49,7 +99,21 @@ fn helper_decision(hwnd: isize, main_hwnd: isize, same_process: bool) -> bool {
 
 #[cfg(test)]
 mod helper_window_tests {
-    use super::helper_decision;
+    use super::{helper_decision, should_restore_focus};
+
+    #[test]
+    fn the_foreground_goes_back_only_when_the_pill_took_it_from_a_live_window() {
+        assert!(should_restore_focus(42, true, true));
+        assert!(
+            !should_restore_focus(42, false, true),
+            "the user's app is still in front"
+        );
+        assert!(
+            !should_restore_focus(42, true, false),
+            "the noted window has closed"
+        );
+        assert!(!should_restore_focus(0, true, true), "nothing noted yet");
+    }
 
     #[test]
     fn only_our_other_windows_count_as_helpers() {
@@ -69,6 +133,12 @@ mod helper_window_tests {
         assert!(!helper_decision(0, 5, true), "no foreground window");
     }
 }
+
+/// A take's state (recording, paused, transcribing, a microphone problem...) is on
+/// the pill, from the start of its show until the pill hides. Unlike
+/// `OVERLAY_VISIBLE` it is set before the show's window work, and a sound source
+/// notice never sets it.
+static TAKE_ON_PILL: AtomicBool = AtomicBool::new(false);
 
 /// Generation counter incremented on every show, checked by delayed hide threads.
 /// If the generation changed between spawning and waking, the hide is stale and skipped.
@@ -392,6 +462,9 @@ pub fn create_recording_overlay(app_handle: &AppHandle) {
 }
 
 fn show_overlay_state(app_handle: &AppHandle, state: &str) {
+    // First, so a sound source notice from here on joins this take's pill instead
+    // of showing (and later hiding) a pill of its own.
+    TAKE_ON_PILL.store(true, Ordering::SeqCst);
     // The main window follows the take too (the setup's Try it), whether or
     // not the pill is shown. `emit_to` only queues the event.
     let _ = app_handle.emit_to("main", "take-state", state);
@@ -465,6 +538,64 @@ pub fn show_microphone_problem_overlay(app_handle: &AppHandle, state: &str) {
     });
 }
 
+/// What the pill says after the sound source changed from the shortcut or its menu.
+#[derive(Clone, serde::Serialize)]
+struct CaptureSourceNotice {
+    source: settings::CaptureSource,
+    /// The take in progress keeps its source; the new one starts with the next take.
+    next_take: bool,
+}
+
+/// How long the pill shows a sound source change.
+const CAPTURE_NOTICE_MS: u64 = 1_600;
+
+/// Say on the pill which sound source takes record now (the Cycle Sound Source
+/// shortcut, the pill's right-click menu). During a take the pill shows it over the
+/// sound bars for a moment; with no take on screen the pill appears just for it and
+/// hides again. Nothing with Overlay Position: None.
+pub fn show_capture_source_notice(
+    app_handle: &AppHandle,
+    source: settings::CaptureSource,
+    next_take: bool,
+) {
+    if settings::get_settings(app_handle).overlay_position == OverlayPosition::None {
+        return;
+    }
+    let notice = CaptureSourceNotice { source, next_take };
+    if TAKE_ON_PILL.load(Ordering::SeqCst) {
+        let _ = app_handle.emit_to("recording_overlay", "capture-source-notice", notice);
+        return;
+    }
+    // Not through show_overlay_state: that tells the main window a take started.
+    // No lock against a take starting right now (its show runs on the main thread,
+    // which this one waits on): a take shown in the meantime keeps its state on
+    // the pill (the page ignores a later "notice") and the hide below skips it.
+    OVERLAY_GENERATION.fetch_add(1, Ordering::SeqCst);
+    let generation = OVERLAY_GENERATION.load(Ordering::SeqCst);
+    update_overlay_position(app_handle);
+    let Some(overlay_window) = app_handle.get_webview_window("recording_overlay") else {
+        return;
+    };
+    if overlay_window.show().is_ok() {
+        OVERLAY_VISIBLE.store(true, Ordering::Relaxed);
+    }
+    #[cfg(target_os = "windows")]
+    force_overlay_topmost(&overlay_window);
+    let _ = overlay_window.emit("show-overlay", "notice");
+    let _ = overlay_window.emit("capture-source-notice", notice);
+    // A take shown in the meantime (or another notice) bumps the generation and
+    // keeps the pill.
+    let app_handle = app_handle.clone();
+    std::thread::spawn(move || {
+        std::thread::sleep(std::time::Duration::from_millis(CAPTURE_NOTICE_MS));
+        if OVERLAY_GENERATION.load(Ordering::SeqCst) == generation
+            && !TAKE_ON_PILL.load(Ordering::SeqCst)
+        {
+            hide_recording_overlay(&app_handle);
+        }
+    });
+}
+
 /// Updates the overlay window position based on current settings
 pub fn update_overlay_position(app_handle: &AppHandle) {
     if let Some(overlay_window) = app_handle.get_webview_window("recording_overlay") {
@@ -488,6 +619,9 @@ pub fn hide_recording_overlay(app_handle: &AppHandle) {
     // Stop the audio worker from emitting levels immediately (T-306), before any
     // window work below — the actual native hide is delayed for the fade-out.
     OVERLAY_VISIBLE.store(false, Ordering::Relaxed);
+    TAKE_ON_PILL.store(false, Ordering::SeqCst);
+    #[cfg(windows)]
+    FOCUS_BEFORE_PILL.store(0, Ordering::Relaxed);
     let _ = app_handle.emit_to("main", "take-state", "idle");
     if QUIET_HINT_SHOWN.swap(false, Ordering::Relaxed) {
         set_quiet_hint_visible(app_handle, false);

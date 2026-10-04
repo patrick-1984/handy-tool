@@ -612,6 +612,10 @@
             "name": "Okienko tekstu na żywo wł./wył.",
             "description": "Włącza lub wyłącza okienko tekstu na żywo, tak jak przycisk T na pasku nagrywania. Domyślnie: brak."
           },
+          "cycle_capture_source": {
+            "name": "Przełącz źródło dźwięku",
+            "description": "Przełącza po kolei, co nagrywa Handy: Mikrofon, Dźwięk systemowy, Mikrofon + dźwięk systemowy. Pasek nagrywania przez chwilę pokazuje nowe źródło. W trakcie nagrania przełącza to nagranie od tej chwili, chyba że zaczęło się od samego dźwięku systemowego — wtedy nowe źródło obowiązuje od następnego nagrania. Tylko Windows. Domyślnie: brak."
+          },
           "transcribe_with_post_process": {
             "name": "Skrót postprocessingu",
             "description": "Opcjonalnie: Dedykowany skrót klawiszowy, który zawsze stosuje postprocessing AI do transkrypcji."
@@ -2064,9 +2068,17 @@
     "menu": {
       "changeShortcut": "Zmień skrót…",
       "liveTextSettings": "Ustawienia pola tekstu na żywo…",
-      "hidePause": "Ukryj przycisk pauzy"
+      "hidePause": "Ukryj przycisk pauzy",
+      "soundSourceSettings": "Ustawienia źródła dźwięku…"
     },
-    "tooQuiet": "Za cicho – mów głośniej"
+    "tooQuiet": "Za cicho – mów głośniej",
+    "captureSource": {
+      "now": "Źródło dźwięku",
+      "nextTake": "Od następnego nagrania",
+      "microphone": "Mikrofon",
+      "systemAudio": "Dźwięk systemowy",
+      "both": "Mikrofon + system"
+    }
   },
   "tokenCount": {
     "configureProviders": "Skonfiguruj dostawców",

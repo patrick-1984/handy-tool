@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { listen } from "@tauri-apps/api/event";
 import { useTranslation } from "react-i18next";
 import { SettingContainer } from "../ui/SettingContainer";
 import { SubSettings } from "../ui/SettingsGroup";
@@ -44,8 +45,19 @@ interface CaptureSourceSettingsProps {
 export const CaptureSourceSettings: React.FC<CaptureSourceSettingsProps> =
   React.memo(({ descriptionMode = "tooltip", grouped = false }) => {
     const { t } = useTranslation();
-    const { getSetting, updateSetting, isUpdating } = useSettings();
+    const { getSetting, updateSetting, isUpdating, refreshSettings } =
+      useSettings();
     const osType = useOsType();
+
+    // The Cycle Sound Source shortcut and the recording pill's menu change it too.
+    useEffect(() => {
+      const unlisten = listen("capture-source-changed", () => {
+        void refreshSettings();
+      });
+      return () => {
+        unlisten.then((fn) => fn());
+      };
+    }, [refreshSettings]);
 
     const [outputs, setOutputs] = useState<AudioDevice[]>([]);
 

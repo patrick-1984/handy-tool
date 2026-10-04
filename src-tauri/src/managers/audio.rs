@@ -116,6 +116,74 @@ pub enum MicrophoneMode {
     OnDemand,
 }
 
+/// Which legs an open capture stream records.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Legs {
+    /// The stream that clocks the take: the microphone, or the playback device when
+    /// System audio was opened on its own.
+    pub master: EndpointRole,
+    /// A system-audio leg is mixed into the microphone.
+    pub system: bool,
+    /// The microphone is heard (false: left out mid-take, or not opened at all).
+    pub mic_on: bool,
+}
+
+impl Legs {
+    /// What `start_microphone_stream` opens for `source`.
+    pub fn opened_for(source: CaptureSource) -> Self {
+        match source {
+            CaptureSource::Microphone => Legs {
+                master: EndpointRole::Capture,
+                system: false,
+                mic_on: true,
+            },
+            CaptureSource::SystemAudio => Legs {
+                master: EndpointRole::RenderLoopback,
+                system: false,
+                mic_on: false,
+            },
+            CaptureSource::MicrophoneAndSystemAudio => Legs {
+                master: EndpointRole::Capture,
+                system: true,
+                mic_on: true,
+            },
+        }
+    }
+
+    /// The legs that record `want` for the rest of a take without reopening its
+    /// master, or `None` when that cannot be done.
+    ///
+    /// A microphone master can carry every source: the system leg is added or
+    /// removed, and System audio leaves the microphone's sound out while its frames
+    /// keep clocking the take - so nothing is lost, duplicated or resampled
+    /// differently at the switch, and VAD and chunking run on as before. A playback
+    /// device master (a take started with System audio alone) cannot: hearing the
+    /// microphone would mean a second clocked input mid-take, so the change waits
+    /// for the next take.
+    pub fn switched_to(self, want: CaptureSource) -> Option<Self> {
+        if self == Legs::opened_for(want) {
+            return Some(self);
+        }
+        if self.master != EndpointRole::Capture {
+            return None;
+        }
+        Some(Legs {
+            master: EndpointRole::Capture,
+            system: want != CaptureSource::Microphone,
+            mic_on: want != CaptureSource::SystemAudio,
+        })
+    }
+}
+
+/// When a sound source change takes effect.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SourceSwitch {
+    /// Now: no take is running, or the take in progress switched.
+    Now,
+    /// The take in progress keeps its source; the next take uses the new one.
+    NextTake,
+}
+
 /// Why a take did not start. Only the cases the UI reports differently are told apart.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum StartFailure {
@@ -214,6 +282,12 @@ pub struct AudioRecordingManager {
     /// Bumped when a take starts (under the state lock): which take an undo cut
     /// belongs to, so a cut from an ended take never lands in a later one.
     take_seq: Arc<AtomicU64>,
+    /// The legs the open stream records now; `None` while it is closed.
+    legs: Arc<Mutex<Option<Legs>>>,
+    /// The open stream no longer matches the settings: a take switched its source
+    /// mid-way, or a source, device, gain or delay change arrived during a take. It
+    /// is reopened once the take has ended (and, at the latest, before the next).
+    streams_stale: Arc<AtomicBool>,
 }
 
 impl AudioRecordingManager {
@@ -239,6 +313,8 @@ impl AudioRecordingManager {
             warm_generation: Arc::new(AtomicU64::new(0)),
             paused: Arc::new(AtomicBool::new(false)),
             take_seq: Arc::new(AtomicU64::new(0)),
+            legs: Arc::new(Mutex::new(None)),
+            streams_stale: Arc::new(AtomicBool::new(false)),
         };
 
         // Always-on?  Open immediately. A microphone that cannot start (blocked in
@@ -415,6 +491,8 @@ impl AudioRecordingManager {
             }
         }
 
+        *self.legs.lock().unwrap() = Some(Legs::opened_for(source));
+        self.streams_stale.store(false, AtomicOrdering::SeqCst);
         *open_flag = true;
         info!(
             "Microphone stream initialized in {:?}",
@@ -444,6 +522,8 @@ impl AudioRecordingManager {
             let _ = rec.close();
         }
 
+        *self.legs.lock().unwrap() = None;
+        self.streams_stale.store(false, AtomicOrdering::SeqCst);
         *open_flag = false;
         debug!("Microphone stream stopped");
     }
@@ -458,13 +538,103 @@ impl AudioRecordingManager {
     /// stream happens to be open. Mirrors what `update_selected_device` already does
     /// for the microphone picker.
     pub fn update_capture_source(&self) {
-        let recording = !matches!(*self.state.lock().unwrap(), RecordingState::Idle);
-        if recording {
+        // Held throughout, so a take cannot start while the streams are reopened.
+        let state = self.state.lock().unwrap();
+        if !matches!(*state, RecordingState::Idle) {
             // Never reopen mid-take: stop_microphone_stream discards the samples the
             // recorder is holding, which would silently destroy the take in progress.
-            info!("Capture source changed while recording; it applies to the next take");
+            info!("Capture settings changed while recording; they apply to the next take");
+            self.streams_stale.store(true, AtomicOrdering::SeqCst);
             return;
         }
+        self.reopen_capture_streams();
+    }
+
+    /// Apply a changed sound source (Settings, the shortcut or the pill's menu).
+    ///
+    /// With no take running the streams are reopened as `update_capture_source`
+    /// does. During a take whose master is the microphone the take itself switches
+    /// (see [`Legs::switched_to`]); otherwise the take keeps its source and the next
+    /// one uses the new source.
+    pub fn apply_capture_source(&self) -> SourceSwitch {
+        let state = self.state.lock().unwrap();
+        if matches!(*state, RecordingState::Idle) {
+            self.reopen_capture_streams();
+            return SourceSwitch::Now;
+        }
+        let want = get_settings(&self.app_handle).effective_capture_source();
+        match self.switch_take_source(want) {
+            Ok(true) => SourceSwitch::Now,
+            Ok(false) => {
+                info!(
+                    "Sound source changed during a take it cannot switch; it applies to the next take"
+                );
+                self.streams_stale.store(true, AtomicOrdering::SeqCst);
+                SourceSwitch::NextTake
+            }
+            Err(e) => {
+                warn!(
+                    "Could not switch the take in progress to {want:?}: {e}; it applies to the next take"
+                );
+                self.streams_stale.store(true, AtomicOrdering::SeqCst);
+                SourceSwitch::NextTake
+            }
+        }
+    }
+
+    /// Switch the take in progress to `want`. Ok(false) when its master cannot carry
+    /// it. Called with the state lock held, so the take cannot end meanwhile.
+    fn switch_take_source(&self, want: CaptureSource) -> Result<bool, anyhow::Error> {
+        let Some(legs) = *self.legs.lock().unwrap() else {
+            return Ok(false);
+        };
+        let Some(target) = legs.switched_to(want) else {
+            return Ok(false);
+        };
+        if target == legs {
+            return Ok(true);
+        }
+        {
+            let mut rec = self.recorder.lock().unwrap();
+            let rec = rec
+                .as_mut()
+                .ok_or_else(|| anyhow::anyhow!("recorder not available"))?;
+            // Add the system leg before the microphone is left out and remove it after
+            // the microphone is heard again, so the take never has a moment with
+            // neither.
+            if target.system && !legs.system {
+                let settings = get_settings(&self.app_handle);
+                let dev = resolve_system_audio_device(settings.system_audio_device.as_deref())
+                    .map_err(|e| anyhow::anyhow!("{e}"))?;
+                rec.attach_system_audio(dev)
+                    .map_err(|e| anyhow::anyhow!("Failed to open system audio: {e}"))?;
+            }
+            if target.mic_on != legs.mic_on {
+                rec.set_microphone_leg(target.mic_on)
+                    .map_err(|e| anyhow::anyhow!("{e}"))?;
+            }
+            if legs.system && !target.system {
+                rec.detach_system_audio()
+                    .map_err(|e| anyhow::anyhow!("{e}"))?;
+            }
+        }
+        *self.legs.lock().unwrap() = Some(target);
+        // Mid-take legs are not what a fresh open makes: reopen after the take.
+        self.streams_stale.store(true, AtomicOrdering::SeqCst);
+        // Muting the playback device would silence the system audio now recorded;
+        // back on the microphone alone, Mute while recording applies again.
+        if target.system {
+            self.remove_mute();
+        } else {
+            self.apply_mute();
+        }
+        info!("Take switched to {want:?}");
+        Ok(true)
+    }
+
+    /// Close and reopen the capture streams for the current settings. The caller
+    /// holds the state lock with no take running.
+    fn reopen_capture_streams(&self) {
         let was_open = *self.is_open.lock().unwrap();
         self.stop_microphone_stream();
         if was_open || matches!(*self.mode.lock().unwrap(), MicrophoneMode::AlwaysOn) {
@@ -472,6 +642,23 @@ impl AudioRecordingManager {
                 error!("Failed to reopen capture streams after a source change: {e}");
             }
         }
+    }
+
+    /// After a take: reopen streams it left stale (see `streams_stale`), off the
+    /// caller's thread so the transcription is not held up.
+    fn reconcile_after_take(&self) {
+        if !self.streams_stale.load(AtomicOrdering::SeqCst) {
+            return;
+        }
+        let manager = self.clone();
+        std::thread::spawn(move || {
+            let state = manager.state.lock().unwrap();
+            if matches!(*state, RecordingState::Idle)
+                && manager.streams_stale.load(AtomicOrdering::SeqCst)
+            {
+                manager.reopen_capture_streams();
+            }
+        });
     }
 
     /* ---------- mode switching --------------------------------------------- */
@@ -540,6 +727,19 @@ impl AudioRecordingManager {
             // fault check lives in start_microphone_stream, which always-on never
             // called; calling it here is a no-op when the stream is healthy and a
             // reopen when it is not.
+            // Streams left stale by a change during the last take, or opened for
+            // another source than the settings now name (a restored backup), are
+            // reopened first: an open stream is otherwise reused as it is.
+            if *self.is_open.lock().unwrap() {
+                let want =
+                    Legs::opened_for(get_settings(&self.app_handle).effective_capture_source());
+                if self.streams_stale.load(AtomicOrdering::SeqCst)
+                    || *self.legs.lock().unwrap() != Some(want)
+                {
+                    info!("Capture streams do not match the settings; reopening before the take");
+                    self.stop_microphone_stream();
+                }
+            }
             let on_demand = matches!(*self.mode.lock().unwrap(), MicrophoneMode::OnDemand);
             let faulted = !on_demand
                 && self
@@ -637,6 +837,7 @@ impl AudioRecordingManager {
                 if matches!(*self.mode.lock().unwrap(), MicrophoneMode::OnDemand) {
                     self.release_microphone_after_take();
                 }
+                self.reconcile_after_take();
 
                 // Pad if very short
                 let s_len = samples.len();
@@ -797,6 +998,7 @@ impl AudioRecordingManager {
             if matches!(*self.mode.lock().unwrap(), MicrophoneMode::OnDemand) {
                 self.release_microphone_after_take();
             }
+            self.reconcile_after_take();
         }
     }
 
@@ -836,5 +1038,57 @@ impl AudioRecordingManager {
         {
             self.stop_microphone_stream();
         }
+    }
+}
+
+#[cfg(test)]
+mod source_switch_tests {
+    use super::{EndpointRole, Legs};
+    use crate::settings::CaptureSource::{self, *};
+
+    const ALL: [CaptureSource; 3] = [Microphone, SystemAudio, MicrophoneAndSystemAudio];
+
+    #[test]
+    fn a_microphone_driven_take_switches_to_any_source_and_keeps_its_clock() {
+        for start in [Microphone, MicrophoneAndSystemAudio] {
+            for want in ALL {
+                let legs = Legs::opened_for(start).switched_to(want).unwrap();
+                assert_eq!(legs.master, EndpointRole::Capture, "{start:?} -> {want:?}");
+                assert_eq!(legs.system, want != Microphone, "{start:?} -> {want:?}");
+                assert_eq!(legs.mic_on, want != SystemAudio, "{start:?} -> {want:?}");
+            }
+        }
+    }
+
+    #[test]
+    fn switching_back_to_the_starting_source_restores_the_opened_legs() {
+        let opened = Legs::opened_for(Microphone);
+        let back = opened
+            .switched_to(SystemAudio)
+            .and_then(|l| l.switched_to(MicrophoneAndSystemAudio))
+            .and_then(|l| l.switched_to(Microphone));
+        assert_eq!(back, Some(opened));
+    }
+
+    #[test]
+    fn a_take_started_on_system_audio_alone_waits_for_the_next_take() {
+        let legs = Legs::opened_for(SystemAudio);
+        assert_eq!(legs.switched_to(Microphone), None);
+        assert_eq!(legs.switched_to(MicrophoneAndSystemAudio), None);
+        assert_eq!(
+            legs.switched_to(SystemAudio),
+            Some(legs),
+            "nothing to change"
+        );
+    }
+
+    #[test]
+    fn mid_take_system_audio_is_not_what_a_fresh_open_makes() {
+        // Why the streams are reopened after such a take: a fresh System audio take
+        // is clocked by the playback device, not by a silenced microphone.
+        let switched = Legs::opened_for(Microphone)
+            .switched_to(SystemAudio)
+            .unwrap();
+        assert_ne!(switched, Legs::opened_for(SystemAudio));
     }
 }

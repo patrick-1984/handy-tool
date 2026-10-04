@@ -612,6 +612,10 @@
             "name": "Okénko živého textu zap./vyp.",
             "description": "Zapne nebo vypne okénko živého textu, stejně jako tlačítko T na nahrávacím panelu. Výchozí: Žádná."
           },
+          "cycle_capture_source": {
+            "name": "Přepnout zdroj zvuku",
+            "description": "Přepíná postupně, co nahrávky zachytávají: Mikrofon, Systémový zvuk, Mikrofon + systémový zvuk. Lišta nahrávání chvíli ukazuje nový zdroj. Během nahrávání přepne tuto nahrávku od té chvíle, pokud nezačala jen se systémovým zvukem; pak nový zdroj platí od další. Pouze Windows. Výchozí: žádná."
+          },
           "transcribe_with_post_process": {
             "name": "Klávesa pro následné zpracování",
             "description": "Volitelné: Vyhrazená klávesová zkratka, která vždy použije AI následné zpracování na váš přepis."
@@ -2064,9 +2068,17 @@
     "menu": {
       "changeShortcut": "Změnit zkratku…",
       "liveTextSettings": "Nastavení živého textu…",
-      "hidePause": "Skrýt tlačítko pozastavení"
+      "hidePause": "Skrýt tlačítko pozastavení",
+      "soundSourceSettings": "Nastavení zdroje zvuku…"
     },
-    "tooQuiet": "Moc potichu – hlasitěji"
+    "tooQuiet": "Moc potichu – hlasitěji",
+    "captureSource": {
+      "now": "Zdroj zvuku",
+      "nextTake": "Od další nahrávky",
+      "microphone": "Mikrofon",
+      "systemAudio": "Systémový zvuk",
+      "both": "Mikrofon + systém"
+    }
   },
   "brand": {
     "name": "Handy",

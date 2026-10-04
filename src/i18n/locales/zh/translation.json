@@ -612,6 +612,10 @@
             "name": "实时文字框开/关",
             "description": "像录音浮层上的 T 按钮一样开启或关闭实时文字框。默认：无。"
           },
+          "cycle_capture_source": {
+            "name": "切换声音来源",
+            "description": "依次切换录音采集的内容：麦克风、系统音频、麦克风 + 系统音频。录音条会短暂显示新的来源。录音中会从那一刻起切换该录音，除非该录音仅以系统音频开始；此时新来源从下一次录音起生效。仅限 Windows。默认：无。"
+          },
           "transcribe_with_post_process": {
             "name": "后处理快捷键",
             "description": "可选：一个专用快捷键，始终对您的转录应用 AI 后处理。"
@@ -2064,9 +2068,17 @@
     "menu": {
       "changeShortcut": "更改快捷键…",
       "liveTextSettings": "实时文本框设置…",
-      "hidePause": "隐藏暂停按钮"
+      "hidePause": "隐藏暂停按钮",
+      "soundSourceSettings": "声音来源设置…"
     },
-    "tooQuiet": "声音太小，请大声点"
+    "tooQuiet": "声音太小，请大声点",
+    "captureSource": {
+      "now": "声音来源",
+      "nextTake": "从下一次录音起",
+      "microphone": "麦克风",
+      "systemAudio": "系统音频",
+      "both": "麦克风 + 系统"
+    }
   },
   "brand": {
     "name": "Handy",

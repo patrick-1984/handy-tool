@@ -114,6 +114,11 @@ enum Cmd {
     Cut(usize, usize, mpsc::Sender<()>),
     /// Reply with a copy of the take's kept audio so far (undo last word).
     Snapshot(mpsc::Sender<Vec<f32>>),
+    /// Mid-take sound source change: mix this system-audio ring in from now on
+    /// (`Some`), or stop mixing one once what it still holds has been mixed (`None`).
+    SystemLeg(Option<Arc<Mutex<SlaveRing>>>),
+    /// Mid-take sound source change: keep (`true`) or silence the microphone leg.
+    MicLeg(bool),
     Shutdown,
 }
 
@@ -385,6 +390,49 @@ impl AudioRecorder {
     /// True when the system-audio leg failed to arm or has faulted.
     pub fn system_audio_faulted(&self) -> bool {
         self.sys_errored.load(Ordering::Acquire)
+    }
+
+    /// Add the system-audio leg to a take in progress (a sound source change while
+    /// recording). Only for a microphone master: the leg is opened as usual and the
+    /// consumer starts mixing it from its next frame. Nothing captured before this
+    /// call reaches the take - `open_system_audio` starts the ring empty.
+    pub fn attach_system_audio(
+        &mut self,
+        device: Device,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        if self.cmd_tx.is_none() {
+            return Err(
+                Error::new(std::io::ErrorKind::NotConnected, "recorder is not open").into(),
+            );
+        }
+        self.open_system_audio(device)?;
+        if let Err(e) = self.send(Cmd::SystemLeg(Some(Arc::clone(&self.sys_ring)))) {
+            self.close_system_audio();
+            return Err(e);
+        }
+        Ok(())
+    }
+
+    /// Remove the system-audio leg from a take in progress. The stream stops now,
+    /// but the ring is NOT cleared: it is a delay line, so it still holds far-end
+    /// audio captured before the switch, and the consumer keeps mixing it until it
+    /// runs dry - the switch loses nothing. The recorder moves on to a new ring, so
+    /// a leg attached again before that never resets the one still draining.
+    pub fn detach_system_audio(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+        self.send(Cmd::SystemLeg(None))?;
+        drop(self.sys_kill_tx.take());
+        if let Some(h) = self.sys_handle.take() {
+            let _ = h.join();
+        }
+        self.sys_ring = Arc::new(Mutex::new(SlaveRing::new()));
+        Ok(())
+    }
+
+    /// Keep or silence the microphone leg of a take in progress (System audio
+    /// chosen while a microphone-driven take records: the microphone stays the
+    /// clock, only its sound is left out).
+    pub fn set_microphone_leg(&self, on: bool) -> Result<(), Box<dyn std::error::Error>> {
+        self.send(Cmd::MicLeg(on))
     }
 
     /// Open a capture stream. `role` says whether `device` is an ordinary input
@@ -1067,22 +1115,115 @@ impl ChunkState {
 /// NOTE: `out_buf` accumulates the whole recording. A future optimization can
 /// skip this in pure-chunked mode (transcription there is per-chunk), bounding
 /// memory for very long recordings.
-/// Mix the system-audio leg into a master frame, in place.
-///
-/// Every frame goes through here, including the ones drained at `Cmd::Stop`: keeping
-/// it in ONE place is what stops the stop-path quietly delivering unmixed audio.
-/// With no system leg this is a no-op and the master frame is untouched - which is
-/// what makes "mixed mode with nothing playing is bit-identical to mic-only" true.
-fn apply_system_mix(
-    frame: &mut Vec<f32>,
-    sys_ring: &Option<Arc<Mutex<SlaveRing>>>,
+/// What the consumer mixes into each master frame: the system-audio leg (when one is
+/// attached) and whether the microphone leg is heard. Set at open; a sound source
+/// change during a take changes it through `Cmd::SystemLeg` / `Cmd::MicLeg`.
+struct LiveMix {
+    /// The system-audio leg's ring, or `None` for a plain microphone take - which is
+    /// what keeps the default path byte-identical.
+    sys_ring: Option<Arc<Mutex<SlaveRing>>>,
+    /// Legs removed mid-take, oldest first: each is still pulled until it runs dry,
+    /// so the far end it buffered before the switch (its delay) still reaches the
+    /// take. A leg attached meanwhile waits behind them (its ring keeps filling), so
+    /// the audio from before and after a quick off-and-on switch arrives in order,
+    /// neither lost nor laid over each other.
+    draining: Vec<Arc<Mutex<SlaveRing>>>,
+    /// False while the microphone leg is left out (System audio chosen mid-take).
+    mic_on: bool,
+    /// Linear gain applied to the system leg before mixing.
     sys_gain: f32,
-    scratch: &mut Vec<f32>,
-) {
-    let Some(ring) = sys_ring else { return };
-    let Ok(mut r) = ring.lock() else { return };
-    r.pull(frame.len(), scratch);
-    mix_into(frame, scratch, sys_gain);
+}
+
+impl LiveMix {
+    fn new(sys_ring: Option<Arc<Mutex<SlaveRing>>>, sys_gain: f32) -> Self {
+        Self {
+            sys_ring,
+            draining: Vec::new(),
+            mic_on: true,
+            sys_gain,
+        }
+    }
+
+    /// Mix the legs into a master frame, in place.
+    ///
+    /// Every frame goes through here, including the ones drained at `Cmd::Stop`:
+    /// keeping it in ONE place is what stops the stop-path quietly delivering unmixed
+    /// audio. With no system leg and the microphone on this is a no-op and the master
+    /// frame is untouched - which is what makes "mixed mode with nothing playing is
+    /// bit-identical to mic-only" true.
+    fn apply(&mut self, frame: &mut [f32], scratch: &mut Vec<f32>) {
+        if !self.mic_on {
+            frame.fill(0.0);
+        }
+        while let Some(ring) = self.draining.first().cloned() {
+            let Ok(mut r) = ring.lock() else {
+                self.draining.remove(0);
+                continue;
+            };
+            if r.is_empty() {
+                drop(r);
+                self.draining.remove(0);
+                continue;
+            }
+            r.pull(frame.len(), scratch);
+            mix_into(frame, scratch, self.sys_gain);
+            return;
+        }
+        let Some(ring) = self.sys_ring.clone() else {
+            return;
+        };
+        let Ok(mut r) = ring.lock() else { return };
+        r.pull(frame.len(), scratch);
+        mix_into(frame, scratch, self.sys_gain);
+    }
+
+    /// `Cmd::SystemLeg`: a new ring is mixed from now on (after any still
+    /// draining); `None` lets the current one drain first.
+    fn set_system(&mut self, ring: Option<Arc<Mutex<SlaveRing>>>) {
+        match ring {
+            Some(ring) => {
+                if self
+                    .sys_ring
+                    .as_ref()
+                    .is_some_and(|r| Arc::ptr_eq(r, &ring))
+                {
+                    return;
+                }
+                // The same ring sent back while it drains: it simply stays attached.
+                self.draining.retain(|r| !Arc::ptr_eq(r, &ring));
+                if let Some(old) = self.sys_ring.replace(ring) {
+                    self.draining.push(old);
+                }
+            }
+            None => {
+                if let Some(old) = self.sys_ring.take() {
+                    self.draining.push(old);
+                }
+            }
+        }
+    }
+
+    /// The microphone leg's sound is left out (its frames still clock the take).
+    fn mic_muted(&self) -> bool {
+        !self.mic_on
+    }
+
+    /// Everything still buffered, in order: the draining legs, then the attached
+    /// one (`Cmd::Stop` flushes it as the take's tail).
+    fn drain_all(&mut self) -> Vec<f32> {
+        let mut tail = Vec::new();
+        for ring in self.draining.iter().chain(self.sys_ring.iter()) {
+            if let Ok(mut r) = ring.lock() {
+                tail.extend(r.drain());
+            }
+        }
+        tail
+    }
+
+    /// A ring still draining from a mid-take switch belongs to that take only.
+    fn end_take(&mut self) {
+        self.draining.clear();
+    }
 }
 
 /// At stop, up to this much audio the speech detector had rejected since it
@@ -1424,6 +1565,25 @@ fn process_frame(
     }
 }
 
+/// Send the bars' levels to the overlay: at full rate while a take records,
+/// throttled while idle (the always-on mic would otherwise flood the event system).
+fn emit_level(
+    level_cb: &Option<LevelCb>,
+    buckets: Vec<f32>,
+    taking: bool,
+    last_level_emit: &mut Option<Instant>,
+    quiet_until: Option<Instant>,
+    live: bool,
+) {
+    let Some(cb) = level_cb else { return };
+    let now = Instant::now();
+    if taking || last_level_emit.map_or(true, |t| now.duration_since(t) >= LEVEL_IDLE_INTERVAL) {
+        *last_level_emit = Some(now);
+        let too_quiet = quiet_until.is_some_and(|until| now < until);
+        cb(buckets, MicState { live, too_quiet });
+    }
+}
+
 /// Classify a capture-stream start failure. Windows answers E_ACCESSDENIED
 /// (0x80070005) when microphone access is switched off in its privacy settings;
 /// the message text is localized, the HRESULT is not.
@@ -1466,6 +1626,8 @@ fn run_consumer(
     sys_ring: Option<Arc<Mutex<SlaveRing>>>,
     sys_gain: f32,
 ) {
+    // The legs mixed into each frame; a mid-take source change updates it.
+    let mut live_mix = LiveMix::new(sys_ring, sys_gain);
     // Reused across every frame so the hot path allocates nothing.
     let mut mix_buf: Vec<f32> = Vec::with_capacity(1024);
     let mut mix_scratch: Vec<f32> = Vec::with_capacity(1024);
@@ -1502,6 +1664,16 @@ fn run_consumer(
     // the right half of the bars averaged 0.01-0.03 against 0.23-0.28 on the left.
     // +8 dB per octave above 500 Hz evens that out (0.12-0.29 everywhere), and
     // the quiet moments between words still show nothing.
+    .with_tilt(8.0, 500.0);
+    // While the microphone leg is left out (System audio chosen mid-take) the bars
+    // show what is recorded instead: the mixed 16 kHz frames, not the microphone.
+    let mut mixed_visualizer = AudioVisualiser::new(
+        constants::WHISPER_SAMPLE_RATE,
+        WINDOW_SIZE,
+        BUCKETS,
+        400.0,
+        4000.0,
+    )
     .with_tilt(8.0, 500.0);
     // Last time the level callback fired while idle (see LEVEL_IDLE_INTERVAL).
     let mut last_level_emit: Option<Instant> = None;
@@ -1576,35 +1748,43 @@ fn run_consumer(
             if first_sound_at.is_none() && raw.iter().any(|s| s.abs() > SILENT_SAMPLE) {
                 first_sound_at = Some(Instant::now());
             }
-            let live = !cold
+            // A microphone left out mid-take has nothing left to warm up.
+            let mic_muted = live_mix.mic_muted();
+            let live = mic_muted
+                || !cold
                 || first_sound_at.is_some_and(|at| {
                     at.elapsed() >= Duration::from_millis(warmup_ms.load(Ordering::Relaxed) as u64)
                 })
                 || first_at.elapsed() >= SILENT_GIVE_UP;
 
             // ---------- spectrum processing ------------------------------ //
-            if let Some(buckets) = visualizer.feed(&raw) {
-                if let Some(cb) = &level_cb {
-                    // Full rate while recording; throttled while idle (the
-                    // always-on mic would otherwise flood the event system).
-                    let now = Instant::now();
-                    if (recording && !paused)
-                        || last_level_emit
-                            .map_or(true, |t| now.duration_since(t) >= LEVEL_IDLE_INTERVAL)
-                    {
-                        last_level_emit = Some(now);
-                        let too_quiet = quiet_until.is_some_and(|until| now < until);
-                        cb(buckets, MicState { live, too_quiet });
-                    }
+            if !mic_muted {
+                if let Some(buckets) = visualizer.feed(&raw) {
+                    emit_level(
+                        &level_cb,
+                        buckets,
+                        recording && !paused,
+                        &mut last_level_emit,
+                        quiet_until,
+                        live,
+                    );
                 }
             }
 
             // ---------- pipeline ----------------------------------------- //
-            let watch_quiet = recording && !paused && quiet_hint.load(Ordering::Relaxed);
+            // "Too quiet" is about the user's voice: not while the microphone is left out.
+            let watch_quiet =
+                recording && !paused && !mic_muted && quiet_hint.load(Ordering::Relaxed);
+            let mut mixed_levels: Option<Vec<f32>> = None;
             frame_resampler.push(&raw, &mut |frame: &[f32]| {
                 mix_buf.clear();
                 mix_buf.extend_from_slice(frame);
-                apply_system_mix(&mut mix_buf, &sys_ring, sys_gain, &mut mix_scratch);
+                live_mix.apply(&mut mix_buf, &mut mix_scratch);
+                if mic_muted {
+                    if let Some(buckets) = mixed_visualizer.feed(&mix_buf) {
+                        mixed_levels = Some(buckets);
+                    }
+                }
                 let kept_before = processed_samples.len();
                 process_frame(
                     &mix_buf,
@@ -1633,6 +1813,16 @@ fn run_consumer(
                     }
                 }
             });
+            if let Some(buckets) = mixed_levels {
+                emit_level(
+                    &level_cb,
+                    buckets,
+                    recording && !paused,
+                    &mut last_level_emit,
+                    quiet_until,
+                    live,
+                );
+            }
         }
 
         // A long pause releases the device, so the system mic indicator goes out.
@@ -1658,7 +1848,8 @@ fn run_consumer(
                     // seconds of audio captured before the press: a transcript bug and a
                     // privacy regression at once. The master's own resampler is reset
                     // just below for exactly the same reason.
-                    if let Some(ring) = sys_ring.as_ref() {
+                    live_mix.end_take();
+                    if let Some(ring) = live_mix.sys_ring.as_ref() {
                         if let Ok(mut r) = ring.lock() {
                             r.clear();
                         }
@@ -1700,7 +1891,7 @@ fn run_consumer(
                         frame_resampler.push(&remaining, &mut |frame: &[f32]| {
                             mix_buf.clear();
                             mix_buf.extend_from_slice(frame);
-                            apply_system_mix(&mut mix_buf, &sys_ring, sys_gain, &mut mix_scratch);
+                            live_mix.apply(&mut mix_buf, &mut mix_scratch);
                             process_frame(
                                 &mix_buf,
                                 drain,
@@ -1717,7 +1908,7 @@ fn run_consumer(
                     frame_resampler.finish(&mut |frame: &[f32]| {
                         mix_buf.clear();
                         mix_buf.extend_from_slice(frame);
-                        apply_system_mix(&mut mix_buf, &sys_ring, sys_gain, &mut mix_scratch);
+                        live_mix.apply(&mut mix_buf, &mut mix_scratch);
                         process_frame(
                             &mix_buf,
                             drain,
@@ -1737,12 +1928,12 @@ fn run_consumer(
                     // against silence (the mic really has stopped) and goes through the
                     // VAD like any other frame, so a sentence the other participant was
                     // still finishing is not truncated.
-                    if let Some(ring) = sys_ring.as_ref() {
-                        let tail = ring.lock().ok().map(|mut r| r.drain()).unwrap_or_default();
+                    {
+                        let tail = live_mix.drain_all();
                         if !tail.is_empty() {
                             mix_buf.clear();
                             mix_buf.resize(tail.len(), 0.0);
-                            mix_into(&mut mix_buf, &tail, sys_gain);
+                            mix_into(&mut mix_buf, &tail, live_mix.sys_gain);
                             // In detector-sized frames (the last one padded with
                             // silence): Silero refuses any other size, and a refused
                             // frame was kept unexamined.
@@ -1765,6 +1956,8 @@ fn run_consumer(
                             mix_buf = mixed;
                         }
                     }
+
+                    live_mix.end_take();
 
                     // Audio the VAD is still holding back (voiced frames in an
                     // unconfirmed onset) - the newest part of `stop_tail`.
@@ -1870,7 +2063,8 @@ fn run_consumer(
                     }
                     // Same reason as Cmd::Start: otherwise a cancelled take's far-end
                     // audio leaks into whatever take comes next.
-                    if let Some(ring) = sys_ring.as_ref() {
+                    live_mix.end_take();
+                    if let Some(ring) = live_mix.sys_ring.as_ref() {
                         if let Ok(mut r) = ring.lock() {
                             r.clear();
                         }
@@ -1916,7 +2110,8 @@ fn run_consumer(
                         }
                         // Continue as a fresh start of speech, like Cmd::Start: nothing
                         // buffered during the pause may leak into the take.
-                        if let Some(ring) = sys_ring.as_ref() {
+                        live_mix.end_take();
+                        if let Some(ring) = live_mix.sys_ring.as_ref() {
                             if let Ok(mut r) = ring.lock() {
                                 r.clear();
                             }
@@ -1935,6 +2130,22 @@ fn run_consumer(
                 }
                 Cmd::Snapshot(reply) => {
                     let _ = reply.send(processed_samples.clone());
+                }
+                Cmd::SystemLeg(ring) => {
+                    log::info!(
+                        "Sound source changed during the take: system audio {}",
+                        if ring.is_some() { "added" } else { "removed" }
+                    );
+                    live_mix.set_system(ring);
+                }
+                Cmd::MicLeg(on) => {
+                    log::info!(
+                        "Sound source changed during the take: microphone {}",
+                        if on { "heard" } else { "left out" }
+                    );
+                    live_mix.mic_on = on;
+                    visualizer.reset();
+                    mixed_visualizer.reset();
                 }
                 Cmd::Shutdown => return,
             }
@@ -2222,5 +2433,120 @@ mod stream_error_tests {
             stream_error_kind("The device is in use. (0x8889000A)"),
             ErrorKind::Other
         );
+    }
+}
+
+#[cfg(test)]
+mod live_mix_tests {
+    use super::{LiveMix, SlaveRing};
+    use std::sync::{Arc, Mutex};
+
+    fn ring_with(samples: &[f32]) -> Arc<Mutex<SlaveRing>> {
+        let mut ring = SlaveRing::new();
+        ring.push(samples);
+        Arc::new(Mutex::new(ring))
+    }
+
+    /// Mix one 480-sample frame of constant `mic`.
+    fn frame(mix: &mut LiveMix, mic: f32) -> Vec<f32> {
+        let mut f = vec![mic; 480];
+        let mut scratch = Vec::new();
+        mix.apply(&mut f, &mut scratch);
+        f
+    }
+
+    #[test]
+    fn a_microphone_take_is_left_bit_identical() {
+        let mut mix = LiveMix::new(None, 1.0);
+        let mut f: Vec<f32> = (0..480).map(|i| (i as f32 / 480.0) - 0.5).collect();
+        let before = f.clone();
+        mix.apply(&mut f, &mut Vec::new());
+        assert_eq!(f, before);
+    }
+
+    #[test]
+    fn leaving_the_microphone_out_keeps_only_the_system_audio() {
+        let mut mix = LiveMix::new(Some(ring_with(&[0.25; 480])), 1.0);
+        mix.mic_on = false;
+        assert_eq!(frame(&mut mix, 0.5), vec![0.25; 480]);
+        // With nothing playing that is silence, not the microphone.
+        assert_eq!(frame(&mut mix, 0.5), vec![0.0; 480]);
+    }
+
+    #[test]
+    fn system_audio_added_mid_take_is_mixed_from_the_next_frame() {
+        let mut mix = LiveMix::new(None, 1.0);
+        assert_eq!(frame(&mut mix, 0.1), vec![0.1; 480]);
+        mix.set_system(Some(ring_with(&[0.25; 480])));
+        let mixed = frame(&mut mix, 0.1);
+        assert!(mixed.iter().all(|s| (s - 0.35).abs() < 1e-6));
+    }
+
+    #[test]
+    fn system_audio_removed_mid_take_drains_what_it_buffered_first() {
+        // 1.5 frames buffered before the switch: none of it may be lost.
+        let ring = ring_with(&[0.5; 720]);
+        let mut mix = LiveMix::new(Some(Arc::clone(&ring)), 1.0);
+        mix.set_system(None);
+        let first = frame(&mut mix, 0.0);
+        let second = frame(&mut mix, 0.0);
+        let delivered: f32 = first.iter().chain(second.iter()).sum();
+        assert!((delivered - 0.5 * 720.0).abs() < 1e-3);
+        // Then the leg is gone and the microphone is all that is left.
+        assert_eq!(frame(&mut mix, 0.1), vec![0.1; 480]);
+        assert!(mix.sys_ring.is_none() && mix.draining.is_empty());
+    }
+
+    #[test]
+    fn adding_system_audio_again_while_it_drains_plays_both_in_order() {
+        // Off and on again within the delay: what the old leg buffered comes first,
+        // then the new leg's audio - none lost, none laid over the other.
+        let mut mix = LiveMix::new(Some(ring_with(&[0.5; 960])), 1.0);
+        mix.set_system(None);
+        mix.set_system(Some(ring_with(&[0.25; 960])));
+        assert_eq!(frame(&mut mix, 0.0), vec![0.5; 480]);
+        assert_eq!(frame(&mut mix, 0.0), vec![0.5; 480]);
+        assert_eq!(frame(&mut mix, 0.0), vec![0.25; 480]);
+        assert_eq!(frame(&mut mix, 0.0), vec![0.25; 480]);
+        assert!(mix.sys_ring.is_some() && mix.draining.is_empty());
+    }
+
+    #[test]
+    fn the_same_leg_sent_back_while_it_drains_stays_attached() {
+        let ring = ring_with(&[0.5; 960]);
+        let mut mix = LiveMix::new(Some(Arc::clone(&ring)), 1.0);
+        mix.set_system(None);
+        mix.set_system(Some(Arc::clone(&ring)));
+        assert!(mix.draining.is_empty());
+        assert!(mix.sys_ring.as_ref().is_some_and(|r| Arc::ptr_eq(r, &ring)));
+    }
+
+    #[test]
+    fn the_stop_tail_keeps_the_order_of_the_legs() {
+        let mut mix = LiveMix::new(Some(ring_with(&[0.5; 3])), 1.0);
+        mix.set_system(None);
+        mix.set_system(Some(ring_with(&[0.25; 2])));
+        assert_eq!(mix.drain_all(), vec![0.5, 0.5, 0.5, 0.25, 0.25]);
+    }
+
+    #[test]
+    fn a_draining_leg_ends_with_its_take_but_an_attached_one_stays() {
+        let mut mix = LiveMix::new(Some(ring_with(&[0.5; 960])), 1.0);
+        mix.end_take();
+        assert!(
+            mix.sys_ring.is_some(),
+            "the open mixed leg serves the next take"
+        );
+        mix.set_system(None);
+        mix.end_take();
+        assert!(mix.sys_ring.is_none() && mix.draining.is_empty());
+    }
+
+    #[test]
+    fn removing_a_leg_that_is_not_there_changes_nothing() {
+        let mut mix = LiveMix::new(None, 1.0);
+        mix.set_system(None);
+        assert!(mix.draining.is_empty());
+        assert_eq!(frame(&mut mix, 0.2), vec![0.2; 480]);
     }
 }

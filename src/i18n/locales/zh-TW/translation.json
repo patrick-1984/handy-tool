@@ -595,6 +595,10 @@
             "name": "即時文字框開/關",
             "description": "像錄音浮層上的 T 按鈕一樣開啟或關閉即時文字框。預設：無。"
           },
+          "cycle_capture_source": {
+            "name": "切換聲音來源",
+            "description": "依序切換錄音擷取的內容：麥克風、系統音訊、麥克風 + 系統音訊。錄音列會短暫顯示新的來源。錄音中會從那一刻起切換該錄音，除非該錄音僅以系統音訊開始；此時新來源從下一次錄音起生效。僅限 Windows。預設：無。"
+          },
           "transcribe_with_post_process": {
             "name": "後處理快捷鍵",
             "description": "可選：專用快捷鍵，使用時一律對轉錄結果套用 AI 後處理"
@@ -2064,9 +2068,17 @@
     "menu": {
       "changeShortcut": "變更快捷鍵…",
       "liveTextSettings": "即時文字框設定…",
-      "hidePause": "隱藏暫停按鈕"
+      "hidePause": "隱藏暫停按鈕",
+      "soundSourceSettings": "聲音來源設定…"
     },
-    "tooQuiet": "聲音太小，請大聲一點"
+    "tooQuiet": "聲音太小，請大聲一點",
+    "captureSource": {
+      "now": "聲音來源",
+      "nextTake": "從下一次錄音起",
+      "microphone": "麥克風",
+      "systemAudio": "系統音訊",
+      "both": "麥克風 + 系統"
+    }
   },
   "brand": {
     "name": "Handy",

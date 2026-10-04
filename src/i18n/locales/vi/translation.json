@@ -612,6 +612,10 @@
             "name": "Bật/tắt ô văn bản trực tiếp",
             "description": "Bật hoặc tắt ô văn bản trực tiếp, giống nút T trên thanh ghi âm. Mặc định: Không có."
           },
+          "cycle_capture_source": {
+            "name": "Đổi nguồn âm thanh",
+            "description": "Lần lượt đổi thứ bản ghi thu lại: Micrô, Âm thanh hệ thống, Micrô + âm thanh hệ thống. Thanh ghi âm hiện nguồn mới trong giây lát. Trong lúc ghi, nó đổi bản ghi đó từ thời điểm ấy, trừ khi bản ghi bắt đầu chỉ với âm thanh hệ thống; khi đó nguồn mới áp dụng từ bản ghi sau. Chỉ Windows. Mặc định: Không có."
+          },
           "transcribe_with_post_process": {
             "name": "Phím tắt xử lý sau",
             "description": "Tùy chọn: Phím tắt chuyên dụng luôn áp dụng xử lý sau bằng AI cho bản phiên âm của bạn."
@@ -2064,9 +2068,17 @@
     "menu": {
       "changeShortcut": "Đổi phím tắt…",
       "liveTextSettings": "Cài đặt hộp văn bản trực tiếp…",
-      "hidePause": "Ẩn nút tạm dừng"
+      "hidePause": "Ẩn nút tạm dừng",
+      "soundSourceSettings": "Cài đặt nguồn âm thanh…"
     },
-    "tooQuiet": "Quá nhỏ — nói to hơn"
+    "tooQuiet": "Quá nhỏ — nói to hơn",
+    "captureSource": {
+      "now": "Nguồn âm thanh",
+      "nextTake": "Từ bản ghi tiếp theo",
+      "microphone": "Micrô",
+      "systemAudio": "Âm thanh hệ thống",
+      "both": "Micrô + hệ thống"
+    }
   },
   "floating": {
     "waiting": "Đang chờ phiên âm…",

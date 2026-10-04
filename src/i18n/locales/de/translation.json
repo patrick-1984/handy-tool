@@ -612,6 +612,10 @@
             "name": "Live-Textfeld an/aus",
             "description": "Schaltet das Live-Textfeld an oder aus, wie die T-Taste der Aufnahmeleiste. Standard: Keine."
           },
+          "cycle_capture_source": {
+            "name": "Tonquelle wechseln",
+            "description": "Wechselt der Reihe nach, was Aufnahmen erfassen: Mikrofon, Systemton, Mikrofon + Systemton. Die Aufnahmeleiste zeigt kurz die neue Quelle. Während einer Aufnahme wechselt sie diese Aufnahme ab diesem Moment, außer sie begann nur mit Systemton; dann gilt die neue Quelle ab der nächsten. Nur Windows. Standard: Keine."
+          },
           "transcribe_with_post_process": {
             "name": "Nachbearbeitungs-Tastenkürzel",
             "description": "Optional: Ein dediziertes Tastenkürzel, das immer die KI-Nachbearbeitung auf Ihre Transkription anwendet."
@@ -2064,9 +2068,17 @@
     "menu": {
       "changeShortcut": "Tastenkürzel ändern…",
       "liveTextSettings": "Einstellungen des Live-Textfelds…",
-      "hidePause": "Pause-Taste ausblenden"
+      "hidePause": "Pause-Taste ausblenden",
+      "soundSourceSettings": "Einstellungen der Tonquelle…"
     },
-    "tooQuiet": "Zu leise – lauter bitte"
+    "tooQuiet": "Zu leise – lauter bitte",
+    "captureSource": {
+      "now": "Tonquelle",
+      "nextTake": "Ab der nächsten Aufnahme",
+      "microphone": "Mikrofon",
+      "systemAudio": "Systemton",
+      "both": "Mikro + Systemton"
+    }
   },
   "brand": {
     "name": "Handy",
