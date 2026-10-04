@@ -1123,10 +1123,6 @@
         "placeholderMulti": "Adicione palavras separadas por espaços e pressione Enter",
         "addedSummary": "Palavras adicionadas: {{added}}",
         "skippedSummary": "Ignoradas: {{skipped}} (duplicadas ou longas demais)",
-        "importFile": "Importar de arquivo",
-        "fileFilter": "Arquivos de texto",
-        "importFailed": "Não foi possível ler o arquivo: {{error}}",
-        "importEmpty": "Nenhuma palavra encontrada no arquivo",
         "copyAll": "Copiar todas",
         "copied": "Palavras copiadas: {{count}}",
         "showAll": "Mostrar todas ({{count}})",
@@ -1135,7 +1131,9 @@
         "noMatches": "Nenhuma palavra corresponde",
         "removeAll": "Remover todas",
         "removeAllTitle": "Remover todas as palavras personalizadas",
-        "removeAllMessage": "Remover todas as palavras personalizadas ({{count}})? Isso não pode ser desfeito."
+        "removeAllMessage": "Remover todas as palavras personalizadas ({{count}})? Isso não pode ser desfeito.",
+        "wordCount": "Palavras: {{count}}",
+        "longListWarning": "Listas longas podem alterar palavras comuns por engano. Mantenha apenas as palavras que são realmente mal reconhecidas."
       },
       "tokenCountProviders": {
         "hint": "Provedores para a página Contagem de Tokens. Dica: o modelo apenas seleciona o tokenizador — escolha o menor modelo da família que lhe interessa (por exemplo, qwen3:0.6b conta da mesma forma que qwen3:8b, mas carrega em uma fração do tempo). Os endpoints de contagem da Anthropic e do Gemini são gratuitos; servidores locais são consultados com uma sondagem de 1 token.",

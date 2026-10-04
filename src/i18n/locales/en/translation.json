@@ -1425,10 +1425,6 @@
         "placeholderMulti": "Add words separated by spaces, then press Enter",
         "addedSummary": "Words added: {{added}}",
         "skippedSummary": "Skipped: {{skipped}} (duplicates or too long)",
-        "importFile": "Import from file",
-        "fileFilter": "Text files",
-        "importFailed": "Could not read the file: {{error}}",
-        "importEmpty": "No words found in the file",
         "copyAll": "Copy all",
         "copied": "Words copied: {{count}}",
         "showAll": "Show all ({{count}})",
@@ -1437,7 +1433,9 @@
         "noMatches": "No words match",
         "removeAll": "Remove all",
         "removeAllTitle": "Remove all custom words",
-        "removeAllMessage": "Remove all custom words ({{count}})? This can't be undone."
+        "removeAllMessage": "Remove all custom words ({{count}})? This can't be undone.",
+        "wordCount": "Words: {{count}}",
+        "longListWarning": "Long lists can change ordinary words by mistake. Keep only the words that are actually misheard."
       },
       "tabs": {
         "output": "Output",

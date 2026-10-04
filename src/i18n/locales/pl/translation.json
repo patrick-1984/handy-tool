@@ -1123,10 +1123,6 @@
         "placeholderMulti": "Dodaj słowa oddzielone spacjami i naciśnij Enter",
         "addedSummary": "Dodano słów: {{added}}",
         "skippedSummary": "Pominięto: {{skipped}} (duplikaty lub za długie)",
-        "importFile": "Importuj z pliku",
-        "fileFilter": "Pliki tekstowe",
-        "importFailed": "Nie udało się odczytać pliku: {{error}}",
-        "importEmpty": "W pliku nie znaleziono słów",
         "copyAll": "Kopiuj wszystkie",
         "copied": "Skopiowano słów: {{count}}",
         "showAll": "Pokaż wszystkie ({{count}})",
@@ -1135,7 +1131,9 @@
         "noMatches": "Brak pasujących słów",
         "removeAll": "Usuń wszystkie",
         "removeAllTitle": "Usuń wszystkie własne słowa",
-        "removeAllMessage": "Usunąć wszystkie własne słowa ({{count}})? Tej operacji nie można cofnąć."
+        "removeAllMessage": "Usunąć wszystkie własne słowa ({{count}})? Tej operacji nie można cofnąć.",
+        "wordCount": "Słów: {{count}}",
+        "longListWarning": "Długie listy mogą przez pomyłkę zmieniać zwykłe słowa. Zostaw tylko te słowa, które naprawdę są źle rozpoznawane."
       },
       "tokenCountProviders": {
         "hint": "Dostawcy dla strony liczenia tokenów. Wskazówka: model wybiera jedynie tokenizer — wybierz najmniejszy model danej rodziny (np. qwen3:0.6b liczy tak samo jak qwen3:8b, ale ładuje się znacznie szybciej). Punkty liczenia Anthropic i Gemini są darmowe; serwery lokalne odpytywane są sondą 1 tokena.",

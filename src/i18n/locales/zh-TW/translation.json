@@ -1123,10 +1123,6 @@
         "placeholderMulti": "輸入以空格分隔的詞語，然後按 Enter",
         "addedSummary": "已新增詞語：{{added}}",
         "skippedSummary": "已略過：{{skipped}}（重複或過長）",
-        "importFile": "從檔案匯入",
-        "fileFilter": "文字檔",
-        "importFailed": "無法讀取檔案：{{error}}",
-        "importEmpty": "檔案中找不到詞語",
         "copyAll": "全部複製",
         "copied": "已複製詞語：{{count}}",
         "showAll": "顯示全部（{{count}}）",
@@ -1135,7 +1131,9 @@
         "noMatches": "沒有符合的詞語",
         "removeAll": "全部移除",
         "removeAllTitle": "移除所有自訂詞語",
-        "removeAllMessage": "要移除所有自訂詞語（{{count}}）嗎？此動作無法復原。"
+        "removeAllMessage": "要移除所有自訂詞語（{{count}}）嗎？此動作無法復原。",
+        "wordCount": "單字數：{{count}}",
+        "longListWarning": "清單過長可能會誤改一般詞語。只保留確實會被聽錯的詞。"
       },
       "tokenCountProviders": {
         "hint": "「token 計數」頁面所使用的供應商。提示:模型只用來選擇分詞器——請選擇您關心系列中最小的模型即可(例如 qwen3:0.6b 的計數結果與 qwen3:8b 相同,但載入時間短得多)。Anthropic 與 Gemini 的計數端點是免費的;本機伺服器則以 1 個 token 的探測請求查詢",

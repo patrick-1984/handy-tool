@@ -2,9 +2,8 @@ import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { X } from "lucide-react";
-import { ask, open } from "@tauri-apps/plugin-dialog";
+import { ask } from "@tauri-apps/plugin-dialog";
 import { writeText } from "@tauri-apps/plugin-clipboard-manager";
-import { commands } from "@/bindings";
 import { useSettings } from "../../hooks/useSettings";
 import { SettingContainer } from "../ui/SettingContainer";
 import { Button } from "../ui/Button";
@@ -18,6 +17,13 @@ interface CustomWordsProps {
 
 /** Above this many words the chip list folds to its first chips. */
 const COLLAPSED_COUNT = 12;
+
+/**
+ * Above this many words a gentle warning shows: the correction is a fuzzy
+ * find-and-replace on the finished text, so a long list starts replacing
+ * ordinary words by mistake.
+ */
+const LONG_LIST_COUNT = 50;
 
 export const CustomWords: React.FC<CustomWordsProps> = React.memo(
   ({ descriptionMode = "tooltip", grouped = false }) => {
@@ -93,39 +99,6 @@ export const CustomWords: React.FC<CustomWordsProps> = React.memo(
       // Keep the edge spaces so the paste never glues onto a word beside it.
       const flat = pasted.replace(/[\r\n\t]+/g, " ");
       setNewWord(newWord.slice(0, start) + flat + newWord.slice(end));
-    };
-
-    const handleImport = async () => {
-      try {
-        const path = await open({
-          multiple: false,
-          directory: false,
-          filters: [
-            {
-              name: t("settings.advanced.customWords.fileFilter"),
-              extensions: ["txt", "csv", "md"],
-            },
-          ],
-        });
-        if (typeof path !== "string") return;
-        const res = await commands.readTextFileForCount(path);
-        if (res.status !== "ok") {
-          toast.error(
-            t("settings.advanced.customWords.importFailed", {
-              error: res.error,
-            }),
-          );
-          return;
-        }
-        if (addWords(res.data) === "empty") {
-          toast.error(t("settings.advanced.customWords.importEmpty"));
-        }
-      } catch (e) {
-        console.error("Failed to import custom words:", e);
-        toast.error(
-          t("settings.advanced.customWords.importFailed", { error: String(e) }),
-        );
-      }
     };
 
     const handleCopyAll = async () => {
@@ -244,47 +217,47 @@ export const CustomWords: React.FC<CustomWordsProps> = React.memo(
               className="flex-1 min-w-40 h-[26px] px-1.5 bg-transparent text-[13px] text-text placeholder:text-text-secondary focus:outline-none"
             />
           </div>
-          <div className="flex flex-wrap items-center gap-1">
-            {showAll && (
-              <>
-                <Input
-                  variant="compact"
-                  type="search"
-                  value={filter}
-                  onChange={(e) => setFilter(e.target.value)}
-                  placeholder={t("settings.advanced.customWords.filter")}
-                  aria-label={t("settings.advanced.customWords.filter")}
-                  className="w-44 text-[13px]"
-                />
-                {toggleButton}
-              </>
-            )}
-            <div className="ms-auto flex flex-wrap items-center gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleImport}
-                disabled={busy}
-              >
-                {t("settings.advanced.customWords.importFile")}
-              </Button>
-              {customWords.length > 0 && (
+          {customWords.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1">
+              <span className="px-1.5 text-xs text-text-secondary">
+                {t("settings.advanced.customWords.wordCount", {
+                  count: customWords.length,
+                })}
+              </span>
+              {showAll && (
                 <>
-                  <Button variant="ghost" size="sm" onClick={handleCopyAll}>
-                    {t("settings.advanced.customWords.copyAll")}
-                  </Button>
-                  <Button
-                    variant="danger-ghost"
-                    size="sm"
-                    onClick={handleRemoveAll}
-                    disabled={busy}
-                  >
-                    {t("settings.advanced.customWords.removeAll")}
-                  </Button>
+                  <Input
+                    variant="compact"
+                    type="search"
+                    value={filter}
+                    onChange={(e) => setFilter(e.target.value)}
+                    placeholder={t("settings.advanced.customWords.filter")}
+                    aria-label={t("settings.advanced.customWords.filter")}
+                    className="w-44 text-[13px]"
+                  />
+                  {toggleButton}
                 </>
               )}
+              <div className="ms-auto flex flex-wrap items-center gap-1">
+                <Button variant="ghost" size="sm" onClick={handleCopyAll}>
+                  {t("settings.advanced.customWords.copyAll")}
+                </Button>
+                <Button
+                  variant="danger-ghost"
+                  size="sm"
+                  onClick={handleRemoveAll}
+                  disabled={busy}
+                >
+                  {t("settings.advanced.customWords.removeAll")}
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
+          {customWords.length > LONG_LIST_COUNT && (
+            <p className="px-1.5 text-xs text-warn-text">
+              {t("settings.advanced.customWords.longListWarning")}
+            </p>
+          )}
         </div>
       </SettingContainer>
     );

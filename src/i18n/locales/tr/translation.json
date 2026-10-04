@@ -1123,10 +1123,6 @@
         "placeholderMulti": "Boşlukla ayrılmış kelimeler ekleyin, ardından Enter'a basın",
         "addedSummary": "Eklenen kelime: {{added}}",
         "skippedSummary": "Atlanan: {{skipped}} (yinelenen veya çok uzun)",
-        "importFile": "Dosyadan içe aktar",
-        "fileFilter": "Metin dosyaları",
-        "importFailed": "Dosya okunamadı: {{error}}",
-        "importEmpty": "Dosyada kelime bulunamadı",
         "copyAll": "Tümünü kopyala",
         "copied": "Kopyalanan kelime: {{count}}",
         "showAll": "Tümünü göster ({{count}})",
@@ -1135,7 +1131,9 @@
         "noMatches": "Eşleşen kelime yok",
         "removeAll": "Tümünü kaldır",
         "removeAllTitle": "Tüm özel kelimeleri kaldır",
-        "removeAllMessage": "Tüm özel kelimeler ({{count}}) kaldırılsın mı? Bu işlem geri alınamaz."
+        "removeAllMessage": "Tüm özel kelimeler ({{count}}) kaldırılsın mı? Bu işlem geri alınamaz.",
+        "wordCount": "Kelime: {{count}}",
+        "longListWarning": "Uzun listeler sıradan kelimeleri yanlışlıkla değiştirebilir. Yalnızca gerçekten yanlış anlaşılan kelimeleri tutun."
       },
       "tokenCountProviders": {
         "hint": "Token Sayımı sayfası için sağlayıcılar. İpucu: model yalnızca tokenizer'ı belirler — önemsediğiniz ailenin en küçük modelini seçin (örn. qwen3:0.6b, qwen3:8b ile aynı sayımı verir ama çok daha kısa sürede yüklenir). Anthropic ve Gemini sayım uç noktaları ücretsizdir; yerel sunucular 1 tokenlik bir sorgu ile sorgulanır.",

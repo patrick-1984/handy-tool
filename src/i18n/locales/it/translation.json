@@ -1123,10 +1123,6 @@
         "placeholderMulti": "Aggiungi parole separate da spazi, poi premi Invio",
         "addedSummary": "Parole aggiunte: {{added}}",
         "skippedSummary": "Saltate: {{skipped}} (duplicate o troppo lunghe)",
-        "importFile": "Importa da file",
-        "fileFilter": "File di testo",
-        "importFailed": "Impossibile leggere il file: {{error}}",
-        "importEmpty": "Nessuna parola trovata nel file",
         "copyAll": "Copia tutte",
         "copied": "Parole copiate: {{count}}",
         "showAll": "Mostra tutte ({{count}})",
@@ -1135,7 +1131,9 @@
         "noMatches": "Nessuna parola corrisponde",
         "removeAll": "Rimuovi tutte",
         "removeAllTitle": "Rimuovi tutte le parole personalizzate",
-        "removeAllMessage": "Rimuovere tutte le parole personalizzate ({{count}})? L'operazione non può essere annullata."
+        "removeAllMessage": "Rimuovere tutte le parole personalizzate ({{count}})? L'operazione non può essere annullata.",
+        "wordCount": "Parole: {{count}}",
+        "longListWarning": "Gli elenchi lunghi possono cambiare per errore parole comuni. Tieni solo le parole che vengono davvero riconosciute male."
       },
       "tokenCountProviders": {
         "hint": "Provider per la pagina Conteggio Token. Suggerimento: il modello serve solo a selezionare il tokenizzatore — scegli il modello più piccolo della famiglia che ti interessa (ad es. qwen3:0.6b conta come qwen3:8b ma si carica in una frazione del tempo). Gli endpoint di conteggio di Anthropic e Gemini sono gratuiti; i server locali vengono interrogati con una richiesta di prova da 1 token.",

@@ -18,9 +18,9 @@ export const sanitizeCustomWord = (raw: string): string | null => {
  * Splits pasted or typed text into custom words. Words may be separated by
  * spaces, tabs, new lines, commas or semicolons. List markup (bullets like
  * `-`, `*` or `1.`, and `**bold**` or `` `code` `` around a word) is ignored, so
- * a Markdown list imports cleanly. Each word is sanitized; words already in
- * `existing` or repeated in the text are skipped, and so are invalid ones
- * (too long, or empty once cleaned).
+ * a Markdown list (say, one a chat assistant wrote) pastes cleanly. Each word
+ * is sanitized; words already in `existing` or repeated in the text are
+ * skipped, and so are invalid ones (too long, or empty once cleaned).
  */
 export const parseCustomWords = (
   text: string,

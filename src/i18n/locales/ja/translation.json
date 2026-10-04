@@ -1123,10 +1123,6 @@
         "placeholderMulti": "スペースで区切って単語を入力し、Enter を押します",
         "addedSummary": "追加した単語: {{added}}",
         "skippedSummary": "スキップ: {{skipped}}（重複または長すぎ）",
-        "importFile": "ファイルからインポート",
-        "fileFilter": "テキストファイル",
-        "importFailed": "ファイルを読み込めませんでした: {{error}}",
-        "importEmpty": "ファイルに単語が見つかりません",
         "copyAll": "すべてコピー",
         "copied": "コピーした単語: {{count}}",
         "showAll": "すべて表示 ({{count}})",
@@ -1135,7 +1131,9 @@
         "noMatches": "一致する単語はありません",
         "removeAll": "すべて削除",
         "removeAllTitle": "カスタム単語をすべて削除",
-        "removeAllMessage": "カスタム単語をすべて ({{count}}) 削除しますか？元に戻せません。"
+        "removeAllMessage": "カスタム単語をすべて ({{count}}) 削除しますか？元に戻せません。",
+        "wordCount": "単語数: {{count}}",
+        "longListWarning": "リストが長いと、普通の単語が誤って置き換えられることがあります。実際に聞き間違えられる単語だけを残してください。"
       },
       "tokenCountProviders": {
         "hint": "トークン数ページで使用するプロバイダーです。ヒント: モデルはトークナイザーの選択にのみ影響します — 気になるファミリーの中で最も小さいモデルを選んでください（例: qwen3:0.6bはqwen3:8bと同じカウント結果になりますが、読み込みはごく短時間で済みます）。AnthropicとGeminiのカウント用エンドポイントは無料です。ローカルサーバーには1トークンのプローブでクエリします。",

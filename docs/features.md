@@ -478,9 +478,11 @@ something phonetically close and completely wrong.
 against that list using edit distance plus a phonetic comparison and substitutes the right
 spelling — no retraining, no model surgery. How eager the matching is can be tuned if it starts
 correcting things you did not mean. A whole list goes in at once: paste or type words separated
-by spaces, commas or new lines, or import them from a text file, and duplicates and words over 50
-characters are skipped with one summary. A long list folds to its first words, with a filter to
-find one, and can be copied out or cleared in one go.
+by spaces, commas or new lines and press Enter, and duplicates and words over 50 characters are
+skipped with one summary. A long list folds to its first words, with a filter to find one, and can
+be copied out or cleared in one go. Keep the list short: the correction is a fuzzy find-and-replace
+on the finished text, so above 50 words it starts changing ordinary words by mistake, and Handy
+says so under the list.
 **Where.** `General › Transcription › Custom Words`; aggressiveness at
 `Advanced settings › Debug › Word Correction Threshold` _{requires: Debug mode}_.
 **Since.** Present since the fork's early releases.

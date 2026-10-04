@@ -1123,10 +1123,6 @@
         "placeholderMulti": "输入以空格分隔的词语，然后按 Enter",
         "addedSummary": "已添加词语：{{added}}",
         "skippedSummary": "已跳过：{{skipped}}（重复或过长）",
-        "importFile": "从文件导入",
-        "fileFilter": "文本文件",
-        "importFailed": "无法读取文件：{{error}}",
-        "importEmpty": "文件中未找到词语",
         "copyAll": "全部复制",
         "copied": "已复制词语：{{count}}",
         "showAll": "显示全部（{{count}}）",
@@ -1135,7 +1131,9 @@
         "noMatches": "没有匹配的词语",
         "removeAll": "全部移除",
         "removeAllTitle": "移除所有自定义词语",
-        "removeAllMessage": "要移除所有自定义词语（{{count}}）吗？此操作无法撤销。"
+        "removeAllMessage": "要移除所有自定义词语（{{count}}）吗？此操作无法撤销。",
+        "wordCount": "单词数：{{count}}",
+        "longListWarning": "列表过长可能会误改普通词语。只保留确实会被听错的词。"
       },
       "tokenCountProviders": {
         "hint": "用于「令牌计数」页面的提供商。提示：模型仅用于选择分词器——请选择您关心的模型系列中最小的一个（例如 qwen3:0.6b 与 qwen3:8b 的计数结果相同，但加载时间要短得多）。Anthropic 和 Gemini 的计数端点是免费的；本地服务器则通过一次仅含 1 个令牌的探测请求查询。",

@@ -1553,7 +1553,7 @@
     "options": [],
     "gating": "none",
     "file": "src/components/settings/CustomWords.tsx",
-    "notes": "Chip field with a text input (placeholder \"Add words separated by spaces, then press Enter\"); Enter adds every word in it, split on spaces, commas, semicolons and new lines. Removable chips; above 12 words only the first 12 show plus a \"Show all ({{count}})\" toggle that opens the full list with a \"Filter words\" box and \"Show less\". Buttons under the field: \"Import from file\" (.txt/.csv/.md), and once the list is not empty \"Copy all\" and \"Remove all\" (confirm dialog)."
+    "notes": "Chip field with a text input (placeholder \"Add words separated by spaces, then press Enter\"); Enter adds every word in it, split on spaces, commas, semicolons and new lines. Removable chips; above 12 words only the first 12 show plus a \"Show all ({{count}})\" toggle that opens the full list with a \"Filter words\" box and \"Show less\". Once the list is not empty, a row under the field shows \"Words: {{count}}\", \"Copy all\" and \"Remove all\" (confirm dialog). Above 50 words a warning line: \"Long lists can change ordinary words by mistake. Keep only the words that are actually misheard.\""
   },
   {
     "page": "General",
