@@ -611,6 +611,10 @@
             "name": "ライブテキストボックスのオン/オフ",
             "description": "録音バーの T ボタンと同じく、ライブテキストボックスをオン/オフします。既定: なし。"
           },
+          "cycle_capture_source": {
+            "name": "音源を切り替え",
+            "description": "録音する音を順に切り替えます: マイク、システム音声、マイク + システム音声。録音バーに新しい音源が少しの間表示されます。録音中はその時点から録音を切り替えます。ただしシステム音声だけで始めた録音では、新しい音源は次の録音から使われます。Windows のみ。既定: なし。"
+          },
           "transcribe_with_post_process": {
             "name": "後処理ホットキー",
             "description": "オプション：文字起こしに常にAI後処理を適用する専用ホットキー。"
@@ -1878,9 +1882,17 @@
     "menu": {
       "changeShortcut": "ショートカットを変更…",
       "liveTextSettings": "ライブテキスト枠の設定…",
-      "hidePause": "一時停止ボタンを隠す"
+      "hidePause": "一時停止ボタンを隠す",
+      "soundSourceSettings": "音源の設定…"
     },
-    "tooQuiet": "声が小さすぎます"
+    "tooQuiet": "声が小さすぎます",
+    "captureSource": {
+      "now": "音源",
+      "nextTake": "次の録音から",
+      "microphone": "マイク",
+      "systemAudio": "システム音声",
+      "both": "マイク + システム"
+    }
   },
   "brand": {
     "name": "Handy",

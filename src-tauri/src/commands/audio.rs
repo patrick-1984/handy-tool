@@ -140,6 +140,22 @@ pub fn change_live_text_box_setting(app: AppHandle, enabled: bool) -> Result<boo
     Ok(enabled)
 }
 
+/// The pointer came onto the recording pill, or pressed it: note the window the
+/// user dictates into (see `overlay::note_focus_before_pill`). Windows only.
+#[tauri::command]
+#[specta::specta]
+pub fn overlay_note_focus() {
+    crate::overlay::note_focus_before_pill();
+}
+
+/// A click or a right-click menu on the recording pill is done: hand the
+/// foreground back if the pill took it. Windows only.
+#[tauri::command]
+#[specta::specta]
+pub fn overlay_restore_focus() {
+    crate::overlay::restore_focus_after_pill();
+}
+
 /// Flip the live text box (the overlay's T button). Returns the new state.
 #[tauri::command]
 #[specta::specta]

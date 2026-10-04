@@ -2541,6 +2541,24 @@ impl ShortcutAction for ToggleLiveTextBoxAction {
     fn stop(&self, _app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {}
 }
 
+// Cycle Sound Source Action: microphone, system audio, both (Windows only)
+struct CycleCaptureSourceAction;
+
+impl ShortcutAction for CycleCaptureSourceAction {
+    fn start(&self, app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {
+        // Off the shortcut's thread (the main thread for the Tauri backend): the
+        // change may reopen the capture streams or open the system-audio leg.
+        let app = app.clone();
+        std::thread::spawn(move || {
+            if let Err(e) = crate::shortcut::cycle_capture_source(&app) {
+                info!("Sound source shortcut: {e}");
+            }
+        });
+    }
+
+    fn stop(&self, _app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {}
+}
+
 struct PauseAction;
 
 impl ShortcutAction for PauseAction {
@@ -3400,6 +3418,10 @@ pub static ACTION_MAP: Lazy<HashMap<String, Arc<dyn ShortcutAction>>> = Lazy::ne
     map.insert(
         "toggle_live_text_box".to_string(),
         Arc::new(ToggleLiveTextBoxAction) as Arc<dyn ShortcutAction>,
+    );
+    map.insert(
+        "cycle_capture_source".to_string(),
+        Arc::new(CycleCaptureSourceAction) as Arc<dyn ShortcutAction>,
     );
     map.insert(
         "type_text".to_string(),

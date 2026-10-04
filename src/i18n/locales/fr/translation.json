@@ -611,6 +611,10 @@
             "name": "Texte en direct activé/désactivé",
             "description": "Active ou désactive le cadre de texte en direct, comme le bouton T de la barre d'enregistrement. Par défaut : aucun."
           },
+          "cycle_capture_source": {
+            "name": "Changer de source sonore",
+            "description": "Change tour à tour ce que les enregistrements captent : Microphone, Son système, Microphone + son système. La barre d'enregistrement affiche un instant la nouvelle source. Pendant un enregistrement, elle bascule cet enregistrement dès ce moment, sauf s'il a commencé avec le son système seul ; la nouvelle source s'applique alors au suivant. Windows uniquement. Par défaut : aucun."
+          },
           "transcribe_with_post_process": {
             "name": "Raccourci de post-traitement",
             "description": "Facultatif : Un raccourci dédié qui applique toujours le post-traitement IA à votre transcription."
@@ -1878,9 +1882,17 @@
     "menu": {
       "changeShortcut": "Modifier le raccourci…",
       "liveTextSettings": "Réglages de la zone de texte en direct…",
-      "hidePause": "Masquer le bouton pause"
+      "hidePause": "Masquer le bouton pause",
+      "soundSourceSettings": "Réglages de la source sonore…"
     },
-    "tooQuiet": "Trop bas — plus fort"
+    "tooQuiet": "Trop bas — plus fort",
+    "captureSource": {
+      "now": "Source sonore",
+      "nextTake": "Au prochain enregistrement",
+      "microphone": "Microphone",
+      "systemAudio": "Son système",
+      "both": "Micro + son système"
+    }
   },
   "floating": {
     "waiting": "En attente de la transcription…",

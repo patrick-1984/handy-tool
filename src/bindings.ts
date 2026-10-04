@@ -1589,6 +1589,23 @@ export const commands = {
       else return { status: "error", error: e as any };
     }
   },
+  /**
+   * The recording pill's right-click menu picked a sound source: like the setting,
+   * and the pill says what takes record now.
+   */
+  async chooseCaptureSource(
+    source: CaptureSource,
+  ): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("choose_capture_source", { source }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
   async changeSystemAudioDeviceSetting(
     deviceName: string,
   ): Promise<Result<null, string>> {
@@ -2438,6 +2455,20 @@ export const commands = {
       if (e instanceof Error) throw e;
       else return { status: "error", error: e as any };
     }
+  },
+  /**
+   * The pointer came onto the recording pill, or pressed it: note the window the
+   * user dictates into (see `overlay::note_focus_before_pill`). Windows only.
+   */
+  async overlayNoteFocus(): Promise<void> {
+    await TAURI_INVOKE("overlay_note_focus");
+  },
+  /**
+   * A click or a right-click menu on the recording pill is done: hand the
+   * foreground back if the pill took it. Windows only.
+   */
+  async overlayRestoreFocus(): Promise<void> {
+    await TAURI_INVOKE("overlay_restore_focus");
   },
   /**
    * Flip the live text box (the overlay's T button). Returns the new state.

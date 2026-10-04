@@ -606,6 +606,10 @@
             "name": "Live Text Box On/Off",
             "description": "Switches the live text box on or off, like the T button on the recording overlay. Default: None."
           },
+          "cycle_capture_source": {
+            "name": "Cycle Sound Source",
+            "description": "Switches what recordings capture, in turn: Microphone, System audio, Microphone + system audio. The recording overlay shows the new source for a moment. During a recording it switches that recording from that moment on, unless the recording started with System audio alone; then the new source applies to the next one. Windows only. Default: None."
+          },
           "transcribe_ptt": {
             "name": "Push-to-Talk Shortcut",
             "description": "**Hold this shortcut to record, release it to stop.** The microphone goes cold on release, so anything you say afterwards cannot leak into the text.\n\n**Default:** Ctrl+Shift+Space.\n\nIt has its own Transcription Mode (PTT) and its own Paste Method (PTT), so push-to-talk can behave differently from Record/Transcribe Shortcut."
@@ -1890,9 +1894,17 @@
     "menu": {
       "changeShortcut": "Change shortcut…",
       "liveTextSettings": "Live text box settings…",
-      "hidePause": "Hide the pause button"
+      "hidePause": "Hide the pause button",
+      "soundSourceSettings": "Sound source settings…"
     },
-    "tooQuiet": "Too quiet — speak up"
+    "tooQuiet": "Too quiet — speak up",
+    "captureSource": {
+      "now": "Sound source",
+      "nextTake": "From the next recording",
+      "microphone": "Microphone",
+      "systemAudio": "System audio",
+      "both": "Mic + system audio"
+    }
   },
   "flm": {
     "windowsApplicationControlBlocked": "Windows Application Control blocked flm.exe because it is not signed. The NPU engine is unavailable. Choose a different transcription model.",

@@ -594,6 +594,10 @@
             "name": "실시간 텍스트 상자 켜기/끄기",
             "description": "녹음 바의 T 버튼처럼 실시간 텍스트 상자를 켜거나 끕니다. 기본값: 없음."
           },
+          "cycle_capture_source": {
+            "name": "사운드 소스 전환",
+            "description": "녹음이 캡처하는 대상을 차례로 바꿉니다: 마이크, 시스템 오디오, 마이크 + 시스템 오디오. 녹음 바에 새 소스가 잠시 표시됩니다. 녹음 중에는 그 순간부터 해당 녹음을 전환합니다. 단, 시스템 오디오만으로 시작한 녹음이면 새 소스는 다음 녹음부터 적용됩니다. Windows 전용. 기본값: 없음."
+          },
           "transcribe_with_post_process": {
             "name": "후처리 단축키",
             "description": "선택 사항: 항상 AI 후처리를 적용하는 전용 단축키입니다."
@@ -1878,9 +1882,17 @@
     "menu": {
       "changeShortcut": "단축키 변경…",
       "liveTextSettings": "실시간 텍스트 상자 설정…",
-      "hidePause": "일시 정지 버튼 숨기기"
+      "hidePause": "일시 정지 버튼 숨기기",
+      "soundSourceSettings": "사운드 소스 설정…"
     },
-    "tooQuiet": "소리가 너무 작아요"
+    "tooQuiet": "소리가 너무 작아요",
+    "captureSource": {
+      "now": "사운드 소스",
+      "nextTake": "다음 녹음부터",
+      "microphone": "마이크",
+      "systemAudio": "시스템 오디오",
+      "both": "마이크 + 시스템"
+    }
   },
   "brand": {
     "name": "Handy",

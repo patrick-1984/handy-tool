@@ -41,6 +41,55 @@ pub fn is_own_helper_window(hwnd: isize) -> bool {
     )
 }
 
+/// The window the user worked in when the pointer came onto the pill, noted so a
+/// click or a right-click menu on the pill can hand the foreground back (see
+/// [`restore_focus_after_pill`]). 0 until noted.
+#[cfg(windows)]
+static FOCUS_BEFORE_PILL: std::sync::atomic::AtomicIsize = std::sync::atomic::AtomicIsize::new(0);
+
+/// The pointer came onto the pill, or pressed it: note the window in front -
+/// unless it already is the pill (or another helper window of ours), which keeps
+/// the window noted before. Hovering never activates the pill, so the window in
+/// front then is the one the user dictates into.
+pub fn note_focus_before_pill() {
+    #[cfg(windows)]
+    if let Some(hwnd) = crate::anchor::foreground_window_id() {
+        if !is_own_helper_window(hwnd) {
+            FOCUS_BEFORE_PILL.store(hwnd, Ordering::Relaxed);
+        }
+    }
+}
+
+/// After a click or a right-click menu on the pill: if that left one of Handy's
+/// helper windows in front, give the foreground back to the window noted when the
+/// pointer came onto the pill, so the next paste lands where the user dictates.
+///
+/// Needed even for a window that does not activate on clicks: the native menu
+/// (muda) calls SetForegroundWindow on the pill before TrackPopupMenu. Allowed
+/// by Windows because Handy's own window is then the foreground. Does nothing
+/// when the main window's handle is unknown or the noted window has closed.
+pub fn restore_focus_after_pill() {
+    #[cfg(windows)]
+    {
+        use windows::Win32::Foundation::HWND;
+        use windows::Win32::UI::WindowsAndMessaging::{IsWindow, SetForegroundWindow};
+        let noted = FOCUS_BEFORE_PILL.load(Ordering::Relaxed);
+        let ours_in_front = crate::anchor::foreground_window_id().is_some_and(is_own_helper_window);
+        let hwnd = HWND(noted as *mut core::ffi::c_void);
+        let alive = noted != 0 && unsafe { IsWindow(Some(hwnd)).as_bool() };
+        if should_restore_focus(noted, ours_in_front, alive) {
+            let restored = unsafe { SetForegroundWindow(hwnd).as_bool() };
+            log::debug!("Pill used: foreground handed back (restored={restored})");
+        }
+    }
+}
+
+/// The rule behind [`restore_focus_after_pill`], kept pure for testing.
+#[cfg_attr(not(windows), allow(dead_code))]
+fn should_restore_focus(noted: isize, ours_in_front: bool, noted_alive: bool) -> bool {
+    noted != 0 && ours_in_front && noted_alive
+}
+
 /// The rule behind [`is_own_helper_window`], kept pure for testing.
 #[cfg_attr(not(windows), allow(dead_code))]
 fn helper_decision(hwnd: isize, main_hwnd: isize, same_process: bool) -> bool {
@@ -49,7 +98,21 @@ fn helper_decision(hwnd: isize, main_hwnd: isize, same_process: bool) -> bool {
 
 #[cfg(test)]
 mod helper_window_tests {
-    use super::helper_decision;
+    use super::{helper_decision, should_restore_focus};
+
+    #[test]
+    fn the_foreground_goes_back_only_when_the_pill_took_it_from_a_live_window() {
+        assert!(should_restore_focus(42, true, true));
+        assert!(
+            !should_restore_focus(42, false, true),
+            "the user's app is still in front"
+        );
+        assert!(
+            !should_restore_focus(42, true, false),
+            "the noted window has closed"
+        );
+        assert!(!should_restore_focus(0, true, true), "nothing noted yet");
+    }
 
     #[test]
     fn only_our_other_windows_count_as_helpers() {
@@ -459,6 +522,58 @@ pub fn show_microphone_problem_overlay(app_handle: &AppHandle, state: &str) {
     let app_handle = app_handle.clone();
     std::thread::spawn(move || {
         std::thread::sleep(std::time::Duration::from_millis(2500));
+        if OVERLAY_GENERATION.load(Ordering::SeqCst) == generation {
+            hide_recording_overlay(&app_handle);
+        }
+    });
+}
+
+/// What the pill says after the sound source changed from the shortcut or its menu.
+#[derive(Clone, serde::Serialize)]
+struct CaptureSourceNotice {
+    source: settings::CaptureSource,
+    /// The take in progress keeps its source; the new one starts with the next take.
+    next_take: bool,
+}
+
+/// How long the pill shows a sound source change.
+const CAPTURE_NOTICE_MS: u64 = 1_600;
+
+/// Say on the pill which sound source takes record now (the Cycle Sound Source
+/// shortcut, the pill's right-click menu). During a take the pill shows it over the
+/// sound bars for a moment; with no take on screen the pill appears just for it and
+/// hides again. Nothing with Overlay Position: None.
+pub fn show_capture_source_notice(
+    app_handle: &AppHandle,
+    source: settings::CaptureSource,
+    next_take: bool,
+) {
+    if settings::get_settings(app_handle).overlay_position == OverlayPosition::None {
+        return;
+    }
+    let notice = CaptureSourceNotice { source, next_take };
+    if OVERLAY_VISIBLE.load(Ordering::Relaxed) {
+        let _ = app_handle.emit_to("recording_overlay", "capture-source-notice", notice);
+        return;
+    }
+    // Not through show_overlay_state: that tells the main window a take started.
+    OVERLAY_GENERATION.fetch_add(1, Ordering::SeqCst);
+    let generation = OVERLAY_GENERATION.load(Ordering::SeqCst);
+    update_overlay_position(app_handle);
+    let Some(overlay_window) = app_handle.get_webview_window("recording_overlay") else {
+        return;
+    };
+    if overlay_window.show().is_ok() {
+        OVERLAY_VISIBLE.store(true, Ordering::Relaxed);
+    }
+    #[cfg(target_os = "windows")]
+    force_overlay_topmost(&overlay_window);
+    let _ = overlay_window.emit("show-overlay", "notice");
+    let _ = overlay_window.emit("capture-source-notice", notice);
+    // A take shown in the meantime bumps the generation and keeps the pill.
+    let app_handle = app_handle.clone();
+    std::thread::spawn(move || {
+        std::thread::sleep(std::time::Duration::from_millis(CAPTURE_NOTICE_MS));
         if OVERLAY_GENERATION.load(Ordering::SeqCst) == generation {
             hide_recording_overlay(&app_handle);
         }

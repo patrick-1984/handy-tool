@@ -69,6 +69,10 @@ export const ShortcutsSettings: React.FC = () => {
           <ShortcutInput shortcutId="undo_word" grouped={true} />
         )}
         <ShortcutInput shortcutId="toggle_live_text_box" grouped={true} />
+        {/* Windows only, like the sound sources it switches between. */}
+        {osType === "windows" && (
+          <ShortcutInput shortcutId="cycle_capture_source" grouped={true} />
+        )}
       </SettingsGroup>
       <SettingsGroup icon={Keyboard} title={t("sidebar.keyboardTyper")}>
         <ShortcutInput shortcutId="type_text" grouped={true} />

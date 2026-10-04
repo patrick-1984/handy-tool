@@ -192,6 +192,7 @@ fn keepable(id: &str) -> bool {
             | "cancel"
             | "pause"
             | "toggle_live_text_box"
+            | "cycle_capture_source"
             | "type_text"
             | "paste_last"
     ) || crate::shortcut::is_jumper_binding(id)

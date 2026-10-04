@@ -440,7 +440,7 @@ pub fn init_shortcuts(app: &AppHandle) -> Result<(), String> {
             continue;
         }
         // The Jumper is Windows-only — don't claim its hotkeys elsewhere.
-        if super::is_jumper_binding(&id) && !cfg!(windows) {
+        if super::is_windows_only_binding(&id) && !cfg!(windows) {
             continue;
         }
         // Skip post-processing shortcut when the feature is disabled

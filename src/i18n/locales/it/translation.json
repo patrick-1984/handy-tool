@@ -611,6 +611,10 @@
             "name": "Testo dal vivo on/off",
             "description": "Attiva o disattiva il riquadro del testo dal vivo, come il pulsante T della barra di registrazione. Predefinito: nessuna."
           },
+          "cycle_capture_source": {
+            "name": "Cambia sorgente audio",
+            "description": "Cambia a turno cosa catturano le registrazioni: Microfono, Audio di sistema, Microfono + audio di sistema. La barra di registrazione mostra per un attimo la nuova sorgente. Durante una registrazione la cambia da quel momento, a meno che non sia iniziata con il solo audio di sistema; allora la nuova sorgente vale dalla successiva. Solo Windows. Predefinito: nessuno."
+          },
           "transcribe_with_post_process": {
             "name": "Tasto di post-elaborazione",
             "description": "Facoltativo: Un tasto di scelta rapida dedicato che applica sempre la post-elaborazione IA alla trascrizione."
@@ -1878,9 +1882,17 @@
     "menu": {
       "changeShortcut": "Cambia scorciatoia…",
       "liveTextSettings": "Impostazioni del riquadro testo dal vivo…",
-      "hidePause": "Nascondi il pulsante di pausa"
+      "hidePause": "Nascondi il pulsante di pausa",
+      "soundSourceSettings": "Impostazioni della sorgente audio…"
     },
-    "tooQuiet": "Troppo piano — più forte"
+    "tooQuiet": "Troppo piano — più forte",
+    "captureSource": {
+      "now": "Sorgente audio",
+      "nextTake": "Dalla prossima registrazione",
+      "microphone": "Microfono",
+      "systemAudio": "Audio di sistema",
+      "both": "Micro + sistema"
+    }
   },
   "brand": {
     "name": "Handy",

@@ -594,6 +594,10 @@
             "name": "Caixa de texto ao vivo liga/desliga",
             "description": "Liga ou desliga a caixa de texto ao vivo, como o botão T da barra de gravação. Padrão: nenhum."
           },
+          "cycle_capture_source": {
+            "name": "Alternar fonte de som",
+            "description": "Alterna, por vez, o que as gravações captam: Microfone, Áudio do sistema, Microfone + áudio do sistema. A barra de gravação mostra a nova fonte por um instante. Durante uma gravação, troca essa gravação a partir daquele momento, a menos que ela tenha começado só com o áudio do sistema; então a nova fonte vale a partir da próxima. Somente Windows. Padrão: nenhum."
+          },
           "transcribe_with_post_process": {
             "name": "Tecla de Pós-Processamento",
             "description": "Opcional: Uma tecla de atalho dedicada que sempre aplica pós-processamento com IA à sua transcrição."
@@ -1878,9 +1882,17 @@
     "menu": {
       "changeShortcut": "Alterar atalho…",
       "liveTextSettings": "Configurações da caixa de texto ao vivo…",
-      "hidePause": "Ocultar o botão de pausa"
+      "hidePause": "Ocultar o botão de pausa",
+      "soundSourceSettings": "Configurações da fonte de som…"
     },
-    "tooQuiet": "Muito baixo — fale alto"
+    "tooQuiet": "Muito baixo — fale alto",
+    "captureSource": {
+      "now": "Fonte de som",
+      "nextTake": "Na próxima gravação",
+      "microphone": "Microfone",
+      "systemAudio": "Áudio do sistema",
+      "both": "Micro + sistema"
+    }
   },
   "brand": {
     "name": "Handy",

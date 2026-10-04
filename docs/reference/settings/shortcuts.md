@@ -28,9 +28,10 @@ Catalog: [Your shortcuts work inside a Remote Desktop session](../../features.md
 Transcribe, Push-to-Talk, Transcribe & Submit, Paste Last Transcription and Cancel. The
 Post-Processing Hotkey is listed while post-processing is on, and Pause / Resume and Undo Last
 Word while their options on General are on. Live Text Box On/Off is always listed. Cancel, Pause / Resume and Undo Last
-Word are not listed on Linux, where they are never registered.
+Word are not listed on Linux, where they are never registered. Cycle Sound Source (no default key) is listed on Windows
+only. _{Windows only}_
 
-Catalog: [Every shortcut on one page](../../features.md#every-shortcut-on-one-page).
+Catalog: [Every shortcut on one page](../../features.md#every-shortcut-on-one-page), [Switch between your voice and the system audio without opening Settings](../../features.md#switch-sound-source-without-settings).
 
 ### Keyboard Typer
 

@@ -611,6 +611,10 @@
             "name": "Activar/desactivar texto en vivo",
             "description": "Activa o desactiva el cuadro de texto en vivo, como el botón T de la barra de grabación. Predeterminado: ninguno."
           },
+          "cycle_capture_source": {
+            "name": "Cambiar fuente de sonido",
+            "description": "Cambia por turnos lo que capturan las grabaciones: Micrófono, Audio del sistema, Micrófono + audio del sistema. La barra de grabación muestra un momento la nueva fuente. Durante una grabación la cambia desde ese momento, salvo que empezara solo con audio del sistema; entonces la nueva fuente se aplica a la siguiente. Solo Windows. Predeterminado: ninguno."
+          },
           "transcribe_with_post_process": {
             "name": "Tecla de Post Procesamiento",
             "description": "Opcional: Una tecla de acceso rápido dedicada que siempre aplica post procesamiento con IA a tu transcripción."
@@ -1878,9 +1882,17 @@
     "menu": {
       "changeShortcut": "Cambiar atajo…",
       "liveTextSettings": "Ajustes del cuadro de texto en vivo…",
-      "hidePause": "Ocultar el botón de pausa"
+      "hidePause": "Ocultar el botón de pausa",
+      "soundSourceSettings": "Ajustes de la fuente de sonido…"
     },
-    "tooQuiet": "Muy bajo: habla alto"
+    "tooQuiet": "Muy bajo: habla alto",
+    "captureSource": {
+      "now": "Fuente de sonido",
+      "nextTake": "Desde la próxima grabación",
+      "microphone": "Micrófono",
+      "systemAudio": "Audio del sistema",
+      "both": "Micro + sistema"
+    }
   },
   "floating": {
     "waiting": "Esperando la transcripción…",

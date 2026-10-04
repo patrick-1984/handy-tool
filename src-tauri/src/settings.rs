@@ -2440,6 +2440,18 @@ pub enum CaptureSource {
     MicrophoneAndSystemAudio,
 }
 
+impl CaptureSource {
+    /// The source the Cycle Sound Source shortcut moves to: Microphone, System
+    /// audio, Microphone + system audio, then Microphone again.
+    pub fn next(self) -> Self {
+        match self {
+            CaptureSource::Microphone => CaptureSource::SystemAudio,
+            CaptureSource::SystemAudio => CaptureSource::MicrophoneAndSystemAudio,
+            CaptureSource::MicrophoneAndSystemAudio => CaptureSource::Microphone,
+        }
+    }
+}
+
 pub const SETTINGS_STORE_PATH: &str = "settings_store.json";
 
 pub fn get_default_settings() -> AppSettings {
@@ -2529,6 +2541,21 @@ pub fn get_default_settings() -> AppSettings {
             description:
                 "Switches the live text box on or off, like the T button on the recording overlay."
                     .to_string(),
+            default_binding: String::new(),
+            current_binding: String::new(),
+        },
+    );
+
+    // Windows-only (see shortcut::is_windows_only_binding): the other sources need
+    // WASAPI loopback. No default chord - a global key for an occasional switch
+    // would take keys from every other app; the pill's right-click menu needs none.
+    bindings.insert(
+        "cycle_capture_source".to_string(),
+        ShortcutBinding {
+            id: "cycle_capture_source".to_string(),
+            name: "Cycle Sound Source".to_string(),
+            description: "Switches what takes record: microphone, system audio, or both."
+                .to_string(),
             default_binding: String::new(),
             current_binding: String::new(),
         },
@@ -3312,6 +3339,37 @@ mod tests {
                 "source={source:?}"
             );
         }
+    }
+
+    #[test]
+    fn the_sound_source_shortcut_cycles_through_all_three_in_order() {
+        let mut s = CaptureSource::Microphone;
+        let mut seen = Vec::new();
+        for _ in 0..4 {
+            s = s.next();
+            seen.push(s);
+        }
+        assert_eq!(
+            seen,
+            vec![
+                CaptureSource::SystemAudio,
+                CaptureSource::MicrophoneAndSystemAudio,
+                CaptureSource::Microphone,
+                CaptureSource::SystemAudio,
+            ]
+        );
+    }
+
+    #[test]
+    fn the_cycle_sound_source_shortcut_ships_unbound_and_is_backfilled() {
+        let defaults = get_default_settings();
+        let b = &defaults.bindings["cycle_capture_source"];
+        assert!(b.default_binding.is_empty() && b.current_binding.is_empty());
+        // A store from before this binding existed gets it, unbound.
+        let mut old = get_default_settings();
+        old.bindings.remove("cycle_capture_source");
+        assert!(ensure_default_bindings(&mut old));
+        assert_eq!(old.bindings["cycle_capture_source"].current_binding, "");
     }
 
     #[test]
