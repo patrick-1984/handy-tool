@@ -43,7 +43,8 @@ pub fn is_own_helper_window(hwnd: isize) -> bool {
 
 /// The window the user worked in when the pointer came onto the pill, noted so a
 /// click or a right-click menu on the pill can hand the foreground back (see
-/// [`restore_focus_after_pill`]). 0 until noted.
+/// [`restore_focus_after_pill`]). 0 until noted; cleared when the pill hides, so
+/// only a window noted while the pill is up can be brought back.
 #[cfg(windows)]
 static FOCUS_BEFORE_PILL: std::sync::atomic::AtomicIsize = std::sync::atomic::AtomicIsize::new(0);
 
@@ -132,6 +133,12 @@ mod helper_window_tests {
         assert!(!helper_decision(0, 5, true), "no foreground window");
     }
 }
+
+/// A take's state (recording, paused, transcribing, a microphone problem...) is on
+/// the pill, from the start of its show until the pill hides. Unlike
+/// `OVERLAY_VISIBLE` it is set before the show's window work, and a sound source
+/// notice never sets it.
+static TAKE_ON_PILL: AtomicBool = AtomicBool::new(false);
 
 /// Generation counter incremented on every show, checked by delayed hide threads.
 /// If the generation changed between spawning and waking, the hide is stale and skipped.
@@ -455,6 +462,9 @@ pub fn create_recording_overlay(app_handle: &AppHandle) {
 }
 
 fn show_overlay_state(app_handle: &AppHandle, state: &str) {
+    // First, so a sound source notice from here on joins this take's pill instead
+    // of showing (and later hiding) a pill of its own.
+    TAKE_ON_PILL.store(true, Ordering::SeqCst);
     // The main window follows the take too (the setup's Try it), whether or
     // not the pill is shown. `emit_to` only queues the event.
     let _ = app_handle.emit_to("main", "take-state", state);
@@ -552,11 +562,14 @@ pub fn show_capture_source_notice(
         return;
     }
     let notice = CaptureSourceNotice { source, next_take };
-    if OVERLAY_VISIBLE.load(Ordering::Relaxed) {
+    if TAKE_ON_PILL.load(Ordering::SeqCst) {
         let _ = app_handle.emit_to("recording_overlay", "capture-source-notice", notice);
         return;
     }
     // Not through show_overlay_state: that tells the main window a take started.
+    // No lock against a take starting right now (its show runs on the main thread,
+    // which this one waits on): a take shown in the meantime keeps its state on
+    // the pill (the page ignores a later "notice") and the hide below skips it.
     OVERLAY_GENERATION.fetch_add(1, Ordering::SeqCst);
     let generation = OVERLAY_GENERATION.load(Ordering::SeqCst);
     update_overlay_position(app_handle);
@@ -570,11 +583,14 @@ pub fn show_capture_source_notice(
     force_overlay_topmost(&overlay_window);
     let _ = overlay_window.emit("show-overlay", "notice");
     let _ = overlay_window.emit("capture-source-notice", notice);
-    // A take shown in the meantime bumps the generation and keeps the pill.
+    // A take shown in the meantime (or another notice) bumps the generation and
+    // keeps the pill.
     let app_handle = app_handle.clone();
     std::thread::spawn(move || {
         std::thread::sleep(std::time::Duration::from_millis(CAPTURE_NOTICE_MS));
-        if OVERLAY_GENERATION.load(Ordering::SeqCst) == generation {
+        if OVERLAY_GENERATION.load(Ordering::SeqCst) == generation
+            && !TAKE_ON_PILL.load(Ordering::SeqCst)
+        {
             hide_recording_overlay(&app_handle);
         }
     });
@@ -603,6 +619,9 @@ pub fn hide_recording_overlay(app_handle: &AppHandle) {
     // Stop the audio worker from emitting levels immediately (T-306), before any
     // window work below — the actual native hide is delayed for the fade-out.
     OVERLAY_VISIBLE.store(false, Ordering::Relaxed);
+    TAKE_ON_PILL.store(false, Ordering::SeqCst);
+    #[cfg(windows)]
+    FOCUS_BEFORE_PILL.store(0, Ordering::Relaxed);
     let _ = app_handle.emit_to("main", "take-state", "idle");
     if QUIET_HINT_SHOWN.swap(false, Ordering::Relaxed) {
         set_quiet_hint_visible(app_handle, false);
