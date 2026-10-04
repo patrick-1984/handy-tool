@@ -57,3 +57,9 @@ Shows the upstream project acknowledgment. **Default:** read-only acknowledgment
 `About › Acknowledgments › Whisper.cpp`
 
 Shows the speech-engine acknowledgment. **Default:** read-only acknowledgment text.
+
+### Speaker detection models
+
+`About › Acknowledgments › Speaker detection models`
+
+Credits the pyannote segmentation (MIT) and WeSpeaker ResNet34 (CC BY 4.0) models, in their sherpa-onnx ONNX versions, that `History › Recordings › Make note with speakers` downloads. **Default:** read-only acknowledgment text.

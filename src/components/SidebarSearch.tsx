@@ -34,6 +34,7 @@ export const SidebarSearch: React.FC<SidebarSearchProps> = ({
   const { settings } = useSettings();
   const osType = useOsType();
   const navigateTo = useNavStore((state) => state.navigateTo);
+  const setNotesTab = useNavStore((state) => state.setNotesTab);
   const [active, setActive] = useState(0);
 
   const index = useMemo(
@@ -55,6 +56,7 @@ export const SidebarSearch: React.FC<SidebarSearchProps> = ({
   const results = useMemo(() => searchSettings(index, query), [index, query]);
 
   const pick = (entry: SearchEntry) => {
+    if (entry.notesTab) setNotesTab(entry.notesTab);
     navigateTo(entry.section as SidebarSection, entry.historyTab);
     onQueryChange("");
     // Once the destination has rendered: the page being left can carry a control

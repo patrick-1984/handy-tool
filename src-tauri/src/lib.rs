@@ -9,6 +9,7 @@ pub mod cli;
 mod cli_client;
 mod clipboard;
 mod commands;
+mod diarization;
 mod helpers;
 mod input;
 mod keyboard_layouts;
@@ -16,6 +17,7 @@ mod llm_client;
 mod managers;
 mod mcp;
 mod model_testing;
+mod note_skills;
 mod overlay;
 mod portable;
 mod remote_keys;
@@ -492,6 +494,22 @@ pub fn run(cli_args: CliArgs) {
         commands::files::change_file_model_setting,
         commands::files::change_file_keep_audio_setting,
         commands::files::change_files_folder_setting,
+        commands::notes::generate_note,
+        commands::notes::get_notes,
+        commands::notes::get_notes_for_history_ids,
+        commands::notes::delete_note,
+        commands::notes::get_note_skills,
+        commands::notes::import_note_skill,
+        commands::notes::delete_note_skill,
+        commands::notes::change_note_skill_ids_setting,
+        commands::notes::change_note_custom_instructions_setting,
+        commands::notes::change_note_language_setting,
+        commands::notes::change_note_provider_ref_setting,
+        commands::notes::change_note_model_setting,
+        commands::speakers::get_speaker_model_status,
+        commands::speakers::download_speaker_models,
+        commands::speakers::delete_speaker_models,
+        commands::speakers::transcribe_history_entry_with_speakers,
         shortcut::change_post_process_enabled_setting,
         shortcut::change_transcription_mode_setting,
         shortcut::change_transcription_mode_ptt_setting,

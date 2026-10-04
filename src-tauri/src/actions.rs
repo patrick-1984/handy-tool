@@ -996,12 +996,12 @@ pub fn end_chunked_session(app: &AppHandle) {
 }
 
 /// Strip invisible Unicode characters that some LLMs may insert
-fn strip_invisible_chars(s: &str) -> String {
+pub(crate) fn strip_invisible_chars(s: &str) -> String {
     s.replace(['\u{200B}', '\u{200C}', '\u{200D}', '\u{FEFF}'], "")
 }
 
 /// Strip `<think>...</think>` blocks that thinking models (e.g. Qwen3) may prepend.
-fn strip_thinking_tags(s: &str) -> String {
+pub(crate) fn strip_thinking_tags(s: &str) -> String {
     let mut result = s.to_string();
     while let Some(start) = result.find("<think>") {
         if let Some(end) = result.find("</think>") {
@@ -1044,7 +1044,7 @@ fn build_system_prompt(prompt_template: &str) -> String {
 /// boundaries loosely, so `</TRANSCRIPT>` is as much a breakout as lowercase)
 /// so dictated text can never escape the delimited region the guard declares
 /// to be data.
-fn build_transcript_user_message(transcription: &str) -> String {
+pub(crate) fn build_transcript_user_message(transcription: &str) -> String {
     let bytes = transcription.as_bytes();
     let mut out: Vec<u8> = Vec::with_capacity(bytes.len() + 16);
     for (i, &b) in bytes.iter().enumerate() {

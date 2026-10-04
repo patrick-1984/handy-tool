@@ -2,6 +2,7 @@
 // This file is copied over transcription.rs during CI tests.
 // Existing tests don't exercise transcription, so this is safe.
 
+use crate::diarization::TimedTranscript;
 use crate::managers::model::ModelManager;
 use anyhow::Result;
 use serde::Serialize;
@@ -45,6 +46,9 @@ pub struct ModelStateEvent {
     pub model_name: Option<String>,
     pub error: Option<String>,
 }
+
+/// Mirrors the real guard; the mock never unloads anything.
+pub struct ModelHold;
 
 #[derive(Clone)]
 pub struct TranscriptionManager {
@@ -100,6 +104,18 @@ impl TranscriptionManager {
         _audio: Vec<f32>,
     ) -> Result<(String, Option<Vec<(f32, String)>>)> {
         Ok((String::new(), None))
+    }
+
+    pub fn transcribe_with_timing_expecting(
+        &self,
+        _expected_model: &str,
+        _audio: Vec<f32>,
+    ) -> Result<TimedTranscript> {
+        Ok(TimedTranscript::default())
+    }
+
+    pub fn hold_loaded_model(&self) -> ModelHold {
+        ModelHold
     }
 
     pub fn set_live_transcribing(&self, _active: bool) {}

@@ -494,27 +494,43 @@ pub async fn list_provider_models(
                 .collect())
         }
         _ => {
-            let timeout = provider_timeout(&provider);
-            let client = http_client(timeout)?;
-            let mut request = client.get(format!("{}/models", base));
-            if !provider.api_key.trim().is_empty() {
-                request = request.bearer_auth(provider.api_key.trim());
+            let key = provider.api_key.trim();
+            // OpenRouter's `/models/user` lists only the models this key's
+            // account may use (provider preferences, privacy settings and
+            // guardrail allow-lists); `/models` is the full public catalogue.
+            if provider.kind == "openrouter" && !key.is_empty() {
+                match fetch_bearer_model_ids(&provider, &format!("{}/models/user", base)).await {
+                    Ok(ids) => return Ok(ids),
+                    Err(e) => warn!("OpenRouter /models/user failed, using /models: {}", e),
+                }
             }
-            let response = request
-                .send()
-                .await
-                .map_err(|e| format!("Request failed: {}", e))?;
-            let body_bytes = crate::llm_client::read_body_capped(
-                response,
-                crate::llm_client::MAX_RESPONSE_BYTES,
-                timeout,
-            )
-            .await?;
-            let value: Value = serde_json::from_slice(&body_bytes)
-                .map_err(|e| format!("Invalid response: {}", e))?;
-            extract_ids(&value["data"], "id")
+            fetch_bearer_model_ids(&provider, &format!("{}/models", base)).await
         }
     }
+}
+
+/// `GET url` (with the provider's key as a bearer token when it has one) and
+/// the `data[].id` list of the OpenAI-style models response.
+async fn fetch_bearer_model_ids(provider: &LlmProvider, url: &str) -> Result<Vec<String>, String> {
+    let timeout = provider_timeout(provider);
+    let client = http_client(timeout)?;
+    let mut request = client.get(url);
+    if !provider.api_key.trim().is_empty() {
+        request = request.bearer_auth(provider.api_key.trim());
+    }
+    let response = request
+        .send()
+        .await
+        .map_err(|e| format!("Request failed: {}", e))?;
+    let body_bytes = crate::llm_client::read_body_capped(
+        response,
+        crate::llm_client::MAX_RESPONSE_BYTES,
+        timeout,
+    )
+    .await?;
+    let value: Value =
+        serde_json::from_slice(&body_bytes).map_err(|e| format!("Invalid response: {}", e))?;
+    extract_ids(&value["data"], "id")
 }
 
 /// Known OpenRouter speech-to-text model ids, used as an offline fallback when

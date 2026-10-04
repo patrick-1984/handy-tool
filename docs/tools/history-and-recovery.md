@@ -15,6 +15,7 @@ Treat History as part of dictation, not as an archive you visit months later. It
 - [What did I dictate last Tuesday?](../features.md#what-did-i-dictate-last-tuesday)
 - [Hear what it heard](../features.md#hear-what-it-heard)
 - [Keep the ones that matter](../features.md#keep-the-ones-that-matter)
+- [Turn a recording into a note](../features.md#turn-a-recording-into-a-note)
 - [Escape stops the delivery, not your words](../features.md#escape-stops-the-delivery-not-your-words)
 - [Don't keep audio forever](../features.md#dont-keep-audio-forever)
 - [How long it was, which engine ran it, what it cost](../features.md#how-long-which-engine-what-it-cost)

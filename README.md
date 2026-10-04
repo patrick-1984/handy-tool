@@ -35,6 +35,9 @@ This list follows the same layout ([how the pages are arranged](docs/features.md
 - **History** — [a crash mid-dictation costs you nothing](docs/features.md#a-crash-mid-dictation-costs-you-nothing);
   [find what you dictated last Tuesday](docs/features.md#what-did-i-dictate-last-tuesday), [hear what it heard](docs/features.md#hear-what-it-heard),
   and [see how much you have dictated](docs/features.md#how-much-have-i-dictated).
+- **Notes** — [turn a recording into a note](docs/features.md#turn-a-recording-into-a-note),
+  [one that says who said what](docs/features.md#a-note-that-says-who-said-what), [written your way, with a skill](docs/features.md#notes-written-your-way-with-a-skill),
+  and [every note in one place](docs/features.md#every-note-in-one-place).
 - **General** — the dictation itself. [Press one key, speak, and the text appears where you were typing](docs/features.md#press-one-key-and-speak),
   or [hold a key for a one-line thought](docs/features.md#hold-to-talk). [Watch the text appear, or wait for the most accurate pass](docs/features.md#live-or-post-recording);
   with the [live text box](docs/features.md#live-text-box) your words sit next to the recording pill while you talk, and you can
@@ -191,3 +194,5 @@ It exists because of an escalation. “I type too slowly. My brain is faster tha
 ## License and lineage
 
 Handy Tool is released under the [MIT License](LICENSE). It began as a fork of [cjpais/Handy](https://github.com/cjpais/Handy), created by CJ Pais, and is now developed independently. That upstream project and its contributors provided the foundation this repository builds on.
+
+Make note with speakers downloads two third-party models on demand: pyannote segmentation 3.0 by Hervé Bredin and pyannote.audio (MIT License) and the WeSpeaker ResNet34 VoxCeleb model by the WeNet community (CC BY 4.0), both in the ONNX versions published by the [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) project.

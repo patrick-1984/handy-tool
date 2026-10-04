@@ -1,0 +1,501 @@
+import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Columns2,
+  Copy,
+  Loader2,
+  NotebookPen,
+  RotateCcw,
+  Scissors,
+  Settings2,
+  Sparkles,
+  Trash2,
+  UsersRound,
+  X,
+} from "lucide-react";
+import { toast } from "sonner";
+import type { Note } from "@/bindings";
+import { useSettings } from "@/hooks/useSettings";
+import { formatCost, formatDuration } from "@/lib/noteModels";
+import { noteLanguageName } from "./OutputLanguagePicker";
+import { useNavStore } from "@/stores/navStore";
+import {
+  SETUP_ERRORS,
+  isHistoryEntryBusy,
+  noteProvider,
+  useNotesStore,
+  type ModelJob,
+} from "@/stores/notesStore";
+import { Button } from "../../ui/Button";
+import { ICON_BUTTON } from "../../ui/controlClasses";
+import { Markdown } from "./markdown";
+import { NoteModelSelect } from "./NoteModelSelect";
+import { translateNoteError } from "./noteErrors";
+
+/**
+ * The tinted "Note" card: the accent colour marks everything that is a note
+ * (or a note being written), so it reads apart from the transcript above it.
+ */
+export const NoteCard: React.FC<{
+  actions?: React.ReactNode;
+  meta?: React.ReactNode;
+  children: React.ReactNode;
+}> = ({ actions, meta, children }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="rounded-lg border border-accent/30 border-s-[3px] border-s-accent bg-accent-soft/50 ps-3 pe-2 py-2 flex flex-col gap-1.5">
+      <div className="flex items-center justify-between gap-2 min-h-7">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.06em] text-accent-text shrink-0">
+            <NotebookPen className="w-3.5 h-3.5" aria-hidden />
+            {t("settings.notes.inline.label")}
+          </span>
+          {meta}
+        </div>
+        <div className="flex items-center gap-0.5 shrink-0">{actions}</div>
+      </div>
+      {children}
+    </div>
+  );
+};
+
+/** When a note was written, as a short date and time. */
+export const noteDate = (timestamp: number, locale: string): string => {
+  const date = new Date(timestamp * 1000);
+  if (isNaN(date.getTime())) return String(timestamp);
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+};
+
+/**
+ * What wrote the note and what it took: model, cost, tokens in / out,
+ * generation time, and the skills it followed.
+ */
+export const NoteMeta: React.FC<{ note: Note }> = ({ note }) => {
+  const { t, i18n } = useTranslation();
+  const count = (n: number | null) =>
+    n === null ? "–" : new Intl.NumberFormat(i18n.language).format(n);
+  const cost = formatCost(note.cost_usd, i18n.language);
+  const items: { key: string; text: string; title?: string }[] = [
+    {
+      key: "cost",
+      text: cost ?? t("settings.notes.usage.costUnknown"),
+      title: t("settings.notes.usage.costTitle"),
+    },
+  ];
+  if (note.prompt_tokens !== null || note.completion_tokens !== null) {
+    items.push({
+      key: "tokens",
+      text: t("settings.notes.usage.tokens", {
+        input: count(note.prompt_tokens),
+        output: count(note.completion_tokens),
+      }),
+    });
+  }
+  if (note.duration_ms !== null) {
+    items.push({
+      key: "time",
+      text: formatDuration(note.duration_ms, i18n.language),
+      title: t("settings.notes.usage.timeTitle"),
+    });
+  }
+  if (note.skill_name) {
+    items.push({ key: "skills", text: note.skill_name });
+  }
+  // Only a picked language; "Same as the transcript" is the quiet default.
+  if (note.language) {
+    items.push({
+      key: "language",
+      text: noteLanguageName(note.language),
+      title: t("settings.notes.language.title"),
+    });
+  }
+  return (
+    <p className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-text-secondary min-w-0">
+      <span
+        className="font-medium text-text break-all"
+        title={t("settings.notes.usage.modelTitle")}
+      >
+        {note.model}
+      </span>
+      {items.map((item) => (
+        <React.Fragment key={item.key}>
+          <span aria-hidden>·</span>
+          <span
+            className={`tabular-nums ${item.key === "skills" ? "break-words" : "whitespace-nowrap"}`}
+            title={item.title}
+          >
+            {item.text}
+          </span>
+        </React.Fragment>
+      ))}
+    </p>
+  );
+};
+
+/** Opens "Try another model" on a note. */
+export const TryAnotherModelButton: React.FC<{
+  active: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+}> = ({ active, disabled, onClick }) => {
+  const { t } = useTranslation();
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-pressed={active}
+      className={`${ICON_BUTTON} ${active ? "bg-active text-text" : ""}`}
+      title={t("settings.notes.compare.tryAnother")}
+    >
+      <Columns2 width={16} height={16} />
+    </button>
+  );
+};
+
+/**
+ * "Try another model": pick a model (the same picker as Note settings) and
+ * write a note from the same text with it, shown next to this one.
+ */
+export const TryAnotherModelForm: React.FC<{
+  note: Note;
+  onClose: () => void;
+}> = ({ note, onClose }) => {
+  const { t } = useTranslation();
+  const { settings } = useSettings();
+  const provider = noteProvider(settings);
+  const tryAnotherModel = useNotesStore((state) => state.tryAnotherModel);
+  const loadSkills = useNotesStore((state) => state.loadSkills);
+  const skills = useNotesStore((state) => state.skills);
+  const busy = useNotesStore(
+    (state) =>
+      note.history_id !== null && isHistoryEntryBusy(state, note.history_id),
+  );
+  const [model, setModel] = useState("");
+
+  useEffect(() => {
+    void loadSkills();
+  }, [loadSkills]);
+
+  // The new note is written with the instructions, skills and note language
+  // set now, not the ones this note was written with. Only the skill names
+  // are stored with a note, so say when those differ.
+  const activeIds = settings?.note_skill_ids ?? [];
+  const currentSkills = skills
+    .filter((skill) => activeIds.includes(skill.id))
+    .map((skill) => skill.name)
+    .join(", ");
+  const skillsChanged = (note.skill_name ?? "") !== currentSkills;
+  const noSkills = t("settings.notes.skillPickerNone");
+
+  const start = () => {
+    if (model.trim() === "" || busy) return;
+    void tryAnotherModel(note, model);
+    onClose();
+  };
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 border-t border-accent/20 pt-2">
+      <span className="text-xs text-text-secondary">
+        {t("settings.notes.compare.pick")}
+      </span>
+      <NoteModelSelect
+        value={model}
+        provider={provider}
+        onCommit={setModel}
+        onChangeText={setModel}
+        placeholder={t("settings.notes.compare.placeholder")}
+        className="w-[240px] max-w-full"
+      />
+      <Button
+        variant="primary"
+        size="sm"
+        onClick={start}
+        disabled={model.trim() === "" || busy}
+      >
+        <Sparkles className="w-3.5 h-3.5" />
+        {t("settings.notes.compare.write")}
+      </Button>
+      <button
+        type="button"
+        onClick={onClose}
+        className={ICON_BUTTON}
+        title={t("settings.notes.inline.dismiss")}
+      >
+        <X width={16} height={16} />
+      </button>
+      <p className="basis-full text-xs text-text-secondary">
+        {t("settings.notes.compare.currentSettings")}
+        {skillsChanged && (
+          <>
+            {" "}
+            {t("settings.notes.compare.skillsChanged", {
+              before: note.skill_name || noSkills,
+              now: currentSkills || noSkills,
+            })}
+          </>
+        )}
+      </p>
+    </div>
+  );
+};
+
+/** A "Try another model" note being written, or why it failed. */
+const ModelJobCard: React.FC<{ note: Note; job: ModelJob }> = ({
+  note,
+  job,
+}) => {
+  const { t } = useTranslation();
+  const tryAnotherModel = useNotesStore((state) => state.tryAnotherModel);
+  const dismiss = useNotesStore((state) => state.dismissModelJob);
+  const openNotes = useNavStore((state) => state.openNotes);
+
+  if (job.status === "generating") {
+    return (
+      <NoteCard>
+        <p className="flex items-center gap-2 text-sm text-text-secondary">
+          <Loader2 className="w-4 h-4 animate-spin text-accent shrink-0" />
+          {t("settings.notes.compare.generating", { model: job.model })}
+        </p>
+      </NoteCard>
+    );
+  }
+  return (
+    <NoteCard
+      actions={
+        <button
+          type="button"
+          onClick={() => dismiss(note.id)}
+          className={ICON_BUTTON}
+          title={t("settings.notes.inline.dismiss")}
+        >
+          <X width={16} height={16} />
+        </button>
+      }
+    >
+      <p className="text-sm text-err-text select-text break-words">
+        <span className="font-medium">
+          {t("settings.notes.compare.error", { model: job.model })}
+        </span>{" "}
+        {translateNoteError(job.error, t)}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => void tryAnotherModel(note, job.model)}
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+          {t("settings.notes.inline.retry")}
+        </Button>
+        {SETUP_ERRORS.has(job.error) && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => openNotes("settings")}
+          >
+            <Settings2 className="w-3.5 h-3.5" />
+            {t("settings.notes.openSettings")}
+          </Button>
+        )}
+      </div>
+    </NoteCard>
+  );
+};
+
+/**
+ * Notes made from the same text, side by side so they can be compared (a
+ * note from "Try another model" next to the one it started from), plus any
+ * "Try another model" job for them. One note alone takes the full width.
+ */
+export const NoteGroup: React.FC<{
+  notes: Note[];
+  renderNote: (note: Note) => React.ReactNode;
+}> = ({ notes, renderNote }) => {
+  const modelJobs = useNotesStore((state) => state.modelJobs);
+  const jobs = notes.flatMap((note) =>
+    modelJobs[note.id] ? [{ note, job: modelJobs[note.id] }] : [],
+  );
+  const cells = notes.length + jobs.length;
+  return (
+    <div className="@container">
+      <div
+        className={`grid gap-2 items-start ${cells > 1 ? "@xl:grid-cols-2" : ""}`}
+      >
+        {notes.map((note) => (
+          <div key={note.id} className="min-w-0">
+            {renderNote(note)}
+          </div>
+        ))}
+        {jobs.map(({ note, job }) => (
+          <div key={`job-${note.id}`} className="min-w-0">
+            <ModelJobCard note={note} job={job} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+/** Marks a note made from a speaker-labelled transcript. */
+export const SpeakersBadge: React.FC = () => {
+  const { t } = useTranslation();
+  return (
+    <span className="inline-flex items-center gap-1 shrink-0 rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent-text">
+      <UsersRound className="w-3 h-3" aria-hidden />
+      {t("settings.notes.speakersBadge")}
+    </span>
+  );
+};
+
+/** Says a note ends early because the model hit its length limit. */
+export const CutShortNotice: React.FC<{ note: Note }> = ({ note }) => {
+  const { t } = useTranslation();
+  if (!note.truncated) return null;
+  return (
+    <p className="flex items-center gap-1.5 text-xs text-warn-text">
+      <Scissors className="w-3.5 h-3.5 shrink-0" aria-hidden />
+      {t("settings.notes.cutShort")}
+    </p>
+  );
+};
+
+/** Copies the raw Markdown and briefly shows a check mark. */
+export const CopyNoteButton: React.FC<{ markdown: string }> = ({
+  markdown,
+}) => {
+  const { t } = useTranslation();
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(markdown);
+    } catch (error) {
+      console.error("Failed to copy note:", error);
+      toast.error(t("settings.notes.copyError"));
+      return;
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      className={ICON_BUTTON}
+      title={t("settings.notes.copy")}
+    >
+      {copied ? (
+        <Check width={16} height={16} />
+      ) : (
+        <Copy width={16} height={16} />
+      )}
+    </button>
+  );
+};
+
+/** Deletes a note, with a toast when that fails. */
+export const DeleteNoteButton: React.FC<{ noteId: number }> = ({ noteId }) => {
+  const { t } = useTranslation();
+  const deleteNote = useNotesStore((state) => state.deleteNote);
+
+  const handleDelete = async () => {
+    if (!(await deleteNote(noteId))) {
+      toast.error(t("settings.notes.deleteError"));
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleDelete}
+      className={`${ICON_BUTTON} hover:!bg-err-bg hover:!text-err-text`}
+      title={t("settings.notes.delete")}
+    >
+      <Trash2 width={16} height={16} />
+    </button>
+  );
+};
+
+/** A note's rendered body; selectable so parts can be copied by hand. */
+export const NoteBody: React.FC<{ markdown: string }> = ({ markdown }) => (
+  <div className="select-text cursor-text break-words min-w-0">
+    <Markdown markdown={markdown} />
+  </div>
+);
+
+/**
+ * A note body clamped to a few lines, with Show more when it is longer.
+ * `footer` sits on the toggle's row, at the other end.
+ */
+export const CollapsibleNote: React.FC<{
+  markdown: string;
+  footer?: React.ReactNode;
+}> = ({ markdown, footer }) => {
+  const { t } = useTranslation();
+  const [expanded, setExpanded] = useState(false);
+  const [overflows, setOverflows] = useState(false);
+  const bodyRef = useRef<HTMLDivElement>(null);
+
+  // Only clamp notes taller than the collapsed height.
+  useEffect(() => {
+    const body = bodyRef.current;
+    if (!body) return;
+    const measure = () => {
+      if (!expanded) setOverflows(body.scrollHeight > body.clientHeight + 1);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(body);
+    return () => observer.disconnect();
+  }, [expanded, markdown]);
+
+  return (
+    <>
+      <div
+        ref={bodyRef}
+        className={
+          expanded
+            ? ""
+            : `max-h-48 overflow-hidden ${
+                overflows
+                  ? "[mask-image:linear-gradient(to_bottom,black_70%,transparent)]"
+                  : ""
+              }`
+        }
+      >
+        <NoteBody markdown={markdown} />
+      </div>
+      {(overflows || footer) && (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {overflows ? (
+            <button
+              type="button"
+              onClick={() => setExpanded((value) => !value)}
+              className="flex items-center gap-1 text-xs text-accent-text hover:underline cursor-pointer"
+            >
+              {expanded ? (
+                <ChevronUp className="w-3.5 h-3.5" aria-hidden />
+              ) : (
+                <ChevronDown className="w-3.5 h-3.5" aria-hidden />
+              )}
+              {expanded
+                ? t("settings.notes.showLess")
+                : t("settings.notes.showMore")}
+            </button>
+          ) : (
+            <span />
+          )}
+          {footer}
+        </div>
+      )}
+    </>
+  );
+};

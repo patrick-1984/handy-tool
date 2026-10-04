@@ -2,6 +2,22 @@
 
 Open `History`. The page has three tabs: Recordings (it opens on this one), Statistics and Settings. On Recordings, row actions repeat for every history entry and the search bar appears once entries exist. The tab bar stays in view while the list scrolls.
 
+### Note skills
+
+`History › Recordings › Note skills`
+
+Turns skills on and off for new notes, right from the list: a compact button that names the skill that is on, says how many are on, or says No skills, and opens a small menu with a checkbox per imported skill. Shown only once a skill is imported. It is the same setting as `Notes › Settings › Skills › Active skills`. **Default:** no skills on.
+
+Catalog: [Notes written your way, with a skill](../../features.md#notes-written-your-way-with-a-skill).
+
+### Output language
+
+`History › Recordings › Output language`
+
+The language new notes are written in: Same as the transcript, or one of the app's languages, listed by their own names (English, Polski, Deutsch…). A dropdown in the toolbar next to Note skills, always shown. It is the same setting as `Notes › Manual note › Output language`. It is the last thing the model is told, and it says the skills and instructions may be in another language, so an English skill on a Polish recording still gives a Polish note. A note written in a picked language shows that language on its meta line, next to the model and cost; Same as the transcript shows nothing there. **Default:** Same as the transcript.
+
+Catalog: [Notes in the language you want, whatever the skill is written in](../../features.md#notes-in-the-language-you-want).
+
 ### Open Recordings Folder
 
 `History › Recordings › Open Recordings Folder`
@@ -26,6 +42,22 @@ Copies the selected row's transcription. **Default:** not applicable; this is a 
 
 Catalog: [Copy or delete a single entry](../../features.md#copy-or-delete-a-single-entry).
 
+### Make note
+
+`History › Recordings › Make note`
+
+Writes a note from the entry's transcription with your instructions, the skills that are on and the provider and model chosen on `Notes › Settings`, in the language picked at Output language, shows it under the entry with its model, cost, tokens and generation time, and marks the entry as saved. Disabled while that entry's note is being written. **Default:** not applicable; this is a per-row action.
+
+Catalog: [Turn a recording into a note](../../features.md#turn-a-recording-into-a-note).
+
+### Make note with speakers
+
+`History › Recordings › Make note with speakers`
+
+Labels who is speaking in the entry's recording with the selected transcription model and the speaker models, then writes a note from the labelled text like Make note and marks the entry as saved. Shown only while the entry still has its recording. Offers the speaker model download first when it is missing. Disabled, like Make note and Delete, while that entry's note is being made. **Default:** not applicable; this is a per-row action.
+
+Catalog: [A note that says who said what](../../features.md#a-note-that-says-who-said-what).
+
 ### Save transcription
 
 `History › Recordings › Save transcription`
@@ -41,6 +73,14 @@ Catalog: [Keep the ones that matter](../../features.md#keep-the-ones-that-matter
 Deletes the selected history row and its Handy-owned audio files. **Default:** not applicable; this is a per-row action.
 
 Catalog: [Copy or delete a single entry](../../features.md#copy-or-delete-a-single-entry).
+
+### Try another model
+
+`History › Recordings › Try another model`
+
+An icon button on each note under an entry. It opens a model picker with prices and Write note, which writes a new note from the same text with that model, using your current instructions, skills and output language (the picker says so, and shows both skill lists when they differ); the new note appears next to the original, side by side, so the two can be compared. Make note and Make note with speakers stay disabled while it runs, and it stays disabled while they run. **Default:** not applicable; this is a per-note action.
+
+Catalog: [Compare models on the same text, with cost and time](../../features.md#compare-models-on-the-same-text).
 
 ## Statistics
 

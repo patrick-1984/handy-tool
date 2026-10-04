@@ -1,4 +1,5 @@
 use crate::audio_toolkit::{apply_custom_words, filter_transcription_output, pad_trailing_silence};
+use crate::diarization::{TimedText, TimedTranscript, group_tokens};
 use crate::managers::model::{EngineType, ModelManager};
 use crate::settings::{
     AppSettings, ModelUnloadTimeout, get_settings, normalize_language_for_engine,
@@ -8,7 +9,7 @@ use log::{debug, error, info, warn};
 use serde::Serialize;
 use std::collections::{BTreeMap, VecDeque};
 use std::panic::{AssertUnwindSafe, catch_unwind};
-use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Arc, Condvar, Mutex, MutexGuard};
 use std::thread;
 use std::time::{Duration, SystemTime};
@@ -359,8 +360,77 @@ pub struct TranscriptionManager {
     /// Same protection for the Translator's folder-batch jobs — a separate
     /// flag so the batch worker never fights the live pipeline's writes.
     is_batch_transcribing: Arc<AtomicBool>,
+    /// Number of live [`ModelHold`]s ("Make note with speakers" runs several
+    /// engine calls); while nonzero the model is not unloaded for inactivity
+    /// or by the "unload immediately" setting.
+    unload_holds: Arc<AtomicUsize>,
     #[cfg(not(target_os = "macos"))]
     flm_manager: Arc<Mutex<Option<crate::managers::flm::FlmManager>>>,
+}
+
+/// Keeps the loaded model from being unloaded while held; see
+/// [`TranscriptionManager::hold_loaded_model`].
+pub struct ModelHold {
+    holds: Arc<AtomicUsize>,
+}
+
+impl Drop for ModelHold {
+    fn drop(&mut self) {
+        self.holds.fetch_sub(1, Ordering::AcqRel);
+    }
+}
+
+/// What [`TranscriptionManager::transcribe_inner`] returns besides the text.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum InnerOutput {
+    /// The cleaned-up text only (dictation, files, the Translator).
+    Text,
+    /// Plus each word's start, when the engine can tell (live preview).
+    LiveWords,
+    /// The engine's raw text plus its timestamps (speaker detection).
+    Timed,
+}
+
+/// The cleaned-up text, the live preview's words and the timed transcript
+/// (see [`InnerOutput`]).
+type InnerResult = (String, Option<Vec<(f32, String)>>, Option<TimedTranscript>);
+
+/// How a transcribe-rs result's segments are read for speaker detection.
+#[derive(Clone, Copy)]
+enum RsTiming {
+    /// One row per word (Parakeet with word granularity).
+    Words,
+    /// One row per token (SenseVoice).
+    Tokens,
+    /// Sentence-like segments (Whisper).
+    Segments,
+}
+
+/// The timed parts of a transcribe-rs result, read as `kind` says. Rows are
+/// in seconds from the start of the audio passed in.
+fn rs_timing(
+    segments: Option<Vec<transcribe_rs::TranscriptionSegment>>,
+    kind: RsTiming,
+) -> (Option<Vec<TimedText>>, Option<Vec<TimedText>>) {
+    let rows: Vec<TimedText> = segments
+        .unwrap_or_default()
+        .into_iter()
+        .map(|s| TimedText::new(s.start, s.end, s.text))
+        .collect();
+    if rows.is_empty() {
+        return (None, None);
+    }
+    match kind {
+        RsTiming::Words => (Some(rows), None),
+        RsTiming::Tokens => {
+            let words = group_tokens(&rows);
+            ((!words.is_empty()).then_some(words), None)
+        }
+        RsTiming::Segments => {
+            let segments: Vec<TimedText> = rows.into_iter().filter(|s| s.end > s.start).collect();
+            (None, (!segments.is_empty()).then_some(segments))
+        }
+    }
 }
 
 impl Clone for TranscriptionManager {
@@ -384,6 +454,7 @@ impl Clone for TranscriptionManager {
             external_select_gen: Arc::clone(&self.external_select_gen),
             is_live_transcribing: Arc::clone(&self.is_live_transcribing),
             is_batch_transcribing: Arc::clone(&self.is_batch_transcribing),
+            unload_holds: Arc::clone(&self.unload_holds),
             #[cfg(not(target_os = "macos"))]
             flm_manager: Arc::clone(&self.flm_manager),
         }
@@ -427,6 +498,7 @@ impl TranscriptionManager {
             external_select_gen: Arc::new(AtomicU64::new(0)),
             is_live_transcribing: Arc::new(AtomicBool::new(false)),
             is_batch_transcribing: Arc::new(AtomicBool::new(false)),
+            unload_holds: Arc::new(AtomicUsize::new(0)),
             #[cfg(not(target_os = "macos"))]
             flm_manager: Arc::new(Mutex::new(None)),
         };
@@ -480,6 +552,7 @@ impl TranscriptionManager {
                         // Translator batch job mid-file.
                         if manager_cloned.is_live_transcribing.load(Ordering::Relaxed)
                             || manager_cloned.is_batch_transcribing.load(Ordering::Relaxed)
+                            || manager_cloned.unload_holds.load(Ordering::Acquire) > 0
                         {
                             return;
                         }
@@ -674,6 +747,10 @@ impl TranscriptionManager {
             debug!("Skipping immediate unload during a Translator batch job");
             return;
         }
+        if self.unload_holds.load(Ordering::Acquire) > 0 {
+            debug!("Skipping immediate unload while the model is held");
+            return;
+        }
         let settings = get_settings(&self.app_handle);
         if settings.model_unload_timeout == ModelUnloadTimeout::Immediately
             && self.is_model_loaded()
@@ -682,6 +759,17 @@ impl TranscriptionManager {
             if let Err(e) = self.unload_model() {
                 warn!("Failed to immediately unload model: {}", e);
             }
+        }
+    }
+
+    /// Keep the model loaded until the returned guard is dropped (speaker
+    /// detection runs several engine calls). Call
+    /// [`maybe_unload_immediately`](Self::maybe_unload_immediately) after
+    /// dropping it to honour the "unload immediately" setting.
+    pub fn hold_loaded_model(&self) -> ModelHold {
+        self.unload_holds.fetch_add(1, Ordering::AcqRel);
+        ModelHold {
+            holds: Arc::clone(&self.unload_holds),
         }
     }
 
@@ -1233,8 +1321,8 @@ impl TranscriptionManager {
     /// caller's preflight and the take-out below. Empty `expected_model`
     /// skips the check (no expectation).
     pub fn transcribe_expecting(&self, expected_model: &str, audio: Vec<f32>) -> Result<String> {
-        self.transcribe_inner(expected_model, audio, false)
-            .map(|(text, _)| text)
+        self.transcribe_inner(expected_model, audio, InnerOutput::Text)
+            .map(|(text, _, _)| text)
     }
 
     /// Transcribe for the live preview: the text plus, when the engine can tell
@@ -1244,15 +1332,35 @@ impl TranscriptionManager {
         audio: Vec<f32>,
     ) -> Result<(String, Option<Vec<(f32, String)>>)> {
         let expected = get_settings(&self.app_handle).selected_model;
-        self.transcribe_inner(&expected, audio, true)
+        self.transcribe_inner(&expected, audio, InnerOutput::LiveWords)
+            .map(|(text, words, _)| (text, words))
+    }
+
+    /// Speaker detection: one engine call like
+    /// [`transcribe_expecting`](Self::transcribe_expecting) (same model check,
+    /// options, padding and locks), but returning the engine's raw text with
+    /// the timestamps it produced (seconds from the start of `audio`). Pieces
+    /// of the text go through [`TimedTranscript::post_process`] afterwards.
+    /// Engines without timestamps return the cleaned-up text and no timing.
+    pub fn transcribe_with_timing_expecting(
+        &self,
+        expected_model: &str,
+        audio: Vec<f32>,
+    ) -> Result<TimedTranscript> {
+        let (text, _, timed) = self.transcribe_inner(expected_model, audio, InnerOutput::Timed)?;
+        Ok(timed.unwrap_or_else(|| TimedTranscript {
+            text,
+            ..Default::default()
+        }))
     }
 
     fn transcribe_inner(
         &self,
         expected_model: &str,
         audio: Vec<f32>,
-        want_words: bool,
-    ) -> Result<(String, Option<Vec<(f32, String)>>)> {
+        output: InnerOutput,
+    ) -> Result<InnerResult> {
+        let want_words = output != InnerOutput::Text;
         // Update last activity timestamp
         self.last_activity.store(
             SystemTime::now()
@@ -1269,7 +1377,7 @@ impl TranscriptionManager {
         if audio.is_empty() {
             debug!("Empty audio vector");
             self.maybe_unload_immediately("empty audio");
-            return Ok((String::new(), None));
+            return Ok((String::new(), None, None));
         }
 
         // Check if model is loaded, if not try to load it
@@ -1353,7 +1461,7 @@ impl TranscriptionManager {
                         };
                         let filtered = filter_transcription_output(&corrected);
                         self.maybe_unload_immediately("FLM transcription");
-                        return Ok((filtered, None));
+                        return Ok((filtered, None, None));
                     }
                     // Engine state says FLM but the subprocess is gone (e.g. a
                     // failed restart) — fail loudly instead of falling through to
@@ -1395,7 +1503,7 @@ impl TranscriptionManager {
                 };
                 let filtered = filter_transcription_output(&corrected);
                 self.maybe_unload_immediately("API transcription");
-                return Ok((filtered, None));
+                return Ok((filtered, None, None));
             }
         }
 
@@ -1455,7 +1563,7 @@ impl TranscriptionManager {
                 };
                 let filtered = filter_transcription_output(&corrected);
                 self.maybe_unload_immediately("OpenRouter transcription");
-                return Ok((filtered, None));
+                return Ok((filtered, None, None));
             }
         }
 
@@ -1465,6 +1573,7 @@ impl TranscriptionManager {
         // Only Parakeet returns real word segments (TimestampGranularity::Word);
         // other engines' segments are sentences or tokens, not words.
         let is_parakeet;
+        let mut rs_timing_kind = None;
         let result = {
             let mut engine_guard = self.lock_engine();
 
@@ -1487,6 +1596,14 @@ impl TranscriptionManager {
             let taken_model_id = engine_guard.model_id.clone();
             let taken_instance = engine_guard.instance;
             is_parakeet = matches!(engine, LoadedEngine::Parakeet(_));
+            if output == InnerOutput::Timed {
+                rs_timing_kind = match engine {
+                    LoadedEngine::Whisper(_) => Some(RsTiming::Segments),
+                    LoadedEngine::Parakeet(_) => Some(RsTiming::Words),
+                    LoadedEngine::SenseVoice(_) => Some(RsTiming::Tokens),
+                    _ => None,
+                };
+            }
 
             // Revalidate the EXPECTED model at actual inference time (pass-3
             // finding 8a): the preflight comparison happens long before this
@@ -1757,7 +1874,28 @@ impl TranscriptionManager {
             }
         };
 
-        let words = if want_words && is_parakeet {
+        // Speaker detection: the raw text and its timing; pieces of it are
+        // cleaned up like below once they are given to speakers.
+        if let Some(kind) = rs_timing_kind {
+            let (words, segments) = rs_timing(result.segments, kind);
+            info!(
+                "Timed transcription completed in {}ms: {} words, {} segments",
+                st.elapsed().as_millis(),
+                words.as_ref().map_or(0, Vec::len),
+                segments.as_ref().map_or(0, Vec::len),
+            );
+            self.maybe_unload_immediately("transcription");
+            let timed = TimedTranscript {
+                text: result.text,
+                words,
+                segments,
+                custom_words: settings.custom_words.clone(),
+                word_correction_threshold: settings.word_correction_threshold,
+            };
+            return Ok((String::new(), None, Some(timed)));
+        }
+
+        let words = if output == InnerOutput::LiveWords && is_parakeet {
             result.segments.as_ref().map(|segments| {
                 segments
                     .iter()
@@ -1808,7 +1946,7 @@ impl TranscriptionManager {
 
         self.maybe_unload_immediately("transcription");
 
-        Ok((final_result, words))
+        Ok((final_result, words, None))
     }
 
     // ===================================================================
@@ -2478,5 +2616,171 @@ mod gpu_device_setting_tests {
     #[test]
     fn cpu_sentinel_is_never_validated_against_the_adapter_list() {
         assert_eq!(resolve_effective_gpu_setting(-2, &[]), -2);
+    }
+}
+
+#[cfg(test)]
+mod timing_tests {
+    use super::{RsTiming, TimedText, rs_timing};
+    use transcribe_rs::TranscriptionSegment;
+
+    fn row(start: f32, end: f32, text: &str) -> TranscriptionSegment {
+        TranscriptionSegment {
+            start,
+            end,
+            text: text.to_string(),
+        }
+    }
+
+    #[test]
+    fn engine_rows_are_read_by_kind() {
+        let rows = || Some(vec![row(0.0, 0.5, "\u{2581}a"), row(0.5, 1.0, "\u{2581}b")]);
+        // Parakeet word rows are words as they are.
+        let (words, segments) = rs_timing(rows(), RsTiming::Words);
+        assert_eq!(words.map(|w| w.len()), Some(2));
+        assert_eq!(segments, None);
+        // SenseVoice token rows are grouped into words.
+        let (words, _) = rs_timing(rows(), RsTiming::Tokens);
+        assert_eq!(
+            words,
+            Some(vec![
+                TimedText::new(0.0, 0.5, "a"),
+                TimedText::new(0.5, 1.0, "b")
+            ])
+        );
+        // Whisper segments; untimed rows are dropped.
+        let (words, segments) = rs_timing(
+            Some(vec![row(0.0, 2.0, " Hello."), row(2.0, 2.0, "")]),
+            RsTiming::Segments,
+        );
+        assert_eq!(words, None);
+        assert_eq!(segments, Some(vec![TimedText::new(0.0, 2.0, " Hello.")]));
+        // Nothing timed at all.
+        assert_eq!(rs_timing(None, RsTiming::Words), (None, None));
+        assert_eq!(
+            rs_timing(Some(vec![row(1.0, 1.0, "")]), RsTiming::Segments),
+            (None, None)
+        );
+    }
+
+    /// A Whisper or Parakeet engine called the way `transcribe_inner` calls
+    /// it (CPU, trailing silence pad, same parameters), for the end-to-end
+    /// check below.
+    enum E2eEngine {
+        Whisper(super::WhisperEngine),
+        Parakeet(super::ParakeetEngine),
+    }
+
+    struct E2e(std::cell::RefCell<E2eEngine>, std::cell::Cell<usize>);
+
+    impl crate::diarization::SpeakerTranscriber for E2e {
+        fn timing_support(&self) -> crate::diarization::TimingSupport {
+            match &*self.0.borrow() {
+                E2eEngine::Whisper(_) => crate::diarization::TimingSupport::Segments,
+                E2eEngine::Parakeet(_) => crate::diarization::TimingSupport::Words,
+            }
+        }
+
+        fn transcribe_timed(
+            &self,
+            audio: &[f32],
+        ) -> anyhow::Result<crate::diarization::TimedTranscript> {
+            use transcribe_rs::TranscriptionEngine;
+            self.1.set(self.1.get() + 1);
+            let audio =
+                super::pad_trailing_silence(audio.to_vec(), super::TRAILING_SILENCE_PAD_SAMPLES);
+            let (result, kind) = match &mut *self.0.borrow_mut() {
+                E2eEngine::Whisper(e) => (
+                    e.transcribe_samples(
+                        audio,
+                        Some(super::WhisperInferenceParams {
+                            language: Some("en".into()),
+                            ..Default::default()
+                        }),
+                    ),
+                    RsTiming::Segments,
+                ),
+                E2eEngine::Parakeet(e) => (
+                    e.transcribe_samples(
+                        audio,
+                        Some(super::ParakeetInferenceParams {
+                            timestamp_granularity: super::TimestampGranularity::Word,
+                        }),
+                    ),
+                    RsTiming::Words,
+                ),
+            };
+            let result = result.map_err(|e| anyhow::anyhow!("{e}"))?;
+            let (words, segments) = rs_timing(result.segments, kind);
+            Ok(crate::diarization::TimedTranscript {
+                text: result.text,
+                words,
+                segments,
+                ..Default::default()
+            })
+        }
+
+        fn transcribe(&self, audio: &[f32]) -> anyhow::Result<String> {
+            let timed = self.transcribe_timed(audio)?;
+            Ok(timed.post_process(&timed.text))
+        }
+    }
+
+    /// "Make note with speakers" end to end with a real local model and the
+    /// real speaker models; prints one `E2E` JSON line with the labelled
+    /// transcript. Not run by default:
+    ///
+    /// ```text
+    /// HANDY_E2E_ENGINE=whisper|parakeet HANDY_E2E_MODEL=<ggml .bin or parakeet dir> \
+    ///   HANDY_DIAR_WAV=meeting.wav HANDY_DIAR_SEG=seg.onnx HANDY_DIAR_EMB=emb.onnx \
+    ///   cargo test --lib timing_tests::speakers_end_to_end -- --ignored --nocapture
+    /// ```
+    #[test]
+    #[ignore = "needs a transcription model, speaker models and a recording (HANDY_* env vars)"]
+    fn speakers_end_to_end() {
+        use transcribe_rs::TranscriptionEngine;
+        let var = |k: &str| std::env::var(k).unwrap_or_else(|_| panic!("{k} not set"));
+        let model = std::path::PathBuf::from(var("HANDY_E2E_MODEL"));
+        let engine = match var("HANDY_E2E_ENGINE").as_str() {
+            "whisper" => {
+                let mut e = super::WhisperEngine::new();
+                e.load_model_with_params(
+                    &model,
+                    super::WhisperModelParams {
+                        use_gpu: false,
+                        gpu_device: 0,
+                    },
+                )
+                .unwrap();
+                E2eEngine::Whisper(e)
+            }
+            _ => {
+                let mut e = super::ParakeetEngine::new();
+                e.load_model_with_params(&model, super::ParakeetModelParams::int8())
+                    .unwrap();
+                E2eEngine::Parakeet(e)
+            }
+        };
+        let samples = crate::audio_toolkit::audio::decode_audio_file(std::path::Path::new(&var(
+            "HANDY_DIAR_WAV",
+        )))
+        .unwrap();
+        let paths = crate::diarization::models::ModelPaths {
+            segmentation: var("HANDY_DIAR_SEG").into(),
+            embedding: var("HANDY_DIAR_EMB").into(),
+        };
+        let e2e = E2e(std::cell::RefCell::new(engine), std::cell::Cell::new(0));
+        let started = std::time::Instant::now();
+        let text = crate::diarization::transcribe_with_speakers(&paths, &e2e, &samples).unwrap();
+        println!(
+            "E2E {}",
+            serde_json::json!({
+                "engine": var("HANDY_E2E_ENGINE"),
+                "audio_seconds": samples.len() as f64 / 16_000.0,
+                "seconds": started.elapsed().as_secs_f64(),
+                "engine_calls": e2e.1.get(),
+                "text": text,
+            })
+        );
     }
 }

@@ -26,13 +26,13 @@ use tokio::sync::Notify;
 /// even if no waiter is currently parked, so a cancel that races the task
 /// between `select!` iterations is not lost — the next `cancelled().await`
 /// returns at once.
-struct DownloadCancel {
+pub(crate) struct DownloadCancel {
     cancelled: AtomicBool,
     notify: Notify,
 }
 
 impl DownloadCancel {
-    fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self {
             cancelled: AtomicBool::new(false),
             notify: Notify::new(),
@@ -68,7 +68,7 @@ struct DownloadAttempt {
 }
 
 /// How the streaming loop ended (distinct from an error return).
-enum DownloadOutcome {
+pub(crate) enum DownloadOutcome {
     /// Server sent all bytes (natural EOF).
     Completed,
     /// A cancel was observed; the partial file is left intact for resume.
@@ -82,7 +82,7 @@ enum DownloadOutcome {
 /// errors. Deliberately free of any `ModelManager`/`AppHandle` dependency so it
 /// can be unit-tested against a real stalled HTTP server; the caller supplies
 /// `on_progress` to surface bytes written (the app emits Tauri events there).
-async fn stream_to_file_with_cancel<S, B>(
+pub(crate) async fn stream_to_file_with_cancel<S, B>(
     stream: &mut S,
     file: &mut std::fs::File,
     cancel: &DownloadCancel,

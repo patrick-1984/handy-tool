@@ -1012,6 +1012,194 @@ export const commands = {
       else return { status: "error", error: e as any };
     }
   },
+/**
+ * Write a Markdown note from `text` with "Your instructions", the active
+ * skills, the note language, provider and model, and save it. `history_id`
+ * is the History entry the text came from (it is starred so retention
+ * keeps it); `with_speakers` marks a note made from a speaker-labelled
+ * transcript; `model` overrides the note model for this one note ("Try
+ * another model").
+ */
+async generateNote(text: string, historyId: number | null, withSpeakers: boolean, model: string | null) : Promise<Result<Note, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("generate_note", { text, historyId, withSpeakers, model }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * All notes, newest first.
+ */
+async getNotes() : Promise<Result<Note[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_notes") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Notes made from the given History entries, newest first.
+ */
+async getNotesForHistoryIds(historyIds: number[]) : Promise<Result<Note[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_notes_for_history_ids", { historyIds }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async deleteNote(id: number) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("delete_note", { id }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * The imported skills, sorted by name. A selected skill whose folder is gone
+ * is cleared, so the setting matches the list.
+ */
+async getNoteSkills() : Promise<Result<NoteSkill[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_note_skills") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Import a skill from a .md/.txt file, a folder, or a .zip/.skill archive
+ * and make it the active skill.
+ */
+async importNoteSkill(path: string) : Promise<Result<NoteSkill, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("import_note_skill", { path }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async deleteNoteSkill(id: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("delete_note_skill", { id }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * The skills notes are written with (several can be active); empty = only
+ * "Your instructions", or the built-in instructions.
+ */
+async changeNoteSkillIdsSetting(ids: string[]) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_note_skill_ids_setting", { ids }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * "Your instructions": sent with every note, before the active skills.
+ */
+async changeNoteCustomInstructionsSetting(instructions: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_note_custom_instructions_setting", { instructions }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * The language notes are written in: an app UI language code, or empty for
+ * the transcript's language.
+ */
+async changeNoteLanguageSetting(language: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_note_language_setting", { language }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Empty = the first enabled OpenRouter provider.
+ */
+async changeNoteProviderRefSetting(id: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_note_provider_ref_setting", { id }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Empty = the provider's own model.
+ */
+async changeNoteModelSetting(model: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("change_note_model_setting", { model }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Whether the speaker models are present, downloading, or failed.
+ */
+async getSpeakerModelStatus() : Promise<SpeakerModelStatus> {
+    return await TAURI_INVOKE("get_speaker_model_status");
+},
+/**
+ * Download (or resume) the speaker models. Progress arrives as
+ * `speaker-model-status` events; returns once the download has finished.
+ */
+async downloadSpeakerModels() : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("download_speaker_models") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Delete the downloaded speaker models to free space; they can be
+ * downloaded again at any time. Refused with `speakers_models_in_use`
+ * while "Make note with speakers" runs and `speakers_models_downloading`
+ * during a download.
+ */
+async deleteSpeakerModels() : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("delete_speaker_models") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Transcribe a History entry's recording with speaker labels
+ * (`[Person N]: …`) for a note with speakers, with the selected
+ * transcription model. With one speaker the text comes back without
+ * labels. The entry's stored text is left as it is.
+ * 
+ * Runs one at a time: a second call waits for the first. The entry is
+ * starred, as for any note, so the retention cleanup keeps it.
+ * 
+ * Error codes: `speakers_models_missing`, `speakers_no_recording`,
+ * `speakers_no_speech`, `speakers_no_model`, `speakers_failed` (the speaker
+ * models failed); transcription errors are returned as they come.
+ */
+async transcribeHistoryEntryWithSpeakers(id: number) : Promise<Result<string, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("transcribe_history_entry_with_speakers", { id }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
   async changeAnchorActionSetting(
     key: string,
     action: string,
@@ -3377,6 +3565,39 @@ export type AppSettings = {
    * Where those go. Empty = `{app_data}/files`.
    */
   files_folder?: string;
+/**
+ * Notes: stable id (into `llm_providers`) of the provider notes are
+ * written with. Empty = the first enabled OpenRouter provider (see
+ * `note_provider`).
+ */
+note_provider_ref?: string; 
+/**
+ * Notes: the model notes are written with. Empty = the provider's model.
+ */
+note_model?: string; 
+/**
+ * Notes: the imported skills notes are written with (folder names under
+ * `{app_data}/skills`). Several can be active; they are sent in the
+ * skills list's order. Empty = only `note_custom_instructions`, or the
+ * built-in instructions when that is empty too.
+ */
+note_skill_ids?: string[]; 
+/**
+ * Notes: the user's own instructions ("Your instructions"), sent before
+ * the active skills. Empty = none.
+ */
+note_custom_instructions?: string; 
+/**
+ * Notes: the language notes are written in, as an app UI language code
+ * (`en`, `pl`, `zh-TW`...). Empty = the transcript's language.
+ */
+note_language?: string; 
+/**
+ * One-time migration marker for notes v2 (several skills, the cheaper
+ * default model). Absent in older stores → `false` → runs once; fresh
+ * installs get `true`.
+ */
+notes_v2_migrated?: boolean;
   jumper_persist?: boolean;
   jumper_saved_slots?: (SavedJumpSlot | null)[];
 };
@@ -3674,6 +3895,12 @@ export type HistoryEntry = {
    * Human label of the engine/model that produced this transcription.
    */
   model_used?: string | null;
+  /**
+   * Set when retention deliberately deleted this row's audio while keeping the
+   * transcript. `None` means the audio was never purged on purpose, so a missing
+   * file is a fault rather than policy - the UI must distinguish the two.
+   */
+  audio_purged_at?: number | null;
 };
 /**
  * Result of changing keyboard implementation
@@ -3872,6 +4099,65 @@ export type NamedText = {
   image?: NamedImage | null;
 };
 /**
+ * A Markdown note generated from a transcript.
+ */
+export type Note = { id: number; 
+/**
+ * The history entry the transcript came from; `None` for pasted text.
+ */
+history_id: number | null; timestamp: number; source_text: string; note_text: string; 
+/**
+ * The skill the note was written with; `None` = the built-in instructions.
+ */
+skill_name: string | null; model: string; 
+/**
+ * Made from a speaker-labelled transcript ("Make note with speakers").
+ */
+with_speakers: boolean; 
+/**
+ * USD cost of the LLM call, when known.
+ */
+cost_usd: number | null; 
+/**
+ * The model stopped at its output-length limit: the note is cut short.
+ */
+truncated: boolean; 
+/**
+ * Input tokens the provider reported for the call, when it did.
+ */
+prompt_tokens: number | null; 
+/**
+ * Output tokens the provider reported for the call, when it did.
+ */
+completion_tokens: number | null; 
+/**
+ * How long the model call took, in milliseconds (`None` for notes made
+ * before this was recorded).
+ */
+duration_ms: number | null; 
+/**
+ * The output language picked for the note (an app language code);
+ * `None` = the transcript's own language.
+ */
+language: string | null; 
+/**
+ * Whether the source history entry still exists.
+ */
+source_exists: boolean }
+export type NoteSkill = { id: string; 
+/**
+ * Frontmatter `name`, else the imported file or folder name.
+ */
+name: string; description: string | null; 
+/**
+ * Number of readable text files that make up the instructions.
+ */
+file_count: number; 
+/**
+ * True when the instructions were cut to fit the size cap.
+ */
+truncated: boolean }
+/**
  * One OpenRouter model's pass-through pricing, normalized to USD per 1M tokens.
  */
 export type OpenRouterModelPrice = {
@@ -3924,6 +4210,12 @@ export type ShortcutBinding = {
   current_binding: string;
 };
 export type SoundTheme = "marimba" | "pop" | "custom";
+export type SpeakerModelState = "missing" | "downloading" | "verifying" | "ready" | "failed";
+/**
+ * Download state of the speaker models; also emitted as
+ * [`STATUS_EVENT`] while a download runs.
+ */
+export type SpeakerModelStatus = { state: SpeakerModelState; downloaded: number; total: number; error: string | null };
 /**
  * How the pill shows the transcription's progress: a line along its bottom, or
  * a glowing light running round its edge.

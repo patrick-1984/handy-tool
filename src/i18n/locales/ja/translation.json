@@ -11,6 +11,7 @@
     "shortcuts": "ショートカット",
     "models": "モデル",
     "history": "履歴",
+    "notes": "ノート",
     "files": "ファイル",
     "debug": "デバッグ",
     "about": "概要",
@@ -1487,6 +1488,186 @@
         "noMatches": "検索に一致するエントリーがありません。"
       }
     },
+    "notes": {
+      "tabs": {
+        "settings": "設定",
+        "saved": "保存したノート",
+        "manual": "手動ノート"
+      },
+      "inline": {
+        "label": "ノート",
+        "makeNote": "ノートを作成",
+        "makeNoteWithSpeakers": "話者付きでノートを作成",
+        "generating": "ノートを作成中…",
+        "retry": "再試行",
+        "dismiss": "閉じる",
+        "error": "ノートを作成できませんでした:",
+        "sourceLabel": "このノートの元"
+      },
+      "openSettings": "ノートの設定",
+      "speakersBadge": "話者付き",
+      "cutShort": "モデルが長さの上限に達したため、このノートは途中で終わっています。",
+      "copy": "ノートをコピー (Markdown)",
+      "copyError": "ノートをコピーできませんでした。",
+      "delete": "ノートを削除",
+      "deleteError": "ノートを削除できませんでした。もう一度お試しください。",
+      "showMore": "さらに表示",
+      "showLess": "表示を減らす",
+      "skillPicker": "ノートのスキル",
+      "skillPickerNone": "スキルなし",
+      "skillPickerCount": "スキル {{count}} 件",
+      "instructions": {
+        "title": "指示",
+        "description": "ノートを書くときにモデルへ渡す内容:あなた自身の指示とオンのスキル。",
+        "custom": {
+          "title": "あなたの指示",
+          "description": "すべてのノートに使うあなた自身の指示です。例:箇条書きを使い、最後にやることをまとめる。オンのスキルより前に送られ、スキルと食い違うときはこちらが優先されます。オンのスキルがなければこの指示だけが使われ、ここも空ならノートは既定の指示に従います。",
+          "placeholder": "例:1 ページ以内にまとめ、最後にやることと担当者を書く。"
+        }
+      },
+      "language": {
+        "title": "出力言語",
+        "description": "ノートを書く言語です。「文字起こしと同じ」は、スキルや指示が別の言語で書かれていても、話された言語のまま書きます。",
+        "sameAsTranscript": "文字起こしと同じ"
+      },
+      "skills": {
+        "title": "スキル",
+        "description": "スキルは、議事録や学習用のまとめなど、ノートの書き方をモデルに伝えます。どの言語で書かれていてもかまいません。好きなだけインポートして 1 つ以上をオンにでき、削除するまで残ります。",
+        "active": {
+          "title": "有効なスキル",
+          "description": "新しいノートを書くときに使うスキルです。複数を同時にオンにできます。それぞれ名前付きで、このリストの順に、あなたの指示の後に送られます。"
+        },
+        "defaultDescription": "オンのスキルがなく「あなたの指示」も空なので、ノートは既定の指示に従います:事実・決定事項・やることをすべて残した、わかりやすく構成された Markdown のノートです。",
+        "none": "まだスキルがインポートされていません。",
+        "activeSummary": "オンのスキル:{{count}} 件。ノートはあなたの指示(あれば)と、オンの各スキルに従います。",
+        "onlyOwnInstructions": "オンのスキルがないため、ノートはあなたの指示だけに従います。",
+        "fileCount": "ファイル数: {{count}}",
+        "truncated": "このスキルは非常に長いため、最初の 200 KB だけがモデルに送られます。",
+        "importFile": "ファイルをインポート…",
+        "importFolder": "フォルダーをインポート…",
+        "importHint": ".md または .txt ファイル、フォルダー、または .zip / .skill アーカイブ (SKILL.md と任意の参照ファイル)。Handy はスキルを自分のデータフォルダーにコピーします。",
+        "fileFilter": "スキル",
+        "imported": "スキル「{{name}}」をインポートしてオンにしました。",
+        "importError": "スキルをインポートできませんでした: {{error}}",
+        "remove": "スキルを削除",
+        "removeError": "スキルを削除できませんでした。"
+      },
+      "provider": {
+        "title": "プロバイダーとモデル",
+        "description": "ノートは LLM プロバイダーのモデルが作成します。文字起こしはそのプロバイダーに送信されます。",
+        "provider": {
+          "title": "プロバイダー",
+          "description": "ノートを作成する登録済みの LLM プロバイダー。選択するまでは、有効になっている最初の OpenRouter プロバイダーを使います。",
+          "placeholder": "プロバイダーを選択"
+        },
+        "apiKey": {
+          "title": "API キー",
+          "description": "選択したプロバイダーの API キー。詳細設定 › LLMプロバイダー と同じキーなので、ここで変更するとそちらも変わります。",
+          "placeholder": "API キーを貼り付け"
+        },
+        "model": {
+          "title": "モデル",
+          "description": "ノートを書くモデルです。プロバイダーのすべてのモデルから選ぶか、入力します。OpenRouter では各モデルに入力 / 出力 100 万トークンあたりの価格が表示され、「ノートにおすすめ(低価格)」には Claude Opus 5.5 より 10 倍以上安い、多言語に強いモデルが並びます。空欄にするとプロバイダーのモデルを使います。",
+          "placeholder": "プロバイダーのモデル"
+        },
+        "manage": "LLM プロバイダーを管理"
+      },
+      "modelPicker": {
+        "search": "モデルを検索",
+        "priceHeader": "100 万トークンあたりの価格:入力 / 出力",
+        "noPrices": "このプロバイダーのモデルの価格はわかりません。",
+        "sort": "並べ替え:",
+        "sortPrice": "価格",
+        "sortName": "名前",
+        "recommended": "ノートにおすすめ(低価格)",
+        "cheaper": "Opus 5.5 より約 {{times}} 倍安い",
+        "all": "すべてのモデル({{count}})",
+        "priceVaries": "価格は変動",
+        "free": "無料",
+        "selectedPrice": "100 万トークンあたり(入力 / 出力):"
+      },
+      "speakers": {
+        "title": "話者の識別",
+        "description": "履歴の「話者付きでノートを作成」でのみ使われます。録音の中で誰が話しているかを判別し、話者を[Person 1]、[Person 2]のように示します。このコンピューター上でオフラインで動作するため、録音が外に出ることはありません。",
+        "models": {
+          "title": "話者モデル",
+          "description": "Hugging Face と GitHub から一度だけダウンロードする 2 つのモデル（32 MB）：pyannote segmentation 3.0（MIT）と WeSpeaker ResNet34（CC BY 4.0）、いずれも sherpa-onnx による書き出し版です。空き容量が必要なら削除できます。いつでも再ダウンロードできます。"
+        },
+        "ready": "準備完了",
+        "notDownloaded": "未ダウンロード",
+        "failed": "ダウンロードに失敗しました",
+        "download": "ダウンロード（32 MB）",
+        "delete": "削除",
+        "deleteError": "話者モデルを削除できませんでした: {{error}}",
+        "downloading": "ダウンロード中… {{percent}}%",
+        "verifying": "ダウンロードを確認中…",
+        "starting": "ダウンロードを開始しています…",
+        "needsDownload": "話者の識別には一度だけ 32 MB のダウンロードが必要です。",
+        "needsDownloadHint": "モデルはこのコンピューター上でオフラインで動作し、「話者付きでノートを作成」でのみ使われます。ダウンロードが終わるとノートの作成が続きます。",
+        "downloadError": "ダウンロードに失敗しました: {{error}}",
+        "identifying": "話者を識別中…",
+        "error": "話者を識別できませんでした:",
+        "normalNote": "通常のノートを作成"
+      },
+      "saved": {
+        "loading": "ノートを読み込み中…",
+        "empty": "まだノートはありません。履歴の録音で「ノートを作成」を使うか、「手動ノート」タブで作成してください。",
+        "goToTranscript": "文字起こしへ移動",
+        "sourceDeleted": "元の文字起こしは削除されました"
+      },
+      "usage": {
+        "costUnknown": "費用不明",
+        "costTitle": "このノートを書くのにかかった費用",
+        "tokens": "トークン:入力 {{input}} / 出力 {{output}}",
+        "timeTitle": "モデルがこのノートを書くのにかかった時間",
+        "modelTitle": "このノートを書いたモデル"
+      },
+      "compare": {
+        "tryAnother": "別のモデルで試す",
+        "pick": "このノートを次のモデルで書き直す:",
+        "placeholder": "モデルを選択",
+        "write": "ノートを書く",
+        "generating": "{{model}} でノートを書いています…",
+        "error": "{{model}} でノートを書けませんでした:",
+        "currentSettings": "現在の指示、スキル、出力言語を使います。",
+        "skillsChanged": "当時のスキル: {{before}} · 現在: {{now}}",
+        "title": "モデルを比較",
+        "filter": "表示",
+        "allModels": "すべてのモデル",
+        "model": "モデル",
+        "notes": "ノート",
+        "averageCost": "平均費用",
+        "averageTime": "平均時間",
+        "totalCost": "合計費用",
+        "hint": "費用は OpenRouter が請求した額、またはプロバイダーに設定した価格からの見積もりです。どちらもない場合は不明です。ノートの「別のモデルで試す」を使うと、別のモデルで書き直したノートがすぐ横に並びます。"
+      },
+      "manual": {
+        "title": "ノートにするテキスト",
+        "placeholder": "文字起こしを貼り付けるか入力…",
+        "generate": "ノートを生成",
+        "savedHint": "保存したノートに保存しました"
+      },
+      "errors": {
+        "emptyTranscript": "ノートにするテキストがありません。",
+        "missingProvider": "ノートの設定でプロバイダーを選択してください。",
+        "unsupportedProvider": "このプロバイダーではノートを作成できません。ノートの設定で別のものを選択してください。",
+        "missingApiKey": "ノートの設定でプロバイダーの API キーを追加してください。",
+        "missingModel": "ノートの設定でモデルを選択してください。",
+        "emptyNote": "モデルが空のノートを返しました。もう一度試すか、別のモデルを選んでください。",
+        "speakersModelsMissing": "話者モデルがダウンロードされていません。ノートの設定でダウンロードしてください。",
+        "speakersModelsInUse": "話者モデルは「話者付きでノートを作成」で使用中です。終わってから再試行してください。",
+        "speakersModelsDownloading": "話者モデルをダウンロード中です。ダウンロードが終わってから再試行してください。",
+        "speakersNoRecording": "この項目には録音がもうないため、話者を識別できません。",
+        "speakersNoSpeech": "録音に音声が見つかりませんでした。",
+        "speakersNoModel": "まず「モデル」ページで文字起こしモデルをダウンロードして選択してください。",
+        "speakersFailed": "この録音では話者モデルの処理に失敗しました。",
+        "skillMissing": "選択したスキルが見つかりません。ノートの設定で別のスキルを選んでください。",
+        "skillEmpty": "スキルに読み取れる指示 (Markdown またはテキスト) がありません。",
+        "skillUnsupported": "この種類のファイルはインポートできません。.md、.txt、.zip、.skill を使ってください。",
+        "skillTooLarge": "スキルが 50 MB を超えています。",
+        "skillUnsafePath": "アーカイブに安全でないファイルパスが含まれているため、インポートしませんでした。"
+      }
+    },
     "debug": {
       "title": "デバッグ",
       "logDirectory": {
@@ -1581,6 +1762,11 @@
           "title": "Handy",
           "description": "本プロジェクトの基盤となったオリジナルのオープンソース音声認識アプリ",
           "details": "Handy Toolは、CJ Pais氏（github.com/cjpais/Handy、handy.computer）によって作成されたHandyのフォークです。アップストリームのv0.8.1（2026年3月）の時点で引き継がれ、その後Patrick R.によって独自に開発が続けられています。本プロジェクトの土台を築いてくれたCJ氏とHandyの貢献者の皆様に深く感謝します。"
+        },
+        "speakers": {
+          "title": "話者識別モデル",
+          "description": "「話者付きでノートを作成」で使う話者モデル",
+          "details": "「話者付きでノートを作成」は、Hervé Bredin と pyannote.audio による pyannote segmentation 3.0（MIT ライセンス）と、WeNet コミュニティによる WeSpeaker ResNet34 VoxCeleb モデル（CC BY 4.0）を、sherpa-onnx プロジェクト（k2-fsa）が公開している ONNX 版で使用しています。アプリには同梱されず、必要なときにダウンロードされます。作者の皆さんに感謝します。"
         }
       }
     },

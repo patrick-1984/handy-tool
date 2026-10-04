@@ -11,6 +11,7 @@
     "shortcuts": "Tastenkürzel",
     "models": "Modelle",
     "history": "Verlauf",
+    "notes": "Notizen",
     "files": "Dateien",
     "debug": "Debug",
     "about": "Info",
@@ -1487,6 +1488,186 @@
         "noMatches": "Keine Einträge entsprechen deiner Suche."
       }
     },
+    "notes": {
+      "tabs": {
+        "settings": "Einstellungen",
+        "saved": "Gespeicherte Notizen",
+        "manual": "Manuelle Notiz"
+      },
+      "inline": {
+        "label": "Notiz",
+        "makeNote": "Notiz erstellen",
+        "makeNoteWithSpeakers": "Notiz mit Sprechern erstellen",
+        "generating": "Deine Notiz wird geschrieben…",
+        "retry": "Erneut versuchen",
+        "dismiss": "Schließen",
+        "error": "Die Notiz konnte nicht geschrieben werden:",
+        "sourceLabel": "Quelle dieser Notiz"
+      },
+      "openSettings": "Notiz-Einstellungen",
+      "speakersBadge": "Mit Sprechern",
+      "cutShort": "Das Modell hat seine Längengrenze erreicht, daher endet diese Notiz vorzeitig.",
+      "copy": "Notiz kopieren (Markdown)",
+      "copyError": "Die Notiz konnte nicht kopiert werden.",
+      "delete": "Notiz löschen",
+      "deleteError": "Die Notiz konnte nicht gelöscht werden. Bitte versuche es erneut.",
+      "showMore": "Mehr anzeigen",
+      "showLess": "Weniger anzeigen",
+      "skillPicker": "Notiz-Skills",
+      "skillPickerNone": "Keine Skills",
+      "skillPickerCount": "{{count}} Skills",
+      "instructions": {
+        "title": "Anweisungen",
+        "description": "Was das Modell beim Schreiben einer Notiz erhält: deine eigenen Anweisungen und die eingeschalteten Skills.",
+        "custom": {
+          "title": "Deine Anweisungen",
+          "description": "Deine eigenen Anweisungen für jede Notiz, zum Beispiel: Aufzählungspunkte verwenden und mit den Aufgaben enden. Sie werden vor den eingeschalteten Skills gesendet und gelten vorrangig, wenn ein Skill etwas anderes sagt. Ist kein Skill eingeschaltet, werden sie allein verwendet; ist auch dieses Feld leer, folgen Notizen den Standardanweisungen.",
+          "placeholder": "Zum Beispiel: Höchstens eine Seite, am Ende die Aufgaben und wer dafür zuständig ist."
+        }
+      },
+      "language": {
+        "title": "Ausgabesprache",
+        "description": "Die Sprache, in der die Notiz geschrieben wird. „Wie das Transkript“ behält die gesprochene Sprache bei, auch wenn deine Skills oder Anweisungen in einer anderen Sprache geschrieben sind.",
+        "sameAsTranscript": "Wie das Transkript"
+      },
+      "skills": {
+        "title": "Skills",
+        "description": "Ein Skill sagt dem Modell, wie es deine Notizen schreiben soll, zum Beispiel als Besprechungsprotokoll oder Lernzusammenfassung, in jeder Sprache. Importiere so viele du willst und schalte einen oder mehrere ein; sie bleiben, bis du sie entfernst.",
+        "active": {
+          "title": "Aktive Skills",
+          "description": "Die Skills, nach denen neue Notizen geschrieben werden. Mehrere können gleichzeitig eingeschaltet sein: Jeder wird unter seinem Namen in der Reihenfolge dieser Liste nach deinen Anweisungen gesendet."
+        },
+        "defaultDescription": "Kein Skill ist eingeschaltet und „Deine Anweisungen“ ist leer, daher folgen Notizen den Standardanweisungen: eine klare, gegliederte Markdown-Notiz, die jede Tatsache, Entscheidung und Aufgabe enthält.",
+        "none": "Noch keine Skills importiert.",
+        "activeSummary": "Eingeschaltete Skills: {{count}}. Notizen folgen deinen Anweisungen (falls vorhanden) und dann jedem eingeschalteten Skill.",
+        "onlyOwnInstructions": "Kein Skill ist eingeschaltet, daher folgen Notizen nur deinen Anweisungen.",
+        "fileCount": "Dateien: {{count}}",
+        "truncated": "Dieser Skill ist sehr lang, deshalb werden nur die ersten 200 KB an das Modell gesendet.",
+        "importFile": "Datei importieren…",
+        "importFolder": "Ordner importieren…",
+        "importHint": "Eine .md- oder .txt-Datei, ein Ordner oder ein .zip- bzw. .skill-Archiv (eine SKILL.md mit optionalen Referenzdateien). Handy kopiert den Skill in seinen eigenen Datenordner.",
+        "fileFilter": "Skills",
+        "imported": "Skill „{{name}}“ importiert und eingeschaltet.",
+        "importError": "Der Skill konnte nicht importiert werden: {{error}}",
+        "remove": "Skill entfernen",
+        "removeError": "Der Skill konnte nicht entfernt werden."
+      },
+      "provider": {
+        "title": "Anbieter und Modell",
+        "description": "Notizen schreibt ein Modell eines deiner LLM-Anbieter. Die Transkription wird an diesen Anbieter gesendet.",
+        "provider": {
+          "title": "Anbieter",
+          "description": "Der registrierte LLM-Anbieter, der Notizen schreibt. Bis du einen wählst, nutzt Handy den ersten aktivierten OpenRouter-Anbieter.",
+          "placeholder": "Anbieter auswählen"
+        },
+        "apiKey": {
+          "title": "API-Schlüssel",
+          "description": "Der API-Schlüssel des gewählten Anbieters. Es ist derselbe Schlüssel wie unter Erweiterte Einstellungen › LLM-Anbieter; änderst du ihn hier, ändert er sich auch dort.",
+          "placeholder": "API-Schlüssel einfügen"
+        },
+        "model": {
+          "title": "Modell",
+          "description": "Das Modell, das Notizen schreibt, aus allen Modellen des Anbieters gewählt oder eingetippt. Bei OpenRouter steht bei jedem Modell der Preis pro 1 Mio. Eingabe- / Ausgabe-Tokens, und „Empfohlen für Notizen (günstig)“ zeigt gute mehrsprachige Modelle, die mindestens 10-mal günstiger als Claude Opus 5.5 sind. Leer lassen, um das Modell des Anbieters zu verwenden.",
+          "placeholder": "Modell des Anbieters"
+        },
+        "manage": "LLM-Anbieter verwalten"
+      },
+      "modelPicker": {
+        "search": "Modelle suchen",
+        "priceHeader": "Preis pro 1 Mio. Tokens: Eingabe / Ausgabe",
+        "noPrices": "Für die Modelle dieses Anbieters sind keine Preise bekannt.",
+        "sort": "Sortieren:",
+        "sortPrice": "Preis",
+        "sortName": "Name",
+        "recommended": "Empfohlen für Notizen (günstig)",
+        "cheaper": "≈{{times}}x günstiger als Opus 5.5",
+        "all": "Alle Modelle ({{count}})",
+        "priceVaries": "Preis variiert",
+        "free": "Kostenlos",
+        "selectedPrice": "Pro 1 Mio. Tokens (Eingabe / Ausgabe):"
+      },
+      "speakers": {
+        "title": "Sprechererkennung",
+        "description": "Wird nur von „Notiz mit Sprechern erstellen“ im Verlauf verwendet: Sie erkennt, wer in einer Aufnahme spricht, und kennzeichnet die Sprecher als [Person 1], [Person 2] usw. Sie läuft offline auf diesem Computer, die Aufnahme verlässt ihn nie.",
+        "models": {
+          "title": "Sprechermodelle",
+          "description": "Zwei Modelle (32 MB), einmalig von Hugging Face und GitHub geladen: pyannote segmentation 3.0 (MIT) und WeSpeaker ResNet34 (CC BY 4.0), im Export von sherpa-onnx. Lösche sie, um Platz zu schaffen; du kannst sie jederzeit erneut herunterladen."
+        },
+        "ready": "Bereit",
+        "notDownloaded": "Nicht heruntergeladen",
+        "failed": "Download fehlgeschlagen",
+        "download": "Herunterladen (32 MB)",
+        "delete": "Löschen",
+        "deleteError": "Die Sprechermodelle konnten nicht gelöscht werden: {{error}}",
+        "downloading": "Wird heruntergeladen… {{percent}} %",
+        "verifying": "Download wird geprüft…",
+        "starting": "Download wird gestartet…",
+        "needsDownload": "Die Sprechererkennung braucht einen einmaligen Download von 32 MB.",
+        "needsDownloadHint": "Die Modelle laufen offline auf diesem Computer und werden nur für „Notiz mit Sprechern erstellen“ verwendet. Deine Notiz wird fortgesetzt, sobald sie geladen sind.",
+        "downloadError": "Der Download ist fehlgeschlagen: {{error}}",
+        "identifying": "Sprecher werden erkannt…",
+        "error": "Die Sprecher konnten nicht erkannt werden:",
+        "normalNote": "Normale Notiz erstellen"
+      },
+      "saved": {
+        "loading": "Notizen werden geladen…",
+        "empty": "Noch keine Notizen. Nutze „Notiz erstellen“ bei einer Aufnahme im Verlauf oder schreibe eine im Tab „Manuelle Notiz“.",
+        "goToTranscript": "Zur Transkription",
+        "sourceDeleted": "Die Quell-Transkription wurde gelöscht"
+      },
+      "usage": {
+        "costUnknown": "Kosten unbekannt",
+        "costTitle": "Was das Schreiben dieser Notiz gekostet hat",
+        "tokens": "{{input}} ein / {{output}} aus Tokens",
+        "timeTitle": "Wie lange das Modell für diese Notiz gebraucht hat",
+        "modelTitle": "Das Modell, das diese Notiz geschrieben hat"
+      },
+      "compare": {
+        "tryAnother": "Anderes Modell testen",
+        "pick": "Diese Notiz neu schreiben mit:",
+        "placeholder": "Modell wählen",
+        "write": "Notiz schreiben",
+        "generating": "Notiz wird mit {{model}} geschrieben…",
+        "error": "Notiz mit {{model}} konnte nicht geschrieben werden:",
+        "currentSettings": "Verwendet deine aktuellen Anweisungen, Skills und Ausgabesprache.",
+        "skillsChanged": "Skills damals: {{before}} · jetzt: {{now}}",
+        "title": "Modelle vergleichen",
+        "filter": "Anzeigen",
+        "allModels": "Alle Modelle",
+        "model": "Modell",
+        "notes": "Notizen",
+        "averageCost": "Ø Kosten",
+        "averageTime": "Ø Zeit",
+        "totalCost": "Kosten gesamt",
+        "hint": "Die Kosten sind der von OpenRouter berechnete Betrag oder eine Schätzung aus den für den Anbieter eingestellten Preisen; sonst sind sie unbekannt. Mit „Anderes Modell testen“ an einer Notiz schreibst du sie mit einem anderen Modell neu, direkt daneben."
+      },
+      "manual": {
+        "title": "Text für die Notiz",
+        "placeholder": "Transkription einfügen oder eingeben…",
+        "generate": "Notiz erstellen",
+        "savedHint": "Gespeichert unter Gespeicherte Notizen"
+      },
+      "errors": {
+        "emptyTranscript": "Es gibt keinen Text für eine Notiz.",
+        "missingProvider": "Wähle in den Notiz-Einstellungen einen Anbieter für Notizen.",
+        "unsupportedProvider": "Dieser Anbieter kann keine Notizen schreiben. Wähle in den Notiz-Einstellungen einen anderen.",
+        "missingApiKey": "Trage in den Notiz-Einstellungen den API-Schlüssel des Anbieters ein.",
+        "missingModel": "Wähle in den Notiz-Einstellungen ein Modell für Notizen.",
+        "emptyNote": "Das Modell hat eine leere Notiz geliefert. Versuche es erneut oder wähle ein anderes Modell.",
+        "speakersModelsMissing": "Die Sprechermodelle sind nicht heruntergeladen. Lade sie in den Notiz-Einstellungen herunter.",
+        "speakersModelsInUse": "Die Sprechermodelle werden gerade von „Notiz mit Sprechern erstellen“ verwendet. Versuche es erneut, wenn es fertig ist.",
+        "speakersModelsDownloading": "Die Sprechermodelle werden gerade heruntergeladen. Versuche es nach dem Download erneut.",
+        "speakersNoRecording": "Dieser Eintrag hat keine Aufnahme mehr, daher können die Sprecher nicht erkannt werden.",
+        "speakersNoSpeech": "In der Aufnahme wurde keine Sprache gefunden.",
+        "speakersNoModel": "Lade zuerst auf der Seite „Modelle“ ein Transkriptionsmodell herunter und wähle es aus.",
+        "speakersFailed": "Die Sprechermodelle sind bei dieser Aufnahme gescheitert.",
+        "skillMissing": "Der gewählte Skill ist nicht mehr vorhanden. Wähle in den Notiz-Einstellungen einen anderen.",
+        "skillEmpty": "Der Skill enthält keine lesbaren Anweisungen (Markdown oder Text).",
+        "skillUnsupported": "Dieser Dateityp kann nicht importiert werden. Verwende .md, .txt, .zip oder .skill.",
+        "skillTooLarge": "Der Skill ist größer als 50 MB.",
+        "skillUnsafePath": "Das Archiv enthält unsichere Dateipfade und wurde deshalb nicht importiert."
+      }
+    },
     "debug": {
       "title": "Debug",
       "logDirectory": {
@@ -1581,6 +1762,11 @@
           "title": "Handy",
           "description": "Die ursprüngliche Open-Source-Sprach-zu-Text-App, auf der dieses Projekt aufbaut",
           "details": "Handy Tool ist ein Fork von Handy, erstellt von CJ Pais (github.com/cjpais/Handy, handy.computer). Es wurde bei Upstream-Version v0.8.1 (März 2026) übernommen und wird seitdem eigenständig von Patrick R. weiterentwickelt. Vielen Dank an CJ und die Handy-Mitwirkenden für die Grundlage, auf der dieses Projekt aufbaut."
+        },
+        "speakers": {
+          "title": "Modelle zur Sprechererkennung",
+          "description": "Die Sprechermodelle hinter „Notiz mit Sprechern erstellen“",
+          "details": "„Notiz mit Sprechern erstellen“ verwendet pyannote segmentation 3.0 von Hervé Bredin und pyannote.audio (MIT-Lizenz) und das WeSpeaker-Modell ResNet34 VoxCeleb der WeNet-Community (CC BY 4.0), in den ONNX-Versionen des Projekts sherpa-onnx (k2-fsa). Sie werden bei Bedarf heruntergeladen, nicht mitgeliefert. Danke an ihre Autoren."
         }
       }
     },

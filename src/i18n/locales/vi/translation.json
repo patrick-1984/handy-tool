@@ -11,6 +11,7 @@
     "shortcuts": "Phím tắt",
     "models": "Mô hình",
     "history": "Lịch sử",
+    "notes": "Ghi chú",
     "files": "File",
     "debug": "Gỡ lỗi",
     "about": "Giới thiệu",
@@ -1487,6 +1488,186 @@
         "noMatches": "Không có mục nào khớp với tìm kiếm của bạn."
       }
     },
+    "notes": {
+      "tabs": {
+        "settings": "Cài đặt",
+        "saved": "Ghi chú đã lưu",
+        "manual": "Ghi chú thủ công"
+      },
+      "inline": {
+        "label": "Ghi chú",
+        "makeNote": "Tạo ghi chú",
+        "makeNoteWithSpeakers": "Tạo ghi chú có người nói",
+        "generating": "Đang viết ghi chú…",
+        "retry": "Thử lại",
+        "dismiss": "Đóng",
+        "error": "Không thể viết ghi chú:",
+        "sourceLabel": "Nguồn của ghi chú này"
+      },
+      "openSettings": "Cài đặt ghi chú",
+      "speakersBadge": "Có người nói",
+      "cutShort": "Mô hình đã chạm giới hạn độ dài nên ghi chú này kết thúc sớm.",
+      "copy": "Sao chép ghi chú (Markdown)",
+      "copyError": "Không thể sao chép ghi chú.",
+      "delete": "Xóa ghi chú",
+      "deleteError": "Không thể xóa ghi chú. Vui lòng thử lại.",
+      "showMore": "Xem thêm",
+      "showLess": "Thu gọn",
+      "skillPicker": "Kỹ năng ghi chú",
+      "skillPickerNone": "Không có kỹ năng",
+      "skillPickerCount": "{{count}} kỹ năng",
+      "instructions": {
+        "title": "Hướng dẫn",
+        "description": "Những gì mô hình nhận được khi viết ghi chú: hướng dẫn của riêng bạn và các kỹ năng đang bật.",
+        "custom": {
+          "title": "Hướng dẫn của bạn",
+          "description": "Hướng dẫn của riêng bạn cho mọi ghi chú, ví dụ: dùng gạch đầu dòng và kết thúc bằng các việc cần làm. Chúng được gửi trước các kỹ năng đang bật và được ưu tiên khi kỹ năng nói khác. Khi không có kỹ năng nào bật, chỉ dùng hướng dẫn này; nếu ô này cũng trống, ghi chú theo hướng dẫn mặc định.",
+          "placeholder": "Ví dụ: Không quá một trang, cuối cùng liệt kê việc cần làm và người phụ trách từng việc."
+        }
+      },
+      "language": {
+        "title": "Ngôn ngữ đầu ra",
+        "description": "Ngôn ngữ dùng để viết ghi chú. \"Giống bản chép lời\" giữ nguyên ngôn ngữ đã nói, kể cả khi kỹ năng hoặc hướng dẫn của bạn được viết bằng ngôn ngữ khác.",
+        "sameAsTranscript": "Giống bản chép lời"
+      },
+      "skills": {
+        "title": "Kỹ năng",
+        "description": "Kỹ năng cho mô hình biết cách viết ghi chú của bạn, ví dụ biên bản họp hoặc tóm tắt bài học, bằng bất kỳ ngôn ngữ nào. Nhập bao nhiêu tùy thích và bật một hoặc vài kỹ năng; chúng sẽ được giữ cho đến khi bạn xóa.",
+        "active": {
+          "title": "Kỹ năng đang bật",
+          "description": "Các kỹ năng dùng để viết ghi chú mới. Có thể bật nhiều kỹ năng cùng lúc: mỗi kỹ năng được gửi kèm tên của nó, theo thứ tự trong danh sách này, sau hướng dẫn của bạn."
+        },
+        "defaultDescription": "Không có kỹ năng nào bật và \"Hướng dẫn của bạn\" đang trống, nên ghi chú theo hướng dẫn mặc định: một ghi chú Markdown rõ ràng, có cấu trúc, giữ lại mọi dữ kiện, quyết định và việc cần làm.",
+        "none": "Chưa nhập kỹ năng nào.",
+        "activeSummary": "Kỹ năng đang bật: {{count}}. Ghi chú theo hướng dẫn của bạn (nếu có), rồi theo từng kỹ năng đang bật.",
+        "onlyOwnInstructions": "Không có kỹ năng nào bật, nên ghi chú chỉ theo hướng dẫn của bạn.",
+        "fileCount": "Tệp: {{count}}",
+        "truncated": "Kỹ năng này rất dài nên chỉ 200 KB đầu tiên được gửi đến mô hình.",
+        "importFile": "Nhập tệp…",
+        "importFolder": "Nhập thư mục…",
+        "importHint": "Tệp .md hoặc .txt, một thư mục, hoặc tệp nén .zip hay .skill (một SKILL.md kèm tệp tham khảo tùy chọn). Handy sao chép kỹ năng vào thư mục dữ liệu của mình.",
+        "fileFilter": "Kỹ năng",
+        "imported": "Đã nhập và bật kỹ năng \"{{name}}\".",
+        "importError": "Không thể nhập kỹ năng: {{error}}",
+        "remove": "Xóa kỹ năng",
+        "removeError": "Không thể xóa kỹ năng."
+      },
+      "provider": {
+        "title": "Nhà cung cấp và mô hình",
+        "description": "Ghi chú được viết bởi một mô hình từ nhà cung cấp LLM của bạn. Bản phiên âm được gửi đến nhà cung cấp đó.",
+        "provider": {
+          "title": "Nhà cung cấp",
+          "description": "Nhà cung cấp LLM đã đăng ký dùng để viết ghi chú. Cho đến khi bạn chọn, Handy dùng nhà cung cấp OpenRouter đầu tiên đang bật.",
+          "placeholder": "Chọn nhà cung cấp"
+        },
+        "apiKey": {
+          "title": "Khóa API",
+          "description": "Khóa API của nhà cung cấp đã chọn. Đây là cùng khóa trong Cài đặt nâng cao › Nhà cung cấp LLM, nên đổi ở đây cũng đổi ở đó.",
+          "placeholder": "Dán khóa API"
+        },
+        "model": {
+          "title": "Mô hình",
+          "description": "Mô hình viết ghi chú, chọn từ tất cả mô hình của nhà cung cấp hoặc tự nhập. Với OpenRouter, mỗi mô hình hiển thị giá cho mỗi 1 triệu token đầu vào / đầu ra, và nhóm \"Đề xuất cho ghi chú (rẻ)\" liệt kê các mô hình đa ngôn ngữ tốt rẻ hơn Claude Opus 5.5 ít nhất 10 lần. Để trống để dùng mô hình của nhà cung cấp.",
+          "placeholder": "Mô hình của nhà cung cấp"
+        },
+        "manage": "Quản lý nhà cung cấp LLM"
+      },
+      "modelPicker": {
+        "search": "Tìm mô hình",
+        "priceHeader": "Giá cho 1 triệu token: đầu vào / đầu ra",
+        "noPrices": "Chưa biết giá các mô hình của nhà cung cấp này.",
+        "sort": "Sắp xếp:",
+        "sortPrice": "Giá",
+        "sortName": "Tên",
+        "recommended": "Đề xuất cho ghi chú (rẻ)",
+        "cheaper": "rẻ hơn Opus 5.5 ≈{{times}} lần",
+        "all": "Tất cả mô hình ({{count}})",
+        "priceVaries": "Giá thay đổi",
+        "free": "Miễn phí",
+        "selectedPrice": "Cho 1 triệu token (đầu vào / đầu ra):"
+      },
+      "speakers": {
+        "title": "Nhận diện người nói",
+        "description": "Chỉ dùng cho \"Tạo ghi chú có người nói\" trong Lịch sử: xác định ai đang nói trong bản ghi và gắn nhãn [Person 1], [Person 2], v.v. Chạy ngoại tuyến trên máy tính này nên bản ghi không bao giờ rời khỏi máy.",
+        "models": {
+          "title": "Mô hình người nói",
+          "description": "Hai mô hình (32 MB) tải một lần từ Hugging Face và GitHub: pyannote segmentation 3.0 (MIT) và WeSpeaker ResNet34 (CC BY 4.0), bản xuất của sherpa-onnx. Xóa chúng để giải phóng dung lượng; bạn có thể tải lại bất cứ lúc nào."
+        },
+        "ready": "Sẵn sàng",
+        "notDownloaded": "Chưa tải",
+        "failed": "Tải xuống thất bại",
+        "download": "Tải xuống (32 MB)",
+        "delete": "Xóa",
+        "deleteError": "Không thể xóa mô hình người nói: {{error}}",
+        "downloading": "Đang tải… {{percent}}%",
+        "verifying": "Đang kiểm tra bản tải…",
+        "starting": "Đang bắt đầu tải…",
+        "needsDownload": "Nhận diện người nói cần tải xuống một lần 32 MB.",
+        "needsDownloadHint": "Các mô hình chạy ngoại tuyến trên máy tính này và chỉ dùng cho \"Tạo ghi chú có người nói\". Ghi chú sẽ tiếp tục ngay khi tải xong.",
+        "downloadError": "Tải xuống thất bại: {{error}}",
+        "identifying": "Đang nhận diện người nói…",
+        "error": "Không thể nhận diện người nói:",
+        "normalNote": "Tạo ghi chú thường"
+      },
+      "saved": {
+        "loading": "Đang tải ghi chú…",
+        "empty": "Chưa có ghi chú. Dùng \"Tạo ghi chú\" trên một bản ghi trong Lịch sử, hoặc viết ở thẻ \"Ghi chú thủ công\".",
+        "goToTranscript": "Đi tới bản phiên âm",
+        "sourceDeleted": "Bản phiên âm nguồn đã bị xóa"
+      },
+      "usage": {
+        "costUnknown": "chưa rõ chi phí",
+        "costTitle": "Chi phí để viết ghi chú này",
+        "tokens": "token: {{input}} vào / {{output}} ra",
+        "timeTitle": "Thời gian mô hình viết ghi chú này",
+        "modelTitle": "Mô hình đã viết ghi chú này"
+      },
+      "compare": {
+        "tryAnother": "Thử mô hình khác",
+        "pick": "Viết lại ghi chú này bằng:",
+        "placeholder": "Chọn mô hình",
+        "write": "Viết ghi chú",
+        "generating": "Đang viết ghi chú bằng {{model}}…",
+        "error": "Không thể viết ghi chú bằng {{model}}:",
+        "currentSettings": "Dùng hướng dẫn, kỹ năng và ngôn ngữ đầu ra hiện tại của bạn.",
+        "skillsChanged": "Kỹ năng lúc đó: {{before}} · bây giờ: {{now}}",
+        "title": "So sánh mô hình",
+        "filter": "Hiển thị",
+        "allModels": "Tất cả mô hình",
+        "model": "Mô hình",
+        "notes": "Ghi chú",
+        "averageCost": "Chi phí TB",
+        "averageTime": "Thời gian TB",
+        "totalCost": "Tổng chi phí",
+        "hint": "Chi phí là số tiền OpenRouter đã tính, hoặc ước tính theo giá đã đặt cho nhà cung cấp; nếu không thì chưa rõ. Dùng \"Thử mô hình khác\" trên một ghi chú để viết lại bằng mô hình khác, ngay bên cạnh."
+      },
+      "manual": {
+        "title": "Văn bản để tạo ghi chú",
+        "placeholder": "Dán hoặc nhập bản phiên âm…",
+        "generate": "Tạo ghi chú",
+        "savedHint": "Đã lưu vào Ghi chú đã lưu"
+      },
+      "errors": {
+        "emptyTranscript": "Không có văn bản để tạo ghi chú.",
+        "missingProvider": "Chọn nhà cung cấp cho ghi chú trong Cài đặt ghi chú.",
+        "unsupportedProvider": "Nhà cung cấp này không thể viết ghi chú. Hãy chọn nhà cung cấp khác trong Cài đặt ghi chú.",
+        "missingApiKey": "Thêm khóa API của nhà cung cấp trong Cài đặt ghi chú.",
+        "missingModel": "Chọn mô hình cho ghi chú trong Cài đặt ghi chú.",
+        "emptyNote": "Mô hình trả về ghi chú trống. Hãy thử lại hoặc chọn mô hình khác.",
+        "speakersModelsMissing": "Chưa tải mô hình người nói. Hãy tải trong Cài đặt ghi chú.",
+        "speakersModelsInUse": "\"Tạo ghi chú có người nói\" đang dùng mô hình người nói. Hãy thử lại khi xong.",
+        "speakersModelsDownloading": "Mô hình người nói đang được tải. Hãy thử lại khi tải xong.",
+        "speakersNoRecording": "Mục này không còn bản ghi nên không thể nhận diện người nói.",
+        "speakersNoSpeech": "Không tìm thấy giọng nói trong bản ghi.",
+        "speakersNoModel": "Trước tiên hãy tải và chọn một mô hình chép lời trong trang Mô hình.",
+        "speakersFailed": "Mô hình người nói gặp lỗi với bản ghi này.",
+        "skillMissing": "Kỹ năng đã chọn không còn nữa. Hãy chọn kỹ năng khác trong Cài đặt ghi chú.",
+        "skillEmpty": "Kỹ năng không có hướng dẫn đọc được (Markdown hoặc văn bản).",
+        "skillUnsupported": "Không thể nhập loại tệp này. Hãy dùng .md, .txt, .zip hoặc .skill.",
+        "skillTooLarge": "Kỹ năng lớn hơn 50 MB.",
+        "skillUnsafePath": "Tệp nén chứa đường dẫn không an toàn nên không được nhập."
+      }
+    },
     "debug": {
       "title": "Gỡ lỗi",
       "logDirectory": {
@@ -1581,6 +1762,11 @@
           "title": "Handy",
           "description": "Ứng dụng phiên âm giọng nói thành văn bản mã nguồn mở nguyên bản mà dự án này được xây dựng dựa trên",
           "details": "Handy Tool là một bản fork của Handy, được tạo bởi CJ Pais (github.com/cjpais/Handy, handy.computer). Nó được tiếp quản tại phiên bản gốc v0.8.1 (tháng 3 năm 2026) và đã được phát triển tiếp một cách độc lập bởi Patrick R. Xin cảm ơn rất nhiều CJ và những người đóng góp cho Handy vì nền tảng mà dự án này đứng trên đó."
+        },
+        "speakers": {
+          "title": "Mô hình nhận diện người nói",
+          "description": "Các mô hình người nói dùng cho \"Tạo ghi chú có người nói\"",
+          "details": "\"Tạo ghi chú có người nói\" dùng pyannote segmentation 3.0 của Hervé Bredin và pyannote.audio (Giấy phép MIT) cùng mô hình WeSpeaker ResNet34 VoxCeleb của cộng đồng WeNet (CC BY 4.0), ở bản ONNX do dự án sherpa-onnx (k2-fsa) phát hành. Chúng được tải khi cần, không đi kèm ứng dụng. Cảm ơn các tác giả."
         }
       }
     },

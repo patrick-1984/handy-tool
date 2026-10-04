@@ -11,6 +11,7 @@
     "shortcuts": "Atajos",
     "models": "Modelos",
     "history": "Historial",
+    "notes": "Notas",
     "files": "Archivos",
     "debug": "Depuración",
     "about": "Acerca de",
@@ -1487,6 +1488,186 @@
         "noMatches": "Ninguna entrada coincide con tu búsqueda."
       }
     },
+    "notes": {
+      "tabs": {
+        "settings": "Ajustes",
+        "saved": "Notas guardadas",
+        "manual": "Nota manual"
+      },
+      "inline": {
+        "label": "Nota",
+        "makeNote": "Crear nota",
+        "makeNoteWithSpeakers": "Crear nota con hablantes",
+        "generating": "Escribiendo tu nota…",
+        "retry": "Reintentar",
+        "dismiss": "Cerrar",
+        "error": "No se pudo escribir la nota:",
+        "sourceLabel": "Origen de esta nota"
+      },
+      "openSettings": "Ajustes de notas",
+      "speakersBadge": "Con hablantes",
+      "cutShort": "El modelo alcanzó su límite de longitud, así que esta nota termina antes de tiempo.",
+      "copy": "Copiar nota (Markdown)",
+      "copyError": "No se pudo copiar la nota.",
+      "delete": "Eliminar nota",
+      "deleteError": "No se pudo eliminar la nota. Inténtalo de nuevo.",
+      "showMore": "Mostrar más",
+      "showLess": "Mostrar menos",
+      "skillPicker": "Skills de notas",
+      "skillPickerNone": "Sin skills",
+      "skillPickerCount": "{{count}} skills",
+      "instructions": {
+        "title": "Instrucciones",
+        "description": "Lo que recibe el modelo al escribir una nota: tus propias instrucciones y las skills activadas.",
+        "custom": {
+          "title": "Tus instrucciones",
+          "description": "Tus propias instrucciones para cada nota, por ejemplo: usa viñetas y termina con las tareas pendientes. Se envían antes de las skills activadas y prevalecen cuando una skill dice otra cosa. Sin ninguna skill activada se usan solas; si este campo también está vacío, las notas siguen las instrucciones predeterminadas.",
+          "placeholder": "Por ejemplo: Que no pase de una página y termina con las tareas y quién se encarga de cada una."
+        }
+      },
+      "language": {
+        "title": "Idioma de salida",
+        "description": "El idioma en que se escribe la nota. «Igual que la transcripción» mantiene el idioma en que se habló, aunque tus skills o instrucciones estén escritas en otro idioma.",
+        "sameAsTranscript": "Igual que la transcripción"
+      },
+      "skills": {
+        "title": "Skills",
+        "description": "Una skill le dice al modelo cómo escribir tus notas, por ejemplo un acta de reunión o un resumen de estudio, en cualquier idioma. Importa tantas como quieras y activa una o varias; se quedan hasta que las elimines.",
+        "active": {
+          "title": "Skills activas",
+          "description": "Las skills con las que se escriben las notas nuevas. Pueden estar activadas varias a la vez: cada una se envía con su nombre, en el orden de esta lista, después de tus instrucciones."
+        },
+        "defaultDescription": "No hay ninguna skill activada y «Tus instrucciones» está vacío, así que las notas siguen las instrucciones predeterminadas: una nota en Markdown clara y estructurada que conserva cada dato, decisión y tarea.",
+        "none": "Todavía no has importado ninguna skill.",
+        "activeSummary": "Skills activadas: {{count}}. Las notas siguen tus instrucciones, si las hay, y luego cada skill activada.",
+        "onlyOwnInstructions": "No hay ninguna skill activada, así que las notas siguen solo tus instrucciones.",
+        "fileCount": "Archivos: {{count}}",
+        "truncated": "Esta skill es muy larga, así que solo se envían al modelo sus primeros 200 KB.",
+        "importFile": "Importar archivo…",
+        "importFolder": "Importar carpeta…",
+        "importHint": "Un archivo .md o .txt, una carpeta o un archivo .zip o .skill (un SKILL.md con archivos de referencia opcionales). Handy copia la skill en su propia carpeta de datos.",
+        "fileFilter": "Skills",
+        "imported": "Skill «{{name}}» importada y activada.",
+        "importError": "No se pudo importar la skill: {{error}}",
+        "remove": "Quitar skill",
+        "removeError": "No se pudo quitar la skill."
+      },
+      "provider": {
+        "title": "Proveedor y modelo",
+        "description": "Las notas las escribe un modelo de uno de tus proveedores LLM. La transcripción se envía a ese proveedor.",
+        "provider": {
+          "title": "Proveedor",
+          "description": "El proveedor LLM registrado que escribe las notas. Hasta que elijas uno, Handy usa el primer proveedor de OpenRouter activado.",
+          "placeholder": "Selecciona un proveedor"
+        },
+        "apiKey": {
+          "title": "Clave de API",
+          "description": "La clave de API del proveedor elegido. Es la misma clave que en Ajustes avanzados › Proveedores LLM, así que si la cambias aquí también cambia allí.",
+          "placeholder": "Pega la clave de API"
+        },
+        "model": {
+          "title": "Modelo",
+          "description": "El modelo que escribe las notas, elegido de todos los modelos del proveedor o escrito a mano. En OpenRouter cada modelo muestra su precio por 1 M de tokens de entrada / salida, y «Recomendados para notas (baratos)» muestra buenos modelos multilingües al menos 10 veces más baratos que Claude Opus 5.5. Déjalo vacío para usar el modelo del proveedor.",
+          "placeholder": "El modelo del proveedor"
+        },
+        "manage": "Gestionar proveedores LLM"
+      },
+      "modelPicker": {
+        "search": "Buscar modelos",
+        "priceHeader": "Precio por 1 M de tokens: entrada / salida",
+        "noPrices": "No se conocen los precios de los modelos de este proveedor.",
+        "sort": "Ordenar:",
+        "sortPrice": "Precio",
+        "sortName": "Nombre",
+        "recommended": "Recomendados para notas (baratos)",
+        "cheaper": "≈{{times}}x más barato que Opus 5.5",
+        "all": "Todos los modelos ({{count}})",
+        "priceVaries": "Precio variable",
+        "free": "Gratis",
+        "selectedPrice": "Por 1 M de tokens (entrada / salida):"
+      },
+      "speakers": {
+        "title": "Detección de hablantes",
+        "description": "Solo la usa «Crear nota con hablantes» en el Historial: averigua quién habla en una grabación y etiqueta a los hablantes como [Person 1], [Person 2], etc. Funciona sin conexión en este equipo, así que la grabación nunca sale de él.",
+        "models": {
+          "title": "Modelos de hablantes",
+          "description": "Dos modelos (32 MB) que se descargan una sola vez de Hugging Face y GitHub: pyannote segmentation 3.0 (MIT) y WeSpeaker ResNet34 (CC BY 4.0), en la exportación de sherpa-onnx. Elimínalos para liberar espacio; puedes volver a descargarlos cuando quieras."
+        },
+        "ready": "Listo",
+        "notDownloaded": "No descargado",
+        "failed": "Error en la descarga",
+        "download": "Descargar (32 MB)",
+        "delete": "Eliminar",
+        "deleteError": "No se pudieron eliminar los modelos de hablantes: {{error}}",
+        "downloading": "Descargando… {{percent}} %",
+        "verifying": "Comprobando la descarga…",
+        "starting": "Iniciando la descarga…",
+        "needsDownload": "La detección de hablantes necesita una descarga única de 32 MB.",
+        "needsDownloadHint": "Los modelos funcionan sin conexión en este equipo y solo se usan para «Crear nota con hablantes». Tu nota continúa en cuanto se descarguen.",
+        "downloadError": "La descarga falló: {{error}}",
+        "identifying": "Identificando hablantes…",
+        "error": "No se pudo identificar a los hablantes:",
+        "normalNote": "Crear una nota normal"
+      },
+      "saved": {
+        "loading": "Cargando notas…",
+        "empty": "Aún no hay notas. Usa «Crear nota» en una grabación del Historial o escribe una en la pestaña «Nota manual».",
+        "goToTranscript": "Ir a la transcripción",
+        "sourceDeleted": "Se eliminó la transcripción de origen"
+      },
+      "usage": {
+        "costUnknown": "coste desconocido",
+        "costTitle": "Lo que costó escribir esta nota",
+        "tokens": "{{input}} entrada / {{output}} salida tokens",
+        "timeTitle": "Cuánto tardó el modelo en escribir esta nota",
+        "modelTitle": "El modelo que escribió esta nota"
+      },
+      "compare": {
+        "tryAnother": "Probar otro modelo",
+        "pick": "Escribir esta nota de nuevo con:",
+        "placeholder": "Elige un modelo",
+        "write": "Escribir nota",
+        "generating": "Escribiendo la nota con {{model}}…",
+        "error": "No se pudo escribir la nota con {{model}}:",
+        "currentSettings": "Usa tus instrucciones, skills e idioma de salida actuales.",
+        "skillsChanged": "Skills entonces: {{before}} · ahora: {{now}}",
+        "title": "Comparar modelos",
+        "filter": "Mostrar",
+        "allModels": "Todos los modelos",
+        "model": "Modelo",
+        "notes": "Notas",
+        "averageCost": "Coste medio",
+        "averageTime": "Tiempo medio",
+        "totalCost": "Coste total",
+        "hint": "El coste es lo que cobró OpenRouter o una estimación con los precios configurados para el proveedor; si no, es desconocido. Usa «Probar otro modelo» en una nota para escribirla de nuevo con otro modelo, justo al lado."
+      },
+      "manual": {
+        "title": "Texto para convertir en nota",
+        "placeholder": "Pega o escribe una transcripción…",
+        "generate": "Generar nota",
+        "savedHint": "Guardada en Notas guardadas"
+      },
+      "errors": {
+        "emptyTranscript": "No hay texto con el que crear una nota.",
+        "missingProvider": "Elige un proveedor para las notas en Ajustes de notas.",
+        "unsupportedProvider": "Este proveedor no puede escribir notas. Elige otro en Ajustes de notas.",
+        "missingApiKey": "Añade la clave de API del proveedor en Ajustes de notas.",
+        "missingModel": "Elige un modelo para las notas en Ajustes de notas.",
+        "emptyNote": "El modelo devolvió una nota vacía. Inténtalo de nuevo o elige otro modelo.",
+        "speakersModelsMissing": "Los modelos de hablantes no están descargados. Descárgalos en Ajustes de notas.",
+        "speakersModelsInUse": "«Crear nota con hablantes» está usando los modelos de hablantes. Inténtalo de nuevo cuando termine.",
+        "speakersModelsDownloading": "Los modelos de hablantes se están descargando. Inténtalo de nuevo cuando termine la descarga.",
+        "speakersNoRecording": "Esta entrada ya no tiene grabación, así que no se pueden identificar los hablantes.",
+        "speakersNoSpeech": "No se encontró voz en la grabación.",
+        "speakersNoModel": "Primero descarga y selecciona un modelo de transcripción en la página Modelos.",
+        "speakersFailed": "Los modelos de hablantes fallaron con esta grabación.",
+        "skillMissing": "La skill seleccionada ya no existe. Elige otra en Ajustes de notas.",
+        "skillEmpty": "La skill no tiene instrucciones legibles (Markdown o texto).",
+        "skillUnsupported": "Este tipo de archivo no se puede importar. Usa .md, .txt, .zip o .skill.",
+        "skillTooLarge": "La skill ocupa más de 50 MB.",
+        "skillUnsafePath": "El archivo comprimido contiene rutas inseguras, así que no se importó."
+      }
+    },
     "debug": {
       "title": "Depuración",
       "logDirectory": {
@@ -1581,6 +1762,11 @@
           "title": "Handy",
           "description": "La app original de código abierto de voz a texto sobre la que se construye este proyecto",
           "details": "Handy Tool es un fork de Handy, creado por CJ Pais (github.com/cjpais/Handy, handy.computer). Se tomó a partir de la versión original v0.8.1 (marzo de 2026) y ha sido desarrollado de forma independiente por Patrick R. Muchas gracias a CJ y a los colaboradores de Handy por la base sobre la que se sostiene este proyecto."
+        },
+        "speakers": {
+          "title": "Modelos de detección de hablantes",
+          "description": "Los modelos de hablantes de «Crear nota con hablantes»",
+          "details": "«Crear nota con hablantes» usa pyannote segmentation 3.0 de Hervé Bredin y pyannote.audio (licencia MIT) y el modelo WeSpeaker ResNet34 VoxCeleb de la comunidad WeNet (CC BY 4.0), en las versiones ONNX publicadas por el proyecto sherpa-onnx (k2-fsa). Se descargan cuando hacen falta, no vienen incluidos. Gracias a sus autores."
         }
       }
     },

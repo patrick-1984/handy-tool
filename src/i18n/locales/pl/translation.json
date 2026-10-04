@@ -11,6 +11,7 @@
     "shortcuts": "Skróty",
     "models": "Modele",
     "history": "Historia",
+    "notes": "Notatki",
     "files": "Pliki",
     "debug": "Debugowanie",
     "about": "O programie",
@@ -1487,6 +1488,186 @@
       },
       "loadError": "Nie udało się wczytać historii: {{error}}"
     },
+    "notes": {
+      "tabs": {
+        "settings": "Ustawienia",
+        "saved": "Zapisane notatki",
+        "manual": "Notatka ręczna"
+      },
+      "inline": {
+        "label": "Notatka",
+        "makeNote": "Utwórz notatkę",
+        "makeNoteWithSpeakers": "Utwórz notatkę z mówcami",
+        "generating": "Piszę notatkę…",
+        "retry": "Spróbuj ponownie",
+        "dismiss": "Zamknij",
+        "error": "Nie udało się napisać notatki:",
+        "sourceLabel": "Źródło tej notatki"
+      },
+      "openSettings": "Ustawienia notatek",
+      "speakersBadge": "Z mówcami",
+      "cutShort": "Model osiągnął limit długości, więc ta notatka urywa się przed końcem.",
+      "copy": "Kopiuj notatkę (Markdown)",
+      "copyError": "Nie udało się skopiować notatki.",
+      "delete": "Usuń notatkę",
+      "deleteError": "Nie udało się usunąć notatki. Spróbuj ponownie.",
+      "showMore": "Pokaż więcej",
+      "showLess": "Pokaż mniej",
+      "skillPicker": "Umiejętności notatek",
+      "skillPickerNone": "Brak umiejętności",
+      "skillPickerCount": "Umiejętności: {{count}}",
+      "instructions": {
+        "title": "Instrukcje",
+        "description": "Co model dostaje, gdy pisze notatkę: Twoje własne instrukcje i włączone umiejętności.",
+        "custom": {
+          "title": "Twoje instrukcje",
+          "description": "Twoje własne instrukcje do każdej notatki, na przykład: używaj punktorów i zakończ listą zadań. Są wysyłane przed włączonymi umiejętnościami i mają pierwszeństwo, gdy umiejętność mówi coś innego. Gdy żadna umiejętność nie jest włączona, są używane same; gdy i to pole jest puste, notatki powstają według domyślnych instrukcji.",
+          "placeholder": "Na przykład: Zmieść się na jednej stronie i zakończ listą zadań z osobami odpowiedzialnymi."
+        }
+      },
+      "language": {
+        "title": "Język notatki",
+        "description": "Język, w którym powstaje notatka. „Taki jak transkrypcja” zachowuje język, w którym mówiono, nawet jeśli Twoje umiejętności lub instrukcje są napisane w innym języku.",
+        "sameAsTranscript": "Taki jak transkrypcja"
+      },
+      "skills": {
+        "title": "Umiejętności",
+        "description": "Umiejętność mówi modelowi, jak pisać notatki, na przykład protokół ze spotkania albo podsumowanie do nauki, w dowolnym języku. Zaimportuj ich tyle, ile chcesz, i włącz jedną lub kilka; zostają, dopóki ich nie usuniesz.",
+        "active": {
+          "title": "Włączone umiejętności",
+          "description": "Umiejętności, według których powstają nowe notatki. Kilka może być włączonych naraz: każda jest wysyłana pod własną nazwą, w kolejności z tej listy, po Twoich instrukcjach."
+        },
+        "defaultDescription": "Żadna umiejętność nie jest włączona, a pole Twoje instrukcje jest puste, więc notatki powstają według domyślnych instrukcji: przejrzysta, uporządkowana notatka w Markdownie, która zachowuje każdy fakt, decyzję i zadanie.",
+        "none": "Nie zaimportowano jeszcze żadnej umiejętności.",
+        "activeSummary": "Włączone umiejętności: {{count}}. Notatki powstają według Twoich instrukcji (jeśli są), a potem według każdej włączonej umiejętności.",
+        "onlyOwnInstructions": "Żadna umiejętność nie jest włączona, więc notatki powstają tylko według Twoich instrukcji.",
+        "fileCount": "Pliki: {{count}}",
+        "truncated": "Ta umiejętność jest bardzo długa, więc do modelu trafia tylko jej pierwsze 200 KB.",
+        "importFile": "Importuj plik…",
+        "importFolder": "Importuj folder…",
+        "importHint": "Plik .md lub .txt, folder albo archiwum .zip lub .skill (SKILL.md z opcjonalnymi plikami pomocniczymi). Handy kopiuje umiejętność do własnego folderu danych.",
+        "fileFilter": "Umiejętności",
+        "imported": "Zaimportowano i włączono umiejętność „{{name}}”.",
+        "importError": "Nie udało się zaimportować umiejętności: {{error}}",
+        "remove": "Usuń umiejętność",
+        "removeError": "Nie udało się usunąć umiejętności."
+      },
+      "provider": {
+        "title": "Dostawca i model",
+        "description": "Notatki pisze model jednego z Twoich dostawców LLM. Transkrypcja jest wysyłana do tego dostawcy.",
+        "provider": {
+          "title": "Dostawca",
+          "description": "Zarejestrowany dostawca LLM, który pisze notatki. Dopóki żadnego nie wybierzesz, Handy używa pierwszego włączonego dostawcy OpenRouter.",
+          "placeholder": "Wybierz dostawcę"
+        },
+        "apiKey": {
+          "title": "Klucz API",
+          "description": "Klucz API wybranego dostawcy. To ten sam klucz co w Ustawienia zaawansowane › Dostawcy LLM, więc zmiana tutaj zmienia go również tam.",
+          "placeholder": "Wklej klucz API"
+        },
+        "model": {
+          "title": "Model",
+          "description": "Model, który pisze notatki, wybrany z pełnej listy modeli dostawcy albo wpisany ręcznie. W OpenRouter każdy model ma cenę za 1 mln tokenów wejściowych / wyjściowych, a grupa „Polecane do notatek (tanie)” pokazuje dobre wielojęzyczne modele co najmniej 10 razy tańsze od Claude Opus 5.5. Zostaw puste, aby użyć modelu dostawcy.",
+          "placeholder": "Model dostawcy"
+        },
+        "manage": "Zarządzaj dostawcami LLM"
+      },
+      "modelPicker": {
+        "search": "Szukaj modeli",
+        "priceHeader": "Cena za 1 mln tokenów: wejście / wyjście",
+        "noPrices": "Ceny modeli tego dostawcy nie są znane.",
+        "sort": "Sortuj:",
+        "sortPrice": "Cena",
+        "sortName": "Nazwa",
+        "recommended": "Polecane do notatek (tanie)",
+        "cheaper": "≈{{times}}x taniej niż Opus 5.5",
+        "all": "Wszystkie modele ({{count}})",
+        "priceVaries": "Cena zmienna",
+        "free": "Bezpłatny",
+        "selectedPrice": "Za 1 mln tokenów (wejście / wyjście):"
+      },
+      "speakers": {
+        "title": "Rozpoznawanie mówców",
+        "description": "Używane tylko przez „Utwórz notatkę z mówcami” w Historii: ustala, kto mówi w nagraniu, i oznacza mówców jako [Person 1], [Person 2] i tak dalej. Działa offline na tym komputerze, więc nagranie nigdy go nie opuszcza.",
+        "models": {
+          "title": "Modele mówców",
+          "description": "Dwa modele (32 MB) pobierane jednorazowo z Hugging Face i GitHuba: pyannote segmentation 3.0 (MIT) i WeSpeaker ResNet34 (CC BY 4.0) w wersjach przygotowanych przez sherpa-onnx. Usuń je, aby zwolnić miejsce; w każdej chwili możesz pobrać je ponownie."
+        },
+        "ready": "Gotowe",
+        "notDownloaded": "Nie pobrano",
+        "failed": "Pobieranie nie powiodło się",
+        "download": "Pobierz (32 MB)",
+        "delete": "Usuń",
+        "deleteError": "Nie udało się usunąć modeli mówców: {{error}}",
+        "downloading": "Pobieranie… {{percent}}%",
+        "verifying": "Sprawdzanie pobranych plików…",
+        "starting": "Rozpoczynanie pobierania…",
+        "needsDownload": "Rozpoznawanie mówców wymaga jednorazowego pobrania 32 MB.",
+        "needsDownloadHint": "Modele działają offline na tym komputerze i są używane tylko przez „Utwórz notatkę z mówcami”. Notatka powstanie, gdy tylko się pobiorą.",
+        "downloadError": "Pobieranie nie powiodło się: {{error}}",
+        "identifying": "Rozpoznaję mówców…",
+        "error": "Nie udało się rozpoznać mówców:",
+        "normalNote": "Utwórz zwykłą notatkę"
+      },
+      "saved": {
+        "loading": "Wczytuję notatki…",
+        "empty": "Nie ma jeszcze notatek. Użyj „Utwórz notatkę” przy nagraniu w sekcji Historia albo napisz notatkę na karcie „Notatka ręczna”.",
+        "goToTranscript": "Przejdź do transkrypcji",
+        "sourceDeleted": "Transkrypcja źródłowa została usunięta"
+      },
+      "usage": {
+        "costUnknown": "koszt nieznany",
+        "costTitle": "Ile kosztowało napisanie tej notatki",
+        "tokens": "tokeny: {{input}} wej. / {{output}} wyj.",
+        "timeTitle": "Ile czasu model pisał tę notatkę",
+        "modelTitle": "Model, który napisał tę notatkę"
+      },
+      "compare": {
+        "tryAnother": "Wypróbuj inny model",
+        "pick": "Napisz tę notatkę ponownie modelem:",
+        "placeholder": "Wybierz model",
+        "write": "Napisz notatkę",
+        "generating": "Piszę notatkę modelem {{model}}…",
+        "error": "Nie udało się napisać notatki modelem {{model}}:",
+        "currentSettings": "Używa Twoich obecnych instrukcji, umiejętności i języka notatki.",
+        "skillsChanged": "Umiejętności wtedy: {{before}} · teraz: {{now}}",
+        "title": "Porównaj modele",
+        "filter": "Pokaż",
+        "allModels": "Wszystkie modele",
+        "model": "Model",
+        "notes": "Notatki",
+        "averageCost": "Śr. koszt",
+        "averageTime": "Śr. czas",
+        "totalCost": "Koszt łącznie",
+        "hint": "Koszt to kwota pobrana przez OpenRouter albo szacunek na podstawie cen ustawionych dla dostawcy; w innym przypadku jest nieznany. Użyj „Wypróbuj inny model” przy notatce, aby napisać ją ponownie innym modelem, tuż obok."
+      },
+      "manual": {
+        "title": "Tekst do zamiany w notatkę",
+        "placeholder": "Wklej lub wpisz transkrypcję…",
+        "generate": "Wygeneruj notatkę",
+        "savedHint": "Zapisano w: Zapisane notatki"
+      },
+      "errors": {
+        "emptyTranscript": "Brak tekstu, z którego można utworzyć notatkę.",
+        "missingProvider": "Wybierz dostawcę notatek w ustawieniach notatek.",
+        "unsupportedProvider": "Ten dostawca nie potrafi pisać notatek. Wybierz innego w ustawieniach notatek.",
+        "missingApiKey": "Dodaj klucz API dostawcy w ustawieniach notatek.",
+        "missingModel": "Wybierz model notatek w ustawieniach notatek.",
+        "emptyNote": "Model zwrócił pustą notatkę. Spróbuj ponownie lub wybierz inny model.",
+        "speakersModelsMissing": "Modele mówców nie są pobrane. Pobierz je w ustawieniach notatek.",
+        "speakersModelsInUse": "Modele mówców są właśnie używane przez „Utwórz notatkę z mówcami”. Spróbuj ponownie, gdy skończy.",
+        "speakersModelsDownloading": "Modele mówców są właśnie pobierane. Spróbuj ponownie po zakończeniu pobierania.",
+        "speakersNoRecording": "Ten wpis nie ma już nagrania, więc nie da się rozpoznać mówców.",
+        "speakersNoSpeech": "W nagraniu nie znaleziono mowy.",
+        "speakersNoModel": "Najpierw pobierz i wybierz model transkrypcji na stronie Modele.",
+        "speakersFailed": "Modele mówców nie poradziły sobie z tym nagraniem.",
+        "skillMissing": "Wybrana umiejętność już nie istnieje. Wybierz inną w ustawieniach notatek.",
+        "skillEmpty": "Umiejętność nie zawiera czytelnych instrukcji (Markdown ani tekstu).",
+        "skillUnsupported": "Tego typu pliku nie można zaimportować. Użyj .md, .txt, .zip lub .skill.",
+        "skillTooLarge": "Umiejętność jest większa niż 50 MB.",
+        "skillUnsafePath": "Archiwum zawiera niebezpieczne ścieżki plików, więc nie zostało zaimportowane."
+      }
+    },
     "debug": {
       "title": "Debugowanie",
       "logDirectory": {
@@ -1581,6 +1762,11 @@
           "title": "Handy",
           "description": "Oryginalna aplikacja open-source do rozpoznawania mowy, na której oparty jest ten projekt",
           "details": "Handy Tool jest forkiem Handy, stworzonego przez CJ Pais (github.com/cjpais/Handy, handy.computer). Projekt przejęto na etapie wersji v0.8.1 projektu źródłowego (marzec 2026) i jest dalej rozwijany niezależnie przez Patricka R. Ogromne podziękowania dla CJ i współtwórców Handy za fundament, na którym stoi ten projekt."
+        },
+        "speakers": {
+          "title": "Modele rozpoznawania mówców",
+          "description": "Modele mówców, z których korzysta „Utwórz notatkę z mówcami”",
+          "details": "„Utwórz notatkę z mówcami” korzysta z pyannote segmentation 3.0 autorstwa Hervé Bredina i pyannote.audio (licencja MIT) oraz modelu WeSpeaker ResNet34 VoxCeleb społeczności WeNet (CC BY 4.0), w wersjach ONNX opublikowanych przez projekt sherpa-onnx (k2-fsa). Są pobierane na żądanie, a nie dołączane do aplikacji. Dziękujemy ich autorom."
         }
       }
     },
