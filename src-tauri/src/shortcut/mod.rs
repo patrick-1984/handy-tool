@@ -357,6 +357,12 @@ pub(crate) fn is_jumper_binding(id: &str) -> bool {
         || id.starts_with("jump_set_slot_")
 }
 
+/// Bindings never registered off Windows: the Jumper's, and Cycle Sound Source
+/// (the sources other than the microphone need WASAPI loopback).
+pub(crate) fn is_windows_only_binding(id: &str) -> bool {
+    is_jumper_binding(id) || id == "cycle_capture_source"
+}
+
 /// A binding being unregistered can never deliver its pending key release. If a
 /// recording is active, synthesize the release so a held PTT is stopped instead
 /// of stranding the coordinator in Recording with a hot mic. (The coordinator
@@ -630,7 +636,7 @@ fn registrable_bindings(app: &AppHandle) -> Vec<ShortcutBinding> {
             !is_take_binding(&b.id)
                 && !is_unbound(&b.current_binding)
                 && !(b.id == "transcribe_with_post_process" && !settings.post_process_enabled)
-                && !(is_jumper_binding(&b.id) && !cfg!(windows))
+                && !(is_windows_only_binding(&b.id) && !cfg!(windows))
         })
         .cloned()
         .collect()
@@ -890,7 +896,7 @@ fn register_all_shortcuts_for_implementation(
             continue;
         }
         // The Jumper is Windows-only — don't claim its hotkeys elsewhere.
-        if is_jumper_binding(id) && !cfg!(windows) {
+        if is_windows_only_binding(id) && !cfg!(windows) {
             continue;
         }
 
@@ -2522,9 +2528,11 @@ pub fn change_system_audio_delay_ms_setting(app: AppHandle, delay_ms: i32) -> Re
     Ok(())
 }
 
+// Async (off the main thread): applying the source can reopen the capture streams
+// or open the system-audio leg, which may take a moment.
 #[tauri::command]
 #[specta::specta]
-pub fn change_capture_source_setting(app: AppHandle, source: String) -> Result<(), String> {
+pub async fn change_capture_source_setting(app: AppHandle, source: String) -> Result<(), String> {
     // String-in, parsed here: the repo's convention for enum settings, and it means an
     // unrecognised value degrades to the safe default instead of failing the command.
     let parsed = match source.as_str() {
@@ -2536,21 +2544,76 @@ pub fn change_capture_source_setting(app: AppHandle, source: String) -> Result<(
             CaptureSource::Microphone
         }
     };
+    set_capture_source(&app, parsed, false).map(|_| ())
+}
+
+/// The recording pill's right-click menu picked a sound source: like the setting,
+/// and the pill says what takes record now.
+#[tauri::command]
+#[specta::specta]
+pub async fn choose_capture_source(app: AppHandle, source: CaptureSource) -> Result<(), String> {
+    set_capture_source(&app, source, true).map(|_| ())
+}
+
+/// The Cycle Sound Source shortcut: the next source after the saved one (see
+/// [`CaptureSource::next`]), shown on the pill.
+pub fn cycle_capture_source(app: &AppHandle) -> Result<(), String> {
+    // Read and written under the lock, so two quick presses never land on the same
+    // source.
+    let _serial = CAPTURE_SOURCE_LOCK
+        .lock()
+        .unwrap_or_else(|e| e.into_inner());
+    let next = settings::get_settings(app).capture_source.next();
+    set_capture_source_locked(app, next, true).map(|_| ())
+}
+
+/// One sound source change at a time (shortcut, pill menu, Settings).
+static CAPTURE_SOURCE_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+/// Save a sound source and apply it: at once, also to a take in progress whose
+/// microphone can carry it, else from the next take (see
+/// `AudioRecordingManager::apply_capture_source`). Settings stay the one source of
+/// truth; the Settings page follows through `capture-source-changed`. `notice`
+/// shows the new source on the pill.
+pub fn set_capture_source(
+    app: &AppHandle,
+    source: CaptureSource,
+    notice: bool,
+) -> Result<crate::managers::audio::SourceSwitch, String> {
+    let _serial = CAPTURE_SOURCE_LOCK
+        .lock()
+        .unwrap_or_else(|e| e.into_inner());
+    set_capture_source_locked(app, source, notice)
+}
+
+fn set_capture_source_locked(
+    app: &AppHandle,
+    source: CaptureSource,
+    notice: bool,
+) -> Result<crate::managers::audio::SourceSwitch, String> {
     #[cfg(not(target_os = "windows"))]
-    if parsed != CaptureSource::Microphone {
+    if source != CaptureSource::Microphone {
         return Err("System audio capture is only available on Windows".to_string());
     }
-    let mut settings = settings::get_settings(&app);
-    settings.capture_source = parsed;
-    settings::write_settings(&app, settings);
+    let mut settings = settings::get_settings(app);
+    settings.capture_source = source;
+    settings::write_settings(app, settings);
     // Persisting is not enough: an already-open stream is reused, so without
     // this the change silently applies to no take at all under always-on.
-    if let Some(rm) =
-        app.try_state::<std::sync::Arc<crate::managers::audio::AudioRecordingManager>>()
-    {
-        rm.update_capture_source();
+    let applied =
+        match app.try_state::<std::sync::Arc<crate::managers::audio::AudioRecordingManager>>() {
+            Some(rm) => rm.apply_capture_source(),
+            None => crate::managers::audio::SourceSwitch::Now,
+        };
+    let _ = app.emit("capture-source-changed", source);
+    if notice {
+        crate::overlay::show_capture_source_notice(
+            app,
+            source,
+            applied == crate::managers::audio::SourceSwitch::NextTake,
+        );
     }
-    Ok(())
+    Ok(applied)
 }
 
 #[tauri::command]
