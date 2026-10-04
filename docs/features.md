@@ -697,7 +697,7 @@ rows are gone. The update controls are the one exception: they are on About and 
 **Where.** `Advanced settings` and `More Tools`.
 **Since.** 1.10.0. Until 2.0.1 More Tools and Advanced settings were one **More** entry, and
 Transcription was its Output tab. History first and About as a page since 2.0.2; Notes since the
-release after 2.0.5.
+release after 2.1.1.
 
 ### What's new, one click from each setting
 
@@ -1481,7 +1481,7 @@ button that opens them. Making a note also marks the entry as saved, so automati
 removes the transcript behind a note. Only the text is sent, never the audio, and only when you
 press the button.
 **Where.** `History › Recordings › Make note`.
-**Since.** The release after 2.0.5.
+**Since.** The release after 2.1.1.
 
 <!-- prov: notes inline | src: src/components/settings/history/HistorySettings.tsx; src/components/settings/notes/HistoryEntryNotes.tsx; src/stores/notesStore.ts; src-tauri/src/commands/notes.rs; src-tauri/src/managers/history.rs -->
 
@@ -1504,7 +1504,7 @@ recording, live text and normal transcription never run them. With API or OpenRo
 transcription selected, that service transcribes the recording, one speaker turn at a time.
 **Where.** `History › Recordings › Make note with speakers` and
 `Notes › Settings › Speaker detection › Speaker models`.
-**Since.** The release after 2.0.5.
+**Since.** The release after 2.1.1.
 
 <!-- prov: notes with speakers | src: src-tauri/src/diarization/mod.rs; src-tauri/src/diarization/align.rs; src-tauri/src/diarization/models.rs; src-tauri/src/commands/speakers.rs; src-tauri/src/managers/transcription.rs; src/stores/notesStore.ts; src/components/settings/notes/HistoryEntryNotes.tsx; src/components/settings/notes/SpeakerDetectionSettings.tsx -->
 
@@ -1529,7 +1529,7 @@ import is capped at 50 MB. Skills are not part of a backup.
 `Notes › Settings › Skills › Active skills`, `Notes › Settings › Skills › Import file…` and
 `Notes › Settings › Skills › Import folder…`; once a skill is imported, also
 `History › Recordings › Note skills`.
-**Since.** The release after 2.0.5.
+**Since.** The release after 2.1.1.
 
 <!-- prov: note skills | src: src-tauri/src/note_skills.rs; src-tauri/src/commands/notes.rs; src-tauri/src/settings.rs; src/components/settings/notes/NoteSettingsTab.tsx; src/components/settings/notes/NoteSkillPicker.tsx -->
 
@@ -1547,7 +1547,7 @@ another language, so an English skill on a Polish recording still gives a Polish
 in English" line inside a skill does not win either. A note written in a picked language shows that
 language next to its model and cost.
 **Where.** `History › Recordings › Output language`; `Notes › Manual note › Output language`.
-**Since.** The release after 2.0.5.
+**Since.** The release after 2.1.1.
 
 <!-- prov: note language | src: src-tauri/src/commands/notes.rs; src-tauri/src/settings.rs; src-tauri/src/managers/history.rs; src/components/settings/notes/OutputLanguagePicker.tsx; src/components/settings/notes/NoteParts.tsx -->
 
@@ -1574,7 +1574,7 @@ against instructions hidden inside it. If the model stops at its length limit, t
 and marked as cut short.
 **Where.** `Notes › Settings › Provider and model › Provider`, `Notes › Settings › Provider and model › API key`
 and `Notes › Settings › Provider and model › Model`.
-**Since.** The release after 2.0.5.
+**Since.** The release after 2.1.1.
 
 <!-- prov: note provider | src: src-tauri/src/commands/notes.rs; src-tauri/src/model_testing.rs; src-tauri/src/token_count.rs; src-tauri/src/settings.rs; src/components/settings/notes/NoteSettingsTab.tsx; src/components/settings/notes/NoteModelSelect.tsx; src/lib/noteModels.ts; src/lib/openrouterPrices.ts -->
 
@@ -1595,7 +1595,7 @@ narrows the list to one model's notes, each still next to the notes it is compar
 thinking tokens count as tokens received, as Google bills them.
 **Where.** `History › Recordings › Try another model`, `Notes › Saved notes › Try another model`
 and `Notes › Saved notes › Compare models`.
-**Since.** The release after 2.0.5.
+**Since.** The release after 2.1.1.
 
 <!-- prov: compare models | src: src/components/settings/notes/NoteParts.tsx; src/components/settings/notes/SavedNotes.tsx; src/lib/noteModels.ts; src/stores/notesStore.ts; src-tauri/src/commands/notes.rs; src-tauri/src/managers/history.rs -->
 
@@ -1609,7 +1609,7 @@ notes made from the same text sit side by side. Go to transcript opens History o
 the source recording, clears the search, scrolls to it and marks it as the source of the note. When the recording was deleted, the note stays and the button says the
 source transcript was deleted.
 **Where.** `Notes › Saved notes › Go to transcript`.
-**Since.** The release after 2.0.5.
+**Since.** The release after 2.1.1.
 
 <!-- prov: saved notes | src: src/components/settings/notes/SavedNotes.tsx; src/components/settings/history/HistorySettings.tsx; src/stores/navStore.ts -->
 
@@ -1621,7 +1621,7 @@ another tool, or notes you typed.
 **What Handy does.** Paste or type it on the Manual note tab and generate a note with the same
 instructions, skills, language and model. The note is saved to Saved notes without a source recording.
 **Where.** `Notes › Manual note › Generate note`.
-**Since.** The release after 2.0.5.
+**Since.** The release after 2.1.1.
 
 <!-- prov: manual note | src: src/components/settings/notes/ManualNote.tsx; src-tauri/src/commands/notes.rs -->
 
