@@ -385,8 +385,8 @@
   background: var(--overlay-hover);
 }
 
-/* A sound source change (shortcut or menu): over the whole pill for a moment,
-   its buttons hidden meanwhile, so the words fit. */
+/* A sound source change (shortcut or menu). On its own: over the whole pill,
+   so the words fit. */
 .capture-notice {
   position: absolute;
   inset: 0;
@@ -399,6 +399,20 @@
 
 .recording-overlay.noticing > :not(.capture-notice) {
   visibility: hidden;
+}
+
+/* During a take: in the middle only, in place of the bars or the words there,
+   so cancel, pause and T stay visible and clickable. */
+.overlay-middle .capture-notice {
+  position: static;
+  min-width: 0;
+  overflow: hidden;
+  gap: 4px;
+  padding: 0;
+}
+
+.overlay-middle.noticing > :not(.capture-notice) {
+  display: none;
 }
 
 .capture-notice-icons {

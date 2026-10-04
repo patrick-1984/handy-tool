@@ -416,13 +416,15 @@ impl AudioRecorder {
     /// Remove the system-audio leg from a take in progress. The stream stops now,
     /// but the ring is NOT cleared: it is a delay line, so it still holds far-end
     /// audio captured before the switch, and the consumer keeps mixing it until it
-    /// runs dry - the switch loses nothing.
+    /// runs dry - the switch loses nothing. The recorder moves on to a new ring, so
+    /// a leg attached again before that never resets the one still draining.
     pub fn detach_system_audio(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         self.send(Cmd::SystemLeg(None))?;
         drop(self.sys_kill_tx.take());
         if let Some(h) = self.sys_handle.take() {
             let _ = h.join();
         }
+        self.sys_ring = Arc::new(Mutex::new(SlaveRing::new()));
         Ok(())
     }
 
@@ -1120,9 +1122,12 @@ struct LiveMix {
     /// The system-audio leg's ring, or `None` for a plain microphone take - which is
     /// what keeps the default path byte-identical.
     sys_ring: Option<Arc<Mutex<SlaveRing>>>,
-    /// The leg was removed mid-take: its ring is still pulled until it runs dry, so
-    /// the far end it buffered before the switch (its delay) still reaches the take.
-    sys_draining: bool,
+    /// Legs removed mid-take, oldest first: each is still pulled until it runs dry,
+    /// so the far end it buffered before the switch (its delay) still reaches the
+    /// take. A leg attached meanwhile waits behind them (its ring keeps filling), so
+    /// the audio from before and after a quick off-and-on switch arrives in order,
+    /// neither lost nor laid over each other.
+    draining: Vec<Arc<Mutex<SlaveRing>>>,
     /// False while the microphone leg is left out (System audio chosen mid-take).
     mic_on: bool,
     /// Linear gain applied to the system leg before mixing.
@@ -1133,7 +1138,7 @@ impl LiveMix {
     fn new(sys_ring: Option<Arc<Mutex<SlaveRing>>>, sys_gain: f32) -> Self {
         Self {
             sys_ring,
-            sys_draining: false,
+            draining: Vec::new(),
             mic_on: true,
             sys_gain,
         }
@@ -1150,29 +1155,51 @@ impl LiveMix {
         if !self.mic_on {
             frame.fill(0.0);
         }
+        while let Some(ring) = self.draining.first().cloned() {
+            let Ok(mut r) = ring.lock() else {
+                self.draining.remove(0);
+                continue;
+            };
+            if r.is_empty() {
+                drop(r);
+                self.draining.remove(0);
+                continue;
+            }
+            r.pull(frame.len(), scratch);
+            mix_into(frame, scratch, self.sys_gain);
+            return;
+        }
         let Some(ring) = self.sys_ring.clone() else {
             return;
         };
         let Ok(mut r) = ring.lock() else { return };
-        if self.sys_draining && r.is_empty() {
-            drop(r);
-            self.sys_ring = None;
-            self.sys_draining = false;
-            return;
-        }
         r.pull(frame.len(), scratch);
         mix_into(frame, scratch, self.sys_gain);
     }
 
-    /// `Cmd::SystemLeg`: a new ring is mixed from now on; `None` lets the current one
-    /// drain first.
+    /// `Cmd::SystemLeg`: a new ring is mixed from now on (after any still
+    /// draining); `None` lets the current one drain first.
     fn set_system(&mut self, ring: Option<Arc<Mutex<SlaveRing>>>) {
         match ring {
             Some(ring) => {
-                self.sys_ring = Some(ring);
-                self.sys_draining = false;
+                if self
+                    .sys_ring
+                    .as_ref()
+                    .is_some_and(|r| Arc::ptr_eq(r, &ring))
+                {
+                    return;
+                }
+                // The same ring sent back while it drains: it simply stays attached.
+                self.draining.retain(|r| !Arc::ptr_eq(r, &ring));
+                if let Some(old) = self.sys_ring.replace(ring) {
+                    self.draining.push(old);
+                }
             }
-            None => self.sys_draining = self.sys_ring.is_some(),
+            None => {
+                if let Some(old) = self.sys_ring.take() {
+                    self.draining.push(old);
+                }
+            }
         }
     }
 
@@ -1181,12 +1208,21 @@ impl LiveMix {
         !self.mic_on
     }
 
+    /// Everything still buffered, in order: the draining legs, then the attached
+    /// one (`Cmd::Stop` flushes it as the take's tail).
+    fn drain_all(&mut self) -> Vec<f32> {
+        let mut tail = Vec::new();
+        for ring in self.draining.iter().chain(self.sys_ring.iter()) {
+            if let Ok(mut r) = ring.lock() {
+                tail.extend(r.drain());
+            }
+        }
+        tail
+    }
+
     /// A ring still draining from a mid-take switch belongs to that take only.
     fn end_take(&mut self) {
-        if self.sys_draining {
-            self.sys_ring = None;
-            self.sys_draining = false;
-        }
+        self.draining.clear();
     }
 }
 
@@ -1529,9 +1565,6 @@ fn process_frame(
     }
 }
 
-/// Classify a capture-stream start failure. Windows answers E_ACCESSDENIED
-/// (0x80070005) when microphone access is switched off in its privacy settings;
-/// the message text is localized, the HRESULT is not.
 /// Send the bars' levels to the overlay: at full rate while a take records,
 /// throttled while idle (the always-on mic would otherwise flood the event system).
 fn emit_level(
@@ -1551,6 +1584,9 @@ fn emit_level(
     }
 }
 
+/// Classify a capture-stream start failure. Windows answers E_ACCESSDENIED
+/// (0x80070005) when microphone access is switched off in its privacy settings;
+/// the message text is localized, the HRESULT is not.
 fn stream_error_kind(message: &str) -> std::io::ErrorKind {
     let m = message.to_ascii_lowercase();
     if m.contains("0x80070005") || m.contains("e_accessdenied") {
@@ -1892,8 +1928,8 @@ fn run_consumer(
                     // against silence (the mic really has stopped) and goes through the
                     // VAD like any other frame, so a sentence the other participant was
                     // still finishing is not truncated.
-                    if let Some(ring) = live_mix.sys_ring.as_ref() {
-                        let tail = ring.lock().ok().map(|mut r| r.drain()).unwrap_or_default();
+                    {
+                        let tail = live_mix.drain_all();
                         if !tail.is_empty() {
                             mix_buf.clear();
                             mix_buf.resize(tail.len(), 0.0);
@@ -2074,6 +2110,7 @@ fn run_consumer(
                         }
                         // Continue as a fresh start of speech, like Cmd::Start: nothing
                         // buffered during the pause may leak into the take.
+                        live_mix.end_take();
                         if let Some(ring) = live_mix.sys_ring.as_ref() {
                             if let Ok(mut r) = ring.lock() {
                                 r.clear();
@@ -2457,18 +2494,39 @@ mod live_mix_tests {
         assert!((delivered - 0.5 * 720.0).abs() < 1e-3);
         // Then the leg is gone and the microphone is all that is left.
         assert_eq!(frame(&mut mix, 0.1), vec![0.1; 480]);
-        assert!(mix.sys_ring.is_none());
+        assert!(mix.sys_ring.is_none() && mix.draining.is_empty());
     }
 
     #[test]
-    fn adding_system_audio_again_while_it_drains_keeps_it() {
+    fn adding_system_audio_again_while_it_drains_plays_both_in_order() {
+        // Off and on again within the delay: what the old leg buffered comes first,
+        // then the new leg's audio - none lost, none laid over the other.
         let mut mix = LiveMix::new(Some(ring_with(&[0.5; 960])), 1.0);
         mix.set_system(None);
-        mix.set_system(Some(ring_with(&[0.25; 4_800])));
-        for _ in 0..5 {
-            frame(&mut mix, 0.0);
-        }
-        assert!(mix.sys_ring.is_some() && !mix.sys_draining);
+        mix.set_system(Some(ring_with(&[0.25; 960])));
+        assert_eq!(frame(&mut mix, 0.0), vec![0.5; 480]);
+        assert_eq!(frame(&mut mix, 0.0), vec![0.5; 480]);
+        assert_eq!(frame(&mut mix, 0.0), vec![0.25; 480]);
+        assert_eq!(frame(&mut mix, 0.0), vec![0.25; 480]);
+        assert!(mix.sys_ring.is_some() && mix.draining.is_empty());
+    }
+
+    #[test]
+    fn the_same_leg_sent_back_while_it_drains_stays_attached() {
+        let ring = ring_with(&[0.5; 960]);
+        let mut mix = LiveMix::new(Some(Arc::clone(&ring)), 1.0);
+        mix.set_system(None);
+        mix.set_system(Some(Arc::clone(&ring)));
+        assert!(mix.draining.is_empty());
+        assert!(mix.sys_ring.as_ref().is_some_and(|r| Arc::ptr_eq(r, &ring)));
+    }
+
+    #[test]
+    fn the_stop_tail_keeps_the_order_of_the_legs() {
+        let mut mix = LiveMix::new(Some(ring_with(&[0.5; 3])), 1.0);
+        mix.set_system(None);
+        mix.set_system(Some(ring_with(&[0.25; 2])));
+        assert_eq!(mix.drain_all(), vec![0.5, 0.5, 0.5, 0.25, 0.25]);
     }
 
     #[test]
@@ -2481,14 +2539,14 @@ mod live_mix_tests {
         );
         mix.set_system(None);
         mix.end_take();
-        assert!(mix.sys_ring.is_none());
+        assert!(mix.sys_ring.is_none() && mix.draining.is_empty());
     }
 
     #[test]
     fn removing_a_leg_that_is_not_there_changes_nothing() {
         let mut mix = LiveMix::new(None, 1.0);
         mix.set_system(None);
-        assert!(!mix.sys_draining);
+        assert!(mix.draining.is_empty());
         assert_eq!(frame(&mut mix, 0.2), vec![0.2; 480]);
     }
 }

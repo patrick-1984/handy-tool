@@ -2457,20 +2457,6 @@ export const commands = {
     }
   },
   /**
-   * The pointer came onto the recording pill, or pressed it: note the window the
-   * user dictates into (see `overlay::note_focus_before_pill`). Windows only.
-   */
-  async overlayNoteFocus(): Promise<void> {
-    await TAURI_INVOKE("overlay_note_focus");
-  },
-  /**
-   * A click or a right-click menu on the recording pill is done: hand the
-   * foreground back if the pill took it. Windows only.
-   */
-  async overlayRestoreFocus(): Promise<void> {
-    await TAURI_INVOKE("overlay_restore_focus");
-  },
-  /**
    * Flip the live text box (the overlay's T button). Returns the new state.
    */
   async toggleLiveTextBox(): Promise<Result<boolean, string>> {
@@ -2483,6 +2469,20 @@ export const commands = {
       if (e instanceof Error) throw e;
       else return { status: "error", error: e as any };
     }
+  },
+  /**
+   * The pointer came onto the recording pill, or pressed it: note the window the
+   * user dictates into (see `overlay::note_focus_before_pill`). Windows only.
+   */
+  async overlayNoteFocus(): Promise<void> {
+    await TAURI_INVOKE("overlay_note_focus");
+  },
+  /**
+   * A click or a right-click menu on the recording pill is done: hand the
+   * foreground back if the pill took it. Windows only.
+   */
+  async overlayRestoreFocus(): Promise<void> {
+    await TAURI_INVOKE("overlay_restore_focus");
   },
   /**
    * What the live text box shows: the last words, or the whole text so far.
