@@ -909,7 +909,7 @@
         "title": "Shortcut Keeper",
         "summary": "Mantiene en este PC los atajos que marques mientras una sesión de Escritorio remoto tiene el teclado, para que controlen Handy Tool aquí en lugar de llegar al equipo remoto. Todas las demás teclas van al equipo remoto como antes.",
         "label": "Mantener los atajos elegidos en este PC en Escritorio remoto (Windows)",
-        "description": "**Escritorio remoto se queda con todas las teclas mientras su sesión tiene el teclado** (en pantalla completa, o cuando las combinaciones de teclas de Windows van al equipo remoto), así que los atajos de Handy Tool dejan de funcionar ahí. Con esto activado, los atajos que marques con Mantener en este PC controlan Handy Tool aquí. Todas las demás teclas, incluidas Ctrl+C, Ctrl+V y Alt+Tab, siguen yendo al equipo remoto.\n\n**Funciona con:** Conexión a Escritorio remoto (mstsc) y la Windows App, en Windows. No con Citrix: usa en su lugar el ajuste propio de Citrix Workspace para las combinaciones de teclas de Windows.\n\n**Todavía no:** Presionar para Hablar y Deshacer la última palabra, que actúan mientras se mantiene pulsada la tecla. 'Paste last transcription' sí se puede mantener: pega en la sesión cuando sueltas las teclas.\n\n**Sin garantía:** si un atajo mantenido deja de funcionar, haz clic fuera de la sesión y luego otra vez dentro.\n\n**Privacidad:** Handy Tool vigila el teclado solo mientras una sesión de Escritorio remoto está en primer plano, reacciona solo a los atajos que marcaste y nunca guarda, registra ni envía lo que escribes.\n\n**Predeterminado:** Desactivado.",
+        "description": "**Escritorio remoto se queda con todas las teclas mientras su sesión tiene el teclado** (en pantalla completa, o cuando las combinaciones de teclas de Windows van al equipo remoto), así que los atajos de Handy Tool dejan de funcionar ahí. Con esto activado, los atajos que marques con Mantener en este PC controlan Handy Tool aquí. Todas las demás teclas, incluidas Ctrl+C, Ctrl+V y Alt+Tab, siguen yendo al equipo remoto.\n\n**Funciona con:** Conexión a Escritorio remoto (mstsc) y la Windows App, en Windows. No con Citrix: usa en su lugar el ajuste propio de Citrix Workspace para las combinaciones de teclas de Windows.\n\n**Todavía no:** Presionar para Hablar y Deshacer la última palabra, que actúan mientras se mantiene pulsada la tecla. 'Paste last transcription' sí se puede mantener: pega en la sesión cuando sueltas las teclas.\n\n**Sin garantía:** cuando un cliente vuelve a quedarse con las teclas, Shortcut Keeper lo nota en pocos segundos mientras escribes y vuelve a ponerse en primer lugar. Si un atajo mantenido sigue yendo al equipo remoto, haz clic fuera de la sesión y luego otra vez dentro.\n\n**Privacidad:** Handy Tool vigila el teclado solo mientras una sesión de Escritorio remoto está en primer plano, reacciona solo a los atajos que marcaste y nunca guarda, registra ni envía lo que escribes.\n\n**Predeterminado:** Desactivado.",
         "cjk": {
           "label": "Escribo en chino, japonés o coreano",
           "description": "**Solo entonces necesitas la nota sobre Ctrl+Espacio.** En configuraciones en chino, japonés y coreano, Ctrl+Espacio cambia el método de entrada; un Ctrl+Espacio mantenido ya no llega al equipo remoto para eso. Activa esto y un Ctrl+Espacio mantenido mostrará esa nota.\n\n**Predeterminado:** Desactivado."
@@ -2061,6 +2061,18 @@
     "release": "Versión {{version}}",
     "show": "Mostrar",
     "items": {
+      "keeperSelfHeal": {
+        "title": "Shortcut Keeper vuelve a ponerse en primer lugar",
+        "description": "Un cliente de Escritorio remoto, o un PC muy ocupado, podía desplazar de su sitio el hook de teclado de Shortcut Keeper, y entonces los atajos mantenidos iban al equipo remoto hasta que lo desactivabas y volvías a activarlo. Ahora, mientras escribes en la sesión, lo nota en pocos segundos y vuelve a ponerse en primer lugar. Solo Windows."
+      },
+      "hallucinationFilter": {
+        "title": "Ya no se pega \"Thank you.\" a partir del silencio",
+        "description": "En una grabación casi sin voz, Whisper a veces se inventa una frase hecha como \"Thank you.\" o \"Cheers.\". Una grabación que no es más que una de esas frases, con alrededor de un segundo de audio o menos, ahora se guarda en el Historial en lugar de pegarse. Si era una respuesta real, 'Paste last transcription' la pega."
+      },
+      "remoteClipboard": {
+        "title": "Transcribir y Enviar respeta el retardo del portapapeles para escritorios remotos",
+        "description": "El ajuste \"Retardo de restauración del portapapeles para escritorios remotos\" ahora también se aplica cuando Transcribir y Enviar pega en una sesión remota. Antes siempre ganaba el retardo de Transcribir y Enviar, así que una sesión remota podía recoger el portapapeles antiguo."
+      },
       "updateIcon": {
         "title": "El icono de actualización muestra en qué punto estás",
         "description": "El icono junto a la versión, abajo a la izquierda, ahora siempre está visible. Una marca verde indica que la última búsqueda no encontró nada más reciente, una flecha cian indica que hay una actualización disponible y una flecha gris indica que no hay un resultado reciente (aún no se ha buscado o la búsqueda falló): haz clic en ella para buscar actualizaciones. Al hacer clic en la versión se abren los detalles."

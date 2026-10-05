@@ -909,7 +909,7 @@
         "title": "Shortcut Keeper",
         "summary": "Giữ các phím tắt bạn đánh dấu trên máy tính này khi một phiên Máy tính Từ xa đang giữ bàn phím, để chúng điều khiển Handy Tool tại đây thay vì đi tới máy từ xa. Mọi phím khác vẫn đi tới máy từ xa như trước.",
         "label": "Giữ các phím tắt đã chọn trên máy tính này trong Máy tính Từ xa (Windows)",
-        "description": "**Máy tính Từ xa nhận mọi phím khi phiên của nó đang giữ bàn phím** (ở chế độ toàn màn hình, hoặc khi tổ hợp phím Windows được gửi tới máy từ xa), nên các phím tắt của Handy Tool không còn hoạt động ở đó. Khi bật tùy chọn này, các phím tắt bạn đánh dấu bằng Giữ trên máy tính này sẽ điều khiển Handy Tool tại đây. Mọi phím khác, kể cả Ctrl+C, Ctrl+V và Alt+Tab, vẫn đi tới máy từ xa.\n\n**Hoạt động với:** Kết nối Máy tính Từ xa (mstsc) và Windows App, trên Windows. Không hoạt động với Citrix: hãy dùng cài đặt riêng của Citrix Workspace cho tổ hợp phím Windows.\n\n**Chưa hỗ trợ:** nhấn để nói và Hoàn tác từ cuối, vốn hoạt động trong khi giữ phím. Dán bản phiên âm gần nhất thì có thể giữ lại: nó dán vào phiên khi bạn nhả phím.\n\n**Không bảo đảm:** nếu một phím tắt đã giữ ngừng hoạt động, hãy bấm ra ngoài phiên rồi bấm lại vào trong.\n\n**Quyền riêng tư:** Handy Tool chỉ theo dõi bàn phím khi một phiên Máy tính Từ xa ở phía trước, chỉ phản ứng với các phím tắt bạn đã đánh dấu, và không bao giờ lưu, ghi nhật ký hay gửi đi những gì bạn gõ.\n\n**Mặc định:** Tắt.",
+        "description": "**Máy tính Từ xa nhận mọi phím khi phiên của nó đang giữ bàn phím** (ở chế độ toàn màn hình, hoặc khi tổ hợp phím Windows được gửi tới máy từ xa), nên các phím tắt của Handy Tool không còn hoạt động ở đó. Khi bật tùy chọn này, các phím tắt bạn đánh dấu bằng Giữ trên máy tính này sẽ điều khiển Handy Tool tại đây. Mọi phím khác, kể cả Ctrl+C, Ctrl+V và Alt+Tab, vẫn đi tới máy từ xa.\n\n**Hoạt động với:** Kết nối Máy tính Từ xa (mstsc) và Windows App, trên Windows. Không hoạt động với Citrix: hãy dùng cài đặt riêng của Citrix Workspace cho tổ hợp phím Windows.\n\n**Chưa hỗ trợ:** nhấn để nói và Hoàn tác từ cuối, vốn hoạt động trong khi giữ phím. Dán bản phiên âm gần nhất thì có thể giữ lại: nó dán vào phiên khi bạn nhả phím.\n\n**Không bảo đảm:** khi một ứng dụng khách giành lại các phím, Shortcut Keeper nhận ra trong vài giây khi bạn gõ và tự trở lại phía trước. Nếu một phím tắt đã giữ vẫn đi tới máy từ xa, hãy bấm ra ngoài phiên rồi bấm lại vào trong.\n\n**Quyền riêng tư:** Handy Tool chỉ theo dõi bàn phím khi một phiên Máy tính Từ xa ở phía trước, chỉ phản ứng với các phím tắt bạn đã đánh dấu, và không bao giờ lưu, ghi nhật ký hay gửi đi những gì bạn gõ.\n\n**Mặc định:** Tắt.",
         "cjk": {
           "label": "Tôi gõ tiếng Trung, tiếng Nhật hoặc tiếng Hàn",
           "description": "**Chỉ khi đó bạn mới cần ghi chú về Ctrl+Space.** Trên các thiết lập tiếng Trung, tiếng Nhật và tiếng Hàn, Ctrl+Space chuyển phương thức nhập; Ctrl+Space đã giữ trên máy tính này sẽ không còn tới máy từ xa cho việc đó nữa. Bật tùy chọn này thì Ctrl+Space đã giữ sẽ hiển thị ghi chú đó.\n\n**Mặc định:** Tắt."
@@ -2061,6 +2061,18 @@
     "release": "Phiên bản {{version}}",
     "show": "Hiện cho tôi",
     "items": {
+      "keeperSelfHeal": {
+        "title": "Shortcut Keeper tự trở lại phía trước",
+        "description": "Một ứng dụng khách Máy tính Từ xa, hoặc một máy tính đang bận, có thể đẩy móc bàn phím của Shortcut Keeper ra khỏi hàng, và khi đó các phím tắt đã giữ đi tới máy từ xa cho đến khi bạn tắt rồi bật lại nó. Giờ đây, trong khi bạn gõ trong phiên, nó nhận ra điều này trong vài giây và tự trở lại phía trước. Chỉ Windows."
+      },
+      "hallucinationFilter": {
+        "title": "Không còn dán \"Thank you.\" từ khoảng lặng",
+        "description": "Với một bản ghi gần như không có lời nói, Whisper đôi khi tự bịa ra một câu quen thuộc như \"Thank you.\" hoặc \"Cheers.\". Một bản ghi chỉ có một câu như vậy, với khoảng một giây âm thanh trở xuống, giờ được giữ trong Lịch sử thay vì được dán. Nếu đó là câu trả lời thật, Dán bản phiên âm gần nhất sẽ dán nó vào."
+      },
+      "remoteClipboard": {
+        "title": "Phiên âm & Gửi tuân theo độ trễ khay nhớ tạm cho máy tính từ xa",
+        "description": "Độ trễ khôi phục khay nhớ tạm cho máy tính từ xa giờ cũng áp dụng khi Phiên âm & Gửi dán vào một phiên từ xa. Trước đây, độ trễ của Phiên âm & Gửi luôn được ưu tiên, nên một phiên từ xa có thể lấy nội dung khay nhớ tạm cũ."
+      },
       "updateIcon": {
         "title": "Biểu tượng cập nhật cho biết tình trạng hiện tại",
         "description": "Biểu tượng cạnh số phiên bản ở góc dưới bên trái giờ luôn hiển thị. Dấu tích xanh lá nghĩa là lần kiểm tra gần nhất không tìm thấy phiên bản mới hơn, mũi tên xanh lơ nghĩa là có bản cập nhật, còn mũi tên xám nghĩa là chưa có kết quả gần đây (chưa kiểm tra hoặc lần kiểm tra bị lỗi): bấm vào để kiểm tra. Bấm vào số phiên bản để mở chi tiết."

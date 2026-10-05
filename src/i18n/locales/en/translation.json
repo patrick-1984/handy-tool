@@ -2067,7 +2067,7 @@
       },
       "hallucinationFilter": {
         "title": "No more \"Thank you.\" pasted from silence",
-        "description": "On a take with almost no speech, Whisper sometimes invents a stock phrase such as \"Thank you.\" or \"Cheers.\". A take that is nothing but such a phrase, with under 2.5 seconds of speech, is now kept in History instead of being pasted."
+        "description": "On a take with almost no speech, Whisper sometimes invents a stock phrase such as \"Thank you.\" or \"Cheers.\". A take that is nothing but such a phrase, with about a second of audio or less, is now kept in History instead of being pasted. If it was a real reply, Paste Last puts it in."
       },
       "remoteClipboard": {
         "title": "Transcribe & Submit honours the remote clipboard delay",

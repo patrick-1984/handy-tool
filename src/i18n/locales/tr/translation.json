@@ -909,7 +909,7 @@
         "title": "Kısayol Koruyucu",
         "summary": "İşaretlediğiniz kısayolları, klavye bir Uzak Masaüstü oturumundayken bu bilgisayarda tutar; böylece uzak bilgisayara ulaşmak yerine burada Handy Tool'u çalıştırırlar. Diğer tüm tuşlar eskisi gibi uzak bilgisayara gider.",
         "label": "Seçilen kısayolları Uzak Masaüstü'nde bu bilgisayarda tut (Windows)",
-        "description": "**Klavye bir Uzak Masaüstü oturumundayken Uzak Masaüstü her tuşu alır** (tam ekranda veya Windows tuş birleşimleri uzak bilgisayara gönderildiğinde), bu yüzden Handy Tool'un kısayolları orada çalışmaz. Bu açıkken, Bu bilgisayarda tut seçeneğiyle işaretlediğiniz kısayollar burada Handy Tool'u çalıştırır. Ctrl+C, Ctrl+V ve Alt+Tab dahil diğer tüm tuşlar yine uzak bilgisayara gider.\n\n**Şunlarla çalışır:** Windows'ta Uzak Masaüstü Bağlantısı (mstsc) ve Windows App. Citrix ile çalışmaz: bunun yerine Citrix Workspace'in Windows tuş birleşimleri için kendi ayarını kullanın.\n\n**Henüz değil:** Bas Konuş ve Son kelimeyi geri al; bunlar tuş basılı tutulurken çalışır. Son Transkripsiyonu Yapıştır tutulabilir: tuşları bıraktığınızda oturuma yapıştırır.\n\n**Garanti yok:** tutulan bir kısayol çalışmayı bırakırsa oturumun dışına, sonra yeniden içine tıklayın.\n\n**Gizlilik:** Handy Tool klavyeyi yalnızca bir Uzak Masaüstü oturumu öndeyken izler, yalnızca işaretlediğiniz kısayollara tepki verir ve yazdıklarınızı asla saklamaz, günlüğe kaydetmez veya göndermez.\n\n**Varsayılan:** Kapalı.",
+        "description": "**Klavye bir Uzak Masaüstü oturumundayken Uzak Masaüstü her tuşu alır** (tam ekranda veya Windows tuş birleşimleri uzak bilgisayara gönderildiğinde), bu yüzden Handy Tool'un kısayolları orada çalışmaz. Bu açıkken, Bu bilgisayarda tut seçeneğiyle işaretlediğiniz kısayollar burada Handy Tool'u çalıştırır. Ctrl+C, Ctrl+V ve Alt+Tab dahil diğer tüm tuşlar yine uzak bilgisayara gider.\n\n**Şunlarla çalışır:** Windows'ta Uzak Masaüstü Bağlantısı (mstsc) ve Windows App. Citrix ile çalışmaz: bunun yerine Citrix Workspace'in Windows tuş birleşimleri için kendi ayarını kullanın.\n\n**Henüz değil:** Bas Konuş ve Son kelimeyi geri al; bunlar tuş basılı tutulurken çalışır. Son Transkripsiyonu Yapıştır tutulabilir: tuşları bıraktığınızda oturuma yapıştırır.\n\n**Garanti yok:** bir istemci tuşları geri aldığında Kısayol Koruyucu, siz yazarken bunu birkaç saniye içinde fark eder ve yeniden öne geçer. Tutulan bir kısayol yine de uzak bilgisayara giderse oturumun dışına, sonra yeniden içine tıklayın.\n\n**Gizlilik:** Handy Tool klavyeyi yalnızca bir Uzak Masaüstü oturumu öndeyken izler, yalnızca işaretlediğiniz kısayollara tepki verir ve yazdıklarınızı asla saklamaz, günlüğe kaydetmez veya göndermez.\n\n**Varsayılan:** Kapalı.",
         "cjk": {
           "label": "Çince, Japonca veya Korece yazıyorum",
           "description": "**Ctrl+Space notu yalnızca bu durumda gerekir.** Çince, Japonca ve Korece kurulumlarda Ctrl+Space giriş yöntemini değiştirir; tutulan bir Ctrl+Space bunun için artık uzak bilgisayara ulaşmaz. Bunu açarsanız tutulan bir Ctrl+Space o notu gösterir.\n\n**Varsayılan:** Kapalı."
@@ -2061,6 +2061,18 @@
     "release": "Sürüm {{version}}",
     "show": "Göster",
     "items": {
+      "keeperSelfHeal": {
+        "title": "Kısayol Koruyucu kendiliğinden yeniden öne geçer",
+        "description": "Bir Uzak Masaüstü istemcisi veya meşgul bir bilgisayar, Kısayol Koruyucu'nun klavye kancasını sıradan itebiliyordu; tutulan kısayollar da siz onu kapatıp yeniden açana kadar uzak bilgisayara gidiyordu. Artık siz oturumda yazarken bunu birkaç saniye içinde fark eder ve yeniden öne geçer. Yalnızca Windows."
+      },
+      "hallucinationFilter": {
+        "title": "Sessizlikten artık \"Thank you.\" yapıştırılmıyor",
+        "description": "Neredeyse hiç konuşma olmayan bir kayıtta Whisper bazen \"Thank you.\" veya \"Cheers.\" gibi kalıp bir ifade uydurur. Yalnızca böyle bir ifadeden oluşan ve yaklaşık bir saniye ya da daha kısa ses içeren bir kayıt artık yapıştırılmak yerine Geçmiş'te tutulur. Gerçek bir yanıttıysa Son Transkripsiyonu Yapıştır onu yapıştırır."
+      },
+      "remoteClipboard": {
+        "title": "Transkribe Et ve Gönder uzak masaüstü pano gecikmesine uyar",
+        "description": "Uzak masaüstleri için pano geri yükleme gecikmesi artık Transkribe Et ve Gönder bir uzak oturuma yapıştırdığında da geçerlidir. Önceden her zaman Transkribe Et ve Gönder gecikmesi geçerli oluyordu, bu yüzden uzak oturum eski pano içeriğini alabiliyordu."
+      },
       "updateIcon": {
         "title": "Güncelleme simgesi durumunuzu gösterir",
         "description": "Sol alttaki sürümün yanındaki simge artık her zaman görünür. Yeşil onay işareti son denetimin daha yeni bir şey bulmadığını, camgöbeği ok bir güncelleme olduğunu, gri ok ise güncel bir sonuç olmadığını (henüz denetlenmedi ya da denetim başarısız oldu) gösterir: denetlemek için oka tıklayın. Sürüme tıklamak ayrıntıları açar."

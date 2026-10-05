@@ -909,7 +909,7 @@
         "title": "Shortcut Keeper",
         "summary": "Mantiene su questo PC le scorciatoie che selezioni mentre una sessione di Desktop remoto ha la tastiera, così controllano Handy Tool qui invece di arrivare al computer remoto. Tutti gli altri tasti vanno al computer remoto come prima.",
         "label": "Mantieni su questo PC le scorciatoie scelte in Desktop remoto (Windows)",
-        "description": "**Desktop remoto prende ogni tasto finché la sua sessione ha la tastiera** (a schermo intero, o quando le combinazioni di tasti di Windows vanno al computer remoto), quindi lì le scorciatoie di Handy Tool smettono di funzionare. Con questa opzione attiva, le scorciatoie che selezioni con Mantieni su questo PC controllano Handy Tool qui. Ogni altro tasto, Ctrl+C, Ctrl+V e Alt+Tab compresi, va ancora al computer remoto.\n\n**Funziona con:** Connessione Desktop remoto (mstsc) e la Windows App, su Windows. Non con Citrix: usa invece l'impostazione di Citrix Workspace per le combinazioni di tasti di Windows.\n\n**Non ancora:** Premi per Parlare e Annulla l'ultima parola, che agiscono mentre il tasto è premuto. Paste last transcription si può mantenere: incolla nella sessione quando rilasci i tasti.\n\n**Senza garanzia:** se una scorciatoia mantenuta smette di funzionare, fai clic fuori dalla sessione e poi di nuovo dentro.\n\n**Privacy:** Handy Tool osserva la tastiera solo mentre una sessione di Desktop remoto è in primo piano, reagisce solo alle scorciatoie che hai selezionato e non salva, registra né invia mai ciò che digiti.\n\n**Predefinito:** Disattivato.",
+        "description": "**Desktop remoto prende ogni tasto finché la sua sessione ha la tastiera** (a schermo intero, o quando le combinazioni di tasti di Windows vanno al computer remoto), quindi lì le scorciatoie di Handy Tool smettono di funzionare. Con questa opzione attiva, le scorciatoie che selezioni con Mantieni su questo PC controllano Handy Tool qui. Ogni altro tasto, Ctrl+C, Ctrl+V e Alt+Tab compresi, va ancora al computer remoto.\n\n**Funziona con:** Connessione Desktop remoto (mstsc) e la Windows App, su Windows. Non con Citrix: usa invece l'impostazione di Citrix Workspace per le combinazioni di tasti di Windows.\n\n**Non ancora:** Premi per Parlare e Annulla l'ultima parola, che agiscono mentre il tasto è premuto. Paste last transcription si può mantenere: incolla nella sessione quando rilasci i tasti.\n\n**Senza garanzia:** quando un client si riprende i tasti, Shortcut Keeper se ne accorge in pochi secondi mentre digiti e si rimette al primo posto. Se una scorciatoia mantenuta va ancora al computer remoto, fai clic fuori dalla sessione e poi di nuovo dentro.\n\n**Privacy:** Handy Tool osserva la tastiera solo mentre una sessione di Desktop remoto è in primo piano, reagisce solo alle scorciatoie che hai selezionato e non salva, registra né invia mai ciò che digiti.\n\n**Predefinito:** Disattivato.",
         "cjk": {
           "label": "Scrivo in cinese, giapponese o coreano",
           "description": "**Solo in quel caso ti serve la nota su Ctrl+Spazio.** Nelle configurazioni in cinese, giapponese e coreano Ctrl+Spazio cambia il metodo di input; un Ctrl+Spazio mantenuto non arriva più al computer remoto per farlo. Attiva questa opzione e un Ctrl+Spazio mantenuto mostrerà quella nota.\n\n**Predefinito:** Disattivato."
@@ -2061,6 +2061,18 @@
     "release": "Versione {{version}}",
     "show": "Mostra",
     "items": {
+      "keeperSelfHeal": {
+        "title": "Shortcut Keeper si rimette al primo posto",
+        "description": "Un client di Desktop remoto, o un PC molto occupato, poteva spostare fuori posto l'hook della tastiera di Shortcut Keeper, e le scorciatoie mantenute andavano allora al computer remoto finché non lo disattivavi e riattivavi. Ora, mentre digiti nella sessione, se ne accorge in pochi secondi e si rimette al primo posto. Solo Windows."
+      },
+      "hallucinationFilter": {
+        "title": "Niente più \"Thank you.\" incollato dal silenzio",
+        "description": "In una registrazione quasi senza parlato, Whisper a volte inventa una frase fatta come \"Thank you.\" o \"Cheers.\". Una registrazione che contiene solo una frase del genere, con circa un secondo di audio o meno, ora resta nella Cronologia invece di essere incollata. Se era una risposta vera, Paste last transcription la incolla."
+      },
+      "remoteClipboard": {
+        "title": "Trascrivi e Invia rispetta il ritardo degli appunti per i desktop remoti",
+        "description": "L'impostazione \"Ritardo di ripristino degli appunti per i desktop remoti\" ora si applica anche quando Trascrivi e Invia incolla in una sessione remota. Prima vinceva sempre il ritardo di Trascrivi e Invia, quindi una sessione remota poteva prendere i vecchi appunti."
+      },
       "updateIcon": {
         "title": "L'icona di aggiornamento mostra a che punto sei",
         "description": "L'icona accanto alla versione, in basso a sinistra, ora è sempre visibile. Un segno di spunta verde indica che l'ultimo controllo non ha trovato nulla di più recente, una freccia ciano indica che è disponibile un aggiornamento e una freccia grigia indica che non c'è un risultato recente (controllo non ancora eseguito o non riuscito): fai clic per controllare. Facendo clic sulla versione si aprono i dettagli."

@@ -892,7 +892,7 @@
         "title": "Guardião de Atalhos",
         "summary": "Mantém neste PC os atalhos que você marcar enquanto uma sessão de Área de Trabalho Remota tem o teclado, para que acionem o Handy Tool aqui em vez de chegarem ao computador remoto. Todas as outras teclas vão para o computador remoto como antes.",
         "label": "Manter os atalhos escolhidos neste PC na Área de Trabalho Remota (Windows)",
-        "description": "**A Área de Trabalho Remota fica com todas as teclas enquanto a sessão dela tem o teclado** (em tela cheia, ou quando as combinações de teclas do Windows vão para o computador remoto), então os atalhos do Handy Tool param de funcionar ali. Com isto ativado, os atalhos que você marcar com Manter neste PC acionam o Handy Tool aqui. Todas as outras teclas, incluindo Ctrl+C, Ctrl+V e Alt+Tab, continuam indo para o computador remoto.\n\n**Funciona com:** Conexão de Área de Trabalho Remota (mstsc) e o Windows App, no Windows. Não com Citrix: use em vez disso a configuração do próprio Citrix Workspace para combinações de teclas do Windows.\n\n**Ainda não:** Pressionar para Falar e Desfazer a última palavra, que agem enquanto a tecla está pressionada. Paste last transcription pode ser mantido: ele cola na sessão quando você solta as teclas.\n\n**Sem garantia:** se um atalho mantido parar de funcionar, clique fora da sessão e depois dentro dela de novo.\n\n**Privacidade:** o Handy Tool observa o teclado só enquanto uma sessão de Área de Trabalho Remota está em primeiro plano, reage só aos atalhos que você marcou e nunca guarda, registra nem envia o que você digita.\n\n**Padrão:** Desativado.",
+        "description": "**A Área de Trabalho Remota fica com todas as teclas enquanto a sessão dela tem o teclado** (em tela cheia, ou quando as combinações de teclas do Windows vão para o computador remoto), então os atalhos do Handy Tool param de funcionar ali. Com isto ativado, os atalhos que você marcar com Manter neste PC acionam o Handy Tool aqui. Todas as outras teclas, incluindo Ctrl+C, Ctrl+V e Alt+Tab, continuam indo para o computador remoto.\n\n**Funciona com:** Conexão de Área de Trabalho Remota (mstsc) e o Windows App, no Windows. Não com Citrix: use em vez disso a configuração do próprio Citrix Workspace para combinações de teclas do Windows.\n\n**Ainda não:** Pressionar para Falar e Desfazer a última palavra, que agem enquanto a tecla está pressionada. Paste last transcription pode ser mantido: ele cola na sessão quando você solta as teclas.\n\n**Sem garantia:** quando um cliente toma as teclas de volta, o Guardião de Atalhos percebe isso em poucos segundos enquanto você digita e volta para a frente. Se um atalho mantido ainda for para o computador remoto, clique fora da sessão e depois dentro dela de novo.\n\n**Privacidade:** o Handy Tool observa o teclado só enquanto uma sessão de Área de Trabalho Remota está em primeiro plano, reage só aos atalhos que você marcou e nunca guarda, registra nem envia o que você digita.\n\n**Padrão:** Desativado.",
         "cjk": {
           "label": "Eu digito em chinês, japonês ou coreano",
           "description": "**Só nesse caso você precisa da nota sobre Ctrl+Space.** Em configurações em chinês, japonês e coreano, Ctrl+Space troca o método de entrada; um Ctrl+Space mantido deixa de chegar ao computador remoto para isso. Ative isto e um Ctrl+Space mantido mostra essa nota.\n\n**Padrão:** Desativado."
@@ -2061,6 +2061,18 @@
     "release": "Versão {{version}}",
     "show": "Mostrar",
     "items": {
+      "keeperSelfHeal": {
+        "title": "O Guardião de Atalhos volta para a frente sozinho",
+        "description": "Um cliente de Área de Trabalho Remota, ou um PC ocupado, podia tirar o gancho de teclado do Guardião de Atalhos da fila, e os atalhos mantidos então iam para o computador remoto até você desativá-lo e ativá-lo de novo. Agora, enquanto você digita na sessão, ele percebe isso em poucos segundos e volta para a frente. Só Windows."
+      },
+      "hallucinationFilter": {
+        "title": "\"Thank you.\" não é mais colado a partir do silêncio",
+        "description": "Em uma gravação quase sem fala, o Whisper às vezes inventa uma frase pronta como \"Thank you.\" ou \"Cheers.\". Uma gravação que é só uma frase dessas, com cerca de um segundo de áudio ou menos, agora fica no Histórico em vez de ser colada. Se era uma resposta de verdade, Paste last transcription a cola."
+      },
+      "remoteClipboard": {
+        "title": "Transcrever e Enviar respeita o atraso da área de transferência para ambientes remotos",
+        "description": "O Atraso de restauro da área de transferência para ambientes de trabalho remotos agora também vale quando Transcrever e Enviar cola em uma sessão remota. Antes, o atraso de Transcrever e Enviar sempre prevalecia, então uma sessão remota podia buscar a área de transferência antiga."
+      },
       "updateIcon": {
         "title": "O ícone de atualização mostra em que pé você está",
         "description": "O ícone ao lado da versão, no canto inferior esquerdo, agora fica sempre visível. Uma marca de seleção verde indica que a última verificação não encontrou nada mais novo, uma seta ciano indica que há uma atualização disponível e uma seta cinza indica que não há um resultado recente (ainda não verificado, ou a verificação falhou): clique nela para verificar. Clicar na versão abre os detalhes."

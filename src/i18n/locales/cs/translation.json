@@ -909,7 +909,7 @@
         "title": "Strážce zkratek",
         "summary": "Ponechá zkratky, které zaškrtnete, na tomto počítači, zatímco klávesnici má relace Vzdálené plochy, takže ovládají Handy Tool zde, místo aby došly do vzdáleného počítače. Všechny ostatní klávesy jdou do vzdáleného počítače jako dosud.",
         "label": "Ponechat vybrané zkratky ve Vzdálené ploše na tomto počítači (Windows)",
-        "description": "**Vzdálená plocha zabírá každou klávesu, dokud má její relace klávesnici** (na celé obrazovce nebo když kombinace kláves Windows jdou do vzdáleného počítače), takže zkratky Handy Tool tam přestanou fungovat. Když je toto zapnuto, zkratky zaškrtnuté volbou Ponechat na tomto počítači ovládají Handy Tool zde. Každá jiná klávesa, včetně Ctrl+C, Ctrl+V a Alt+Tab, jde dál do vzdáleného počítače.\n\n**Funguje s:** aplikacemi Připojení ke vzdálené ploše (mstsc) a Windows App ve Windows. Ne s klientem Citrix: místo toho použijte vlastní nastavení Citrix Workspace pro kombinace kláves Windows.\n\n**Zatím ne:** Stisk a mluv a Vrátit poslední slovo, které působí, dokud klávesu držíte. Vložit poslední přepis ponechat lze: vloží text do relace, když klávesy pustíte.\n\n**Bez záruky:** pokud ponechaná zkratka přestane fungovat, klikněte mimo relaci a pak zpět do ní.\n\n**Soukromí:** Handy Tool sleduje klávesnici jen tehdy, když je relace Vzdálené plochy v popředí, reaguje jen na zkratky, které jste zaškrtli, a nikdy neukládá, nezaznamenává ani neodesílá, co píšete.\n\n**Výchozí:** Vypnuto.",
+        "description": "**Vzdálená plocha zabírá každou klávesu, dokud má její relace klávesnici** (na celé obrazovce nebo když kombinace kláves Windows jdou do vzdáleného počítače), takže zkratky Handy Tool tam přestanou fungovat. Když je toto zapnuto, zkratky zaškrtnuté volbou Ponechat na tomto počítači ovládají Handy Tool zde. Každá jiná klávesa, včetně Ctrl+C, Ctrl+V a Alt+Tab, jde dál do vzdáleného počítače.\n\n**Funguje s:** aplikacemi Připojení ke vzdálené ploše (mstsc) a Windows App ve Windows. Ne s klientem Citrix: místo toho použijte vlastní nastavení Citrix Workspace pro kombinace kláves Windows.\n\n**Zatím ne:** Stisk a mluv a Vrátit poslední slovo, které působí, dokud klávesu držíte. Vložit poslední přepis ponechat lze: vloží text do relace, když klávesy pustíte.\n\n**Bez záruky:** když si klient vzdálené plochy klávesy znovu vezme, Strážce zkratek si toho při psaní během několika sekund všimne a sám se vrátí na první místo. Pokud ponechaná zkratka přesto jde do vzdáleného počítače, klikněte mimo relaci a pak zpět do ní.\n\n**Soukromí:** Handy Tool sleduje klávesnici jen tehdy, když je relace Vzdálené plochy v popředí, reaguje jen na zkratky, které jste zaškrtli, a nikdy neukládá, nezaznamenává ani neodesílá, co píšete.\n\n**Výchozí:** Vypnuto.",
         "cjk": {
           "label": "Píšu čínsky, japonsky nebo korejsky",
           "description": "**Jen pak potřebujete poznámku o Ctrl+Space.** V čínském, japonském a korejském nastavení Ctrl+Space přepíná metodu zadávání; ponechaná Ctrl+Space kvůli tomu už do vzdáleného počítače nedorazí. Když toto zapnete, ponechaná Ctrl+Space tu poznámku zobrazí.\n\n**Výchozí:** Vypnuto."
@@ -2061,6 +2061,18 @@
     "release": "Verze {{version}}",
     "show": "Ukázat",
     "items": {
+      "keeperSelfHeal": {
+        "title": "Strážce zkratek se sám vrátí na první místo",
+        "description": "Klient vzdálené plochy nebo vytížený počítač mohl Strážce zkratek odsunout z jeho místa ve zpracování kláves a ponechané zkratky pak šly do vzdáleného počítače, dokud jste ho nevypnuli a znovu nezapnuli. Teď si toho při psaní v relaci během několika sekund všimne a sám se vrátí na první místo. Jen Windows."
+      },
+      "hallucinationFilter": {
+        "title": "Žádné „Thank you.“ vložené z ticha",
+        "description": "U nahrávky téměř bez řeči si Whisper někdy vymyslí ustálenou frázi jako „Thank you.“ nebo „Cheers.“. Nahrávka, která obsahuje jen takovou frázi a zhruba sekundu zvuku nebo méně, se teď uloží do historie, místo aby se vložila. Pokud šlo o skutečnou odpověď, Vložit poslední přepis ji vloží."
+      },
+      "remoteClipboard": {
+        "title": "Přepsat a odeslat respektuje zpoždění schránky pro vzdálené plochy",
+        "description": "Nastavení „Zpoždění obnovení schránky pro vzdálené plochy“ teď platí i tehdy, když Přepsat a odeslat vkládá do vzdálené relace. Dříve mělo vždy přednost zpoždění pro Přepsat a odeslat, takže si vzdálená relace mohla vyzvednout starý obsah schránky."
+      },
       "updateIcon": {
         "title": "Ikona aktualizace ukazuje, jak na tom jste",
         "description": "Ikona vedle verze vlevo dole je nyní vidět vždy. Zelené zaškrtnutí znamená, že poslední kontrola nenašla nic novějšího, azurová šipka znamená, že je k dispozici aktualizace, a šedá šipka znamená, že není k dispozici žádný nedávný výsledek (kontrola ještě neproběhla nebo selhala): kliknutím na ni kontrolu spustíte. Kliknutím na verzi otevřete podrobnosti."
