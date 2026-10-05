@@ -921,15 +921,35 @@ fn samples_to_seconds(n: usize) -> f64 {
     n as f64 / 16_000.0
 }
 
-/// Under this much kept speech, a take whose whole text is a phrase Whisper
-/// invents on silence is not pasted.
-const HALLUCINATION_MAX_SECS: f64 = 2.5;
+/// Under this much kept audio, a Whisper take whose whole text is a phrase
+/// Whisper invents on silence is not pasted. Every kept burst carries ~0.9 s of
+/// speech-detector padding, so a real "Thank you" keeps more than this.
+const HALLUCINATION_MAX_SECS: f64 = 1.1;
 
 /// A near-silent take that Whisper turned into "Thank you." or "Cheers.": it
-/// stays in History, but nothing is pasted.
-fn hallucinated_take(text: &str, kept_samples: usize) -> bool {
-    let hit = samples_to_seconds(kept_samples) < HALLUCINATION_MAX_SECS
-        && crate::audio_toolkit::text::is_stock_hallucination(text);
+/// stays in History (and Paste Last), but nothing is pasted. Only for the
+/// Whisper family; the other engines do not invent these.
+fn hallucinated_take(app: &AppHandle, text: &str, kept_samples: usize) -> bool {
+    use crate::managers::model::EngineType;
+    if samples_to_seconds(kept_samples) >= HALLUCINATION_MAX_SECS
+        || !crate::audio_toolkit::text::is_stock_hallucination(text)
+    {
+        return false;
+    }
+    let selected = get_settings(app).selected_model;
+    let engine = app
+        .try_state::<Arc<crate::managers::model::ModelManager>>()
+        .and_then(|mm| mm.get_model_info(&selected))
+        .map(|mi| mi.engine_type);
+    let hit = !matches!(
+        engine,
+        Some(
+            EngineType::Parakeet
+                | EngineType::Moonshine
+                | EngineType::MoonshineStreaming
+                | EngineType::SenseVoice
+        )
+    );
     if hit {
         info!(
             "Not pasting \"{}\": {:.1} s of speech, a phrase Whisper invents on silence (kept in History)",
@@ -2109,7 +2129,13 @@ impl ShortcutAction for TranscribeAction {
                     }
                     // Off the event loop on Windows (long remote jump delays);
                     // on the main thread elsewhere (enigo). See dispatch_delivery.
-                    let silent = silent || hallucinated_take(&raw_text, total_samples as usize);
+                    let hallucinated =
+                        !silent && hallucinated_take(&ah, &raw_text, total_samples as usize);
+                    if hallucinated {
+                        // Not pasted, but one Paste Last press puts it in.
+                        set_last_transcription(&delivered);
+                    }
+                    let silent = silent || hallucinated;
                     dispatch_delivery(
                         ah.clone(),
                         delivered,
@@ -2445,7 +2471,13 @@ impl ShortcutAction for TranscribeAction {
                             if after_stop {
                                 show_text_after_stop(&ah, &final_text);
                             }
-                            let silent = silent || hallucinated_take(&transcription, effective_len);
+                            let hallucinated =
+                                !silent && hallucinated_take(&ah, &transcription, effective_len);
+                            if hallucinated {
+                                // Not pasted, but one Paste Last press puts it in.
+                                set_last_transcription(&delivered);
+                            }
+                            let silent = silent || hallucinated;
                             dispatch_delivery(
                                 ah.clone(),
                                 delivered,

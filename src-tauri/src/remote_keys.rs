@@ -692,6 +692,7 @@ mod win {
     static HOOK_CALLS: AtomicU32 = AtomicU32::new(0);
     /// No more often than this does the tick put the hook back in front.
     const HEAL_EVERY: Duration = Duration::from_secs(10);
+    const HEAL_EVERY_UNHEARD: Duration = Duration::from_secs(60);
 
     struct Candidate {
         chord: Chord,
@@ -735,6 +736,9 @@ mod win {
         seen_calls: u32,
         last_heard: u32,
         last_heal: Option<Instant>,
+        /// HOOK_CALLS at the last heal: if no key was heard since, the next
+        /// heal waits longer (mouse-only use looks like a lost hook).
+        calls_at_heal: u32,
     }
 
     thread_local! {
@@ -816,6 +820,7 @@ mod win {
                 seen_calls: 0,
                 last_heard: 0,
                 last_heal: None,
+                calls_at_heal: 0,
             })
         });
         THREAD_ID.store(unsafe { GetCurrentThreadId() }, Ordering::SeqCst);
@@ -1058,11 +1063,18 @@ mod win {
             k.last_heard = now;
             return;
         }
+        // Nothing heard since the last heal: it was probably the mouse, so
+        // wait longer before trying again.
+        let gap = if calls == k.calls_at_heal {
+            HEAL_EVERY_UNHEARD
+        } else {
+            HEAL_EVERY
+        };
         if k.armed.is_none()
             || k.hook.is_none()
             || k.attempt_timer != 0
             || k.keys.owns_any()
-            || k.last_heal.is_some_and(|t| t.elapsed() < HEAL_EVERY)
+            || k.last_heal.is_some_and(|t| t.elapsed() < gap)
         {
             return;
         }
@@ -1084,6 +1096,7 @@ mod win {
             now.wrapping_sub(k.last_heard) / 1000
         );
         k.last_heal = Some(Instant::now());
+        k.calls_at_heal = calls;
         attempt(k);
     }
 

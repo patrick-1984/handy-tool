@@ -16,8 +16,9 @@ Transcribe & Submit honours the remote clipboard delay.
   seconds, never while a key is held, and never when you are idle.
 - **No more "Thank you." pasted from silence.** On a take with almost no speech, Whisper sometimes
   invents a stock phrase ("Thank you.", "Cheers.", "Thanks for watching", subtitle credits). A take
-  that is nothing but such a phrase, with under 2.5 seconds of speech, is kept in History instead
-  of being pasted. Real short dictations are not affected.
+  that is nothing but such a phrase, with about a second of audio or less, is kept in History
+  instead of being pasted (Whisper-family engines only). A real spoken "Thank you" keeps more audio
+  and is pasted as usual; if one is ever held back, Paste Last puts it in.
 - **Transcribe & Submit honours the remote clipboard delay.** `Clipboard restore delay for remote
 desktops` now wins over the Transcribe & Submit delay when the target is a remote session;
   before, the Transcribe & Submit value always won, so the remote session could fetch the old

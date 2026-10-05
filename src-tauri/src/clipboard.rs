@@ -311,8 +311,9 @@ fn pre_submit_total_ms(
 /// Extra wait before restoring the original clipboard.
 ///
 /// `remote_override` is `None` for "inherit", so a user who has never touched
-/// the remote control keeps byte-identical behaviour. A per-flow submit override
-/// still wins over both, because that is an explicit per-shortcut choice.
+/// the remote control keeps byte-identical behaviour. Order: for a remote
+/// target the remote delay (when set); otherwise the per-flow submit override;
+/// otherwise the global delay.
 fn restore_extra_for_target(
     submit_override_ms: Option<u64>,
     remote: bool,
