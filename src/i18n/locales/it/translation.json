@@ -2084,10 +2084,6 @@
       "hotkeyRelease": {
         "title": "Tenere premuta una scorciatoia non tiene più occupato un core del processore",
         "description": "Su Windows, mentre tenevi premuta una scorciatoia (per esempio Premi per Parlare), Handy Tool controllava senza sosta se l'avevi rilasciata, tenendo un core del processore completamente occupato. Ora controlla ogni 10 ms."
-      },
-      "endOfTakeKept": {
-        "title": "La fine di una registrazione si conserva in modo più affidabile",
-        "description": "Allo stop vengono conservati fino a 3 secondi che il rilevatore vocale non aveva ancora accettato, nella registrazione e nel testo, se contengono suono a livello di voce. Le parole non si ripetono più dopo una ripresa rapida e Whisper omette meno spesso l'ultima parola di un segmento."
       }
     },
     "installed": "Installata"

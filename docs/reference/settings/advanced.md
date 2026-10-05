@@ -64,7 +64,7 @@ Catalog: [Your remote session pastes the right thing](../../features.md#your-rem
 
 `Transcription › Transcribe › Clipboard restore delay for remote desktops` _{Windows only}_
 
-Overrides the restore delay when the delivery target is classified remote by [Remote match strings](jumper.md#remote-match-strings). `Not set` inherits the value above — and is the default, so this control changes nothing until you pick a value. The remaining choices match the delay above. Raising it trades exposure for reliability: the transcript stays on your clipboard longer. **Default:** `Not set`.
+Overrides the restore delay when the delivery target is classified remote by [Remote match strings](jumper.md#remote-match-strings). `Not set` inherits the value above — and is the default, so this control changes nothing until you pick a value. When set, it also wins over the Transcribe & Submit delay for a remote target (since 2.1.2). The remaining choices match the delay above. Raising it trades exposure for reliability: the transcript stays on your clipboard longer. **Default:** `Not set`.
 
 Catalog: [A remote paste gets the right clipboard, not the one before it](../../features.md#a-remote-paste-gets-the-right-clipboard).
 

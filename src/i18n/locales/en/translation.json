@@ -904,7 +904,7 @@
         "title": "Shortcut Keeper",
         "summary": "Keeps the shortcuts you tick on this PC while a Remote Desktop session has the keyboard, so they run Handy Tool here instead of reaching the remote. All other keys go to the remote as before.",
         "label": "Keep chosen shortcuts on this PC in Remote Desktop (Windows)",
-        "description": "**Remote Desktop takes every key while its session has the keyboard** (in full screen, or when Windows key combinations go to the remote computer), so Handy Tool's shortcuts stop working there. With this on, the shortcuts you tick with Keep on this PC run Handy Tool here. Every other key, Ctrl+C, Ctrl+V and Alt+Tab included, still goes to the remote.\n\n**Works with:** Remote Desktop Connection (mstsc) and the Windows App, on Windows. Not with Citrix: use Citrix Workspace's own setting for Windows key combinations instead.\n\n**Not yet:** push-to-talk and Undo last word, which act while the key is held. Paste last transcription can be kept: it pastes into the session when you let go of the keys.\n\n**Best effort:** if a kept shortcut stops working, click outside the session and back in.\n\n**Privacy:** Handy Tool watches the keyboard only while a Remote Desktop session is in front, reacts only to the shortcuts you ticked, and never stores, logs or sends what you type.\n\n**Default:** Off.",
+        "description": "**Remote Desktop takes every key while its session has the keyboard** (in full screen, or when Windows key combinations go to the remote computer), so Handy Tool's shortcuts stop working there. With this on, the shortcuts you tick with Keep on this PC run Handy Tool here. Every other key, Ctrl+C, Ctrl+V and Alt+Tab included, still goes to the remote.\n\n**Works with:** Remote Desktop Connection (mstsc) and the Windows App, on Windows. Not with Citrix: use Citrix Workspace's own setting for Windows key combinations instead.\n\n**Not yet:** push-to-talk and Undo last word, which act while the key is held. Paste last transcription can be kept: it pastes into the session when you let go of the keys.\n\n**Best effort:** when a client takes the keys back, Shortcut Keeper notices within a few seconds while you type and puts itself back in front. If a kept shortcut still goes to the remote, click outside the session and back in.\n\n**Privacy:** Handy Tool watches the keyboard only while a Remote Desktop session is in front, reacts only to the shortcuts you ticked, and never stores, logs or sends what you type.\n\n**Default:** Off.",
         "cjk": {
           "label": "I type Chinese, Japanese or Korean",
           "description": "**Only then do you need the Ctrl+Space note.** On Chinese, Japanese and Korean setups Ctrl+Space switches the input method; a kept Ctrl+Space no longer reaches the remote for that. Switch this on and a kept Ctrl+Space shows that note.\n\n**Default:** Off."
@@ -2061,6 +2061,18 @@
     "release": "Version {{version}}",
     "show": "Show me",
     "items": {
+      "keeperSelfHeal": {
+        "title": "Shortcut Keeper puts itself back in front",
+        "description": "A Remote Desktop client, or a busy PC, could push Shortcut Keeper's keyboard hook out of line, and kept shortcuts then went to the remote until you switched it off and on. Now, while you type in the session, it notices within a few seconds and puts itself back in front. Windows only."
+      },
+      "hallucinationFilter": {
+        "title": "No more \"Thank you.\" pasted from silence",
+        "description": "On a take with almost no speech, Whisper sometimes invents a stock phrase such as \"Thank you.\" or \"Cheers.\". A take that is nothing but such a phrase, with under 2.5 seconds of speech, is now kept in History instead of being pasted."
+      },
+      "remoteClipboard": {
+        "title": "Transcribe & Submit honours the remote clipboard delay",
+        "description": "Clipboard restore delay for remote desktops now also applies when Transcribe & Submit pastes into a remote session. Before, the Transcribe & Submit delay always won, so a remote session could fetch the old clipboard."
+      },
       "updateIcon": {
         "title": "The update icon shows where you stand",
         "description": "The icon next to the version at the bottom left is always there now. A green check means the last check found nothing newer, a cyan arrow means an update is available, and a grey arrow means there is no recent result (not checked yet, or the check failed): click it to check. Clicking the version opens the details."
@@ -2084,10 +2096,6 @@
       "hotkeyRelease": {
         "title": "Holding a shortcut no longer keeps a processor core busy",
         "description": "On Windows, while you held a shortcut (push-to-talk, for example), Handy Tool checked nonstop whether you had let go, which kept one processor core fully busy. It now checks every 10 ms."
-      },
-      "endOfTakeKept": {
-        "title": "The end of a take is kept more reliably",
-        "description": "When you stop, up to 3 seconds the speech detector had not yet accepted are kept, in the recording and the text, if they hold speech-level sound. Words no longer repeat after a quick restart, and Whisper is less likely to drop a piece's last word."
       }
     },
     "installed": "Installed"

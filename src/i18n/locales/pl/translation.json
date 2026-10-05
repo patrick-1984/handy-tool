@@ -2084,10 +2084,6 @@
       "hotkeyRelease": {
         "title": "Przytrzymany skrót nie zajmuje już rdzenia procesora",
         "description": "W Windows, gdy skrót był przytrzymany (na przykład Push-to-Talk), Handy Tool bez przerwy sprawdzał, czy został już puszczony, przez co jeden rdzeń procesora był w pełni zajęty. Teraz sprawdza co 10 ms."
-      },
-      "endOfTakeKept": {
-        "title": "Koniec nagrania jest zachowywany pewniej",
-        "description": "Przy zatrzymaniu do 3 sekund, których wykrywacz mowy jeszcze nie przyjął, zostaje w nagraniu i w tekście, jeśli zawierają dźwięk na poziomie mowy. Słowa nie powtarzają się już po szybkim podjęciu mówienia, a Whisper rzadziej gubi ostatnie słowo fragmentu."
       }
     },
     "installed": "Zainstalowana"

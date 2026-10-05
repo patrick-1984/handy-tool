@@ -2084,10 +2084,6 @@
       "hotkeyRelease": {
         "title": "Podržená zkratka už nevytěžuje jádro procesoru",
         "description": "Ve Windows Handy Tool při podržení zkratky (například Stisk a mluv) neustále kontroloval, zda jste ji pustili, a jedno jádro procesoru tak bylo plně vytížené. Nyní kontroluje každých 10 ms."
-      },
-      "endOfTakeKept": {
-        "title": "Konec nahrávky se uchová spolehlivěji",
-        "description": "Při zastavení se uchovají až 3 sekundy, které detektor řeči ještě nepřijal, v nahrávce i v textu, pokud obsahují zvuk na úrovni řeči. Slova se už neopakují po rychlém pokračování a Whisper méně často vynechá poslední slovo úseku."
       }
     },
     "installed": "Nainstalovaná"

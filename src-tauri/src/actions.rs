@@ -921,6 +921,25 @@ fn samples_to_seconds(n: usize) -> f64 {
     n as f64 / 16_000.0
 }
 
+/// Under this much kept speech, a take whose whole text is a phrase Whisper
+/// invents on silence is not pasted.
+const HALLUCINATION_MAX_SECS: f64 = 2.5;
+
+/// A near-silent take that Whisper turned into "Thank you." or "Cheers.": it
+/// stays in History, but nothing is pasted.
+fn hallucinated_take(text: &str, kept_samples: usize) -> bool {
+    let hit = samples_to_seconds(kept_samples) < HALLUCINATION_MAX_SECS
+        && crate::audio_toolkit::text::is_stock_hallucination(text);
+    if hit {
+        info!(
+            "Not pasting \"{}\": {:.1} s of speech, a phrase Whisper invents on silence (kept in History)",
+            text.trim(),
+            samples_to_seconds(kept_samples)
+        );
+    }
+    hit
+}
+
 /// Human label of the transcription engine/model in use, for the history entry
 /// (e.g. "Whisper Large — local", "openai/whisper-large-v3 — OpenRouter").
 fn model_label(app: &AppHandle) -> Option<String> {
@@ -2090,6 +2109,7 @@ impl ShortcutAction for TranscribeAction {
                     }
                     // Off the event loop on Windows (long remote jump delays);
                     // on the main thread elsewhere (enigo). See dispatch_delivery.
+                    let silent = silent || hallucinated_take(&raw_text, total_samples as usize);
                     dispatch_delivery(
                         ah.clone(),
                         delivered,
@@ -2425,6 +2445,7 @@ impl ShortcutAction for TranscribeAction {
                             if after_stop {
                                 show_text_after_stop(&ah, &final_text);
                             }
+                            let silent = silent || hallucinated_take(&transcription, effective_len);
                             dispatch_delivery(
                                 ah.clone(),
                                 delivered,
@@ -2518,7 +2539,7 @@ struct CancelAction;
 
 impl ShortcutAction for CancelAction {
     fn start(&self, app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {
-        utils::cancel_current_operation(app);
+        utils::cancel_current_operation(app, "the Cancel shortcut");
     }
 
     fn stop(&self, _app: &AppHandle, _binding_id: &str, _shortcut_str: &str) {

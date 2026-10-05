@@ -13,7 +13,7 @@ use tauri_plugin_opener::OpenerExt;
 #[tauri::command]
 #[specta::specta]
 pub fn cancel_operation(app: AppHandle) {
-    cancel_current_operation(&app);
+    cancel_current_operation(&app, "the app (pill or window)");
 }
 
 /// Where the pill's right-click menus send you: a page and the setting on it.

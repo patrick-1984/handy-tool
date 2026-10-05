@@ -2084,10 +2084,6 @@
       "hotkeyRelease": {
         "title": "Bir kısayolu basılı tutmak artık bir işlemci çekirdeğini meşgul etmiyor",
         "description": "Windows'ta bir kısayolu basılı tuttuğunuzda (örneğin Bas Konuş), Handy Tool bırakıp bırakmadığınızı durmadan denetliyordu ve bu, bir işlemci çekirdeğini tamamen meşgul ediyordu. Artık her 10 ms'de bir denetliyor."
-      },
-      "endOfTakeKept": {
-        "title": "Kaydın sonu daha güvenilir şekilde korunuyor",
-        "description": "Durdurduğunuzda, konuşma algılayıcının henüz kabul etmediği en fazla 3 saniye, konuşma düzeyinde ses içeriyorsa kayıtta ve metinde kalıyor. Hızlıca yeniden konuşmaya başladığınızda sözcükler artık tekrarlanmıyor ve Whisper bir bölümün son sözcüğünü daha az atlıyor."
       }
     },
     "installed": "Yüklü"

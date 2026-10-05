@@ -1210,9 +1210,10 @@ still see the leftover modifier and open its Start menu or menu bar; Ctrl+Alt+De
 Windows+L always belong to Windows. A ticked shortcut with Ctrl+Shift shows a question mark: the
 remote still sees Ctrl and Shift on their own, which switches its keyboard layout if that is the
 layout hotkey there. A ticked Ctrl+Space shows its input-method note only if you switched on
-`I type Chinese, Japanese or Korean` (since 2.1.1). A session running as administrator keeps Handy out. If the client puts its
-hook back in front of Handy's, keys go to the remote again until you click outside the session
-and back in.
+`I type Chinese, Japanese or Korean` (since 2.1.1). A session running as administrator keeps Handy out. If the client (or Windows,
+on a busy PC) puts its hook back in front of Handy's, Handy notices within a few seconds while you
+type in the session and puts its hook back in front, at most every 10 s and never while a key is
+held (since 2.1.2); clicking outside the session and back in also restores it.
 **Where.** `Shortcuts › Shortcut Keeper › Keep chosen shortcuts on this PC in Remote Desktop (Windows)`,
 then `Keep on this PC` on each shortcut's row _{Windows only}_. The `Remote Desktop shortcuts`
 setup on `Setups` walks through it.
@@ -1256,7 +1257,8 @@ earlier instead.
 **What Handy does.** The restore wait is configurable, and since 1.3.0 you can set a separate,
 longer value that applies only when the target is a recognized remote desktop — so a local paste
 stays snappy while a remote one gets the time it needs. It is unset by default and changes nothing
-until you choose a value; 1 s is a sensible starting point. The honest cost is stated in the
+until you choose a value; 1 s is a sensible starting point. Since 2.1.2 it also wins over the
+Transcribe & Submit delay when that flow pastes into a remote session. The honest cost is stated in the
 setting itself: a longer restore leaves the transcript on your clipboard for longer, which widens
 the window in which clipboard history and clipboard managers can capture it.
 **Where.** `Transcription › Transcribe › Clipboard restore delay for remote desktops`

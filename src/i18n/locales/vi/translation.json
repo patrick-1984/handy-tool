@@ -2084,10 +2084,6 @@
       "hotkeyRelease": {
         "title": "Giữ một phím tắt không còn làm bận một nhân bộ xử lý",
         "description": "Trên Windows, khi bạn giữ một phím tắt (ví dụ nhấn để nói), Handy Tool liên tục kiểm tra xem bạn đã nhả phím chưa, khiến một nhân bộ xử lý luôn bận hoàn toàn. Giờ nó kiểm tra mỗi 10 ms."
-      },
-      "endOfTakeKept": {
-        "title": "Phần cuối của bản ghi được giữ lại đáng tin cậy hơn",
-        "description": "Khi dừng, tối đa 3 giây mà bộ phát hiện giọng nói chưa chấp nhận sẽ được giữ trong bản ghi và văn bản, nếu có âm thanh ở mức giọng nói. Từ ngữ không còn bị lặp sau khi nói lại ngay, và Whisper ít bỏ sót từ cuối của mỗi đoạn hơn."
       }
     },
     "installed": "Đã cài"

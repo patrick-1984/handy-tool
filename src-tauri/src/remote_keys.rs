@@ -16,8 +16,10 @@
 //!   or sent anywhere; the logs name binding ids only.
 //! - Injected input (macros, remappers, Handy's own paste) passes through and
 //!   is never acted on.
-//! - Best effort: if the client re-hooks after us, keys go to the remote again
-//!   until focus leaves the session and comes back.
+//! - Best effort: the client (or Windows, when the PC is busy) can put its
+//!   hook in front of ours later. While a session has the keyboard, the 1 s
+//!   tick notices when you type but our hook hears nothing and puts it back in
+//!   front (at most every 10 s, never while a key is held or when idle).
 //!
 //! A kept shortcut runs once on its press and its release is swallowed, except
 //! Paste last transcription, which runs once on its (swallowed) release.
@@ -444,6 +446,16 @@ impl KeyState {
     }
 }
 
+/// The hook is no longer first in line: the system saw input (keyboard or
+/// mouse, `last_input`) at least 1 s after the hook last heard a key
+/// (`last_heard`), within the last 3 s, and the hook has heard nothing for
+/// 3 s. All three are Windows tick counts in ms (they wrap).
+pub(crate) fn hook_seems_lost(now: u32, last_heard: u32, last_input: u32) -> bool {
+    now.wrapping_sub(last_heard) >= 3_000
+        && (last_input.wrapping_sub(last_heard) as i32) >= 1_000
+        && now.wrapping_sub(last_input) <= 3_000
+}
+
 // ---------------------------------------------------------------------------
 // Status and commands
 // ---------------------------------------------------------------------------
@@ -545,6 +557,10 @@ pub fn change_remote_keys_setting(app: AppHandle, enabled: bool) -> Result<(), S
     }
     settings.remote_keys_enabled = enabled;
     settings::write_settings(&app, settings);
+    log::info!(
+        "Shortcut Keeper switched {}",
+        if enabled { "on" } else { "off" }
+    );
     if enabled {
         win::start(&app);
     }
@@ -614,7 +630,10 @@ pub fn get_remote_keys_status(app: AppHandle) -> RemoteKeysStatus {
 
 #[cfg(windows)]
 mod win {
-    use super::{Chord, KeyState, MODIFIER_VKS, RemoteGuard, RemoteKeysState, Verdict, VkSet};
+    use super::{
+        Chord, KeyState, MODIFIER_VKS, RemoteGuard, RemoteKeysState, Verdict, VkSet,
+        hook_seems_lost,
+    };
     use log::{debug, info, warn};
     use std::cell::RefCell;
     use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};
@@ -628,12 +647,15 @@ mod win {
         TOKEN_QUERY, TokenIntegrityLevel,
     };
     use windows::Win32::System::LibraryLoader::GetModuleHandleW;
+    use windows::Win32::System::SystemInformation::GetTickCount;
     use windows::Win32::System::Threading::{
         GetCurrentProcess, GetCurrentThreadId, OpenProcess, OpenProcessToken, PROCESS_NAME_WIN32,
         PROCESS_QUERY_LIMITED_INFORMATION, QueryFullProcessImageNameW,
     };
     use windows::Win32::UI::Accessibility::{HWINEVENTHOOK, SetWinEventHook, UnhookWinEvent};
-    use windows::Win32::UI::Input::KeyboardAndMouse::GetAsyncKeyState;
+    use windows::Win32::UI::Input::KeyboardAndMouse::{
+        GetAsyncKeyState, GetLastInputInfo, LASTINPUTINFO,
+    };
     use windows::Win32::UI::WindowsAndMessaging::{
         CallNextHookEx, EVENT_OBJECT_FOCUS, EVENT_SYSTEM_FOREGROUND, GA_ROOT, GUITHREADINFO,
         GetAncestor, GetClassNameW, GetForegroundWindow, GetGUIThreadInfo, GetMessageW,
@@ -666,6 +688,10 @@ mod win {
     /// Bumped whenever the session that may receive kept presses changes.
     static CONTEXT_GEN: AtomicU64 = AtomicU64::new(1);
     static STATE: Mutex<RemoteKeysState> = Mutex::new(RemoteKeysState::Waiting);
+    /// Counts the hook's calls; the tick compares it to notice a lost hook.
+    static HOOK_CALLS: AtomicU32 = AtomicU32::new(0);
+    /// No more often than this does the tick put the hook back in front.
+    const HEAL_EVERY: Duration = Duration::from_secs(10);
 
     struct Candidate {
         chord: Chord,
@@ -705,6 +731,10 @@ mod win {
         /// A kept key whose shortcut runs on its release: (key, the press
         /// that will go out when it comes up).
         release_pending: Option<(u8, Press)>,
+        /// HOOK_CALLS at the last tick, and the tick count when it last moved.
+        seen_calls: u32,
+        last_heard: u32,
+        last_heal: Option<Instant>,
     }
 
     thread_local! {
@@ -783,6 +813,9 @@ mod win {
                 last_owned: Instant::now(),
                 reported: None,
                 release_pending: None,
+                seen_calls: 0,
+                last_heard: 0,
+                last_heal: None,
             })
         });
         THREAD_ID.store(unsafe { GetCurrentThreadId() }, Ordering::SeqCst);
@@ -897,6 +930,7 @@ mod win {
         k.keys.begin_context();
         k.attempts_done = 0;
         k.attempts_blocked = false;
+        k.last_heard = unsafe { GetTickCount() };
         set_timer(&mut k.attempt_timer, ATTEMPT_DELAYS_MS[0]);
         info!("Shortcut Keeper: a Remote Desktop session has the keyboard");
     }
@@ -933,6 +967,7 @@ mod win {
             // A safety net for a focus change whose event never came.
             evaluate(k);
             drained(k);
+            heal_if_lost(k);
         } else {
             // Posted before its timer was killed.
             unsafe {
@@ -948,11 +983,13 @@ mod win {
             k.attempts_blocked = true;
             return;
         }
-        if let Some(old) = k.hook.take() {
-            unsafe {
-                let _ = UnhookWindowsHookEx(old);
-            }
+        if let Some(old) = k.hook.take()
+            && let Err(e) = unsafe { UnhookWindowsHookEx(old) }
+        {
+            // Windows already removed it (a slow callback), or it was gone.
+            debug!("Shortcut Keeper: the previous hook could not be removed: {e}");
         }
+        k.last_heard = unsafe { GetTickCount() };
         let hook = unsafe {
             GetModuleHandleW(None).and_then(|module| {
                 SetWindowsHookExW(WH_KEYBOARD_LL, Some(hook_proc), Some(module.into()), 0)
@@ -1001,12 +1038,53 @@ mod win {
     }
 
     fn unhook(k: &mut Keeper) {
-        if let Some(hook) = k.hook.take() {
-            unsafe {
-                let _ = UnhookWindowsHookEx(hook);
-            }
+        if let Some(hook) = k.hook.take()
+            && let Err(e) = unsafe { UnhookWindowsHookEx(hook) }
+        {
+            debug!("Shortcut Keeper: the hook could not be removed: {e}");
         }
         kill_timer(&mut k.tick_timer);
+    }
+
+    /// While a session has the keyboard: if you are typing (or using the
+    /// mouse) but the hook has heard nothing for 3 s, the client or Windows
+    /// has put it out of line. Put it back in front - only when nothing is
+    /// held, and at most every 10 s, so it is not churned while idle.
+    fn heal_if_lost(k: &mut Keeper) {
+        let calls = HOOK_CALLS.load(Ordering::Relaxed);
+        let now = unsafe { GetTickCount() };
+        if calls != k.seen_calls {
+            k.seen_calls = calls;
+            k.last_heard = now;
+            return;
+        }
+        if k.armed.is_none()
+            || k.hook.is_none()
+            || k.attempt_timer != 0
+            || k.keys.owns_any()
+            || k.last_heal.is_some_and(|t| t.elapsed() < HEAL_EVERY)
+        {
+            return;
+        }
+        let mut input = LASTINPUTINFO {
+            cbSize: std::mem::size_of::<LASTINPUTINFO>() as u32,
+            dwTime: 0,
+        };
+        if !unsafe { GetLastInputInfo(&mut input) }.as_bool()
+            || !hook_seems_lost(now, k.last_heard, input.dwTime)
+        {
+            return;
+        }
+        // A held key would be quarantined by the re-hook; wait for its release.
+        if !sample_down(k.table.iter().map(|c| c.chord.vk)).is_empty() {
+            return;
+        }
+        info!(
+            "Shortcut Keeper: input reached Windows but not the hook for {} s; putting the hook back in front",
+            now.wrapping_sub(k.last_heard) / 1000
+        );
+        k.last_heal = Some(Instant::now());
+        attempt(k);
     }
 
     /// Both or none: arming needs to see focus leave the session.
@@ -1069,6 +1147,7 @@ mod win {
 
     unsafe extern "system" fn hook_proc(code: i32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
         if code >= 0 {
+            HOOK_CALLS.fetch_add(1, Ordering::Relaxed);
             let event = unsafe { &*(lparam.0 as *const KBDLLHOOKSTRUCT) };
             if with_keeper(|k| on_key(k, event)).unwrap_or(false) {
                 return LRESULT(1);
@@ -1142,6 +1221,10 @@ mod win {
     fn dispatcher(app: AppHandle, rx: Receiver<Press>) {
         while let Ok(press) = rx.recv() {
             if press.generation != CONTEXT_GEN.load(Ordering::SeqCst) {
+                debug!(
+                    "Shortcut Keeper: press dropped, the session changed before it ran: {}",
+                    press.id
+                );
                 continue;
             }
             let main_app = app.clone();
@@ -1333,6 +1416,22 @@ mod tests {
         keys.event(vk, down, true, |_| {
             panic!("injected input must never claim")
         })
+    }
+
+    #[test]
+    fn a_hook_is_lost_only_when_input_arrived_that_it_did_not_hear() {
+        // Heard a key at t=10 s; typing went on at 14 s; now 15 s: lost.
+        assert!(hook_seems_lost(15_000, 10_000, 14_000));
+        // Idle: no input since the last key heard. Not lost.
+        assert!(!hook_seems_lost(60_000, 10_000, 10_000));
+        // Heard recently (under 3 s). Not lost.
+        assert!(!hook_seems_lost(12_000, 10_000, 11_500));
+        // Input only right after the last key (under 1 s later). Not lost.
+        assert!(!hook_seems_lost(15_000, 10_000, 10_500));
+        // The input is old (over 3 s ago). Not lost (yet).
+        assert!(!hook_seems_lost(20_000, 10_000, 15_000));
+        // Tick counts wrap after ~49.7 days.
+        assert!(hook_seems_lost(3_500, u32::MAX - 1_000, 2_800));
     }
 
     #[test]

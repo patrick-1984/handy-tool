@@ -2084,10 +2084,6 @@
       "hotkeyRelease": {
         "title": "Maintenir un raccourci n'occupe plus un cœur du processeur",
         "description": "Sur Windows, pendant que vous mainteniez un raccourci (Appuyer pour parler, par exemple), Handy Tool vérifiait sans arrêt si vous l'aviez relâché, ce qui occupait entièrement un cœur du processeur. Il vérifie désormais toutes les 10 ms."
-      },
-      "endOfTakeKept": {
-        "title": "La fin d'une prise est conservée de façon plus fiable",
-        "description": "À l'arrêt, jusqu'à 3 secondes que le détecteur de parole n'avait pas encore acceptées sont conservées, dans l'enregistrement et le texte, si elles contiennent un son au niveau de la parole. Les mots ne se répètent plus après une reprise rapide, et Whisper omet moins souvent le dernier mot d'un segment."
       }
     },
     "installed": "Installée"

@@ -319,12 +319,11 @@ fn restore_extra_for_target(
     remote_override_ms: Option<u64>,
     global_ms: u64,
 ) -> u64 {
-    if let Some(ms) = submit_override_ms {
-        return ms;
-    }
+    // A remote session fetches the clipboard late: its own delay wins for a
+    // remote target, also in Transcribe & Submit (whose override used to win).
     match (remote, remote_override_ms) {
         (true, Some(ms)) => ms,
-        _ => global_ms,
+        _ => submit_override_ms.unwrap_or(global_ms),
     }
 }
 
@@ -620,13 +619,18 @@ mod restore_race_tests {
     }
 
     #[test]
-    fn a_per_flow_submit_override_beats_both() {
-        // An explicit per-shortcut choice is the most specific intent there is.
+    fn the_remote_delay_wins_for_a_remote_target_even_in_submit() {
+        // A remote session fetches the clipboard late, so its own delay wins
+        // there; the Transcribe & Submit override applies to local targets.
         assert_eq!(
             restore_extra_for_target(Some(50), true, Some(1000), 250),
+            1000
+        );
+        assert_eq!(
+            restore_extra_for_target(Some(50), false, Some(1000), 250),
             50
         );
-        assert_eq!(restore_extra_for_target(Some(0), true, Some(1000), 250), 0);
+        assert_eq!(restore_extra_for_target(Some(0), true, None, 250), 0);
     }
 
     #[test]

@@ -2084,10 +2084,6 @@
       "hotkeyRelease": {
         "title": "Manter um atalho pressionado não ocupa mais um núcleo do processador",
         "description": "No Windows, enquanto você mantinha um atalho pressionado (Pressionar para Falar, por exemplo), o Handy Tool verificava sem parar se você já o tinha soltado, o que mantinha um núcleo do processador totalmente ocupado. Agora ele verifica a cada 10 ms."
-      },
-      "endOfTakeKept": {
-        "title": "O fim de uma gravação é guardado com mais fiabilidade",
-        "description": "Ao parar, até 3 segundos que o detetor de voz ainda não tinha aceitado são guardados, na gravação e no texto, se tiverem som ao nível da voz. As palavras já não se repetem depois de retomar rapidamente, e o Whisper omite menos vezes a última palavra de um segmento."
       }
     },
     "installed": "Instalada"

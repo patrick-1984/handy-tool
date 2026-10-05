@@ -194,6 +194,48 @@ fn extract_punctuation(word: &str) -> (&str, &str) {
     (prefix, suffix)
 }
 
+/// Whole transcripts Whisper invents on (near-)silent audio. Matched only
+/// against the ENTIRE text, lowercased, with punctuation and spaces removed.
+const STOCK_HALLUCINATIONS: &[&str] = &[
+    "thankyou",
+    "thankyouverymuch",
+    "thanks",
+    "thanksforwatching",
+    "thankyouforwatching",
+    "cheers",
+    "bye",
+    "byebye",
+    "you",
+    "pleasesubscribe",
+    "subtitlesbytheamaraorgcommunity",
+    "dziekuje",
+    "dziekujebardzo",
+    "dziekujezauwage",
+    "napisystworzoneprzezspolecznoscamaraorg",
+];
+
+/// Whether the whole transcript is one of the phrases Whisper invents on
+/// silence ("Thank you.", "Cheers.", subtitle credits).
+pub fn is_stock_hallucination(text: &str) -> bool {
+    let key: String = text
+        .chars()
+        .filter(|c| c.is_alphanumeric())
+        .flat_map(char::to_lowercase)
+        .map(|c| match c {
+            'ą' => 'a',
+            'ć' => 'c',
+            'ę' => 'e',
+            'ł' => 'l',
+            'ń' => 'n',
+            'ó' => 'o',
+            'ś' => 's',
+            'ź' | 'ż' => 'z',
+            other => other,
+        })
+        .collect();
+    !key.is_empty() && STOCK_HALLUCINATIONS.contains(&key.as_str())
+}
+
 /// Filler words to remove from transcriptions
 const FILLER_WORDS: &[&str] = &[
     "uh", "um", "uhm", "umm", "uhh", "uhhh", "ah", "eh", "hmm", "hm", "mmm", "mm", "mh", "ha",
@@ -325,6 +367,22 @@ pub fn filter_transcription_output(text: &str) -> String {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn stock_hallucinations_match_only_the_whole_text() {
+        use super::is_stock_hallucination as h;
+        assert!(h("Thank you."));
+        assert!(h(" thank you! "));
+        assert!(h("Cheers."));
+        assert!(h("Thanks for watching!"));
+        assert!(h("Subtitles by the Amara.org community"));
+        assert!(h("Dziękuję."));
+        assert!(!h("Thank you for the report, I will check it."));
+        assert!(!h("Gdzie to będzie?"));
+        assert!(!h("Cheers to the team"));
+        assert!(!h(""));
+        assert!(!h("..."));
+    }
+
     use super::*;
 
     #[test]

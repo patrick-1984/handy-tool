@@ -333,7 +333,7 @@ fn initialize_core_logic(app_handle: &AppHandle) {
                 use crate::utils::cancel_current_operation;
 
                 // Use centralized cancellation that handles all operations
-                cancel_current_operation(app);
+                cancel_current_operation(app, "the tray menu");
             }
             "quit" => {
                 app.exit(0);
@@ -717,7 +717,7 @@ pub fn run(cli_args: CliArgs) {
             } else if args.iter().any(|a| a == "--toggle-post-process") {
                 signal_handle::send_transcription_input(app, "transcribe_with_post_process", "CLI");
             } else if args.iter().any(|a| a == "--cancel") {
-                crate::utils::cancel_current_operation(app);
+                crate::utils::cancel_current_operation(app, "the command line");
             } else if args.iter().any(|a| a == "--start-hidden") {
                 // A second instance launched purely to (auto-)start hidden — e.g.
                 // the CLI probing for the server. Don't surface the main window.

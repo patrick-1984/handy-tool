@@ -14,8 +14,9 @@ pub use crate::tray::*;
 
 /// Centralized cancellation function that can be called from anywhere in the app.
 /// Handles cancelling both recording and transcription operations and updates UI state.
-pub fn cancel_current_operation(app: &AppHandle) {
-    info!("Initiating operation cancellation...");
+/// `source` names what asked (shortcut, app, tray, cli) for the log.
+pub fn cancel_current_operation(app: &AppHandle, source: &str) {
+    info!("Initiating operation cancellation (from {source})...");
 
     // Unregister the take-only shortcuts (Cancel, Pause, Undo word) asynchronously
     shortcut::unregister_take_shortcuts(app);

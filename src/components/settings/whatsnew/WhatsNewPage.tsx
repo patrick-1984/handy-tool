@@ -37,6 +37,19 @@ interface Item {
  */
 const RELEASES: { version: string; items: Item[] }[] = [
   {
+    version: "2.1.2",
+    items: [
+      {
+        key: "keeperSelfHeal",
+        section: "shortcuts",
+        titleKeys: ["settings.shortcuts.keeper.label"],
+        windowsOnly: true,
+      },
+      { key: "hallucinationFilter" },
+      { key: "remoteClipboard" },
+    ],
+  },
+  {
     version: "2.1.1",
     items: [
       { key: "updateIcon" },
@@ -61,10 +74,6 @@ const RELEASES: { version: string; items: Item[] }[] = [
       { key: "updateIndicator" },
       { key: "hotkeyRelease" },
     ],
-  },
-  {
-    version: "2.0.5",
-    items: [{ key: "endOfTakeKept" }],
   },
 ];
 

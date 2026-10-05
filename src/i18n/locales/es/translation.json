@@ -2084,10 +2084,6 @@
       "hotkeyRelease": {
         "title": "Mantener pulsado un atajo ya no ocupa un núcleo del procesador",
         "description": "En Windows, mientras mantenías pulsado un atajo (Presionar para Hablar, por ejemplo), Handy Tool comprobaba sin parar si lo habías soltado, lo que mantenía un núcleo del procesador totalmente ocupado. Ahora lo comprueba cada 10 ms."
-      },
-      "endOfTakeKept": {
-        "title": "El final de una grabación se conserva con más fiabilidad",
-        "description": "Al detener se conservan hasta 3 segundos que el detector de voz aún no había aceptado, en la grabación y en el texto, si contienen sonido a nivel de voz. Las palabras ya no se repiten tras retomar rápido, y Whisper omite con menos frecuencia la última palabra de un fragmento."
       }
     },
     "installed": "Instalada"

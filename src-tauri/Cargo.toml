@@ -1,6 +1,6 @@
 [package]
 name = "handy"
-version = "2.1.1"
+version = "2.1.2"
 description = "Handy"
 authors = ["pr"]
 edition = "2024"
@@ -126,6 +126,9 @@ windows = { version = "0.61.3", features = [
   # Shortcut Keeper (remote_keys.rs): GetModuleHandleW, so the keyboard hook
   # names Handy's own module instead of a null one.
   "Win32_System_LibraryLoader",
+  # Shortcut Keeper self-heal: GetTickCount, to compare the hook's last event
+  # with the system's last input (GetLastInputInfo).
+  "Win32_System_SystemInformation",
 ] }
 
 [target.'cfg(target_os = "macos")'.dependencies]

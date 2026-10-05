@@ -2084,10 +2084,6 @@
       "hotkeyRelease": {
         "title": "Ein gehaltenes Tastenkürzel hält keinen Prozessorkern mehr beschäftigt",
         "description": "Unter Windows prüfte Handy Tool, während du ein Tastenkürzel gehalten hast (zum Beispiel Push-to-Talk), ununterbrochen, ob du losgelassen hattest. Das hielt einen Prozessorkern voll ausgelastet. Jetzt prüft es alle 10 ms."
-      },
-      "endOfTakeKept": {
-        "title": "Das Ende einer Aufnahme bleibt zuverlässiger erhalten",
-        "description": "Beim Stoppen bleiben bis zu 3 Sekunden, die die Spracherkennung noch nicht angenommen hatte, in Aufnahme und Text erhalten, wenn sie Ton in Sprachlautstärke enthalten. Wörter wiederholen sich nach einem schnellen Weitersprechen nicht mehr, und Whisper lässt seltener das letzte Wort eines Abschnitts weg."
       }
     },
     "installed": "Installiert"

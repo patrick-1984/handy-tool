@@ -1,5 +1,31 @@
 # Changelog
 
+## [2.1.2] - 2026-10-05
+
+A fix release: Shortcut Keeper recovers by itself, silent takes no longer paste "Thank you.", and
+Transcribe & Submit honours the remote clipboard delay.
+
+### Fixed
+
+- **Shortcut Keeper puts itself back in front (Windows).** A Remote Desktop client, or Windows on
+  a busy PC, could push Shortcut Keeper's keyboard hook out of line while the session kept the
+  keyboard. Kept shortcuts then went to the remote, nothing noticed it, and it took switching
+  Shortcut Keeper off and on to fix. Now, while a session has the keyboard, Handy compares the
+  input Windows saw with what its hook heard: when you type (or move the mouse) and the hook has
+  heard nothing for 3 seconds, it puts the hook back in front. That happens at most every 10
+  seconds, never while a key is held, and never when you are idle.
+- **No more "Thank you." pasted from silence.** On a take with almost no speech, Whisper sometimes
+  invents a stock phrase ("Thank you.", "Cheers.", "Thanks for watching", subtitle credits). A take
+  that is nothing but such a phrase, with under 2.5 seconds of speech, is kept in History instead
+  of being pasted. Real short dictations are not affected.
+- **Transcribe & Submit honours the remote clipboard delay.** `Clipboard restore delay for remote
+desktops` now wins over the Transcribe & Submit delay when the target is a remote session;
+  before, the Transcribe & Submit value always won, so the remote session could fetch the old
+  clipboard.
+- The log now says where a Cancel came from (the Cancel shortcut, the app, the tray menu or the
+  command line), when Shortcut Keeper is switched on or off, when it puts its hook back in front,
+  and when it drops a press because the session changed.
+
 ## [2.1.1] - 2026-10-03
 
 The update icon next to the version is always there, Paste Last works in Remote Desktop, and the
