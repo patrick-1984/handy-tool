@@ -904,7 +904,7 @@
         "title": "Shortcut Keeper",
         "summary": "Keeps the shortcuts you tick on this PC while a Remote Desktop session has the keyboard, so they run Handy Tool here instead of reaching the remote. All other keys go to the remote as before.",
         "label": "Keep chosen shortcuts on this PC in Remote Desktop (Windows)",
-        "description": "**Remote Desktop takes every key while its session has the keyboard** (in full screen, or when Windows key combinations go to the remote computer), so Handy Tool's shortcuts stop working there. With this on, the shortcuts you tick with Keep on this PC run Handy Tool here. Every other key, Ctrl+C, Ctrl+V and Alt+Tab included, still goes to the remote.\n\n**Works with:** Remote Desktop Connection (mstsc) and the Windows App, on Windows. Not with Citrix: use Citrix Workspace's own setting for Windows key combinations instead.\n\n**Not yet:** push-to-talk and Undo last word, which act while the key is held. Paste last transcription can be kept: it pastes into the session when you let go of the keys.\n\n**Best effort:** when a client takes the keys back, Shortcut Keeper notices within a few seconds while you type and puts itself back in front. If a kept shortcut still goes to the remote, click outside the session and back in.\n\n**Privacy:** Handy Tool watches the keyboard only while a Remote Desktop session is in front, reacts only to the shortcuts you ticked, and never stores, logs or sends what you type.\n\n**Default:** Off.",
+        "description": "**Remote Desktop takes every key while its session has the keyboard** (in full screen, or when Windows key combinations go to the remote computer), so Handy Tool's shortcuts stop working there. With this on, the shortcuts you tick with Keep on this PC run Handy Tool here. Every other key, Ctrl+C, Ctrl+V and Alt+Tab included, still goes to the remote.\n\n**Works with:** Remote Desktop Connection (mstsc) and the Windows App, on Windows. Not with Citrix: use Citrix Workspace's own setting for Windows key combinations instead.\n\n**Not yet:** push-to-talk and Undo last word, which act while the key is held. Paste last transcription can be kept: it pastes into the session when you let go of the keys.\n\n**Best effort:** Remote Desktop clients keep taking the keys back, so Shortcut Keeper puts itself back in front after every second without a key press. A kept shortcut pressed just after a client took the keys can still go to the remote: press it again, or click outside the session and back in.\n\n**Privacy:** Handy Tool watches the keyboard only while a Remote Desktop session is in front, reacts only to the shortcuts you ticked, and never stores, logs or sends what you type.\n\n**Default:** Off.",
         "cjk": {
           "label": "I type Chinese, Japanese or Korean",
           "description": "**Only then do you need the Ctrl+Space note.** On Chinese, Japanese and Korean setups Ctrl+Space switches the input method; a kept Ctrl+Space no longer reaches the remote for that. Switch this on and a kept Ctrl+Space shows that note.\n\n**Default:** Off."
@@ -2061,9 +2061,13 @@
     "release": "Version {{version}}",
     "show": "Show me",
     "items": {
-      "keeperSelfHeal": {
-        "title": "Shortcut Keeper puts itself back in front",
-        "description": "A Remote Desktop client, or a busy PC, could push Shortcut Keeper's keyboard hook out of line, and kept shortcuts then went to the remote until you switched it off and on. Now, while you type in the session, it notices within a few seconds and puts itself back in front. Windows only."
+      "keeperRefresh": {
+        "title": "Shortcut Keeper stays in front in Remote Desktop",
+        "description": "The Windows App puts its own keyboard hook in front of Shortcut Keeper's every half minute or so, and kept shortcuts then went to the remote. Shortcut Keeper now puts itself back in front after every second without a key press, instead of waiting until you had typed for a few seconds. Windows only."
+      },
+      "vulkanOptional": {
+        "title": "Handy Tool starts on PCs without Vulkan",
+        "description": "On a PC without a Vulkan graphics driver, often an older laptop, Windows refused to start Handy Tool with \"vulkan-1.dll was not found\". It now starts, and Whisper models run on the processor instead of the graphics card. Windows only."
       },
       "hallucinationFilter": {
         "title": "No more \"Thank you.\" pasted from silence",
@@ -2088,10 +2092,6 @@
       "shortcutKeeper": {
         "title": "Shortcut Keeper: your shortcuts work in Remote Desktop",
         "description": "On Windows, switch on Shortcut Keeper on the Shortcuts page and tick Keep on this PC next to a shortcut: while a Remote Desktop Connection or Windows App session has the keyboard, that shortcut runs Handy Tool on this PC instead of reaching the remote. Every other key still goes to the remote."
-      },
-      "updateIndicator": {
-        "title": "The version shows when an update is available",
-        "description": "A small arrow next to the version at the bottom left means a newer version is available. Click the version to check for updates with Update now, or to install one that was found."
       },
       "hotkeyRelease": {
         "title": "Holding a shortcut no longer keeps a processor core busy",

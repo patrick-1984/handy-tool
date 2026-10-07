@@ -1210,10 +1210,12 @@ still see the leftover modifier and open its Start menu or menu bar; Ctrl+Alt+De
 Windows+L always belong to Windows. A ticked shortcut with Ctrl+Shift shows a question mark: the
 remote still sees Ctrl and Shift on their own, which switches its keyboard layout if that is the
 layout hotkey there. A ticked Ctrl+Space shows its input-method note only if you switched on
-`I type Chinese, Japanese or Korean` (since 2.1.1). A session running as administrator keeps Handy out. If the client (or Windows,
-on a busy PC) puts its hook back in front of Handy's, Handy notices within a few seconds while you
-type in the session and puts its hook back in front, at most every 10 s and never while a key is
-held (since 2.1.2); clicking outside the session and back in also restores it. When a key of a kept
+`I type Chinese, Japanese or Korean` (since 2.1.1). A session running as administrator keeps Handy out. The client keeps putting
+its own hook in front of Handy's (the Windows App a few seconds after you enter a session, then
+every 15 to 35 seconds), so while a session has the keyboard Handy puts its hook back in front
+after every second in which it heard no key and no key is held (since 2.1.4); a shortcut pressed
+within a second or two of the client taking the front can still reach the remote. Clicking outside
+the session and back in also restores it. When a key of a kept
 shortcut goes to the remote instead, the log says which keys and why (since 2.1.3).
 **Where.** `Shortcuts › Shortcut Keeper › Keep chosen shortcuts on this PC in Remote Desktop (Windows)`,
 then `Keep on this PC` on each shortcut's row _{Windows only}_. The `Remote Desktop shortcuts`
@@ -1738,7 +1740,9 @@ got cut off.
 discrete GPU.
 **What Handy does.** Ships a custom-built whisper.cpp with Vulkan acceleration, which covers AMD
 and Intel integrated graphics as well as discrete cards. This is what makes live transcription
-feel immediate on an ordinary laptop.
+feel immediate on an ordinary laptop. A PC without a Vulkan driver (or with one older than 1.2)
+still starts Handy, and Whisper runs on the CPU (since 2.1.4; before, Windows refused to start it
+with "vulkan-1.dll was not found").
 **Where.** No control — this is always active.
 **Since.** 0.8.2.
 

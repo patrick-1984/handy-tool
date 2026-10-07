@@ -140,8 +140,10 @@ App session has the keyboard. The hook looks at each key event to recognise the 
 ticked with `Keep on this PC`; it passes everything else on unchanged and keeps no record of it.
 Nothing is written to settings, logs or files, and nothing leaves the machine: the logs name only
 which shortcut was kept, never the keys you typed. With the switch off, or with no session in
-front, no hook is installed. Security software may still notice that a keyboard hook exists while
-it runs.
+front, no hook is installed. While a session has the keyboard, the hook is installed again after
+every second without a key press, because the Remote Desktop client keeps putting its own hook in
+front (since 2.1.4). Security software may still notice that a keyboard hook exists while it runs,
+and may count these re-installs.
 
 ## Password-field refusal has a narrow boundary
 

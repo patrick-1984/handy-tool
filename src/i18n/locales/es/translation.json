@@ -909,7 +909,7 @@
         "title": "Shortcut Keeper",
         "summary": "Mantiene en este PC los atajos que marques mientras una sesión de Escritorio remoto tiene el teclado, para que controlen Handy Tool aquí en lugar de llegar al equipo remoto. Todas las demás teclas van al equipo remoto como antes.",
         "label": "Mantener los atajos elegidos en este PC en Escritorio remoto (Windows)",
-        "description": "**Escritorio remoto se queda con todas las teclas mientras su sesión tiene el teclado** (en pantalla completa, o cuando las combinaciones de teclas de Windows van al equipo remoto), así que los atajos de Handy Tool dejan de funcionar ahí. Con esto activado, los atajos que marques con Mantener en este PC controlan Handy Tool aquí. Todas las demás teclas, incluidas Ctrl+C, Ctrl+V y Alt+Tab, siguen yendo al equipo remoto.\n\n**Funciona con:** Conexión a Escritorio remoto (mstsc) y la Windows App, en Windows. No con Citrix: usa en su lugar el ajuste propio de Citrix Workspace para las combinaciones de teclas de Windows.\n\n**Todavía no:** Presionar para Hablar y Deshacer la última palabra, que actúan mientras se mantiene pulsada la tecla. 'Paste last transcription' sí se puede mantener: pega en la sesión cuando sueltas las teclas.\n\n**Sin garantía:** cuando un cliente vuelve a quedarse con las teclas, Shortcut Keeper lo nota en pocos segundos mientras escribes y vuelve a ponerse en primer lugar. Si un atajo mantenido sigue yendo al equipo remoto, haz clic fuera de la sesión y luego otra vez dentro.\n\n**Privacidad:** Handy Tool vigila el teclado solo mientras una sesión de Escritorio remoto está en primer plano, reacciona solo a los atajos que marcaste y nunca guarda, registra ni envía lo que escribes.\n\n**Predeterminado:** Desactivado.",
+        "description": "**Escritorio remoto se queda con todas las teclas mientras su sesión tiene el teclado** (en pantalla completa, o cuando las combinaciones de teclas de Windows van al equipo remoto), así que los atajos de Handy Tool dejan de funcionar ahí. Con esto activado, los atajos que marques con Mantener en este PC controlan Handy Tool aquí. Todas las demás teclas, incluidas Ctrl+C, Ctrl+V y Alt+Tab, siguen yendo al equipo remoto.\n\n**Funciona con:** Conexión a Escritorio remoto (mstsc) y la Windows App, en Windows. No con Citrix: usa en su lugar el ajuste propio de Citrix Workspace para las combinaciones de teclas de Windows.\n\n**Todavía no:** Presionar para Hablar y Deshacer la última palabra, que actúan mientras se mantiene pulsada la tecla. 'Paste last transcription' sí se puede mantener: pega en la sesión cuando sueltas las teclas.\n\n**Sin garantía:** los clientes de Escritorio remoto se quedan con las teclas una y otra vez, así que Shortcut Keeper vuelve a ponerse en primer lugar tras cada segundo sin pulsar ninguna tecla. Un atajo mantenido que pulses justo después de que un cliente se haya quedado con las teclas aún puede ir al equipo remoto: vuelve a pulsarlo o haz clic fuera de la sesión y luego otra vez dentro.\n\n**Privacidad:** Handy Tool vigila el teclado solo mientras una sesión de Escritorio remoto está en primer plano, reacciona solo a los atajos que marcaste y nunca guarda, registra ni envía lo que escribes.\n\n**Predeterminado:** Desactivado.",
         "cjk": {
           "label": "Escribo en chino, japonés o coreano",
           "description": "**Solo entonces necesitas la nota sobre Ctrl+Espacio.** En configuraciones en chino, japonés y coreano, Ctrl+Espacio cambia el método de entrada; un Ctrl+Espacio mantenido ya no llega al equipo remoto para eso. Activa esto y un Ctrl+Espacio mantenido mostrará esa nota.\n\n**Predeterminado:** Desactivado."
@@ -2061,9 +2061,13 @@
     "release": "Versión {{version}}",
     "show": "Mostrar",
     "items": {
-      "keeperSelfHeal": {
-        "title": "Shortcut Keeper vuelve a ponerse en primer lugar",
-        "description": "Un cliente de Escritorio remoto, o un PC muy ocupado, podía desplazar de su sitio el hook de teclado de Shortcut Keeper, y entonces los atajos mantenidos iban al equipo remoto hasta que lo desactivabas y volvías a activarlo. Ahora, mientras escribes en la sesión, lo nota en pocos segundos y vuelve a ponerse en primer lugar. Solo Windows."
+      "keeperRefresh": {
+        "title": "Shortcut Keeper se mantiene en primer lugar en Escritorio remoto",
+        "description": "La Windows App pone su propio hook de teclado por delante del de Shortcut Keeper cada medio minuto más o menos, y entonces los atajos mantenidos iban al equipo remoto. Ahora Shortcut Keeper vuelve a ponerse en primer lugar tras cada segundo sin pulsar ninguna tecla, en lugar de esperar a que hubieras escrito durante unos segundos. Solo Windows."
+      },
+      "vulkanOptional": {
+        "title": "Handy Tool se inicia en PC sin Vulkan",
+        "description": "En un PC sin controlador gráfico Vulkan, a menudo un portátil antiguo, Windows se negaba a iniciar Handy Tool con \"vulkan-1.dll was not found\". Ahora se inicia, y los modelos Whisper se ejecutan en el procesador en lugar de en la tarjeta gráfica. Solo Windows."
       },
       "hallucinationFilter": {
         "title": "Ya no se pega \"Thank you.\" a partir del silencio",
@@ -2088,10 +2092,6 @@
       "shortcutKeeper": {
         "title": "Shortcut Keeper: tus atajos funcionan en Escritorio remoto",
         "description": "En Windows, activa Shortcut Keeper en la página Atajos y marca Mantener en este PC junto a un atajo: mientras una sesión de Conexión a Escritorio remoto o de la Windows App tiene el teclado, ese atajo controla Handy Tool en este PC en lugar de llegar al equipo remoto. Todas las demás teclas siguen yendo al equipo remoto."
-      },
-      "updateIndicator": {
-        "title": "La versión indica cuándo hay una actualización disponible",
-        "description": "Una pequeña flecha junto a la versión, abajo a la izquierda, indica que hay una versión más reciente. Haz clic en la versión para buscar actualizaciones con Actualizar ahora o para instalar la que se haya encontrado."
       },
       "hotkeyRelease": {
         "title": "Mantener pulsado un atajo ya no ocupa un núcleo del procesador",

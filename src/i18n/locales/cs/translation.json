@@ -909,7 +909,7 @@
         "title": "Strážce zkratek",
         "summary": "Ponechá zkratky, které zaškrtnete, na tomto počítači, zatímco klávesnici má relace Vzdálené plochy, takže ovládají Handy Tool zde, místo aby došly do vzdáleného počítače. Všechny ostatní klávesy jdou do vzdáleného počítače jako dosud.",
         "label": "Ponechat vybrané zkratky ve Vzdálené ploše na tomto počítači (Windows)",
-        "description": "**Vzdálená plocha zabírá každou klávesu, dokud má její relace klávesnici** (na celé obrazovce nebo když kombinace kláves Windows jdou do vzdáleného počítače), takže zkratky Handy Tool tam přestanou fungovat. Když je toto zapnuto, zkratky zaškrtnuté volbou Ponechat na tomto počítači ovládají Handy Tool zde. Každá jiná klávesa, včetně Ctrl+C, Ctrl+V a Alt+Tab, jde dál do vzdáleného počítače.\n\n**Funguje s:** aplikacemi Připojení ke vzdálené ploše (mstsc) a Windows App ve Windows. Ne s klientem Citrix: místo toho použijte vlastní nastavení Citrix Workspace pro kombinace kláves Windows.\n\n**Zatím ne:** Stisk a mluv a Vrátit poslední slovo, které působí, dokud klávesu držíte. Vložit poslední přepis ponechat lze: vloží text do relace, když klávesy pustíte.\n\n**Bez záruky:** když si klient vzdálené plochy klávesy znovu vezme, Strážce zkratek si toho při psaní během několika sekund všimne a sám se vrátí na první místo. Pokud ponechaná zkratka přesto jde do vzdáleného počítače, klikněte mimo relaci a pak zpět do ní.\n\n**Soukromí:** Handy Tool sleduje klávesnici jen tehdy, když je relace Vzdálené plochy v popředí, reaguje jen na zkratky, které jste zaškrtli, a nikdy neukládá, nezaznamenává ani neodesílá, co píšete.\n\n**Výchozí:** Vypnuto.",
+        "description": "**Vzdálená plocha zabírá každou klávesu, dokud má její relace klávesnici** (na celé obrazovce nebo když kombinace kláves Windows jdou do vzdáleného počítače), takže zkratky Handy Tool tam přestanou fungovat. Když je toto zapnuto, zkratky zaškrtnuté volbou Ponechat na tomto počítači ovládají Handy Tool zde. Každá jiná klávesa, včetně Ctrl+C, Ctrl+V a Alt+Tab, jde dál do vzdáleného počítače.\n\n**Funguje s:** aplikacemi Připojení ke vzdálené ploše (mstsc) a Windows App ve Windows. Ne s klientem Citrix: místo toho použijte vlastní nastavení Citrix Workspace pro kombinace kláves Windows.\n\n**Zatím ne:** Stisk a mluv a Vrátit poslední slovo, které působí, dokud klávesu držíte. Vložit poslední přepis ponechat lze: vloží text do relace, když klávesy pustíte.\n\n**Bez záruky:** klienti vzdálené plochy si klávesy berou znovu a znovu, proto se Strážce zkratek vrací na první místo po každé sekundě bez stisku klávesy. Ponechaná zkratka stisknutá těsně poté, co si klient klávesy vzal, může přesto jít do vzdáleného počítače: stiskněte ji znovu nebo klikněte mimo relaci a pak zpět do ní.\n\n**Soukromí:** Handy Tool sleduje klávesnici jen tehdy, když je relace Vzdálené plochy v popředí, reaguje jen na zkratky, které jste zaškrtli, a nikdy neukládá, nezaznamenává ani neodesílá, co píšete.\n\n**Výchozí:** Vypnuto.",
         "cjk": {
           "label": "Píšu čínsky, japonsky nebo korejsky",
           "description": "**Jen pak potřebujete poznámku o Ctrl+Space.** V čínském, japonském a korejském nastavení Ctrl+Space přepíná metodu zadávání; ponechaná Ctrl+Space kvůli tomu už do vzdáleného počítače nedorazí. Když toto zapnete, ponechaná Ctrl+Space tu poznámku zobrazí.\n\n**Výchozí:** Vypnuto."
@@ -2061,9 +2061,13 @@
     "release": "Verze {{version}}",
     "show": "Ukázat",
     "items": {
-      "keeperSelfHeal": {
-        "title": "Strážce zkratek se sám vrátí na první místo",
-        "description": "Klient vzdálené plochy nebo vytížený počítač mohl Strážce zkratek odsunout z jeho místa ve zpracování kláves a ponechané zkratky pak šly do vzdáleného počítače, dokud jste ho nevypnuli a znovu nezapnuli. Teď si toho při psaní v relaci během několika sekund všimne a sám se vrátí na první místo. Jen Windows."
+      "keeperRefresh": {
+        "title": "Strážce zkratek zůstává ve Vzdálené ploše na prvním místě",
+        "description": "Windows App si zhruba každou půlminutu zařadí vlastní zachytávání klávesnice před Strážce zkratek a ponechané zkratky pak šly do vzdáleného počítače. Strážce zkratek se teď vrátí na první místo po každé sekundě bez stisku klávesy, místo aby čekal, až budete několik sekund psát. Jen Windows."
+      },
+      "vulkanOptional": {
+        "title": "Handy Tool se spustí i na počítačích bez Vulkanu",
+        "description": "Na počítači bez grafického ovladače Vulkan, často na starším notebooku, systém Windows odmítl spustit Handy Tool s hlášením „vulkan-1.dll was not found“. Teď se spustí a modely Whisper běží na procesoru místo na grafické kartě. Jen Windows."
       },
       "hallucinationFilter": {
         "title": "Žádné „Thank you.“ vložené z ticha",
@@ -2088,10 +2092,6 @@
       "shortcutKeeper": {
         "title": "Strážce zkratek: vaše zkratky fungují ve Vzdálené ploše",
         "description": "Ve Windows zapněte Strážce zkratek na stránce Zkratky a u zkratky zaškrtněte Ponechat na tomto počítači: dokud má klávesnici relace Připojení ke vzdálené ploše nebo Windows App, ovládá tato zkratka Handy Tool na tomto počítači, místo aby došla do vzdáleného počítače. Každá jiná klávesa jde dál do vzdáleného počítače."
-      },
-      "updateIndicator": {
-        "title": "Verze ukazuje, kdy je k dispozici aktualizace",
-        "description": "Malá šipka vedle verze vlevo dole znamená, že je k dispozici novější verze. Kliknutím na verzi vyhledáte aktualizace tlačítkem Aktualizovat nyní nebo nainstalujete nalezenou aktualizaci."
       },
       "hotkeyRelease": {
         "title": "Podržená zkratka už nevytěžuje jádro procesoru",

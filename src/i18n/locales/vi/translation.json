@@ -909,7 +909,7 @@
         "title": "Shortcut Keeper",
         "summary": "Giữ các phím tắt bạn đánh dấu trên máy tính này khi một phiên Máy tính Từ xa đang giữ bàn phím, để chúng điều khiển Handy Tool tại đây thay vì đi tới máy từ xa. Mọi phím khác vẫn đi tới máy từ xa như trước.",
         "label": "Giữ các phím tắt đã chọn trên máy tính này trong Máy tính Từ xa (Windows)",
-        "description": "**Máy tính Từ xa nhận mọi phím khi phiên của nó đang giữ bàn phím** (ở chế độ toàn màn hình, hoặc khi tổ hợp phím Windows được gửi tới máy từ xa), nên các phím tắt của Handy Tool không còn hoạt động ở đó. Khi bật tùy chọn này, các phím tắt bạn đánh dấu bằng Giữ trên máy tính này sẽ điều khiển Handy Tool tại đây. Mọi phím khác, kể cả Ctrl+C, Ctrl+V và Alt+Tab, vẫn đi tới máy từ xa.\n\n**Hoạt động với:** Kết nối Máy tính Từ xa (mstsc) và Windows App, trên Windows. Không hoạt động với Citrix: hãy dùng cài đặt riêng của Citrix Workspace cho tổ hợp phím Windows.\n\n**Chưa hỗ trợ:** nhấn để nói và Hoàn tác từ cuối, vốn hoạt động trong khi giữ phím. Dán bản phiên âm gần nhất thì có thể giữ lại: nó dán vào phiên khi bạn nhả phím.\n\n**Không bảo đảm:** khi một ứng dụng khách giành lại các phím, Shortcut Keeper nhận ra trong vài giây khi bạn gõ và tự trở lại phía trước. Nếu một phím tắt đã giữ vẫn đi tới máy từ xa, hãy bấm ra ngoài phiên rồi bấm lại vào trong.\n\n**Quyền riêng tư:** Handy Tool chỉ theo dõi bàn phím khi một phiên Máy tính Từ xa ở phía trước, chỉ phản ứng với các phím tắt bạn đã đánh dấu, và không bao giờ lưu, ghi nhật ký hay gửi đi những gì bạn gõ.\n\n**Mặc định:** Tắt.",
+        "description": "**Máy tính Từ xa nhận mọi phím khi phiên của nó đang giữ bàn phím** (ở chế độ toàn màn hình, hoặc khi tổ hợp phím Windows được gửi tới máy từ xa), nên các phím tắt của Handy Tool không còn hoạt động ở đó. Khi bật tùy chọn này, các phím tắt bạn đánh dấu bằng Giữ trên máy tính này sẽ điều khiển Handy Tool tại đây. Mọi phím khác, kể cả Ctrl+C, Ctrl+V và Alt+Tab, vẫn đi tới máy từ xa.\n\n**Hoạt động với:** Kết nối Máy tính Từ xa (mstsc) và Windows App, trên Windows. Không hoạt động với Citrix: hãy dùng cài đặt riêng của Citrix Workspace cho tổ hợp phím Windows.\n\n**Chưa hỗ trợ:** nhấn để nói và Hoàn tác từ cuối, vốn hoạt động trong khi giữ phím. Dán bản phiên âm gần nhất thì có thể giữ lại: nó dán vào phiên khi bạn nhả phím.\n\n**Không bảo đảm:** các ứng dụng khách Máy tính Từ xa liên tục giành lại các phím, nên Shortcut Keeper tự trở lại phía trước sau mỗi giây không có phím nào được nhấn. Nếu bạn nhấn một phím tắt đã giữ ngay sau khi ứng dụng khách giành lại các phím, phím tắt đó vẫn có thể đi tới máy từ xa: hãy nhấn lại, hoặc bấm ra ngoài phiên rồi bấm lại vào trong.\n\n**Quyền riêng tư:** Handy Tool chỉ theo dõi bàn phím khi một phiên Máy tính Từ xa ở phía trước, chỉ phản ứng với các phím tắt bạn đã đánh dấu, và không bao giờ lưu, ghi nhật ký hay gửi đi những gì bạn gõ.\n\n**Mặc định:** Tắt.",
         "cjk": {
           "label": "Tôi gõ tiếng Trung, tiếng Nhật hoặc tiếng Hàn",
           "description": "**Chỉ khi đó bạn mới cần ghi chú về Ctrl+Space.** Trên các thiết lập tiếng Trung, tiếng Nhật và tiếng Hàn, Ctrl+Space chuyển phương thức nhập; Ctrl+Space đã giữ trên máy tính này sẽ không còn tới máy từ xa cho việc đó nữa. Bật tùy chọn này thì Ctrl+Space đã giữ sẽ hiển thị ghi chú đó.\n\n**Mặc định:** Tắt."
@@ -2061,9 +2061,13 @@
     "release": "Phiên bản {{version}}",
     "show": "Hiện cho tôi",
     "items": {
-      "keeperSelfHeal": {
-        "title": "Shortcut Keeper tự trở lại phía trước",
-        "description": "Một ứng dụng khách Máy tính Từ xa, hoặc một máy tính đang bận, có thể đẩy móc bàn phím của Shortcut Keeper ra khỏi hàng, và khi đó các phím tắt đã giữ đi tới máy từ xa cho đến khi bạn tắt rồi bật lại nó. Giờ đây, trong khi bạn gõ trong phiên, nó nhận ra điều này trong vài giây và tự trở lại phía trước. Chỉ Windows."
+      "keeperRefresh": {
+        "title": "Shortcut Keeper luôn ở phía trước trong Máy tính Từ xa",
+        "description": "Cứ khoảng nửa phút, Windows App lại đặt móc bàn phím của chính nó lên trước móc của Shortcut Keeper, và khi đó các phím tắt đã giữ đi tới máy từ xa. Giờ đây Shortcut Keeper tự trở lại phía trước sau mỗi giây không có phím nào được nhấn, thay vì chờ đến khi bạn đã gõ được vài giây. Chỉ Windows."
+      },
+      "vulkanOptional": {
+        "title": "Handy Tool khởi động được trên máy tính không có Vulkan",
+        "description": "Trên máy tính không có driver đồ hoạ Vulkan, thường là laptop đời cũ, Windows đã từ chối khởi động Handy Tool với thông báo \"vulkan-1.dll was not found\". Giờ đây Handy Tool khởi động được, và các mô hình Whisper chạy trên bộ xử lý thay vì card đồ hoạ. Chỉ Windows."
       },
       "hallucinationFilter": {
         "title": "Không còn dán \"Thank you.\" từ khoảng lặng",
@@ -2088,10 +2092,6 @@
       "shortcutKeeper": {
         "title": "Shortcut Keeper: phím tắt của bạn hoạt động trong Máy tính Từ xa",
         "description": "Trên Windows, hãy bật Shortcut Keeper ở trang Phím tắt và đánh dấu Giữ trên máy tính này cạnh một phím tắt: khi một phiên Kết nối Máy tính Từ xa hoặc Windows App đang giữ bàn phím, phím tắt đó điều khiển Handy Tool trên máy tính này thay vì đi tới máy từ xa. Mọi phím khác vẫn đi tới máy từ xa."
-      },
-      "updateIndicator": {
-        "title": "Phiên bản cho biết khi có bản cập nhật",
-        "description": "Một mũi tên nhỏ cạnh số phiên bản ở góc dưới bên trái nghĩa là đã có phiên bản mới hơn. Bấm vào số phiên bản để kiểm tra bản cập nhật bằng Cập nhật ngay, hoặc để cài bản đã tìm thấy."
       },
       "hotkeyRelease": {
         "title": "Giữ một phím tắt không còn làm bận một nhân bộ xử lý",

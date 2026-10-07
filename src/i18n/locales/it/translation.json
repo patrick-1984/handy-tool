@@ -909,7 +909,7 @@
         "title": "Shortcut Keeper",
         "summary": "Mantiene su questo PC le scorciatoie che selezioni mentre una sessione di Desktop remoto ha la tastiera, così controllano Handy Tool qui invece di arrivare al computer remoto. Tutti gli altri tasti vanno al computer remoto come prima.",
         "label": "Mantieni su questo PC le scorciatoie scelte in Desktop remoto (Windows)",
-        "description": "**Desktop remoto prende ogni tasto finché la sua sessione ha la tastiera** (a schermo intero, o quando le combinazioni di tasti di Windows vanno al computer remoto), quindi lì le scorciatoie di Handy Tool smettono di funzionare. Con questa opzione attiva, le scorciatoie che selezioni con Mantieni su questo PC controllano Handy Tool qui. Ogni altro tasto, Ctrl+C, Ctrl+V e Alt+Tab compresi, va ancora al computer remoto.\n\n**Funziona con:** Connessione Desktop remoto (mstsc) e la Windows App, su Windows. Non con Citrix: usa invece l'impostazione di Citrix Workspace per le combinazioni di tasti di Windows.\n\n**Non ancora:** Premi per Parlare e Annulla l'ultima parola, che agiscono mentre il tasto è premuto. Paste last transcription si può mantenere: incolla nella sessione quando rilasci i tasti.\n\n**Senza garanzia:** quando un client si riprende i tasti, Shortcut Keeper se ne accorge in pochi secondi mentre digiti e si rimette al primo posto. Se una scorciatoia mantenuta va ancora al computer remoto, fai clic fuori dalla sessione e poi di nuovo dentro.\n\n**Privacy:** Handy Tool osserva la tastiera solo mentre una sessione di Desktop remoto è in primo piano, reagisce solo alle scorciatoie che hai selezionato e non salva, registra né invia mai ciò che digiti.\n\n**Predefinito:** Disattivato.",
+        "description": "**Desktop remoto prende ogni tasto finché la sua sessione ha la tastiera** (a schermo intero, o quando le combinazioni di tasti di Windows vanno al computer remoto), quindi lì le scorciatoie di Handy Tool smettono di funzionare. Con questa opzione attiva, le scorciatoie che selezioni con Mantieni su questo PC controllano Handy Tool qui. Ogni altro tasto, Ctrl+C, Ctrl+V e Alt+Tab compresi, va ancora al computer remoto.\n\n**Funziona con:** Connessione Desktop remoto (mstsc) e la Windows App, su Windows. Non con Citrix: usa invece l'impostazione di Citrix Workspace per le combinazioni di tasti di Windows.\n\n**Non ancora:** Premi per Parlare e Annulla l'ultima parola, che agiscono mentre il tasto è premuto. Paste last transcription si può mantenere: incolla nella sessione quando rilasci i tasti.\n\n**Senza garanzia:** i client di Desktop remoto continuano a riprendersi i tasti, quindi Shortcut Keeper si rimette al primo posto dopo ogni secondo in cui non viene premuto alcun tasto. Se premi una scorciatoia mantenuta subito dopo che un client si è ripreso i tasti, può ancora andare al computer remoto: premila di nuovo, oppure fai clic fuori dalla sessione e poi di nuovo dentro.\n\n**Privacy:** Handy Tool osserva la tastiera solo mentre una sessione di Desktop remoto è in primo piano, reagisce solo alle scorciatoie che hai selezionato e non salva, registra né invia mai ciò che digiti.\n\n**Predefinito:** Disattivato.",
         "cjk": {
           "label": "Scrivo in cinese, giapponese o coreano",
           "description": "**Solo in quel caso ti serve la nota su Ctrl+Spazio.** Nelle configurazioni in cinese, giapponese e coreano Ctrl+Spazio cambia il metodo di input; un Ctrl+Spazio mantenuto non arriva più al computer remoto per farlo. Attiva questa opzione e un Ctrl+Spazio mantenuto mostrerà quella nota.\n\n**Predefinito:** Disattivato."
@@ -2061,9 +2061,13 @@
     "release": "Versione {{version}}",
     "show": "Mostra",
     "items": {
-      "keeperSelfHeal": {
-        "title": "Shortcut Keeper si rimette al primo posto",
-        "description": "Un client di Desktop remoto, o un PC molto occupato, poteva spostare fuori posto l'hook della tastiera di Shortcut Keeper, e le scorciatoie mantenute andavano allora al computer remoto finché non lo disattivavi e riattivavi. Ora, mentre digiti nella sessione, se ne accorge in pochi secondi e si rimette al primo posto. Solo Windows."
+      "keeperRefresh": {
+        "title": "Shortcut Keeper resta al primo posto in Desktop remoto",
+        "description": "La Windows App mette il proprio hook della tastiera davanti a quello di Shortcut Keeper all'incirca ogni mezzo minuto, e le scorciatoie mantenute andavano allora al computer remoto. Ora Shortcut Keeper si rimette al primo posto dopo ogni secondo in cui non viene premuto alcun tasto, invece di aspettare che tu avessi digitato per qualche secondo. Solo Windows."
+      },
+      "vulkanOptional": {
+        "title": "Handy Tool si avvia sui PC senza Vulkan",
+        "description": "Su un PC senza driver grafico Vulkan, spesso un portatile datato, Windows si rifiutava di avviare Handy Tool con \"vulkan-1.dll was not found\". Ora si avvia, e i modelli Whisper vengono eseguiti sul processore invece che sulla scheda grafica. Solo Windows."
       },
       "hallucinationFilter": {
         "title": "Niente più \"Thank you.\" incollato dal silenzio",
@@ -2088,10 +2092,6 @@
       "shortcutKeeper": {
         "title": "Shortcut Keeper: le tue scorciatoie funzionano in Desktop remoto",
         "description": "Su Windows, attiva Shortcut Keeper nella pagina Scorciatoie e seleziona Mantieni su questo PC accanto a una scorciatoia: mentre una sessione di Connessione Desktop remoto o della Windows App ha la tastiera, quella scorciatoia controlla Handy Tool su questo PC invece di arrivare al computer remoto. Ogni altro tasto va ancora al computer remoto."
-      },
-      "updateIndicator": {
-        "title": "La versione indica quando è disponibile un aggiornamento",
-        "description": "Una piccola freccia accanto alla versione, in basso a sinistra, indica che è disponibile una versione più recente. Fai clic sulla versione per cercare aggiornamenti con Aggiorna ora o per installare quello trovato."
       },
       "hotkeyRelease": {
         "title": "Tenere premuta una scorciatoia non tiene più occupato un core del processore",

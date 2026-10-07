@@ -1,5 +1,29 @@
 # Changelog
 
+## [2.1.4] - 2026-10-07
+
+A fix release: Shortcut Keeper stays in front in Remote Desktop, and Handy Tool starts on PCs
+without Vulkan.
+
+### Fixed
+
+- **Shortcut Keeper stays in front in Remote Desktop (Windows).** The 2.1.3 log showed why kept
+  shortcuts still reached the remote: the Windows App puts its own keyboard hook back in front of
+  Shortcut Keeper's a few seconds after you enter a session and then every 15 to 35 seconds, while
+  the 2.1.2 self-heal reacted only after you had typed for 3 seconds unheard (and waited up to a
+  minute after mouse-only use). Now, while a session has the keyboard, Shortcut Keeper puts its
+  hook back in front after every second in which it heard no key and no key is held. A key let go
+  while the client's hook was in front (so Handy never saw it go up) no longer makes the next kept
+  shortcut go to the remote. Still best effort: a shortcut pressed within a second or two of the
+  client taking the front can reach the remote. The log line when the session loses the keyboard
+  says how often the hook was put back in front.
+- **Handy Tool starts on PCs without Vulkan (Windows).** On a PC without a Vulkan graphics driver
+  (often an older laptop), Windows refused to start Handy Tool: "The code execution cannot proceed
+  because vulkan-1.dll was not found". Handy Tool now loads the Vulkan library only when Whisper
+  first looks for a graphics card; without it, Whisper models run on the processor. A Vulkan driver
+  older than version 1.2 now also means "no graphics card" instead of closing Handy Tool when a
+  Whisper model loads.
+
 ## [2.1.3] - 2026-10-07
 
 A diagnostic release for Shortcut Keeper.

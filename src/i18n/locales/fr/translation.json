@@ -909,7 +909,7 @@
         "title": "Shortcut Keeper",
         "summary": "Garde sur ce PC les raccourcis que vous cochez pendant qu'une session Bureau à distance a le clavier, pour qu'ils pilotent Handy Tool ici au lieu d'atteindre l'ordinateur distant. Toutes les autres touches vont à l'ordinateur distant comme avant.",
         "label": "Garder les raccourcis choisis sur ce PC dans Bureau à distance (Windows)",
-        "description": "**Bureau à distance prend toutes les touches tant que sa session a le clavier** (en plein écran, ou quand les combinaisons de touches Windows vont à l'ordinateur distant), si bien que les raccourcis de Handy Tool n'y fonctionnent plus. Avec cette option, les raccourcis que vous cochez avec Garder sur ce PC pilotent Handy Tool ici. Toutes les autres touches, y compris Ctrl+C, Ctrl+V et Alt+Tab, vont toujours à l'ordinateur distant.\n\n**Fonctionne avec :** Connexion Bureau à distance (mstsc) et Windows App, sur Windows. Pas avec Citrix : utilisez plutôt le réglage propre à Citrix Workspace pour les combinaisons de touches Windows.\n\n**Pas encore :** Appuyer pour parler et Annuler le dernier mot, qui agissent tant que la touche est maintenue. « Paste last transcription » peut être gardé : il colle dans la session quand vous relâchez les touches.\n\n**Sans garantie :** quand un client reprend les touches, Shortcut Keeper le remarque en quelques secondes pendant que vous tapez et se remet en première position. Si un raccourci gardé va encore à l'ordinateur distant, cliquez hors de la session, puis de nouveau dedans.\n\n**Confidentialité :** Handy Tool n'observe le clavier que lorsqu'une session Bureau à distance est au premier plan, ne réagit qu'aux raccourcis que vous avez cochés et n'enregistre, ne journalise ni n'envoie jamais ce que vous tapez.\n\n**Par défaut :** Désactivé.",
+        "description": "**Bureau à distance prend toutes les touches tant que sa session a le clavier** (en plein écran, ou quand les combinaisons de touches Windows vont à l'ordinateur distant), si bien que les raccourcis de Handy Tool n'y fonctionnent plus. Avec cette option, les raccourcis que vous cochez avec Garder sur ce PC pilotent Handy Tool ici. Toutes les autres touches, y compris Ctrl+C, Ctrl+V et Alt+Tab, vont toujours à l'ordinateur distant.\n\n**Fonctionne avec :** Connexion Bureau à distance (mstsc) et Windows App, sur Windows. Pas avec Citrix : utilisez plutôt le réglage propre à Citrix Workspace pour les combinaisons de touches Windows.\n\n**Pas encore :** Appuyer pour parler et Annuler le dernier mot, qui agissent tant que la touche est maintenue. « Paste last transcription » peut être gardé : il colle dans la session quand vous relâchez les touches.\n\n**Sans garantie :** les clients Bureau à distance reprennent sans cesse les touches, donc Shortcut Keeper se remet en première position après chaque seconde sans appui sur une touche. Un raccourci gardé sur lequel vous appuyez juste après qu'un client a repris les touches peut encore aller à l'ordinateur distant : appuyez de nouveau dessus, ou cliquez hors de la session, puis de nouveau dedans.\n\n**Confidentialité :** Handy Tool n'observe le clavier que lorsqu'une session Bureau à distance est au premier plan, ne réagit qu'aux raccourcis que vous avez cochés et n'enregistre, ne journalise ni n'envoie jamais ce que vous tapez.\n\n**Par défaut :** Désactivé.",
         "cjk": {
           "label": "J'écris en chinois, japonais ou coréen",
           "description": "**C'est seulement dans ce cas que la remarque sur Ctrl+Espace vous concerne.** Sur les configurations chinoises, japonaises et coréennes, Ctrl+Espace change de méthode d'entrée ; un Ctrl+Espace gardé n'atteint plus l'ordinateur distant pour cela. Activez cette option et un Ctrl+Espace gardé affichera cette remarque.\n\n**Par défaut :** Désactivé."
@@ -2061,9 +2061,13 @@
     "release": "Version {{version}}",
     "show": "Montrer",
     "items": {
-      "keeperSelfHeal": {
-        "title": "Shortcut Keeper se remet en première position",
-        "description": "Un client Bureau à distance, ou un PC très occupé, pouvait faire perdre sa place au hook clavier de Shortcut Keeper, et les raccourcis gardés allaient alors à l'ordinateur distant jusqu'à ce que vous le désactiviez puis le réactiviez. Désormais, pendant que vous tapez dans la session, il le remarque en quelques secondes et se remet en première position. Windows uniquement."
+      "keeperRefresh": {
+        "title": "Shortcut Keeper reste en première position dans Bureau à distance",
+        "description": "Windows App place son propre hook clavier devant celui de Shortcut Keeper toutes les trente secondes environ, et les raccourcis gardés allaient alors à l'ordinateur distant. Shortcut Keeper se remet désormais en première position après chaque seconde sans appui sur une touche, au lieu d'attendre que vous ayez tapé pendant quelques secondes. Windows uniquement."
+      },
+      "vulkanOptional": {
+        "title": "Handy Tool démarre sur les PC sans Vulkan",
+        "description": "Sur un PC sans pilote graphique Vulkan, souvent un portable assez ancien, Windows refusait de démarrer Handy Tool avec « vulkan-1.dll was not found ». Il démarre désormais, et les modèles Whisper s'exécutent sur le processeur au lieu de la carte graphique. Windows uniquement."
       },
       "hallucinationFilter": {
         "title": "Plus de « Thank you. » collé à partir du silence",
@@ -2088,10 +2092,6 @@
       "shortcutKeeper": {
         "title": "Shortcut Keeper : vos raccourcis fonctionnent dans Bureau à distance",
         "description": "Sur Windows, activez Shortcut Keeper dans la page Raccourcis et cochez Garder sur ce PC à côté d'un raccourci : tant qu'une session Connexion Bureau à distance ou Windows App a le clavier, ce raccourci pilote Handy Tool sur ce PC au lieu d'atteindre l'ordinateur distant. Toutes les autres touches vont toujours à l'ordinateur distant."
-      },
-      "updateIndicator": {
-        "title": "La version indique quand une mise à jour est disponible",
-        "description": "Une petite flèche à côté de la version, en bas à gauche, signale qu'une version plus récente est disponible. Cliquez sur la version pour rechercher des mises à jour avec Mettre à jour maintenant, ou pour installer celle qui a été trouvée."
       },
       "hotkeyRelease": {
         "title": "Maintenir un raccourci n'occupe plus un cœur du processeur",

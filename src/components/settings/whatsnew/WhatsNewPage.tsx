@@ -37,17 +37,20 @@ interface Item {
  */
 const RELEASES: { version: string; items: Item[] }[] = [
   {
-    version: "2.1.2",
+    version: "2.1.4",
     items: [
       {
-        key: "keeperSelfHeal",
+        key: "keeperRefresh",
         section: "shortcuts",
         titleKeys: ["settings.shortcuts.keeper.label"],
         windowsOnly: true,
       },
-      { key: "hallucinationFilter" },
-      { key: "remoteClipboard" },
+      { key: "vulkanOptional" },
     ],
+  },
+  {
+    version: "2.1.2",
+    items: [{ key: "hallucinationFilter" }, { key: "remoteClipboard" }],
   },
   {
     version: "2.1.1",
@@ -71,7 +74,6 @@ const RELEASES: { version: string; items: Item[] }[] = [
         titleKeys: ["settings.shortcuts.keeper.label"],
         windowsOnly: true,
       },
-      { key: "updateIndicator" },
       { key: "hotkeyRelease" },
     ],
   },

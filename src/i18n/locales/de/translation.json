@@ -909,7 +909,7 @@
         "title": "Shortcut Keeper",
         "summary": "Hält die Tastenkürzel, die du anhakst, auf diesem PC, während eine Remotedesktop-Sitzung die Tastatur hat. So steuern sie Handy Tool hier, statt beim Remotecomputer anzukommen. Alle anderen Tasten gehen wie bisher an den Remotecomputer.",
         "label": "Gewählte Tastenkürzel im Remotedesktop auf diesem PC behalten (Windows)",
-        "description": "**Remotedesktop nimmt jede Taste, solange seine Sitzung die Tastatur hat** (im Vollbild oder wenn Windows-Tastenkombinationen an den Remotecomputer gehen), daher funktionieren die Tastenkürzel von Handy Tool dort nicht mehr. Ist dies eingeschaltet, steuern die Tastenkürzel, die du mit Auf diesem PC behalten anhakst, Handy Tool hier. Jede andere Taste, auch Strg+C, Strg+V und Alt+Tab, geht weiterhin an den Remotecomputer.\n\n**Funktioniert mit:** Remotedesktopverbindung (mstsc) und der Windows App, unter Windows. Nicht mit Citrix: Nutze stattdessen die eigene Einstellung von Citrix Workspace für Windows-Tastenkombinationen.\n\n**Noch nicht:** Push-to-Talk und Letztes Wort rückgängig, die wirken, solange die Taste gehalten wird. Das erneute Einfügen der letzten Transkription lässt sich behalten: Es fügt in die Sitzung ein, wenn du die Tasten loslässt.\n\n**Ohne Garantie:** Wenn ein Client die Tasten wieder an sich nimmt, bemerkt Shortcut Keeper das beim Tippen innerhalb weniger Sekunden und stellt sich wieder an die erste Stelle. Geht ein behaltenes Tastenkürzel trotzdem an den Remotecomputer, klicke außerhalb der Sitzung und dann wieder hinein.\n\n**Datenschutz:** Handy Tool beobachtet die Tastatur nur, solange eine Remotedesktop-Sitzung im Vordergrund ist, reagiert nur auf die Tastenkürzel, die du angehakt hast, und speichert, protokolliert oder sendet nie, was du tippst.\n\n**Standard:** Aus.",
+        "description": "**Remotedesktop nimmt jede Taste, solange seine Sitzung die Tastatur hat** (im Vollbild oder wenn Windows-Tastenkombinationen an den Remotecomputer gehen), daher funktionieren die Tastenkürzel von Handy Tool dort nicht mehr. Ist dies eingeschaltet, steuern die Tastenkürzel, die du mit Auf diesem PC behalten anhakst, Handy Tool hier. Jede andere Taste, auch Strg+C, Strg+V und Alt+Tab, geht weiterhin an den Remotecomputer.\n\n**Funktioniert mit:** Remotedesktopverbindung (mstsc) und der Windows App, unter Windows. Nicht mit Citrix: Nutze stattdessen die eigene Einstellung von Citrix Workspace für Windows-Tastenkombinationen.\n\n**Noch nicht:** Push-to-Talk und Letztes Wort rückgängig, die wirken, solange die Taste gehalten wird. Das erneute Einfügen der letzten Transkription lässt sich behalten: Es fügt in die Sitzung ein, wenn du die Tasten loslässt.\n\n**Ohne Garantie:** Remotedesktop-Clients nehmen die Tasten immer wieder an sich, daher stellt sich Shortcut Keeper nach jeder Sekunde ohne Tastendruck wieder an die erste Stelle. Drückst du ein behaltenes Tastenkürzel direkt, nachdem ein Client die Tasten an sich genommen hat, kann es trotzdem an den Remotecomputer gehen: Drücke es noch einmal oder klicke außerhalb der Sitzung und dann wieder hinein.\n\n**Datenschutz:** Handy Tool beobachtet die Tastatur nur, solange eine Remotedesktop-Sitzung im Vordergrund ist, reagiert nur auf die Tastenkürzel, die du angehakt hast, und speichert, protokolliert oder sendet nie, was du tippst.\n\n**Standard:** Aus.",
         "cjk": {
           "label": "Ich tippe Chinesisch, Japanisch oder Koreanisch",
           "description": "**Nur dann brauchst du den Hinweis zu Strg+Leertaste.** Bei chinesischen, japanischen und koreanischen Einstellungen wechselt Strg+Leertaste die Eingabemethode; ein behaltenes Strg+Leertaste kommt dafür nicht mehr beim Remotecomputer an. Schalte dies ein, dann zeigt ein behaltenes Strg+Leertaste diesen Hinweis.\n\n**Standard:** Aus."
@@ -2061,9 +2061,13 @@
     "release": "Version {{version}}",
     "show": "Zeigen",
     "items": {
-      "keeperSelfHeal": {
-        "title": "Shortcut Keeper stellt sich wieder an die erste Stelle",
-        "description": "Ein Remotedesktop-Client oder ein ausgelasteter PC konnte den Tastatur-Hook von Shortcut Keeper aus der Reihe drängen. Behaltene Tastenkürzel gingen dann an den Remotecomputer, bis du Shortcut Keeper aus- und wieder eingeschaltet hast. Jetzt bemerkt er das innerhalb weniger Sekunden, während du in der Sitzung tippst, und stellt sich wieder an die erste Stelle. Nur Windows."
+      "keeperRefresh": {
+        "title": "Shortcut Keeper bleibt im Remotedesktop an erster Stelle",
+        "description": "Die Windows App stellt etwa jede halbe Minute ihren eigenen Tastatur-Hook vor den von Shortcut Keeper, und behaltene Tastenkürzel gingen dann an den Remotecomputer. Shortcut Keeper stellt sich jetzt nach jeder Sekunde ohne Tastendruck wieder an die erste Stelle, statt zu warten, bis du einige Sekunden lang getippt hattest. Nur Windows."
+      },
+      "vulkanOptional": {
+        "title": "Handy Tool startet auf PCs ohne Vulkan",
+        "description": "Auf einem PC ohne Vulkan-Grafiktreiber, oft einem älteren Laptop, hat Windows den Start von Handy Tool mit „vulkan-1.dll was not found“ verweigert. Jetzt startet es, und Whisper-Modelle laufen auf dem Prozessor statt auf der Grafikkarte. Nur Windows."
       },
       "hallucinationFilter": {
         "title": "Kein „Thank you.“ mehr aus der Stille",
@@ -2088,10 +2092,6 @@
       "shortcutKeeper": {
         "title": "Shortcut Keeper: Deine Tastenkürzel funktionieren im Remotedesktop",
         "description": "Schalte unter Windows Shortcut Keeper auf der Seite Tastenkürzel ein und hake neben einem Tastenkürzel Auf diesem PC behalten an: Solange eine Sitzung der Remotedesktopverbindung oder der Windows App die Tastatur hat, steuert dieses Tastenkürzel Handy Tool auf diesem PC, statt beim Remotecomputer anzukommen. Jede andere Taste geht weiterhin an den Remotecomputer."
-      },
-      "updateIndicator": {
-        "title": "Die Version zeigt an, wenn ein Update verfügbar ist",
-        "description": "Ein kleiner Pfeil neben der Version unten links bedeutet, dass eine neuere Version verfügbar ist. Klicke auf die Version, um mit Jetzt aktualisieren nach Updates zu suchen oder ein gefundenes zu installieren."
       },
       "hotkeyRelease": {
         "title": "Ein gehaltenes Tastenkürzel hält keinen Prozessorkern mehr beschäftigt",

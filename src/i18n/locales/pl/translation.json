@@ -909,7 +909,7 @@
         "title": "Strażnik skrótów",
         "summary": "Zatrzymuje zaznaczone przez Ciebie skróty na tym komputerze, gdy klawiaturę ma sesja Pulpitu zdalnego, więc sterują one Handy Tool tutaj, zamiast trafiać do komputera zdalnego. Wszystkie inne klawisze trafiają do komputera zdalnego jak dotąd.",
         "label": "Zachowaj wybrane skróty na tym komputerze w Pulpicie zdalnym (Windows)",
-        "description": "**Pulpit zdalny przejmuje każdy klawisz, gdy jego sesja ma klawiaturę** (na pełnym ekranie albo gdy kombinacje klawiszy Windows trafiają do komputera zdalnego), więc skróty Handy Tool przestają tam działać. Gdy to jest włączone, skróty zaznaczone opcją Zachowaj na tym komputerze sterują Handy Tool tutaj. Każdy inny klawisz, w tym Ctrl+C, Ctrl+V i Alt+Tab, nadal trafia do komputera zdalnego.\n\n**Działa z:** aplikacjami Podłączanie pulpitu zdalnego (mstsc) i Windows App, w Windows. Nie działa z klientem Citrix: zamiast tego użyj własnego ustawienia Citrix Workspace dla kombinacji klawiszy Windows.\n\n**Jeszcze nie:** Push-to-Talk i Cofnij ostatnie słowo, które działają, gdy klawisz jest przytrzymany. Wklej ostatnią transkrypcję można zachować: wkleja do sesji, gdy puścisz klawisze.\n\n**Bez gwarancji:** gdy klient przejmie klawisze z powrotem, Strażnik skrótów zauważa to w ciągu kilku sekund, gdy piszesz, i odzyskuje pierwszeństwo. Jeśli zachowany skrót nadal trafia do komputera zdalnego, kliknij poza sesją, a potem z powrotem w nią.\n\n**Prywatność:** Handy Tool obserwuje klawiaturę tylko wtedy, gdy sesja Pulpitu zdalnego jest na pierwszym planie, reaguje tylko na zaznaczone przez Ciebie skróty i nigdy nie zapisuje, nie rejestruje ani nie wysyła tego, co piszesz.\n\n**Domyślnie:** Wyłączone.",
+        "description": "**Pulpit zdalny przejmuje każdy klawisz, gdy jego sesja ma klawiaturę** (na pełnym ekranie albo gdy kombinacje klawiszy Windows trafiają do komputera zdalnego), więc skróty Handy Tool przestają tam działać. Gdy to jest włączone, skróty zaznaczone opcją Zachowaj na tym komputerze sterują Handy Tool tutaj. Każdy inny klawisz, w tym Ctrl+C, Ctrl+V i Alt+Tab, nadal trafia do komputera zdalnego.\n\n**Działa z:** aplikacjami Podłączanie pulpitu zdalnego (mstsc) i Windows App, w Windows. Nie działa z klientem Citrix: zamiast tego użyj własnego ustawienia Citrix Workspace dla kombinacji klawiszy Windows.\n\n**Jeszcze nie:** Push-to-Talk i Cofnij ostatnie słowo, które działają, gdy klawisz jest przytrzymany. Wklej ostatnią transkrypcję można zachować: wkleja do sesji, gdy puścisz klawisze.\n\n**Bez gwarancji:** klienci Pulpitu zdalnego wciąż przejmują klawisze z powrotem, więc Strażnik skrótów odzyskuje pierwszeństwo po każdej sekundzie bez naciśnięcia klawisza. Zachowany skrót naciśnięty tuż po tym, jak klient przejął klawisze, może nadal trafić do komputera zdalnego: naciśnij go ponownie albo kliknij poza sesją, a potem z powrotem w nią.\n\n**Prywatność:** Handy Tool obserwuje klawiaturę tylko wtedy, gdy sesja Pulpitu zdalnego jest na pierwszym planie, reaguje tylko na zaznaczone przez Ciebie skróty i nigdy nie zapisuje, nie rejestruje ani nie wysyła tego, co piszesz.\n\n**Domyślnie:** Wyłączone.",
         "cjk": {
           "label": "Piszę po chińsku, japońsku lub koreańsku",
           "description": "**Tylko wtedy potrzebujesz informacji o Ctrl+Space.** W konfiguracjach chińskich, japońskich i koreańskich Ctrl+Space przełącza metodę wprowadzania; zachowany Ctrl+Space nie dotrze już w tym celu do komputera zdalnego. Gdy to włączysz, zachowany Ctrl+Space pokaże tę informację.\n\n**Domyślnie:** Wyłączone."
@@ -2061,9 +2061,13 @@
     "release": "Wersja {{version}}",
     "show": "Pokaż",
     "items": {
-      "keeperSelfHeal": {
-        "title": "Strażnik skrótów sam odzyskuje pierwszeństwo",
-        "description": "Klient Pulpitu zdalnego albo zajęty komputer mógł wypchnąć przechwytywanie klawiatury Strażnika skrótów z kolejki, a zachowane skróty trafiały wtedy do komputera zdalnego aż do jego wyłączenia i ponownego włączenia. Teraz, gdy piszesz w sesji, Strażnik skrótów zauważa to w ciągu kilku sekund i odzyskuje pierwszeństwo. Tylko Windows."
+      "keeperRefresh": {
+        "title": "Strażnik skrótów utrzymuje pierwszeństwo w Pulpicie zdalnym",
+        "description": "Windows App mniej więcej co pół minuty stawia własne przechwytywanie klawiatury przed przechwytywaniem Strażnika skrótów, a zachowane skróty trafiały wtedy do komputera zdalnego. Teraz Strażnik skrótów odzyskuje pierwszeństwo po każdej sekundzie bez naciśnięcia klawisza, zamiast czekać, aż przez kilka sekund będziesz pisać. Tylko Windows."
+      },
+      "vulkanOptional": {
+        "title": "Handy Tool uruchamia się na komputerach bez Vulkana",
+        "description": "Na komputerze bez sterownika graficznego Vulkan, często starszym laptopie, Windows odmawiał uruchomienia Handy Tool z komunikatem „vulkan-1.dll was not found”. Teraz Handy Tool się uruchamia, a modele Whisper działają na procesorze zamiast na karcie graficznej. Tylko Windows."
       },
       "hallucinationFilter": {
         "title": "Koniec z „Dziękuję.” wklejanym z ciszy",
@@ -2088,10 +2092,6 @@
       "shortcutKeeper": {
         "title": "Strażnik skrótów: Twoje skróty działają w Pulpicie zdalnym",
         "description": "W Windows włącz Strażnika skrótów na stronie Skróty i zaznacz Zachowaj na tym komputerze przy skrócie: gdy klawiaturę ma sesja aplikacji Podłączanie pulpitu zdalnego lub Windows App, ten skrót steruje Handy Tool na tym komputerze, zamiast trafiać do komputera zdalnego. Każdy inny klawisz nadal trafia do komputera zdalnego."
-      },
-      "updateIndicator": {
-        "title": "Wersja pokazuje, kiedy jest dostępna aktualizacja",
-        "description": "Mała strzałka obok wersji w lewym dolnym rogu oznacza, że dostępna jest nowsza wersja. Kliknij wersję, aby sprawdzić aktualizacje przyciskiem Aktualizuj teraz albo zainstalować znalezioną."
       },
       "hotkeyRelease": {
         "title": "Przytrzymany skrót nie zajmuje już rdzenia procesora",

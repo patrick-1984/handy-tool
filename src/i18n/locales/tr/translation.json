@@ -909,7 +909,7 @@
         "title": "Kısayol Koruyucu",
         "summary": "İşaretlediğiniz kısayolları, klavye bir Uzak Masaüstü oturumundayken bu bilgisayarda tutar; böylece uzak bilgisayara ulaşmak yerine burada Handy Tool'u çalıştırırlar. Diğer tüm tuşlar eskisi gibi uzak bilgisayara gider.",
         "label": "Seçilen kısayolları Uzak Masaüstü'nde bu bilgisayarda tut (Windows)",
-        "description": "**Klavye bir Uzak Masaüstü oturumundayken Uzak Masaüstü her tuşu alır** (tam ekranda veya Windows tuş birleşimleri uzak bilgisayara gönderildiğinde), bu yüzden Handy Tool'un kısayolları orada çalışmaz. Bu açıkken, Bu bilgisayarda tut seçeneğiyle işaretlediğiniz kısayollar burada Handy Tool'u çalıştırır. Ctrl+C, Ctrl+V ve Alt+Tab dahil diğer tüm tuşlar yine uzak bilgisayara gider.\n\n**Şunlarla çalışır:** Windows'ta Uzak Masaüstü Bağlantısı (mstsc) ve Windows App. Citrix ile çalışmaz: bunun yerine Citrix Workspace'in Windows tuş birleşimleri için kendi ayarını kullanın.\n\n**Henüz değil:** Bas Konuş ve Son kelimeyi geri al; bunlar tuş basılı tutulurken çalışır. Son Transkripsiyonu Yapıştır tutulabilir: tuşları bıraktığınızda oturuma yapıştırır.\n\n**Garanti yok:** bir istemci tuşları geri aldığında Kısayol Koruyucu, siz yazarken bunu birkaç saniye içinde fark eder ve yeniden öne geçer. Tutulan bir kısayol yine de uzak bilgisayara giderse oturumun dışına, sonra yeniden içine tıklayın.\n\n**Gizlilik:** Handy Tool klavyeyi yalnızca bir Uzak Masaüstü oturumu öndeyken izler, yalnızca işaretlediğiniz kısayollara tepki verir ve yazdıklarınızı asla saklamaz, günlüğe kaydetmez veya göndermez.\n\n**Varsayılan:** Kapalı.",
+        "description": "**Klavye bir Uzak Masaüstü oturumundayken Uzak Masaüstü her tuşu alır** (tam ekranda veya Windows tuş birleşimleri uzak bilgisayara gönderildiğinde), bu yüzden Handy Tool'un kısayolları orada çalışmaz. Bu açıkken, Bu bilgisayarda tut seçeneğiyle işaretlediğiniz kısayollar burada Handy Tool'u çalıştırır. Ctrl+C, Ctrl+V ve Alt+Tab dahil diğer tüm tuşlar yine uzak bilgisayara gider.\n\n**Şunlarla çalışır:** Windows'ta Uzak Masaüstü Bağlantısı (mstsc) ve Windows App. Citrix ile çalışmaz: bunun yerine Citrix Workspace'in Windows tuş birleşimleri için kendi ayarını kullanın.\n\n**Henüz değil:** Bas Konuş ve Son kelimeyi geri al; bunlar tuş basılı tutulurken çalışır. Son Transkripsiyonu Yapıştır tutulabilir: tuşları bıraktığınızda oturuma yapıştırır.\n\n**Garanti yok:** Uzak Masaüstü istemcileri tuşları sürekli geri alır, bu yüzden Kısayol Koruyucu tuşa basılmadan geçen her saniyenin ardından yeniden öne geçer. Bir istemci tuşları geri aldıktan hemen sonra tutulan bir kısayola basarsanız kısayol yine de uzak bilgisayara gidebilir: ona yeniden basın veya oturumun dışına, sonra yeniden içine tıklayın.\n\n**Gizlilik:** Handy Tool klavyeyi yalnızca bir Uzak Masaüstü oturumu öndeyken izler, yalnızca işaretlediğiniz kısayollara tepki verir ve yazdıklarınızı asla saklamaz, günlüğe kaydetmez veya göndermez.\n\n**Varsayılan:** Kapalı.",
         "cjk": {
           "label": "Çince, Japonca veya Korece yazıyorum",
           "description": "**Ctrl+Space notu yalnızca bu durumda gerekir.** Çince, Japonca ve Korece kurulumlarda Ctrl+Space giriş yöntemini değiştirir; tutulan bir Ctrl+Space bunun için artık uzak bilgisayara ulaşmaz. Bunu açarsanız tutulan bir Ctrl+Space o notu gösterir.\n\n**Varsayılan:** Kapalı."
@@ -2061,9 +2061,13 @@
     "release": "Sürüm {{version}}",
     "show": "Göster",
     "items": {
-      "keeperSelfHeal": {
-        "title": "Kısayol Koruyucu kendiliğinden yeniden öne geçer",
-        "description": "Bir Uzak Masaüstü istemcisi veya meşgul bir bilgisayar, Kısayol Koruyucu'nun klavye kancasını sıradan itebiliyordu; tutulan kısayollar da siz onu kapatıp yeniden açana kadar uzak bilgisayara gidiyordu. Artık siz oturumda yazarken bunu birkaç saniye içinde fark eder ve yeniden öne geçer. Yalnızca Windows."
+      "keeperRefresh": {
+        "title": "Kısayol Koruyucu, Uzak Masaüstü'nde önde kalır",
+        "description": "Windows App yaklaşık her yarım dakikada bir kendi klavye kancasını Kısayol Koruyucu'nunkinin önüne koyar; tutulan kısayollar da bu durumda uzak bilgisayara gidiyordu. Artık Kısayol Koruyucu, siz birkaç saniye yazana kadar beklemek yerine, tuşa basılmadan geçen her saniyenin ardından yeniden öne geçer. Yalnızca Windows."
+      },
+      "vulkanOptional": {
+        "title": "Handy Tool, Vulkan olmayan bilgisayarlarda başlar",
+        "description": "Vulkan grafik sürücüsü olmayan bir bilgisayarda, çoğu zaman eski bir dizüstü bilgisayarda, Windows Handy Tool'u \"vulkan-1.dll was not found\" iletisiyle başlatmayı reddediyordu. Artık başlıyor ve Whisper modelleri ekran kartı yerine işlemcide çalışıyor. Yalnızca Windows."
       },
       "hallucinationFilter": {
         "title": "Sessizlikten artık \"Thank you.\" yapıştırılmıyor",
@@ -2088,10 +2092,6 @@
       "shortcutKeeper": {
         "title": "Kısayol Koruyucu: kısayollarınız Uzak Masaüstü'nde çalışır",
         "description": "Windows'ta Kısayollar sayfasında Kısayol Koruyucu'yu açın ve bir kısayolun yanındaki Bu bilgisayarda tut kutusunu işaretleyin: klavye bir Uzak Masaüstü Bağlantısı veya Windows App oturumundayken o kısayol, uzak bilgisayara ulaşmak yerine bu bilgisayarda Handy Tool'u çalıştırır. Diğer tüm tuşlar yine uzak bilgisayara gider."
-      },
-      "updateIndicator": {
-        "title": "Güncelleme olduğunda sürüm bunu gösterir",
-        "description": "Sol alttaki sürümün yanındaki küçük ok, daha yeni bir sürüm olduğunu gösterir. Şimdi güncelle ile güncellemeleri denetlemek veya bulunan bir güncellemeyi yüklemek için sürüme tıklayın."
       },
       "hotkeyRelease": {
         "title": "Bir kısayolu basılı tutmak artık bir işlemci çekirdeğini meşgul etmiyor",
