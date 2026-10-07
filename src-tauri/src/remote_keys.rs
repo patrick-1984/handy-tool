@@ -268,6 +268,16 @@ pub(crate) fn chord_name(mods: u8, vk: u8) -> String {
         0x09 => name.push_str("Tab"),
         0x1B => name.push_str("Escape"),
         0x08 => name.push_str("Backspace"),
+        0x2D => name.push_str("Insert"),
+        VK_DELETE => name.push_str("Delete"),
+        VK_HOME => name.push_str("Home"),
+        VK_END => name.push_str("End"),
+        0x21 => name.push_str("Page Up"),
+        0x22 => name.push_str("Page Down"),
+        0x25 => name.push_str("Left"),
+        0x26 => name.push_str("Up"),
+        0x27 => name.push_str("Right"),
+        0x28 => name.push_str("Down"),
         _ => name.push_str(&format!("key {vk:#04x}")),
     }
     name
@@ -377,11 +387,10 @@ impl PassReason {
                 "the keys were sent by software (a macro tool or remapper), which Shortcut Keeper ignores"
             }
             2 => "it was a key repeat",
-            3 => "the hook was not ready yet (just entered the session)",
+            3 => "the hook was not ready (just entered the session, or still releasing a kept key)",
             4 => "the key was already down when the hook went in",
             5 => "a modifier was already down when the hook went in",
             6 => "a Windows key or right Alt (AltGr) was held",
-            8 => "no kept shortcut matches these keys",
             9 => "the keyboard focus was not in the session window",
             10 => "the press queue was full",
             11 => "no session was armed",
@@ -407,8 +416,10 @@ pub(crate) struct KeyState {
     phys_down: VkSet,
     quarantine: VkSet,
     acquiring: bool,
-    /// The last event, if it was a key-down of an ordinary key that was let
-    /// through: (key, modifiers held, why). Read by the hook for the log.
+    /// The last event, if it was a fresh key-down of an ordinary key that was
+    /// let through: (key, the modifiers meant with it, why). The modifiers
+    /// include a quarantined one and right Alt, so the log can tell whether it
+    /// was an attempt at a kept shortcut. Repeats are never recorded.
     pub(crate) last_pass: Option<(u8, u8, PassReason)>,
 }
 
@@ -492,22 +503,30 @@ impl KeyState {
             return Verdict::Pass;
         }
         let mods = self.mods();
-        let reason = if was_down {
-            Some(PassReason::Repeat)
-        } else if !self.acquiring {
-            Some(PassReason::NotAcquiring)
+        if was_down {
+            // A repeat: never noted (it would hide the real reason).
+            return Verdict::Pass;
+        }
+        let held = |v: u8| self.phys_down.get(v);
+        let reason = if !self.acquiring {
+            Some((mods, PassReason::NotAcquiring))
         } else if self.quarantine.get(vk) {
-            Some(PassReason::QuarantinedKey)
+            Some((mods, PassReason::QuarantinedKey))
         } else if MODIFIER_VKS.iter().any(|m| self.quarantine.get(*m)) {
-            Some(PassReason::QuarantinedModifier)
-        } else {
-            let held = |v: u8| self.phys_down.get(v);
+            Some((
+                mods | self.quarantined_mods(),
+                PassReason::QuarantinedModifier,
+            ))
+        } else if held(VK_LWIN) || held(VK_RWIN) || held(VK_RMENU) {
             // Win makes any chord a different one; right Alt is AltGr, whose
-            // characters must keep reaching the remote.
-            (held(VK_LWIN) || held(VK_RWIN) || held(VK_RMENU)).then_some(PassReason::WinOrAltGr)
+            // characters must keep reaching the remote. Noted as meant.
+            let alt = if held(VK_RMENU) { MOD_ALT } else { 0 };
+            Some((mods | alt, PassReason::WinOrAltGr))
+        } else {
+            None
         };
-        if let Some(reason) = reason {
-            self.last_pass = Some((vk, mods, reason));
+        if let Some((meant, reason)) = reason {
+            self.last_pass = Some((vk, meant, reason));
             return Verdict::Pass;
         }
         if claim(Chord { mods, vk }) {
@@ -516,6 +535,22 @@ impl KeyState {
         }
         self.last_pass = Some((vk, mods, PassReason::Unclaimed));
         Verdict::Pass
+    }
+
+    /// Modifiers that were down when the hook went in and are not released yet.
+    fn quarantined_mods(&self) -> u8 {
+        let q = |v: u8| self.quarantine.get(v);
+        let mut mods = 0;
+        if q(VK_LCONTROL) || q(VK_RCONTROL) {
+            mods |= MOD_CTRL;
+        }
+        if q(VK_LMENU) || q(VK_RMENU) {
+            mods |= MOD_ALT;
+        }
+        if q(VK_LSHIFT) || q(VK_RSHIFT) {
+            mods |= MOD_SHIFT;
+        }
+        mods
     }
 
     /// Ctrl / Alt (left) / Shift as physically held now.
@@ -723,6 +758,7 @@ mod win {
         Chord, KeyState, MODIFIER_VKS, RemoteGuard, RemoteKeysState, Verdict, VkSet,
         hook_seems_lost,
     };
+    use super::{MOD_ALT, MOD_CTRL, MOD_SHIFT};
     use log::{debug, info, warn};
     use std::cell::RefCell;
     use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};
@@ -1140,6 +1176,9 @@ mod win {
     }
 
     fn unhook(k: &mut Keeper) {
+        // A note about a press just before leaving must not wait for the
+        // next session.
+        log_passes(k);
         if let Some(hook) = k.hook.take()
             && let Err(e) = unsafe { UnhookWindowsHookEx(hook) }
         {
@@ -1208,8 +1247,14 @@ mod win {
         k.logged_passes = seq;
         let packed = PASSED.load(Ordering::Relaxed);
         let (vk, mods, reason) = (packed as u8, (packed >> 8) as u8, (packed >> 16) as u8);
+        let binding = k
+            .table
+            .iter()
+            .find(|c| c.chord == Chord { mods, vk })
+            .map(|c| c.id.to_string())
+            .unwrap_or_else(|| "a kept shortcut".to_string());
         info!(
-            "Shortcut Keeper: let {} through to the remote: {}{}",
+            "Shortcut Keeper: did not keep {binding} ({}): {}{}",
             super::chord_name(mods, vk),
             super::PassReason::describe(reason),
             if missed > 1 {
@@ -1341,9 +1386,20 @@ mod win {
         if verdict != Verdict::Swallow {
             // Only keys of kept shortcuts are noted (no allocation, no I/O:
             // two atomic stores; the tick writes the log line).
-            if let Some((vk, mods, reason)) = k.keys.last_pass
-                && k.table.iter().any(|c| c.chord.vk == vk)
-            {
+            if let Some((vk, meant, reason)) = k.keys.last_pass {
+                // Injected keys do not update our physical state; read the
+                // modifiers Windows has down (they include injected ones).
+                let mods = if reason == super::PassReason::Injected {
+                    async_mods()
+                } else {
+                    meant
+                };
+                // Only an attempt at a kept chord (the whole chord) is noted;
+                // ordinary typing never is. "No match" (8) is not an attempt.
+                let attempt = refused != 8 && k.table.iter().any(|c| c.chord == Chord { mods, vk });
+                if !attempt {
+                    return false;
+                }
                 let code = if reason == super::PassReason::Unclaimed && refused != 0 {
                     refused
                 } else {
@@ -1509,6 +1565,22 @@ mod win {
         }
     }
 
+    /// Ctrl / left Alt / Shift as Windows has them down (physical or injected).
+    fn async_mods() -> u8 {
+        let down = |vk: u8| unsafe { GetAsyncKeyState(i32::from(vk)) } as u16 & 0x8000 != 0;
+        let mut mods = 0;
+        if down(super::VK_LCONTROL) || down(super::VK_RCONTROL) {
+            mods |= MOD_CTRL;
+        }
+        if down(super::VK_LMENU) {
+            mods |= MOD_ALT;
+        }
+        if down(super::VK_LSHIFT) || down(super::VK_RSHIFT) {
+            mods |= MOD_SHIFT;
+        }
+        mods
+    }
+
     /// One read of the keys that matter: the given keys and the modifiers
     /// (high bit = down now).
     fn sample_down(keys: impl Iterator<Item = u8>) -> VkSet {
@@ -1632,8 +1704,49 @@ mod tests {
         press(&mut keys, LALT, true, &table);
         assert_eq!(press(&mut keys, p, true, &table), Verdict::Swallow);
         assert_eq!(keys.last_pass, None);
+        // A quarantined modifier is part of what was meant.
+        let mut keys = KeyState::default();
+        keys.begin_context();
+        let mut sample = VkSet::default();
+        sample.set(VK_LMENU);
+        keys.begin_attempt(&sample);
+        press(&mut keys, CTRL, true, &table);
+        press(&mut keys, p, true, &table);
+        assert_eq!(keys.last_pass.map(|x| x.1), Some(MOD_CTRL | MOD_ALT));
+        // The key itself already down when the hook went in.
+        let mut keys = KeyState::default();
+        keys.begin_context();
+        let mut sample = VkSet::default();
+        sample.set(0x50);
+        keys.begin_attempt(&sample);
+        press(&mut keys, CTRL, true, &table);
+        press(&mut keys, LALT, true, &table);
+        press(&mut keys, p, true, &table);
+        assert_eq!(
+            keys.last_pass.map(|x| x.2),
+            Some(PassReason::QuarantinedKey)
+        );
+        // AltGr (left Ctrl + right Alt): noted as Ctrl+Alt, reason AltGr.
+        let mut keys = armed();
+        press(&mut keys, CTRL, true, &table);
+        press(&mut keys, RALT, true, &table);
+        press(&mut keys, p, true, &table);
+        assert_eq!(
+            keys.last_pass,
+            Some((0x50, MOD_CTRL | MOD_ALT, PassReason::WinOrAltGr))
+        );
+        // A repeat is never noted, and the next event clears the note.
+        let mut keys = armed();
+        press(&mut keys, CTRL, true, &table);
+        press(&mut keys, p, true, &table);
+        assert!(keys.last_pass.is_some());
+        press(&mut keys, p, true, &table);
+        assert_eq!(keys.last_pass, None);
+        press(&mut keys, p, false, &table);
+        assert_eq!(keys.last_pass, None);
         assert_eq!(chord_name(MOD_CTRL | MOD_ALT, 0x50), "Ctrl+Alt+P");
         assert_eq!(chord_name(MOD_CTRL | MOD_SHIFT, 0x71), "Ctrl+Shift+F2");
+        assert_eq!(chord_name(MOD_CTRL, 0x22), "Ctrl+Page Down");
     }
 
     #[test]
