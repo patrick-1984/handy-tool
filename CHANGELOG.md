@@ -12,10 +12,9 @@ without Vulkan.
   Shortcut Keeper's a few seconds after you enter a session and then every 15 to 35 seconds, while
   the 2.1.2 self-heal reacted only after you had typed for 3 seconds unheard (and waited up to a
   minute after mouse-only use). Now, while a session has the keyboard, Shortcut Keeper puts its
-  hook back in front after every second in which it heard no key and no key is held. A key let go
-  while the client's hook was in front (so Handy never saw it go up) no longer makes the next kept
-  shortcut go to the remote. Still best effort: a shortcut pressed within a second or two of the
-  client taking the front can reach the remote. The log line when the session loses the keyboard
+  hook back in front after every second in which it heard no key and no key is held. Still best
+  effort: a shortcut pressed within a second or two of the client taking the front can reach the
+  remote. The log line when the session loses the keyboard
   says how often the hook was put back in front.
 - **Handy Tool starts on PCs without Vulkan (Windows).** On a PC without a Vulkan graphics driver
   (often an older laptop), Windows refused to start Handy Tool: "The code execution cannot proceed

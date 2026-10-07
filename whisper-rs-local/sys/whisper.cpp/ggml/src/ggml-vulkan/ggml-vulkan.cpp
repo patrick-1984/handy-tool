@@ -4943,6 +4943,12 @@ static void ggml_vk_instance_init() {
     // See https://github.com/KhronosGroup/Vulkan-Hpp?tab=readme-ov-file#extensions--per-device-function-pointers-
     ggml_vk_default_dispatcher_instance.init(vkGetInstanceProcAddr);
 
+    // Handy patch: a Vulkan 1.0 loader has no vkEnumerateInstanceVersion, and
+    // calling it would crash; 1.0 is below the 1.2 required here anyway.
+    if (!ggml_vk_default_dispatcher_instance.vkEnumerateInstanceVersion) {
+        throw vk::SystemError(vk::Result::eErrorFeatureNotPresent, "Vulkan 1.2 required");
+    }
+
     uint32_t api_version = vk::enumerateInstanceVersion();
 
     if (api_version < VK_API_VERSION_1_2) {

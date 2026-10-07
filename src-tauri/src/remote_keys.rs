@@ -815,6 +815,8 @@ mod win {
         logged_passes: u32,
         /// How often the hook was put back in front in this session.
         refreshes: u32,
+        /// Installs that failed in a row (logged once, retried every tick).
+        install_failures: u32,
     }
 
     thread_local! {
@@ -896,6 +898,7 @@ mod win {
                 seen_calls: 0,
                 logged_passes: 0,
                 refreshes: 0,
+                install_failures: 0,
             })
         });
         THREAD_ID.store(unsafe { GetCurrentThreadId() }, Ordering::SeqCst);
@@ -1079,9 +1082,27 @@ mod win {
             })
         };
         match hook {
-            Ok(hook) => k.hook = Some(hook),
+            Ok(hook) => {
+                k.hook = Some(hook);
+                if k.install_failures > 0 {
+                    info!(
+                        "Shortcut Keeper: keyboard hook installed after {} failed tries",
+                        k.install_failures
+                    );
+                    k.install_failures = 0;
+                }
+            }
             Err(e) => {
-                warn!("Shortcut Keeper: keyboard hook not installed: {e}");
+                if k.install_failures == 0 {
+                    warn!(
+                        "Shortcut Keeper: keyboard hook not installed, retrying every second: {e}"
+                    );
+                }
+                k.install_failures = k.install_failures.saturating_add(1);
+                // The tick retries (and stops with the session).
+                if k.tick_timer == 0 {
+                    set_timer(&mut k.tick_timer, 1000);
+                }
                 return;
             }
         }
@@ -1136,14 +1157,14 @@ mod win {
     /// putting its own hook in front of ours (seen every 15-35 s with the
     /// Windows App). So whenever the hook heard nothing for a whole tick
     /// (1 s) and no key is held, put it back in front. Keys heard means the
-    /// hook is first already; a held key would be quarantined, so wait.
+    /// hook is first already; a held key would be quarantined, so wait. A
+    /// failed install (no hook) is retried the same way.
     fn refresh_if_quiet(k: &mut Keeper) {
         let calls = HOOK_CALLS.load(Ordering::Relaxed);
         let heard = calls != k.seen_calls;
         k.seen_calls = calls;
         if heard
             || k.armed.is_none()
-            || k.hook.is_none()
             || k.attempt_timer != 0
             || k.keys.owns_any()
             || !sample_down(k.table.iter().map(|c| c.chord.vk)).is_empty()
@@ -1151,11 +1172,9 @@ mod win {
             return;
         }
         k.refreshes = k.refreshes.saturating_add(1);
-        // Nothing that matters is down (just read), so a key the hook still
-        // has as held or quarantined went up while the client's hook was in
-        // front. Start clean, as on entering, or the next kept press would be
-        // let through to the remote.
-        k.keys.begin_context();
+        // Same context: what the hook saw held stays quarantined. The client's
+        // hook takes keys before Windows records them, so a read cannot tell a
+        // modifier still held from one let go while that hook was in front.
         attempt(k);
         // attempt() itself is heard by nothing; count from here.
         k.seen_calls = HOOK_CALLS.load(Ordering::Relaxed);
@@ -1629,30 +1648,6 @@ mod tests {
         assert_eq!(chord_name(MOD_CTRL | MOD_ALT, 0x50), "Ctrl+Alt+P");
         assert_eq!(chord_name(MOD_CTRL | MOD_SHIFT, 0x71), "Ctrl+Shift+F2");
         assert_eq!(chord_name(MOD_CTRL, 0x22), "Ctrl+Page Down");
-    }
-
-    #[test]
-    fn a_quiet_refresh_forgets_a_release_the_hook_never_heard() {
-        let table = [chord("ctrl+alt+p")];
-        let p = 0x50u32;
-        // Ctrl went down while the hook was first; the client's hook then got
-        // in front and took Ctrl's release.
-        let mut keys = armed();
-        press(&mut keys, CTRL, true, &table);
-        // Re-hooked as is: Ctrl looks still held, and the next kept press
-        // goes to the remote.
-        let mut stale = armed();
-        press(&mut stale, CTRL, true, &table);
-        stale.begin_attempt(&VkSet::default());
-        press(&mut stale, CTRL, true, &table);
-        press(&mut stale, LALT, true, &table);
-        assert_eq!(press(&mut stale, p, true, &table), Verdict::Pass);
-        // A quiet refresh (nothing down when read) starts clean: kept.
-        keys.begin_context();
-        keys.begin_attempt(&VkSet::default());
-        press(&mut keys, CTRL, true, &table);
-        press(&mut keys, LALT, true, &table);
-        assert_eq!(press(&mut keys, p, true, &table), Verdict::Swallow);
     }
 
     #[test]
