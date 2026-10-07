@@ -4930,6 +4930,16 @@ static void ggml_vk_instance_init() {
     }
     VK_LOG_DEBUG("ggml_vk_instance_init()");
 
+#if defined(_MSC_VER)
+    // Handy patch: handy.exe delay-loads vulkan-1.dll, so a PC without a
+    // Vulkan driver can still start. Check that the loader is there before the
+    // first Vulkan call; callers turn this exception into "no Vulkan devices"
+    // and whisper runs on the CPU.
+    if (LoadLibraryW(L"vulkan-1.dll") == nullptr) {
+        throw std::runtime_error("vulkan-1.dll is not installed");
+    }
+#endif
+
     // See https://github.com/KhronosGroup/Vulkan-Hpp?tab=readme-ov-file#extensions--per-device-function-pointers-
     ggml_vk_default_dispatcher_instance.init(vkGetInstanceProcAddr);
 
@@ -11942,7 +11952,13 @@ static void ggml_vk_cleanup(ggml_backend_vk_context * ctx) {
 }
 
 static int ggml_vk_get_device_count() {
-    ggml_vk_instance_init();
+    // Handy patch: no usable Vulkan (no driver, or one older than 1.2) means
+    // no Vulkan devices - never an exception through the C API into Rust.
+    try {
+        ggml_vk_instance_init();
+    } catch (...) {
+        return 0;
+    }
 
     return vk_instance.device_indices.size();
 }

@@ -18,6 +18,18 @@ fn main() {
 
     generate_tray_translations();
 
+    // Windows: load vulkan-1.dll (whisper's GPU backend) on first use instead
+    // of at startup. A PC without a Vulkan driver has no vulkan-1.dll, and with
+    // a normal import Windows refuses to start handy.exe at all ("vulkan-1.dll
+    // was not found"). ggml checks for the DLL before its first Vulkan call and
+    // falls back to the CPU (whisper-rs-local ggml-vulkan.cpp, Handy patch).
+    if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("windows")
+        && std::env::var("CARGO_CFG_TARGET_ENV").as_deref() == Ok("msvc")
+    {
+        println!("cargo:rustc-link-arg-bins=/DELAYLOAD:vulkan-1.dll");
+        println!("cargo:rustc-link-arg-bins=delayimp.lib");
+    }
+
     tauri_build::build()
 }
 
