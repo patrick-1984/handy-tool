@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.1.3] - 2026-10-07
+
+A diagnostic release for Shortcut Keeper.
+
+### Added
+
+- **Shortcut Keeper says why a shortcut went to the remote (Windows).** When a key of a kept
+  shortcut is let through to the Remote Desktop session instead of running Handy, the log now
+  names the keys and the reason: sent by software (a macro tool or remapper, which Shortcut
+  Keeper ignores), a key repeat, the hook not ready yet, a key or modifier already down when the
+  hook went in, a Windows key or right Alt held, no matching kept shortcut, the focus outside the
+  session window, or a full queue. A shortcut that reached the remote with no such line got past
+  Handy's hook entirely, because the Remote Desktop client's own hook was in front. This tells the
+  two apart the next time a shortcut such as Ctrl+Alt+P lands in the remote session (where, in
+  Codex or Claude Code, it recalls the previous prompt) instead of starting a recording.
+
 ## [2.1.2] - 2026-10-05
 
 A fix release: Shortcut Keeper recovers by itself, silent takes no longer paste "Thank you.", and

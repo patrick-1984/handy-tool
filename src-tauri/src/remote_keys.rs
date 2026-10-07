@@ -248,6 +248,31 @@ pub(crate) fn support(id: &str, chord: &str) -> KeepSupport {
     keep(Ok, "")
 }
 
+/// "Ctrl+Alt+P" for the log.
+pub(crate) fn chord_name(mods: u8, vk: u8) -> String {
+    let mut name = String::new();
+    for (bit, text) in [
+        (MOD_CTRL, "Ctrl+"),
+        (MOD_ALT, "Alt+"),
+        (MOD_SHIFT, "Shift+"),
+    ] {
+        if mods & bit != 0 {
+            name.push_str(text);
+        }
+    }
+    match vk {
+        0x41..=0x5A | 0x30..=0x39 => name.push(vk as char),
+        0x70..=0x87 => name.push_str(&format!("F{}", vk - 0x6F)),
+        VK_SPACE => name.push_str("Space"),
+        0x0D => name.push_str("Enter"),
+        0x09 => name.push_str("Tab"),
+        0x1B => name.push_str("Escape"),
+        0x08 => name.push_str("Backspace"),
+        _ => name.push_str(&format!("key {vk:#04x}")),
+    }
+    name
+}
+
 /// The chords to keep: checked, supported, and actually registered (binding id
 /// and chord as registered, so a failed or duplicate registration never counts).
 fn candidates(registered: &[(String, String)], local: &[String]) -> Vec<(Chord, String, String)> {
@@ -325,6 +350,46 @@ pub(crate) enum Verdict {
     Swallow,
 }
 
+/// Why a key-down was let through to the remote (for the log only).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(u8)]
+pub(crate) enum PassReason {
+    /// Sent by software (a macro tool, a remapper, Handy itself).
+    Injected = 1,
+    /// An auto-repeat of a key already down.
+    Repeat = 2,
+    /// The hook was not ready (just entered the session, or draining).
+    NotAcquiring = 3,
+    /// The key was already down when the hook went in.
+    QuarantinedKey = 4,
+    /// A modifier was already down when the hook went in.
+    QuarantinedModifier = 5,
+    /// A Windows key or right Alt (AltGr) was held.
+    WinOrAltGr = 6,
+    /// The keys were fine, but no kept shortcut took them.
+    Unclaimed = 7,
+}
+
+impl PassReason {
+    pub(crate) fn describe(code: u8) -> &'static str {
+        match code {
+            1 => {
+                "the keys were sent by software (a macro tool or remapper), which Shortcut Keeper ignores"
+            }
+            2 => "it was a key repeat",
+            3 => "the hook was not ready yet (just entered the session)",
+            4 => "the key was already down when the hook went in",
+            5 => "a modifier was already down when the hook went in",
+            6 => "a Windows key or right Alt (AltGr) was held",
+            8 => "no kept shortcut matches these keys",
+            9 => "the keyboard focus was not in the session window",
+            10 => "the press queue was full",
+            11 => "no session was armed",
+            _ => "it was not taken",
+        }
+    }
+}
+
 /// Physical keyboard state as seen by the hook since it was (re)installed.
 ///
 /// - `phys_down`: keys whose physical press this hook saw and whose release it
@@ -342,6 +407,9 @@ pub(crate) struct KeyState {
     phys_down: VkSet,
     quarantine: VkSet,
     acquiring: bool,
+    /// The last event, if it was a key-down of an ordinary key that was let
+    /// through: (key, modifiers held, why). Read by the hook for the log.
+    pub(crate) last_pass: Option<(u8, u8, PassReason)>,
 }
 
 impl KeyState {
@@ -391,7 +459,15 @@ impl KeyState {
         injected: bool,
         claim: impl FnOnce(Chord) -> bool,
     ) -> Verdict {
+        self.last_pass = None;
         if injected {
+            if down
+                && let Some(vk) = normalize_vk(raw_vk)
+                && !is_modifier(vk)
+                && !always_passes(vk)
+            {
+                self.last_pass = Some((vk, self.mods(), PassReason::Injected));
+            }
             return Verdict::Pass;
         }
         let Some(vk) = normalize_vk(raw_vk) else {
@@ -412,22 +488,39 @@ impl KeyState {
             }
             return Verdict::Swallow;
         }
-        if !down
-            || was_down
-            || !self.acquiring
-            || is_modifier(vk)
-            || always_passes(vk)
-            || self.quarantine.get(vk)
-            || MODIFIER_VKS.iter().any(|m| self.quarantine.get(*m))
-        {
+        if !down || is_modifier(vk) || always_passes(vk) {
             return Verdict::Pass;
         }
+        let mods = self.mods();
+        let reason = if was_down {
+            Some(PassReason::Repeat)
+        } else if !self.acquiring {
+            Some(PassReason::NotAcquiring)
+        } else if self.quarantine.get(vk) {
+            Some(PassReason::QuarantinedKey)
+        } else if MODIFIER_VKS.iter().any(|m| self.quarantine.get(*m)) {
+            Some(PassReason::QuarantinedModifier)
+        } else {
+            let held = |v: u8| self.phys_down.get(v);
+            // Win makes any chord a different one; right Alt is AltGr, whose
+            // characters must keep reaching the remote.
+            (held(VK_LWIN) || held(VK_RWIN) || held(VK_RMENU)).then_some(PassReason::WinOrAltGr)
+        };
+        if let Some(reason) = reason {
+            self.last_pass = Some((vk, mods, reason));
+            return Verdict::Pass;
+        }
+        if claim(Chord { mods, vk }) {
+            self.owned.set(vk);
+            return Verdict::Swallow;
+        }
+        self.last_pass = Some((vk, mods, PassReason::Unclaimed));
+        Verdict::Pass
+    }
+
+    /// Ctrl / Alt (left) / Shift as physically held now.
+    fn mods(&self) -> u8 {
         let held = |v: u8| self.phys_down.get(v);
-        // Win makes any chord a different one; right Alt is AltGr, whose
-        // characters must keep reaching the remote.
-        if held(VK_LWIN) || held(VK_RWIN) || held(VK_RMENU) {
-            return Verdict::Pass;
-        }
         let mut mods = 0;
         if held(VK_LCONTROL) || held(VK_RCONTROL) {
             mods |= MOD_CTRL;
@@ -438,11 +531,7 @@ impl KeyState {
         if held(VK_LSHIFT) || held(VK_RSHIFT) {
             mods |= MOD_SHIFT;
         }
-        if claim(Chord { mods, vk }) {
-            self.owned.set(vk);
-            return Verdict::Swallow;
-        }
-        Verdict::Pass
+        mods
     }
 }
 
@@ -690,6 +779,10 @@ mod win {
     static STATE: Mutex<RemoteKeysState> = Mutex::new(RemoteKeysState::Waiting);
     /// Counts the hook's calls; the tick compares it to notice a lost hook.
     static HOOK_CALLS: AtomicU32 = AtomicU32::new(0);
+    /// The last key of a kept shortcut the hook let through, packed as
+    /// key | modifiers << 8 | reason << 16, and a counter the tick watches.
+    static PASSED: AtomicU32 = AtomicU32::new(0);
+    static PASSED_SEQ: AtomicU32 = AtomicU32::new(0);
     /// No more often than this does the tick put the hook back in front.
     const HEAL_EVERY: Duration = Duration::from_secs(10);
     const HEAL_EVERY_UNHEARD: Duration = Duration::from_secs(60);
@@ -734,6 +827,8 @@ mod win {
         release_pending: Option<(u8, Press)>,
         /// HOOK_CALLS at the last tick, and the tick count when it last moved.
         seen_calls: u32,
+        /// PASSED_SEQ already logged.
+        logged_passes: u32,
         last_heard: u32,
         last_heal: Option<Instant>,
         /// HOOK_CALLS at the last heal: if no key was heard since, the next
@@ -818,6 +913,7 @@ mod win {
                 reported: None,
                 release_pending: None,
                 seen_calls: 0,
+                logged_passes: 0,
                 last_heard: 0,
                 last_heal: None,
                 calls_at_heal: 0,
@@ -972,6 +1068,7 @@ mod win {
             // A safety net for a focus change whose event never came.
             evaluate(k);
             drained(k);
+            log_passes(k);
             heal_if_lost(k);
         } else {
             // Posted before its timer was killed.
@@ -1100,6 +1197,29 @@ mod win {
         attempt(k);
     }
 
+    /// Says (once per tick) when a key of a kept shortcut went to the remote,
+    /// and why, so a shortcut that "did nothing" can be traced.
+    fn log_passes(k: &mut Keeper) {
+        let seq = PASSED_SEQ.load(Ordering::Relaxed);
+        if seq == k.logged_passes {
+            return;
+        }
+        let missed = seq.wrapping_sub(k.logged_passes);
+        k.logged_passes = seq;
+        let packed = PASSED.load(Ordering::Relaxed);
+        let (vk, mods, reason) = (packed as u8, (packed >> 8) as u8, (packed >> 16) as u8);
+        info!(
+            "Shortcut Keeper: let {} through to the remote: {}{}",
+            super::chord_name(mods, vk),
+            super::PassReason::describe(reason),
+            if missed > 1 {
+                format!(" ({missed} such presses since the last note)")
+            } else {
+                String::new()
+            }
+        );
+    }
+
     /// Both or none: arming needs to see focus leave the session.
     fn install_win_events(k: &mut Keeper) {
         for event in FOCUS_EVENTS {
@@ -1174,6 +1294,7 @@ mod win {
     fn on_key(k: &mut Keeper, event: &KBDLLHOOKSTRUCT) -> bool {
         let injected = event.flags.contains(LLKHF_INJECTED);
         let down = !event.flags.contains(LLKHF_UP);
+        let mut refused = 0u8;
         let verdict = {
             let Keeper {
                 keys,
@@ -1184,14 +1305,18 @@ mod win {
                 ..
             } = &mut *k;
             let armed = *armed;
+            let refused = &mut refused;
             keys.event(event.vkCode, down, injected, |chord| {
                 let Some(candidate) = table.iter().find(|c| c.chord == chord) else {
+                    *refused = 8;
                     return false;
                 };
                 let Some(hwnd) = armed else {
+                    *refused = 11;
                     return false;
                 };
                 if focus_hwnd() != Some(hwnd) {
+                    *refused = 9;
                     return false;
                 }
                 let press = Press {
@@ -1206,10 +1331,30 @@ mod win {
                     *release_pending = Some((chord.vk, press));
                     return true;
                 }
-                tx.try_send(press).is_ok()
+                let sent = tx.try_send(press).is_ok();
+                if !sent {
+                    *refused = 10;
+                }
+                sent
             })
         };
         if verdict != Verdict::Swallow {
+            // Only keys of kept shortcuts are noted (no allocation, no I/O:
+            // two atomic stores; the tick writes the log line).
+            if let Some((vk, mods, reason)) = k.keys.last_pass
+                && k.table.iter().any(|c| c.chord.vk == vk)
+            {
+                let code = if reason == super::PassReason::Unclaimed && refused != 0 {
+                    refused
+                } else {
+                    reason as u8
+                };
+                PASSED.store(
+                    u32::from(vk) | u32::from(mods) << 8 | u32::from(code) << 16,
+                    Ordering::Relaxed,
+                );
+                PASSED_SEQ.fetch_add(1, Ordering::Relaxed);
+            }
             return false;
         }
         if !down
@@ -1445,6 +1590,50 @@ mod tests {
         assert!(!hook_seems_lost(20_000, 10_000, 15_000));
         // Tick counts wrap after ~49.7 days.
         assert!(hook_seems_lost(3_500, u32::MAX - 1_000, 2_800));
+    }
+
+    #[test]
+    fn a_let_through_key_says_why() {
+        let table = [chord("ctrl+alt+p")];
+        let p = 0x50u32;
+        // Sent by software.
+        let mut keys = armed();
+        keys.event(CTRL, true, true, |_| false);
+        keys.event(p, true, true, |_| panic!("injected must not claim"));
+        assert_eq!(keys.last_pass.map(|x| x.2), Some(PassReason::Injected));
+        // A modifier held before the hook went in.
+        let mut keys = KeyState::default();
+        keys.begin_context();
+        let mut sample = VkSet::default();
+        sample.set(VK_LMENU);
+        keys.begin_attempt(&sample);
+        press(&mut keys, CTRL, true, &table);
+        press(&mut keys, p, true, &table);
+        assert_eq!(
+            keys.last_pass.map(|x| x.2),
+            Some(PassReason::QuarantinedModifier)
+        );
+        // Not ready yet (no attempt since entering).
+        let mut keys = KeyState::default();
+        keys.begin_context();
+        press(&mut keys, p, true, &table);
+        assert_eq!(keys.last_pass.map(|x| x.2), Some(PassReason::NotAcquiring));
+        // Wrong modifiers: claimed by nobody, with the modifiers recorded.
+        let mut keys = armed();
+        press(&mut keys, CTRL, true, &table);
+        press(&mut keys, p, true, &table);
+        assert_eq!(
+            keys.last_pass,
+            Some((0x50, MOD_CTRL, PassReason::Unclaimed))
+        );
+        // Kept: nothing recorded.
+        let mut keys = armed();
+        press(&mut keys, CTRL, true, &table);
+        press(&mut keys, LALT, true, &table);
+        assert_eq!(press(&mut keys, p, true, &table), Verdict::Swallow);
+        assert_eq!(keys.last_pass, None);
+        assert_eq!(chord_name(MOD_CTRL | MOD_ALT, 0x50), "Ctrl+Alt+P");
+        assert_eq!(chord_name(MOD_CTRL | MOD_SHIFT, 0x71), "Ctrl+Shift+F2");
     }
 
     #[test]

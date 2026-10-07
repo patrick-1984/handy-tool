@@ -1213,7 +1213,8 @@ layout hotkey there. A ticked Ctrl+Space shows its input-method note only if you
 `I type Chinese, Japanese or Korean` (since 2.1.1). A session running as administrator keeps Handy out. If the client (or Windows,
 on a busy PC) puts its hook back in front of Handy's, Handy notices within a few seconds while you
 type in the session and puts its hook back in front, at most every 10 s and never while a key is
-held (since 2.1.2); clicking outside the session and back in also restores it.
+held (since 2.1.2); clicking outside the session and back in also restores it. When a key of a kept
+shortcut goes to the remote instead, the log says which keys and why (since 2.1.3).
 **Where.** `Shortcuts › Shortcut Keeper › Keep chosen shortcuts on this PC in Remote Desktop (Windows)`,
 then `Keep on this PC` on each shortcut's row _{Windows only}_. The `Remote Desktop shortcuts`
 setup on `Setups` walks through it.
