@@ -6,16 +6,16 @@ A diagnostic release for Shortcut Keeper.
 
 ### Added
 
-- **Shortcut Keeper says why it did not keep a shortcut (Windows).** When you press a kept
-  shortcut in a Remote Desktop session and Shortcut Keeper lets it through instead of running
-  Handy, the log now names the shortcut and the reason: sent by software (a macro tool or remapper,
-  which Shortcut Keeper ignores), the hook not ready yet, a key or modifier already down when the
-  hook went in, a Windows key or right Alt held, the focus outside the session window, or a full
-  queue. Only presses of a kept shortcut's whole key combination are noted; ordinary typing never
-  is. A shortcut that reached the remote with no such line got past Handy's hook entirely, because
-  the Remote Desktop client's own hook was in front. This tells the two apart the next time a
-  shortcut such as Ctrl+Alt+P lands in the remote session (where, in Codex or Claude Code, it
-  recalls the previous prompt) instead of starting a recording.
+- **Shortcut Keeper says why it did not keep a shortcut (Windows).** When you physically press a
+  kept shortcut in a Remote Desktop session and Shortcut Keeper lets it through instead of running
+  Handy, the log now names the shortcut and the reason: the hook not ready yet, the key or a
+  modifier already down when the hook went in, a Windows key held, the focus outside the session
+  window, or a full queue. Only a kept shortcut's whole key combination, pressed with the physical
+  keys, is ever noted: ordinary typing, AltGr characters and keys sent by software (password
+  managers, macro tools) never are. A shortcut that reached the remote with no such line got past
+  Handy's hook entirely, because the Remote Desktop client's own hook was in front. This tells the
+  two apart the next time a shortcut such as Ctrl+Alt+P lands in the remote session (where, in
+  Codex or Claude Code, it recalls the previous prompt) instead of starting a recording.
 
 ## [2.1.2] - 2026-10-05
 
