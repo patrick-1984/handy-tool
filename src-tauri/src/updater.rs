@@ -212,26 +212,28 @@ impl UpdateManager {
             .app
             .updater_builder()
             .timeout(CHECK_TIMEOUT)
+            // Advanced > Proxy (net/mod.rs), as every other request.
+            .configure_client(crate::net::configure)
             .on_before_exit(crate::mcp::stop)
             .build()
         {
             Ok(updater) => updater,
             Err(error) if automatic => {
-                let detail = error.to_string();
+                let detail = crate::utils::error_chain(&error);
                 warn!("Scheduled updater configuration error: {detail}");
                 return Err(detail);
             }
-            Err(error) => return Err(self.fail("configuration", error)),
+            Err(error) => return Err(self.fail("configuration", crate::utils::error_chain(&error))),
         };
 
         let checked = match updater.check().await {
             Ok(update) => Ok(update),
             Err(error) if automatic => {
-                let detail = error.to_string();
+                let detail = crate::utils::error_chain(&error);
                 warn!("Scheduled update check failed: {detail}");
                 Err(detail)
             }
-            Err(error) => Err(self.fail("check_failed", error)),
+            Err(error) => Err(self.fail("check_failed", crate::utils::error_chain(&error))),
         };
 
         let now = Utc::now().to_rfc3339();
@@ -375,7 +377,7 @@ impl UpdateManager {
                     || {},
                 )
                 .await
-                .map_err(|error| self.fail("download_failed", error))?;
+                .map_err(|error| self.fail("download_failed", crate::utils::error_chain(&error)))?;
 
             let mut ready = UpdaterStatus::state("ready_to_restart");
             ready.version = Some(version.clone());
@@ -467,7 +469,7 @@ impl UpdateManager {
                 .app
                 .state::<crate::TranscriptionCoordinator>()
                 .release_update_reservation();
-            return Err(self.fail("install_failed", error));
+            return Err(self.fail("install_failed", crate::utils::error_chain(&error)));
         }
         Ok(())
     }

@@ -9,6 +9,7 @@ import {
   Sparkles,
   Palette,
   ListChecks,
+  Globe,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { ShowOverlay } from "../ShowOverlay";
@@ -35,6 +36,7 @@ import { OpenRouterTranscriptionSettings } from "../OpenRouterTranscriptionSetti
 import { KeyboardImplementationSelector } from "../debug/KeyboardImplementationSelector";
 import { RegisteredLlmProviders } from "./RegisteredLlmProviders";
 import { McpSettings } from "./McpSettings";
+import { ProxySettings } from "./ProxySettings";
 import { TranscriptionCostReport } from "./TranscriptionCostReport";
 import { TranscribeAndSubmitSettings } from "../TranscribeAndSubmitSettings";
 import { PasteLastSettings } from "../PasteLastSettings";
@@ -188,6 +190,22 @@ export const McpSection: React.FC = () => {
         description={t("settings.advanced.mcp.description")}
       >
         <McpSettings />
+      </SettingsGroup>
+    </div>
+  );
+};
+
+/** Advanced settings › Proxy (Windows): how Handy reaches the internet. */
+export const ProxySection: React.FC = () => {
+  const { t } = useTranslation();
+  return (
+    <div className="w-full space-y-4">
+      <SettingsGroup
+        icon={Globe}
+        title={t("settings.advanced.groups.proxy")}
+        description={t("settings.advanced.proxy.description")}
+      >
+        <ProxySettings />
       </SettingsGroup>
     </div>
   );

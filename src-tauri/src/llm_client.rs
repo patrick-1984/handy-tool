@@ -108,7 +108,7 @@ pub(crate) const MAX_RESPONSE_BYTES: usize = 10 * 1024 * 1024; // 10 MB
 /// Create an HTTP client with provider-specific headers
 fn create_client(provider: &LlmProvider, api_key: &str) -> Result<reqwest::Client, String> {
     let headers = build_headers(provider, api_key)?;
-    reqwest::Client::builder()
+    crate::net::client_builder()
         .default_headers(headers)
         .connect_timeout(CONNECT_TIMEOUT)
         .timeout(REQUEST_TIMEOUT)
@@ -773,7 +773,7 @@ mod tests {
             .expect("build a local tokio runtime for the test");
 
         let result: Result<Vec<u8>, String> = rt.block_on(async {
-            let client = reqwest::Client::new();
+            let client = crate::net::client();
             let response = client
                 .get(format!("http://{}/", addr))
                 .send()
@@ -837,7 +837,7 @@ mod tests {
         // message text.
         let timeout = std::time::Duration::from_secs(2);
         let outcome: Result<Vec<u8>, String> = rt.block_on(async {
-            let client = reqwest::Client::builder()
+            let client = crate::net::client_builder()
                 .timeout(timeout)
                 .build()
                 .expect("build client");

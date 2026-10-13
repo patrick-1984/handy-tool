@@ -142,6 +142,23 @@ pub fn cancel_current_operation(app: &AppHandle, source: &str) {
     info!("Operation cancellation completed - returned to idle state");
 }
 
+/// An error with all its causes, outermost first: "error sending request for
+/// url (...): client error (Connect): ...". reqwest's own message stops at the
+/// first line, which says that a request failed but never why.
+pub fn error_chain(error: &dyn std::error::Error) -> String {
+    let mut text = error.to_string();
+    let mut source = error.source();
+    while let Some(cause) = source {
+        let cause_text = cause.to_string();
+        if !text.contains(&cause_text) {
+            text.push_str(": ");
+            text.push_str(&cause_text);
+        }
+        source = cause.source();
+    }
+    text
+}
+
 /// Check if using the Wayland display server protocol
 #[cfg(target_os = "linux")]
 pub fn is_wayland() -> bool {

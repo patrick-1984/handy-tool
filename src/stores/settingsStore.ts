@@ -277,6 +277,15 @@ const settingUpdaters: {
   file_keep_audio: (value) =>
     commands.changeFileKeepAudioSetting(value as boolean),
   files_folder: (value) => commands.changeFilesFolderSetting(value as string),
+  proxy_mode: (value) => commands.changeProxyModeSetting(value as string),
+  proxy_host: (value) => commands.changeProxyHostSetting(value as string),
+  proxy_port: (value) => commands.changeProxyPortSetting(value as number),
+  proxy_bypass: (value) => commands.changeProxyBypassSetting(value as string),
+  proxy_auth: (value) => commands.changeProxyAuthSetting(value as string),
+  proxy_username: (value) =>
+    commands.changeProxyUsernameSetting(value as string),
+  // proxy_password is set by commands.setProxyPassword from ProxySettings (it
+  // is stored encrypted, so the plain text never goes through the store).
   jumper_persist: (value) =>
     commands.changeJumperPersistSetting(value as boolean),
   model_unload_custom_seconds: (value) =>

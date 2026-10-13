@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { getVersion } from "@tauri-apps/api/app";
+import { type as osType } from "@tauri-apps/plugin-os";
 import { useTranslation } from "react-i18next";
 import {
   Archive,
@@ -10,6 +11,7 @@ import {
   CircleArrowUp,
   SquareCheck,
   FileAudio,
+  Globe,
   Gift,
   FlaskConical,
   Hash,
@@ -48,6 +50,7 @@ import {
   ProvidersSection,
   LlmProvidersSection,
   McpSection,
+  ProxySection,
   PostProcessingSection,
   CurrentAudioView,
   HistorySettings,
@@ -191,6 +194,14 @@ export const SECTIONS_CONFIG = {
     component: McpSection,
     placement: "more-settings",
     enabled: () => true,
+  },
+  // Windows only: elsewhere Handy keeps using the system's proxy settings.
+  proxy: {
+    labelKey: "settings.advanced.tabs.proxy",
+    icon: Globe,
+    component: ProxySection,
+    placement: "more-settings",
+    enabled: () => osType() === "windows",
   },
   backup: {
     labelKey: "sidebar.backup",

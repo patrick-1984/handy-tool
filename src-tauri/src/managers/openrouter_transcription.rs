@@ -208,7 +208,8 @@ fn parse_chat_response(value: &serde_json::Value) -> String {
 }
 
 fn post_json(url: &str, api_key: &str, body: &serde_json::Value) -> Result<serde_json::Value> {
-    let mut req = ureq::post(url)
+    let mut req = crate::net::ureq_agent(url)
+        .post(url)
         // Bound the request so a stalled/misrouted call can't hang the pipeline
         // (the chunked path would otherwise wait on it up to its 15-min backstop).
         .timeout(std::time::Duration::from_secs(120))

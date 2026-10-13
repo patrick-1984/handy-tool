@@ -1,6 +1,6 @@
 [package]
 name = "handy"
-version = "2.2.1"
+version = "2.2.2"
 description = "Handy"
 authors = ["pr"]
 edition = "2024"
@@ -126,6 +126,14 @@ windows = { version = "0.61.3", features = [
   # Shortcut Keeper (remote_keys.rs): GetModuleHandleW, so the keyboard hook
   # names Handy's own module instead of a null one.
   "Win32_System_LibraryLoader",
+  # Advanced > Proxy (net/): Windows' proxy settings and PAC scripts (WinHTTP),
+  # signing in to the proxy with NTLM/Negotiate (SSPI; the identity struct lives
+  # under System_Rpc) and the password encrypted with DPAPI.
+  "Win32_Networking_WinHttp",
+  "Win32_Security_Authentication_Identity",
+  "Win32_Security_Credentials",
+  "Win32_Security_Cryptography",
+  "Win32_System_Rpc",
 ] }
 
 [target.'cfg(target_os = "macos")'.dependencies]

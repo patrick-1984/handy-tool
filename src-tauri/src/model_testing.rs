@@ -102,7 +102,7 @@ fn request_timeout_for(provider: &LlmProvider) -> Duration {
 /// sequential lane, where the timeout is what guarantees the lane eventually
 /// moves on to the next provider instead of hanging indefinitely.
 fn http_client(provider: &LlmProvider) -> Result<reqwest::Client, String> {
-    reqwest::Client::builder()
+    crate::net::client_builder()
         .connect_timeout(crate::llm_client::CONNECT_TIMEOUT)
         .timeout(request_timeout_for(provider))
         .build()
@@ -642,7 +642,7 @@ pub fn write_text_file(path: String, contents: String) -> Result<(), String> {
 #[specta::specta]
 pub async fn fetch_openrouter_model_prices() -> Result<Vec<OpenRouterModelPrice>, String> {
     let timeout = Duration::from_secs(CLOUD_TIMEOUT_SECS);
-    let client = reqwest::Client::builder()
+    let client = crate::net::client_builder()
         .connect_timeout(crate::llm_client::CONNECT_TIMEOUT)
         .timeout(timeout)
         .build()

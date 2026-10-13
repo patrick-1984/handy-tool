@@ -1275,7 +1275,7 @@ impl ModelManager {
 
         // Create HTTP client with range request for resuming. Connect timeout
         // only — a total-request deadline would kill large model downloads.
-        let client = reqwest::Client::builder()
+        let client = crate::net::client_builder()
             .connect_timeout(Duration::from_secs(15))
             .build()?;
         let mut request = client.get(&url);
@@ -2008,7 +2008,7 @@ mod download_cancel_tests {
             }
         });
 
-        let client = reqwest::Client::new();
+        let client = crate::net::client();
         let resp = client
             .get(format!("http://{}/", addr))
             .send()

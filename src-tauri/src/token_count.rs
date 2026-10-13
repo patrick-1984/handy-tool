@@ -68,7 +68,7 @@ fn provider_timeout(provider: &LlmProvider) -> Duration {
 /// independent timeout so one hung provider can't stall the others sharing a
 /// sweep.
 fn http_client(timeout: Duration) -> Result<reqwest::Client, String> {
-    reqwest::Client::builder()
+    crate::net::client_builder()
         .connect_timeout(crate::llm_client::CONNECT_TIMEOUT)
         .timeout(timeout)
         .build()

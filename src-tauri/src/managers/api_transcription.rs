@@ -60,7 +60,7 @@ pub fn transcribe(
 
 /// Send a multipart request and parse the OpenAI-compatible response.
 fn send_multipart_request(url: &str, api_key: &str, boundary: &str, body: &[u8]) -> Result<String> {
-    let mut req = ureq::post(url).set(
+    let mut req = crate::net::ureq_agent(url).post(url).set(
         "Content-Type",
         &format!("multipart/form-data; boundary={}", boundary),
     );

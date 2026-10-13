@@ -995,7 +995,8 @@
         "keyboardTyper": "Pisanie klawiaturą",
         "tokenCountProviders": "Dostawcy liczenia tokenów",
         "llmProviders": "Zarejestrowani dostawcy LLM",
-        "mcp": "MCP i CLI"
+        "mcp": "MCP i CLI",
+        "proxy": "Proxy"
       },
       "startHidden": {
         "label": "Uruchom ukryty",
@@ -1219,7 +1220,8 @@
         "typer": "Pisanie",
         "providers": "Dostawcy",
         "mcp": "MCP i CLI",
-        "postProcessing": "Postproces"
+        "postProcessing": "Postproces",
+        "proxy": "Proxy"
       },
       "mcp": {
         "loading": "Wczytywanie…",
@@ -1388,6 +1390,69 @@
       "pillPreview": {
         "title": "Podgląd",
         "description": "**Pigułka nagrywania taka, jaką tworzą ją otaczające ją ustawienia, w ruchu:** nagrywanie po lewej (świecące T, gdy pole tekstu na żywo jest włączone, paski dźwięku) i transkrybowanie po prawej, którego postęp biegnie od 0 do 100% w kółko, z Twoim stylem postępu, poświatą i kolorem, w Twoim Rozmiarze nakładki."
+      },
+      "proxy": {
+        "description": "Jak Handy łączy się z internetem: pobieranie modeli, sprawdzanie aktualizacji, dostawcy LLM i transkrypcja online.",
+        "mode": {
+          "title": "Proxy",
+          "description": "**Ustawienia Windows** (domyślnie): proxy ustawione w Ustawieniach Windows > Sieć i Internet > Serwer proxy, także skrypt konfiguracji, tak jak używa go przeglądarka.\n\n**Ręczne proxy**: adres i port, które wpiszesz.\n\n**Bez proxy**: prosto do internetu.",
+          "system": "Ustawienia Windows",
+          "manual": "Ręczne proxy",
+          "off": "Bez proxy"
+        },
+        "windows": {
+          "label": "Windows używa:",
+          "none": "brak proxy",
+          "proxy": "proxy {{proxy}}",
+          "script": "skrypt konfiguracji {{url}}",
+          "bypass": "z wyjątkiem {{list}}"
+        },
+        "host": {
+          "title": "Adres proxy",
+          "description": "Nazwa lub adres IP serwera proxy i jego port, jak w ręcznych ustawieniach proxy przeglądarki.",
+          "placeholder": "proxy.example.com"
+        },
+        "port": "Port",
+        "bypass": {
+          "title": "Bez proxy dla",
+          "description": "Strony otwierane bezpośrednio, oddzielone średnikami lub przecinkami. `*` to dowolny ciąg znaków, `.example.com` obejmuje domenę i wszystko pod nią, `<local>` oznacza nazwy bez kropki. Ten komputer (localhost) jest zawsze bezpośrednio.",
+          "placeholder": "<local>; *.example.com; 10.*"
+        },
+        "auth": {
+          "title": "Logowanie do proxy",
+          "description": "Używane tylko, gdy proxy o to prosi.\n\n**Konto Windows** (domyślnie): logowanie jak w przeglądarce (Negotiate / NTLM), bez hasła.\n\n**Nazwa użytkownika i hasło**: dla proxy z osobnym kontem (Basic, NTLM lub Negotiate). Dla konta domenowego wpisz DOMENA\\użytkownik.",
+          "windows": "Konto Windows",
+          "password": "Nazwa użytkownika i hasło"
+        },
+        "username": {
+          "title": "Nazwa użytkownika",
+          "description": "Nazwa konta proxy (DOMENA\\użytkownik albo użytkownik@domena dla konta domenowego).",
+          "placeholder": "nazwa użytkownika"
+        },
+        "password": {
+          "title": "Hasło",
+          "description": "Zapisane zaszyfrowane dla Twojego konta Windows, nigdy jako zwykły tekst, i po zapisaniu już niewyświetlane. Wpisz nowe, aby je zastąpić.",
+          "placeholder": "hasło",
+          "saved": "Zapisane (wpisz, aby zmienić)",
+          "forget": "Usuń",
+          "error": "Nie udało się zapisać hasła."
+        },
+        "test": {
+          "title": "Test połączenia",
+          "description": "Otwiera github.com z powyższymi ustawieniami i pokazuje trasę oraz użyty sposób logowania.",
+          "button": "Testuj",
+          "running": "Testowanie…",
+          "viaProxy": "przez proxy {{proxy}}",
+          "route": {
+            "direct": "bezpośrednio",
+            "bypassed": "bezpośrednio (na liście bez proxy)",
+            "environment": "przez proxy ze zmiennej HTTPS_PROXY",
+            "error": "przy nieużywalnych ustawieniach proxy"
+          },
+          "ok": "Połączono {{route}} (HTTP {{status}}){{signIn}}.",
+          "signedIn": ", zalogowano przez {{method}}",
+          "failed": "Nie udało się {{route}}: {{error}}"
+        }
       }
     },
     "postProcessing": {
@@ -2126,6 +2191,10 @@
       "foldersFollowFiles": {
         "title": "Obserwowane foldery używają modelu wybranego dla plików",
         "description": "Przy FLM (NPU) wybranym dla plików obserwowane foldery dalej transkrybowały modelem dyktowania na karcie graficznej. Jeśli nie wybierzesz dla nich osobnego modelu, używają teraz modelu wybranego dla plików na górze strony Pliki."
+      },
+      "proxy": {
+        "title": "Działa za proxy, które wymaga logowania",
+        "description": "Pobieranie modeli, sprawdzanie aktualizacji i dostawcy online używają teraz proxy ustawionego w Windows i logują się do niego kontem Windows (NTLM / Negotiate), tak jak przeglądarka. Ręczne proxy z nazwą użytkownika i hasłem ustawisz w Ustawieniach zaawansowanych > Proxy."
       }
     },
     "installed": "Zainstalowana"

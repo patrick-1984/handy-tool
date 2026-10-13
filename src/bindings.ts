@@ -1821,6 +1821,105 @@ export const commands = {
       else return { status: "error", error: e as any };
     }
   },
+  async changeProxyModeSetting(mode: string): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_proxy_mode_setting", { mode }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  async changeProxyHostSetting(host: string): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_proxy_host_setting", { host }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  async changeProxyPortSetting(port: number): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_proxy_port_setting", { port }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  async changeProxyBypassSetting(
+    bypass: string,
+  ): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_proxy_bypass_setting", { bypass }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  async changeProxyAuthSetting(auth: string): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_proxy_auth_setting", { auth }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  async changeProxyUsernameSetting(
+    username: string,
+  ): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_proxy_username_setting", {
+          username,
+        }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * Saves the proxy password encrypted (empty = forget it). It is never sent
+   * back to the window.
+   */
+  async setProxyPassword(password: string): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("set_proxy_password", { password }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * The proxy Windows is set to use (Settings > Network & internet > Proxy).
+   */
+  async getSystemProxy(): Promise<SystemProxyInfo> {
+    return await TAURI_INVOKE("get_system_proxy");
+  },
+  /**
+   * Fetches a page through the proxy settings now in force.
+   */
+  async testProxyConnection(): Promise<ProxyTestResult> {
+    return await TAURI_INVOKE("test_proxy_connection");
+  },
   async cancelOperation(): Promise<void> {
     await TAURI_INVOKE("cancel_operation");
   },
@@ -3400,6 +3499,28 @@ export type AppSettings = {
    * Where those go. Empty = `{app_data}/files`.
    */
   files_folder?: string;
+  /**
+   * Advanced > Proxy (Windows; see net/mod.rs).
+   */
+  proxy_mode?: ProxyMode;
+  /**
+   * Manual proxy: its address (host name or IP).
+   */
+  proxy_host?: string;
+  /**
+   * Manual proxy: its port.
+   */
+  proxy_port?: number;
+  /**
+   * Manual proxy: sites reached directly ("<local>; *.corp; 10.*").
+   */
+  proxy_bypass?: string;
+  proxy_auth?: ProxyAuth;
+  proxy_username?: string;
+  /**
+   * Encrypted for this Windows account (`net::secret`); never plain text.
+   */
+  proxy_password?: string;
   jumper_persist?: boolean;
   jumper_saved_slots?: (SavedJumpSlot | null)[];
 };
@@ -3958,6 +4079,53 @@ export type SoundTheme = "marimba" | "pop" | "custom";
  * a glowing light running round its edge.
  */
 export type ProgressStyle = "line" | "ring" | "lap";
+/**
+ * Advanced > Proxy: how Handy reaches the internet (Windows; elsewhere the
+ * system's proxy as before).
+ */
+export type ProxyMode = "system" | "manual" | "off";
+/**
+ * How Handy signs in to a proxy that asks.
+ */
+export type ProxyAuth = "windows" | "password";
+/**
+ * The proxy Windows is set to use (Settings > Network & internet > Proxy).
+ */
+export type SystemProxyInfo = {
+  /**
+   * "proxy.corp:8080" for HTTPS.
+   */
+  proxy: string | null;
+  /**
+   * The setup script's address.
+   */
+  script: string | null;
+  /**
+   * "<local>;*.corp".
+   */
+  bypass: string | null;
+};
+export type ProxyTestResult = {
+  ok: boolean;
+  /**
+   * The HTTP status the site answered with.
+   */
+  status: number | null;
+  /**
+   * "direct" | "bypassed" | "environment" | "proxy" | "error".
+   */
+  route: string;
+  /**
+   * The proxy's address (route "proxy").
+   */
+  proxy: string | null;
+  /**
+   * How Handy signed in to it: "Negotiate", "NTLM", "Basic"; None = it did
+   * not ask.
+   */
+  sign_in: string | null;
+  error: string | null;
+};
 /**
  * A keyboard language (Windows lists keyboards under a language) with a
  * keyboard on which AltGr types a character on some keys.

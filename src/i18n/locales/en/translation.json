@@ -1209,7 +1209,8 @@
         "history": "History",
         "postProcessing": "Post-processing",
         "llmProviders": "Registered LLM Providers",
-        "mcp": "MCP & CLI"
+        "mcp": "MCP & CLI",
+        "proxy": "Proxy"
       },
       "tokenCountProviders": {
         "hint": "Providers for the Token Count page. Tip: the model only selects the tokenizer — pick the smallest model of the family you care about (e.g. qwen3:0.6b counts the same as qwen3:8b but loads in a fraction of the time). Anthropic and Gemini counting endpoints are free; local servers are queried with a 1-token probe.",
@@ -1433,7 +1434,8 @@
         "typer": "Typer",
         "providers": "Providers",
         "mcp": "MCP & CLI",
-        "postProcessing": "Post-processing"
+        "postProcessing": "Post-processing",
+        "proxy": "Proxy"
       },
       "mcp": {
         "loading": "Loading…",
@@ -1602,6 +1604,69 @@
       "pillPreview": {
         "title": "Preview",
         "description": "**The recording pill as the settings around it make it, moving:** recording on the left (the T lit while the live text box is on, the sound bars) and transcribing on the right, its progress running from 0 to 100% over and over with your progress style, glow and colour, at your Overlay Size."
+      },
+      "proxy": {
+        "description": "How Handy reaches the internet: model downloads, update checks, LLM providers and online transcription.",
+        "mode": {
+          "title": "Proxy",
+          "description": "**Use Windows settings** (default): the proxy set in Windows Settings > Network & internet > Proxy, including a setup script, as your browser uses it.\n\n**Manual proxy**: an address and port you enter.\n\n**No proxy**: straight to the internet.",
+          "system": "Use Windows settings",
+          "manual": "Manual proxy",
+          "off": "No proxy"
+        },
+        "windows": {
+          "label": "Windows uses:",
+          "none": "no proxy",
+          "proxy": "proxy {{proxy}}",
+          "script": "setup script {{url}}",
+          "bypass": "except {{list}}"
+        },
+        "host": {
+          "title": "Proxy address",
+          "description": "The proxy's host name or IP address and its port, as in a browser's manual proxy settings.",
+          "placeholder": "proxy.example.com"
+        },
+        "port": "Port",
+        "bypass": {
+          "title": "No proxy for",
+          "description": "Sites reached directly, separated by semicolons or commas. `*` is a wildcard, `.example.com` covers the domain and everything under it, `<local>` means names without a dot. This PC (localhost) is always reached directly.",
+          "placeholder": "<local>; *.example.com; 10.*"
+        },
+        "auth": {
+          "title": "Sign in to the proxy",
+          "description": "Used only when the proxy asks.\n\n**Windows account** (default): signs in the way your browser does (Negotiate / NTLM), no password needed.\n\n**User name and password**: for a proxy with its own account (Basic, NTLM or Negotiate). For a domain account write DOMAIN\\user.",
+          "windows": "Windows account",
+          "password": "User name and password"
+        },
+        "username": {
+          "title": "User name",
+          "description": "The proxy account's user name (DOMAIN\\user or user@domain for a domain account).",
+          "placeholder": "user name"
+        },
+        "password": {
+          "title": "Password",
+          "description": "Stored encrypted for your Windows account, never as plain text, and not shown again once saved. Type a new one to replace it.",
+          "placeholder": "password",
+          "saved": "Saved (type to replace)",
+          "forget": "Forget",
+          "error": "The password could not be saved."
+        },
+        "test": {
+          "title": "Test connection",
+          "description": "Opens github.com with the settings above and shows the route and the sign-in used.",
+          "button": "Test",
+          "running": "Testing…",
+          "viaProxy": "through the proxy {{proxy}}",
+          "route": {
+            "direct": "directly",
+            "bypassed": "directly (on the no-proxy list)",
+            "environment": "through the proxy in the HTTPS_PROXY variable",
+            "error": "with an unusable proxy setup"
+          },
+          "ok": "Connected {{route}} (HTTP {{status}}){{signIn}}.",
+          "signedIn": ", signed in with {{method}}",
+          "failed": "Failed {{route}}: {{error}}"
+        }
       }
     },
     "postProcessing": {
@@ -2126,6 +2191,10 @@
       "hotkeyRelease": {
         "title": "Holding a shortcut no longer keeps a processor core busy",
         "description": "On Windows, while you held a shortcut (push-to-talk, for example), Handy Tool checked nonstop whether you had let go, which kept one processor core fully busy. It now checks every 10 ms."
+      },
+      "proxy": {
+        "title": "Works behind a proxy that asks for a sign-in",
+        "description": "Model downloads, update checks and online providers now use the proxy set in Windows and sign in to it with your Windows account (NTLM / Negotiate), as a browser does. A manual proxy with a user name and password can be set in Advanced settings > Proxy."
       }
     },
     "installed": "Installed"

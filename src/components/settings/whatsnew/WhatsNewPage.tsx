@@ -37,6 +37,17 @@ interface Item {
  */
 const RELEASES: { version: string; items: Item[] }[] = [
   {
+    version: "2.2.2",
+    items: [
+      {
+        key: "proxy",
+        section: "proxy",
+        titleKeys: ["settings.advanced.proxy.auth.title"],
+        windowsOnly: true,
+      },
+    ],
+  },
+  {
     version: "2.2.1",
     items: [
       {

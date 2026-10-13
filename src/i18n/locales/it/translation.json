@@ -995,7 +995,8 @@
         "keyboardTyper": "Digitatore da Tastiera",
         "tokenCountProviders": "Provider per il Conteggio Token",
         "llmProviders": "Provider LLM Registrati",
-        "mcp": "MCP e CLI"
+        "mcp": "MCP e CLI",
+        "proxy": "Proxy"
       },
       "startHidden": {
         "label": "Avvia in Background",
@@ -1219,7 +1220,8 @@
         "typer": "Digitatore",
         "providers": "Provider",
         "mcp": "MCP e CLI",
-        "postProcessing": "Post-Elaborazione"
+        "postProcessing": "Post-Elaborazione",
+        "proxy": "Proxy"
       },
       "mcp": {
         "loading": "Caricamento…",
@@ -1388,6 +1390,69 @@
       "pillPreview": {
         "title": "Anteprima",
         "description": "**La pillola di registrazione così come la fanno le impostazioni intorno, in movimento:** la registrazione a sinistra (la T accesa mentre il riquadro testo dal vivo è attivo, le barre del suono) e la trascrizione a destra, il suo avanzamento che va da 0 a 100% più volte con il tuo stile di avanzamento, bagliore e colore, alla tua Dimensione della Sovrimpressione."
+      },
+      "proxy": {
+        "description": "How Handy reaches the internet: model downloads, update checks, LLM providers and online transcription.",
+        "mode": {
+          "title": "Proxy",
+          "description": "**Use Windows settings** (default): the proxy set in Windows Settings > Network & internet > Proxy, including a setup script, as your browser uses it.\n\n**Manual proxy**: an address and port you enter.\n\n**No proxy**: straight to the internet.",
+          "system": "Use Windows settings",
+          "manual": "Manual proxy",
+          "off": "No proxy"
+        },
+        "windows": {
+          "label": "Windows uses:",
+          "none": "no proxy",
+          "proxy": "proxy {{proxy}}",
+          "script": "setup script {{url}}",
+          "bypass": "except {{list}}"
+        },
+        "host": {
+          "title": "Proxy address",
+          "description": "The proxy's host name or IP address and its port, as in a browser's manual proxy settings.",
+          "placeholder": "proxy.example.com"
+        },
+        "port": "Port",
+        "bypass": {
+          "title": "No proxy for",
+          "description": "Sites reached directly, separated by semicolons or commas. `*` is a wildcard, `.example.com` covers the domain and everything under it, `<local>` means names without a dot. This PC (localhost) is always reached directly.",
+          "placeholder": "<local>; *.example.com; 10.*"
+        },
+        "auth": {
+          "title": "Sign in to the proxy",
+          "description": "Used only when the proxy asks.\n\n**Windows account** (default): signs in the way your browser does (Negotiate / NTLM), no password needed.\n\n**User name and password**: for a proxy with its own account (Basic, NTLM or Negotiate). For a domain account write DOMAIN\\user.",
+          "windows": "Windows account",
+          "password": "User name and password"
+        },
+        "username": {
+          "title": "User name",
+          "description": "The proxy account's user name (DOMAIN\\user or user@domain for a domain account).",
+          "placeholder": "user name"
+        },
+        "password": {
+          "title": "Password",
+          "description": "Stored encrypted for your Windows account, never as plain text, and not shown again once saved. Type a new one to replace it.",
+          "placeholder": "password",
+          "saved": "Saved (type to replace)",
+          "forget": "Forget",
+          "error": "The password could not be saved."
+        },
+        "test": {
+          "title": "Test connection",
+          "description": "Opens github.com with the settings above and shows the route and the sign-in used.",
+          "button": "Test",
+          "running": "Testing…",
+          "viaProxy": "through the proxy {{proxy}}",
+          "route": {
+            "direct": "directly",
+            "bypassed": "directly (on the no-proxy list)",
+            "environment": "through the proxy in the HTTPS_PROXY variable",
+            "error": "with an unusable proxy setup"
+          },
+          "ok": "Connected {{route}} (HTTP {{status}}){{signIn}}.",
+          "signedIn": ", signed in with {{method}}",
+          "failed": "Failed {{route}}: {{error}}"
+        }
       }
     },
     "postProcessing": {
@@ -2126,6 +2191,10 @@
       "foldersFollowFiles": {
         "title": "Watched folders use the model you picked for files",
         "description": "With FLM (NPU) picked for files, the watched folders kept transcribing with your dictation model on the graphics card. Unless you pick a batch model of their own, they now use the model picked for files at the top of the Files page."
+      },
+      "proxy": {
+        "title": "Works behind a proxy that asks for a sign-in",
+        "description": "Model downloads, update checks and online providers now use the proxy set in Windows and sign in to it with your Windows account (NTLM / Negotiate), as a browser does. A manual proxy with a user name and password can be set in Advanced settings > Proxy."
       }
     },
     "installed": "Installata"

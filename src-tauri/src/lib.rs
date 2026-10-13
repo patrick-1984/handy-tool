@@ -16,6 +16,7 @@ mod llm_client;
 mod managers;
 mod mcp;
 mod model_testing;
+mod net;
 mod overlay;
 mod portable;
 mod remote_keys;
@@ -481,6 +482,15 @@ pub fn run(cli_args: CliArgs) {
         commands::translator::translator_add_folder,
         commands::translator::translator_set_folder_enabled,
         commands::translator::translator_remove_folder,
+        commands::proxy::change_proxy_mode_setting,
+        commands::proxy::change_proxy_host_setting,
+        commands::proxy::change_proxy_port_setting,
+        commands::proxy::change_proxy_bypass_setting,
+        commands::proxy::change_proxy_auth_setting,
+        commands::proxy::change_proxy_username_setting,
+        commands::proxy::set_proxy_password,
+        commands::proxy::get_system_proxy,
+        commands::proxy::test_proxy_connection,
         commands::files::transcribe_file,
         commands::files::retranscribe_history_entry,
         commands::files::get_file_job,
@@ -777,6 +787,9 @@ pub fn run(cli_args: CliArgs) {
             app.manage(updater::LastUpdateOutcome(std::sync::Mutex::new(
                 update_outcome,
             )));
+            // The saved proxy before anything goes online (update check,
+            // downloads); settings writes keep it current from here on.
+            net::apply_settings(&settings::get_settings(&app_handle));
             app.manage(updater::UpdateManager::new(app_handle.clone()));
             app.state::<updater::UpdateManager>().start();
 

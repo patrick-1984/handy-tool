@@ -622,6 +622,32 @@ pub enum TranscriptionMode {
     PostRecording,
 }
 
+/// Advanced > Proxy: how Handy reaches the internet (Windows; elsewhere the
+/// system's proxy as before).
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum ProxyMode {
+    /// Windows' proxy settings (static proxy, bypass list, PAC script), as
+    /// browsers use them.
+    #[default]
+    System,
+    /// `proxy_host`:`proxy_port`, except `proxy_bypass`.
+    Manual,
+    /// Straight to the internet.
+    Off,
+}
+
+/// How Handy signs in to a proxy that asks.
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum ProxyAuth {
+    /// The Windows account (NTLM / Negotiate), as browsers do.
+    #[default]
+    Windows,
+    /// `proxy_username` and `proxy_password` (Basic, NTLM or Negotiate).
+    Password,
+}
+
 /// What the live text box above the recording overlay shows.
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type, Default)]
 #[serde(rename_all = "snake_case")]
@@ -1518,6 +1544,29 @@ pub struct AppSettings {
     /// Where those go. Empty = `{app_data}/files`.
     #[serde(default)]
     pub files_folder: String,
+    /// Advanced > Proxy (Windows; see net/mod.rs).
+    #[serde(default)]
+    pub proxy_mode: ProxyMode,
+    /// Manual proxy: its address (host name or IP).
+    #[serde(default)]
+    pub proxy_host: String,
+    /// Manual proxy: its port.
+    #[serde(default = "default_proxy_port")]
+    pub proxy_port: u16,
+    /// Manual proxy: sites reached directly ("<local>; *.corp; 10.*").
+    #[serde(default)]
+    pub proxy_bypass: String,
+    #[serde(default)]
+    pub proxy_auth: ProxyAuth,
+    #[serde(default)]
+    pub proxy_username: String,
+    /// Encrypted for this Windows account (`net::secret`); never plain text.
+    #[serde(default)]
+    pub proxy_password: String,
+}
+
+fn default_proxy_port() -> u16 {
+    8080
 }
 
 fn default_translator_priority() -> TranslatorPriority {
@@ -2839,6 +2888,13 @@ pub fn get_default_settings() -> AppSettings {
         file_model: String::new(),
         file_keep_audio: false,
         files_folder: String::new(),
+        proxy_mode: ProxyMode::default(),
+        proxy_host: String::new(),
+        proxy_port: default_proxy_port(),
+        proxy_bypass: String::new(),
+        proxy_auth: ProxyAuth::default(),
+        proxy_username: String::new(),
+        proxy_password: String::new(),
     }
 }
 
@@ -2988,6 +3044,7 @@ pub fn load_or_create_app_settings(app: &AppHandle) -> AppSettings {
         store.set("settings", serde_json::to_value(&settings).unwrap());
     }
 
+    crate::net::apply_settings(&settings);
     settings
 }
 
@@ -3033,6 +3090,7 @@ pub fn write_settings(app: &AppHandle, settings: AppSettings) {
         ))
         .expect("Failed to initialize store");
 
+    crate::net::apply_settings(&settings);
     store.set("settings", serde_json::to_value(&settings).unwrap());
 }
 

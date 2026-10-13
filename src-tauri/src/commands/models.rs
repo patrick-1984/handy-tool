@@ -63,10 +63,12 @@ pub async fn download_model(
     model_manager: State<'_, Arc<ModelManager>>,
     model_id: String,
 ) -> Result<(), String> {
-    model_manager
-        .download_model(&model_id)
-        .await
-        .map_err(|e| e.to_string())
+    model_manager.download_model(&model_id).await.map_err(|e| {
+        // {:#} carries the causes (DNS, connect, TLS) - the frontend only
+        // says that the download failed.
+        log::error!("Download of model {model_id} failed: {e:#}");
+        format!("{e:#}")
+    })
 }
 
 #[tauri::command]

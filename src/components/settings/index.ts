@@ -7,6 +7,7 @@ export {
   ProvidersSection,
   LlmProvidersSection,
   McpSection,
+  ProxySection,
   PostProcessingSection,
 } from "./advanced/AdvancedSettings";
 export { DebugSettings } from "./debug/DebugSettings";

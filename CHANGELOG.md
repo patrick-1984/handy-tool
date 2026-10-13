@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.2.2] - 2026-10-13
+
+### Added
+
+- **Works behind a proxy that asks for a sign-in (Windows).** Handy read the proxy's address from
+  Windows but could not sign in to it, so on a PC behind such a proxy model downloads and update
+  checks failed with "error sending request" while the browser worked. Handy now uses the proxy
+  set in Windows the way a browser does - static proxy, bypass list or setup script (PAC) - and
+  signs in with your Windows account (Negotiate / NTLM) when the proxy asks. Advanced settings >
+  Proxy (new) also offers a manual proxy (address, port, sites reached directly), a user name and
+  password for a proxy with its own account (stored encrypted for your Windows account), No
+  proxy, and a Test button that shows the route and the sign-in used. Covers model downloads,
+  update checks, LLM providers and the online transcription engines; servers on this PC are
+  always reached directly.
+
+### Fixed
+
+- **Network errors say why.** A failed model download is now logged with its cause (it was not
+  logged at all), and update-check errors include the underlying reason (DNS, connection, TLS,
+  proxy) instead of only "error sending request".
+
 ## [2.2.1] - 2026-10-13
 
 ### Fixed
