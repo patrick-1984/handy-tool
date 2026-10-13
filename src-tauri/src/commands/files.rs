@@ -73,11 +73,13 @@ static LOG_LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
 
 /// True while a file is being decoded or transcribed. The updater waits for it:
 /// until the file is done, its text exists only in this worker's memory.
+/// History's "Transcribe again" counts too (its text is not saved yet either).
 pub fn file_job_running() -> bool {
-    matches!(
-        *JOB.lock().unwrap_or_else(|p| p.into_inner()),
-        Some(FileJob::Decoding { .. } | FileJob::Transcribing { .. })
-    )
+    RETRANSCRIBING.load(Ordering::SeqCst)
+        || matches!(
+            *JOB.lock().unwrap_or_else(|p| p.into_inner()),
+            Some(FileJob::Decoding { .. } | FileJob::Transcribing { .. })
+        )
 }
 
 fn publish(app: &AppHandle, job: FileJob) {
@@ -232,6 +234,16 @@ fn transcribe_piece(
 ) -> Result<String, String> {
     let is_dictation = get_settings(app).selected_model == model;
     let load_error = |e: anyhow::Error| format!("could not load the model: {e}");
+    // FLM (the NPU server) runs beside whatever dictation uses: straight to the
+    // server, never through an engine slot (and not under the chunk lock - the
+    // NPU does not compete with the GPU/CPU engines). Also when FLM IS the
+    // dictation model: dictation may switch away mid-file, and only dictation's
+    // own takes drive the overlay's percentage.
+    if tm.is_flm_model(model) {
+        return tm
+            .transcribe_flm_direct(model, piece)
+            .map_err(|e| e.to_string());
+    }
     if is_dictation || external {
         if !is_dictation {
             // An online engine has no second slot.
@@ -558,6 +570,99 @@ pub fn change_files_folder_setting(app: AppHandle, path: String) -> Result<(), S
     settings.files_folder = trimmed.to_string();
     write_settings(&app, settings);
     Ok(())
+}
+
+/// One History re-transcription at a time.
+static RETRANSCRIBING: AtomicBool = AtomicBool::new(false);
+
+/// Clears RETRANSCRIBING however the job ends.
+struct RetranscribeGuard;
+
+impl Drop for RetranscribeGuard {
+    fn drop(&mut self) {
+        RETRANSCRIBING.store(false, Ordering::SeqCst);
+    }
+}
+
+/// History's "Transcribe again": reads a take's recording again with the
+/// dictation model and replaces the row's transcript - for a take recorded
+/// without a model, or whose transcription failed. Nothing is pasted or
+/// post-processed; the recording is only read. Returns the new text.
+#[tauri::command]
+#[specta::specta]
+pub async fn retranscribe_history_entry(app: AppHandle, id: i64) -> Result<String, String> {
+    let history = Arc::clone(
+        app.state::<Arc<crate::managers::history::HistoryManager>>()
+            .inner(),
+    );
+    let entry = history
+        .get_entry_by_id(id)
+        .await
+        .map_err(|e| e.to_string())?
+        .ok_or("the history entry no longer exists")?;
+    let model = get_settings(&app).selected_model;
+    let model_info = app
+        .state::<Arc<ModelManager>>()
+        .get_model_info(&model)
+        .filter(|m| m.is_downloaded)
+        .ok_or("no speech model is ready - download one first")?;
+    let files = history
+        .recording_files_for(&entry.file_name)
+        .map_err(|e| e.to_string())?;
+    // Claim first, then look for an update: the updater claims UPDATE_PENDING
+    // first and then reads file_job_running() (which sees this flag) - both
+    // SeqCst, so at least one of the two sees the other and backs off.
+    if RETRANSCRIBING.swap(true, Ordering::SeqCst) {
+        return Err("another recording is being transcribed".into());
+    }
+    let guard = RetranscribeGuard;
+    if crate::transcription_coordinator::update_pending() {
+        return Err("an update is being installed; try again after the restart".into());
+    }
+
+    let app_job = app.clone();
+    let model_job = model.clone();
+    let text = tauri::async_runtime::spawn_blocking(move || -> Result<String, String> {
+        let mut samples = Vec::new();
+        for file in &files {
+            samples.extend(decode_audio_file(file).map_err(|e| e.to_string())?);
+        }
+        let external = model_info.engine_type.is_external();
+        let tm = app_job.state::<Arc<TranscriptionManager>>();
+        info!(
+            "History: transcribing entry {id} again with {model_job} ({:.0} s)",
+            samples.len() as f64 / SAMPLE_HZ
+        );
+        let mut parts = Vec::new();
+        for range in split_speech_segments(&samples) {
+            let piece = samples[range].to_vec();
+            let text = transcribe_piece(&app_job, &tm, &model_job, external, piece)?;
+            let text = text.trim();
+            if !text.is_empty() {
+                parts.push(text.to_string());
+            }
+        }
+        release_model(&app_job, &model_job);
+        Ok(parts.join(" "))
+    })
+    .await
+    .map_err(|e| e.to_string())??;
+
+    let label = app
+        .state::<Arc<ModelManager>>()
+        .get_model_info(&model)
+        .map(|m| m.name);
+    history
+        .update_transcription(id, &text, label)
+        .await
+        .map_err(|e| e.to_string())?;
+    // Held until the text is in the database, so an update waits for it.
+    drop(guard);
+    info!(
+        "History: entry {id} transcribed again ({} chars)",
+        text.len()
+    );
+    Ok(text)
 }
 
 #[cfg(test)]

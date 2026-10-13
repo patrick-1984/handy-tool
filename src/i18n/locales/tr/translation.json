@@ -957,8 +957,10 @@
       "micWarmup": {
         "title": "Mikrofonun ısınmasını bekle",
         "description": "**Boşta duran bir mikrofon açıldıktan sonra, gerçekten hazır olana kadar kayıt çubuğunda \"Mikrofon açılıyor...\" gösterilmeye devam eder.** Bazı mikrofonlar çok daha sessiz başlar ve yaklaşık bir saniyede sesi yükselir; bu sırada söylenen kelimeler gürültü olarak atılıyordu. Bekleme, bu mikrofonun son birkaç soğuk başlangıcının uygulamanın kendisinin ölçtüğü ortalamasıdır.\n\n**Varsayılan:** Açık.\n\nYalnızca soğuk başlangıç bekler — hazır tutulan mikrofon hemen başlar. Mikrofon Her Zaman Açık etkinken gizlenir.",
-        "measured": "Bu bilgisayarda ölçülen: {{seconds}} sn.",
-        "notMeasured": "Henüz ölçülmedi — bir sonraki soğuk başlangıçta kendini ölçer."
+        "notMeasured": "Henüz ölçülmedi — bir sonraki soğuk başlangıçta kendini ölçer.",
+        "counting": "{{device}}: {{count}} of {{total}} cold starts measured — no wait yet.",
+        "noFadeIn": "{{device}}: no fade-in — no wait.",
+        "waits": "{{device}}: waits {{seconds}} s."
       },
       "tooQuiet": {
         "title": "Çok sessiz konuşunca uyar",
@@ -1485,7 +1487,12 @@
         "regexBadge": ".*",
         "regexActive": "Sorgu düzenli ifade olarak değerlendiriliyor",
         "noMatches": "Aramanızla eşleşen kayıt yok."
-      }
+      },
+      "transcribeAgain": "Transcribe this recording (again) with your dictation model",
+      "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
+      "transcribeAgainFailed": "Could not transcribe it: {{error}}",
+      "noTranscript": "No transcript — transcribe the recording with the ⟲ button.",
+      "noTranscriptNoAudio": "No transcript."
     },
     "debug": {
       "title": "Hata Ayıklama",
@@ -1719,9 +1726,11 @@
         "groups": {
           "dictation": "Dikte modeliniz",
           "downloaded": "İndirilenler",
-          "notDownloaded": "İndirilmeyenler"
+          "notDownloaded": "İndirilmeyenler",
+          "online": "Online (dictation model only)"
         },
-        "downloadSize": "İndir · {{size}}"
+        "downloadSize": "İndir · {{size}}",
+        "onlineHint": "Set it as your dictation model to use it here"
       },
       "transcribe": {
         "title": "Dosya yazıya dök",
@@ -2096,6 +2105,22 @@
       "hotkeyRelease": {
         "title": "Bir kısayolu basılı tutmak artık bir işlemci çekirdeğini meşgul etmiyor",
         "description": "Windows'ta bir kısayolu basılı tuttuğunuzda (örneğin Bas Konuş), Handy Tool bırakıp bırakmadığınızı durmadan denetliyordu ve bu, bir işlemci çekirdeğini tamamen meşgul ediyordu. Artık her 10 ms'de bir denetliyor."
+      },
+      "steadyMic": {
+        "title": "No more false \"Starting mic...\"",
+        "description": "After a driver update a microphone can take longer to open, and the pill then said \"Starting mic...\" on every take although your words were already being recorded. Each microphone is now measured on its own, against the room's noise, and the pill waits only for a microphone that really fades in."
+      },
+      "segmentsWhileSpeaking": {
+        "title": "Short takes are transcribed while you speak",
+        "description": "After 10 seconds of speech a clear pause is enough to send what you said so far to the engine, so most of a 15-30 second take is done by the time you stop."
+      },
+      "flmFiles": {
+        "title": "FLM (NPU) for files and watched folders",
+        "description": "Pick FLM Whisper on the Files page: it runs on the NPU beside your dictation model, so neither waits for the other. A watched folder on FLM no longer pushes your dictation model out. Windows only."
+      },
+      "transcribeAgain": {
+        "title": "Transcribe a recording again from History",
+        "description": "Recorded without a model, or the transcription failed? The new button beside Copy reads the recording again with your dictation model. A take whose transcription fails is now always kept."
       }
     },
     "installed": "Yüklü"

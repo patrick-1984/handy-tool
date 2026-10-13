@@ -957,8 +957,10 @@
       "micWarmup": {
         "title": "Chờ micrô khởi động xong",
         "description": "**Sau khi một micrô đang nghỉ được bật, thanh ghi âm tiếp tục hiện \"Đang bật micrô...\" cho đến khi micrô thực sự sẵn sàng.** Một số micrô bắt đầu nhỏ hơn nhiều rồi to dần trong khoảng một giây; những từ nói trong lúc đó bị bỏ như tiếng ồn. Thời gian chờ là trung bình của vài lần khởi động lạnh gần nhất của micrô này, do chính ứng dụng đo.\n\n**Mặc định:** Bật.\n\nChỉ khởi động lạnh mới phải chờ — micrô được giữ sẵn sàng bắt đầu ngay. Ẩn khi Micrô luôn bật đang bật.",
-        "measured": "Đo trên máy này: {{seconds}} giây.",
-        "notMeasured": "Chưa đo — sẽ tự đo ở lần khởi động lạnh tiếp theo."
+        "notMeasured": "Chưa đo — sẽ tự đo ở lần khởi động lạnh tiếp theo.",
+        "counting": "{{device}}: {{count}} of {{total}} cold starts measured — no wait yet.",
+        "noFadeIn": "{{device}}: no fade-in — no wait.",
+        "waits": "{{device}}: waits {{seconds}} s."
       },
       "tooQuiet": {
         "title": "Báo khi bạn nói quá nhỏ",
@@ -1485,7 +1487,12 @@
         "regexBadge": ".*",
         "regexActive": "Truy vấn đang được xử lý như một biểu thức chính quy",
         "noMatches": "Không có mục nào khớp với tìm kiếm của bạn."
-      }
+      },
+      "transcribeAgain": "Transcribe this recording (again) with your dictation model",
+      "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
+      "transcribeAgainFailed": "Could not transcribe it: {{error}}",
+      "noTranscript": "No transcript — transcribe the recording with the ⟲ button.",
+      "noTranscriptNoAudio": "No transcript."
     },
     "debug": {
       "title": "Gỡ lỗi",
@@ -1719,9 +1726,11 @@
         "groups": {
           "dictation": "Mô hình đọc chính tả của bạn",
           "downloaded": "Đã tải xuống",
-          "notDownloaded": "Chưa tải xuống"
+          "notDownloaded": "Chưa tải xuống",
+          "online": "Online (dictation model only)"
         },
-        "downloadSize": "Tải xuống · {{size}}"
+        "downloadSize": "Tải xuống · {{size}}",
+        "onlineHint": "Set it as your dictation model to use it here"
       },
       "transcribe": {
         "title": "Phiên âm một file",
@@ -2096,6 +2105,22 @@
       "hotkeyRelease": {
         "title": "Giữ một phím tắt không còn làm bận một nhân bộ xử lý",
         "description": "Trên Windows, khi bạn giữ một phím tắt (ví dụ nhấn để nói), Handy Tool liên tục kiểm tra xem bạn đã nhả phím chưa, khiến một nhân bộ xử lý luôn bận hoàn toàn. Giờ nó kiểm tra mỗi 10 ms."
+      },
+      "steadyMic": {
+        "title": "No more false \"Starting mic...\"",
+        "description": "After a driver update a microphone can take longer to open, and the pill then said \"Starting mic...\" on every take although your words were already being recorded. Each microphone is now measured on its own, against the room's noise, and the pill waits only for a microphone that really fades in."
+      },
+      "segmentsWhileSpeaking": {
+        "title": "Short takes are transcribed while you speak",
+        "description": "After 10 seconds of speech a clear pause is enough to send what you said so far to the engine, so most of a 15-30 second take is done by the time you stop."
+      },
+      "flmFiles": {
+        "title": "FLM (NPU) for files and watched folders",
+        "description": "Pick FLM Whisper on the Files page: it runs on the NPU beside your dictation model, so neither waits for the other. A watched folder on FLM no longer pushes your dictation model out. Windows only."
+      },
+      "transcribeAgain": {
+        "title": "Transcribe a recording again from History",
+        "description": "Recorded without a model, or the transcription failed? The new button beside Copy reads the recording again with your dictation model. A take whose transcription fails is now always kept."
       }
     },
     "installed": "Đã cài"

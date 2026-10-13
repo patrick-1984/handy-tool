@@ -957,8 +957,10 @@
       "micWarmup": {
         "title": "マイクが温まるまで待つ",
         "description": "**待機中だったマイクを起動したあと、本当に準備ができるまで録音バーに「マイク起動中...」を表示し続けます。** マイクによっては起動直後の音がかなり小さく、1秒ほどかけて大きくなります。その間に話した言葉はノイズとして捨てられていました。待ち時間は、このマイクの直近のコールドスタートをアプリ自身が測った平均です。\n\n**デフォルト:** オン。\n\n待つのはコールドスタートのときだけで、待機状態のマイクはすぐに始まります。マイク常時オンが有効なときは非表示です。",
-        "measured": "このPCでの実測: {{seconds}} 秒。",
-        "notMeasured": "まだ測定されていません。次のコールドスタートで自動的に測ります。"
+        "notMeasured": "まだ測定されていません。次のコールドスタートで自動的に測ります。",
+        "counting": "{{device}}: {{count}} of {{total}} cold starts measured — no wait yet.",
+        "noFadeIn": "{{device}}: no fade-in — no wait.",
+        "waits": "{{device}}: waits {{seconds}} s."
       },
       "tooQuiet": {
         "title": "声が小さすぎるときに知らせる",
@@ -1485,7 +1487,12 @@
         "regexBadge": ".*",
         "regexActive": "クエリは正規表現として処理されています",
         "noMatches": "検索に一致するエントリーがありません。"
-      }
+      },
+      "transcribeAgain": "Transcribe this recording (again) with your dictation model",
+      "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
+      "transcribeAgainFailed": "Could not transcribe it: {{error}}",
+      "noTranscript": "No transcript — transcribe the recording with the ⟲ button.",
+      "noTranscriptNoAudio": "No transcript."
     },
     "debug": {
       "title": "デバッグ",
@@ -1719,9 +1726,11 @@
         "groups": {
           "dictation": "音声入力のモデル",
           "downloaded": "ダウンロード済み",
-          "notDownloaded": "未ダウンロード"
+          "notDownloaded": "未ダウンロード",
+          "online": "Online (dictation model only)"
         },
-        "downloadSize": "ダウンロード · {{size}}"
+        "downloadSize": "ダウンロード · {{size}}",
+        "onlineHint": "Set it as your dictation model to use it here"
       },
       "transcribe": {
         "title": "ファイルを文字起こし",
@@ -2096,6 +2105,22 @@
       "hotkeyRelease": {
         "title": "ショートカットを押し続けてもプロセッサ コアを占有しないように",
         "description": "Windows では、ショートカットを押し続けている間 (プッシュトゥトークなど)、Handy Tool がキーを離したかどうかを絶え間なく確認していたため、プロセッサ コアが 1 つ完全に占有されていました。現在は 10 ミリ秒ごとに確認します。"
+      },
+      "steadyMic": {
+        "title": "No more false \"Starting mic...\"",
+        "description": "After a driver update a microphone can take longer to open, and the pill then said \"Starting mic...\" on every take although your words were already being recorded. Each microphone is now measured on its own, against the room's noise, and the pill waits only for a microphone that really fades in."
+      },
+      "segmentsWhileSpeaking": {
+        "title": "Short takes are transcribed while you speak",
+        "description": "After 10 seconds of speech a clear pause is enough to send what you said so far to the engine, so most of a 15-30 second take is done by the time you stop."
+      },
+      "flmFiles": {
+        "title": "FLM (NPU) for files and watched folders",
+        "description": "Pick FLM Whisper on the Files page: it runs on the NPU beside your dictation model, so neither waits for the other. A watched folder on FLM no longer pushes your dictation model out. Windows only."
+      },
+      "transcribeAgain": {
+        "title": "Transcribe a recording again from History",
+        "description": "Recorded without a model, or the transcription failed? The new button beside Copy reads the recording again with your dictation model. A take whose transcription fails is now always kept."
       }
     },
     "installed": "インストール済み"

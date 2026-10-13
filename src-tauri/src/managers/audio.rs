@@ -172,26 +172,49 @@ fn create_audio_recorder(
         })
         .with_warmup_callback({
             let app_handle = app_handle.clone();
-            move |ms| record_mic_warmup(&app_handle, ms)
+            move |device, ms| record_mic_warmup(&app_handle, device, ms)
         });
 
     Ok(recorder)
 }
 
-/// Keep a cold start's measured warm-up; the next cold starts wait for the
-/// average (see `AppSettings::applied_mic_warmup_ms`). Off the audio thread.
-fn record_mic_warmup(app_handle: &tauri::AppHandle, ms: u32) {
+/// Keep a cold start's measured warm-up under the microphone it was measured
+/// on; that microphone's next cold starts wait for it once enough were
+/// measured (see `AppSettings::applied_mic_warmup_ms`). Off the audio thread.
+fn record_mic_warmup(app_handle: &tauri::AppHandle, device: &str, ms: u32) {
+    if device.is_empty() {
+        return;
+    }
     let app_handle = app_handle.clone();
+    let device = device.to_string();
     std::thread::spawn(move || {
-        let mut settings = get_settings(&app_handle);
-        let measured = &mut settings.mic_fade_in_measured_ms;
-        measured.push(ms.min(crate::settings::MIC_WARMUP_MAX_MS));
-        let excess = measured
-            .len()
-            .saturating_sub(crate::settings::MIC_WARMUP_KEPT);
-        measured.drain(..excess);
-        crate::settings::write_settings(&app_handle, settings);
+        // A synchronized read-modify-write: a plain one could put back a
+        // setting another thread changed meanwhile.
+        let mut kept = 0;
+        crate::settings::update_settings(&app_handle, |settings| {
+            let measured = settings
+                .mic_warmup_by_device
+                .entry(device.clone())
+                .or_default();
+            measured.push(ms.min(crate::settings::MIC_WARMUP_MAX_MS));
+            let excess = measured
+                .len()
+                .saturating_sub(crate::settings::MIC_WARMUP_KEPT);
+            measured.drain(..excess);
+            kept = measured.len();
+        });
+        info!(
+            "Microphone warm-up for '{device}': {ms} ms ({kept} of {} cold starts measured)",
+            crate::settings::MIC_WARMUP_KEPT
+        );
     });
+}
+
+/// The name a microphone's warm-up measurements are kept under: the name of the
+/// device that will be opened ("" when there is none - nothing is measured).
+fn warmup_device_key(device: Option<&cpal::Device>) -> String {
+    use cpal::traits::DeviceTrait;
+    device.and_then(|d| d.name().ok()).unwrap_or_default()
 }
 
 /* ──────────────────────────────────────────────────────────────── */
@@ -367,12 +390,20 @@ impl AudioRecordingManager {
 
         // Get the selected device from settings, considering clamshell mode
         let settings = get_settings(&self.app_handle);
-        let selected_device = self.get_effective_microphone_device(&settings);
+        // The system default is resolved HERE, once, so the warm-up wait is looked
+        // up for exactly the device that open() gets (it would otherwise resolve
+        // the default again, and the default can change in between).
+        let selected_device = self.get_effective_microphone_device(&settings).or_else(|| {
+            use cpal::traits::HostTrait;
+            crate::audio_toolkit::get_cpal_host().default_input_device()
+        });
 
         let source = settings.effective_capture_source();
 
         if let Some(rec) = recorder_opt.as_mut() {
-            rec.set_warmup_ms(settings.applied_mic_warmup_ms());
+            rec.set_warmup_ms(
+                settings.applied_mic_warmup_ms(&warmup_device_key(selected_device.as_ref())),
+            );
             rec.set_system_audio_gain(settings.system_audio_gain);
             rec.set_system_audio_delay_ms(settings.system_audio_delay_ms);
             // Mixed: arm the SLAVE first. The consumer thread captures the ring at

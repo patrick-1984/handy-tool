@@ -148,6 +148,80 @@ pub fn running_transcription_remaining() -> Option<f32> {
     }
 }
 
+/// Publishes an engine call for the overlay's percentage; the returned guard
+/// clears it however the call ends. `started` is None while the call still
+/// waits for the GPU (it counts as no progress).
+fn begin_running_job(
+    started: Option<std::time::Instant>,
+    expected: Option<f32>,
+    reported: Arc<AtomicI32>,
+) -> RunningJobGuard {
+    if let Ok(mut job) = RUNNING_JOB.lock() {
+        *job = Some(RunningJob {
+            started,
+            expected,
+            reported,
+        });
+    }
+    RunningJobGuard
+}
+
+/// Keeps a successful call's timing for the model's estimates; clips too short
+/// to say anything about speed are skipped.
+fn record_model_timing(speed_key: String, audio_secs: f32, took: f32) {
+    if audio_secs < MIN_TIMING_SAMPLE_SECS || speed_key.is_empty() {
+        return;
+    }
+    if let Ok(mut timings) = MODEL_TIMINGS.lock() {
+        let calls = timings.entry(speed_key).or_default();
+        if calls.len() == TIMINGS_KEPT {
+            calls.pop_front();
+        }
+        calls.push_back((audio_secs, took));
+    }
+}
+
+/* ── FLM used beside the engine slots (Files, watched folders) ── */
+
+/// Direct FLM calls in flight (Files / watched folders using FLM while dictation
+/// runs another model). Taken under `load_flight` together with the check that
+/// the server is alive, so nothing that also holds `load_flight` (an idle stop,
+/// an unload, a reload) can take the server away while a call is in flight.
+#[cfg(not(target_os = "macos"))]
+static FLM_IN_FLIGHT: AtomicU64 = AtomicU64::new(0);
+/// An unload was refused because FLM was busy; with "Immediately" the idle
+/// watcher does it once FLM is free.
+#[cfg(not(target_os = "macos"))]
+static FLM_UNLOAD_DEFERRED: AtomicBool = AtomicBool::new(false);
+/// When FLM last finished a call or started (ms since the Unix epoch).
+#[cfg(not(target_os = "macos"))]
+static FLM_LAST_USED_MS: AtomicU64 = AtomicU64::new(0);
+#[cfg(not(target_os = "macos"))]
+fn now_ms() -> u64 {
+    SystemTime::now()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or(0)
+}
+
+/// FLM was just used (or started): its idle time counts from now.
+#[cfg(not(target_os = "macos"))]
+fn flm_note_used() {
+    FLM_LAST_USED_MS.store(now_ms(), Ordering::Relaxed);
+}
+
+/// One direct FLM call in flight; ends (and counts as use) when dropped.
+#[cfg(not(target_os = "macos"))]
+struct FlmLease;
+
+#[cfg(not(target_os = "macos"))]
+impl Drop for FlmLease {
+    fn drop(&mut self) {
+        flm_note_used();
+        FLM_IN_FLIGHT.fetch_sub(1, Ordering::AcqRel);
+    }
+}
+
 /// Clears the running job however the engine call ends, including a panic.
 struct RunningJobGuard;
 
@@ -465,10 +539,36 @@ impl TranscriptionManager {
 
                         // Skip polling-based unloading for immediate timeout since it's handled directly in transcribe()
                         if settings.model_unload_timeout == ModelUnloadTimeout::Immediately {
+                            // ...except an FLM unload put off because a file was
+                            // using the server then: done once nothing does.
+                            #[cfg(not(target_os = "macos"))]
+                            if FLM_UNLOAD_DEFERRED.load(Ordering::Acquire)
+                                && FLM_IN_FLIGHT.load(Ordering::Acquire) == 0
+                                && !manager_cloned.is_live_transcribing.load(Ordering::Relaxed)
+                                && !manager_cloned.is_batch_transcribing.load(Ordering::Relaxed)
+                                && matches!(
+                                    manager_cloned.lock_engine().engine,
+                                    Some(LoadedEngine::FlmWhisper)
+                                )
+                            {
+                                FLM_UNLOAD_DEFERRED.store(false, Ordering::Release);
+                                manager_cloned.maybe_unload_immediately("FLM no longer in use");
+                            }
                             return;
                         }
 
                         let last = manager_cloned.last_activity.load(Ordering::Relaxed);
+                        // FLM in the dictation slot is also busy when Files or a
+                        // watched folder use it (they never touch last_activity).
+                        #[cfg(not(target_os = "macos"))]
+                        let last = if matches!(
+                            manager_cloned.lock_engine().engine,
+                            Some(LoadedEngine::FlmWhisper)
+                        ) {
+                            last.max(FLM_LAST_USED_MS.load(Ordering::Relaxed))
+                        } else {
+                            last
+                        };
                         let now_ms = SystemTime::now()
                             .duration_since(SystemTime::UNIX_EPOCH)
                             .unwrap()
@@ -509,6 +609,12 @@ impl TranscriptionManager {
                             }
                         }
                     })();
+
+                    // An FLM server the dictation slot no longer holds (Files /
+                    // watched folders started it, or dictation moved to another
+                    // model) stops after a while unused.
+                    #[cfg(not(target_os = "macos"))]
+                    manager_cloned.stop_idle_flm();
 
                     // Translator slot: ALWAYS evaluated each tick, independent of
                     // the main-slot decision above. Independent idle-unload driven by
@@ -608,6 +714,21 @@ impl TranscriptionManager {
         let unload_start = std::time::Instant::now();
         debug!("Starting to unload model");
 
+        // FLM in use right now (a dictation take, a file, a watched folder - each
+        // holds a lease taken under load_flight, which we hold): leave it all as
+        // it is; the idle unload tries again later. Unloading would stop the
+        // server under that request, or empty the dictation slot mid-take.
+        #[cfg(not(target_os = "macos"))]
+        if FLM_IN_FLIGHT.load(Ordering::Acquire) > 0
+            && matches!(self.lock_engine().engine, Some(LoadedEngine::FlmWhisper))
+        {
+            info!("FLM is busy; not unloading it now");
+            FLM_UNLOAD_DEFERRED.store(true, Ordering::Release);
+            return Err(anyhow::anyhow!(
+                "FLM is transcribing right now - try again in a moment"
+            ));
+        }
+
         {
             let mut state = self.lock_engine();
             if let Some(ref mut loaded_engine) = state.engine {
@@ -619,7 +740,8 @@ impl TranscriptionManager {
                     LoadedEngine::SenseVoice(e) => e.unload_model(),
                     #[cfg(not(target_os = "macos"))]
                     LoadedEngine::FlmWhisper => {
-                        // Stop the FLM subprocess
+                        // Stop the FLM subprocess (an FLM call in flight was
+                        // ruled out above, under load_flight).
                         if let Ok(mut flm_guard) = self.flm_manager.lock() {
                             if let Some(ref mut flm) = *flm_guard {
                                 flm.stop();
@@ -661,6 +783,156 @@ impl TranscriptionManager {
             unload_duration.as_millis()
         );
         Ok(())
+    }
+
+    /// Whether `model_id` runs on FLM (the NPU server).
+    pub fn is_flm_model(&self, model_id: &str) -> bool {
+        #[cfg(not(target_os = "macos"))]
+        {
+            self.model_manager
+                .get_model_info(model_id)
+                .is_some_and(|m| matches!(m.engine_type, EngineType::FlmWhisper))
+        }
+        #[cfg(target_os = "macos")]
+        {
+            let _ = model_id;
+            false
+        }
+    }
+
+    /// Transcribes with FLM beside the engine slots, whatever dictation uses:
+    /// Files and watched folders put FLM (NPU) to work while dictation keeps
+    /// its own model (often Whisper on the GPU). One server serves everyone
+    /// (port 52625): a running one is used, else it is started here - without
+    /// touching the dictation slot.
+    ///
+    /// Locks: load_flight → flm_manager only to check/start the server and take
+    /// the lease; then flm_manager alone for the request. Nothing upstream is
+    /// ever taken while flm_manager is held.
+    #[cfg(not(target_os = "macos"))]
+    pub fn transcribe_flm_direct(&self, model_id: &str, audio: Vec<f32>) -> Result<String> {
+        use crate::managers::flm::FlmManager;
+        let model_info = self
+            .model_manager
+            .get_model_info(model_id)
+            .ok_or_else(|| anyhow::anyhow!("Model not found: {}", model_id))?;
+        if !matches!(model_info.engine_type, EngineType::FlmWhisper) {
+            return Err(anyhow::anyhow!("'{}' is not an FLM model", model_id));
+        }
+        if audio.is_empty() {
+            return Ok(String::new());
+        }
+        let lease = {
+            let _flight = self
+                .load_flight
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            let mut flm = self
+                .flm_manager
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            if !flm.as_mut().is_some_and(|f| f.is_running()) {
+                if let Some(mut old) = flm.take() {
+                    old.stop();
+                }
+                let name = if model_info.filename.is_empty() {
+                    "whisper-v3:turbo"
+                } else {
+                    model_info.filename.as_str()
+                };
+                info!("FLM: starting the server for a file");
+                *flm = Some(FlmManager::start_serve(name)?);
+            }
+            FLM_IN_FLIGHT.fetch_add(1, Ordering::AcqRel);
+            FlmLease
+        };
+
+        let settings = get_settings(&self.app_handle);
+        let translate = settings.translate_to_english && model_info.supports_translation;
+        let language = normalize_language_for_engine(&settings.selected_language)
+            .or_else(|| Some("en".to_string()));
+        let audio_secs = audio.len() as f32 / 16_000.0;
+        let result = {
+            let flm = self
+                .flm_manager
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            let started = std::time::Instant::now();
+            let result = match flm.as_ref() {
+                Some(flm) => flm.transcribe(audio, language.as_deref(), translate),
+                None => Err(anyhow::anyhow!("The FLM server is not running")),
+            };
+            if result.is_ok() {
+                record_model_timing(
+                    model_id.to_string(),
+                    audio_secs,
+                    started.elapsed().as_secs_f32(),
+                );
+            }
+            result
+        };
+        drop(lease);
+        let raw_text = result?;
+        let corrected = if !settings.custom_words.is_empty() {
+            apply_custom_words(
+                &raw_text,
+                &settings.custom_words,
+                settings.word_correction_threshold,
+            )
+        } else {
+            raw_text
+        };
+        Ok(filter_transcription_output(&corrected))
+    }
+
+    /// No FLM on macOS (`is_flm_model` is always false there).
+    #[cfg(target_os = "macos")]
+    pub fn transcribe_flm_direct(&self, model_id: &str, _audio: Vec<f32>) -> Result<String> {
+        Err(anyhow::anyhow!(
+            "FLM is not available on macOS ('{}')",
+            model_id
+        ))
+    }
+
+    /// Stops an FLM server that the dictation slot does not hold once nothing
+    /// has used it for the model unload timeout. Rechecked under load_flight, which
+    /// every lease is taken under, so it never stops a server in use.
+    #[cfg(not(target_os = "macos"))]
+    fn stop_idle_flm(&self) {
+        // The same "unload model after" as dictation's (Never = keep it).
+        let settings = get_settings(&self.app_handle);
+        let Some(limit_secs) = settings
+            .model_unload_timeout
+            .to_seconds(settings.model_unload_custom_seconds)
+        else {
+            return;
+        };
+        let idle = |since: u64| now_ms().saturating_sub(since) > limit_secs * 1000;
+        if FLM_IN_FLIGHT.load(Ordering::Acquire) > 0
+            || !idle(FLM_LAST_USED_MS.load(Ordering::Relaxed))
+        {
+            return;
+        }
+        let _flight = self
+            .load_flight
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        if FLM_IN_FLIGHT.load(Ordering::Acquire) > 0
+            || !idle(FLM_LAST_USED_MS.load(Ordering::Relaxed))
+        {
+            return;
+        }
+        if matches!(self.lock_engine().engine, Some(LoadedEngine::FlmWhisper)) {
+            return; // the dictation slot's own idle unload governs it
+        }
+        let mut flm = self
+            .flm_manager
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        if let Some(mut server) = flm.take() {
+            server.stop();
+            info!("FLM: stopped the server after {limit_secs} s unused");
+        }
     }
 
     /// Unloads the model immediately if the setting is enabled and the model is loaded.
@@ -1022,17 +1294,35 @@ impl TranscriptionManager {
                 } else {
                     &model_info.filename
                 };
-                // Stop and drop any existing FLM child BEFORE spawning a new
-                // one, so re-selecting FLM restarts a dead server (recovery)
-                // AND the new `flm serve` doesn't collide with the old one on
-                // port 52625. Serialized by `load_flight`, so this stop→start is
-                // atomic with respect to other loaders.
-                if let Ok(mut existing) = self.flm_manager.lock() {
-                    if let Some(mut old) = existing.take() {
-                        old.stop();
+                // A server still running (Files / watched folders started it, or
+                // an earlier dictation load) is reused: restarting it would fail
+                // a file's request in flight and cost the NPU's warm-up. A dead
+                // one is stopped and dropped BEFORE spawning a new one, so
+                // re-selecting FLM restarts a dead server (recovery) and the new
+                // `flm serve` doesn't collide with the old one on port 52625.
+                // Serialized by `load_flight`, so this check→start is atomic with
+                // respect to other loaders and to the Files lease.
+                let reuse = {
+                    let mut existing = self
+                        .flm_manager
+                        .lock()
+                        .unwrap_or_else(|poisoned| poisoned.into_inner());
+                    if existing.as_mut().is_some_and(|f| f.is_running()) {
+                        true
+                    } else {
+                        if let Some(mut old) = existing.take() {
+                            old.stop();
+                        }
+                        false
                     }
-                }
-                let flm = match FlmManager::start_serve(flm_model_name) {
+                };
+                let started = if reuse {
+                    info!("FLM: the dictation slot uses the server already running");
+                    Ok(None)
+                } else {
+                    FlmManager::start_serve(flm_model_name).map(Some)
+                };
+                let flm = match started {
                     Ok(flm) => flm,
                     Err(e) => {
                         let error_msg = format!("Failed to start FLM server: {}", e);
@@ -1063,7 +1353,13 @@ impl TranscriptionManager {
                         return Err(anyhow::anyhow!(error_msg));
                     }
                 };
-                *self.flm_manager.lock().unwrap() = Some(flm);
+                if let Some(flm) = flm {
+                    *self
+                        .flm_manager
+                        .lock()
+                        .unwrap_or_else(|poisoned| poisoned.into_inner()) = Some(flm);
+                }
+                flm_note_used();
                 LoadedEngine::FlmWhisper
             }
             EngineType::ApiWhisper => {
@@ -1326,8 +1622,28 @@ impl TranscriptionManager {
             if matches!(&engine_guard.engine, Some(LoadedEngine::FlmWhisper)) {
                 Self::ensure_expected_model(&engine_guard, expected_model)?;
                 drop(engine_guard);
+                // A lease, taken under load_flight with the slot checked again: an
+                // unload (tray, idle) between the check above and the request can
+                // then no longer stop the server under this take (unload keeps a
+                // leased server running). Order load_flight → engine, as always.
+                let (speed_key, lease) = {
+                    let _flight = self
+                        .load_flight
+                        .lock()
+                        .unwrap_or_else(|poisoned| poisoned.into_inner());
+                    let engine_guard = self.lock_engine();
+                    if !matches!(&engine_guard.engine, Some(LoadedEngine::FlmWhisper)) {
+                        return Err(anyhow::anyhow!(
+                            "The FLM model was unloaded mid-take — please retry."
+                        ));
+                    }
+                    Self::ensure_expected_model(&engine_guard, expected_model)?;
+                    FLM_IN_FLIGHT.fetch_add(1, Ordering::AcqRel);
+                    (engine_guard.model_id.clone().unwrap_or_default(), FlmLease)
+                };
                 let language = normalize_language_for_engine(&settings.selected_language)
                     .or_else(|| Some("en".to_string()));
+                let audio_secs = audio.len() as f32 / 16_000.0;
                 // Transcribe under the flm lock, then RELEASE it before
                 // maybe_unload_immediately: unload_model re-locks flm_manager, so
                 // holding it across the unload self-deadlocks (std Mutex is not
@@ -1335,10 +1651,27 @@ impl TranscriptionManager {
                 // borrow the guard, so the guard drops at the block's end.
                 let flm_result = {
                     let flm_guard = self.flm_manager.lock().unwrap();
-                    flm_guard
+                    // The overlay's percentage and this model's timings (FLM gives
+                    // no figure of its own): timed from here, once the server is
+                    // ours, so waiting for a file's request is not counted.
+                    let started = std::time::Instant::now();
+                    let job_guard = begin_running_job(
+                        Some(started),
+                        expected_transcription_secs(&speed_key, audio_secs),
+                        Arc::new(AtomicI32::new(-1)),
+                    );
+                    let result = flm_guard
                         .as_ref()
-                        .map(|flm| flm.transcribe(audio, language.as_deref(), effective_translate))
+                        .map(|flm| flm.transcribe(audio, language.as_deref(), effective_translate));
+                    drop(job_guard);
+                    if matches!(result, Some(Ok(_))) {
+                        record_model_timing(speed_key, audio_secs, started.elapsed().as_secs_f32());
+                    }
+                    result
                 };
+                // Released before maybe_unload_immediately below (a held lease
+                // would keep the server running); counts as use.
+                drop(lease);
                 match flm_result {
                     Some(raw) => {
                         let raw_text = raw?;
@@ -1537,14 +1870,11 @@ impl TranscriptionManager {
             // holds it (below). Only engine time counts, for the percentage
             // and for the timings.
             let waits_for_gpu = matches!(engine, LoadedEngine::Whisper(_));
-            if let Ok(mut job) = RUNNING_JOB.lock() {
-                *job = Some(RunningJob {
-                    started: (!waits_for_gpu).then_some(job_started),
-                    expected,
-                    reported: Arc::clone(&reported),
-                });
-            }
-            let job_guard = RunningJobGuard;
+            let job_guard = begin_running_job(
+                (!waits_for_gpu).then_some(job_started),
+                expected,
+                Arc::clone(&reported),
+            );
             let engine_started = std::cell::Cell::new(job_started);
 
             let transcribe_result = catch_unwind(AssertUnwindSafe(
@@ -1647,17 +1977,9 @@ impl TranscriptionManager {
             ));
 
             drop(job_guard);
-            if transcribe_result.as_ref().is_ok_and(|r| r.is_ok())
-                && audio_secs >= MIN_TIMING_SAMPLE_SECS
-            {
+            if transcribe_result.as_ref().is_ok_and(|r| r.is_ok()) {
                 let took = engine_started.get().elapsed().as_secs_f32();
-                if let Ok(mut timings) = MODEL_TIMINGS.lock() {
-                    let calls = timings.entry(speed_key).or_default();
-                    if calls.len() == TIMINGS_KEPT {
-                        calls.pop_front();
-                    }
-                    calls.push_back((audio_secs, took));
-                }
+                record_model_timing(speed_key, audio_secs, took);
             }
 
             match transcribe_result {

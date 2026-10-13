@@ -957,8 +957,10 @@
       "micWarmup": {
         "title": "Attendi che il microfono si scaldi",
         "description": "**Dopo l'avvio di un microfono inattivo, la barra di registrazione continua a mostrare \"Avvio microfono...\" finché non è davvero pronto.** Alcuni microfoni partono molto più piano e salgono per circa un secondo; le parole dette in quel tempo venivano scartate come rumore. L'attesa è la media degli ultimi avvii a freddo di questo microfono, misurati dall'app stessa.\n\n**Predefinito:** Attivo.\n\nAttende solo un avvio a freddo: un microfono tenuto pronto parte subito. Nascosto con Microfono Sempre Attivo.",
-        "measured": "Misurato su questo PC: {{seconds}} s.",
-        "notMeasured": "Non ancora misurato: si misura da solo al prossimo avvio a freddo."
+        "notMeasured": "Non ancora misurato: si misura da solo al prossimo avvio a freddo.",
+        "counting": "{{device}}: {{count}} of {{total}} cold starts measured — no wait yet.",
+        "noFadeIn": "{{device}}: no fade-in — no wait.",
+        "waits": "{{device}}: waits {{seconds}} s."
       },
       "tooQuiet": {
         "title": "Avvisa se parli troppo piano",
@@ -1485,7 +1487,12 @@
         "regexBadge": ".*",
         "regexActive": "La query viene trattata come espressione regolare",
         "noMatches": "Nessuna voce corrisponde alla tua ricerca."
-      }
+      },
+      "transcribeAgain": "Transcribe this recording (again) with your dictation model",
+      "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
+      "transcribeAgainFailed": "Could not transcribe it: {{error}}",
+      "noTranscript": "No transcript — transcribe the recording with the ⟲ button.",
+      "noTranscriptNoAudio": "No transcript."
     },
     "debug": {
       "title": "Debug",
@@ -1719,9 +1726,11 @@
         "groups": {
           "dictation": "Il tuo modello di dettatura",
           "downloaded": "Scaricati",
-          "notDownloaded": "Non scaricati"
+          "notDownloaded": "Non scaricati",
+          "online": "Online (dictation model only)"
         },
-        "downloadSize": "Scarica · {{size}}"
+        "downloadSize": "Scarica · {{size}}",
+        "onlineHint": "Set it as your dictation model to use it here"
       },
       "transcribe": {
         "title": "Trascrivi un file",
@@ -2096,6 +2105,22 @@
       "hotkeyRelease": {
         "title": "Tenere premuta una scorciatoia non tiene più occupato un core del processore",
         "description": "Su Windows, mentre tenevi premuta una scorciatoia (per esempio Premi per Parlare), Handy Tool controllava senza sosta se l'avevi rilasciata, tenendo un core del processore completamente occupato. Ora controlla ogni 10 ms."
+      },
+      "steadyMic": {
+        "title": "No more false \"Starting mic...\"",
+        "description": "After a driver update a microphone can take longer to open, and the pill then said \"Starting mic...\" on every take although your words were already being recorded. Each microphone is now measured on its own, against the room's noise, and the pill waits only for a microphone that really fades in."
+      },
+      "segmentsWhileSpeaking": {
+        "title": "Short takes are transcribed while you speak",
+        "description": "After 10 seconds of speech a clear pause is enough to send what you said so far to the engine, so most of a 15-30 second take is done by the time you stop."
+      },
+      "flmFiles": {
+        "title": "FLM (NPU) for files and watched folders",
+        "description": "Pick FLM Whisper on the Files page: it runs on the NPU beside your dictation model, so neither waits for the other. A watched folder on FLM no longer pushes your dictation model out. Windows only."
+      },
+      "transcribeAgain": {
+        "title": "Transcribe a recording again from History",
+        "description": "Recorded without a model, or the transcription failed? The new button beside Copy reads the recording again with your dictation model. A take whose transcription fails is now always kept."
       }
     },
     "installed": "Installata"

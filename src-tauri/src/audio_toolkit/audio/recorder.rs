@@ -40,8 +40,11 @@ pub struct MicState {
 
 /// Spectrum levels for the overlay, and the microphone's state.
 type LevelCb = Arc<dyn Fn(Vec<f32>, MicState) + Send + Sync + 'static>;
-/// Reports a cold-started microphone's measured warm-up, in ms.
-type WarmupCb = Arc<dyn Fn(u32) + Send + Sync + 'static>;
+/// Reports a cold-started microphone's measured warm-up, in ms, with the name of
+/// the device it was measured on (each microphone keeps its own measurements).
+type WarmupCb = Arc<dyn Fn(&str, u32) + Send + Sync + 'static>;
+/// The same report inside the worker, the device already filled in.
+type WarmupReport = Arc<dyn Fn(u32) + Send + Sync + 'static>;
 
 /// A microphone that takes longer than this from open to its first audio was
 /// idle ("cold") - the only kind that fades in.
@@ -53,6 +56,9 @@ const WARMUP_MEASURE_WINDOWS: usize = 60;
 /// exact zeros after a replug, then faded in.
 const SILENT_SAMPLE: f32 = 1e-5;
 const SILENT_DB: f32 = -100.0;
+/// No room is this loud between words (speech is): a "floor" above it means
+/// the warm-up measurement heard only speech and is not used.
+const ROOM_MAX_DB: f32 = -45.0;
 /// A cold microphone still silent this long after its first audio is shown as
 /// live anyway (a muted one would otherwise say "Starting mic..." forever).
 const SILENT_GIVE_UP: Duration = Duration::from_secs(3);
@@ -84,14 +90,51 @@ const FILE_SOFT_SAMPLES: usize = 10 * 60 * 16_000;
 /// Force a file cut even mid-speech (~11 min @ 16 kHz).
 const FILE_HARD_SAMPLES: usize = 11 * 60 * 16_000;
 
-/// Transcription segmenting (on-the-fly): once this much speech (~20 s) has
-/// accumulated, cut a transcription segment at the next VAD silence so it is
-/// transcribed in the background while recording continues. This is independent
-/// of file chunking — it's what makes a long recording finish almost instantly.
+/// Transcription segmenting (on-the-fly), in two stages, so even a 10-30 s take
+/// is mostly transcribed by the time it stops. Independent of file chunking.
+/// All lengths count KEPT speech (what the engine gets), not wall time.
+///
+/// Below this (~10 s) a segment is never cut: shorter clips lose context and
+/// Whisper gets words wrong.
+const SEG_MIN_SAMPLES: usize = 10 * 16_000;
+/// Stage 1 (10-20 s): cut only at a clear pause - this much rejected input
+/// after the speech detector's 450 ms hangover, i.e. ~0.7 s since the last
+/// voiced frame (9 frames of 30 ms reach it, 8 do not).
+const SEG_PAUSE_REJECTED_SAMPLES: usize = 16_000 / 4;
+/// Stage 2 (20-45 s): cut at the first silence the detector reports (~0.48 s).
 const SEG_SOFT_SAMPLES: usize = 20 * 16_000;
 /// Force a transcription segment cut even mid-speech (~45 s) so an unbroken
 /// monologue still streams to the engine.
 const SEG_HARD_SAMPLES: usize = 45 * 16_000;
+
+/// Why a transcription segment was cut (logged).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum SegmentCut {
+    /// 10-20 s of speech and a clear pause.
+    Pause,
+    /// 20 s of speech or more, at the first silence.
+    Soft,
+    /// 45 s of unbroken speech.
+    Hard,
+}
+
+/// Whether to cut the transcription segment now: `kept` samples of speech in
+/// it, `rejected` samples of input rejected since the detector last kept a
+/// frame, `speech_ended` = the detector reported the end of an utterance on
+/// this frame.
+fn segment_cut(kept: usize, rejected: usize, speech_ended: bool) -> Option<SegmentCut> {
+    if kept == 0 {
+        None
+    } else if kept >= SEG_HARD_SAMPLES {
+        Some(SegmentCut::Hard)
+    } else if kept >= SEG_SOFT_SAMPLES && speech_ended {
+        Some(SegmentCut::Soft)
+    } else if kept >= SEG_MIN_SAMPLES && rejected >= SEG_PAUSE_REJECTED_SAMPLES {
+        Some(SegmentCut::Pause)
+    } else {
+        None
+    }
+}
 
 /// Minimum interval between mic-level callbacks while NOT recording (~16 Hz).
 /// The mic can be always-on, so idle spectrum updates are throttled to avoid
@@ -201,10 +244,11 @@ impl AudioRecorder {
         self
     }
 
-    /// Called once per cold microphone start with its measured warm-up (ms).
+    /// Called once per cold microphone start with the device's name and its
+    /// measured warm-up (ms).
     pub fn with_warmup_callback<F>(mut self, cb: F) -> Self
     where
-        F: Fn(u32) + Send + Sync + 'static,
+        F: Fn(&str, u32) + Send + Sync + 'static,
     {
         self.warmup_cb = Some(Arc::new(cb));
         self
@@ -485,6 +529,10 @@ impl AudioRecorder {
 
             let sample_rate = config.sample_rate().0;
             let channels = config.channels() as usize;
+            // The warm-up measured on this open belongs to this device.
+            let device_name = thread_device.name().unwrap_or_default();
+            let warmup_cb: Option<WarmupReport> =
+                warmup_cb.map(|cb| Arc::new(move |ms: u32| cb(&device_name, ms)) as WarmupReport);
 
             log::info!(
                 "Using device: {:?}\nSample rate: {}\nChannels: {}\nFormat: {:?}",
@@ -961,6 +1009,9 @@ struct ChunkState {
     /// Audio that came in since the last segment cut, kept or not (for the
     /// stop log: how much of it the detector kept).
     seg_in_samples: usize,
+    /// Input rejected since the detector last kept a frame (the pause so far,
+    /// after its hangover). Reset by every kept frame.
+    seg_rejected: usize,
 }
 
 impl ChunkState {
@@ -977,6 +1028,7 @@ impl ChunkState {
             seg_pcm: Vec::new(),
             seg_samples: 0,
             seg_in_samples: 0,
+            seg_rejected: 0,
         };
         s.open_next_file();
         s
@@ -1022,6 +1074,7 @@ impl ChunkState {
         self.file_samples += samples.len();
         self.seg_pcm.extend_from_slice(samples);
         self.seg_samples += samples.len();
+        self.seg_rejected = 0;
     }
 
     /// Finalize the current Opus file chunk (rename temp→final) and open the
@@ -1305,26 +1358,46 @@ impl WarmupMeter {
 /// How long a cold-started microphone took to reach its normal level, in ms,
 /// from the level of each 50 ms since its first audio: from its first sound
 /// (digital silence before it is not counted - the pill waits for sound anyway)
-/// to the start of the first half-second that stays within 6 dB of the floor it
-/// settles at (the quietest fifth of the later half - speech only adds level, so
-/// it cannot hide a fade-in). A Realtek input was seen starting 15-20 dB quiet
-/// and fading in; the first words spoken into that were dropped as noise.
-fn warmup_from_levels(levels: &[f32]) -> u32 {
-    let Some(sound) = levels.iter().position(|&l| l > SILENT_DB) else {
-        return 0;
-    };
+/// to the start of the first half-second that stays within 6 dB of the room's
+/// noise floor (the second-quietest 50 ms of the later half; the quietest
+/// could be a one-off dropout). A Realtek input was seen starting 15-20 dB
+/// quiet and fading in; the first words spoken into that were dropped as noise.
+///
+/// The floor is the room between words, not a typical level: with speech in
+/// the later half, a "typical" level is a speech level, and the room noise
+/// before the first word (a microphone that is plainly live) read as a fade-in
+/// - a Logitech BRIO measured 1.8 s of "warm-up" that was only the pause
+/// before the user spoke (2026-10-12).
+///
+/// None when the 3 s say nothing either way, and nothing is recorded: a
+/// microphone that stayed silent, or a later half with no sign of the room
+/// (its quietest level louder than any room, or too seldom heard - speech
+/// throughout). A guess there would teach the pill a wait that is not real,
+/// or a 0 that hides a real fade-in.
+fn warmup_from_levels(levels: &[f32]) -> Option<u32> {
+    let sound = levels.iter().position(|&l| l > SILENT_DB)?;
     let levels = &levels[sound..];
-    let mut later = levels[levels.len() / 2..].to_vec();
+    // Dropouts of digital silence are not the room.
+    let mut later: Vec<f32> = levels[levels.len() / 2..]
+        .iter()
+        .copied()
+        .filter(|&l| l > SILENT_DB)
+        .collect();
+    if later.is_empty() {
+        return None;
+    }
     later.sort_by(f32::total_cmp);
-    let floor = later[later.len() / 5];
-    let settled = (0..levels.len())
-        .find(|&i| {
-            levels[i..(i + 10).min(levels.len())]
-                .iter()
-                .all(|&l| l >= floor - 6.0)
-        })
-        .unwrap_or(levels.len());
-    settled as u32 * 50
+    let floor = later[1.min(later.len() - 1)];
+    let at_floor = later.iter().filter(|&&l| l <= floor + 6.0).count();
+    if floor > ROOM_MAX_DB || at_floor * 5 < later.len() {
+        return None;
+    }
+    // Settled = the start of a full half-second (10 windows) at the room's
+    // level; never settling within the 3 s says nothing reliable.
+    let settled = levels
+        .windows(10)
+        .position(|run| run.iter().all(|&l| l >= floor - 6.0))?;
+    Some(settled as u32 * 50)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -1369,6 +1442,9 @@ fn process_frame(
                 stop_tail.kept(level_db, prob);
             } else {
                 stop_tail.rejected(samples, level_db, prob);
+                if let Some(chunk) = chunk.as_mut() {
+                    chunk.seg_rejected += samples.len();
+                }
             }
             speech_ended = det.speech_ended();
         } else {
@@ -1389,13 +1465,16 @@ fn process_frame(
             chunk.close_file_chunk();
         }
 
-        // Transcription: cut a segment at the first silence after ~20 s of speech
-        // (hard cut at ~45 s) and hand it to the background transcription
-        // pipeline, so it is transcribed WHILE recording continues. This is what
-        // keeps the GPU busy during recording and makes stop near-instant.
-        let seg_cut = (chunk.seg_samples >= SEG_SOFT_SAMPLES && speech_ended)
-            || chunk.seg_samples >= SEG_HARD_SAMPLES;
-        if seg_cut && chunk.seg_samples > 0 {
+        // Transcription: cut a segment (see segment_cut: a clear pause after
+        // 10 s of speech, any silence after 20 s, forced at 45 s) and hand it
+        // to the background transcription pipeline, so it is transcribed WHILE
+        // recording continues and stop has little left to do.
+        if let Some(reason) = segment_cut(chunk.seg_samples, chunk.seg_rejected, speech_ended) {
+            log::info!(
+                "Transcription segment cut ({reason:?}): {} ms of speech, pause {} ms",
+                chunk.seg_samples * 1000 / 16_000,
+                chunk.seg_rejected * 1000 / 16_000
+            );
             let seg = chunk.take_segment();
             if let Some(cb) = closed_chunk_cb.lock().unwrap().as_ref() {
                 cb(seg);
@@ -1445,7 +1524,7 @@ fn run_consumer(
     sample_rx: mpsc::Receiver<Vec<f32>>,
     cmd_rx: mpsc::Receiver<Cmd>,
     level_cb: Option<LevelCb>,
-    warmup_cb: Option<WarmupCb>,
+    warmup_cb: Option<WarmupReport>,
     warmup_ms: Arc<AtomicU32>,
     quiet_hint: Arc<AtomicBool>,
     segment_cb: SegmentCb,
@@ -1564,12 +1643,16 @@ fn run_consumer(
                 if let Some(levels) = warmup_meter.push(&raw) {
                     let warmup = warmup_from_levels(&levels);
                     let shown: Vec<String> = levels.iter().map(|l| format!("{l:.0}")).collect();
+                    let measured = match warmup {
+                        Some(ms) => format!("{ms} ms"),
+                        None => "not measurable (no room noise heard), not kept".to_string(),
+                    };
                     log::info!(
-                        "Microphone warm-up after a cold start: {warmup} ms (dBFS per 50 ms: {})",
+                        "Microphone warm-up after a cold start: {measured} (dBFS per 50 ms: {})",
                         shown.join(" ")
                     );
-                    if let Some(cb) = &warmup_cb {
-                        cb(warmup);
+                    if let (Some(cb), Some(ms)) = (&warmup_cb, warmup) {
+                        cb(ms);
                     }
                 }
             }
@@ -2138,12 +2221,51 @@ mod quiet_tests {
 }
 
 #[cfg(test)]
+mod segment_cut_tests {
+    use super::{SegmentCut, segment_cut};
+
+    const S: usize = 16_000;
+    /// One detector frame (30 ms).
+    const FRAME: usize = 480;
+
+    #[test]
+    fn under_ten_seconds_of_speech_is_never_cut() {
+        assert_eq!(segment_cut(9 * S, 2 * S, true), None);
+        assert_eq!(segment_cut(0, 10 * S, false), None);
+    }
+
+    #[test]
+    fn between_ten_and_twenty_seconds_only_a_clear_pause_cuts() {
+        // speech_ended alone (0.48 s after the last word) is not enough yet.
+        assert_eq!(segment_cut(12 * S, 0, true), None);
+        // 8 rejected frames after the hangover: ~0.69 s since the last word.
+        assert_eq!(segment_cut(12 * S, 8 * FRAME, false), None);
+        // The 9th: ~0.72 s.
+        assert_eq!(
+            segment_cut(12 * S, 9 * FRAME, false),
+            Some(SegmentCut::Pause)
+        );
+    }
+
+    #[test]
+    fn from_twenty_seconds_the_first_silence_cuts() {
+        assert_eq!(segment_cut(21 * S, 0, true), Some(SegmentCut::Soft));
+        assert_eq!(segment_cut(21 * S, 0, false), None);
+    }
+
+    #[test]
+    fn forty_five_seconds_of_unbroken_speech_is_cut() {
+        assert_eq!(segment_cut(45 * S, 0, false), Some(SegmentCut::Hard));
+    }
+}
+
+#[cfg(test)]
 mod warmup_tests {
     use super::{WARMUP_MEASURE_WINDOWS, WarmupMeter, warmup_from_levels};
 
     #[test]
     fn a_steady_microphone_needs_no_warm_up() {
-        assert_eq!(warmup_from_levels(&[-60.0; 60]), 0);
+        assert_eq!(warmup_from_levels(&[-60.0; 60]), Some(0));
     }
 
     #[test]
@@ -2152,7 +2274,7 @@ mod warmup_tests {
         let mut levels = vec![-77.0; 10];
         levels.extend([-70.0, -68.0, -63.0, -61.0]);
         levels.extend(vec![-60.0; 46]);
-        assert_eq!(warmup_from_levels(&levels), 600);
+        assert_eq!(warmup_from_levels(&levels), Some(600));
     }
 
     #[test]
@@ -2161,7 +2283,7 @@ mod warmup_tests {
         for i in 0..44 {
             levels.push(if i % 4 < 2 { -20.0 } else { -60.0 });
         }
-        assert_eq!(warmup_from_levels(&levels), 800);
+        assert_eq!(warmup_from_levels(&levels), Some(800));
     }
 
     #[test]
@@ -2174,12 +2296,47 @@ mod warmup_tests {
         levels.extend([
             -13.0, -17.0, -38.0, -21.0, -14.0, -16.0, -21.0, -26.0, -41.0, -30.0,
         ]);
-        assert_eq!(warmup_from_levels(&levels), 500);
+        assert_eq!(warmup_from_levels(&levels), Some(500));
+    }
+
+    /// A Logitech BRIO after a driver update (log, 2026-10-12 22:07 UTC): the room
+    /// at about -80 dBFS for 1.8 s, then speech with pauses back to the room.
+    /// The microphone was live from its first audio; the old reference (a speech
+    /// level) measured 1800 ms.
+    #[test]
+    fn the_pause_before_the_first_word_is_not_a_warm_up() {
+        let levels = [
+            -76.0, -70.0, -68.0, -80.0, -81.0, -81.0, -81.0, -82.0, -81.0, -73.0, -65.0, -64.0,
+            -64.0, -66.0, -66.0, -67.0, -68.0, -72.0, -71.0, -65.0, -58.0, -46.0, -61.0, -73.0,
+            -77.0, -75.0, -70.0, -71.0, -71.0, -72.0, -79.0, -80.0, -81.0, -83.0, -81.0, -81.0,
+            -52.0, -36.0, -39.0, -34.0, -33.0, -40.0, -46.0, -29.0, -24.0, -24.0, -32.0, -31.0,
+            -36.0, -41.0, -34.0, -38.0, -54.0, -41.0, -32.0, -32.0, -37.0, -46.0, -43.0, -34.0,
+        ];
+        assert_eq!(warmup_from_levels(&levels), Some(0));
+    }
+
+    #[test]
+    fn a_dropout_of_digital_silence_does_not_hide_a_fade_in() {
+        let mut levels = vec![-77.0; 10];
+        levels.extend([-70.0, -68.0, -63.0, -61.0]);
+        levels.extend(vec![-60.0; 46]);
+        levels[30] = -120.0;
+        levels[31] = -120.0;
+        assert_eq!(warmup_from_levels(&levels), Some(600));
+    }
+
+    /// Speech from start to end of the later half, with no room heard: as
+    /// likely the pause before the first word as a fade-in - not measured.
+    #[test]
+    fn speech_without_any_room_noise_is_not_measured() {
+        let mut levels = vec![-80.0; 30];
+        levels.extend(vec![-30.0; 30]);
+        assert_eq!(warmup_from_levels(&levels), None);
     }
 
     #[test]
     fn a_microphone_that_stays_silent_is_not_measured() {
-        assert_eq!(warmup_from_levels(&[-120.0; 60]), 0);
+        assert_eq!(warmup_from_levels(&[-120.0; 60]), None);
     }
 
     #[test]

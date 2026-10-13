@@ -899,6 +899,23 @@ export const commands = {
     }
   },
   /**
+   * History's "Transcribe again": reads a take's recording again with the
+   * dictation model and replaces the row's transcript - for a take recorded
+   * without a model, or whose transcription failed. Nothing is pasted or
+   * post-processed; the recording is only read. Returns the new text.
+   */
+  async retranscribeHistoryEntry(id: number): Promise<Result<string, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("retranscribe_history_entry", { id }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
    * The file being transcribed, or how the last one ended (null before the first).
    */
   async getFileJob(): Promise<FileJob | null> {
@@ -3100,10 +3117,16 @@ export type AppSettings = {
    */
   mic_warmup_wait?: boolean;
   /**
-   * The last few measured warm-ups of this PC's microphone after a cold start,
-   * in ms, newest last.
+   * Before 2.2.0: the measured fade-ins of whichever microphone was in use.
+   * No longer read (it mixed microphones and could hold the pause before the
+   * first word); kept so older settings files load unchanged.
    */
   mic_fade_in_measured_ms?: number[];
+  /**
+   * The last few measured fade-ins after a cold start, per microphone (keyed
+   * by the device's name), in ms from its first sound, newest last.
+   */
+  mic_warmup_by_device?: Partial<{ [key in string]: number[] }>;
   /**
    * The pill says "Too quiet" when it hears voice-like sound too quiet for
    * the speech detector to keep.
@@ -3674,6 +3697,12 @@ export type HistoryEntry = {
    * Human label of the engine/model that produced this transcription.
    */
   model_used?: string | null;
+  /**
+   * Set when retention deliberately deleted this row's audio while keeping the
+   * transcript. `None` means the audio was never purged on purpose, so a missing
+   * file is a fault rather than policy - the UI must distinguish the two.
+   */
+  audio_purged_at?: number | null;
 };
 /**
  * Result of changing keyboard implementation

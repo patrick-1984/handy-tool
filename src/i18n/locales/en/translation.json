@@ -1081,12 +1081,14 @@
     "files": {
       "model": {
         "title": "Model",
-        "description": "**Which speech model transcribes the file.** Models that aren't downloaded yet are listed too; pick one and download it first.\n\n**Default:** your dictation model, and the one you pick is remembered. Another model loads beside your dictation model, so dictation stays ready, and unloads again when the file is done.",
+        "description": "**Which speech model transcribes the file.** Models that aren't downloaded yet are listed too; pick one and download it first.\n\n**Default:** your dictation model, and the one you pick is remembered. Another model loads beside your dictation model, so dictation stays ready, and unloads again when the file is done. FLM (NPU) runs beside any dictation model. An online model (API, OpenRouter) works for files only while it is your dictation model.",
         "dictation": "{{name}} (your dictation model)",
         "notDownloaded": "{{name}} (not downloaded)",
+        "onlineHint": "Set it as your dictation model to use it here",
         "groups": {
           "dictation": "Your dictation model",
           "downloaded": "Downloaded",
+          "online": "Online (dictation model only)",
           "notDownloaded": "Not downloaded"
         },
         "downloadSize": "Download · {{size}}"
@@ -1167,9 +1169,11 @@
       },
       "micWarmup": {
         "title": "Wait for the microphone to warm up",
-        "description": "**After an idle microphone starts, the recording overlay keeps showing \"Starting mic...\" until it has really warmed up.** Some microphones start much quieter and fade in over a second or so; words spoken into that were dropped as noise. The wait is the average of this microphone's last few cold starts, measured by the app itself.\n\n**Default:** On.\n\nOnly a cold start waits — a microphone kept ready starts at once. Hidden when Always-On Microphone is on.",
-        "measured": "Measured on this PC: {{seconds}} s.",
-        "notMeasured": "Not measured yet — it measures itself on the next cold start."
+        "description": "**After an idle microphone starts, the recording overlay keeps showing \"Starting mic...\" until it has really warmed up.** Some microphones start much quieter and fade in over a second or so; words spoken into that were dropped as noise. Each microphone is measured on its own: after 5 cold starts, the wait is the shortest fade-in measured, so a microphone that is ready at once never waits.\n\n**Default:** On.\n\nOnly a cold start waits — a microphone kept ready starts at once. Your words are recorded either way. Hidden when Always-On Microphone is on.",
+        "notMeasured": "Not measured yet — each microphone measures itself on its cold starts.",
+        "counting": "{{device}}: {{count}} of {{total}} cold starts measured — no wait yet.",
+        "noFadeIn": "{{device}}: no fade-in — no wait.",
+        "waits": "{{device}}: waits {{seconds}} s."
       },
       "tooQuiet": {
         "title": "Warn when you speak too quietly",
@@ -1705,6 +1709,11 @@
       "loading": "Loading history...",
       "empty": "No transcriptions yet. Start recording to build your history!",
       "copyToClipboard": "Copy transcription to clipboard",
+      "transcribeAgain": "Transcribe this recording (again) with your dictation model",
+      "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
+      "transcribeAgainFailed": "Could not transcribe it: {{error}}",
+      "noTranscript": "No transcript — transcribe the recording with the ⟲ button.",
+      "noTranscriptNoAudio": "No transcript.",
       "save": "Save transcription",
       "unsave": "Remove from saved",
       "delete": "Delete entry",
@@ -2061,6 +2070,22 @@
     "release": "Version {{version}}",
     "show": "Show me",
     "items": {
+      "steadyMic": {
+        "title": "No more false \"Starting mic...\"",
+        "description": "After a driver update a microphone can take longer to open, and the pill then said \"Starting mic...\" on every take although your words were already being recorded. Each microphone is now measured on its own, against the room's noise, and the pill waits only for a microphone that really fades in."
+      },
+      "segmentsWhileSpeaking": {
+        "title": "Short takes are transcribed while you speak",
+        "description": "After 10 seconds of speech a clear pause is enough to send what you said so far to the engine, so most of a 15-30 second take is done by the time you stop."
+      },
+      "flmFiles": {
+        "title": "FLM (NPU) for files and watched folders",
+        "description": "Pick FLM Whisper on the Files page: it runs on the NPU beside your dictation model, so neither waits for the other. A watched folder on FLM no longer pushes your dictation model out. Windows only."
+      },
+      "transcribeAgain": {
+        "title": "Transcribe a recording again from History",
+        "description": "Recorded without a model, or the transcription failed? The new button beside Copy reads the recording again with your dictation model. A take whose transcription fails is now always kept."
+      },
       "keeperRefresh": {
         "title": "Shortcut Keeper stays in front in Remote Desktop",
         "description": "The Windows App puts its own keyboard hook in front of Shortcut Keeper's every half minute or so, and kept shortcuts then went to the remote. Shortcut Keeper now puts itself back in front after every second without a key press, instead of waiting until you had typed for a few seconds. Windows only."

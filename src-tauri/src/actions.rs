@@ -901,6 +901,7 @@ async fn save_history(
         .await
     } else {
         hm.save_transcription(
+            Some(ts as i64),
             samples,
             text,
             post_processed,
@@ -1904,7 +1905,9 @@ impl ShortcutAction for TranscribeAction {
                                 shown = so_far;
                             }
                         }
-                        tokio::time::sleep(Duration::from_millis(100)).await;
+                        // Short: the take is delivered at most this long after
+                        // its last chunk is done.
+                        tokio::time::sleep(Duration::from_millis(20)).await;
                     }
                     let done = session.done_count.load(Ordering::SeqCst);
                     // Every chunk transcribed, none failed, some text, and the
@@ -1985,6 +1988,7 @@ impl ShortcutAction for TranscribeAction {
                 // surface it. Without this a broken engine (e.g. FLM whose ASR
                 // model failed to load) silently saves a textless recording,
                 // which reads as "recording works but produces no text".
+                let transcription_failed = transcription_error.is_some();
                 if raw_text.is_empty() {
                     if let Some(reason) = transcription_error {
                         warn!("Transcription produced no text due to engine error: {reason}");
@@ -2039,9 +2043,13 @@ impl ShortcutAction for TranscribeAction {
 
                 // Save history pointing at the glued opus (kept even if text is
                 // empty, so a long but quiet recording isn't lost). Accidental
-                // taps — tiny AND textless — aren't worth a history row.
-                let worth_saving =
-                    total_samples as usize >= MIN_SAMPLES_TO_SAVE || !raw_text.is_empty();
+                // taps — tiny AND textless — aren't worth a history row; but a
+                // take whose transcription FAILED is always kept, however short
+                // (its audio is all the user has; History can transcribe it
+                // again).
+                let worth_saving = total_samples as usize >= MIN_SAMPLES_TO_SAVE
+                    || !raw_text.is_empty()
+                    || transcription_failed;
                 let hm_clone = Arc::clone(&hm);
                 let history_text = raw_text.clone();
                 let pp = post_processed_text.clone();
@@ -2524,28 +2532,28 @@ impl ShortcutAction for TranscribeAction {
                         // textless recording that reads as "no output".
                         let _ = ah.emit("transcription-failed", err.to_string());
                         // Save the audio so recordings aren't lost on engine failure
-                        // (e.g. Moonshine 64s limit, Whisper OOM, etc.)
-                        if effective_len >= MIN_SAMPLES_TO_SAVE {
-                            let hm_clone = Arc::clone(&hm);
+                        // (e.g. Moonshine 64s limit, Whisper OOM, no model) -
+                        // however short: it is all the user has, and History can
+                        // transcribe it again. AWAITED, so the row is durable
+                        // before this take is over.
+                        if effective_len > 0 {
                             let cost =
                                 crate::managers::openrouter_transcription::take_session_cost();
                             let duration = Some(samples_to_seconds(samples_clone.len()));
                             let model = model_label(&ah);
-                            tauri::async_runtime::spawn(async move {
-                                save_history(
-                                    &hm_clone,
-                                    crash_safe,
-                                    ts,
-                                    samples_clone,
-                                    String::new(),
-                                    None,
-                                    None,
-                                    cost,
-                                    duration,
-                                    model,
-                                )
-                                .await;
-                            });
+                            save_history(
+                                &hm,
+                                crash_safe,
+                                ts,
+                                samples_clone,
+                                String::new(),
+                                None,
+                                None,
+                                cost,
+                                duration,
+                                model,
+                            )
+                            .await;
                         }
                         utils::hide_recording_overlay(&ah);
                         change_tray_icon(&ah, TrayIconState::Idle);

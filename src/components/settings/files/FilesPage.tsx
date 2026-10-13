@@ -51,12 +51,10 @@ const AUDIO_EXTENSIONS = [
   "opus",
 ];
 
-/** Online engines: they have no second slot to run beside dictation. */
-const EXTERNAL: EngineType[] = [
-  "FlmWhisper",
-  "ApiWhisper",
-  "OpenRouterWhisper",
-];
+/** Online engines: they have no second slot to run beside dictation, so a
+ * file can use one only while it is the dictation model. FLM is not one of
+ * them: it runs on this PC's NPU, beside any dictation model. */
+const ONLINE: EngineType[] = ["ApiWhisper", "OpenRouterWhisper"];
 
 const SAVE_MODES: FileTextSave[] = [
   "ask",
@@ -302,22 +300,24 @@ const TranscribeFile: React.FC<{ onFinished: () => void }> = ({
     useModelStore.getState().initialize();
   }, []);
 
-  // Any local model, and the dictation model even when it is an online one.
-  // The one picked last is remembered; until then, the dictation model.
-  const fileModels = models.filter(
-    (m) => m.id === dictationModel || !EXTERNAL.includes(m.engine_type),
-  );
+  // Every model; an online one only while it is the dictation model (it is
+  // listed but greyed otherwise). The one picked last is remembered; until
+  // then, the dictation model.
+  const unusable = (m: ModelInfo) =>
+    m.id !== dictationModel && ONLINE.includes(m.engine_type);
+  const fileModels = models;
   const savedModel = (getSetting("file_model") as string) ?? "";
-  const modelId = fileModels.some((m) => m.id === savedModel)
+  const modelId = fileModels.some((m) => m.id === savedModel && !unusable(m))
     ? savedModel
     : dictationModel;
   const model = fileModels.find((m) => m.id === modelId);
-  // The dictation model first, then the downloaded ones, then the rest.
+  // The dictation model first, then the downloaded ones, the online ones,
+  // then the rest.
   const rank = (m: ModelInfo) =>
-    m.id === dictationModel ? 0 : m.is_downloaded ? 1 : 2;
+    m.id === dictationModel ? 0 : unusable(m) ? 2 : m.is_downloaded ? 1 : 3;
   // Grouped under headings, each with its size; the ones to download have a
   // download glyph instead of "(not downloaded)".
-  const GROUPS = ["dictation", "downloaded", "notDownloaded"];
+  const GROUPS = ["dictation", "downloaded", "online", "notDownloaded"];
   const modelOptions = [...fileModels]
     .sort((a, b) => rank(a) - rank(b))
     .map((m) => {
@@ -325,8 +325,11 @@ const TranscribeFile: React.FC<{ onFinished: () => void }> = ({
       return {
         value: m.id,
         label: name,
+        disabled: unusable(m),
         group: t(`settings.files.model.groups.${GROUPS[rank(m)]}`),
-        hint: formatModelSize(Number(m.size_mb)),
+        hint: unusable(m)
+          ? t("settings.files.model.onlineHint")
+          : formatModelSize(Number(m.size_mb)),
         trailing: m.is_downloaded ? undefined : (
           <Download
             className="w-3.5 h-3.5 shrink-0 text-text-secondary"

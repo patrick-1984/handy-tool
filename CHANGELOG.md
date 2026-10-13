@@ -1,5 +1,45 @@
 # Changelog
 
+## [2.2.0] - 2026-10-13 "Steady Mic"
+
+Recording you can rely on: no false "Starting mic...", short takes transcribed while you speak,
+FLM (NPU) for files and folders, and every take kept even when transcription fails.
+
+### Fixed
+
+- **No more false "Starting mic..." (Windows, any microphone).** After a driver update a microphone
+  can take longer to open, and every take then counted as a "cold start". The warm-up was then
+  measured against your speech, so the quiet pause before your first word read as the microphone
+  "warming up", and the pill kept saying "Starting mic..." although every word was being recorded.
+  The warm-up is now measured against the room's noise floor, kept separately for each microphone,
+  and the pill waits only after five measured cold starts of that microphone, for the shortest
+  fade-in measured (a real fade-in shows every time; a pause before speaking does not).
+- **FLM (NPU) shows how far the transcription is.** FLM takes never showed "Transcribing N%";
+  they now do from the second take on, like the local engines.
+- **FLM for files and watched folders.** FLM Whisper (NPU) can now be picked on the Files page and
+  runs beside your dictation model (for example Whisper on the graphics card), so neither waits for
+  the other. A watched folder set to FLM no longer pushes your dictation model out (the two used to
+  keep swapping). Online models (API, OpenRouter) are listed but greyed: they work for files only
+  while they are your dictation model. An FLM server that only files used stops after your
+  "Unload model" time.
+- **A take whose transcription fails is always kept.** Its recording and a History row are saved
+  however short the take, so nothing is lost when no model is ready or the engine fails.
+
+### Added
+
+- **Transcribe a recording again from History.** A new button beside Copy reads the recording again
+  with your dictation model and replaces the transcript - for a take recorded without a model, or
+  one whose transcription failed. A row without text says so and highlights the button.
+
+### Changed
+
+- **Short takes are transcribed while you speak.** A take used to go to the engine in one piece
+  unless it ran past 20 seconds. Now, after 10 seconds of speech, a clear pause (about 0.7 s) is
+  enough to send what was said so far; after 20 seconds any pause is; after 45 seconds it is cut
+  anyway. Most of a 15-30 second take is transcribed by the time you stop.
+- The take is delivered up to 80 ms sooner after its last piece is transcribed, and the pill goes
+  away sooner after the text is in.
+
 ## [2.1.4] - 2026-10-07
 
 A fix release: Shortcut Keeper stays in front in Remote Desktop, and Handy Tool starts on PCs

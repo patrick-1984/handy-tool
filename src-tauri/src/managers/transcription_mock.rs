@@ -102,6 +102,15 @@ impl TranscriptionManager {
         Ok((String::new(), None))
     }
 
+    /// No FLM in the mock.
+    pub fn is_flm_model(&self, _model_id: &str) -> bool {
+        false
+    }
+
+    pub fn transcribe_flm_direct(&self, _model_id: &str, _audio: Vec<f32>) -> Result<String> {
+        Ok(String::new())
+    }
+
     pub fn set_live_transcribing(&self, _active: bool) {}
 
     pub fn set_batch_transcribing(&self, _active: bool) {}

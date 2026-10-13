@@ -957,8 +957,10 @@
       "micWarmup": {
         "title": "Ждать, пока микрофон прогреется",
         "description": "**После запуска простаивавшего микрофона на панели записи остаётся «Запуск микрофона...», пока он действительно не будет готов.** Некоторые микрофоны начинают гораздо тише и набирают громкость около секунды; слова, сказанные в это время, отбрасывались как шум. Ожидание — среднее по нескольким последним холодным запускам этого микрофона, которые приложение измеряет само.\n\n**По умолчанию:** Вкл.\n\nЖдёт только холодный запуск — микрофон, который держится наготове, стартует сразу. Скрыто, когда включён «Всегда включенный микрофон».",
-        "measured": "Измерено на этом ПК: {{seconds}} с.",
-        "notMeasured": "Ещё не измерено — измерится само при следующем холодном запуске."
+        "notMeasured": "Ещё не измерено — измерится само при следующем холодном запуске.",
+        "counting": "{{device}}: {{count}} of {{total}} cold starts measured — no wait yet.",
+        "noFadeIn": "{{device}}: no fade-in — no wait.",
+        "waits": "{{device}}: waits {{seconds}} s."
       },
       "tooQuiet": {
         "title": "Предупреждать, если говорите слишком тихо",
@@ -1485,7 +1487,12 @@
         "regexBadge": ".*",
         "regexActive": "Запрос обрабатывается как регулярное выражение",
         "noMatches": "Нет записей, соответствующих вашему запросу."
-      }
+      },
+      "transcribeAgain": "Transcribe this recording (again) with your dictation model",
+      "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
+      "transcribeAgainFailed": "Could not transcribe it: {{error}}",
+      "noTranscript": "No transcript — transcribe the recording with the ⟲ button.",
+      "noTranscriptNoAudio": "No transcript."
     },
     "debug": {
       "title": "Отлаживать",
@@ -1719,9 +1726,11 @@
         "groups": {
           "dictation": "Ваша модель диктовки",
           "downloaded": "Скачанные",
-          "notDownloaded": "Не скачанные"
+          "notDownloaded": "Не скачанные",
+          "online": "Online (dictation model only)"
         },
-        "downloadSize": "Скачать · {{size}}"
+        "downloadSize": "Скачать · {{size}}",
+        "onlineHint": "Set it as your dictation model to use it here"
       },
       "transcribe": {
         "title": "Транскрибировать файл",
@@ -2096,6 +2105,22 @@
       "hotkeyRelease": {
         "title": "Удержание сочетания больше не загружает ядро процессора",
         "description": "В Windows, пока вы удерживали сочетание (например, «Нажми и говори»), Handy Tool непрерывно проверял, отпустили ли вы его, и одно ядро процессора было полностью загружено. Теперь проверка идёт каждые 10 мс."
+      },
+      "steadyMic": {
+        "title": "No more false \"Starting mic...\"",
+        "description": "After a driver update a microphone can take longer to open, and the pill then said \"Starting mic...\" on every take although your words were already being recorded. Each microphone is now measured on its own, against the room's noise, and the pill waits only for a microphone that really fades in."
+      },
+      "segmentsWhileSpeaking": {
+        "title": "Short takes are transcribed while you speak",
+        "description": "After 10 seconds of speech a clear pause is enough to send what you said so far to the engine, so most of a 15-30 second take is done by the time you stop."
+      },
+      "flmFiles": {
+        "title": "FLM (NPU) for files and watched folders",
+        "description": "Pick FLM Whisper on the Files page: it runs on the NPU beside your dictation model, so neither waits for the other. A watched folder on FLM no longer pushes your dictation model out. Windows only."
+      },
+      "transcribeAgain": {
+        "title": "Transcribe a recording again from History",
+        "description": "Recorded without a model, or the transcription failed? The new button beside Copy reads the recording again with your dictation model. A take whose transcription fails is now always kept."
       }
     },
     "installed": "Установлена"

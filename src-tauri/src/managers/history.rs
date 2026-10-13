@@ -504,10 +504,14 @@ impl HistoryManager {
 
     /// Save a transcription to history, writing a WAV from the in-memory samples.
     /// Used by the legacy / live / API paths when crash-safe Opus recording is
-    /// off (or no glued Opus file exists).
+    /// off (or no glued Opus file exists). `timestamp` is the recording's start
+    /// (the name its chunks carry, so a take whose chunks could not be glued
+    /// can still be found from its row); None = now. An existing file of that
+    /// name is never overwritten - the row then gets a fresh name.
     #[allow(clippy::too_many_arguments)]
     pub async fn save_transcription(
         &self,
+        timestamp: Option<i64>,
         audio_samples: Vec<f32>,
         transcription_text: String,
         post_processed_text: Option<String>,
@@ -516,7 +520,25 @@ impl HistoryManager {
         duration_seconds: Option<f64>,
         model_used: Option<String>,
     ) -> Result<()> {
-        let timestamp = Utc::now().timestamp();
+        // The first free second from there: never write over another take's WAV.
+        let mut timestamp = timestamp.unwrap_or_else(|| Utc::now().timestamp());
+        for _ in 0..1000 {
+            if !self
+                .recordings_dir
+                .join(format!("handy-{timestamp}.wav"))
+                .exists()
+            {
+                break;
+            }
+            timestamp += 1;
+        }
+        if self
+            .recordings_dir
+            .join(format!("handy-{timestamp}.wav"))
+            .exists()
+        {
+            return Err(anyhow::anyhow!("no free name for the recording"));
+        }
         let file_name = format!("handy-{}.wav", timestamp);
 
         // Save WAV file
@@ -985,6 +1007,93 @@ impl HistoryManager {
 
     pub fn get_audio_file_path(&self, file_name: &str) -> PathBuf {
         self.recordings_dir.join(file_name)
+    }
+
+    /// The audio of a history row, to read it again: the row's own file, or -
+    /// when a long take's glued file is missing - its chunks in order. Only a
+    /// plain Handy recording name inside the recordings folder is accepted
+    /// (no paths, no `..`), and nothing is ever written or deleted.
+    pub fn recording_files_for(&self, file_name: &str) -> Result<Vec<PathBuf>> {
+        let plain = !file_name.is_empty()
+            && !file_name.contains(['/', '\\', ':'])
+            && !file_name.contains("..")
+            && is_handy_recording_file(file_name);
+        if !plain {
+            return Err(anyhow::anyhow!("not a Handy recording: {file_name}"));
+        }
+        let path = self.recordings_dir.join(file_name);
+        // A row's own file with real audio in it (an empty WAV is 44 bytes:
+        // what a take whose chunks could not be glued saves under its row).
+        let own_has_audio = fs::metadata(&path).is_ok_and(|m| m.is_file() && m.len() > 1024);
+        let files = if own_has_audio {
+            vec![path]
+        } else {
+            match self.chunk_files_for(file_name)? {
+                Some(chunks) => chunks,
+                None if path.is_file() => vec![path],
+                None => return Err(anyhow::anyhow!("the recording file is missing")),
+            }
+        };
+        // Inside the recordings folder for real (no link pointing elsewhere).
+        let dir = fs::canonicalize(&self.recordings_dir)?;
+        for file in &files {
+            let linked = fs::symlink_metadata(file).is_ok_and(|m| m.file_type().is_symlink());
+            if linked || !fs::canonicalize(file)?.starts_with(&dir) {
+                return Err(anyhow::anyhow!("not a Handy recording: {}", file.display()));
+            }
+        }
+        Ok(files)
+    }
+
+    /// A chunked take's pieces, handy-{ts}-chunk-N.opus in order, when they
+    /// are all there (1..=n, no gap); None otherwise.
+    fn chunk_files_for(&self, file_name: &str) -> Result<Option<Vec<PathBuf>>> {
+        let Some(stem) = [".opus", ".ogg", ".wav"]
+            .iter()
+            .find_map(|ext| file_name.strip_suffix(ext))
+        else {
+            return Ok(None);
+        };
+        let prefix = format!("{stem}-chunk-");
+        let mut chunks: Vec<(usize, PathBuf)> = fs::read_dir(&self.recordings_dir)?
+            .flatten()
+            .filter_map(|entry| {
+                let name = entry.file_name().to_string_lossy().to_string();
+                let n = name
+                    .strip_prefix(&prefix)?
+                    .strip_suffix(".opus")?
+                    .parse::<usize>()
+                    .ok()?;
+                Some((n, entry.path()))
+            })
+            .collect();
+        chunks.sort_by_key(|(n, _)| *n);
+        let complete =
+            !chunks.is_empty() && chunks.iter().enumerate().all(|(i, (n, _))| *n == i + 1);
+        Ok(complete.then(|| chunks.into_iter().map(|(_, p)| p).collect()))
+    }
+
+    /// Replaces a row's transcript with a new one (History's "Transcribe
+    /// again"). The post-processed text came from the old transcript, so it
+    /// is cleared with it.
+    pub async fn update_transcription(
+        &self,
+        id: i64,
+        text: &str,
+        model: Option<String>,
+    ) -> Result<()> {
+        let conn = self.get_connection()?;
+        let changed = conn.execute(
+            "UPDATE transcription_history SET transcription_text = ?1, post_processed_text = NULL, post_process_prompt = NULL, model_used = COALESCE(?2, model_used) WHERE id = ?3",
+            params![text, model, id],
+        )?;
+        if changed != 1 {
+            return Err(anyhow::anyhow!("the history entry no longer exists"));
+        }
+        if let Err(e) = self.app_handle.emit("history-updated", ()) {
+            error!("Failed to emit history-updated event: {}", e);
+        }
+        Ok(())
     }
 
     pub async fn get_entry_by_id(&self, id: i64) -> Result<Option<HistoryEntry>> {

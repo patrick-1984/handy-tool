@@ -18,6 +18,8 @@ import {
   X,
   HardDrive,
   Clock,
+  RotateCcw,
+  Loader2,
 } from "lucide-react";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
@@ -462,6 +464,30 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
 }) => {
   const { t, i18n } = useTranslation();
   const [showCopied, setShowCopied] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
+  const [transcribeError, setTranscribeError] = useState<string | null>(null);
+  const noText = entry.transcription_text.trim() === "";
+  // The audio is still there (History's clean-up can delete it, keeping the text).
+  const hasAudio = entry.audio_purged_at == null;
+
+  // "Transcribe again": reads the recording again with the dictation model
+  // (a take recorded without a model, or whose transcription failed). The
+  // row's text is replaced; asks first when it has text.
+  const handleTranscribeAgain = async () => {
+    if (
+      !noText &&
+      !window.confirm(t("settings.history.transcribeAgainConfirm"))
+    )
+      return;
+    setTranscribing(true);
+    setTranscribeError(null);
+    try {
+      const result = await commands.retranscribeHistoryEntry(entry.id);
+      if (result.status === "error") setTranscribeError(result.error);
+    } finally {
+      setTranscribing(false);
+    }
+  };
 
   const handleLoadAudio = useCallback(
     () => getAudioUrl(entry.file_name),
@@ -507,6 +533,20 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
           ))}
         </p>
         <div className="flex items-center gap-1">
+          {hasAudio && (
+            <button
+              onClick={handleTranscribeAgain}
+              disabled={transcribing}
+              className={`${ICON_BUTTON} ${noText ? "!text-accent" : ""} disabled:cursor-wait`}
+              title={t("settings.history.transcribeAgain")}
+            >
+              {transcribing ? (
+                <Loader2 width={16} height={16} className="animate-spin" />
+              ) : (
+                <RotateCcw width={16} height={16} />
+              )}
+            </button>
+          )}
           <button
             onClick={handleCopyText}
             className={ICON_BUTTON}
@@ -542,9 +582,24 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
           </button>
         </div>
       </div>
-      <p className="text-sm select-text cursor-text">
-        <HighlightedText text={entry.transcription_text} matcher={matcher} />
-      </p>
+      {noText ? (
+        <p className="text-sm text-text-secondary italic">
+          {hasAudio
+            ? t("settings.history.noTranscript")
+            : t("settings.history.noTranscriptNoAudio")}
+        </p>
+      ) : (
+        <p className="text-sm select-text cursor-text">
+          <HighlightedText text={entry.transcription_text} matcher={matcher} />
+        </p>
+      )}
+      {transcribeError && (
+        <p className="text-xs text-err-text">
+          {t("settings.history.transcribeAgainFailed", {
+            error: transcribeError,
+          })}
+        </p>
+      )}
       <AudioPlayer onLoadRequest={handleLoadAudio} className="w-full" />
     </div>
   );

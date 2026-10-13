@@ -932,8 +932,10 @@
       "micWarmup": {
         "title": "انتظار إحماء الميكروفون",
         "description": "**بعد تشغيل ميكروفون كان خاملًا، يبقى شريط التسجيل يعرض \"جارٍ تشغيل الميكروفون...\" حتى يصبح جاهزًا فعلًا.** بعض الميكروفونات تبدأ أهدأ بكثير ثم يرتفع صوتها خلال ثانية تقريبًا، وكانت الكلمات المنطوقة خلال ذلك تُهمَل كضوضاء. مدة الانتظار هي متوسط آخر مرات تشغيل هذا الميكروفون من البارد، يقيسها التطبيق بنفسه.\n\n**الافتراضي:** تشغيل.\n\nالتشغيل من البارد وحده ينتظر — الميكروفون المُبقى جاهزًا يبدأ فورًا. مخفي عند تفعيل ميكروفون يعمل دائماً.",
-        "measured": "القياس على هذا الجهاز: {{seconds}} ث.",
-        "notMeasured": "لم يُقَس بعد — سيقيس نفسه في التشغيل البارد التالي."
+        "notMeasured": "لم يُقَس بعد — سيقيس نفسه في التشغيل البارد التالي.",
+        "counting": "{{device}}: {{count}} of {{total}} cold starts measured — no wait yet.",
+        "noFadeIn": "{{device}}: no fade-in — no wait.",
+        "waits": "{{device}}: waits {{seconds}} s."
       },
       "tooQuiet": {
         "title": "التنبيه عند التحدث بصوت منخفض جدًا",
@@ -1460,7 +1462,12 @@
         "regexBadge": ".*",
         "regexActive": "يُعامَل الاستعلام كتعبير نمطي (regex)",
         "noMatches": "لا توجد إدخالات مطابقة لبحثك."
-      }
+      },
+      "transcribeAgain": "Transcribe this recording (again) with your dictation model",
+      "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
+      "transcribeAgainFailed": "Could not transcribe it: {{error}}",
+      "noTranscript": "No transcript — transcribe the recording with the ⟲ button.",
+      "noTranscriptNoAudio": "No transcript."
     },
     "debug": {
       "title": "تصحيح الأخطاء",
@@ -1719,9 +1726,11 @@
         "groups": {
           "dictation": "نموذج الإملاء لديك",
           "downloaded": "المنزّلة",
-          "notDownloaded": "غير المنزّلة"
+          "notDownloaded": "غير المنزّلة",
+          "online": "Online (dictation model only)"
         },
-        "downloadSize": "تنزيل · {{size}}"
+        "downloadSize": "تنزيل · {{size}}",
+        "onlineHint": "Set it as your dictation model to use it here"
       },
       "transcribe": {
         "title": "تفريغ ملف",
@@ -2096,6 +2105,22 @@
       "hotkeyRelease": {
         "title": "لم يعد الضغط المستمر على اختصار يُشغل نواة معالج",
         "description": "على Windows، كان Handy Tool أثناء ضغطك المستمر على اختصار (مثل اضغط للتحدث) يتحقق باستمرار مما إذا كنت قد حررته، مما أبقى نواة معالج واحدة مشغولة بالكامل. أصبح الآن يتحقق كل 10 مللي ثانية."
+      },
+      "steadyMic": {
+        "title": "No more false \"Starting mic...\"",
+        "description": "After a driver update a microphone can take longer to open, and the pill then said \"Starting mic...\" on every take although your words were already being recorded. Each microphone is now measured on its own, against the room's noise, and the pill waits only for a microphone that really fades in."
+      },
+      "segmentsWhileSpeaking": {
+        "title": "Short takes are transcribed while you speak",
+        "description": "After 10 seconds of speech a clear pause is enough to send what you said so far to the engine, so most of a 15-30 second take is done by the time you stop."
+      },
+      "flmFiles": {
+        "title": "FLM (NPU) for files and watched folders",
+        "description": "Pick FLM Whisper on the Files page: it runs on the NPU beside your dictation model, so neither waits for the other. A watched folder on FLM no longer pushes your dictation model out. Windows only."
+      },
+      "transcribeAgain": {
+        "title": "Transcribe a recording again from History",
+        "description": "Recorded without a model, or the transcription failed? The new button beside Copy reads the recording again with your dictation model. A take whose transcription fails is now always kept."
       }
     },
     "installed": "مثبّت"

@@ -55,7 +55,8 @@ const RecordingOverlay: React.FC = () => {
   // the user talks over until a mic-level update says the microphone is live.
   const [micLive, setMicLive] = useState(false);
   // How far the transcription is after stop (percent); null until the backend
-  // reports one (it waits half a second, and has no figure for remote engines).
+  // reports one (it waits half a second, and has no figure for the online API
+  // and OpenRouter engines).
   const [progress, setProgress] = useState<number | null>(null);
   // The figure on screen counts up to each new one instead of jumping: 1% per
   // step, bigger steps for a bigger gap, so even a jump rolls up smoothly.

@@ -809,6 +809,11 @@ fn worker(app: AppHandle, shutdown: Arc<AtomicBool>, status: Arc<Mutex<Translato
                         .lock()
                         .unwrap_or_else(|poisoned| poisoned.into_inner());
                     tm.transcribe_translator_expecting(&effective_model, segment)
+                } else if tm.is_flm_model(&effective_model) {
+                    // FLM (NPU) for the folders: straight to the FLM server,
+                    // never through the dictation slot (loading FLM there
+                    // evicted dictation's model, and the two kept swapping).
+                    tm.transcribe_flm_direct(&effective_model, segment)
                 } else if engine_external {
                     // External engines (HTTP/subprocess) aren't single-tenant —
                     // and must not hold the engine lock across a network call.

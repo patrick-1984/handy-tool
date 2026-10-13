@@ -37,6 +37,24 @@ interface Item {
  */
 const RELEASES: { version: string; items: Item[] }[] = [
   {
+    version: "2.2.0",
+    items: [
+      {
+        key: "steadyMic",
+        section: "general",
+        titleKeys: ["settings.sound.micWarmup.title"],
+      },
+      { key: "segmentsWhileSpeaking" },
+      {
+        key: "flmFiles",
+        section: "files",
+        titleKeys: ["settings.files.model.title"],
+        windowsOnly: true,
+      },
+      { key: "transcribeAgain", section: "history", historyTab: "recordings" },
+    ],
+  },
+  {
     version: "2.1.4",
     items: [
       {

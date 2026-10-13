@@ -957,8 +957,10 @@
       "micWarmup": {
         "title": "Czekaj, aż mikrofon się rozgrzeje",
         "description": "**Po uruchomieniu bezczynnego mikrofonu pasek nagrywania pokazuje „Włączam mikrofon...”, dopóki mikrofon naprawdę nie jest gotowy.** Niektóre mikrofony startują dużo ciszej i podgłaśniają się przez mniej więcej sekundę; słowa wypowiedziane w tym czasie były odrzucane jako szum. Czas oczekiwania to średnia z kilku ostatnich zimnych startów tego mikrofonu, mierzona przez samą aplikację.\n\n**Domyślnie:** Włączone.\n\nCzeka tylko zimny start — mikrofon w gotowości startuje od razu. Ukryte, gdy włączony jest Mikrofon zawsze aktywny.",
-        "measured": "Zmierzone na tym komputerze: {{seconds}} s.",
-        "notMeasured": "Jeszcze nie zmierzone — zmierzy się samo przy następnym zimnym starcie."
+        "notMeasured": "Jeszcze nie zmierzone — zmierzy się samo przy następnym zimnym starcie.",
+        "counting": "{{device}}: zmierzono {{count}} z {{total}} zimnych startów — jeszcze bez czekania.",
+        "noFadeIn": "{{device}}: bez wyciszenia na starcie — bez czekania.",
+        "waits": "{{device}}: czeka {{seconds}} s."
       },
       "tooQuiet": {
         "title": "Ostrzegaj, gdy mówisz za cicho",
@@ -1485,7 +1487,12 @@
         "regexActive": "Zapytanie jest traktowane jako wyrażenie regularne",
         "noMatches": "Brak wpisów pasujących do wyszukiwania."
       },
-      "loadError": "Nie udało się wczytać historii: {{error}}"
+      "loadError": "Nie udało się wczytać historii: {{error}}",
+      "transcribeAgain": "Przetranskrybuj to nagranie (ponownie) modelem dyktowania",
+      "transcribeAgainConfirm": "Zastąpić tę transkrypcję nową transkrypcją nagrania?",
+      "transcribeAgainFailed": "Nie udało się przetranskrybować: {{error}}",
+      "noTranscript": "Brak transkrypcji — przetranskrybuj nagranie przyciskiem ⟲.",
+      "noTranscriptNoAudio": "Brak transkrypcji."
     },
     "debug": {
       "title": "Debugowanie",
@@ -1719,9 +1726,11 @@
         "groups": {
           "dictation": "Twój model dyktowania",
           "downloaded": "Pobrane",
-          "notDownloaded": "Niepobrane"
+          "notDownloaded": "Niepobrane",
+          "online": "Online (tylko jako model dyktowania)"
         },
-        "downloadSize": "Pobierz · {{size}}"
+        "downloadSize": "Pobierz · {{size}}",
+        "onlineHint": "Ustaw go jako model dyktowania, aby użyć go tutaj"
       },
       "transcribe": {
         "title": "Transkrybuj plik",
@@ -2096,6 +2105,22 @@
       "hotkeyRelease": {
         "title": "Przytrzymany skrót nie zajmuje już rdzenia procesora",
         "description": "W Windows, gdy skrót był przytrzymany (na przykład Push-to-Talk), Handy Tool bez przerwy sprawdzał, czy został już puszczony, przez co jeden rdzeń procesora był w pełni zajęty. Teraz sprawdza co 10 ms."
+      },
+      "steadyMic": {
+        "title": "Koniec fałszywego „Starting mic...”",
+        "description": "Po aktualizacji sterowników mikrofon może otwierać się dłużej i pill przy każdym nagraniu pokazywał „Starting mic...”, choć słowa były już nagrywane. Każdy mikrofon jest teraz mierzony osobno, względem szumu tła, a pill czeka tylko na mikrofon, który naprawdę się rozgrzewa."
+      },
+      "segmentsWhileSpeaking": {
+        "title": "Krótkie nagrania są transkrybowane w trakcie mówienia",
+        "description": "Po 10 sekundach mowy wyraźna pauza wystarcza, by wysłać dotychczasową wypowiedź do silnika, więc większość nagrania 15-30 s jest gotowa, zanim skończysz."
+      },
+      "flmFiles": {
+        "title": "FLM (NPU) dla plików i obserwowanych folderów",
+        "description": "Wybierz FLM Whisper na stronie Pliki: działa na NPU obok modelu dyktowania, więc żaden nie czeka na drugi. Obserwowany folder na FLM nie wypycha już modelu dyktowania. Tylko Windows."
+      },
+      "transcribeAgain": {
+        "title": "Ponowna transkrypcja nagrania z Historii",
+        "description": "Nagrano bez modelu albo transkrypcja się nie udała? Nowy przycisk obok Kopiuj odczytuje nagranie ponownie modelem dyktowania. Nagranie z nieudaną transkrypcją jest teraz zawsze zachowane."
       }
     },
     "installed": "Zainstalowana"

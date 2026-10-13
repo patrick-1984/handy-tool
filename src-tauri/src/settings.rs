@@ -207,15 +207,13 @@ fn default_true() -> bool {
     true
 }
 
-/// Measured microphone warm-ups kept (the wait is their average).
+/// Measured warm-ups kept per microphone; the pill waits only once this many
+/// cold starts of that microphone were measured.
 pub const MIC_WARMUP_KEPT: usize = 5;
-/// Added to the average warm-up, so an average start is safely covered.
+/// Added to the measured warm-up, so a start is safely covered.
 const MIC_WARMUP_MARGIN_MS: u32 = 100;
 /// Longest wait the pill ever puts before a take.
 pub const MIC_WARMUP_MAX_MS: u32 = 3000;
-/// The wait on a cold start before any was measured: a Realtek input's fade-in
-/// (0.5 s) plus the margin. The first cold start measures the real one.
-const MIC_WARMUP_DEFAULT_MS: u32 = 600;
 
 /// A registered LLM provider. This single registry powers token counting, LLM
 /// post-processing, and the model-testing tool. Post-processing and the tester
@@ -994,11 +992,15 @@ pub struct AppSettings {
     /// words spoken into that were dropped as noise. The wait is measured.
     #[serde(default = "default_true")]
     pub mic_warmup_wait: bool,
-    /// The last few measured fade-ins of this PC's microphone after a cold start,
-    /// in ms from its first sound (the digital silence some start with is not
-    /// counted), newest last.
+    /// Before 2.2.0: the measured fade-ins of whichever microphone was in use.
+    /// No longer read (it mixed microphones and could hold the pause before the
+    /// first word); kept so older settings files load unchanged.
     #[serde(default)]
     pub mic_fade_in_measured_ms: Vec<u32>,
+    /// The last few measured fade-ins after a cold start, per microphone (keyed
+    /// by the device's name), in ms from its first sound, newest last.
+    #[serde(default)]
+    pub mic_warmup_by_device: HashMap<String, Vec<u32>>,
     /// The pill says "Too quiet" when it hears voice-like sound too quiet for
     /// the speech detector to keep.
     #[serde(default = "default_true")]
@@ -2343,27 +2345,30 @@ pub fn apply_affixes(text: &str, spec: &AffixSpec<'_>) -> String {
 }
 
 impl AppSettings {
-    /// How long a cold microphone needs before the pill shows it as live, in ms:
-    /// the average of its measured warm-ups plus a little margin; 0 when the
-    /// wait is off or nothing has been measured yet.
     /// The pill's size as a factor of its normal size (1.0 - 1.5).
     pub fn pill_scale_factor(&self) -> f64 {
         self.pill_scale.clamp(100, 150) as f64 / 100.0
     }
 
-    pub fn applied_mic_warmup_ms(&self) -> u32 {
-        let measured = &self.mic_fade_in_measured_ms;
+    /// How long this cold microphone needs before the pill shows it as live, in
+    /// ms. 0 when the wait is off, or until MIC_WARMUP_KEPT cold starts of THIS
+    /// microphone were measured. Then the SHORTEST of them plus a margin: a real
+    /// fade-in (hardware) shows on every cold start, while a quiet pause before
+    /// the first word comes and goes - one start where the user spoke at once
+    /// reads 0 and rules the wait out.
+    pub fn applied_mic_warmup_ms(&self, device: &str) -> u32 {
         if !self.mic_warmup_wait {
             return 0;
         }
-        if measured.is_empty() {
-            return MIC_WARMUP_DEFAULT_MS;
+        let Some(measured) = self.mic_warmup_by_device.get(device) else {
+            return 0;
+        };
+        if measured.len() < MIC_WARMUP_KEPT {
+            return 0;
         }
-        let average = measured.iter().sum::<u32>() / measured.len() as u32;
-        if average == 0 {
-            0
-        } else {
-            (average + MIC_WARMUP_MARGIN_MS).min(MIC_WARMUP_MAX_MS)
+        match measured.iter().min() {
+            Some(&0) | None => 0,
+            Some(&shortest) => (shortest + MIC_WARMUP_MARGIN_MS).min(MIC_WARMUP_MAX_MS),
         }
     }
 
@@ -2681,6 +2686,7 @@ pub fn get_default_settings() -> AppSettings {
         mic_keep_warm_minutes: 0,
         mic_warmup_wait: true,
         mic_fade_in_measured_ms: Vec::new(),
+        mic_warmup_by_device: HashMap::new(),
         too_quiet_hint: true,
         too_quiet_hint_box: true,
         pill_scale: default_pill_scale(),
@@ -3118,6 +3124,42 @@ pub fn get_recording_retention_period(app: &AppHandle) -> RecordingRetentionPeri
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn with_warmups(device: &str, measured: &[u32]) -> AppSettings {
+        let mut s = get_default_settings();
+        s.mic_warmup_by_device
+            .insert(device.to_string(), measured.to_vec());
+        s
+    }
+
+    #[test]
+    fn no_warm_up_wait_until_five_cold_starts_of_that_microphone() {
+        let s = with_warmups("BRIO", &[600, 600, 600, 600]);
+        assert_eq!(s.applied_mic_warmup_ms("BRIO"), 0);
+        assert_eq!(s.applied_mic_warmup_ms("Realtek"), 0);
+        assert_eq!(get_default_settings().applied_mic_warmup_ms("BRIO"), 0);
+    }
+
+    #[test]
+    fn the_warm_up_wait_is_the_shortest_measured_plus_margin() {
+        let s = with_warmups("Realtek", &[600, 550, 700, 500, 650]);
+        assert_eq!(s.applied_mic_warmup_ms("Realtek"), 600);
+    }
+
+    #[test]
+    fn one_start_without_a_fade_in_rules_the_wait_out() {
+        // The pause before the first word varies; a real fade-in does not.
+        let s = with_warmups("BRIO", &[1800, 0, 1750, 850, 1900]);
+        assert_eq!(s.applied_mic_warmup_ms("BRIO"), 0);
+    }
+
+    #[test]
+    fn the_warm_up_wait_is_capped_and_can_be_switched_off() {
+        let mut s = with_warmups("Slow", &[5000, 4000, 4500, 6000, 3500]);
+        assert_eq!(s.applied_mic_warmup_ms("Slow"), MIC_WARMUP_MAX_MS);
+        s.mic_warmup_wait = false;
+        assert_eq!(s.applied_mic_warmup_ms("Slow"), 0);
+    }
 
     #[test]
     fn ensure_default_bindings_backfills_missing_and_never_touches_a_saved_chord() {

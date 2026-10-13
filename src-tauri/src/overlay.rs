@@ -506,9 +506,10 @@ pub fn hide_recording_overlay(app_handle: &AppHandle) {
             let _ = w.emit("live-text-hide", ());
         }
         // A "Transcribing N%" figure first runs up to 100% (the pill does that
-        // on hide-overlay), then fades.
+        // on hide-overlay, in a quick burst), then fades. The text is already
+        // delivered by now; this is only the pill going away.
         let fade_ms = if PROGRESS_SHOWN.swap(false, Ordering::Relaxed) {
-            650
+            350
         } else {
             300
         };

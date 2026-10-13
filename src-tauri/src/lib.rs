@@ -482,6 +482,7 @@ pub fn run(cli_args: CliArgs) {
         commands::translator::translator_set_folder_enabled,
         commands::translator::translator_remove_folder,
         commands::files::transcribe_file,
+        commands::files::retranscribe_history_entry,
         commands::files::get_file_job,
         commands::files::cancel_file_job,
         commands::files::get_file_transcriptions,

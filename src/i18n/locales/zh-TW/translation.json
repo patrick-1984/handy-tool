@@ -957,8 +957,10 @@
       "micWarmup": {
         "title": "等待麥克風暖機",
         "description": "**閒置的麥克風啟動後，錄音浮層會持續顯示「正在啟動麥克風...」，直到它真正就緒。** 有些麥克風剛啟動時聲音小得多，要大約一秒才漸漸變大；這段時間說的話會被當成雜音捨棄。等待時間是這支麥克風最近幾次冷啟動的平均值，由應用程式自行測量。\n\n**預設：** 開啟。\n\n只有冷啟動才會等待——保持就緒的麥克風會立即開始。開啟麥克風常開時隱藏。",
-        "measured": "本機實測：{{seconds}} 秒。",
-        "notMeasured": "尚未測量——下次冷啟動時會自動測量。"
+        "notMeasured": "尚未測量——下次冷啟動時會自動測量。",
+        "counting": "{{device}}: {{count}} of {{total}} cold starts measured — no wait yet.",
+        "noFadeIn": "{{device}}: no fade-in — no wait.",
+        "waits": "{{device}}: waits {{seconds}} s."
       },
       "tooQuiet": {
         "title": "說話太小聲時提醒",
@@ -1485,7 +1487,12 @@
         "regexBadge": ".*",
         "regexActive": "查詢字串將視為正規表達式處理",
         "noMatches": "沒有符合搜尋條件的項目"
-      }
+      },
+      "transcribeAgain": "Transcribe this recording (again) with your dictation model",
+      "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
+      "transcribeAgainFailed": "Could not transcribe it: {{error}}",
+      "noTranscript": "No transcript — transcribe the recording with the ⟲ button.",
+      "noTranscriptNoAudio": "No transcript."
     },
     "debug": {
       "title": "偵錯",
@@ -1719,9 +1726,11 @@
         "groups": {
           "dictation": "你的聽寫模型",
           "downloaded": "已下載",
-          "notDownloaded": "未下載"
+          "notDownloaded": "未下載",
+          "online": "Online (dictation model only)"
         },
-        "downloadSize": "下載 · {{size}}"
+        "downloadSize": "下載 · {{size}}",
+        "onlineHint": "Set it as your dictation model to use it here"
       },
       "transcribe": {
         "title": "轉錄檔案",
@@ -2096,6 +2105,22 @@
       "hotkeyRelease": {
         "title": "按住快捷鍵時不再占滿一個處理器核心",
         "description": "在 Windows 上，按住快捷鍵（例如按住說話）時，Handy Tool 會不停檢查你是否已放開，導致一個處理器核心被完全占滿。現在改為每 10 毫秒檢查一次。"
+      },
+      "steadyMic": {
+        "title": "No more false \"Starting mic...\"",
+        "description": "After a driver update a microphone can take longer to open, and the pill then said \"Starting mic...\" on every take although your words were already being recorded. Each microphone is now measured on its own, against the room's noise, and the pill waits only for a microphone that really fades in."
+      },
+      "segmentsWhileSpeaking": {
+        "title": "Short takes are transcribed while you speak",
+        "description": "After 10 seconds of speech a clear pause is enough to send what you said so far to the engine, so most of a 15-30 second take is done by the time you stop."
+      },
+      "flmFiles": {
+        "title": "FLM (NPU) for files and watched folders",
+        "description": "Pick FLM Whisper on the Files page: it runs on the NPU beside your dictation model, so neither waits for the other. A watched folder on FLM no longer pushes your dictation model out. Windows only."
+      },
+      "transcribeAgain": {
+        "title": "Transcribe a recording again from History",
+        "description": "Recorded without a model, or the transcription failed? The new button beside Copy reads the recording again with your dictation model. A take whose transcription fails is now always kept."
       }
     },
     "installed": "已安裝"
