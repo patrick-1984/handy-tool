@@ -1041,8 +1041,9 @@
       },
       "model": {
         "title": "Batch model",
-        "description": "**Which speech model transcribes the files in your watched folders.** Models marked with a globe can also translate to English, which needs Translate to English switched on.\n\n**Default:** Same as dictation (default) — reuses whatever is selected on the Models page.\n\nPick a different local model and it loads into a slot of its own next to the dictation model: batch work on one engine, dictation still instant on the other. The cost is extra memory, which Unload batch model after can hand back.",
+        "description": "**Which speech model transcribes the files in your watched folders.** Models marked with a globe can also translate to English, which needs Translate to English switched on.\n\n**Default:** the model picked for files above (Model, at the top of this page); with none picked, your dictation model.\n\nPick a different local model and it loads into a slot of its own next to the dictation model: batch work on one engine, dictation still instant on the other. The cost is extra memory, which Unload batch model after can hand back.",
         "sameAsDictation": "Same as dictation (default)",
+        "sameAsFiles": "Same as the model for files above: {{name}} (default)",
         "translates": "{{name}} — can translate to English"
       },
       "unload": {
@@ -1081,7 +1082,7 @@
     "files": {
       "model": {
         "title": "Model",
-        "description": "**Which speech model transcribes the file.** Models that aren't downloaded yet are listed too; pick one and download it first.\n\n**Default:** your dictation model, and the one you pick is remembered. Another model loads beside your dictation model, so dictation stays ready, and unloads again when the file is done. FLM (NPU) runs beside any dictation model. An online model (API, OpenRouter) works for files only while it is your dictation model.",
+        "description": "**Which speech model transcribes the file.** Models that aren't downloaded yet are listed too; pick one and download it first.\n\n**Default:** your dictation model, and the one you pick is remembered. Another model loads beside your dictation model, so dictation stays ready, and unloads again when the file is done. FLM (NPU) runs beside any dictation model. An online model (API, OpenRouter) works for files only while it is your dictation model. The watched folders below use this model too, unless they have one of their own.",
         "dictation": "{{name}} (your dictation model)",
         "notDownloaded": "{{name}} (not downloaded)",
         "onlineHint": "Set it as your dictation model to use it here",
@@ -2070,6 +2071,10 @@
     "release": "Version {{version}}",
     "show": "Show me",
     "items": {
+      "foldersFollowFiles": {
+        "title": "Watched folders use the model you picked for files",
+        "description": "With FLM (NPU) picked for files, the watched folders kept transcribing with your dictation model on the graphics card. Unless you pick a batch model of their own, they now use the model picked for files at the top of the Files page."
+      },
       "steadyMic": {
         "title": "No more false \"Starting mic...\"",
         "description": "After a driver update a microphone can take longer to open, and the pill then said \"Starting mic...\" on every take although your words were already being recorded. Each microphone is now measured on its own, against the room's noise, and the pill waits only for a microphone that really fades in."

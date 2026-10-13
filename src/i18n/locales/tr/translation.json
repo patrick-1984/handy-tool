@@ -1682,7 +1682,8 @@
         "title": "Toplu iş modeli",
         "description": "İzlenen klasörlerinizdeki dosyaları hangi konuşma modelinin transkribe edeceği; küre işaretli modeller İngilizceye de çevirebilir, bunun için İngilizceye Çevir'in açık olması gerekir. Varsayılan: Modeller sayfasında seçili olanı yeniden kullanan Dikte ile aynı (varsayılan). Farklı bir yerel model seçtiğinizde, dikte modelinin yanında kendine ait bir yuvaya yüklenir — biri toplu işi yürütürken diğeri dikte için hâlâ anındadır — bunun bedeli, Toplu iş modelini şu süre sonra boşalt'ın geri verebileceği ek bellektir.",
         "sameAsDictation": "Dikte ile aynı (varsayılan)",
-        "translates": "{{name}} — İngilizceye çevirebilir"
+        "translates": "{{name}} — İngilizceye çevirebilir",
+        "sameAsFiles": "Same as the model for files above: {{name}} (default)"
       },
       "unload": {
         "title": "Toplu iş modelini şu süre sonra boşalt",
@@ -2121,6 +2122,10 @@
       "transcribeAgain": {
         "title": "Transcribe a recording again from History",
         "description": "Recorded without a model, or the transcription failed? The new button beside Copy reads the recording again with your dictation model. A take whose transcription fails is now always kept."
+      },
+      "foldersFollowFiles": {
+        "title": "Watched folders use the model you picked for files",
+        "description": "With FLM (NPU) picked for files, the watched folders kept transcribing with your dictation model on the graphics card. Unless you pick a batch model of their own, they now use the model picked for files at the top of the Files page."
       }
     },
     "installed": "Yüklü"

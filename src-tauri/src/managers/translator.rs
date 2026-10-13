@@ -637,17 +637,13 @@ fn worker(app: AppHandle, shutdown: Arc<AtomicBool>, status: Arc<Mutex<Translato
         }
 
         // Batch model: the per-Translator override when set and still valid,
-        // otherwise the dictation model. Only transcription-registry ids are
-        // accepted (every entry is ASR-capable — LLM chat providers aren't).
+        // else the Files page's model, else the dictation model (see
+        // AppSettings::watched_folder_model). Only transcription-registry ids
+        // are accepted (every entry is ASR-capable — LLM chat providers aren't).
         let model_manager = app.state::<Arc<crate::managers::model::ModelManager>>();
-        let effective_model = {
-            let m = settings.translator_model.trim();
-            if !m.is_empty() && model_manager.get_model_info(m).is_some() {
-                m.to_string()
-            } else {
-                settings.selected_model.clone()
-            }
-        };
+        let effective_model = settings.watched_folder_model(|m| {
+            crate::commands::files::usable_for_folders(&settings, &model_manager, m)
+        });
 
         // Engine class decides two special cases below: external engines
         // (FLM/API/OpenRouter) don't need the single-tenant engine lock, and

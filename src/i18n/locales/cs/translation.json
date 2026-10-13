@@ -1682,7 +1682,8 @@
         "title": "Dávkový model",
         "description": "Který model přepisuje soubory ve vašich sledovaných složkách; modely označené glóbusem umí i překládat do angličtiny, což vyžaduje zapnuté Překládat do angličtiny. Výchozí: Stejný jako pro diktování (výchozí) — použije se model vybraný na stránce Modely. Zvolíte-li jiný místní model, načte se do vlastního slotu vedle modelu pro diktování — dávková práce na jednom enginu, diktování stále okamžité na druhém — za cenu paměti navíc, kterou lze vrátit pomocí Uvolnit dávkový model po.",
         "sameAsDictation": "Stejný jako pro diktování (výchozí)",
-        "translates": "{{name}} — umí překládat do angličtiny"
+        "translates": "{{name}} — umí překládat do angličtiny",
+        "sameAsFiles": "Same as the model for files above: {{name}} (default)"
       },
       "unload": {
         "title": "Uvolnit dávkový model po",
@@ -2121,6 +2122,10 @@
       "transcribeAgain": {
         "title": "Transcribe a recording again from History",
         "description": "Recorded without a model, or the transcription failed? The new button beside Copy reads the recording again with your dictation model. A take whose transcription fails is now always kept."
+      },
+      "foldersFollowFiles": {
+        "title": "Watched folders use the model you picked for files",
+        "description": "With FLM (NPU) picked for files, the watched folders kept transcribing with your dictation model on the graphics card. Unless you pick a batch model of their own, they now use the model picked for files at the top of the Files page."
       }
     },
     "installed": "Nainstalovaná"

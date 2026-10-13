@@ -1682,7 +1682,8 @@
         "title": "Model wsadowy",
         "description": "Który model mowy transkrybuje pliki w obserwowanych folderach; modele oznaczone globusem mogą również tłumaczyć na angielski, co wymaga włączenia Tłumacz na angielski. Domyślnie: Taki jak do dyktowania (domyślny), czyli model wybrany na stronie Modele. Wybranie innego modelu lokalnego powoduje wczytanie go do własnego slotu obok modelu dyktowania — praca wsadowa na jednym silniku, dyktowanie wciąż natychmiastowe na drugim — kosztem dodatkowej pamięci, którą można oddać za pomocą Zwolnij model wsadowy po.",
         "sameAsDictation": "Taki jak do dyktowania (domyślny)",
-        "translates": "{{name}} — może tłumaczyć na angielski"
+        "translates": "{{name}} — może tłumaczyć na angielski",
+        "sameAsFiles": "Jak model dla plików powyżej: {{name}} (domyślnie)"
       },
       "unload": {
         "title": "Zwolnij model wsadowy po",
@@ -2121,6 +2122,10 @@
       "transcribeAgain": {
         "title": "Ponowna transkrypcja nagrania z Historii",
         "description": "Nagrano bez modelu albo transkrypcja się nie udała? Nowy przycisk obok Kopiuj odczytuje nagranie ponownie modelem dyktowania. Nagranie z nieudaną transkrypcją jest teraz zawsze zachowane."
+      },
+      "foldersFollowFiles": {
+        "title": "Obserwowane foldery używają modelu wybranego dla plików",
+        "description": "Przy FLM (NPU) wybranym dla plików obserwowane foldery dalej transkrybowały modelem dyktowania na karcie graficznej. Jeśli nie wybierzesz dla nich osobnego modelu, używają teraz modelu wybranego dla plików na górze strony Pliki."
       }
     },
     "installed": "Zainstalowana"

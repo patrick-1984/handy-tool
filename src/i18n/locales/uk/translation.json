@@ -1682,7 +1682,8 @@
         "title": "Пакетна модель",
         "description": "Яка мовна модель транскрибує файли у відстежуваних папках; моделі з позначкою глобуса можуть також перекладати англійською, що потребує увімкненого Translate to English. Типово: Same as dictation (default) — використовує те, що обрано на сторінці Models. Оберіть іншу локальну модель, і вона завантажиться у власний слот поряд з моделлю диктування — пакетна робота на одному рушії, диктування досі миттєве на іншому — за рахунок додаткової пам'яті, яку може звільнити Unload batch model after.",
         "sameAsDictation": "Як для диктування (за замовчуванням)",
-        "translates": "{{name}} — може перекладати на англійську"
+        "translates": "{{name}} — може перекладати на англійську",
+        "sameAsFiles": "Same as the model for files above: {{name}} (default)"
       },
       "unload": {
         "title": "Вивантажувати пакетну модель через",
@@ -2121,6 +2122,10 @@
       "transcribeAgain": {
         "title": "Transcribe a recording again from History",
         "description": "Recorded without a model, or the transcription failed? The new button beside Copy reads the recording again with your dictation model. A take whose transcription fails is now always kept."
+      },
+      "foldersFollowFiles": {
+        "title": "Watched folders use the model you picked for files",
+        "description": "With FLM (NPU) picked for files, the watched folders kept transcribing with your dictation model on the graphics card. Unless you pick a batch model of their own, they now use the model picked for files at the top of the Files page."
       }
     },
     "installed": "Встановлена"

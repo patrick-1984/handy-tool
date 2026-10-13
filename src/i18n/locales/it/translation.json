@@ -1682,7 +1682,8 @@
         "title": "Modello batch",
         "description": "Quale modello vocale trascrive i file nelle tue cartelle monitorate; i modelli contrassegnati con un globo possono anche tradurre in inglese, il che richiede Traduci in inglese attivo. Predefinito: Uguale alla dettatura (predefinito), che riutilizza quanto selezionato nella pagina Modelli. Scegli un modello locale diverso e verrà caricato in un proprio slot accanto al modello di dettatura — il lavoro batch su un motore, la dettatura sempre istantanea sull'altro — al costo di memoria extra, che Scarica il modello batch dopo può restituire.",
         "sameAsDictation": "Uguale alla dettatura (predefinito)",
-        "translates": "{{name}} — può tradurre in inglese"
+        "translates": "{{name}} — può tradurre in inglese",
+        "sameAsFiles": "Same as the model for files above: {{name}} (default)"
       },
       "unload": {
         "title": "Scarica il modello batch dopo",
@@ -2121,6 +2122,10 @@
       "transcribeAgain": {
         "title": "Transcribe a recording again from History",
         "description": "Recorded without a model, or the transcription failed? The new button beside Copy reads the recording again with your dictation model. A take whose transcription fails is now always kept."
+      },
+      "foldersFollowFiles": {
+        "title": "Watched folders use the model you picked for files",
+        "description": "With FLM (NPU) picked for files, the watched folders kept transcribing with your dictation model on the graphics card. Unless you pick a batch model of their own, they now use the model picked for files at the top of the Files page."
       }
     },
     "installed": "Installata"

@@ -157,8 +157,25 @@ export const TranslatorSettings: React.FC = () => {
   // Only transcription-capable models are offered (the same registry the
   // Models page shows) — an LLM chat provider can't transcribe audio. Models
   // that can also translate to English are marked.
+  // The default follows the model picked for files on this same page (the
+  // backend's AppSettings::watched_folder_model); with none, dictation's.
+  const fileModelId = ((getSetting("file_model") as string) ?? "").trim();
+  const fileModel = models.find(
+    (m) =>
+      m.id === fileModelId &&
+      m.is_downloaded &&
+      (!["ApiWhisper", "OpenRouterWhisper"].includes(m.engine_type) ||
+        m.id === getSetting("selected_model")),
+  );
   const modelOptions = [
-    { value: "", label: t("settings.translator.model.sameAsDictation") },
+    {
+      value: "",
+      label: fileModel
+        ? t("settings.translator.model.sameAsFiles", {
+            name: getTranslatedModelName(fileModel, t),
+          })
+        : t("settings.translator.model.sameAsDictation"),
+    },
     ...models
       .filter((m) => m.is_downloaded)
       .map((m) => ({

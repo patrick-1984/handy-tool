@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.2.1] - 2026-10-13
+
+### Fixed
+
+- **Watched folders use the model you picked for files.** The Files page has two model choices:
+  Model at the top (for files you add) and Batch model for the watched folders, which defaulted
+  to your dictation model. With FLM (NPU) picked at the top, the watched folders kept
+  transcribing with the dictation model on the graphics card. Batch model's default now follows
+  the model picked for files (and says which one); with none picked it is still your dictation
+  model, and a batch model you pick yourself still wins. An online model (API, OpenRouter) picked
+  for files is used by the folders only while it is your dictation model.
+
 ## [2.2.0] - 2026-10-13 "Steady Mic"
 
 Recording you can rely on: no false "Starting mic...", short takes transcribed while you speak,

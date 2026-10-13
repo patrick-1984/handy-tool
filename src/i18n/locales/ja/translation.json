@@ -1682,7 +1682,8 @@
         "title": "バッチモデル",
         "description": "監視フォルダ内のファイルを文字起こしする音声モデルです。地球アイコン付きのモデルは英語への翻訳も可能で、「英語に翻訳」をオンにする必要があります。デフォルト: 音声入力と同じ(デフォルト)で、Models ページで選択されているものを再利用します。別のローカルモデルを選ぶと、音声入力モデルと並んで独自のスロットにロードされます — 一方のエンジンでバッチ処理、もう一方で音声入力は即座のまま — その代償として追加のメモリが必要になりますが、これは「バッチモデルのアンロード時間」で解放できます。",
         "sameAsDictation": "音声入力と同じ（デフォルト）",
-        "translates": "{{name}} — 英語に翻訳可能"
+        "translates": "{{name}} — 英語に翻訳可能",
+        "sameAsFiles": "Same as the model for files above: {{name}} (default)"
       },
       "unload": {
         "title": "バッチモデルをアンロードするまでの時間",
@@ -2121,6 +2122,10 @@
       "transcribeAgain": {
         "title": "Transcribe a recording again from History",
         "description": "Recorded without a model, or the transcription failed? The new button beside Copy reads the recording again with your dictation model. A take whose transcription fails is now always kept."
+      },
+      "foldersFollowFiles": {
+        "title": "Watched folders use the model you picked for files",
+        "description": "With FLM (NPU) picked for files, the watched folders kept transcribing with your dictation model on the graphics card. Unless you pick a batch model of their own, they now use the model picked for files at the top of the Files page."
       }
     },
     "installed": "インストール済み"

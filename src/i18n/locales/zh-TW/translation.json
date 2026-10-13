@@ -1682,7 +1682,8 @@
         "title": "批次模型",
         "description": "轉錄你所監看資料夾中檔案所使用的語音模型；標有地球圖示的模型也可翻譯成英文，需開啟「翻譯成英文」。預設：與語音輸入相同（預設），沿用模型頁面上目前所選的模型。選擇另一個本機模型，它會載入獨立的插槽並與語音輸入模型並存——批次工作用一個引擎、語音輸入依然即時使用另一個——代價是額外的記憶體用量，可透過「批次模型卸載時間」歸還。",
         "sameAsDictation": "與口述相同(預設)",
-        "translates": "{{name}}——可翻譯為英語"
+        "translates": "{{name}}——可翻譯為英語",
+        "sameAsFiles": "Same as the model for files above: {{name}} (default)"
       },
       "unload": {
         "title": "批次模型卸載時間",
@@ -2121,6 +2122,10 @@
       "transcribeAgain": {
         "title": "Transcribe a recording again from History",
         "description": "Recorded without a model, or the transcription failed? The new button beside Copy reads the recording again with your dictation model. A take whose transcription fails is now always kept."
+      },
+      "foldersFollowFiles": {
+        "title": "Watched folders use the model you picked for files",
+        "description": "With FLM (NPU) picked for files, the watched folders kept transcribing with your dictation model on the graphics card. Unless you pick a batch model of their own, they now use the model picked for files at the top of the Files page."
       }
     },
     "installed": "已安裝"

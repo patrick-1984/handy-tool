@@ -1682,7 +1682,8 @@
         "title": "Mô hình xử lý theo lô",
         "description": "Model giọng nói nào phiên âm các file trong thư mục theo dõi của bạn; các model có biểu tượng địa cầu cũng có thể dịch sang tiếng Anh, cần bật Translate to English. Mặc định: Same as dictation (default), dùng lại model đang chọn ở trang Models. Chọn một model cục bộ khác thì nó sẽ tải vào một ô riêng cùng với model đọc chính tả — xử lý theo lô trên một engine, đọc chính tả vẫn tức thì trên engine khác — đổi lại tốn thêm bộ nhớ, có thể được Unload batch model after trả lại.",
         "sameAsDictation": "Giống mô hình đọc chính tả (mặc định)",
-        "translates": "{{name}} — có thể dịch sang tiếng Anh"
+        "translates": "{{name}} — có thể dịch sang tiếng Anh",
+        "sameAsFiles": "Same as the model for files above: {{name}} (default)"
       },
       "unload": {
         "title": "Giải phóng mô hình theo lô sau",
@@ -2121,6 +2122,10 @@
       "transcribeAgain": {
         "title": "Transcribe a recording again from History",
         "description": "Recorded without a model, or the transcription failed? The new button beside Copy reads the recording again with your dictation model. A take whose transcription fails is now always kept."
+      },
+      "foldersFollowFiles": {
+        "title": "Watched folders use the model you picked for files",
+        "description": "With FLM (NPU) picked for files, the watched folders kept transcribing with your dictation model on the graphics card. Unless you pick a batch model of their own, they now use the model picked for files at the top of the Files page."
       }
     },
     "installed": "Đã cài"

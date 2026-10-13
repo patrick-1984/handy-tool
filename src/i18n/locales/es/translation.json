@@ -1682,7 +1682,8 @@
         "title": "Modelo por lotes",
         "description": "Qué modelo de voz transcribe los archivos de tus carpetas vigiladas; los modelos marcados con un globo también pueden traducir al inglés, lo que requiere activar Traducir al Inglés. Predeterminado: Igual que el dictado (predeterminado), reutilizando lo que esté seleccionado en la página de Modelos. Elige un modelo local distinto y se carga en una ranura propia junto al modelo de dictado (trabajo por lotes en un motor, dictado siempre instantáneo en el otro) al costo de memoria adicional, que Descargar modelo por lotes después de puede devolver.",
         "sameAsDictation": "Igual que el dictado (predeterminado)",
-        "translates": "{{name}} — puede traducir al inglés"
+        "translates": "{{name}} — puede traducir al inglés",
+        "sameAsFiles": "Same as the model for files above: {{name}} (default)"
       },
       "unload": {
         "title": "Descargar modelo por lotes después de",
@@ -2121,6 +2122,10 @@
       "transcribeAgain": {
         "title": "Transcribe a recording again from History",
         "description": "Recorded without a model, or the transcription failed? The new button beside Copy reads the recording again with your dictation model. A take whose transcription fails is now always kept."
+      },
+      "foldersFollowFiles": {
+        "title": "Watched folders use the model you picked for files",
+        "description": "With FLM (NPU) picked for files, the watched folders kept transcribing with your dictation model on the graphics card. Unless you pick a batch model of their own, they now use the model picked for files at the top of the Files page."
       }
     },
     "installed": "Instalada"

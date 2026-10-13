@@ -2856,6 +2856,20 @@ impl AppSettings {
         self.llm_provider(&self.post_process_provider_ref)
     }
 
+    /// The model the watched folders transcribe with: their own choice when set
+    /// (and still a known model), else the model picked for files on the same
+    /// Files page, else the dictation model. Before 2.2.1 the second step was
+    /// missing: with FLM picked for files, the folders kept using the
+    /// dictation model (Whisper on the GPU) - the Files page showed both
+    /// choices and only one applied to the folders.
+    pub fn watched_folder_model(&self, is_known: impl Fn(&str) -> bool) -> String {
+        [self.translator_model.trim(), self.file_model.trim()]
+            .into_iter()
+            .find(|m| !m.is_empty() && is_known(m))
+            .map(str::to_string)
+            .unwrap_or_else(|| self.selected_model.clone())
+    }
+
     /// Build a `TranscriptionPolicySnapshot` for a new job (T-108). Pass the
     /// already-resolved effective model id (e.g. Translator's per-job
     /// `translator_model`, validated against the model registry by the
@@ -3918,6 +3932,22 @@ mod tests {
         settings.word_correction_threshold = 0.1;
         // Frozen: a later mutation must not leak into the already-taken snapshot.
         assert_eq!(snap.word_correction_threshold, 0.75);
+    }
+
+    #[test]
+    fn watched_folders_follow_their_own_then_the_files_then_the_dictation_model() {
+        let mut s = get_default_settings();
+        s.selected_model = "turbo".to_string();
+        let known = |m: &str| m != "gone";
+        assert_eq!(s.watched_folder_model(known), "turbo");
+        s.file_model = "flm-whisper-v3-turbo".to_string();
+        assert_eq!(s.watched_folder_model(known), "flm-whisper-v3-turbo");
+        s.translator_model = "parakeet".to_string();
+        assert_eq!(s.watched_folder_model(known), "parakeet");
+        s.translator_model = "gone".to_string();
+        assert_eq!(s.watched_folder_model(known), "flm-whisper-v3-turbo");
+        s.file_model = "gone".to_string();
+        assert_eq!(s.watched_folder_model(known), "turbo");
     }
 
     #[test]

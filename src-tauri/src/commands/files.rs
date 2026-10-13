@@ -285,10 +285,29 @@ fn transcribe_piece(
     Err(error)
 }
 
+/// Whether the watched folders can use `model`: a downloaded model; an online
+/// one (API, OpenRouter) only when picked for the folders themselves or when
+/// it is the dictation model - the same rule the Files page shows.
+pub fn usable_for_folders(settings: &AppSettings, models: &ModelManager, model: &str) -> bool {
+    use crate::managers::model::EngineType;
+    models.get_model_info(model).is_some_and(|info| {
+        let online = matches!(
+            info.engine_type,
+            EngineType::ApiWhisper | EngineType::OpenRouterWhisper
+        );
+        info.is_downloaded
+            && (!online
+                || model == settings.translator_model.trim()
+                || model == settings.selected_model)
+    })
+}
+
 /// A model loaded into the second slot only for a file doesn't stay in memory.
 fn release_model(app: &AppHandle, model: &str) {
     let settings = get_settings(app);
-    let watched_folders_use_it = settings.translator_enabled && settings.translator_model == model;
+    let models = app.state::<Arc<ModelManager>>();
+    let watched_folders_use_it = settings.translator_enabled
+        && settings.watched_folder_model(|m| usable_for_folders(&settings, &models, m)) == model;
     let tm = app.state::<Arc<TranscriptionManager>>();
     if !watched_folders_use_it && tm.get_current_translator_model().as_deref() == Some(model) {
         let _ = tm.unload_translator_model();

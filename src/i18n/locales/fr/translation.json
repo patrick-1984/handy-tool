@@ -1682,7 +1682,8 @@
         "title": "Modèle de lot",
         "description": "Quel modèle vocal transcrit les fichiers de vos dossiers surveillés ; les modèles marqués d'un globe peuvent aussi traduire en anglais, ce qui nécessite que « Traduire en anglais » soit activé. Par défaut : Identique à la dictée (par défaut), qui reprend ce qui est sélectionné sur la page Modèles. Choisissez un modèle local différent et il se charge dans son propre emplacement à côté du modèle de dictée — le traitement par lot tourne sur un moteur, la dictée reste instantanée sur l'autre — au prix d'une mémoire supplémentaire, que « Décharger le modèle de lot après » peut restituer.",
         "sameAsDictation": "Identique à la dictée (par défaut)",
-        "translates": "{{name}} — peut traduire en anglais"
+        "translates": "{{name}} — peut traduire en anglais",
+        "sameAsFiles": "Same as the model for files above: {{name}} (default)"
       },
       "unload": {
         "title": "Décharger le modèle de lot après",
@@ -2121,6 +2122,10 @@
       "transcribeAgain": {
         "title": "Transcribe a recording again from History",
         "description": "Recorded without a model, or the transcription failed? The new button beside Copy reads the recording again with your dictation model. A take whose transcription fails is now always kept."
+      },
+      "foldersFollowFiles": {
+        "title": "Watched folders use the model you picked for files",
+        "description": "With FLM (NPU) picked for files, the watched folders kept transcribing with your dictation model on the graphics card. Unless you pick a batch model of their own, they now use the model picked for files at the top of the Files page."
       }
     },
     "installed": "Installée"

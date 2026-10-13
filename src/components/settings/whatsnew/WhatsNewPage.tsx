@@ -37,6 +37,16 @@ interface Item {
  */
 const RELEASES: { version: string; items: Item[] }[] = [
   {
+    version: "2.2.1",
+    items: [
+      {
+        key: "foldersFollowFiles",
+        section: "files",
+        titleKeys: ["settings.translator.model.title"],
+      },
+    ],
+  },
+  {
     version: "2.2.0",
     items: [
       {

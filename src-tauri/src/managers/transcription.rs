@@ -630,7 +630,9 @@ impl TranscriptionManager {
                         .translator_model_unload_timeout
                         .to_seconds(settings.translator_model_unload_custom_seconds);
                     if let Some(tr_limit) = translator_timeout {
-                        if !manager_cloned.is_batch_transcribing.load(Ordering::Relaxed) {
+                        if !manager_cloned.is_batch_transcribing.load(Ordering::Relaxed)
+                            && !crate::commands::files::file_job_running()
+                        {
                             let last = manager_cloned
                                 .translator_last_activity
                                 .load(Ordering::Relaxed);
@@ -2461,7 +2463,11 @@ impl TranscriptionManager {
     /// on the next tick after the batch flag clears, not literally per
     /// segment. Kept for spec-compliance / defensiveness.
     fn maybe_unload_translator_immediately(&self) {
-        if self.is_batch_transcribing.load(Ordering::Relaxed) {
+        // A Files job shares this slot (same model for files and folders since
+        // 2.2.1): unloading between its pieces would reload it every piece.
+        if self.is_batch_transcribing.load(Ordering::Relaxed)
+            || crate::commands::files::file_job_running()
+        {
             return;
         }
         let settings = get_settings(&self.app_handle);
