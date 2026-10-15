@@ -1333,6 +1333,10 @@
         "label": "删除录音时保留转录文本",
         "description": "清理只删除音频文件，转录文本将永久保留。默认开启。此时历史上限限制的是保留音频的录音数量，而非保留的转录数量。"
       },
+      "recordingTextFile": {
+        "label": "在每条录音旁保存文本文件",
+        "description": "每条录音的转录文本会根据录音已有的文本写在录音旁（录音文件夹中的 handy-….txt），因此录音不会被再次转录。默认开启。在历史记录中“重新转录”会替换该文件。"
+      },
       "affix": {
         "prefix": {
           "enable": {
@@ -1774,7 +1778,7 @@
         "emptyTitle": "没有正在监视的文件夹",
         "emptyDescription": "添加一个文件夹即可开始监视其中的新录音。",
         "addTitle": "添加文件夹",
-        "addDescription": "打开文件夹选择器；此后该文件夹中出现的任何新音频文件都会被排入队列，并在旁边生成对应的 .txt 转录文件。默认：翻译器首次启动时会自动添加你的 Handy 录音文件夹。添加文件夹本身不会有任何效果，除非“监视文件夹”已开启；文件夹中已有的文件会被忽略——只有之后到达的文件才会被转录。",
+        "addDescription": "打开文件夹选择器；此后该文件夹中出现的任何新音频文件都会被排入队列，并在旁边生成对应的 .txt 转录文件。添加文件夹本身不会有任何效果，除非“监视文件夹”已开启；文件夹中已有的文件会被忽略——只有之后到达的文件才会被转录。",
         "add": "添加文件夹",
         "remove": "停止监视此文件夹",
         "addFailed": "无法添加文件夹：{{reason}}",
@@ -1793,10 +1797,9 @@
           "dictation": "你的听写模型",
           "downloaded": "已下载",
           "notDownloaded": "未下载",
-          "online": "Online (dictation model only)"
+          "online": "Online"
         },
-        "downloadSize": "下载 · {{size}}",
-        "onlineHint": "Set it as your dictation model to use it here"
+        "downloadSize": "下载 · {{size}}"
       },
       "transcribe": {
         "title": "转录文件",
@@ -1804,6 +1807,12 @@
           "title": "选择音频文件",
           "description": "**转录你选择的音频文件**：WAV、MP3、M4A、MP4（视频的音轨）、AAC、FLAC 或 Ogg Opus（.ogg、.opus），例如手机录音，使用上面选择的模型和你的语言设置。\n\n文件会在停顿处切成最长约 40 秒的片段，每个片段只转录一次：没有实时文字，也没有第二遍处理。原始文件只会被读取，绝不会被修改。",
           "button": "选择文件…"
+        },
+        "drop": {
+          "hint": "将音频文件拖放到这里，或",
+          "notReady": "现在无法开始：已有文件正在转录，或模型尚未下载。",
+          "oneFile": "一次只能拖放一个音频文件。",
+          "unsupported": "{{name}} 不是 Handy 能读取的音频文件。"
         },
         "audioFiles": "音频文件",
         "decoding": "正在读取 {{file}}…",

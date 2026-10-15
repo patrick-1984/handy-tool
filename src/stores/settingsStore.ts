@@ -301,6 +301,8 @@ const settingUpdaters: {
     commands.changeAppendTrailingSpaceSetting(value as boolean),
   preserve_transcriptions: (value) =>
     commands.changePreserveTranscriptionsSetting(value as boolean),
+  recording_text_file: (value) =>
+    commands.changeRecordingTextFileSetting(value as boolean),
   capture_source: (value) =>
     commands.changeCaptureSourceSetting(value as string),
   system_audio_device: (value) =>

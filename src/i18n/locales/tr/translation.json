@@ -1333,6 +1333,10 @@
         "label": "Kayıtlar silinirken transkripsiyonları koru",
         "description": "Temizleme yalnızca ses dosyasını siler, transkripsiyon metnini kalıcı olarak saklar. Varsayılan olarak açık. Bu durumda geçmiş sınırı, kaç kaydın sesini koruyacağını sınırlar; sakladığınız transkripsiyon sayısını değil."
       },
+      "recordingTextFile": {
+        "label": "Her kaydın yanına bir metin dosyası kaydet",
+        "description": "Her kaydın transkripti, kaydın zaten sahip olduğu metinden kaydın yanına yazılır (kayıtlar klasöründe handy-….txt), böylece kayıt ikinci kez transkribe edilmez. Varsayılan olarak açık. Geçmiş'teki Yeniden transkribe et dosyayı değiştirir."
+      },
       "affix": {
         "prefix": {
           "enable": {
@@ -1774,7 +1778,7 @@
         "emptyTitle": "İzlenen klasör yok",
         "emptyDescription": "Yeni kayıtlar için izlemeye başlamak üzere bir klasör ekleyin.",
         "addTitle": "Klasör ekle",
-        "addDescription": "Bir klasör seçici açar; bundan sonra o klasörde görünen her yeni ses dosyası kuyruğa alınır ve transkripti yanına bir .txt olarak yazılır. Varsayılan: Çevirmen ilk başladığında Handy kayıtlar klasörünüz sizin için eklenir. Klasör eklemek, Klasörleri izle açılana kadar hiçbir şey yapmaz ve klasörde zaten bulunanlar yoksayılır — yalnızca sonradan gelen dosyalar transkribe edilir.",
+        "addDescription": "Bir klasör seçici açar; bundan sonra o klasörde görünen her yeni ses dosyası kuyruğa alınır ve transkripti yanına bir .txt olarak yazılır. Klasör eklemek, Klasörleri izle açılana kadar hiçbir şey yapmaz ve klasörde zaten bulunanlar yoksayılır — yalnızca sonradan gelen dosyalar transkribe edilir.",
         "add": "Klasör ekle",
         "remove": "Bu klasörü izlemeyi durdur",
         "addFailed": "Klasör eklenemedi: {{reason}}",
@@ -1793,10 +1797,9 @@
           "dictation": "Dikte modeliniz",
           "downloaded": "İndirilenler",
           "notDownloaded": "İndirilmeyenler",
-          "online": "Online (dictation model only)"
+          "online": "Online"
         },
-        "downloadSize": "İndir · {{size}}",
-        "onlineHint": "Set it as your dictation model to use it here"
+        "downloadSize": "İndir · {{size}}"
       },
       "transcribe": {
         "title": "Dosya yazıya dök",
@@ -1804,6 +1807,12 @@
           "title": "Ses dosyası seç",
           "description": "**Seçtiğiniz ses dosyasını yazıya döker**: WAV, MP3, M4A, MP4 (bir videonun ses parçası), AAC, FLAC veya Ogg Opus (.ogg, .opus), örneğin bir telefon kaydı; yukarıda seçilen modeli ve dil ayarlarınızı kullanır.\n\nDosya duraklamalarından en fazla yaklaşık 40 saniyelik parçalara bölünür ve her parça bir kez yazıya dökülür: canlı metin yok, ikinci geçiş yok. Orijinal dosya yalnızca okunur, asla değiştirilmez.",
           "button": "Dosya seç…"
+        },
+        "drop": {
+          "hint": "Bir ses dosyasını buraya bırakın ya da",
+          "notReady": "Şu anda başlatılamıyor: bir dosya zaten transkribe ediliyor veya model indirilmemiş.",
+          "oneFile": "Her seferinde tek bir ses dosyası bırakın.",
+          "unsupported": "{{name}}, Handy'nin okuyabildiği bir ses dosyası değil."
         },
         "audioFiles": "Ses dosyaları",
         "decoding": "{{file}} okunuyor…",

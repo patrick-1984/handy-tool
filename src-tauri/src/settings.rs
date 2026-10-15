@@ -1146,6 +1146,13 @@ pub struct AppSettings {
     #[serde(default = "default_preserve_transcriptions")]
     pub preserve_transcriptions: bool,
 
+    /// Write each take's transcript to `handy-{ts}.txt` beside its recording,
+    /// straight from the text the take already has - the recording is not read
+    /// a second time. On by default; it replaces the watched recordings folder
+    /// older versions added for you (see `translator_recordings_folder_retired`).
+    #[serde(default = "default_true")]
+    pub recording_text_file: bool,
+
     /// Which sound source a take records. See [`CaptureSource`].
     #[serde(default)]
     pub capture_source: CaptureSource,
@@ -1512,6 +1519,12 @@ pub struct AppSettings {
     /// edits the list (removing every folder must stick).
     #[serde(default)]
     pub translator_seeded: bool,
+    /// One-time flag (2.3.0): the recordings folder that older versions added
+    /// to the watched folders has been removed. Each take now writes its own
+    /// `.txt` (`recording_text_file`), so transcribing the recording again was
+    /// only extra work. A folder the user adds afterwards stays.
+    #[serde(default)]
+    pub translator_recordings_folder_retired: bool,
     #[serde(default = "default_translator_priority")]
     pub translator_priority: TranslatorPriority,
     /// Model the Translator batch uses. Empty = same as dictation. Only ids
@@ -2773,6 +2786,7 @@ pub fn get_default_settings() -> AppSettings {
         history_limit: default_history_limit(),
         recording_retention_period: default_recording_retention_period(),
         preserve_transcriptions: default_preserve_transcriptions(),
+        recording_text_file: true,
         capture_source: CaptureSource::default(),
         system_audio_device: None,
         system_audio_gain: default_system_audio_gain(),
@@ -2879,6 +2893,7 @@ pub fn get_default_settings() -> AppSettings {
         translator_enabled: false,
         translator_folders: Vec::new(),
         translator_seeded: false,
+        translator_recordings_folder_retired: false,
         translator_priority: default_translator_priority(),
         translator_model: String::new(),
         translator_model_unload_timeout: ModelUnloadTimeout::Never,

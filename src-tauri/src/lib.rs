@@ -252,6 +252,7 @@ fn initialize_core_logic(app_handle: &AppHandle) {
 
     // Translator (folder-watch batch transcription). Started after the
     // transcription manager is managed — its worker resolves it from state.
+    crate::managers::translator::retire_default_folder(app_handle);
     let translator_manager = crate::managers::translator::TranslatorManager::new(app_handle);
     app_handle.manage(translator_manager);
 
@@ -529,6 +530,7 @@ pub fn run(cli_args: CliArgs) {
         shortcut::change_mute_while_recording_setting,
         shortcut::change_append_trailing_space_setting,
         shortcut::change_preserve_transcriptions_setting,
+        shortcut::change_recording_text_file_setting,
         shortcut::change_capture_source_setting,
         shortcut::change_system_audio_device_setting,
         shortcut::change_system_audio_gain_setting,

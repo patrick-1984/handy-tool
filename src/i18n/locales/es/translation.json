@@ -1333,6 +1333,10 @@
         "label": "Conservar las transcripciones al eliminar las grabaciones",
         "description": "La limpieza elimina solo el archivo de audio y conserva el texto para siempre. Activado por defecto. El límite del historial pasa a limitar cuántas grabaciones conservan su audio, no cuántas transcripciones guardas."
       },
+      "recordingTextFile": {
+        "label": "Guardar un archivo de texto junto a cada grabación",
+        "description": "La transcripción de cada toma se escribe junto a su grabación (handy-….txt en la carpeta de grabaciones) a partir del texto que la toma ya tiene, así que la grabación no se transcribe una segunda vez. Activado por defecto. Transcribir de nuevo en el Historial reemplaza el archivo."
+      },
       "affix": {
         "prefix": {
           "enable": {
@@ -1774,7 +1778,7 @@
         "emptyTitle": "Sin carpetas vigiladas",
         "emptyDescription": "Agrega una carpeta para empezar a vigilarla en busca de grabaciones nuevas.",
         "addTitle": "Agregar una carpeta",
-        "addDescription": "Abre un selector de carpetas; desde entonces, cualquier archivo de audio nuevo que aparezca en esa carpeta se pone en cola y su transcripción se escribe junto a él como un .txt. Predeterminado: tu carpeta de grabaciones de Handy se agrega por ti la primera vez que se inicia el Traductor. Agregar una carpeta no hace nada hasta que Vigilar carpetas esté activado, y lo que ya hay en la carpeta se ignora: solo se transcriben los archivos que llegan después.",
+        "addDescription": "Abre un selector de carpetas; desde entonces, cualquier archivo de audio nuevo que aparezca en esa carpeta se pone en cola y su transcripción se escribe junto a él como un .txt. Agregar una carpeta no hace nada hasta que Vigilar carpetas esté activado, y lo que ya hay en la carpeta se ignora: solo se transcriben los archivos que llegan después.",
         "add": "Agregar carpeta",
         "remove": "Dejar de vigilar esta carpeta",
         "addFailed": "No se pudo agregar la carpeta: {{reason}}",
@@ -1793,10 +1797,9 @@
           "dictation": "Tu modelo de dictado",
           "downloaded": "Descargados",
           "notDownloaded": "No descargados",
-          "online": "Online (dictation model only)"
+          "online": "Online"
         },
-        "downloadSize": "Descargar · {{size}}",
-        "onlineHint": "Set it as your dictation model to use it here"
+        "downloadSize": "Descargar · {{size}}"
       },
       "transcribe": {
         "title": "Transcribir un archivo",
@@ -1804,6 +1807,12 @@
           "title": "Elegir un archivo de audio",
           "description": "**Transcribe el archivo de audio que elijas**: WAV, MP3, M4A, MP4 (la pista de audio de un vídeo), AAC, FLAC u Ogg Opus (.ogg, .opus), como una grabación del móvil, con el modelo elegido arriba y tus ajustes de idioma.\n\nEl archivo se corta en sus pausas en partes de hasta unos 40 segundos, y cada parte se transcribe una vez: sin texto en vivo ni segunda pasada. El archivo original solo se lee, nunca se modifica.",
           "button": "Elegir archivo…"
+        },
+        "drop": {
+          "hint": "Suelta aquí un archivo de audio, o",
+          "notReady": "No se puede empezar ahora: ya se está transcribiendo un archivo o el modelo no está descargado.",
+          "oneFile": "Suelta un solo archivo de audio a la vez.",
+          "unsupported": "{{name}} no es un archivo de audio que Handy pueda leer."
         },
         "audioFiles": "Archivos de audio",
         "decoding": "Leyendo {{file}}…",

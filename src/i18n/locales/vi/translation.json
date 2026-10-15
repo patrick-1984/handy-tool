@@ -1333,6 +1333,10 @@
         "label": "Giữ lại bản ghi chép khi xoá bản thu âm",
         "description": "Việc dọn dẹp chỉ xoá tệp âm thanh và giữ lại văn bản mãi mãi. Bật theo mặc định. Khi đó giới hạn lịch sử giới hạn số bản thu giữ được âm thanh, không phải số bản ghi chép."
       },
+      "recordingTextFile": {
+        "label": "Lưu file văn bản cạnh mỗi bản ghi",
+        "description": "Bản phiên âm của mỗi lần ghi được lưu cạnh bản ghi (handy-….txt trong thư mục ghi âm) từ văn bản mà lần ghi đã có, nên bản ghi không bị phiên âm lần thứ hai. Bật theo mặc định. Phiên âm lại trong Lịch sử sẽ thay thế file."
+      },
       "affix": {
         "prefix": {
           "enable": {
@@ -1774,7 +1778,7 @@
         "emptyTitle": "Không có thư mục nào được theo dõi",
         "emptyDescription": "Thêm một thư mục để bắt đầu theo dõi các bản ghi mới trong đó.",
         "addTitle": "Thêm thư mục",
-        "addDescription": "Mở trình chọn thư mục; từ đó mọi file âm thanh mới xuất hiện trong thư mục đó sẽ được đưa vào hàng đợi và bản phiên âm được ghi bên cạnh dưới dạng .txt. Mặc định: thư mục ghi âm Handy của bạn được thêm sẵn lần đầu Translator chạy. Thêm một thư mục không có tác dụng gì cho đến khi Watch folders được bật, và những gì đã có sẵn trong thư mục sẽ bị bỏ qua — chỉ file xuất hiện sau đó mới được phiên âm.",
+        "addDescription": "Mở trình chọn thư mục; từ đó mọi file âm thanh mới xuất hiện trong thư mục đó sẽ được đưa vào hàng đợi và bản phiên âm được ghi bên cạnh dưới dạng .txt. Thêm một thư mục không có tác dụng gì cho đến khi Watch folders được bật, và những gì đã có sẵn trong thư mục sẽ bị bỏ qua — chỉ file xuất hiện sau đó mới được phiên âm.",
         "add": "Thêm thư mục",
         "remove": "Ngừng theo dõi thư mục này",
         "addFailed": "Không thể thêm thư mục: {{reason}}",
@@ -1793,10 +1797,9 @@
           "dictation": "Mô hình đọc chính tả của bạn",
           "downloaded": "Đã tải xuống",
           "notDownloaded": "Chưa tải xuống",
-          "online": "Online (dictation model only)"
+          "online": "Online"
         },
-        "downloadSize": "Tải xuống · {{size}}",
-        "onlineHint": "Set it as your dictation model to use it here"
+        "downloadSize": "Tải xuống · {{size}}"
       },
       "transcribe": {
         "title": "Phiên âm một file",
@@ -1804,6 +1807,12 @@
           "title": "Chọn file âm thanh",
           "description": "**Phiên âm file âm thanh bạn chọn**: WAV, MP3, M4A, MP4 (rãnh âm thanh của video), AAC, FLAC hoặc Ogg Opus (.ogg, .opus), chẳng hạn bản ghi âm trên điện thoại, bằng model đã chọn ở trên và cài đặt ngôn ngữ của bạn.\n\nFile được cắt tại các khoảng lặng thành từng đoạn tối đa khoảng 40 giây, và mỗi đoạn được phiên âm một lần: không có văn bản trực tiếp, không có lượt thứ hai. File gốc chỉ được đọc, không bao giờ bị thay đổi.",
           "button": "Chọn file…"
+        },
+        "drop": {
+          "hint": "Thả file âm thanh vào đây, hoặc",
+          "notReady": "Chưa thể bắt đầu: một file khác đang được phiên âm, hoặc mô hình chưa được tải xuống.",
+          "oneFile": "Mỗi lần chỉ thả một file âm thanh.",
+          "unsupported": "{{name}} không phải file âm thanh mà Handy đọc được."
         },
         "audioFiles": "File âm thanh",
         "decoding": "Đang đọc {{file}}…",

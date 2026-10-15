@@ -887,6 +887,78 @@ impl TranscriptionManager {
         Ok(filter_transcription_output(&corrected))
     }
 
+    /// An online engine (API, OpenRouter) for a file: straight to its endpoint,
+    /// never through the dictation slot, so a file can use one whatever the
+    /// dictation model is. Same request, language and custom words as a take;
+    /// an OpenRouter cost is not added to the take being dictated.
+    pub fn transcribe_online_direct(&self, model_id: &str, audio: Vec<f32>) -> Result<String> {
+        let model_info = self
+            .model_manager
+            .get_model_info(model_id)
+            .ok_or_else(|| anyhow::anyhow!("Model not found: {}", model_id))?;
+        if audio.is_empty() {
+            return Ok(String::new());
+        }
+        let settings = get_settings(&self.app_handle);
+        let translate = settings.translate_to_english && model_info.supports_translation;
+        let raw_text = match model_info.engine_type {
+            EngineType::ApiWhisper => {
+                let language = normalize_language_for_engine(&settings.selected_language)
+                    .or_else(|| Some("en".to_string()));
+                crate::managers::api_transcription::transcribe(
+                    &settings.api_transcription_url,
+                    &settings.api_transcription_key,
+                    &settings.api_transcription_model,
+                    audio,
+                    language.as_deref(),
+                    translate,
+                )?
+            }
+            EngineType::OpenRouterWhisper => {
+                let base_url = settings.openrouter_transcription_url.trim();
+                let api_key = settings.openrouter_transcription_key.trim();
+                if base_url.is_empty() || api_key.is_empty() {
+                    return Err(anyhow::anyhow!(
+                        "OpenRouter transcription needs a base URL and API key. \
+                         Set them in Advanced > Providers."
+                    ));
+                }
+                let model = match settings.openrouter_transcription_model.trim() {
+                    "" => "openai/whisper-large-v3",
+                    m => m,
+                };
+                let language = normalize_language_for_engine(&settings.selected_language);
+                let translate = matches!(
+                    settings.openrouter_transcription_route,
+                    crate::settings::OpenRouterTranscriptionRoute::Chat
+                ) && translate;
+                crate::managers::openrouter_transcription::transcribe_unbilled(
+                    base_url,
+                    api_key,
+                    model,
+                    &audio,
+                    language.as_deref(),
+                    settings.openrouter_transcription_route,
+                    settings.openrouter_transcription_audio_format,
+                    translate,
+                )?
+            }
+            _ => {
+                return Err(anyhow::anyhow!("'{}' is not an online model", model_id));
+            }
+        };
+        let corrected = if !settings.custom_words.is_empty() {
+            apply_custom_words(
+                &raw_text,
+                &settings.custom_words,
+                settings.word_correction_threshold,
+            )
+        } else {
+            raw_text
+        };
+        Ok(filter_transcription_output(&corrected))
+    }
+
     /// No FLM on macOS (`is_flm_model` is always false there).
     #[cfg(target_os = "macos")]
     pub fn transcribe_flm_direct(&self, model_id: &str, _audio: Vec<f32>) -> Result<String> {

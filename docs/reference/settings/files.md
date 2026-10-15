@@ -8,13 +8,13 @@ Open `Files`. The page has four groups: Transcribe a file, the list of transcrib
 
 `Files › Transcribe a file › Model`
 
-The speech model that transcribes the file. The list shows your dictation model first, then the other downloaded models, then the ones not downloaded yet; picking one of those shows `Download`, and the file can be chosen once it is here. Online engines are listed only when they are your dictation model. Any other model loads into a second slot beside the dictation model, so dictation stays ready, and is unloaded after the file unless the watched folders use it. **Default:** your dictation model; the model you pick is remembered.
+The speech model that transcribes the file. The list shows your dictation model first, then the other downloaded models, then the ones not downloaded yet; picking one of those shows `Download`, and the file can be chosen once it is here. Online engines (API, OpenRouter) work whatever your dictation model is: each piece goes straight to the endpoint, and an OpenRouter cost is never added to the take you are dictating. Any other local model loads into a second slot beside the dictation model, so dictation stays ready, and is unloaded after the file unless the watched folders use it. **Default:** your dictation model; the model you pick is remembered.
 
 ### Choose an audio file
 
 `Files › Transcribe a file › Choose an audio file`
 
-Opens a file picker for one WAV, MP3, M4A, MP4 (its audio track), AAC, FLAC or Ogg Opus (`.ogg`, `.opus`) file and transcribes it with the model chosen in [Model](#model) and the language settings. While [Save the text](#save-the-text) is `Ask every time`, a pop-up first asks where the text goes: `In Handy's folder`, `Next to the recording` or `Don't save`, with `Remember my choice`. A progress bar follows the file's length; `Stop` ends it after the piece in progress. When it finishes, the text is shown with `Copy text`. The original file is only read. **Default:** not applicable; this is an action.
+Opens a file picker - or takes a file you drag onto this box - for one WAV, MP3, M4A, MP4 (its audio track), AAC, FLAC or Ogg Opus (`.ogg`, `.opus`) file and transcribes it with the model chosen in [Model](#model) and the language settings. While [Save the text](#save-the-text) is `Ask every time`, a pop-up first asks where the text goes: `In Handy's folder`, `Next to the recording` or `Don't save`, with `Remember my choice`. A progress bar follows the file's length; `Stop` ends it after the piece in progress. When it finishes, the text is shown with `Copy text`. The original file is only read. **Default:** not applicable; this is an action.
 
 Catalog: [One file, transcribed as accurately as the model can](../../features.md#one-file-transcribed-as-accurately-as-the-model-can).
 
@@ -90,7 +90,7 @@ Catalog: [You can see what it is working on](../../features.md#you-can-see-what-
 
 `Files › Folders › No watched folders`
 
-Shows the empty state when the list contains no folders. **Default:** the stored list starts empty; the recordings folder may be seeded the first time watching starts.
+Shows the empty state when the list contains no folders. **Default:** the list starts empty. Handy's recordings folder is not watched: each take writes its own text file (see [Save a text file next to each recording](history.md#save-a-text-file-next-to-each-recording)); versions before 2.3.0 added it here, and updating removes it once.
 
 ### \<folder name\>
 

@@ -111,6 +111,10 @@ impl TranscriptionManager {
         Ok(String::new())
     }
 
+    pub fn transcribe_online_direct(&self, _model_id: &str, _audio: Vec<f32>) -> Result<String> {
+        Ok(String::new())
+    }
+
     pub fn set_live_transcribing(&self, _active: bool) {}
 
     pub fn set_batch_transcribing(&self, _active: bool) {}

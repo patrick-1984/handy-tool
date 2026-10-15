@@ -2608,6 +2608,15 @@ pub fn change_preserve_transcriptions_setting(app: AppHandle, enabled: bool) -> 
 
 #[tauri::command]
 #[specta::specta]
+pub fn change_recording_text_file_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    settings.recording_text_file = enabled;
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 pub fn change_output_prefix_enabled_setting(app: AppHandle, enabled: bool) -> Result<(), String> {
     let mut settings = settings::get_settings(&app);
     settings.output_prefix_enabled = enabled;

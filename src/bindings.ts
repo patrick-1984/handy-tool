@@ -1421,6 +1421,21 @@ export const commands = {
       else return { status: "error", error: e as any };
     }
   },
+  async changeRecordingTextFileSetting(
+    enabled: boolean,
+  ): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_recording_text_file_setting", {
+          enabled,
+        }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
   async changeOutputPrefixEnabledSetting(
     enabled: boolean,
   ): Promise<Result<null, string>> {
@@ -3370,6 +3385,7 @@ export type AppSettings = {
   mute_while_recording?: boolean;
   append_trailing_space?: boolean;
   preserve_transcriptions?: boolean;
+  recording_text_file?: boolean;
   capture_source?: CaptureSource;
   system_audio_device?: string | null;
   system_audio_gain?: number;
@@ -3477,6 +3493,7 @@ export type AppSettings = {
   translator_enabled?: boolean;
   translator_folders?: TranslatorFolder[];
   translator_seeded?: boolean;
+  translator_recordings_folder_retired?: boolean;
   translator_priority?: TranslatorPriority;
   translator_model?: string;
   translator_model_unload_timeout?: ModelUnloadTimeout;

@@ -1,5 +1,29 @@
 # Changelog
 
+## [2.3.0] - 2026-10-15
+
+### Changed
+
+- **A recording is no longer transcribed twice.** Older versions added Handy's recordings folder
+  to the watched folders, so after every take the Translator read the recording again from its
+  file to write `handy-….txt` - a second full transcription that kept the processor busy. Each
+  take now writes that text file itself, from the text it already has, the moment it is saved
+  (History > Settings > "Save a text file next to each recording", on by default). The
+  recordings folder is removed from the watched folders once on update; a folder you add
+  yourself stays, and takes still queued from it are not read again. Transcribe again in
+  History updates the take's text file, and deleting a take (or retention removing it) removes
+  the text file with it - only when it is the one Handy wrote; a `.txt` of your own under that
+  name is never replaced or deleted.
+
+### Added
+
+- **Drop an audio file to transcribe it.** On Files, drag an audio file onto the "Choose an
+  audio file" box instead of picking it.
+- **Online models for files.** The Files page offered the online models (API, OpenRouter) only
+  while one was your dictation model. They now work for files whatever your dictation model is:
+  a file goes straight to the online endpoint, and its OpenRouter cost is never added to the
+  take you are dictating.
+
 ## [2.2.3] - 2026-10-15
 
 ### Fixed

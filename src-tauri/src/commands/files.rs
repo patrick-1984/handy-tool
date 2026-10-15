@@ -224,7 +224,8 @@ fn write_log(app: &AppHandle, entries: &[FileTranscription]) -> Result<(), Strin
 /// One piece through the right engine slot, checked per piece. The dictation
 /// model uses the shared slot; any other local model loads into the second
 /// slot beside it (the watched folders' one), so dictation stays ready -
-/// switching the dictation model mid-file just moves the rest there.
+/// switching the dictation model mid-file just moves the rest there. FLM and
+/// the online engines need no slot and go straight to their server.
 fn transcribe_piece(
     app: &AppHandle,
     tm: &TranscriptionManager,
@@ -244,19 +245,18 @@ fn transcribe_piece(
             .transcribe_flm_direct(model, piece)
             .map_err(|e| e.to_string());
     }
-    if is_dictation || external {
-        if !is_dictation {
-            // An online engine has no second slot.
-            return Err("the speech model was changed while the file was being transcribed".into());
-        }
+    // An online engine (API, OpenRouter) is a stateless request: straight to
+    // its endpoint, beside whatever dictation uses (and its cost is not billed
+    // to a take being dictated).
+    if external {
+        return tm
+            .transcribe_online_direct(model, piece)
+            .map_err(|e| e.to_string());
+    }
+    if is_dictation {
         // Loaded on first use, and again if it was unloaded (idle timeout).
         if tm.get_current_model().as_deref() != Some(model) {
             tm.load_model(model).map_err(load_error)?;
-        }
-        if external {
-            return tm
-                .transcribe_expecting(model, piece)
-                .map_err(|e| e.to_string());
         }
         // The local engine takes one job at a time: a take being dictated
         // waits for this piece at most.
@@ -671,9 +671,10 @@ pub async fn retranscribe_history_entry(app: AppHandle, id: i64) -> Result<Strin
         .state::<Arc<ModelManager>>()
         .get_model_info(&model)
         .map(|m| m.name);
+    // The row and the take's text file change together (see
+    // HistoryManager::replace_transcription).
     history
-        .update_transcription(id, &text, label)
-        .await
+        .replace_transcription(id, &text, label)
         .map_err(|e| e.to_string())?;
     // Held until the text is in the database, so an update waits for it.
     drop(guard);

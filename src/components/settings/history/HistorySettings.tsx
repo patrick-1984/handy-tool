@@ -31,6 +31,7 @@ import { TranscriptionCostReport } from "../advanced/TranscriptionCostReport";
 import { useNavStore, type HistoryTab } from "@/stores/navStore";
 import { CrashResilientRecording } from "../CrashResilientRecording";
 import { PreserveTranscriptions } from "../PreserveTranscriptions";
+import { RecordingTextFile } from "../RecordingTextFile";
 import { HistoryLimit } from "../HistoryLimit";
 import { RecordingRetentionPeriodSelector } from "../RecordingRetentionPeriod";
 
@@ -407,6 +408,7 @@ export const HistorySettings: React.FC = () => {
         >
           <CrashResilientRecording descriptionMode="tooltip" grouped={true} />
           <PreserveTranscriptions descriptionMode="tooltip" grouped={true} />
+          <RecordingTextFile descriptionMode="tooltip" grouped={true} />
           <HistoryLimit descriptionMode="tooltip" grouped={true} />
           <RecordingRetentionPeriodSelector
             descriptionMode="tooltip"

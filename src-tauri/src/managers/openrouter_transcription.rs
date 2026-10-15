@@ -67,6 +67,7 @@ surrounding quotation marks.";
 
 /// Transcribe 16 kHz mono PCM via OpenRouter. `base_url` should be the
 /// OpenRouter API root (e.g. `https://openrouter.ai/api/v1`).
+#[allow(clippy::too_many_arguments)]
 pub fn transcribe(
     base_url: &str,
     api_key: &str,
@@ -76,6 +77,58 @@ pub fn transcribe(
     route: OpenRouterTranscriptionRoute,
     audio_format: TranscriptionAudioFormat,
     translate: bool,
+) -> Result<String> {
+    transcribe_with_billing(
+        base_url,
+        api_key,
+        model,
+        audio,
+        language,
+        route,
+        audio_format,
+        translate,
+        true,
+    )
+}
+
+/// The same request for work that is not a recording (a file): its cost is not
+/// added to the per-recording accumulator, so a file read while you dictate
+/// never lands on that take's history row.
+#[allow(clippy::too_many_arguments)]
+pub fn transcribe_unbilled(
+    base_url: &str,
+    api_key: &str,
+    model: &str,
+    audio: &[f32],
+    language: Option<&str>,
+    route: OpenRouterTranscriptionRoute,
+    audio_format: TranscriptionAudioFormat,
+    translate: bool,
+) -> Result<String> {
+    transcribe_with_billing(
+        base_url,
+        api_key,
+        model,
+        audio,
+        language,
+        route,
+        audio_format,
+        translate,
+        false,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn transcribe_with_billing(
+    base_url: &str,
+    api_key: &str,
+    model: &str,
+    audio: &[f32],
+    language: Option<&str>,
+    route: OpenRouterTranscriptionRoute,
+    audio_format: TranscriptionAudioFormat,
+    translate: bool,
+    bill_session: bool,
 ) -> Result<String> {
     // The dedicated STT endpoint reliably accepts WAV; opus-in-ogg support varies
     // by model (Whisper rejects it), so force WAV for the STT route. The chat
@@ -125,7 +178,9 @@ pub fn transcribe(
         .and_then(|c| c.as_f64())
     {
         debug!("OpenRouter transcription cost: ${:.6}", cost);
-        add_session_cost(cost);
+        if bill_session {
+            add_session_cost(cost);
+        }
     }
     let text = match route {
         OpenRouterTranscriptionRoute::Stt => parse_stt_response(&value),

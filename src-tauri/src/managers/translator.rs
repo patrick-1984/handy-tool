@@ -223,21 +223,72 @@ fn is_candidate(path: &Path) -> bool {
     crate::audio_toolkit::audio::SUPPORTED_EXTENSIONS.contains(&ext.as_str())
 }
 
-/// Seed the default watch folder ({app_data}/recordings) exactly once.
-fn seed_default_folder(app: &AppHandle) {
+/// Older versions added Handy's own recordings folder to the watched folders,
+/// so every take was transcribed a second time from its file. Each take now
+/// writes its own `.txt` (`recording_text_file`): remove that folder once, and
+/// never add it again. A folder the user adds afterwards stays. Runs on the
+/// setup thread before the worker starts, so no other startup write races it.
+pub fn retire_default_folder(app: &AppHandle) {
     let mut settings = get_settings(app);
-    if settings.translator_seeded {
+    if settings.translator_recordings_folder_retired {
         return;
     }
     if let Ok(dir) = crate::portable::resolve_app_data_dir(app) {
         let rec = dir.join("recordings");
-        settings.translator_folders.push(TranslatorFolder {
-            path: rec.to_string_lossy().to_string(),
-            enabled: true,
-        });
+        let before = settings.translator_folders.len();
+        settings
+            .translator_folders
+            .retain(|f| !same_folder(&f.path, &rec.to_string_lossy()));
+        if settings.translator_folders.len() != before {
+            info!(
+                "Translator: the recordings folder is no longer watched (each take writes its own text file)"
+            );
+        }
     }
     settings.translator_seeded = true;
+    settings.translator_recordings_folder_retired = true;
     write_settings(app, settings);
+}
+
+/// Takes queued while older versions watched the recordings folder are not
+/// read a second time now (each wrote its own text file) - unless that folder
+/// is watched again.
+fn drop_unwatched_recordings(app: &AppHandle, queue: &mut VecDeque<PathBuf>) {
+    let Ok(dir) = crate::portable::resolve_app_data_dir(app) else {
+        return;
+    };
+    let rec = dir.join("recordings").to_string_lossy().to_string();
+    let settings = get_settings(app);
+    if settings
+        .translator_folders
+        .iter()
+        .any(|f| f.enabled && same_folder(&f.path, &rec))
+    {
+        return;
+    }
+    let before = queue.len();
+    queue.retain(|p| {
+        !p.parent()
+            .is_some_and(|d| same_folder(&d.to_string_lossy(), &rec))
+    });
+    if queue.len() != before {
+        info!(
+            "Translator: {} queued recording(s) dropped (each take writes its own text file)",
+            before - queue.len()
+        );
+        persist_queue(app, queue, None);
+    }
+}
+
+/// Same folder, written either way: separators, a trailing separator and (on
+/// Windows) letter case do not matter.
+fn same_folder(a: &str, b: &str) -> bool {
+    let norm = |p: &str| {
+        let p = p.trim().replace('\\', "/");
+        let p = p.trim_end_matches('/').to_string();
+        if cfg!(windows) { p.to_lowercase() } else { p }
+    };
+    norm(a) == norm(b)
 }
 
 /// Energy-VAD segmentation: speech-only ranges, merged across short gaps and
@@ -513,10 +564,10 @@ impl Scanner {
 
 fn worker(app: AppHandle, shutdown: Arc<AtomicBool>, status: Arc<Mutex<TranslatorStatus>>) {
     info!("Translator worker started");
-    seed_default_folder(&app);
 
     let mut scanner = Scanner::new();
     let mut queue = load_persisted_queue(&app);
+    drop_unwatched_recordings(&app, &mut queue);
     if !queue.is_empty() {
         info!("Translator: restored {} queued file(s)", queue.len());
     }
@@ -934,6 +985,31 @@ fn worker(app: AppHandle, shutdown: Arc<AtomicBool>, status: Arc<Mutex<Translato
 mod tests {
     use super::*;
     use tempfile::TempDir;
+
+    #[test]
+    fn the_recordings_folder_matches_however_it_is_written() {
+        assert!(same_folder(
+            "C:\\Users\\a\\AppData\\Roaming\\pr.handy\\recordings",
+            "C:/Users/a/AppData/Roaming/pr.handy/recordings/"
+        ));
+        assert!(same_folder(
+            "/home/a/.config/pr.handy/recordings",
+            "/home/a/.config/pr.handy/recordings"
+        ));
+        assert!(!same_folder(
+            "/home/a/.config/pr.handy/recordings",
+            "/home/a/.config/pr.handy/recordings-old"
+        ));
+        assert!(!same_folder(
+            "/home/a/Music",
+            "/home/a/.config/pr.handy/recordings"
+        ));
+        #[cfg(windows)]
+        assert!(same_folder(
+            "C:\\Users\\A\\Recordings",
+            "c:/users/a/recordings"
+        ));
+    }
 
     /// Push a file's mtime into the past so it clears `MIN_FILE_AGE`
     /// immediately, without a real-time sleep in the test.

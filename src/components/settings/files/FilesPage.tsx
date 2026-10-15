@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { listen } from "@tauri-apps/api/event";
+import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { open } from "@tauri-apps/plugin-dialog";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
 import { toast } from "sonner";
@@ -32,7 +33,6 @@ import { formatModelSize } from "../../../lib/utils/format";
 import { TranslatorSettings } from "../translator/TranslatorSettings";
 import {
   commands,
-  type EngineType,
   type FileJob,
   type FileTextSave,
   type FileTranscription,
@@ -50,11 +50,6 @@ const AUDIO_EXTENSIONS = [
   "ogg",
   "opus",
 ];
-
-/** Online engines: they have no second slot to run beside dictation, so a
- * file can use one only while it is the dictation model. FLM is not one of
- * them: it runs on this PC's NPU, beside any dictation model. */
-const ONLINE: EngineType[] = ["ApiWhisper", "OpenRouterWhisper"];
 
 const SAVE_MODES: FileTextSave[] = [
   "ask",
@@ -300,21 +295,21 @@ const TranscribeFile: React.FC<{ onFinished: () => void }> = ({
     useModelStore.getState().initialize();
   }, []);
 
-  // Every model; an online one only while it is the dictation model (it is
-  // listed but greyed otherwise). The one picked last is remembered; until
-  // then, the dictation model.
-  const unusable = (m: ModelInfo) =>
-    m.id !== dictationModel && ONLINE.includes(m.engine_type);
+  // Every model, online ones (API, OpenRouter) included: they go straight to
+  // their endpoint, beside whatever dictation uses. The one picked last is
+  // remembered; until then, the dictation model.
+  const isOnline = (m: ModelInfo) =>
+    m.engine_type === "ApiWhisper" || m.engine_type === "OpenRouterWhisper";
   const fileModels = models;
   const savedModel = (getSetting("file_model") as string) ?? "";
-  const modelId = fileModels.some((m) => m.id === savedModel && !unusable(m))
+  const modelId = fileModels.some((m) => m.id === savedModel)
     ? savedModel
     : dictationModel;
   const model = fileModels.find((m) => m.id === modelId);
   // The dictation model first, then the downloaded ones, the online ones,
   // then the rest.
   const rank = (m: ModelInfo) =>
-    m.id === dictationModel ? 0 : unusable(m) ? 2 : m.is_downloaded ? 1 : 3;
+    m.id === dictationModel ? 0 : isOnline(m) ? 2 : m.is_downloaded ? 1 : 3;
   // Grouped under headings, each with its size; the ones to download have a
   // download glyph instead of "(not downloaded)".
   const GROUPS = ["dictation", "downloaded", "online", "notDownloaded"];
@@ -325,11 +320,8 @@ const TranscribeFile: React.FC<{ onFinished: () => void }> = ({
       return {
         value: m.id,
         label: name,
-        disabled: unusable(m),
         group: t(`settings.files.model.groups.${GROUPS[rank(m)]}`),
-        hint: unusable(m)
-          ? t("settings.files.model.onlineHint")
-          : formatModelSize(Number(m.size_mb)),
+        hint: isOnline(m) ? undefined : formatModelSize(Number(m.size_mb)),
         trailing: m.is_downloaded ? undefined : (
           <Download
             className="w-3.5 h-3.5 shrink-0 text-text-secondary"
@@ -370,6 +362,11 @@ const TranscribeFile: React.FC<{ onFinished: () => void }> = ({
 
   const running = job?.state === "decoding" || job?.state === "transcribing";
 
+  const takeFile = (path: string) => {
+    if (saveMode === "ask") setPendingFile(path);
+    else void start(path, saveMode);
+  };
+
   const chooseFile = async () => {
     const picked = await open({
       multiple: false,
@@ -381,9 +378,58 @@ const TranscribeFile: React.FC<{ onFinished: () => void }> = ({
       ],
     });
     if (typeof picked !== "string" || !picked) return;
-    if (saveMode === "ask") setPendingFile(picked);
-    else void start(picked, saveMode);
+    takeFile(picked);
   };
+
+  // A file dropped on the "Choose an audio file" box starts like a picked one.
+  // The web view reports drops for the whole window, in physical pixels: only
+  // a drop inside the box counts. The latest state is read through a ref, as
+  // the listener is registered once.
+  const dropRef = useRef<HTMLDivElement>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const onDropRef = useRef<(paths: string[]) => void>(() => {});
+  onDropRef.current = (paths: string[]) => {
+    if (running || !model?.is_downloaded) {
+      toast.error(t("settings.files.transcribe.drop.notReady"));
+      return;
+    }
+    if (paths.length !== 1) {
+      toast.error(t("settings.files.transcribe.drop.oneFile"));
+      return;
+    }
+    const path = paths[0];
+    const ext = path.split(".").pop()?.toLowerCase() ?? "";
+    if (!AUDIO_EXTENSIONS.includes(ext)) {
+      const name = path.split(/[\\/]/).pop() ?? path;
+      toast.error(t("settings.files.transcribe.drop.unsupported", { name }));
+      return;
+    }
+    takeFile(path);
+  };
+  useEffect(() => {
+    const inside = (p: { x: number; y: number }) => {
+      const box = dropRef.current?.getBoundingClientRect();
+      if (!box) return false;
+      const scale = window.devicePixelRatio || 1;
+      const x = p.x / scale;
+      const y = p.y / scale;
+      return x >= box.left && x <= box.right && y >= box.top && y <= box.bottom;
+    };
+    const unlisten = getCurrentWebview().onDragDropEvent((event) => {
+      const e = event.payload;
+      if (e.type === "leave") {
+        setDragOver(false);
+      } else if (e.type === "enter" || e.type === "over") {
+        setDragOver(inside(e.position));
+      } else if (e.type === "drop") {
+        setDragOver(false);
+        if (inside(e.position)) onDropRef.current(e.paths);
+      }
+    });
+    return () => {
+      unlisten.then((f) => f());
+    };
+  }, []);
 
   const start = async (path: string, save: FileTextSave) => {
     const result = await commands.transcribeFile(path, modelId, save);
@@ -568,13 +614,23 @@ const TranscribeFile: React.FC<{ onFinished: () => void }> = ({
           descriptionMode="tooltip"
           grouped={true}
         >
-          <Button
-            variant="primary"
-            onClick={chooseFile}
-            disabled={running || !model?.is_downloaded}
+          <div
+            ref={dropRef}
+            className={`flex items-center gap-3 rounded-md border border-dashed px-3 py-2 transition-colors ${
+              dragOver ? "border-accent bg-accent/10" : "border-border"
+            }`}
           >
-            {t("settings.files.transcribe.choose.button")}
-          </Button>
+            <span className="text-xs text-text-secondary">
+              {t("settings.files.transcribe.drop.hint")}
+            </span>
+            <Button
+              variant="primary"
+              onClick={chooseFile}
+              disabled={running || !model?.is_downloaded}
+            >
+              {t("settings.files.transcribe.choose.button")}
+            </Button>
+          </div>
         </SettingContainer>
         {status()}
         <SettingContainer

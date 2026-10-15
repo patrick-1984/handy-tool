@@ -1333,6 +1333,10 @@
         "label": "Zachowuj transkrypcje przy usuwaniu nagrań",
         "description": "Czyszczenie usuwa tylko plik dźwiękowy, a tekst transkrypcji zostaje na zawsze. Domyślnie włączone. Limit historii ogranicza wtedy liczbę nagrań zachowujących dźwięk, a nie liczbę transkrypcji."
       },
+      "recordingTextFile": {
+        "label": "Zapisuj plik tekstowy obok każdego nagrania",
+        "description": "Transkrypcja każdego nagrania jest zapisywana obok niego (handy-….txt w folderze nagrań) z tekstu, który nagranie już ma, więc nagranie nie jest transkrybowane drugi raz. Domyślnie włączone. Ponowna transkrypcja w Historii zastępuje plik."
+      },
       "affix": {
         "prefix": {
           "enable": {
@@ -1774,7 +1778,7 @@
         "emptyTitle": "Brak obserwowanych folderów",
         "emptyDescription": "Dodaj folder, aby zacząć obserwować w nim nowe nagrania.",
         "addTitle": "Dodaj folder",
-        "addDescription": "Otwiera okno wyboru folderu; od tej chwili każdy nowy plik audio, który pojawi się w tym folderze, trafia do kolejki, a jego transkrypcja jest zapisywana obok jako plik .txt. Domyślnie: folder nagrań Handy jest dodawany automatycznie przy pierwszym uruchomieniu Tłumacza. Dodanie folderu nic nie zmienia, dopóki Obserwuj foldery nie jest włączone, a to, co już znajduje się w folderze, jest ignorowane — transkrybowane są tylko pliki, które pojawią się później.",
+        "addDescription": "Otwiera okno wyboru folderu; od tej chwili każdy nowy plik audio, który pojawi się w tym folderze, trafia do kolejki, a jego transkrypcja jest zapisywana obok jako plik .txt. Dodanie folderu nic nie zmienia, dopóki Obserwuj foldery nie jest włączone, a to, co już znajduje się w folderze, jest ignorowane — transkrybowane są tylko pliki, które pojawią się później.",
         "add": "Dodaj folder",
         "remove": "Zatrzymaj obserwację tego folderu",
         "addFailed": "Nie udało się dodać folderu: {{reason}}",
@@ -1793,10 +1797,9 @@
           "dictation": "Twój model dyktowania",
           "downloaded": "Pobrane",
           "notDownloaded": "Niepobrane",
-          "online": "Online (tylko jako model dyktowania)"
+          "online": "Online"
         },
-        "downloadSize": "Pobierz · {{size}}",
-        "onlineHint": "Ustaw go jako model dyktowania, aby użyć go tutaj"
+        "downloadSize": "Pobierz · {{size}}"
       },
       "transcribe": {
         "title": "Transkrybuj plik",
@@ -1804,6 +1807,12 @@
           "title": "Wybierz plik audio",
           "description": "**Transkrybuje wybrany plik audio**: WAV, MP3, M4A, MP4 (ścieżka dźwiękowa wideo), AAC, FLAC lub Ogg Opus (.ogg, .opus), np. nagranie z telefonu, modelem wybranym powyżej i z twoimi ustawieniami języka.\n\nPlik jest dzielony w pauzach na kawałki do około 40 sekund, a każdy kawałek jest transkrybowany raz: bez tekstu na żywo i bez drugiego przebiegu. Oryginalny plik jest tylko odczytywany, nigdy zmieniany.",
           "button": "Wybierz plik…"
+        },
+        "drop": {
+          "hint": "Upuść tu plik audio albo",
+          "notReady": "Nie można teraz zacząć: inny plik jest właśnie transkrybowany albo model nie jest pobrany.",
+          "oneFile": "Upuszczaj jeden plik audio naraz.",
+          "unsupported": "{{name}} to nie plik audio, który Handy potrafi odczytać."
         },
         "audioFiles": "Pliki audio",
         "decoding": "Odczytywanie {{file}}…",

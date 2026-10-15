@@ -1333,6 +1333,10 @@
         "label": "Conserva le trascrizioni quando le registrazioni vengono rimosse",
         "description": "La pulizia elimina solo il file audio e conserva il testo per sempre. Attivo per impostazione predefinita. Il limite della cronologia limita quante registrazioni mantengono l'audio, non quante trascrizioni conservi."
       },
+      "recordingTextFile": {
+        "label": "Salva un file di testo accanto a ogni registrazione",
+        "description": "La trascrizione di ogni registrazione viene scritta accanto ad essa (handy-….txt nella cartella delle registrazioni) dal testo che la registrazione ha già, quindi la registrazione non viene trascritta una seconda volta. Attivo per impostazione predefinita. Trascrivi di nuovo nella Cronologia sostituisce il file."
+      },
       "affix": {
         "prefix": {
           "enable": {
@@ -1774,7 +1778,7 @@
         "emptyTitle": "Nessuna cartella monitorata",
         "emptyDescription": "Aggiungi una cartella per iniziare a monitorarla per nuove registrazioni.",
         "addTitle": "Aggiungi una cartella",
-        "addDescription": "Apre un selettore di cartelle; da quel momento ogni nuovo file audio che appare in quella cartella viene messo in coda e la sua trascrizione viene scritta accanto ad esso come file .txt. Predefinito: la tua cartella delle registrazioni di Handy viene aggiunta automaticamente la prima volta che il Traduttore si avvia. Aggiungere una cartella non fa nulla finché Monitora cartelle non è attivo, e ciò che è già presente nella cartella viene ignorato — vengono trascritti solo i file che arrivano dopo.",
+        "addDescription": "Apre un selettore di cartelle; da quel momento ogni nuovo file audio che appare in quella cartella viene messo in coda e la sua trascrizione viene scritta accanto ad esso come file .txt. Aggiungere una cartella non fa nulla finché Monitora cartelle non è attivo, e ciò che è già presente nella cartella viene ignorato — vengono trascritti solo i file che arrivano dopo.",
         "add": "Aggiungi cartella",
         "remove": "Interrompi il monitoraggio di questa cartella",
         "addFailed": "Impossibile aggiungere la cartella: {{reason}}",
@@ -1793,10 +1797,9 @@
           "dictation": "Il tuo modello di dettatura",
           "downloaded": "Scaricati",
           "notDownloaded": "Non scaricati",
-          "online": "Online (dictation model only)"
+          "online": "Online"
         },
-        "downloadSize": "Scarica · {{size}}",
-        "onlineHint": "Set it as your dictation model to use it here"
+        "downloadSize": "Scarica · {{size}}"
       },
       "transcribe": {
         "title": "Trascrivi un file",
@@ -1804,6 +1807,12 @@
           "title": "Scegli un file audio",
           "description": "**Trascrive il file audio che scegli**: WAV, MP3, M4A, MP4 (la traccia audio di un video), AAC, FLAC o Ogg Opus (.ogg, .opus), come una registrazione del telefono, con il modello scelto sopra e le impostazioni della lingua.\n\nIl file viene diviso nelle pause in pezzi fino a circa 40 secondi, e ogni pezzo viene trascritto una volta: niente testo dal vivo, nessun secondo passaggio. Il file originale viene solo letto, mai modificato.",
           "button": "Scegli file…"
+        },
+        "drop": {
+          "hint": "Trascina qui un file audio, oppure",
+          "notReady": "Impossibile iniziare ora: un file è già in trascrizione oppure il modello non è scaricato.",
+          "oneFile": "Trascina un solo file audio alla volta.",
+          "unsupported": "{{name}} non è un file audio che Handy sa leggere."
         },
         "audioFiles": "File audio",
         "decoding": "Lettura di {{file}}…",

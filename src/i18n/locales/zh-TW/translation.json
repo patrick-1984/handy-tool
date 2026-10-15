@@ -1333,6 +1333,10 @@
         "label": "刪除錄音時保留轉錄文字",
         "description": "清理只會刪除音訊檔案，轉錄文字將永久保留。預設開啟。此時歷史上限限制的是保留音訊的錄音數量，而非保留的轉錄數量。"
       },
+      "recordingTextFile": {
+        "label": "在每段錄音旁儲存文字檔",
+        "description": "每段錄音的轉錄文字會依錄音已有的文字寫在錄音旁（錄音資料夾中的 handy-….txt），因此錄音不會再轉錄一次。預設開啟。在歷史記錄中「重新轉錄」會取代該檔案。"
+      },
       "affix": {
         "prefix": {
           "enable": {
@@ -1774,7 +1778,7 @@
         "emptyTitle": "尚無監看的資料夾",
         "emptyDescription": "新增資料夾即可開始監看新錄音",
         "addTitle": "新增資料夾",
-        "addDescription": "開啟資料夾選取視窗；此後該資料夾中出現的任何新音訊檔都會排入佇列，並在旁邊寫出對應的 .txt 轉錄檔。預設：翻譯器首次啟動時會自動加入你的 Handy 錄音資料夾。加入資料夾在「監看資料夾」開啟前不會有任何作用，且資料夾中已存在的檔案會被忽略——僅轉錄之後新加入的檔案。",
+        "addDescription": "開啟資料夾選取視窗；此後該資料夾中出現的任何新音訊檔都會排入佇列，並在旁邊寫出對應的 .txt 轉錄檔。加入資料夾在「監看資料夾」開啟前不會有任何作用，且資料夾中已存在的檔案會被忽略——僅轉錄之後新加入的檔案。",
         "add": "新增資料夾",
         "remove": "停止監看此資料夾",
         "addFailed": "無法新增資料夾:{{reason}}",
@@ -1793,10 +1797,9 @@
           "dictation": "你的聽寫模型",
           "downloaded": "已下載",
           "notDownloaded": "未下載",
-          "online": "Online (dictation model only)"
+          "online": "Online"
         },
-        "downloadSize": "下載 · {{size}}",
-        "onlineHint": "Set it as your dictation model to use it here"
+        "downloadSize": "下載 · {{size}}"
       },
       "transcribe": {
         "title": "轉錄檔案",
@@ -1804,6 +1807,12 @@
           "title": "選擇音訊檔",
           "description": "**轉錄你選擇的音訊檔**：WAV、MP3、M4A、MP4（影片的音軌）、AAC、FLAC 或 Ogg Opus（.ogg、.opus），例如手機錄音，使用上方選擇的模型與你的語言設定。\n\n檔案會在停頓處切成最長約 40 秒的片段，每個片段只轉錄一次：沒有即時文字，也沒有第二次處理。原始檔案只會被讀取，絕不會被修改。",
           "button": "選擇檔案…"
+        },
+        "drop": {
+          "hint": "將音訊檔拖放到這裡，或",
+          "notReady": "現在無法開始：已有檔案正在轉錄，或模型尚未下載。",
+          "oneFile": "一次只能拖放一個音訊檔。",
+          "unsupported": "{{name}} 不是 Handy 能讀取的音訊檔。"
         },
         "audioFiles": "音訊檔",
         "decoding": "正在讀取 {{file}}…",

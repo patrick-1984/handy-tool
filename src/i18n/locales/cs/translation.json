@@ -1333,6 +1333,10 @@
         "label": "Zachovat přepisy při odstraňování nahrávek",
         "description": "Úklid smaže pouze zvukový soubor a text přepisu zachová natrvalo. Výchozí je zapnuto. Limit historie pak omezuje, kolik nahrávek si ponechá zvuk, nikoli kolik přepisů si ponecháte."
       },
+      "recordingTextFile": {
+        "label": "Ukládat textový soubor vedle každé nahrávky",
+        "description": "Přepis každé nahrávky se uloží vedle ní (handy-….txt ve složce nahrávek) z textu, který nahrávka už má, takže se nahrávka nepřepisuje podruhé. Ve výchozím stavu zapnuto. Přepsat znovu v Historii soubor nahradí."
+      },
       "affix": {
         "prefix": {
           "enable": {
@@ -1774,7 +1778,7 @@
         "emptyTitle": "Žádné sledované složky",
         "emptyDescription": "Přidejte složku a začněte sledovat nové nahrávky.",
         "addTitle": "Přidat složku",
-        "addDescription": "Otevře výběr složky; od té chvíle se každý nový zvukový soubor, který se v ní objeví, zařadí do fronty a jeho přepis se uloží vedle něj jako .txt. Výchozí: vaše nahrávací složka Handy se při prvním spuštění Překladače přidá automaticky. Přidání složky nic neudělá, dokud není zapnuté Sledovat složky, a to, co už ve složce je, se ignoruje — přepisují se jen soubory, které přibudou později.",
+        "addDescription": "Otevře výběr složky; od té chvíle se každý nový zvukový soubor, který se v ní objeví, zařadí do fronty a jeho přepis se uloží vedle něj jako .txt. Přidání složky nic neudělá, dokud není zapnuté Sledovat složky, a to, co už ve složce je, se ignoruje — přepisují se jen soubory, které přibudou později.",
         "add": "Přidat složku",
         "remove": "Přestat sledovat tuto složku",
         "addFailed": "Složku se nepodařilo přidat: {{reason}}",
@@ -1793,10 +1797,9 @@
           "dictation": "Váš model diktování",
           "downloaded": "Stažené",
           "notDownloaded": "Nestažené",
-          "online": "Online (dictation model only)"
+          "online": "Online"
         },
-        "downloadSize": "Stáhnout · {{size}}",
-        "onlineHint": "Set it as your dictation model to use it here"
+        "downloadSize": "Stáhnout · {{size}}"
       },
       "transcribe": {
         "title": "Přepsat soubor",
@@ -1804,6 +1807,12 @@
           "title": "Vybrat zvukový soubor",
           "description": "**Přepíše zvukový soubor, který vyberete**: WAV, MP3, M4A, MP4 (zvuková stopa videa), AAC, FLAC nebo Ogg Opus (.ogg, .opus), třeba nahrávku z telefonu, modelem vybraným výše a s vaším nastavením jazyka.\n\nSoubor se v pauzách rozdělí na kousky do zhruba 40 sekund a každý kousek se přepíše jednou: žádný živý text, žádný druhý průchod. Původní soubor se jen čte, nikdy nemění.",
           "button": "Vybrat soubor…"
+        },
+        "drop": {
+          "hint": "Přetáhněte sem zvukový soubor, nebo",
+          "notReady": "Teď nelze začít: jiný soubor se už přepisuje, nebo model není stažený.",
+          "oneFile": "Přetáhněte vždy jen jeden zvukový soubor.",
+          "unsupported": "{{name}} není zvukový soubor, který Handy umí přečíst."
         },
         "audioFiles": "Zvukové soubory",
         "decoding": "Načítání {{file}}…",

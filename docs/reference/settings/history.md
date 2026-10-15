@@ -62,6 +62,12 @@ Writes incremental Opus chunks that can be recovered after interruption. Turning
 
 Catalog: [A crash mid-dictation costs you nothing](../../features.md#a-crash-mid-dictation-costs-you-nothing).
 
+### Save a text file next to each recording
+
+`History › Settings › Save a text file next to each recording`
+
+Writes each take's transcript to `handy-….txt` beside its recording in the recordings folder, from the text the take already has - the recording is not transcribed a second time. It never writes over an existing file. `Transcribe again` updates the file, and deleting the entry (or retention removing the row) removes it - only while it still holds the entry's text, so a `.txt` of your own is never replaced or deleted. **Default:** On.
+
 ### History Limit
 
 `History › Settings › History Limit`

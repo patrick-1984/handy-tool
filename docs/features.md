@@ -1358,7 +1358,8 @@ short recording is a single file with no redundant chunk copy.
 automatic cleanup is about to run.
 **What Handy does.** Every delete, rename and retention sweep is restricted to files Handy
 created and named itself. Anything else in that folder is invisible to cleanup. Deleting one
-recording also removes its chunk siblings, and nothing else.
+recording also removes its chunk siblings and its `handy-….txt` text file - the latter only
+while it still holds that recording's text, so a note of yours under that name stays.
 **Where.** `History › Recordings › Open Recordings Folder`.
 **Since.** 0.10.0, extended to Opus in 0.11.0.
 

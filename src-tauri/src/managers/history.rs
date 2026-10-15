@@ -22,6 +22,130 @@ fn is_handy_recording_file(file_name: &str) -> bool {
             || file_name.ends_with(".ogg"))
 }
 
+/// Where a recording's transcript goes: `handy-{ts}.txt` in the recordings
+/// folder. `None` for anything but a plain Handy recording name.
+fn text_file_path(recordings_dir: &std::path::Path, file_name: &str) -> Option<PathBuf> {
+    let plain = !file_name.contains(['/', '\\', ':'])
+        && !file_name.contains("..")
+        && is_handy_recording_file(file_name);
+    plain.then(|| recordings_dir.join(std::path::Path::new(file_name).with_extension("txt")))
+}
+
+/// A take's text file that Handy wrote: it holds exactly the row's text. A
+/// `.txt` with anything else in it (a note of yours, an edited copy, the
+/// watched-folder transcript of older versions) is never replaced or deleted.
+/// `Ok(None)` = missing or not Handy's; an error = it could not be read (e.g.
+/// open in another program), so nobody can tell - callers must not go on as if
+/// it were not Handy's.
+fn owned_text_file(
+    recordings_dir: &std::path::Path,
+    file_name: &str,
+    row_text: &str,
+) -> std::io::Result<Option<PathBuf>> {
+    let Some(path) = text_file_path(recordings_dir, file_name) else {
+        return Ok(None);
+    };
+    let row_text = row_text.trim();
+    let on_disk = match fs::read_to_string(&path) {
+        Ok(text) => text,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+        // Not UTF-8: not a file Handy wrote.
+        Err(e) if e.kind() == std::io::ErrorKind::InvalidData => return Ok(None),
+        Err(e) => return Err(e),
+    };
+    Ok((!row_text.is_empty() && on_disk.trim() == row_text).then_some(path))
+}
+
+/// A new take's text file, never over an existing file: written to a temp
+/// name, then linked into place (fails if the name is taken). `Ok(true)` =
+/// written.
+fn create_text_file_in(
+    recordings_dir: &std::path::Path,
+    file_name: &str,
+    text: &str,
+) -> Result<bool> {
+    let text = text.trim();
+    let Some(path) = text_file_path(recordings_dir, file_name) else {
+        return Ok(false);
+    };
+    if text.is_empty() || path.exists() {
+        return Ok(false);
+    }
+    let tmp = path.with_extension("txt.tmp");
+    fs::write(&tmp, text.as_bytes())?;
+    let linked = fs::hard_link(&tmp, &path);
+    let _ = fs::remove_file(&tmp);
+    match linked {
+        Ok(()) => Ok(true),
+        Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => Ok(false),
+        // No hard links on this file system: create it, still never over one.
+        Err(_) => {
+            use std::io::Write;
+            match fs::OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .open(&path)
+            {
+                Ok(mut f) => {
+                    f.write_all(text.as_bytes())?;
+                    Ok(true)
+                }
+                Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => Ok(false),
+                Err(e) => Err(e.into()),
+            }
+        }
+    }
+}
+
+/// History's "Transcribe again": the take's text file follows the new text -
+/// replaced when Handy wrote it (it still holds `previous_text`), written when
+/// missing and `create_missing`, removed when the new text is empty. Anything
+/// else is left alone.
+fn rewrite_text_file_in(
+    recordings_dir: &std::path::Path,
+    file_name: &str,
+    previous_text: &str,
+    new_text: &str,
+    create_missing: bool,
+) -> Result<bool> {
+    let Some(path) = text_file_path(recordings_dir, file_name) else {
+        return Ok(false);
+    };
+    let owned = owned_text_file(recordings_dir, file_name, previous_text)?.is_some();
+    if path.exists() && !owned {
+        return Ok(false);
+    }
+    if !path.exists() && !create_missing {
+        return Ok(false);
+    }
+    let new_text = new_text.trim();
+    if new_text.is_empty() {
+        if owned {
+            fs::remove_file(&path)?;
+            return Ok(true);
+        }
+        return Ok(false);
+    }
+    let tmp = path.with_extension("txt.tmp");
+    fs::write(&tmp, new_text.as_bytes())?;
+    fs::rename(&tmp, &path)?;
+    Ok(true)
+}
+
+/// Removes the take's text file with its row, when Handy wrote it.
+fn remove_owned_text_file(recordings_dir: &std::path::Path, file_name: &str, row_text: &str) {
+    match owned_text_file(recordings_dir, file_name, row_text) {
+        Ok(Some(path)) => {
+            if let Err(e) = fs::remove_file(&path) {
+                error!("Failed to delete text file {}: {}", path.display(), e);
+            }
+        }
+        Ok(None) => {}
+        // Unreadable now: keep it rather than guess (the row still goes).
+        Err(e) => error!("Could not check the text file of {}: {}", file_name, e),
+    }
+}
+
 /// Best-effort duration (seconds) of a recording file: WAV via hound, Ogg/Opus
 /// via the Ogg granule. `None` for unknown/unreadable files.
 fn audio_file_duration_seconds(path: &std::path::Path) -> Option<f64> {
@@ -157,6 +281,11 @@ pub struct HistoryManager {
     app_handle: AppHandle,
     recordings_dir: PathBuf,
     db_path: PathBuf,
+    /// Serialises what changes a row together with its text file: "Transcribe
+    /// again" (file + row), deleting an entry and retention. Without it a
+    /// deletion could read the row's old text, miss the file just rewritten
+    /// and leave it behind. Never held across an `.await`.
+    text_files: std::sync::Mutex<()>,
 }
 
 impl HistoryManager {
@@ -177,6 +306,7 @@ impl HistoryManager {
             app_handle: app_handle.clone(),
             recordings_dir,
             db_path,
+            text_files: std::sync::Mutex::new(()),
         };
 
         // Initialize database and run migrations synchronously
@@ -575,18 +705,33 @@ impl HistoryManager {
         model_used: Option<String>,
     ) -> Result<()> {
         let title = self.format_timestamp_title(timestamp);
+        // The take's transcript beside its recording (`handy-{ts}.txt`), from
+        // the text it already has: nothing transcribes the recording again.
+        let text_file = crate::settings::get_settings(&self.app_handle)
+            .recording_text_file
+            .then(|| (file_name.clone(), transcription_text.clone()));
 
-        self.save_to_database(
-            file_name,
-            timestamp,
-            title,
-            transcription_text,
-            post_processed_text,
-            post_process_prompt,
-            cost_usd,
-            duration_seconds,
-            model_used,
-        )?;
+        {
+            // Row and text file together (see `text_files`); released before
+            // the cleanup below, which takes the lock itself.
+            let _files = self.text_files.lock().unwrap_or_else(|p| p.into_inner());
+            self.save_to_database(
+                file_name,
+                timestamp,
+                title,
+                transcription_text,
+                post_processed_text,
+                post_process_prompt,
+                cost_usd,
+                duration_seconds,
+                model_used,
+            )?;
+            if let Some((name, text)) = text_file {
+                if let Err(e) = create_text_file_in(&self.recordings_dir, &name, &text) {
+                    error!("Failed to write the text file of {}: {}", name, e);
+                }
+            }
+        }
 
         // Clean up old entries
         self.cleanup_old_entries()?;
@@ -740,6 +885,7 @@ impl HistoryManager {
         if entries.is_empty() {
             return Ok(0);
         }
+        let _files = self.text_files.lock().unwrap_or_else(|p| p.into_inner());
 
         // When the user has asked to keep transcriptions, retention becomes
         // audio-only: the row survives with `audio_purged_at` stamped, so the
@@ -759,6 +905,18 @@ impl HistoryManager {
                     params![now, id],
                 )?;
             } else {
+                // The row's own text file goes with the row (only when Handy
+                // wrote it; with transcriptions kept, above, it stays too).
+                let row_text: Option<String> = conn
+                    .query_row(
+                        "SELECT transcription_text FROM transcription_history WHERE id = ?1",
+                        params![id],
+                        |row| row.get(0),
+                    )
+                    .optional()?;
+                if let Some(text) = row_text {
+                    remove_owned_text_file(&self.recordings_dir, file_name, &text);
+                }
                 // Accrue BEFORE the delete, in the same loop that removes the row, so
                 // a row cannot be deleted without being counted. Explicit per-entry
                 // deletion does not come through here: pressing the trash can means
@@ -1009,6 +1167,29 @@ impl HistoryManager {
         self.recordings_dir.join(file_name)
     }
 
+    /// History's "Transcribe again": the take's text file follows the new text
+    /// (see `rewrite_text_file_in`). A file Handy wrote is always kept in step
+    /// with its row, so it never turns into an orphan Handy no longer
+    /// recognises; a missing one is created only when `recording_text_file` is
+    /// on, or when `restore` puts back what a failed update replaced.
+    pub fn rewrite_text_file(
+        &self,
+        file_name: &str,
+        previous_text: &str,
+        new_text: &str,
+        restore: bool,
+    ) -> Result<bool> {
+        let create_missing =
+            restore || crate::settings::get_settings(&self.app_handle).recording_text_file;
+        rewrite_text_file_in(
+            &self.recordings_dir,
+            file_name,
+            previous_text,
+            new_text,
+            create_missing,
+        )
+    }
+
     /// The audio of a history row, to read it again: the row's own file, or -
     /// when a long take's glued file is missing - its chunks in order. Only a
     /// plain Handy recording name inside the recordings folder is accepted
@@ -1076,12 +1257,31 @@ impl HistoryManager {
     /// Replaces a row's transcript with a new one (History's "Transcribe
     /// again"). The post-processed text came from the old transcript, so it
     /// is cleared with it.
-    pub async fn update_transcription(
-        &self,
-        id: i64,
-        text: &str,
-        model: Option<String>,
-    ) -> Result<()> {
+    /// History's "Transcribe again": the row and its text file change together,
+    /// under the same lock as deletion and retention. The file follows first
+    /// (only a file Handy wrote, see `rewrite_text_file`) - a failed write
+    /// leaves both as they were - and is put back if the row cannot be updated.
+    pub fn replace_transcription(&self, id: i64, text: &str, model: Option<String>) -> Result<()> {
+        let _files = self.text_files.lock().unwrap_or_else(|p| p.into_inner());
+        let entry = self
+            .entry_by_id(id)?
+            .ok_or_else(|| anyhow::anyhow!("the history entry no longer exists"))?;
+        let file_changed =
+            self.rewrite_text_file(&entry.file_name, &entry.transcription_text, text, false)?;
+        if let Err(e) = self.update_transcription_row(id, text, model) {
+            if file_changed {
+                if let Err(e) =
+                    self.rewrite_text_file(&entry.file_name, text, &entry.transcription_text, true)
+                {
+                    error!("Failed to put back the text file of entry {}: {}", id, e);
+                }
+            }
+            return Err(e);
+        }
+        Ok(())
+    }
+
+    fn update_transcription_row(&self, id: i64, text: &str, model: Option<String>) -> Result<()> {
         let conn = self.get_connection()?;
         let changed = conn.execute(
             "UPDATE transcription_history SET transcription_text = ?1, post_processed_text = NULL, post_process_prompt = NULL, model_used = COALESCE(?2, model_used) WHERE id = ?3",
@@ -1097,6 +1297,10 @@ impl HistoryManager {
     }
 
     pub async fn get_entry_by_id(&self, id: i64) -> Result<Option<HistoryEntry>> {
+        self.entry_by_id(id)
+    }
+
+    fn entry_by_id(&self, id: i64) -> Result<Option<HistoryEntry>> {
         let conn = self.get_connection()?;
         let mut stmt = conn.prepare(
             "SELECT id, file_name, timestamp, saved, title, transcription_text, post_processed_text, post_process_prompt, cost_usd, duration_seconds, model_used, audio_purged_at
@@ -1126,10 +1330,24 @@ impl HistoryManager {
     }
 
     pub async fn delete_entry(&self, id: i64) -> Result<()> {
+        self.delete_entry_files_and_row(id)?;
+
+        debug!("Deleted history entry with id: {}", id);
+
+        // Emit history updated event
+        if let Err(e) = self.app_handle.emit("history-updated", ()) {
+            error!("Failed to emit history-updated event: {}", e);
+        }
+
+        Ok(())
+    }
+
+    fn delete_entry_files_and_row(&self, id: i64) -> Result<()> {
+        let _files = self.text_files.lock().unwrap_or_else(|p| p.into_inner());
         let conn = self.get_connection()?;
 
         // Get the entry to find the file name
-        if let Some(entry) = self.get_entry_by_id(id).await? {
+        if let Some(entry) = self.entry_by_id(id)? {
             // Delete the audio file first — but only if Handy created it, so we
             // never remove a user's own file that may share the folder.
             if is_handy_recording_file(&entry.file_name) {
@@ -1142,6 +1360,11 @@ impl HistoryManager {
                 }
                 // Remove the chunk siblings of a glued opus recording.
                 self.delete_chunk_siblings(&entry.file_name);
+                remove_owned_text_file(
+                    &self.recordings_dir,
+                    &entry.file_name,
+                    &entry.transcription_text,
+                );
             }
         }
 
@@ -1150,14 +1373,6 @@ impl HistoryManager {
             "DELETE FROM transcription_history WHERE id = ?1",
             params![id],
         )?;
-
-        debug!("Deleted history entry with id: {}", id);
-
-        // Emit history updated event
-        if let Err(e) = self.app_handle.emit("history-updated", ()) {
-            error!("Failed to emit history-updated event: {}", e);
-        }
-
         Ok(())
     }
 
@@ -1176,6 +1391,77 @@ impl HistoryManager {
 mod tests {
     use super::*;
     use rusqlite::{Connection, params};
+
+    #[test]
+    fn a_takes_text_goes_beside_its_recording_and_never_over_a_file() {
+        let dir = tempfile::tempdir().expect("temp dir");
+        let rec = dir.path();
+        assert!(create_text_file_in(rec, "handy-17.opus", "  Hello there. \n").unwrap());
+        let txt = rec.join("handy-17.txt");
+        assert_eq!(fs::read_to_string(&txt).unwrap(), "Hello there.");
+        assert!(!rec.join("handy-17.txt.tmp").exists());
+        // A file already there is never replaced at take time.
+        assert!(!create_text_file_in(rec, "handy-17.opus", "Other").unwrap());
+        assert_eq!(fs::read_to_string(&txt).unwrap(), "Hello there.");
+        // A WAV take gets the same kind of name.
+        assert!(create_text_file_in(rec, "handy-18.wav", "Wav take").unwrap());
+        assert!(rec.join("handy-18.txt").exists());
+        // Nothing for empty text or a name that is not a Handy recording.
+        assert!(!create_text_file_in(rec, "handy-19.opus", "   ").unwrap());
+        for name in [
+            "notes.opus",
+            "../handy-20.opus",
+            "sub/handy-20.opus",
+            "handy-20.txt",
+        ] {
+            assert!(!create_text_file_in(rec, name, "text").unwrap(), "{name}");
+        }
+        assert!(!rec.join("handy-19.txt").exists());
+    }
+
+    #[test]
+    fn transcribe_again_replaces_only_a_file_handy_wrote() {
+        let dir = tempfile::tempdir().expect("temp dir");
+        let rec = dir.path();
+        let txt = rec.join("handy-21.txt");
+        // Handy's file (it holds the row's text): replaced.
+        fs::write(&txt, "old text").unwrap();
+        assert!(rewrite_text_file_in(rec, "handy-21.opus", "old text", "new text", true).unwrap());
+        assert_eq!(fs::read_to_string(&txt).unwrap(), "new text");
+        // Your own note under that name: left alone.
+        fs::write(&txt, "my note").unwrap();
+        assert!(!rewrite_text_file_in(rec, "handy-21.opus", "new text", "newer", true).unwrap());
+        assert_eq!(fs::read_to_string(&txt).unwrap(), "my note");
+        // Missing: written only when asked to create it.
+        fs::remove_file(&txt).unwrap();
+        assert!(!rewrite_text_file_in(rec, "handy-21.opus", "", "fresh", false).unwrap());
+        assert!(!txt.exists());
+        assert!(rewrite_text_file_in(rec, "handy-21.opus", "", "fresh", true).unwrap());
+        assert_eq!(fs::read_to_string(&txt).unwrap(), "fresh");
+        // New text empty: Handy's file is removed, a note is not.
+        assert!(rewrite_text_file_in(rec, "handy-21.opus", "fresh", "  ", false).unwrap());
+        assert!(!txt.exists());
+        fs::write(&txt, "my note").unwrap();
+        assert!(!rewrite_text_file_in(rec, "handy-21.opus", "fresh", "", false).unwrap());
+        assert!(txt.exists());
+    }
+
+    #[test]
+    fn a_rows_text_file_is_removed_only_when_handy_wrote_it() {
+        let dir = tempfile::tempdir().expect("temp dir");
+        let rec = dir.path();
+        let txt = rec.join("handy-22.txt");
+        fs::write(&txt, "my note").unwrap();
+        remove_owned_text_file(rec, "handy-22.opus", "the take");
+        assert!(txt.exists());
+        fs::write(&txt, "the take\n").unwrap();
+        remove_owned_text_file(rec, "handy-22.opus", "the take");
+        assert!(!txt.exists());
+        // An empty row owns nothing.
+        fs::write(&txt, "").unwrap();
+        remove_owned_text_file(rec, "handy-22.opus", "");
+        assert!(txt.exists());
+    }
 
     fn setup_conn() -> Connection {
         let conn = Connection::open_in_memory().expect("open in-memory db");

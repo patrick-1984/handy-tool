@@ -1333,6 +1333,10 @@
         "label": "Manter as transcrições ao remover as gravações",
         "description": "A limpeza elimina apenas o ficheiro de áudio e mantém o texto para sempre. Ativado por predefinição. O limite do histórico passa a limitar quantas gravações mantêm o áudio, não quantas transcrições guarda."
       },
+      "recordingTextFile": {
+        "label": "Salvar um arquivo de texto ao lado de cada gravação",
+        "description": "A transcrição de cada gravação é escrita ao lado dela (handy-….txt na pasta de gravações) a partir do texto que a gravação já tem, então a gravação não é transcrita uma segunda vez. Ativado por padrão. Transcrever novamente no Histórico substitui o arquivo."
+      },
       "affix": {
         "prefix": {
           "enable": {
@@ -1774,7 +1778,7 @@
         "emptyTitle": "Nenhuma pasta monitorada",
         "emptyDescription": "Adicione uma pasta para começar a monitorá-la em busca de novas gravações.",
         "addTitle": "Adicionar uma pasta",
-        "addDescription": "Abre um seletor de pasta; a partir daí, qualquer novo arquivo de áudio que aparecer nessa pasta é colocado na fila e sua transcrição é gravada ao lado como um .txt. Padrão: sua pasta de gravações do Handy é adicionada automaticamente na primeira vez que o Tradutor inicia. Adicionar uma pasta não faz nada até que Monitorar pastas esteja ligado, e o que já estiver na pasta é ignorado — apenas arquivos que chegarem depois são transcritos.",
+        "addDescription": "Abre um seletor de pasta; a partir daí, qualquer novo arquivo de áudio que aparecer nessa pasta é colocado na fila e sua transcrição é gravada ao lado como um .txt. Adicionar uma pasta não faz nada até que Monitorar pastas esteja ligado, e o que já estiver na pasta é ignorado — apenas arquivos que chegarem depois são transcritos.",
         "add": "Adicionar pasta",
         "remove": "Parar de monitorar esta pasta",
         "addFailed": "Não foi possível adicionar a pasta: {{reason}}",
@@ -1793,10 +1797,9 @@
           "dictation": "Seu modelo de ditado",
           "downloaded": "Baixados",
           "notDownloaded": "Não baixados",
-          "online": "Online (dictation model only)"
+          "online": "Online"
         },
-        "downloadSize": "Baixar · {{size}}",
-        "onlineHint": "Set it as your dictation model to use it here"
+        "downloadSize": "Baixar · {{size}}"
       },
       "transcribe": {
         "title": "Transcrever um arquivo",
@@ -1804,6 +1807,12 @@
           "title": "Escolher um arquivo de áudio",
           "description": "**Transcreve o arquivo de áudio que você escolher**: WAV, MP3, M4A, MP4 (a faixa de áudio de um vídeo), AAC, FLAC ou Ogg Opus (.ogg, .opus), como uma gravação do celular, com o modelo escolhido acima e suas configurações de idioma.\n\nO arquivo é cortado nas pausas em partes de até cerca de 40 segundos, e cada parte é transcrita uma vez: sem texto ao vivo, sem segunda passada. O arquivo original é apenas lido, nunca alterado.",
           "button": "Escolher arquivo…"
+        },
+        "drop": {
+          "hint": "Solte um arquivo de áudio aqui, ou",
+          "notReady": "Não é possível começar agora: um arquivo já está sendo transcrito ou o modelo não foi baixado.",
+          "oneFile": "Solte um arquivo de áudio por vez.",
+          "unsupported": "{{name}} não é um arquivo de áudio que o Handy consegue ler."
         },
         "audioFiles": "Arquivos de áudio",
         "decoding": "Lendo {{file}}…",

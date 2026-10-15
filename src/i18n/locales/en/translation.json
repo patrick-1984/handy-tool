@@ -1070,7 +1070,7 @@
         "emptyTitle": "No watched folders",
         "emptyDescription": "Add a folder to start watching it for new recordings.",
         "addTitle": "Add a folder",
-        "addDescription": "Opens a folder picker; from then on any new audio file that appears in that folder is queued and its transcript is written beside it as a .txt. Default: your Handy recordings folder is added for you the first time the Translator starts. Adding a folder does nothing until Watch folders is on, and whatever is already in the folder is ignored — only files that arrive afterwards are transcribed.",
+        "addDescription": "Opens a folder picker; from then on any new audio file that appears in that folder is queued and its transcript is written beside it as a .txt. Adding a folder does nothing until Watch folders is on, and whatever is already in the folder is ignored — only files that arrive afterwards are transcribed.",
         "add": "Add folder",
         "remove": "Stop watching this folder",
         "addFailed": "Could not add folder: {{reason}}",
@@ -1082,14 +1082,13 @@
     "files": {
       "model": {
         "title": "Model",
-        "description": "**Which speech model transcribes the file.** Models that aren't downloaded yet are listed too; pick one and download it first.\n\n**Default:** your dictation model, and the one you pick is remembered. Another model loads beside your dictation model, so dictation stays ready, and unloads again when the file is done. FLM (NPU) runs beside any dictation model. An online model (API, OpenRouter) works for files only while it is your dictation model. The watched folders below use this model too, unless they have one of their own.",
+        "description": "**Which speech model transcribes the file.** Models that aren't downloaded yet are listed too; pick one and download it first.\n\n**Default:** your dictation model, and the one you pick is remembered. Another model loads beside your dictation model, so dictation stays ready, and unloads again when the file is done. FLM (NPU) runs beside any dictation model. An online model (API, OpenRouter) works too, whatever your dictation model is. The watched folders below use this model too, unless they have one of their own (an online model only while it is your dictation model).",
         "dictation": "{{name}} (your dictation model)",
         "notDownloaded": "{{name}} (not downloaded)",
-        "onlineHint": "Set it as your dictation model to use it here",
         "groups": {
           "dictation": "Your dictation model",
           "downloaded": "Downloaded",
-          "online": "Online (dictation model only)",
+          "online": "Online",
           "notDownloaded": "Not downloaded"
         },
         "downloadSize": "Download · {{size}}"
@@ -1100,6 +1099,12 @@
           "title": "Choose an audio file",
           "description": "**Transcribes an audio file you pick**: WAV, MP3, M4A, MP4 (the audio track of a video), AAC, FLAC or Ogg Opus (.ogg, .opus), such as a phone recording, with the model chosen above and your language settings.\n\nThe file is cut at its pauses into pieces of up to about 40 seconds, and each piece is transcribed once: no live text, no second pass. The original file is only read, never changed.",
           "button": "Choose file…"
+        },
+        "drop": {
+          "hint": "Drop an audio file here, or",
+          "notReady": "A file can't start now: one is already being transcribed, or the model isn't downloaded.",
+          "oneFile": "Drop one audio file at a time.",
+          "unsupported": "{{name}} isn't an audio file Handy can read."
         },
         "audioFiles": "Audio files",
         "decoding": "Reading {{file}}…",
@@ -1546,6 +1551,10 @@
       "preserveTranscriptions": {
         "label": "Keep transcriptions when recordings are removed",
         "description": "Retention deletes only the audio file and keeps the transcription text forever. On by default. With this on, the history limit caps how many recordings keep their audio, not how many transcriptions you keep."
+      },
+      "recordingTextFile": {
+        "label": "Save a text file next to each recording",
+        "description": "Each take's transcript is written beside its recording (handy-….txt in the recordings folder) from the text the take already has, so the recording is not transcribed a second time. On by default. Transcribe again in History replaces the file."
       },
       "affix": {
         "prefix": {

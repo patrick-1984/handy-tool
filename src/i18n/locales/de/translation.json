@@ -1333,6 +1333,10 @@
         "label": "Transkriptionen behalten, wenn Aufnahmen entfernt werden",
         "description": "Die Bereinigung löscht nur die Audiodatei und behält den Transkriptionstext dauerhaft. Standardmäßig aktiviert. Das Verlaufslimit begrenzt dann, wie viele Aufnahmen ihr Audio behalten, nicht wie viele Transkriptionen bleiben."
       },
+      "recordingTextFile": {
+        "label": "Textdatei neben jeder Aufnahme speichern",
+        "description": "Das Transkript jeder Aufnahme wird neben ihr gespeichert (handy-….txt im Aufnahmeordner), aus dem Text, den die Aufnahme schon hat, sodass die Aufnahme nicht ein zweites Mal transkribiert wird. Standardmäßig an. Erneut transkribieren im Verlauf ersetzt die Datei."
+      },
       "affix": {
         "prefix": {
           "enable": {
@@ -1774,7 +1778,7 @@
         "emptyTitle": "Keine überwachten Ordner",
         "emptyDescription": "Füge einen Ordner hinzu, um ihn auf neue Aufnahmen zu überwachen.",
         "addTitle": "Ordner hinzufügen",
-        "addDescription": "Öffnet eine Ordnerauswahl; danach wird jede neue Audiodatei, die in diesem Ordner erscheint, in die Warteschlange eingereiht und ihr Transkript daneben als .txt geschrieben. Standard: Dein Handy-Aufnahmeordner wird beim ersten Start des Übersetzers automatisch hinzugefügt. Das Hinzufügen eines Ordners bewirkt nichts, bis Ordner überwachen aktiv ist, und alles, was bereits im Ordner liegt, wird ignoriert — nur später eintreffende Dateien werden transkribiert.",
+        "addDescription": "Öffnet eine Ordnerauswahl; danach wird jede neue Audiodatei, die in diesem Ordner erscheint, in die Warteschlange eingereiht und ihr Transkript daneben als .txt geschrieben. Das Hinzufügen eines Ordners bewirkt nichts, bis Ordner überwachen aktiv ist, und alles, was bereits im Ordner liegt, wird ignoriert — nur später eintreffende Dateien werden transkribiert.",
         "add": "Ordner hinzufügen",
         "remove": "Diesen Ordner nicht mehr überwachen",
         "addFailed": "Ordner konnte nicht hinzugefügt werden: {{reason}}",
@@ -1793,10 +1797,9 @@
           "dictation": "Dein Diktiermodell",
           "downloaded": "Heruntergeladen",
           "notDownloaded": "Nicht heruntergeladen",
-          "online": "Online (dictation model only)"
+          "online": "Online"
         },
-        "downloadSize": "Herunterladen · {{size}}",
-        "onlineHint": "Set it as your dictation model to use it here"
+        "downloadSize": "Herunterladen · {{size}}"
       },
       "transcribe": {
         "title": "Datei transkribieren",
@@ -1804,6 +1807,12 @@
           "title": "Audiodatei wählen",
           "description": "**Transkribiert eine Audiodatei deiner Wahl**: WAV, MP3, M4A, MP4 (die Tonspur eines Videos), AAC, FLAC oder Ogg Opus (.ogg, .opus), etwa eine Handyaufnahme, mit dem oben gewählten Modell und deinen Spracheinstellungen.\n\nDie Datei wird an ihren Pausen in Stücke von bis zu etwa 40 Sekunden geteilt, und jedes Stück wird einmal transkribiert: kein Live-Text, kein zweiter Durchgang. Die Originaldatei wird nur gelesen, nie verändert.",
           "button": "Datei wählen…"
+        },
+        "drop": {
+          "hint": "Audiodatei hier ablegen oder",
+          "notReady": "Jetzt kann keine Datei starten: Es wird bereits eine transkribiert, oder das Modell ist nicht heruntergeladen.",
+          "oneFile": "Lege jeweils nur eine Audiodatei ab.",
+          "unsupported": "{{name}} ist keine Audiodatei, die Handy lesen kann."
         },
         "audioFiles": "Audiodateien",
         "decoding": "{{file}} wird gelesen…",

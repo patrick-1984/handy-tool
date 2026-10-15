@@ -1333,6 +1333,10 @@
         "label": "Conserver les transcriptions lors de la suppression des enregistrements",
         "description": "Le nettoyage supprime uniquement le fichier audio et conserve le texte indéfiniment. Activé par défaut. La limite d'historique plafonne alors le nombre d'enregistrements qui gardent leur audio, pas le nombre de transcriptions."
       },
+      "recordingTextFile": {
+        "label": "Enregistrer un fichier texte à côté de chaque enregistrement",
+        "description": "La transcription de chaque prise est écrite à côté de son enregistrement (handy-….txt dans le dossier des enregistrements) à partir du texte que la prise a déjà, l'enregistrement n'est donc pas transcrit une seconde fois. Activé par défaut. Transcrire à nouveau dans l'Historique remplace le fichier."
+      },
       "affix": {
         "prefix": {
           "enable": {
@@ -1774,7 +1778,7 @@
         "emptyTitle": "Aucun dossier surveillé",
         "emptyDescription": "Ajoutez un dossier pour commencer à le surveiller pour de nouveaux enregistrements.",
         "addTitle": "Ajouter un dossier",
-        "addDescription": "Ouvre un sélecteur de dossier ; à partir de là, tout nouveau fichier audio apparaissant dans ce dossier est mis en file d'attente et sa transcription est écrite à côté en .txt. Par défaut : votre dossier d'enregistrements Handy est ajouté pour vous au premier démarrage du Traducteur. Ajouter un dossier ne fait rien jusqu'à ce que « Surveiller des dossiers » soit activé, et ce qui se trouve déjà dans le dossier est ignoré — seuls les fichiers qui arrivent ensuite sont transcrits.",
+        "addDescription": "Ouvre un sélecteur de dossier ; à partir de là, tout nouveau fichier audio apparaissant dans ce dossier est mis en file d'attente et sa transcription est écrite à côté en .txt. Ajouter un dossier ne fait rien jusqu'à ce que « Surveiller des dossiers » soit activé, et ce qui se trouve déjà dans le dossier est ignoré — seuls les fichiers qui arrivent ensuite sont transcrits.",
         "add": "Ajouter un dossier",
         "remove": "Arrêter de surveiller ce dossier",
         "addFailed": "Impossible d'ajouter le dossier : {{reason}}",
@@ -1793,10 +1797,9 @@
           "dictation": "Votre modèle de dictée",
           "downloaded": "Téléchargés",
           "notDownloaded": "Non téléchargés",
-          "online": "Online (dictation model only)"
+          "online": "Online"
         },
-        "downloadSize": "Télécharger · {{size}}",
-        "onlineHint": "Set it as your dictation model to use it here"
+        "downloadSize": "Télécharger · {{size}}"
       },
       "transcribe": {
         "title": "Transcrire un fichier",
@@ -1804,6 +1807,12 @@
           "title": "Choisir un fichier audio",
           "description": "**Transcrit le fichier audio de votre choix** : WAV, MP3, M4A, MP4 (la piste audio d'une vidéo), AAC, FLAC ou Ogg Opus (.ogg, .opus), comme un enregistrement de téléphone, avec le modèle choisi ci-dessus et vos réglages de langue.\n\nLe fichier est découpé à ses pauses en morceaux d'environ 40 secondes au plus, et chaque morceau est transcrit une fois : pas de texte en direct, pas de second passage. Le fichier d'origine est seulement lu, jamais modifié.",
           "button": "Choisir un fichier…"
+        },
+        "drop": {
+          "hint": "Déposez un fichier audio ici, ou",
+          "notReady": "Impossible de démarrer maintenant : un fichier est déjà en cours de transcription, ou le modèle n'est pas téléchargé.",
+          "oneFile": "Déposez un seul fichier audio à la fois.",
+          "unsupported": "{{name}} n'est pas un fichier audio que Handy sait lire."
         },
         "audioFiles": "Fichiers audio",
         "decoding": "Lecture de {{file}}…",
