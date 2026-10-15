@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.2.3] - 2026-10-15
+
+### Fixed
+
+- **History player seeks anywhere in long recordings.** For takes longer than a minute or two the
+  slider could not be moved to an arbitrary point (it played, but jumping ahead failed or snapped
+  back), because the app streamed the file in a way the Windows web view barely lets you seek in.
+  The recording is now loaded into memory before it plays, so the whole take is seekable, and the
+  player follows the length the file reports once it is known.
+- **History player shows the recording's length right away.** It showed "0:00 / 0:00" until you
+  pressed play; it now shows the stored length of the take (e.g. "0:00 / 5:19") from the start.
+
 ## [2.2.2] - 2026-10-13
 
 ### Added

@@ -19,6 +19,24 @@ const releasePlayback = (audio: HTMLAudioElement) => {
   }
 };
 
+// A lazily loaded recording is read whole into memory (a blob URL). Only the
+// most recently loaded player keeps its copy: loading another one unloads it,
+// so auditioning many rows of a long history cannot pile up file copies.
+let unloadHeld: (() => void) | null = null;
+
+const holdLoadedSource = (unload: () => void) => {
+  if (unloadHeld && unloadHeld !== unload) {
+    unloadHeld();
+  }
+  unloadHeld = unload;
+};
+
+const dropLoadedSource = (unload: () => void) => {
+  if (unloadHeld === unload) {
+    unloadHeld = null;
+  }
+};
+
 interface AudioPlayerProps {
   /** Audio source URL. If not provided, onLoadRequest must be provided. */
   src?: string;
@@ -26,16 +44,23 @@ interface AudioPlayerProps {
   onLoadRequest?: () => Promise<string | null>;
   className?: string;
   autoPlay?: boolean;
+  /** Length in seconds known in advance (e.g. stored with a history row): shown
+   *  before the file is loaded, and used when the browser cannot tell. */
+  knownDuration?: number | null;
 }
+
+const usableDuration = (d: number | null | undefined): number =>
+  d != null && isFinite(d) && d > 0 ? d : 0;
 
 export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   src: initialSrc,
   onLoadRequest,
   className = "",
   autoPlay = false,
+  knownDuration,
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [duration, setDuration] = useState(0);
+  const [duration, setDuration] = useState(usableDuration(knownDuration));
   const [currentTime, setCurrentTime] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [loadedSrc, setLoadedSrc] = useState<string | null>(initialSrc ?? null);
@@ -49,6 +74,52 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   // Use refs to avoid stale closures in animation loop
   const isPlayingRef = useRef(false);
   const isDraggingRef = useRef(false);
+  const knownDurationRef = useRef(usableDuration(knownDuration));
+
+  useEffect(() => {
+    knownDurationRef.current = usableDuration(knownDuration);
+    setDuration(
+      usableDuration(audioRef.current?.duration) || knownDurationRef.current,
+    );
+  }, [knownDuration]);
+
+  // The blob URL this player loaded, tracked synchronously so it is revoked
+  // even if React never commits it (two loads finishing in one batch).
+  const ownedBlobRef = useRef<string | null>(null);
+  const revokeOwnedBlob = useCallback(() => {
+    if (ownedBlobRef.current) {
+      URL.revokeObjectURL(ownedBlobRef.current);
+      ownedBlobRef.current = null;
+    }
+  }, []);
+
+  // Free this player's in-memory copy (another player loaded its own).
+  // load() drops the queued pause event, so reset the playing state here.
+  const unload = useCallback(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load();
+      releasePlayback(audio);
+    }
+    revokeOwnedBlob();
+    setIsPlaying(false);
+    setLoadedSrc(null);
+    setCurrentTime(0);
+    setDuration(knownDurationRef.current);
+  }, [revokeOwnedBlob]);
+
+  // A load that finishes after unmount must not leak its blob URL.
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      dropLoadedSource(unload);
+      revokeOwnedBlob();
+    };
+  }, [unload, revokeOwnedBlob]);
 
   // Keep refs in sync with state
   useEffect(() => {
@@ -99,14 +170,22 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
     const audio = audioRef.current;
     if (!audio) return;
 
+    // The element's own length wins once it is known (Ogg can report it late,
+    // via durationchange); until then, or when it is Infinity/NaN, keep the
+    // stored length so the slider spans the whole recording.
+    const syncDuration = () => {
+      setDuration(usableDuration(audio.duration) || knownDurationRef.current);
+    };
     const handleLoadedMetadata = () => {
-      setDuration(audio.duration || 0);
-      setCurrentTime(0);
+      syncDuration();
+      setCurrentTime(audio.currentTime);
     };
 
     const handleEnded = () => {
       setIsPlaying(false);
-      setCurrentTime(audio.duration || 0);
+      setCurrentTime(
+        usableDuration(audio.duration) || knownDurationRef.current,
+      );
       releasePlayback(audio);
     };
 
@@ -121,12 +200,14 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
     };
 
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+    audio.addEventListener("durationchange", syncDuration);
     audio.addEventListener("ended", handleEnded);
     audio.addEventListener("play", handlePlay);
     audio.addEventListener("pause", handlePause);
 
     return () => {
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      audio.removeEventListener("durationchange", syncDuration);
       audio.removeEventListener("ended", handleEnded);
       audio.removeEventListener("play", handlePlay);
       audio.removeEventListener("pause", handlePause);
@@ -202,8 +283,18 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
         if (!src && onLoadRequest) {
           setIsLoading(true);
           const newSrc = await onLoadRequest();
+          if (!mountedRef.current) {
+            if (newSrc?.startsWith("blob:")) {
+              URL.revokeObjectURL(newSrc);
+            }
+            return;
+          }
           setIsLoading(false);
           if (newSrc) {
+            holdLoadedSource(unload);
+            if (newSrc.startsWith("blob:")) {
+              ownedBlobRef.current = newSrc;
+            }
             setLoadedSrc(newSrc);
             // Playback will be triggered by the useEffect watching loadedSrc
           }
@@ -212,6 +303,9 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
         }
       }
     } catch (error) {
+      if (mountedRef.current) {
+        setIsLoading(false);
+      }
       console.error("Playback failed:", error);
     }
   };
@@ -280,7 +374,9 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
         min="0"
         max={duration || 0}
         step="0.01"
-        value={currentTime}
+        value={Math.min(currentTime, duration || 0)}
+        disabled={!src}
+        aria-label="Playback position"
         onChange={handleSeek}
         onMouseDown={handleSliderMouseDown}
         onTouchStart={handleSliderTouchStart}

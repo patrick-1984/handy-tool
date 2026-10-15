@@ -85,7 +85,6 @@ const detailParts = (e: HistoryEntry): string[] => {
   if (e.cost_usd != null) parts.push(`$${e.cost_usd.toFixed(4)}`);
   return parts;
 };
-import { useOsType } from "@/hooks/useOsType";
 import {
   buildMatcher,
   fieldsMatch,
@@ -126,7 +125,6 @@ export const HistorySettings: React.FC = () => {
   const { t } = useTranslation();
   const tab = useNavStore((state) => state.historyTab);
   const setTab = useNavStore((state) => state.setHistoryTab);
-  const osType = useOsType();
   const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -234,31 +232,33 @@ export const HistorySettings: React.FC = () => {
     }
   };
 
-  const getAudioUrl = useCallback(
-    async (fileName: string) => {
-      try {
-        const result = await commands.getAudioFilePath(fileName);
-        if (result.status === "ok") {
-          if (osType === "linux") {
-            const fileData = await readFile(result.data);
-            const ext = fileName.split(".").pop()?.toLowerCase();
-            const mimeType =
-              ext === "opus" || ext === "ogg" ? "audio/ogg" : "audio/wav";
-            const blob = new Blob([fileData], { type: mimeType });
+  const getAudioUrl = useCallback(async (fileName: string) => {
+    try {
+      const result = await commands.getAudioFilePath(fileName);
+      if (result.status === "ok") {
+        // Play from memory (a blob URL) on every platform: WebView2 streams
+        // the asset protocol as a barely seekable resource, so the slider
+        // could not move to an arbitrary point of a minutes-long take.
+        try {
+          const fileData = await readFile(result.data);
+          const ext = fileName.split(".").pop()?.toLowerCase();
+          const mimeType =
+            ext === "opus" || ext === "ogg" ? "audio/ogg" : "audio/wav";
+          const blob = new Blob([fileData], { type: mimeType });
 
-            return URL.createObjectURL(blob);
-          }
-
-          return convertFileSrc(result.data, "asset");
+          return URL.createObjectURL(blob);
+        } catch (error) {
+          console.error("Failed to read audio file, streaming it:", error);
         }
-        return null;
-      } catch (error) {
-        console.error("Failed to get audio file path:", error);
-        return null;
+
+        return convertFileSrc(result.data, "asset");
       }
-    },
-    [osType],
-  );
+      return null;
+    } catch (error) {
+      console.error("Failed to get audio file path:", error);
+      return null;
+    }
+  }, []);
 
   const deleteAudioEntry = async (id: number) => {
     try {
@@ -600,7 +600,11 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
           })}
         </p>
       )}
-      <AudioPlayer onLoadRequest={handleLoadAudio} className="w-full" />
+      <AudioPlayer
+        onLoadRequest={handleLoadAudio}
+        knownDuration={entry.duration_seconds}
+        className="w-full"
+      />
     </div>
   );
 };
