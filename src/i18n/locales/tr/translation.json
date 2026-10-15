@@ -2145,6 +2145,26 @@
     "release": "Sürüm {{version}}",
     "show": "Göster",
     "items": {
+      "longTakes": {
+        "title": "Uzun kayıtlar sonuna kadar çalınır",
+        "description": "10 dakikadan uzun bir kayıt parçalar halinde saklanır; Geçmiş oynatıcısı ilk parçanın sonunda duruyordu (11:43'lük kayıtta 10:09). Artık tüm kaydı çalar ve istediğiniz yere atlar."
+      },
+      "takeTextFile": {
+        "title": "Bir kaydın ikinci kez transkribe edilmesi yok",
+        "description": "Her kayıt artık metin dosyasını (handy-….txt) zaten sahip olduğu metinden kendisi yazar, kaydı yeniden transkribe etmez - işlemciye daha az iş. Kayıtlar klasörü artık izlenen bir klasör değil. Ayar: Geçmiş > Ayarlar."
+      },
+      "fileDrop": {
+        "title": "Transkribe etmek için bir ses dosyası bırakın",
+        "description": "Dosyalar sayfasında bir ses dosyasını seçmek yerine \"Bir ses dosyası seçin\" kutusuna sürükleyin."
+      },
+      "onlineFiles": {
+        "title": "Dosyalar için çevrimiçi modeller",
+        "description": "Çevrimiçi modeller (API, OpenRouter) artık dikte modeliniz ne olursa olsun Dosyalar sayfasında çalışır; bir dosyanın maliyeti dikte ettiğiniz kayda asla eklenmez."
+      },
+      "playerSeek": {
+        "title": "Geçmiş oynatıcısı: her yere atlama, süre baştan",
+        "description": "Kaydırıcı uzun bir kaydın her noktasına gider ve oynatıcı süreyi çalmadan önce gösterir."
+      },
       "keeperRefresh": {
         "title": "Kısayol Koruyucu, Uzak Masaüstü'nde önde kalır",
         "description": "Windows App yaklaşık her yarım dakikada bir kendi klavye kancasını Kısayol Koruyucu'nunkinin önüne koyar; tutulan kısayollar da bu durumda uzak bilgisayara gidiyordu. Artık Kısayol Koruyucu, siz birkaç saniye yazana kadar beklemek yerine, tuşa basılmadan geçen her saniyenin ardından yeniden öne geçer. Yalnızca Windows."

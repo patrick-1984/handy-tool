@@ -2145,6 +2145,26 @@
     "release": "Version {{version}}",
     "show": "Zeigen",
     "items": {
+      "longTakes": {
+        "title": "Lange Aufnahmen laufen bis zum Ende",
+        "description": "Eine Aufnahme über 10 Minuten wird in Teilen gespeichert; der Player im Verlauf hielt am Ende des ersten an (10:09 bei 11:43). Jetzt spielt er die ganze Aufnahme und springt an jede Stelle."
+      },
+      "takeTextFile": {
+        "title": "Keine zweite Transkription einer Aufnahme",
+        "description": "Jede Aufnahme schreibt ihre Textdatei (handy-….txt) jetzt selbst, aus dem Text, den sie schon hat, statt die Aufnahme erneut zu transkribieren - weniger Arbeit für den Prozessor. Der Aufnahmeordner wird nicht mehr überwacht. Schalter unter Verlauf > Einstellungen."
+      },
+      "fileDrop": {
+        "title": "Audiodatei ablegen, um sie zu transkribieren",
+        "description": "Ziehe auf der Seite Dateien eine Audiodatei auf das Feld \"Audiodatei auswählen\", statt sie auszuwählen."
+      },
+      "onlineFiles": {
+        "title": "Online-Modelle für Dateien",
+        "description": "Die Online-Modelle (API, OpenRouter) funktionieren auf der Seite Dateien jetzt unabhängig vom Diktiermodell; die Kosten einer Datei landen nie bei der gerade diktierten Aufnahme."
+      },
+      "playerSeek": {
+        "title": "Player im Verlauf: überall springen, Länge vorab",
+        "description": "Der Regler springt an jede Stelle einer langen Aufnahme, und der Player zeigt die Länge schon vor dem Abspielen."
+      },
       "keeperRefresh": {
         "title": "Shortcut Keeper bleibt im Remotedesktop an erster Stelle",
         "description": "Die Windows App stellt etwa jede halbe Minute ihren eigenen Tastatur-Hook vor den von Shortcut Keeper, und behaltene Tastenkürzel gingen dann an den Remotecomputer. Shortcut Keeper stellt sich jetzt nach jeder Sekunde ohne Tastendruck wieder an die erste Stelle, statt zu warten, bis du einige Sekunden lang getippt hattest. Nur Windows."

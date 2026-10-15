@@ -2145,6 +2145,26 @@
     "release": "Wersja {{version}}",
     "show": "Pokaż",
     "items": {
+      "longTakes": {
+        "title": "Długie nagrania odtwarzają się do końca",
+        "description": "Nagranie dłuższe niż 10 minut jest zapisywane w częściach; odtwarzacz w Historii zatrzymywał się na końcu pierwszej (10:09 przy nagraniu 11:43). Teraz odtwarza całe nagranie i przewija w dowolne miejsce."
+      },
+      "takeTextFile": {
+        "title": "Bez drugiej transkrypcji nagrania",
+        "description": "Każde nagranie samo zapisuje swój plik tekstowy (handy-….txt) z tekstu, który już ma, zamiast transkrybować nagranie ponownie - mniej pracy dla procesora. Folder nagrań nie jest już obserwowanym folderem. Przełącznik w Historia > Ustawienia."
+      },
+      "fileDrop": {
+        "title": "Upuść plik audio, aby go transkrybować",
+        "description": "Na stronie Pliki przeciągnij plik audio na pole \"Wybierz plik audio\" zamiast go wybierać."
+      },
+      "onlineFiles": {
+        "title": "Modele online dla plików",
+        "description": "Modele online (API, OpenRouter) działają teraz na stronie Pliki niezależnie od modelu dyktowania; koszt pliku nigdy nie jest doliczany do dyktowanego nagrania."
+      },
+      "playerSeek": {
+        "title": "Odtwarzacz w Historii: przewijanie i długość od razu",
+        "description": "Suwak przesuwa się w dowolne miejsce długiego nagrania, a odtwarzacz pokazuje długość nagrania jeszcze przed odtworzeniem."
+      },
       "keeperRefresh": {
         "title": "Strażnik skrótów utrzymuje pierwszeństwo w Pulpicie zdalnym",
         "description": "Windows App mniej więcej co pół minuty stawia własne przechwytywanie klawiatury przed przechwytywaniem Strażnika skrótów, a zachowane skróty trafiały wtedy do komputera zdalnego. Teraz Strażnik skrótów odzyskuje pierwszeństwo po każdej sekundzie bez naciśnięcia klawisza, zamiast czekać, aż przez kilka sekund będziesz pisać. Tylko Windows."

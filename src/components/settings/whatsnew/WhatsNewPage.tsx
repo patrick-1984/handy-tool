@@ -37,6 +37,37 @@ interface Item {
  */
 const RELEASES: { version: string; items: Item[] }[] = [
   {
+    version: "2.3.1",
+    items: [{ key: "longTakes", section: "history", historyTab: "recordings" }],
+  },
+  {
+    version: "2.3.0",
+    items: [
+      {
+        key: "takeTextFile",
+        section: "history",
+        historyTab: "settings",
+        titleKeys: ["settings.advanced.recordingTextFile.label"],
+      },
+      {
+        key: "fileDrop",
+        section: "files",
+        titleKeys: ["settings.files.transcribe.choose.title"],
+      },
+      {
+        key: "onlineFiles",
+        section: "files",
+        titleKeys: ["settings.files.model.title"],
+      },
+    ],
+  },
+  {
+    version: "2.2.3",
+    items: [
+      { key: "playerSeek", section: "history", historyTab: "recordings" },
+    ],
+  },
+  {
     version: "2.2.2",
     items: [
       {

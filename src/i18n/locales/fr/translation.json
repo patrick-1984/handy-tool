@@ -2145,6 +2145,26 @@
     "release": "Version {{version}}",
     "show": "Montrer",
     "items": {
+      "longTakes": {
+        "title": "Les longs enregistrements se lisent jusqu'au bout",
+        "description": "Une prise de plus de 10 minutes est enregistrée en morceaux ; le lecteur de l'Historique s'arrêtait à la fin du premier (10:09 pour une prise de 11:43). Il lit désormais toute la prise et va à n'importe quel point."
+      },
+      "takeTextFile": {
+        "title": "Plus de seconde transcription d'un enregistrement",
+        "description": "Chaque prise écrit désormais elle-même son fichier texte (handy-….txt) à partir du texte qu'elle a déjà, au lieu de retranscrire l'enregistrement - moins de travail pour le processeur. Le dossier des enregistrements n'est plus surveillé. Réglage dans Historique > Paramètres."
+      },
+      "fileDrop": {
+        "title": "Déposez un fichier audio pour le transcrire",
+        "description": "Dans Fichiers, faites glisser un fichier audio sur la zone \"Choisir un fichier audio\" au lieu de le chercher."
+      },
+      "onlineFiles": {
+        "title": "Modèles en ligne pour les fichiers",
+        "description": "Les modèles en ligne (API, OpenRouter) fonctionnent désormais dans Fichiers quel que soit votre modèle de dictée ; le coût d'un fichier n'est jamais ajouté à la prise en cours."
+      },
+      "playerSeek": {
+        "title": "Lecteur de l'Historique : aller n'importe où, durée affichée d'emblée",
+        "description": "Le curseur va à n'importe quel point d'un long enregistrement, et le lecteur affiche la durée avant la lecture."
+      },
       "keeperRefresh": {
         "title": "Shortcut Keeper reste en première position dans Bureau à distance",
         "description": "Windows App place son propre hook clavier devant celui de Shortcut Keeper toutes les trente secondes environ, et les raccourcis gardés allaient alors à l'ordinateur distant. Shortcut Keeper se remet désormais en première position après chaque seconde sans appui sur une touche, au lieu d'attendre que vous ayez tapé pendant quelques secondes. Windows uniquement."

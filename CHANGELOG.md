@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.3.1] - 2026-10-15
+
+### Fixed
+
+- **Long recordings play to the end in History.** A take longer than 10 minutes is saved in
+  10-minute pieces and glued into one file made of several Ogg streams back to back. The web
+  view behind History's player plays only the first of them, so an 11:43 take stopped at 10:09
+  (and could not be moved past it). The player now hands it the take as one continuous stream,
+  rebuilt in memory from Handy's own file - the file on disk is unchanged - so it plays and
+  seeks across the whole take. A file not written by Handy is played as it is.
+- **What's New lists 2.2.3 and 2.3.0 too.** Their entries were missing.
+
 ## [2.3.0] - 2026-10-15
 
 ### Changed

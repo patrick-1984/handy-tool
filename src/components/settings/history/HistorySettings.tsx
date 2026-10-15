@@ -22,6 +22,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { convertFileSrc } from "@tauri-apps/api/core";
+import { toSingleOggStream } from "@/lib/utils/oggChain";
 import { listen } from "@tauri-apps/api/event";
 import { readFile } from "@tauri-apps/plugin-fs";
 import { commands, type HistoryEntry } from "@/bindings";
@@ -243,9 +244,13 @@ export const HistorySettings: React.FC = () => {
         try {
           const fileData = await readFile(result.data);
           const ext = fileName.split(".").pop()?.toLowerCase();
-          const mimeType =
-            ext === "opus" || ext === "ogg" ? "audio/ogg" : "audio/wav";
-          const blob = new Blob([fileData], { type: mimeType });
+          const isOgg = ext === "opus" || ext === "ogg";
+          const mimeType = isOgg ? "audio/ogg" : "audio/wav";
+          // A take longer than 10 minutes is glued from chunks as a chained
+          // Ogg file, which the web view plays only up to the end of the
+          // first chunk: hand it one continuous stream instead.
+          const audio = isOgg ? toSingleOggStream(fileData) : fileData;
+          const blob = new Blob([audio], { type: mimeType });
 
           return URL.createObjectURL(blob);
         } catch (error) {

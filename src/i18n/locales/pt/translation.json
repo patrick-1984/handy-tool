@@ -2145,6 +2145,26 @@
     "release": "Versão {{version}}",
     "show": "Mostrar",
     "items": {
+      "longTakes": {
+        "title": "Gravações longas tocam até o fim",
+        "description": "Uma gravação com mais de 10 minutos é salva em partes; o player do Histórico parava no fim da primeira (10:09 numa gravação de 11:43). Agora toca a gravação inteira e pula para qualquer ponto."
+      },
+      "takeTextFile": {
+        "title": "Sem segunda transcrição de uma gravação",
+        "description": "Cada gravação agora escreve o próprio arquivo de texto (handy-….txt) a partir do texto que já tem, em vez de transcrever a gravação de novo - menos trabalho para o processador. A pasta de gravações não é mais monitorada. Opção em Histórico > Configurações."
+      },
+      "fileDrop": {
+        "title": "Solte um arquivo de áudio para transcrevê-lo",
+        "description": "Em Arquivos, arraste um arquivo de áudio para a caixa \"Escolher um arquivo de áudio\" em vez de procurá-lo."
+      },
+      "onlineFiles": {
+        "title": "Modelos online para arquivos",
+        "description": "Os modelos online (API, OpenRouter) agora funcionam em Arquivos seja qual for o seu modelo de ditado; o custo de um arquivo nunca entra na gravação que você está ditando."
+      },
+      "playerSeek": {
+        "title": "Player do Histórico: pule para qualquer ponto, duração logo de início",
+        "description": "O controle vai para qualquer ponto de uma gravação longa, e o player mostra a duração antes de tocar."
+      },
       "keeperRefresh": {
         "title": "O Guardião de Atalhos continua na frente na Área de Trabalho Remota",
         "description": "O Windows App coloca o próprio gancho de teclado na frente do gancho do Guardião de Atalhos mais ou menos a cada meio minuto, e os atalhos mantidos então iam para o computador remoto. Agora o Guardião de Atalhos volta para a frente após cada segundo sem nenhuma tecla pressionada, em vez de esperar até você ter digitado por alguns segundos. Só Windows."

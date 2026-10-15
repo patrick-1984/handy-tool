@@ -2145,6 +2145,26 @@
     "release": "Versión {{version}}",
     "show": "Mostrar",
     "items": {
+      "longTakes": {
+        "title": "Las grabaciones largas se reproducen hasta el final",
+        "description": "Una toma de más de 10 minutos se guarda en partes; el reproductor del Historial se detenía al final de la primera (10:09 en una toma de 11:43). Ahora reproduce toda la toma y salta a cualquier punto."
+      },
+      "takeTextFile": {
+        "title": "Sin segunda transcripción de una grabación",
+        "description": "Cada toma escribe ahora su archivo de texto (handy-….txt) a partir del texto que ya tiene, en lugar de transcribir la grabación de nuevo: menos trabajo para el procesador. La carpeta de grabaciones ya no es una carpeta vigilada. Actívalo en Historial > Ajustes."
+      },
+      "fileDrop": {
+        "title": "Suelta un archivo de audio para transcribirlo",
+        "description": "En Archivos, arrastra un archivo de audio al recuadro \"Elegir un archivo de audio\" en lugar de buscarlo."
+      },
+      "onlineFiles": {
+        "title": "Modelos en línea para archivos",
+        "description": "Los modelos en línea (API, OpenRouter) funcionan ahora en Archivos sea cual sea tu modelo de dictado; el coste de un archivo nunca se suma a la toma que estás dictando."
+      },
+      "playerSeek": {
+        "title": "Reproductor del Historial: salta a cualquier punto, duración desde el inicio",
+        "description": "El control se mueve a cualquier punto de una grabación larga y el reproductor muestra la duración antes de reproducir."
+      },
       "keeperRefresh": {
         "title": "Shortcut Keeper se mantiene en primer lugar en Escritorio remoto",
         "description": "La Windows App pone su propio hook de teclado por delante del de Shortcut Keeper cada medio minuto más o menos, y entonces los atajos mantenidos iban al equipo remoto. Ahora Shortcut Keeper vuelve a ponerse en primer lugar tras cada segundo sin pulsar ninguna tecla, en lugar de esperar a que hubieras escrito durante unos segundos. Solo Windows."

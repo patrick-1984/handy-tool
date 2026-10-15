@@ -2145,6 +2145,26 @@
     "release": "Phiên bản {{version}}",
     "show": "Hiện cho tôi",
     "items": {
+      "longTakes": {
+        "title": "Bản ghi dài phát đến hết",
+        "description": "Bản ghi dài hơn 10 phút được lưu thành nhiều phần; trình phát trong Lịch sử dừng ở cuối phần đầu (10:09 với bản ghi 11:43). Giờ nó phát toàn bộ và tua đến bất kỳ đâu."
+      },
+      "takeTextFile": {
+        "title": "Không phiên âm bản ghi lần thứ hai",
+        "description": "Mỗi bản ghi giờ tự ghi file văn bản (handy-….txt) từ văn bản đã có, thay vì phiên âm lại bản ghi - bớt việc cho bộ xử lý. Thư mục ghi âm không còn là thư mục được theo dõi. Bật/tắt trong Lịch sử > Cài đặt."
+      },
+      "fileDrop": {
+        "title": "Thả file âm thanh để phiên âm",
+        "description": "Trên trang Tệp, kéo file âm thanh vào ô \"Chọn file âm thanh\" thay vì chọn."
+      },
+      "onlineFiles": {
+        "title": "Mô hình trực tuyến cho file",
+        "description": "Các mô hình trực tuyến (API, OpenRouter) giờ chạy trên trang Tệp bất kể mô hình đọc chính tả của bạn; chi phí của file không bao giờ cộng vào bản ghi đang đọc."
+      },
+      "playerSeek": {
+        "title": "Trình phát Lịch sử: tua bất kỳ đâu, hiện độ dài ngay",
+        "description": "Thanh trượt tới bất kỳ điểm nào của bản ghi dài, và trình phát hiện độ dài trước khi phát."
+      },
       "keeperRefresh": {
         "title": "Shortcut Keeper luôn ở phía trước trong Máy tính Từ xa",
         "description": "Cứ khoảng nửa phút, Windows App lại đặt móc bàn phím của chính nó lên trước móc của Shortcut Keeper, và khi đó các phím tắt đã giữ đi tới máy từ xa. Giờ đây Shortcut Keeper tự trở lại phía trước sau mỗi giây không có phím nào được nhấn, thay vì chờ đến khi bạn đã gõ được vài giây. Chỉ Windows."

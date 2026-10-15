@@ -2145,6 +2145,26 @@
     "release": "Versione {{version}}",
     "show": "Mostra",
     "items": {
+      "longTakes": {
+        "title": "Le registrazioni lunghe si riproducono fino alla fine",
+        "description": "Una registrazione oltre i 10 minuti viene salvata in parti; il lettore della Cronologia si fermava alla fine della prima (10:09 su 11:43). Ora riproduce tutta la registrazione e salta in qualsiasi punto."
+      },
+      "takeTextFile": {
+        "title": "Nessuna seconda trascrizione di una registrazione",
+        "description": "Ogni registrazione scrive ora da sé il proprio file di testo (handy-….txt) dal testo che ha già, invece di trascrivere di nuovo la registrazione: meno lavoro per il processore. La cartella delle registrazioni non è più monitorata. Interruttore in Cronologia > Impostazioni."
+      },
+      "fileDrop": {
+        "title": "Trascina un file audio per trascriverlo",
+        "description": "In File, trascina un file audio sul riquadro \"Scegli un file audio\" invece di cercarlo."
+      },
+      "onlineFiles": {
+        "title": "Modelli online per i file",
+        "description": "I modelli online (API, OpenRouter) ora funzionano in File qualunque sia il modello di dettatura; il costo di un file non viene mai aggiunto alla registrazione in corso."
+      },
+      "playerSeek": {
+        "title": "Lettore della Cronologia: salti ovunque, durata subito",
+        "description": "Il cursore si sposta in qualsiasi punto di una registrazione lunga e il lettore mostra la durata prima della riproduzione."
+      },
       "keeperRefresh": {
         "title": "Shortcut Keeper resta al primo posto in Desktop remoto",
         "description": "La Windows App mette il proprio hook della tastiera davanti a quello di Shortcut Keeper all'incirca ogni mezzo minuto, e le scorciatoie mantenute andavano allora al computer remoto. Ora Shortcut Keeper si rimette al primo posto dopo ogni secondo in cui non viene premuto alcun tasto, invece di aspettare che tu avessi digitato per qualche secondo. Solo Windows."

@@ -2145,6 +2145,26 @@
     "release": "Version {{version}}",
     "show": "Show me",
     "items": {
+      "longTakes": {
+        "title": "Long recordings play to the end",
+        "description": "A take longer than 10 minutes is saved in pieces; History's player stopped at the end of the first one (10:09 for an 11:43 take). It now plays the whole take and seeks anywhere in it."
+      },
+      "takeTextFile": {
+        "title": "No second transcription of a recording",
+        "description": "Each take now writes its text file (handy-….txt) itself, from the text it already has, instead of transcribing the recording again - less work for the processor. The recordings folder is no longer a watched folder. Switch it in History > Settings."
+      },
+      "fileDrop": {
+        "title": "Drop an audio file to transcribe it",
+        "description": "On Files, drag an audio file onto the \"Choose an audio file\" box instead of picking it."
+      },
+      "onlineFiles": {
+        "title": "Online models for files",
+        "description": "The online models (API, OpenRouter) now work on the Files page whatever your dictation model is; a file's cost is never added to the take you are dictating."
+      },
+      "playerSeek": {
+        "title": "History player: seek anywhere, length up front",
+        "description": "The slider moves to any point of a long recording, and the player shows the take's length before you press play."
+      },
       "foldersFollowFiles": {
         "title": "Watched folders use the model you picked for files",
         "description": "With FLM (NPU) picked for files, the watched folders kept transcribing with your dictation model on the graphics card. Unless you pick a batch model of their own, they now use the model picked for files at the top of the Files page."

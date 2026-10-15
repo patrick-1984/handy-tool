@@ -2145,6 +2145,26 @@
     "release": "Verze {{version}}",
     "show": "Ukázat",
     "items": {
+      "longTakes": {
+        "title": "Dlouhé nahrávky se přehrají do konce",
+        "description": "Nahrávka delší než 10 minut se ukládá po částech; přehrávač v Historii se zastavil na konci první (10:09 u nahrávky 11:43). Teď přehraje celou nahrávku a přeskočí kamkoli."
+      },
+      "takeTextFile": {
+        "title": "Žádný druhý přepis nahrávky",
+        "description": "Každá nahrávka teď sama zapíše svůj textový soubor (handy-….txt) z textu, který už má, místo aby se nahrávka přepisovala znovu - méně práce pro procesor. Složka nahrávek už není sledovaná. Přepínač v Historie > Nastavení."
+      },
+      "fileDrop": {
+        "title": "Přetáhněte zvukový soubor k přepisu",
+        "description": "Na stránce Soubory přetáhněte zvukový soubor na pole \"Vyberte zvukový soubor\" místo vybírání."
+      },
+      "onlineFiles": {
+        "title": "Online modely pro soubory",
+        "description": "Online modely (API, OpenRouter) teď na stránce Soubory fungují bez ohledu na model diktování; náklady souboru se nikdy nepřičtou k právě diktované nahrávce."
+      },
+      "playerSeek": {
+        "title": "Přehrávač v Historii: přeskok kamkoli, délka hned",
+        "description": "Posuvník přeskočí kamkoli v dlouhé nahrávce a přehrávač ukáže délku ještě před přehráním."
+      },
       "keeperRefresh": {
         "title": "Strážce zkratek zůstává ve Vzdálené ploše na prvním místě",
         "description": "Windows App si zhruba každou půlminutu zařadí vlastní zachytávání klávesnice před Strážce zkratek a ponechané zkratky pak šly do vzdáleného počítače. Strážce zkratek se teď vrátí na první místo po každé sekundě bez stisku klávesy, místo aby čekal, až budete několik sekund psát. Jen Windows."
