@@ -1,9 +1,12 @@
 pub mod api_transcription;
 pub mod audio;
+pub mod failover;
 #[cfg(not(target_os = "macos"))]
 pub mod flm;
+pub mod hf_parakeet;
 pub mod history;
 pub mod model;
 pub mod openrouter_transcription;
+pub mod stt_server;
 pub mod transcription;
 pub mod translator;

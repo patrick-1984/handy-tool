@@ -706,9 +706,12 @@ fn worker(app: AppHandle, shutdown: Arc<AtomicBool>, status: Arc<Mutex<Translato
             .as_ref()
             .map(|m| m.engine_type.is_external())
             .unwrap_or(false);
+        // OpenRouter (per-take cost) and the STT server (per-take speaker
+        // text) keep process-wide per-take state: never overlap a take.
         let engine_openrouter = matches!(
             engine_info.as_ref().map(|m| &m.engine_type),
             Some(crate::managers::model::EngineType::OpenRouterWhisper)
+                | Some(crate::managers::model::EngineType::SttServer)
         );
 
         // Priority gate.

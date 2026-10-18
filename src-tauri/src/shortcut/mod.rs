@@ -2606,6 +2606,37 @@ pub fn change_preserve_transcriptions_setting(app: AppHandle, enabled: bool) -> 
     Ok(())
 }
 
+/// The failover order after the dictation model (up to two model ids).
+#[tauri::command]
+#[specta::specta]
+pub fn change_transcription_fallbacks_setting(
+    app: AppHandle,
+    models: Vec<String>,
+) -> Result<(), String> {
+    let manager = app.state::<std::sync::Arc<crate::managers::model::ModelManager>>();
+    let models = crate::managers::failover::validate_fallbacks(&models, |id| {
+        manager.get_model_info(id).is_some()
+    })?;
+    let mut settings = settings::get_settings(&app);
+    settings.transcription_fallbacks = models;
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
+/// One Custom STT server setting (see `AppSettings::set_stt_server_field`).
+#[tauri::command]
+#[specta::specta]
+pub fn change_stt_server_setting(
+    app: AppHandle,
+    field: String,
+    value: String,
+) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    settings.set_stt_server_field(&field, &value)?;
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
 #[tauri::command]
 #[specta::specta]
 pub fn change_recording_text_file_setting(app: AppHandle, enabled: bool) -> Result<(), String> {

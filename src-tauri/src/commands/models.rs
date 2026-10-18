@@ -226,6 +226,13 @@ pub async fn is_model_loading(
 ///   `openai/whisper-large-v3`, see CLAUDE.md).
 /// - FlmWhisper: model-manager queries filter out a policy-blocked FLM before
 ///   this helper sees it; is_downloaded is true for the remaining entry.
+/// Whether model `id` can transcribe now: known, downloaded and configured.
+pub fn model_usable(models: &ModelManager, settings: &AppSettings, id: &str) -> bool {
+    models
+        .get_model_info(id)
+        .is_some_and(|m| m.is_downloaded && is_model_usable(&m, settings))
+}
+
 fn is_model_usable(model: &ModelInfo, settings: &AppSettings) -> bool {
     match model.engine_type {
         EngineType::ApiWhisper => !settings.api_transcription_url.trim().is_empty(),
@@ -235,6 +242,7 @@ fn is_model_usable(model: &ModelInfo, settings: &AppSettings) -> bool {
             !settings.openrouter_transcription_url.trim().is_empty()
                 && !settings.openrouter_transcription_key.trim().is_empty()
         }
+        EngineType::SttServer => !settings.stt_server_url.trim().is_empty(),
         #[cfg(not(target_os = "macos"))]
         EngineType::FlmWhisper => model.is_downloaded,
         _ => model.is_downloaded,

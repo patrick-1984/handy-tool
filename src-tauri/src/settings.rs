@@ -791,6 +791,17 @@ pub struct TranscriptionPolicySnapshot {
     pub word_correction_threshold: f64,
 }
 
+/// What a Custom STT server take pastes when speakers are on.
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum SttServerPaste {
+    /// The plain text (the speaker text is kept in History).
+    #[default]
+    Text,
+    /// The text with speakers, one `A: ...` paragraph per turn.
+    Speakers,
+}
+
 /// Which OpenRouter endpoint the OpenRouter transcription engine uses.
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type)]
 #[serde(rename_all = "snake_case")]
@@ -1313,6 +1324,57 @@ pub struct AppSettings {
     pub openrouter_transcription_language: String,
     #[serde(default)]
     pub openrouter_transcription_translate_to_english: bool,
+    /// Transcription failover: up to two more models (ids), tried in order
+    /// when the dictation model cannot transcribe a take (see
+    /// managers/failover.rs). Empty = off.
+    #[serde(default)]
+    pub transcription_fallbacks: Vec<String>,
+    /// Custom STT server (engine `SttServer`): an OpenAI-compatible
+    /// speech-to-text server on your network or this PC that can also tell
+    /// the speakers apart. Base URL including the version prefix, e.g.
+    /// `http://192.168.1.10:8000/v1`. Empty = not set up.
+    #[serde(default)]
+    pub stt_server_url: String,
+    /// Optional bearer token.
+    #[serde(default)]
+    pub stt_server_key: String,
+    /// Server model for plain text (`transcribe` on Handy's reference server).
+    #[serde(default = "default_stt_server_model")]
+    pub stt_server_model: String,
+    /// Tell the speakers apart: use `stt_server_speakers_model` instead.
+    #[serde(default)]
+    pub stt_server_speakers: bool,
+    /// Server model for text with speakers (`transcribe-diarize-openai`).
+    #[serde(default = "default_stt_server_speakers_model")]
+    pub stt_server_speakers_model: String,
+    /// With speakers on: paste the plain text or the text with speakers.
+    /// History keeps both either way.
+    #[serde(default)]
+    pub stt_server_paste: SttServerPaste,
+    #[serde(default)]
+    pub stt_text_prefix_enabled: bool,
+    #[serde(default)]
+    pub stt_text_prefix_text: String,
+    #[serde(default = "default_affix_newline")]
+    pub stt_text_prefix_newline: bool,
+    #[serde(default)]
+    pub stt_text_suffix_enabled: bool,
+    #[serde(default)]
+    pub stt_text_suffix_text: String,
+    #[serde(default = "default_affix_newline")]
+    pub stt_text_suffix_newline: bool,
+    #[serde(default)]
+    pub stt_speakers_prefix_enabled: bool,
+    #[serde(default)]
+    pub stt_speakers_prefix_text: String,
+    #[serde(default = "default_affix_newline")]
+    pub stt_speakers_prefix_newline: bool,
+    #[serde(default)]
+    pub stt_speakers_suffix_enabled: bool,
+    #[serde(default)]
+    pub stt_speakers_suffix_text: String,
+    #[serde(default = "default_affix_newline")]
+    pub stt_speakers_suffix_newline: bool,
     /// T-308 one-time migration guard (see `ensure_custom_asr_config`). Absent in
     /// pre-0.54 stores → `false` → migration runs once; fresh installs get `true`.
     #[serde(default)]
@@ -1751,6 +1813,14 @@ pub fn typing_chunk_params(
         }
     }
     (chars as usize, delay as u64)
+}
+
+fn default_stt_server_model() -> String {
+    "transcribe".to_string()
+}
+
+fn default_stt_server_speakers_model() -> String {
+    "transcribe-diarize-openai".to_string()
 }
 
 fn default_openrouter_transcription_url() -> String {
@@ -2462,6 +2532,71 @@ impl AppSettings {
 
     /// Affixes for the flow that is delivering: the Transcribe & Submit flow when
     /// `submit` is true, otherwise plain Transcribe.
+    /// The Custom STT server's own prefix/suffix: one set for the plain text,
+    /// one for the text with speakers. Applied inside the flow's affixes.
+    pub fn stt_affixes_for(&self, speakers: bool) -> AffixSpec<'_> {
+        if speakers {
+            AffixSpec {
+                prefix_enabled: self.stt_speakers_prefix_enabled,
+                prefix_text: &self.stt_speakers_prefix_text,
+                prefix_newline: self.stt_speakers_prefix_newline,
+                suffix_enabled: self.stt_speakers_suffix_enabled,
+                suffix_text: &self.stt_speakers_suffix_text,
+                suffix_newline: self.stt_speakers_suffix_newline,
+            }
+        } else {
+            AffixSpec {
+                prefix_enabled: self.stt_text_prefix_enabled,
+                prefix_text: &self.stt_text_prefix_text,
+                prefix_newline: self.stt_text_prefix_newline,
+                suffix_enabled: self.stt_text_suffix_enabled,
+                suffix_text: &self.stt_text_suffix_text,
+                suffix_newline: self.stt_text_suffix_newline,
+            }
+        }
+    }
+
+    /// Sets one Custom STT server setting from the UI (`field` = the
+    /// setting's name, `value` as text). Unknown fields and bad values are
+    /// refused.
+    pub fn set_stt_server_field(&mut self, field: &str, value: &str) -> Result<(), String> {
+        let flag = || match value {
+            "true" => Ok(true),
+            "false" => Ok(false),
+            other => Err(format!("not a true/false value: {other}")),
+        };
+        match field {
+            "stt_server_url" => self.stt_server_url = value.trim().to_string(),
+            "stt_server_key" => self.stt_server_key = value.trim().to_string(),
+            "stt_server_model" => self.stt_server_model = value.trim().to_string(),
+            "stt_server_speakers" => self.stt_server_speakers = flag()?,
+            "stt_server_speakers_model" => {
+                self.stt_server_speakers_model = value.trim().to_string()
+            }
+            "stt_server_paste" => {
+                self.stt_server_paste = match value {
+                    "text" => SttServerPaste::Text,
+                    "speakers" => SttServerPaste::Speakers,
+                    other => return Err(format!("unknown paste choice: {other}")),
+                }
+            }
+            "stt_text_prefix_enabled" => self.stt_text_prefix_enabled = flag()?,
+            "stt_text_prefix_text" => self.stt_text_prefix_text = value.to_string(),
+            "stt_text_prefix_newline" => self.stt_text_prefix_newline = flag()?,
+            "stt_text_suffix_enabled" => self.stt_text_suffix_enabled = flag()?,
+            "stt_text_suffix_text" => self.stt_text_suffix_text = value.to_string(),
+            "stt_text_suffix_newline" => self.stt_text_suffix_newline = flag()?,
+            "stt_speakers_prefix_enabled" => self.stt_speakers_prefix_enabled = flag()?,
+            "stt_speakers_prefix_text" => self.stt_speakers_prefix_text = value.to_string(),
+            "stt_speakers_prefix_newline" => self.stt_speakers_prefix_newline = flag()?,
+            "stt_speakers_suffix_enabled" => self.stt_speakers_suffix_enabled = flag()?,
+            "stt_speakers_suffix_text" => self.stt_speakers_suffix_text = value.to_string(),
+            "stt_speakers_suffix_newline" => self.stt_speakers_suffix_newline = flag()?,
+            other => return Err(format!("unknown STT server setting: {other}")),
+        }
+        Ok(())
+    }
+
     pub fn affixes_for(&self, submit: bool) -> AffixSpec<'_> {
         if submit {
             AffixSpec {
@@ -2838,6 +2973,25 @@ pub fn get_default_settings() -> AppSettings {
         openrouter_transcription_key: String::new(),
         openrouter_transcription_model: default_openrouter_transcription_model(),
         openrouter_transcription_route: OpenRouterTranscriptionRoute::default(),
+        transcription_fallbacks: Vec::new(),
+        stt_server_url: String::new(),
+        stt_server_key: String::new(),
+        stt_server_model: default_stt_server_model(),
+        stt_server_speakers: false,
+        stt_server_speakers_model: default_stt_server_speakers_model(),
+        stt_server_paste: SttServerPaste::default(),
+        stt_text_prefix_enabled: false,
+        stt_text_prefix_text: String::new(),
+        stt_text_prefix_newline: default_affix_newline(),
+        stt_text_suffix_enabled: false,
+        stt_text_suffix_text: String::new(),
+        stt_text_suffix_newline: default_affix_newline(),
+        stt_speakers_prefix_enabled: false,
+        stt_speakers_prefix_text: String::new(),
+        stt_speakers_prefix_newline: default_affix_newline(),
+        stt_speakers_suffix_enabled: false,
+        stt_speakers_suffix_text: String::new(),
+        stt_speakers_suffix_newline: default_affix_newline(),
         openrouter_transcription_audio_format: TranscriptionAudioFormat::default(),
         openrouter_transcription_language: default_selected_language(),
         openrouter_transcription_translate_to_english: false,
@@ -3360,6 +3514,43 @@ mod tests {
 
         assert_eq!(apply_affixes("x", &settings.affixes_for(false)), "OUT\nx");
         assert_eq!(apply_affixes("x", &settings.affixes_for(true)), "SUB\nx");
+    }
+
+    #[test]
+    fn stt_server_fields_are_set_by_name_and_affixes_pick_the_mode() {
+        let mut s = get_default_settings();
+        assert_eq!(s.stt_server_model, "transcribe");
+        assert_eq!(s.stt_server_speakers_model, "transcribe-diarize-openai");
+        assert!(!s.stt_server_speakers);
+        assert_eq!(s.stt_server_paste, SttServerPaste::Text);
+        s.set_stt_server_field("stt_server_url", " http://pc:8000/v1 ")
+            .unwrap();
+        s.set_stt_server_field("stt_server_speakers", "true")
+            .unwrap();
+        s.set_stt_server_field("stt_server_paste", "speakers")
+            .unwrap();
+        s.set_stt_server_field("stt_speakers_prefix_enabled", "true")
+            .unwrap();
+        s.set_stt_server_field("stt_speakers_prefix_text", "[Speakers]")
+            .unwrap();
+        s.set_stt_server_field("stt_text_suffix_enabled", "true")
+            .unwrap();
+        s.set_stt_server_field("stt_text_suffix_text", "--")
+            .unwrap();
+        assert_eq!(s.stt_server_url, "http://pc:8000/v1");
+        assert!(s.stt_server_speakers);
+        assert_eq!(s.stt_server_paste, SttServerPaste::Speakers);
+        assert_eq!(
+            apply_affixes("A: hi", &s.stt_affixes_for(true)),
+            "[Speakers]\nA: hi"
+        );
+        assert_eq!(apply_affixes("hi", &s.stt_affixes_for(false)), "hi\n--");
+        assert!(
+            s.set_stt_server_field("stt_server_speakers", "yes")
+                .is_err()
+        );
+        assert!(s.set_stt_server_field("selected_model", "x").is_err());
+        assert!(s.set_stt_server_field("stt_server_paste", "both").is_err());
     }
 
     #[test]

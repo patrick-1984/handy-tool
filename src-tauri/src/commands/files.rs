@@ -233,6 +233,26 @@ fn transcribe_piece(
     external: bool,
     piece: Vec<f32>,
 ) -> Result<String, String> {
+    transcribe_piece_with(app, tm, model, external, piece, false)
+}
+
+/// `lock_held`: the caller already holds CHUNK_TRANSCRIBE_LOCK (a take's
+/// failover) - do not take it again.
+fn transcribe_piece_with(
+    app: &AppHandle,
+    tm: &TranscriptionManager,
+    model: &str,
+    external: bool,
+    piece: Vec<f32>,
+    lock_held: bool,
+) -> Result<String, String> {
+    let serial = || {
+        (!lock_held).then(|| {
+            crate::actions::CHUNK_TRANSCRIBE_LOCK
+                .lock()
+                .unwrap_or_else(|p| p.into_inner())
+        })
+    };
     let is_dictation = get_settings(app).selected_model == model;
     let load_error = |e: anyhow::Error| format!("could not load the model: {e}");
     // FLM (the NPU server) runs beside whatever dictation uses: straight to the
@@ -260,9 +280,7 @@ fn transcribe_piece(
         }
         // The local engine takes one job at a time: a take being dictated
         // waits for this piece at most.
-        let _serial = crate::actions::CHUNK_TRANSCRIBE_LOCK
-            .lock()
-            .unwrap_or_else(|p| p.into_inner());
+        let _serial = serial();
         return tm
             .transcribe_expecting(model, piece)
             .map_err(|e| e.to_string());
@@ -274,15 +292,67 @@ fn transcribe_piece(
         if tm.get_current_translator_model().as_deref() != Some(model) {
             tm.load_translator_model(model).map_err(load_error)?;
         }
-        let _serial = crate::actions::CHUNK_TRANSCRIBE_LOCK
-            .lock()
-            .unwrap_or_else(|p| p.into_inner());
+        let _serial = serial();
         match tm.transcribe_translator_expecting(model, piece.clone()) {
             Ok(text) => return Ok(text),
             Err(e) => error = e.to_string(),
         }
     }
     Err(error)
+}
+
+/// The whole of `samples` with `model` (any engine), cut at its pauses into
+/// pieces as for a file. Used by a take's failover (`lock_held` = the caller
+/// holds CHUNK_TRANSCRIBE_LOCK). A local model other than the dictation one
+/// runs in the second slot and is released afterwards.
+pub fn transcribe_samples_with(
+    app: &AppHandle,
+    tm: &TranscriptionManager,
+    model: &str,
+    samples: &[f32],
+    lock_held: bool,
+) -> Result<String, String> {
+    let info = app
+        .state::<Arc<ModelManager>>()
+        .get_model_info(model)
+        .filter(|m| m.is_downloaded)
+        .ok_or_else(|| format!("{model} is not available"))?;
+    let external = info.engine_type.is_external();
+    // An online engine takes the whole take at once (one request); a local
+    // engine reads it in pieces.
+    let result = if external && !tm.is_flm_model(model) {
+        transcribe_piece_with(app, tm, model, true, samples.to_vec(), lock_held)
+    } else {
+        let mut parts = Vec::new();
+        let mut failed = None;
+        for range in split_speech_segments(samples) {
+            match transcribe_piece_with(
+                app,
+                tm,
+                model,
+                external,
+                samples[range].to_vec(),
+                lock_held,
+            ) {
+                Ok(text) => {
+                    let text = text.trim();
+                    if !text.is_empty() {
+                        parts.push(text.to_string());
+                    }
+                }
+                Err(e) => {
+                    failed = Some(e);
+                    break;
+                }
+            }
+        }
+        match failed {
+            Some(e) => Err(e),
+            None => Ok(parts.join(" ")),
+        }
+    };
+    release_model(app, model);
+    result
 }
 
 /// Whether the watched folders can use `model`: a downloaded model; an online
@@ -293,7 +363,7 @@ pub fn usable_for_folders(settings: &AppSettings, models: &ModelManager, model: 
     models.get_model_info(model).is_some_and(|info| {
         let online = matches!(
             info.engine_type,
-            EngineType::ApiWhisper | EngineType::OpenRouterWhisper
+            EngineType::ApiWhisper | EngineType::OpenRouterWhisper | EngineType::SttServer
         );
         info.is_downloaded
             && (!online
@@ -641,29 +711,40 @@ pub async fn retranscribe_history_entry(app: AppHandle, id: i64) -> Result<Strin
 
     let app_job = app.clone();
     let model_job = model.clone();
-    let text = tauri::async_runtime::spawn_blocking(move || -> Result<String, String> {
-        let mut samples = Vec::new();
-        for file in &files {
-            samples.extend(decode_audio_file(file).map_err(|e| e.to_string())?);
-        }
-        let external = model_info.engine_type.is_external();
-        let tm = app_job.state::<Arc<TranscriptionManager>>();
-        info!(
-            "History: transcribing entry {id} again with {model_job} ({:.0} s)",
-            samples.len() as f64 / SAMPLE_HZ
-        );
-        let mut parts = Vec::new();
-        for range in split_speech_segments(&samples) {
-            let piece = samples[range].to_vec();
-            let text = transcribe_piece(&app_job, &tm, &model_job, external, piece)?;
-            let text = text.trim();
-            if !text.is_empty() {
-                parts.push(text.to_string());
+    let (text, diarized) = tauri::async_runtime::spawn_blocking(
+        move || -> Result<(String, Option<String>), String> {
+            let mut samples = Vec::new();
+            for file in &files {
+                samples.extend(decode_audio_file(file).map_err(|e| e.to_string())?);
             }
-        }
-        release_model(&app_job, &model_job);
-        Ok(parts.join(" "))
-    })
+            let external = model_info.engine_type.is_external();
+            let tm = app_job.state::<Arc<TranscriptionManager>>();
+            info!(
+                "History: transcribing entry {id} again with {model_job} ({:.0} s)",
+                samples.len() as f64 / SAMPLE_HZ
+            );
+            // A Custom STT server reads the whole recording at once, so it can
+            // tell the speakers apart across it.
+            if matches!(
+                model_info.engine_type,
+                crate::managers::model::EngineType::SttServer
+            ) {
+                let result = tm.stt_server_take(&samples).map_err(|e| e.to_string())?;
+                return Ok((result.text, result.diarized));
+            }
+            let mut parts = Vec::new();
+            for range in split_speech_segments(&samples) {
+                let piece = samples[range].to_vec();
+                let text = transcribe_piece(&app_job, &tm, &model_job, external, piece)?;
+                let text = text.trim();
+                if !text.is_empty() {
+                    parts.push(text.to_string());
+                }
+            }
+            release_model(&app_job, &model_job);
+            Ok((parts.join(" "), None))
+        },
+    )
     .await
     .map_err(|e| e.to_string())??;
 
@@ -674,7 +755,7 @@ pub async fn retranscribe_history_entry(app: AppHandle, id: i64) -> Result<Strin
     // The row and the take's text file change together (see
     // HistoryManager::replace_transcription).
     history
-        .replace_transcription(id, &text, label)
+        .replace_transcription(id, &text, label, diarized.as_deref())
         .map_err(|e| e.to_string())?;
     // Held until the text is in the database, so an update waits for it.
     drop(guard);

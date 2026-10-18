@@ -246,6 +246,9 @@ pub enum EngineType {
     /// endpoint or chat `input_audio`). Unlike ApiWhisper it participates in
     /// the live/chunked per-segment pipeline.
     OpenRouterWhisper,
+    /// A Custom STT server (OpenAI-compatible, optionally with speakers): one
+    /// request per take, see managers/stt_server.rs.
+    SttServer,
 }
 
 impl EngineType {
@@ -258,7 +261,7 @@ impl EngineType {
         match self {
             #[cfg(not(target_os = "macos"))]
             EngineType::FlmWhisper => true,
-            EngineType::ApiWhisper | EngineType::OpenRouterWhisper => true,
+            EngineType::ApiWhisper | EngineType::OpenRouterWhisper | EngineType::SttServer => true,
             _ => false,
         }
     }
@@ -753,6 +756,33 @@ impl ModelManager {
             },
         );
 
+        // Custom STT server — transcription and, optionally, who spoke when.
+        available_models.insert(
+            "stt-server".to_string(),
+            ModelInfo {
+                id: "stt-server".to_string(),
+                name: "Custom STT server".to_string(),
+                description: "Your own speech-to-text server (OpenAI-compatible), with speakers told apart when it supports it. Configure it in Advanced settings > STT server.".to_string(),
+                filename: String::new(),
+                url: None,
+                size_mb: 0,
+                is_downloaded: true,
+                is_downloading: false,
+                partial_size: 0,
+                is_directory: false,
+                engine_type: EngineType::SttServer,
+                accuracy_score: 0.0,
+                speed_score: 0.0,
+                supports_translation: false,
+                is_recommended: false,
+                supported_languages: whisper_languages.clone(),
+                is_custom: false,
+            },
+        );
+
+        // Parakeet models added from Hugging Face (and ones still downloading).
+        Self::discover_hf_parakeet_models(&models_dir, &mut available_models);
+
         // Auto-discover custom Whisper models (.bin files) in the models directory
         if let Err(e) = Self::discover_custom_whisper_models(&models_dir, &mut available_models) {
             warn!("Failed to discover custom models: {}", e);
@@ -1030,6 +1060,290 @@ impl ModelManager {
 
     /// Discover custom Whisper models (.bin files) in the models directory.
     /// Skips files that match predefined model filenames.
+    /// The ModelInfo of a Parakeet model from Hugging Face (folder = id).
+    fn hf_parakeet_info(
+        id: &str,
+        marker: &super::hf_parakeet::Marker,
+        downloaded: bool,
+    ) -> ModelInfo {
+        use super::hf_parakeet;
+        let bytes: u64 = marker.files.iter().map(|f| f.size).sum();
+        ModelInfo {
+            id: id.to_string(),
+            name: hf_parakeet::display_name(&marker.repo),
+            description: format!(
+                "Parakeet from Hugging Face: {}. Read by Handy's Parakeet engine, on this PC.",
+                marker.repo
+            ),
+            filename: id.to_string(),
+            url: Some(hf_parakeet::model_url(&marker.repo)),
+            size_mb: bytes.div_ceil(1024 * 1024),
+            is_downloaded: downloaded,
+            is_downloading: false,
+            partial_size: 0,
+            is_directory: true,
+            engine_type: EngineType::Parakeet,
+            accuracy_score: 0.0,
+            speed_score: 0.0,
+            supports_translation: false,
+            is_recommended: false,
+            supported_languages: Vec::new(),
+            is_custom: true,
+        }
+    }
+
+    /// Folders `hf-*` holding a `handy-hf.json` marker: finished ones as
+    /// downloaded models, `*.partial-dir` ones as models still to finish.
+    fn discover_hf_parakeet_models(
+        models_dir: &Path,
+        available_models: &mut HashMap<String, ModelInfo>,
+    ) {
+        use super::hf_parakeet::{self, STAGING_SUFFIX};
+        let Ok(entries) = fs::read_dir(models_dir) else {
+            return;
+        };
+        let mut found: Vec<(String, hf_parakeet::Marker, bool)> = Vec::new();
+        for entry in entries.flatten() {
+            let path = entry.path();
+            let Some(name) = path
+                .file_name()
+                .and_then(|n| n.to_str())
+                .map(str::to_string)
+            else {
+                continue;
+            };
+            if !path.is_dir() || !name.starts_with("hf-") {
+                continue;
+            }
+            let Some(marker) = hf_parakeet::read_marker(&path) else {
+                continue;
+            };
+            let (id, downloaded) = match name.strip_suffix(STAGING_SUFFIX) {
+                Some(id) => (id.to_string(), false),
+                None => (name.clone(), true),
+            };
+            if id != hf_parakeet::model_id_for(&marker.repo) {
+                continue; // a folder renamed by hand
+            }
+            found.push((id, marker, downloaded));
+        }
+        // A finished folder wins over a leftover staging one.
+        found.sort_by_key(|(_, _, downloaded)| *downloaded);
+        for (id, marker, downloaded) in found {
+            available_models.insert(id.clone(), Self::hf_parakeet_info(&id, &marker, downloaded));
+        }
+    }
+
+    /// Adds a Parakeet model from Hugging Face (not downloaded yet): its
+    /// staging folder and marker are written, so a restart remembers it.
+    pub fn add_hf_parakeet_model(
+        &self,
+        repo: &str,
+        files: Vec<super::hf_parakeet::HfFile>,
+    ) -> Result<ModelInfo> {
+        use super::hf_parakeet::{self, STAGING_SUFFIX};
+        if !hf_parakeet::valid_repo(repo) {
+            return Err(anyhow::anyhow!(
+                "not a Hugging Face repo id (owner/name): {repo}"
+            ));
+        }
+        let id = hf_parakeet::model_id_for(repo);
+        if let Some(existing) = self.available_models.lock().unwrap().get(&id) {
+            return Ok(existing.clone());
+        }
+        let marker = hf_parakeet::Marker {
+            repo: repo.to_string(),
+            files,
+        };
+        let staging = self.models_dir.join(format!("{id}{STAGING_SUFFIX}"));
+        fs::create_dir_all(&staging)?;
+        hf_parakeet::write_marker(&staging, &marker)?;
+        let info = Self::hf_parakeet_info(&id, &marker, false);
+        {
+            let mut models = self.available_models.lock().unwrap();
+            models.insert(id.clone(), info.clone());
+            self.bump_refresh_revision(&id);
+        }
+        Ok(info)
+    }
+
+    /// Downloads a Hugging Face model's files one by one into its staging
+    /// folder (each resumable, each checked against its size), then moves
+    /// the folder into place. Same events, cancel and cleanup as an archive.
+    async fn download_hf_files(
+        &self,
+        model_id: &str,
+        generation: u64,
+        cancel: &Arc<DownloadCancel>,
+        mut cleanup_guard: RegistrationGuard<'_>,
+        model_info: &ModelInfo,
+    ) -> Result<()> {
+        use super::hf_parakeet::{self, STAGING_SUFFIX};
+        let model_path = self.models_dir.join(&model_info.filename);
+        let staging = self
+            .models_dir
+            .join(format!("{}{STAGING_SUFFIX}", &model_info.filename));
+        let marker = hf_parakeet::read_marker(&staging).ok_or_else(|| {
+            anyhow::anyhow!("This Hugging Face model's file list is missing; add it again")
+        })?;
+        let total: u64 = marker.files.iter().map(|f| f.size).sum();
+        let done_size = |f: &hf_parakeet::HfFile| {
+            staging
+                .join(&f.path)
+                .metadata()
+                .ok()
+                .filter(|m| m.len() == f.size)
+                .map(|m| m.len())
+        };
+        let mut downloaded: u64 = marker.files.iter().filter_map(done_size).sum();
+        let client = crate::net::client_builder()
+            .connect_timeout(Duration::from_secs(15))
+            .build()?;
+        let mut last_emit = Instant::now();
+        const STALL_TIMEOUT: Duration = Duration::from_secs(60);
+        let progress = |downloaded: u64| DownloadProgress {
+            model_id: model_id.to_string(),
+            generation,
+            downloaded,
+            total,
+            percentage: if total > 0 {
+                downloaded as f64 / total as f64 * 100.0
+            } else {
+                0.0
+            },
+        };
+        let _ = self
+            .app_handle
+            .emit("model-download-progress", &progress(downloaded));
+
+        for file in &marker.files {
+            if file.path.contains(['/', '\\']) || file.path.contains("..") {
+                return Err(anyhow::anyhow!("unexpected file name: {}", file.path));
+            }
+            if done_size(file).is_some() {
+                continue;
+            }
+            let target = staging.join(&file.path);
+            let part = staging.join(format!("{}.part", file.path));
+            let mut resume_from = part.metadata().map(|m| m.len()).unwrap_or(0);
+            if resume_from > file.size {
+                let _ = fs::remove_file(&part);
+                resume_from = 0;
+            }
+            let url = hf_parakeet::file_url(&marker.repo, &file.path);
+            info!(
+                "Hugging Face: {} -> {} (from byte {})",
+                url,
+                target.display(),
+                resume_from
+            );
+            let mut request = client.get(&url);
+            if resume_from > 0 {
+                request = request.header("Range", format!("bytes={resume_from}-"));
+            }
+            let mut response = tokio::select! {
+                biased;
+                _ = cancel.cancelled() => {
+                    cleanup_guard.disarm();
+                    self.emit_download_cancelled(model_id, generation);
+                    return Ok(());
+                }
+                r = request.send() => r?,
+            };
+            if resume_from > 0 && response.status() == reqwest::StatusCode::OK {
+                // No range support: start this file again.
+                drop(response);
+                let _ = fs::remove_file(&part);
+                resume_from = 0;
+                response = tokio::select! {
+                    biased;
+                    _ = cancel.cancelled() => {
+                        cleanup_guard.disarm();
+                        self.emit_download_cancelled(model_id, generation);
+                        return Ok(());
+                    }
+                    r = client.get(&url).send() => r?,
+                };
+            }
+            if !response.status().is_success() {
+                return Err(anyhow::anyhow!(
+                    "Failed to download {}: HTTP {}",
+                    file.path,
+                    response.status()
+                ));
+            }
+            let mut out = if resume_from > 0 {
+                fs::OpenOptions::new()
+                    .create(true)
+                    .append(true)
+                    .open(&part)?
+            } else {
+                File::create(&part)?
+            };
+            downloaded += resume_from;
+            let mut stream = Box::pin(response.bytes_stream());
+            let outcome =
+                stream_to_file_with_cancel(&mut stream, &mut out, cancel, STALL_TIMEOUT, |n| {
+                    downloaded += n as u64;
+                    if last_emit.elapsed() >= Duration::from_millis(100) {
+                        let _ = self
+                            .app_handle
+                            .emit("model-download-progress", &progress(downloaded));
+                        last_emit = Instant::now();
+                    }
+                })
+                .await?;
+            if let DownloadOutcome::Cancelled = outcome {
+                drop(out);
+                cleanup_guard.disarm();
+                self.emit_download_cancelled(model_id, generation);
+                return Ok(());
+            }
+            out.flush()?;
+            drop(out);
+            let got = part.metadata()?.len();
+            if got != file.size {
+                let _ = fs::remove_file(&part);
+                return Err(anyhow::anyhow!(
+                    "Download of {} incomplete: expected {} bytes, got {}",
+                    file.path,
+                    file.size,
+                    got
+                ));
+            }
+            fs::rename(&part, &target)?;
+        }
+
+        if cancel.is_cancelled() {
+            cleanup_guard.disarm();
+            self.emit_download_cancelled(model_id, generation);
+            return Ok(());
+        }
+        let _ = self
+            .app_handle
+            .emit("model-download-progress", &progress(total));
+        // Every file is there: the folder goes into place.
+        remove_path_any_type(&model_path);
+        fs::rename(&staging, &model_path)?;
+        {
+            let mut models = self.available_models.lock().unwrap();
+            if let Some(model) = models.get_mut(model_id) {
+                model.is_downloading = false;
+                model.is_downloaded = true;
+                model.partial_size = 0;
+            }
+            self.bump_refresh_revision(model_id);
+        }
+        self.clear_download_registration(model_id, generation);
+        cleanup_guard.disarm();
+        self.emit_download_complete(model_id, generation);
+        info!(
+            "Downloaded {} from Hugging Face into {:?}",
+            marker.repo, model_path
+        );
+        Ok(())
+    }
+
     fn discover_custom_whisper_models(
         models_dir: &Path,
         available_models: &mut HashMap<String, ModelInfo>,
@@ -1245,6 +1559,13 @@ impl ModelManager {
                 "Model {} looks complete but its stale .partial could not be removed; re-downloading",
                 model_id
             );
+        }
+
+        // A Parakeet model from Hugging Face: several files, not one archive.
+        if super::hf_parakeet::repo_from_url(&url).is_some() {
+            return self
+                .download_hf_files(model_id, generation, &cancel, cleanup_guard, &model_info)
+                .await;
         }
 
         // Check if we have a partial download to resume
@@ -1642,6 +1963,18 @@ impl ModelManager {
                 info!("Model file deleted successfully");
                 deleted_something = true;
             }
+        }
+
+        // A Hugging Face model's unfinished download folder.
+        let staging = self.models_dir.join(format!(
+            "{}{}",
+            &model_info.filename,
+            super::hf_parakeet::STAGING_SUFFIX
+        ));
+        if model_info.is_custom && staging.is_dir() {
+            info!("Deleting unfinished download folder at: {:?}", staging);
+            fs::remove_dir_all(&staging)?;
+            deleted_something = true;
         }
 
         // Delete partial file if it exists (same for both types)
