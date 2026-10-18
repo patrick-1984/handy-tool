@@ -140,6 +140,11 @@ fn probe(url: &str, key: &str) -> Result<(), String> {
     }
 }
 
+/// The current take's number (capture it where the take's work is set up).
+pub fn current_take() -> u64 {
+    state().take
+}
+
 /// A new take: forget the last one and, when fallbacks are set and the
 /// dictation model is online, check it in the background.
 pub fn start_take(app: &AppHandle) {
@@ -201,11 +206,12 @@ fn model_name(app: &AppHandle, id: &str) -> String {
 pub fn transcribe(
     app: &AppHandle,
     tm: &TranscriptionManager,
+    take: u64,
     samples: Vec<f32>,
 ) -> anyhow::Result<String> {
-    // Everything below belongs to the take current NOW; a chunk of an
-    // abandoned take that finishes later never touches the next one.
-    let take = state().take;
+    // `take` = the take this work belongs to (captured when it was set up),
+    // so a chunk of an abandoned take that finishes later never touches the
+    // next one: every write below checks it is still the current take.
     let settings = get_settings(app);
     let primary = settings.selected_model.clone();
     let primary_is_stt = app

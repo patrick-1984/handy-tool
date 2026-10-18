@@ -307,7 +307,26 @@ mod tests {
         HfFile {
             path: path.into(),
             size,
+            sha256: None,
         }
+    }
+
+    #[test]
+    fn files_are_checked_by_size_and_sha256() {
+        let dir = tempfile::tempdir().unwrap();
+        let p = dir.path().join("vocab.txt");
+        std::fs::write(&p, b"abc").unwrap();
+        let sha = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad";
+        assert_eq!(sha256_file(&p).unwrap(), sha);
+        let with = |s: &str| HfFile {
+            path: "vocab.txt".into(),
+            size: 3,
+            sha256: Some(s.into()),
+        };
+        assert!(file_matches(&p, &with(sha)).unwrap());
+        assert!(!file_matches(&p, &with(&"00".repeat(32))).unwrap());
+        assert!(!file_matches(&p, &f("vocab.txt", 4)).unwrap());
+        assert!(file_matches(&p, &f("vocab.txt", 3)).unwrap());
     }
 
     #[test]
@@ -392,7 +411,11 @@ mod tests {
         assert_eq!(repo_from_url("hf://../b"), None);
         assert_eq!(repo_from_url("https://x"), None);
         assert_eq!(
-            file_url("a/b", "vocab.txt"),
+            file_url("a/b", "0123abcd", "vocab.txt"),
+            "https://huggingface.co/a/b/resolve/0123abcd/vocab.txt"
+        );
+        assert_eq!(
+            file_url("a/b", "../x", "vocab.txt"),
             "https://huggingface.co/a/b/resolve/main/vocab.txt"
         );
     }
@@ -402,11 +425,18 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let marker = Marker {
             repo: "a/b".into(),
+            revision: "abc1234".into(),
             files: vec![f("vocab.txt", 3)],
         };
         write_marker(dir.path(), &marker).unwrap();
         assert_eq!(read_marker(dir.path()), Some(marker));
         std::fs::write(dir.path().join(MARKER), r#"{"repo":"../x","files":[]}"#).unwrap();
+        assert_eq!(read_marker(dir.path()), None);
+        std::fs::write(
+            dir.path().join(MARKER),
+            r#"{"repo":"a/b","files":[{"path":"../evil","size":1}]}"#,
+        )
+        .unwrap();
         assert_eq!(read_marker(dir.path()), None);
         std::fs::write(
             dir.path().join(MARKER),

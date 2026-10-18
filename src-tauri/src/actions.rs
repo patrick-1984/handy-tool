@@ -1667,6 +1667,7 @@ impl ShortcutAction for TranscribeAction {
                 *CHUNKED_SESSION.lock().unwrap() = Some(Arc::clone(&session));
                 let tm_chunk = Arc::clone(&tm_seg);
                 let app_chunk = app.clone();
+                let take_chunk = crate::managers::failover::current_take();
                 rm.set_on_chunk_callback(move |closed: ClosedChunk| {
                     // Reserve the slot before spawning so stop()'s wait can't see
                     // done_count >= closed_count prematurely.
@@ -1722,22 +1723,22 @@ impl ShortcutAction for TranscribeAction {
                         if let Ok(mut transcribing) = session_inner.transcribing.lock() {
                             *transcribing = Some(idx);
                         }
-                        let text =
-                            match crate::managers::failover::transcribe(&app_inner, &tm_inner, pcm)
-                            {
-                                Ok(t) => t,
-                                Err(e) => {
-                                    debug!("Chunk {} transcription failed: {}", idx, e);
-                                    // Record the failure so the stop path can tell an
-                                    // engine error (surface it) apart from genuine
-                                    // silence (empty result is fine).
-                                    session_inner.error_count.fetch_add(1, Ordering::SeqCst);
-                                    if let Ok(mut le) = session_inner.last_error.lock() {
-                                        *le = Some(e.to_string());
-                                    }
-                                    String::new()
+                        let text = match crate::managers::failover::transcribe(
+                            &app_inner, &tm_inner, take_chunk, pcm,
+                        ) {
+                            Ok(t) => t,
+                            Err(e) => {
+                                debug!("Chunk {} transcription failed: {}", idx, e);
+                                // Record the failure so the stop path can tell an
+                                // engine error (surface it) apart from genuine
+                                // silence (empty result is fine).
+                                session_inner.error_count.fetch_add(1, Ordering::SeqCst);
+                                if let Ok(mut le) = session_inner.last_error.lock() {
+                                    *le = Some(e.to_string());
                                 }
-                            };
+                                String::new()
+                            }
+                        };
                         if let Ok(mut map) = session_inner.transcripts.lock() {
                             map.insert(idx, Some(text));
                         }
@@ -1770,6 +1771,8 @@ impl ShortcutAction for TranscribeAction {
 
         let stop_time = Instant::now();
         debug!("TranscribeAction::stop called for binding: {}", binding_id);
+        // The take this stop finishes (its failover state; see failover.rs).
+        let take_stop = crate::managers::failover::current_take();
 
         // Clear the live segment callback. The chunk callback is cleared later
         // (in the chunked branch) after stop_recording() fires it for the final
@@ -1981,7 +1984,9 @@ impl ShortcutAction for TranscribeAction {
                             let _serial = CHUNK_TRANSCRIBE_LOCK
                                 .lock()
                                 .unwrap_or_else(|poisoned| poisoned.into_inner());
-                            raw_text = match crate::managers::failover::transcribe(&ah, &tm, full) {
+                            raw_text = match crate::managers::failover::transcribe(
+                                &ah, &tm, take_stop, full,
+                            ) {
                                 Ok(t) => t,
                                 Err(e) => {
                                     error!("Deferred (OpenRouter) transcription failed: {}", e);
@@ -2374,7 +2379,7 @@ impl ShortcutAction for TranscribeAction {
                         .lock()
                         .unwrap_or_else(|poisoned| poisoned.into_inner());
                     let progress = ProgressTicker::start(&ah, running_transcription_remaining);
-                    match crate::managers::failover::transcribe(&ah, &tm, samples) {
+                    match crate::managers::failover::transcribe(&ah, &tm, take_stop, samples) {
                         Ok(text) => {
                             // 100% only for text to deliver (not an empty result
                             // or a take cancelled meanwhile).

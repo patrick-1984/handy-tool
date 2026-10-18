@@ -124,7 +124,7 @@ pub fn change_live_text_box_setting(app: AppHandle, enabled: bool) -> Result<boo
     if enabled
         && matches!(
             settings.selected_model.as_str(),
-            "api-whisper" | "openrouter-transcription"
+            "api-whisper" | "openrouter-transcription" | "stt-server"
         )
     {
         return Err("The live text box needs a model that runs on this PC".to_string());

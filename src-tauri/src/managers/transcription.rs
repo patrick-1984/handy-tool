@@ -360,6 +360,15 @@ enum LoadedEngine {
     SttServer,
 }
 
+thread_local! {
+    /// Set by `stt_server_take_expecting` around its `transcribe_inner` call:
+    /// `Some(None)` = this call is a dictation take that wants its speaker
+    /// text; the STT branch fills it in. Same thread, so no other caller
+    /// (watched folders, files) ever sees it.
+    static STT_TAKE_SPEAKERS: std::cell::RefCell<Option<Option<String>>> =
+        const { std::cell::RefCell::new(None) };
+}
+
 /// The loaded engine AND the model ID it was loaded for, behind ONE mutex
 /// (adversarial-review finding 8b). These used to live in two SEPARATE
 /// `Mutex`es, updated in two separate critical sections by
@@ -948,23 +957,18 @@ impl TranscriptionManager {
     }
 
     /// A dictation take on the Custom STT server: text and, with speakers on,
-    /// the speaker text - only while `expected_model` is the loaded engine.
+    /// the speaker text. Goes through `transcribe_inner` like any take (it
+    /// waits for a model still loading and keeps the model's idle timer
+    /// fresh).
     pub fn stt_server_take_expecting(
         &self,
         expected_model: &str,
         audio: &[f32],
     ) -> Result<crate::managers::stt_server::SttServerResult> {
-        {
-            let engine_guard = self.lock_engine();
-            if !matches!(&engine_guard.engine, Some(LoadedEngine::SttServer)) {
-                return Err(anyhow::anyhow!("The STT server is not the loaded model"));
-            }
-            Self::ensure_expected_model(&engine_guard, expected_model)?;
-        }
-        let settings = get_settings(&self.app_handle);
-        let result = self.stt_server_request(&settings, audio, true);
-        self.maybe_unload_immediately("STT server");
-        result
+        STT_TAKE_SPEAKERS.with(|c| *c.borrow_mut() = Some(None));
+        let result = self.transcribe_inner(expected_model, audio.to_vec(), false);
+        let diarized = STT_TAKE_SPEAKERS.with(|c| c.borrow_mut().take()).flatten();
+        result.map(|(text, _)| crate::managers::stt_server::SttServerResult { text, diarized })
     }
 
     /// History's "Transcribe again" for a Custom STT server take: the whole
@@ -1901,10 +1905,14 @@ impl TranscriptionManager {
             if matches!(&engine_guard.engine, Some(LoadedEngine::SttServer)) {
                 Self::ensure_expected_model(&engine_guard, expected_model)?;
                 drop(engine_guard);
-                // Plain text only here: watched folders and other shared-path
-                // callers come through too. A take's speaker text comes from
-                // `stt_server_take_expecting` (failover::transcribe).
-                let result = self.stt_server_request(&settings, &audio, false)?;
+                // Plain text for watched folders and other shared-path
+                // callers; a dictation take (`stt_server_take_expecting`)
+                // also gets its speaker text.
+                let take = STT_TAKE_SPEAKERS.with(|c| c.borrow().is_some());
+                let result = self.stt_server_request(&settings, &audio, take)?;
+                if take {
+                    STT_TAKE_SPEAKERS.with(|c| *c.borrow_mut() = Some(result.diarized));
+                }
                 self.maybe_unload_immediately("STT server");
                 return Ok((result.text, None));
             }
