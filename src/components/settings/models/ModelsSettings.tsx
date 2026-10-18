@@ -10,6 +10,10 @@ import { LANGUAGES } from "@/lib/constants/languages.ts";
 import type { ModelInfo } from "@/bindings";
 import { RichText } from "../../ui/RichText";
 import { SectionTitle } from "../../ui/SettingsGroup";
+import { useNavStore } from "../../../stores/navStore";
+import { modelConfigTarget, openModelConfig } from "./modelConfig";
+import { FallbackSettings } from "./FallbackSettings";
+import { HuggingFaceParakeet } from "./HuggingFaceParakeet";
 
 /** Model cards: two side by side when there is room. */
 const MODEL_GRID = "grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-3";
@@ -24,7 +28,8 @@ const modelSupportsLanguage = (model: ModelInfo, langCode: string): boolean => {
 const isExternalEngine = (model: ModelInfo): boolean =>
   model.engine_type === "FlmWhisper" ||
   model.engine_type === "ApiWhisper" ||
-  model.engine_type === "OpenRouterWhisper";
+  model.engine_type === "OpenRouterWhisper" ||
+  model.engine_type === "SttServer";
 
 export const ModelsSettings: React.FC = () => {
   const { t } = useTranslation();
@@ -124,6 +129,16 @@ export const ModelsSettings: React.FC = () => {
     } finally {
       setSwitchingModelId(null);
     }
+  };
+
+  const navigateTo = useNavStore((s) => s.navigateTo);
+  // A model with settings of its own gets a gear (and a click on it while in
+  // use opens them).
+  const configureFor = (model: ModelInfo) => {
+    const target = modelConfigTarget(model);
+    return target
+      ? () => openModelConfig(target, (section) => navigateTo(section), t)
+      : undefined;
   };
 
   const handleModelDownload = async (modelId: string) => {
@@ -333,6 +348,7 @@ export const ModelsSettings: React.FC = () => {
                     isExternalEngine(model) ? undefined : handleModelDelete
                   }
                   onCancel={handleModelCancel}
+                  onConfigure={configureFor(model)}
                   downloadProgress={getDownloadProgress(model.id)}
                   downloadSpeed={getDownloadSpeed(model.id)}
                   showRecommended={false}
@@ -357,6 +373,7 @@ export const ModelsSettings: React.FC = () => {
                       isExternalEngine(model) ? undefined : handleModelDelete
                     }
                     onCancel={handleModelCancel}
+                    onConfigure={configureFor(model)}
                     downloadProgress={getDownloadProgress(model.id)}
                     downloadSpeed={getDownloadSpeed(model.id)}
                     showRecommended={false}
@@ -371,6 +388,8 @@ export const ModelsSettings: React.FC = () => {
           {t("settings.models.noModelsMatch")}
         </div>
       )}
+      <FallbackSettings />
+      <HuggingFaceParakeet />
     </div>
   );
 };

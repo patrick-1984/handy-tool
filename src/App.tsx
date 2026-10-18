@@ -166,10 +166,26 @@ function App() {
         { duration: 10000 },
       ),
     );
+    // The dictation model failed (or did not answer the take's heartbeat) and
+    // the next model in the failover order transcribed instead.
+    const unlistenFallback = listen<{
+      from: string;
+      to: string;
+      reason: string;
+    }>("transcription-fallback", (e) =>
+      toast.info(
+        t("toasts.transcriptionFallback", {
+          from: e.payload.from,
+          to: e.payload.to,
+        }),
+        { description: e.payload.reason, duration: 8000 },
+      ),
+    );
     return () => {
       unlisten.then((f) => f());
       unlistenPaste.then((f) => f());
       unlistenTranscribe.then((f) => f());
+      unlistenFallback.then((f) => f());
     };
   }, [t, pasteLastKey]);
 

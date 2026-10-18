@@ -7,6 +7,7 @@ import type { ModelInfo } from "@/bindings";
 const NOT_SUGGESTED: string[] = [
   "ApiWhisper",
   "OpenRouterWhisper",
+  "SttServer",
   "FlmWhisper",
 ];
 

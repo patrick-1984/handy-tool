@@ -10,6 +10,7 @@ export {
   ProxySection,
   PostProcessingSection,
 } from "./advanced/AdvancedSettings";
+export { SttServerSection } from "./stt-server/SttServerSection";
 export { DebugSettings } from "./debug/DebugSettings";
 export { CurrentAudioView } from "./current-audio/CurrentAudioView";
 export { HistorySettings } from "./history/HistorySettings";

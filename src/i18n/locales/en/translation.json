@@ -16,7 +16,8 @@
     "transcriptionFailed": "Transcription failed: {{reason}}. Check that your selected model is working, then try again.",
     "pasteFailedHistoryOnly": "Pasting the transcription failed: {{reason}}. Your clipboard was left untouched — the text is saved in History. {{recovery}}",
     "recoverWithPasteLast": "Press {{shortcut}} to paste it.",
-    "recoverFromHistory": "Open Settings › History to copy it."
+    "recoverFromHistory": "Open Settings › History to copy it.",
+    "transcriptionFallback": "{{from}} could not transcribe this take, so {{to}} did"
   },
   "sidebar": {
     "general": "General",
@@ -82,7 +83,8 @@
     "transcriptionProviders": "Transcription providers",
     "llmProviders": "LLM providers",
     "advancedSettings": "Advanced settings",
-    "moreTools": "More Tools"
+    "moreTools": "More Tools",
+    "sttServer": "STT server"
   },
   "helpMode": {
     "button": "Help mode: point at a setting to see what it does",
@@ -560,7 +562,8 @@
     },
     "ready": "Ready",
     "useModel": "Use this model",
-    "inUse": "Used for all dictation."
+    "inUse": "Used for all dictation.",
+    "configureModel": "Settings of {{modelName}}"
   },
   "settings": {
     "modelSettings": {
@@ -950,7 +953,36 @@
         "translation": "Translation",
         "allLanguages": "All Languages"
       },
-      "noModelsMatch": "No models match this filter."
+      "noModelsMatch": "No models match this filter.",
+      "fallback": {
+        "title": "If your dictation model fails",
+        "description": "Up to two more models, tried in this order when a take cannot be transcribed: the server is down, the network dropped, a request failed. An online model is checked when the take starts, and the next model takes over at once if it does not answer.",
+        "none": "None",
+        "second": {
+          "title": "Second model",
+          "description": "Transcribes the take when your dictation model cannot. Any downloaded or online model."
+        },
+        "third": {
+          "title": "Third model",
+          "description": "Transcribes the take when the second model cannot either."
+        }
+      },
+      "huggingFace": {
+        "title": "Parakeet from Hugging Face",
+        "description": "Newer or fine-tuned Parakeet models (ONNX exports laid out like the one Handy ships), read by Handy's own Parakeet engine on this PC.",
+        "searchDescription": "**Searches Hugging Face for Parakeet ONNX models**, most downloaded first, or type a repo as owner/name. Check one to see whether Handy can use it and how big it is, then add it: it downloads like any model.",
+        "placeholder": "Search, or owner/name",
+        "search": "Search",
+        "searchFailed": "Could not search Hugging Face: {{error}}",
+        "checkFailed": "Could not read the model: {{error}}",
+        "noResults": "No Parakeet ONNX models found.",
+        "downloads": "{{count}} downloads",
+        "size": "{{size}} MB",
+        "incompatible": "not usable: {{reason}}",
+        "check": "Check",
+        "added": "Added",
+        "add": "Add and download"
+      }
     },
     "jumper": {
       "windowsOnly": "The Jumper is available on Windows only.",
@@ -1792,7 +1824,12 @@
       "save": "Save transcription",
       "unsave": "Remove from saved",
       "delete": "Delete entry",
-      "deleteError": "Failed to delete entry. Please try again."
+      "deleteError": "Failed to delete entry. Please try again.",
+      "view": {
+        "label": "Show the text with or without speakers",
+        "text": "Text",
+        "speakers": "Speakers"
+      }
     },
     "debug": {
       "title": "Debug",
@@ -1915,7 +1952,69 @@
       "error": "Failed to load models",
       "noMatches": "No matching models — type to use a custom id"
     },
-    "revealHint": "Switch it on to see more settings."
+    "revealHint": "Switch it on to see more settings.",
+    "sttServer": {
+      "server": {
+        "title": "Your STT server",
+        "description": "A speech-to-text server of your own (on this PC or your network) that speaks the OpenAI transcription API. If it can tell speakers apart, Handy saves who said what."
+      },
+      "url": {
+        "title": "Server address",
+        "description": "**The server's API address, with its version**, e.g. http://192.168.1.10:8000/v1. Handy sends each take to {address}/audio/transcriptions."
+      },
+      "key": {
+        "title": "API key",
+        "description": "Only if your server asks for one. Sent as a bearer token.",
+        "placeholder": "Optional"
+      },
+      "test": {
+        "title": "Test the server",
+        "description": "Asks the server which models it has (GET {address}/models) and fills the model lists below.",
+        "button": "Test",
+        "busy": "Testing…",
+        "ok": "Connected · {{count}} models",
+        "failed": "Could not reach the server: {{error}}"
+      },
+      "use": {
+        "title": "Use it for dictation",
+        "description": "Makes the STT server your dictation model. You can also pick it on the Models page, or set it as a fallback there.",
+        "button": "Use for dictation",
+        "inUse": "In use for dictation"
+      },
+      "transcription": {
+        "title": "Transcription",
+        "description": "Each take goes to the server in one piece when you stop, so the speakers are told apart consistently across it."
+      },
+      "model": {
+        "title": "Model for text",
+        "description": "**The server's model for plain text**, without speakers. Default: transcribe."
+      },
+      "speakers": {
+        "label": "Tell the speakers apart",
+        "description": "**Uses the server's model with speakers (diarization)** and saves the text with speakers in History next to the plain text, one \"A: …\" paragraph per speaker turn. With one voice there is just the text."
+      },
+      "speakersModel": {
+        "title": "Model with speakers",
+        "description": "**The server's model that tells speakers apart.** A model with OpenAI-style segments (e.g. transcribe-diarize-openai) or one that answers with \"A: …\" paragraphs both work."
+      },
+      "paste": {
+        "title": "What to paste",
+        "description": "**The text pasted after a take.** History keeps both either way, and its Text / Speakers switch shows and copies either one.",
+        "options": {
+          "text": "Text only",
+          "speakers": "Text with speakers"
+        }
+      },
+      "customWords": "Your custom words (General › Custom words) are sent to the server as vocabulary (the prompt field) and corrected in its answer, as for every model.",
+      "affixText": {
+        "title": "Around the plain text",
+        "description": "Text added before and after a take pasted as plain text, e.g. a label saying where it came from. Comes inside the general prefix and suffix."
+      },
+      "affixSpeakers": {
+        "title": "Around the text with speakers",
+        "description": "Text added before and after a take pasted with speakers, e.g. \"Meeting notes:\". Comes inside the general prefix and suffix."
+      }
+    }
   },
   "common": {
     "loading": "Loading...",
@@ -2224,6 +2323,22 @@
       "proxy": {
         "title": "Works behind a proxy that asks for a sign-in",
         "description": "Model downloads, update checks and online providers now use the proxy set in Windows and sign in to it with your Windows account (NTLM / Negotiate), as a browser does. A manual proxy with a user name and password can be set in Advanced settings > Proxy."
+      },
+      "sttServer": {
+        "title": "Your own STT server, with speakers",
+        "description": "Connect a speech-to-text server of your own (OpenAI-compatible) in Advanced settings › STT server. If it tells the speakers apart, History shows the take with speakers next to the plain text, and you choose which one is pasted, each with its own prefix and suffix."
+      },
+      "failover": {
+        "title": "A second and third model if the first fails",
+        "description": "Pick up to two more models on the Models page. When your dictation model cannot transcribe a take (its server is down, the network dropped) the next one does, and an online model is checked as soon as the take starts."
+      },
+      "huggingFace": {
+        "title": "Parakeet models from Hugging Face",
+        "description": "Search Hugging Face for newer or fine-tuned Parakeet models on the Models page, check one and add it: it runs on this PC like the Parakeet Handy ships."
+      },
+      "modelSettings": {
+        "title": "A model's settings from its card",
+        "description": "The gear on a model card, or a click on the card of the model in use, opens that model's own settings. History's Transcribe again button has a new icon."
       }
     },
     "installed": "Installed"

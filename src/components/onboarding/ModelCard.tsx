@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Check, Download, Loader2, Trash2 } from "lucide-react";
+import { Check, Download, Loader2, Settings2, Trash2 } from "lucide-react";
 import type { ModelInfo } from "@/bindings";
 import { formatModelSize } from "../../lib/utils/format";
 import {
@@ -40,6 +40,9 @@ interface ModelCardProps {
   className?: string;
   onSelect: (modelId: string) => void;
   onDownload?: (modelId: string) => void;
+  /** Opens the model's own settings (a gear on the card; a click on the
+   *  card of the model in use goes there too). */
+  onConfigure?: (modelId: string) => void;
   onDelete?: (modelId: string) => void;
   onCancel?: (modelId: string) => void;
   downloadProgress?: number;
@@ -105,6 +108,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
   onSelect,
   onDownload,
   onDelete,
+  onConfigure,
   onCancel,
   downloadProgress,
   downloadSpeed,
@@ -135,6 +139,9 @@ const ModelCard: React.FC<ModelCardProps> = ({
     if (!isClickable || disabled) return;
     if (status === "downloadable" && onDownload) {
       onDownload(model.id);
+    } else if (status === "active" && onConfigure) {
+      // Already in use: the click opens its settings instead.
+      onConfigure(model.id);
     } else {
       onSelect(model.id);
     }
@@ -279,7 +286,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
         !hideActions &&
         (status === "downloadable" ||
           status === "available" ||
-          (status === "active" && onDelete)) && (
+          (status === "active" && (onDelete || onConfigure))) && (
           <div className="flex items-center gap-2">
             {status === "downloadable" && (
               <Button
@@ -302,6 +309,21 @@ const ModelCard: React.FC<ModelCardProps> = ({
                 {t("modelSelector.useModel")}
               </Button>
             )}
+            {onConfigure && (
+              <button
+                type="button"
+                onClick={stop(() => onConfigure(model.id))}
+                title={t("modelSelector.configureModel", {
+                  modelName: displayName,
+                })}
+                aria-label={t("modelSelector.configureModel", {
+                  modelName: displayName,
+                })}
+                className={`ms-auto inline-flex items-center justify-center h-7 w-7 rounded-md text-text-secondary hover:bg-hover hover:text-text cursor-pointer transition-colors`}
+              >
+                <Settings2 className="w-3.5 h-3.5" />
+              </button>
+            )}
             {onDelete && (status === "available" || status === "active") && (
               <button
                 type="button"
@@ -312,7 +334,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
                 aria-label={t("modelSelector.deleteModel", {
                   modelName: displayName,
                 })}
-                className="ms-auto inline-flex items-center justify-center h-7 w-7 rounded-md text-text-secondary hover:bg-err-bg hover:text-err-text cursor-pointer transition-colors"
+                className={`${onConfigure ? "" : "ms-auto "}inline-flex items-center justify-center h-7 w-7 rounded-md text-text-secondary hover:bg-err-bg hover:text-err-text cursor-pointer transition-colors`}
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
