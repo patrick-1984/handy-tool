@@ -493,6 +493,7 @@ impl HistoryManager {
                         None,
                         None,
                         None,
+                        None,
                     ) {
                         error!("Failed to add recovered recording to history: {}", e);
                         continue;
@@ -611,6 +612,7 @@ impl HistoryManager {
                     ts as i64,
                     title,
                     String::new(),
+                    None,
                     None,
                     None,
                     None,
