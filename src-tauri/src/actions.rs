@@ -886,9 +886,9 @@ async fn save_history(
     cost_usd: Option<f64>,
     duration_seconds: Option<f64>,
     model_used: Option<String>,
+    // The take's speaker text (Custom STT server with speakers), if any.
+    diarized_text: Option<String>,
 ) {
-    // A Custom STT server take with speakers left its speaker text here.
-    let diarized_text = crate::managers::stt_server::take_session_diarized();
     let res = if crash_safe {
         hm.save_transcription_with_file(
             format!("handy-{}.opus", ts),
@@ -2134,6 +2134,7 @@ impl ShortcutAction for TranscribeAction {
                         cost,
                         duration,
                         model,
+                        None,
                     )
                     .await;
                 } else {
@@ -2431,7 +2432,7 @@ impl ShortcutAction for TranscribeAction {
                             // keeps both), inside the server's own affixes.
                             let stt_take = settings.selected_model == "stt-server";
                             let speaker_text = if stt_take {
-                                crate::managers::stt_server::peek_session_diarized()
+                                crate::managers::stt_server::take_session_diarized(take_stop)
                             } else {
                                 None
                             };
@@ -2521,6 +2522,7 @@ impl ShortcutAction for TranscribeAction {
                                 cost,
                                 duration,
                                 model,
+                                speaker_text.clone(),
                             )
                             .await;
 
@@ -2584,6 +2586,7 @@ impl ShortcutAction for TranscribeAction {
                                         cost,
                                         duration,
                                         model,
+                                        None,
                                     )
                                     .await;
                                 });
@@ -2619,6 +2622,7 @@ impl ShortcutAction for TranscribeAction {
                                 cost,
                                 duration,
                                 model,
+                                None,
                             )
                             .await;
                         }

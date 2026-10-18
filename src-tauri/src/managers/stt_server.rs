@@ -49,36 +49,32 @@ pub struct SttServerInfo {
     pub backend: Option<String>,
 }
 
-// The speaker text of the take being recorded: set by the take's own
-// transcription (failover::transcribe, only for the take that is current),
-// taken when the take is saved to History (like OpenRouter's per-take cost).
-// Never written by watched folders or file jobs.
-static SESSION_DIARIZED: Mutex<Option<String>> = Mutex::new(None);
+// The speaker text of a dictation take, keyed by the take (failover's take
+// number): set by the take's own transcription (failover::transcribe) and
+// taken by that same take when it decides what to paste and saves to
+// History. Another take can neither read nor overwrite it. Never written by
+// watched folders or file jobs.
+static SESSION_DIARIZED: Mutex<Option<(u64, String)>> = Mutex::new(None);
 
 /// Forget any speaker text (call at recording start).
 pub fn reset_session_diarized() {
     *SESSION_DIARIZED.lock().unwrap_or_else(|p| p.into_inner()) = None;
 }
 
-pub fn set_session_diarized(text: Option<String>) {
-    *SESSION_DIARIZED.lock().unwrap_or_else(|p| p.into_inner()) = text;
+/// Take `take`'s speaker text (`None` clears what it had).
+pub fn set_session_diarized(take: u64, text: Option<String>) {
+    *SESSION_DIARIZED.lock().unwrap_or_else(|p| p.into_inner()) = text.map(|t| (take, t));
 }
 
-/// The take's speaker text, left in place (to choose what to paste before the
-/// take is saved).
-pub fn peek_session_diarized() -> Option<String> {
-    SESSION_DIARIZED
-        .lock()
-        .unwrap_or_else(|p| p.into_inner())
-        .clone()
-}
-
-/// The take's speaker text, once (it is cleared).
-pub fn take_session_diarized() -> Option<String> {
-    SESSION_DIARIZED
-        .lock()
-        .unwrap_or_else(|p| p.into_inner())
-        .take()
+/// Take `take`'s speaker text, once - nothing if the slot holds another
+/// take's (which then stays for that take).
+pub fn take_session_diarized(take: u64) -> Option<String> {
+    let mut slot = SESSION_DIARIZED.lock().unwrap_or_else(|p| p.into_inner());
+    if slot.as_ref().is_some_and(|(owner, _)| *owner == take) {
+        slot.take().map(|(_, text)| text)
+    } else {
+        None
+    }
 }
 
 fn endpoint(base_url: &str, path: &str) -> String {
@@ -298,6 +294,19 @@ pub(crate) fn parse_response(value: &serde_json::Value, speakers: bool) -> SttSe
         .collect();
     let labelled: Vec<(&str, &str)> = paragraphs.iter().filter_map(|p| split_label(p)).collect();
     let speakers: std::collections::BTreeSet<&str> = labelled.iter().map(|(l, _)| *l).collect();
+    // Every paragraph labelled: the plain text loses the labels; a separate
+    // speaker text only with two or more voices.
+    if !paragraphs.is_empty() && labelled.len() == paragraphs.len() && speakers.len() == 1 {
+        let plain = labelled
+            .iter()
+            .map(|(_, said)| *said)
+            .collect::<Vec<_>>()
+            .join(" ");
+        return SttServerResult {
+            text: plain,
+            diarized: None,
+        };
+    }
     if paragraphs.len() >= 2 && labelled.len() == paragraphs.len() && speakers.len() >= 2 {
         let plain = labelled
             .iter()
@@ -365,6 +374,35 @@ mod tests {
 
     fn parse_response_t(value: &serde_json::Value) -> SttServerResult {
         parse_response(value, true)
+    }
+
+    #[test]
+    fn one_labelled_voice_is_plain_text_without_its_label() {
+        let r = parse_response(&json!({"text": "A: hello\n\nA: again"}), true);
+        assert_eq!(
+            r,
+            SttServerResult {
+                text: "hello again".into(),
+                diarized: None
+            }
+        );
+        let r = parse_response(&json!({"text": "A: hello"}), true);
+        assert_eq!(
+            r,
+            SttServerResult {
+                text: "hello".into(),
+                diarized: None
+            }
+        );
+    }
+
+    #[test]
+    fn speaker_text_belongs_to_its_take() {
+        reset_session_diarized();
+        set_session_diarized(7, Some("A: x\n\nB: y".into()));
+        assert_eq!(take_session_diarized(8), None);
+        assert_eq!(take_session_diarized(7).as_deref(), Some("A: x\n\nB: y"));
+        assert_eq!(take_session_diarized(7), None);
     }
 
     #[test]

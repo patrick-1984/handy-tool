@@ -224,7 +224,7 @@ pub fn transcribe(
         if primary_is_stt {
             let result = tm.stt_server_take_expecting(&primary, &samples)?;
             if state().take == take {
-                crate::managers::stt_server::set_session_diarized(result.diarized);
+                crate::managers::stt_server::set_session_diarized(take, result.diarized);
             }
             Ok(result.text)
         } else {
