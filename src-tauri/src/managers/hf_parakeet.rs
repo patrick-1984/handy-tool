@@ -8,16 +8,20 @@
 //! `decoder_joint-model[.int8].onnx`, `nemo128.onnx` and `vocab.txt`; the
 //! int8 pair is preferred (smaller, what Handy ships), else the full-precision
 //! pair with the encoder's `.onnx.data` weights when the repo has them.
-//! A folder holds `handy-hf.json` (the repo and its files) so Handy finds it
-//! again after a restart; a download in progress lives in
-//! `<folder>.partial-dir` until every file is there.
+//! A folder holds `handy-hf.json` (the repo, the commit and its files) so
+//! Handy finds it again after a restart; a download in progress lives in
+//! `{models}/.hf-partial/<id>/` until every file is there. Everything is
+//! pinned to the commit seen when the model was added, and each large (LFS)
+//! file is checked against its SHA-256, so a repo changing meanwhile can
+//! never mix two versions.
 
 use serde::{Deserialize, Serialize};
 use specta::Type;
 use std::path::Path;
 
 pub const MARKER: &str = "handy-hf.json";
-pub const STAGING_SUFFIX: &str = ".partial-dir";
+/// Where downloads in progress live, inside the models folder.
+pub const STAGING_DIR: &str = ".hf-partial";
 const HF: &str = "https://huggingface.co";
 
 /// A file in a Hugging Face repo.
@@ -25,6 +29,9 @@ const HF: &str = "https://huggingface.co";
 pub struct HfFile {
     pub path: String,
     pub size: u64,
+    /// SHA-256 of a large (LFS) file, as Hugging Face lists it.
+    #[serde(default)]
+    pub sha256: Option<String>,
 }
 
 /// One search hit.
@@ -52,6 +59,9 @@ pub struct HfRepoCheck {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Marker {
     pub repo: String,
+    /// The commit the files come from.
+    #[serde(default)]
+    pub revision: String,
     pub files: Vec<HfFile>,
 }
 
@@ -133,9 +143,19 @@ pub fn check_tree(repo: &str, tree: &[HfFile]) -> HfRepoCheck {
     }
 }
 
-/// A download URL for one file of a repo.
-pub fn file_url(repo: &str, path: &str) -> String {
-    format!("{HF}/{repo}/resolve/main/{path}")
+/// A download URL for one file of a repo at a commit.
+pub fn file_url(repo: &str, revision: &str, path: &str) -> String {
+    let revision = if valid_revision(revision) {
+        revision
+    } else {
+        "main"
+    };
+    format!("{HF}/{repo}/resolve/{revision}/{path}")
+}
+
+/// A commit id (hex).
+pub fn valid_revision(revision: &str) -> bool {
+    (7..=64).contains(&revision.len()) && revision.chars().all(|c| c.is_ascii_hexdigit())
 }
 
 /// The ModelInfo `url` of a Hugging Face model: `hf://owner/name`.
@@ -156,7 +176,43 @@ pub fn display_name(repo: &str) -> String {
 pub fn read_marker(dir: &Path) -> Option<Marker> {
     let text = std::fs::read_to_string(dir.join(MARKER)).ok()?;
     let marker: Marker = serde_json::from_str(&text).ok()?;
-    valid_repo(&marker.repo).then_some(marker)
+    let files_ok = marker
+        .files
+        .iter()
+        .all(|f| !f.path.is_empty() && !f.path.contains(['/', '\\']) && !f.path.contains(".."));
+    (valid_repo(&marker.repo) && files_ok).then_some(marker)
+}
+
+/// SHA-256 of a file, lowercase hex.
+pub fn sha256_file(path: &Path) -> std::io::Result<String> {
+    use sha2::{Digest, Sha256};
+    use std::io::Read;
+    let mut file = std::fs::File::open(path)?;
+    let mut hasher = Sha256::new();
+    let mut buf = vec![0u8; 1 << 20];
+    loop {
+        let n = file.read(&mut buf)?;
+        if n == 0 {
+            break;
+        }
+        hasher.update(&buf[..n]);
+    }
+    Ok(hasher
+        .finalize()
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect())
+}
+
+/// A downloaded file is right: its size, and its SHA-256 when listed.
+pub fn file_matches(path: &Path, file: &HfFile) -> std::io::Result<bool> {
+    if std::fs::metadata(path)?.len() != file.size {
+        return Ok(false);
+    }
+    match &file.sha256 {
+        Some(expected) => Ok(sha256_file(path)?.eq_ignore_ascii_case(expected)),
+        None => Ok(true),
+    }
 }
 
 pub fn write_marker(dir: &Path, marker: &Marker) -> std::io::Result<()> {
@@ -196,16 +252,29 @@ pub async fn search(query: &str) -> anyhow::Result<Vec<HfModelSummary>> {
         .collect())
 }
 
-/// The files of a repo (top level of `main`).
-pub async fn tree(repo: &str) -> anyhow::Result<Vec<HfFile>> {
+/// The repo's current commit and its files (top level) at that commit.
+pub async fn tree(repo: &str) -> anyhow::Result<(String, Vec<HfFile>)> {
     if !valid_repo(repo) {
         anyhow::bail!("not a Hugging Face repo id (owner/name): {repo}");
     }
     let client = crate::net::client_builder()
         .timeout(std::time::Duration::from_secs(20))
         .build()?;
+    let info: serde_json::Value = client
+        .get(format!("{HF}/api/models/{repo}"))
+        .send()
+        .await?
+        .error_for_status()?
+        .json()
+        .await?;
+    let revision = info
+        .get("sha")
+        .and_then(|s| s.as_str())
+        .filter(|s| valid_revision(s))
+        .ok_or_else(|| anyhow::anyhow!("Hugging Face did not say which commit {repo} is at"))?
+        .to_string();
     let list: Vec<serde_json::Value> = client
-        .get(format!("{HF}/api/models/{repo}/tree/main"))
+        .get(format!("{HF}/api/models/{repo}/tree/{revision}"))
         .send()
         .await?
         .error_for_status()?
@@ -218,9 +287,16 @@ pub async fn tree(repo: &str) -> anyhow::Result<Vec<HfFile>> {
             Some(HfFile {
                 path: f.get("path")?.as_str()?.to_string(),
                 size: f.get("size").and_then(|s| s.as_u64()).unwrap_or(0),
+                sha256: f
+                    .get("lfs")
+                    .and_then(|l| l.get("oid"))
+                    .and_then(|o| o.as_str())
+                    .filter(|o| o.len() == 64 && o.chars().all(|c| c.is_ascii_hexdigit()))
+                    .map(str::to_lowercase),
             })
         })
-        .collect())
+        .collect::<Vec<_>>())
+    .map(|files| (revision, files))
 }
 
 #[cfg(test)]
@@ -331,6 +407,12 @@ mod tests {
         write_marker(dir.path(), &marker).unwrap();
         assert_eq!(read_marker(dir.path()), Some(marker));
         std::fs::write(dir.path().join(MARKER), r#"{"repo":"../x","files":[]}"#).unwrap();
+        assert_eq!(read_marker(dir.path()), None);
+        std::fs::write(
+            dir.path().join(MARKER),
+            r#"{"repo":"a/b","files":[{"path":"../evil","size":1}]}"#,
+        )
+        .unwrap();
         assert_eq!(read_marker(dir.path()), None);
     }
 }

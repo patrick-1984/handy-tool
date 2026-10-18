@@ -70,7 +70,8 @@
     "transcriptionProviders": "文字起こしプロバイダー",
     "llmProviders": "LLMプロバイダー",
     "advancedSettings": "詳細設定",
-    "moreTools": "その他のツール"
+    "moreTools": "その他のツール",
+    "sttServer": "STT サーバー"
   },
   "helpMode": {
     "button": "ヘルプモード: 設定にポインターを合わせると説明が表示されます",
@@ -548,7 +549,8 @@
     "cancelDownload": "ダウンロードをキャンセル",
     "ready": "準備完了",
     "useModel": "このモデルを使う",
-    "inUse": "すべての音声入力に使われています。"
+    "inUse": "すべての音声入力に使われています。",
+    "configureModel": "{{modelName}} の設定"
   },
   "settings": {
     "modelSettings": {
@@ -574,7 +576,36 @@
       },
       "noModelsMatch": "このフィルターに一致するモデルがありません。",
       "yourModels": "ダウンロード済みモデル",
-      "availableModels": "ダウンロード可能"
+      "availableModels": "ダウンロード可能",
+      "fallback": {
+        "title": "音声入力モデルが失敗した場合",
+        "description": "録音を文字起こしできないとき（サーバーが停止している、ネットワークが切れた、リクエストが失敗した）に、この順で試す最大 2 つの追加モデル。オンラインモデルは録音開始時に確認され、応答がなければすぐに次のモデルが引き継ぎます。",
+        "none": "なし",
+        "second": {
+          "title": "2 番目のモデル",
+          "description": "音声入力モデルが文字起こしできないときに録音を文字起こしします。ダウンロード済みまたはオンラインの任意のモデル。"
+        },
+        "third": {
+          "title": "3 番目のモデル",
+          "description": "2 番目のモデルでも文字起こしできないときに録音を文字起こしします。"
+        }
+      },
+      "huggingFace": {
+        "title": "Hugging Face の Parakeet",
+        "description": "新しい、またはファインチューニングされた Parakeet モデル（Handy 同梱モデルと同じ構成の ONNX エクスポート）を、この PC 上の Handy 独自の Parakeet エンジンで実行します。",
+        "searchDescription": "**Hugging Face で Parakeet ONNX モデルを検索します**（ダウンロード数順）。リポジトリを owner/name 形式で入力することもできます。モデルを確認すると Handy で使えるかとサイズがわかります。その後追加すると、他のモデルと同様にダウンロードされます。",
+        "placeholder": "検索、または owner/name",
+        "search": "検索",
+        "searchFailed": "Hugging Face を検索できませんでした: {{error}}",
+        "checkFailed": "モデルを読み取れませんでした: {{error}}",
+        "noResults": "Parakeet ONNX モデルが見つかりませんでした。",
+        "downloads": "{{count}} ダウンロード",
+        "size": "{{size}} MB",
+        "incompatible": "使用不可: {{reason}}",
+        "check": "確認",
+        "added": "追加済み",
+        "add": "追加してダウンロード"
+      }
     },
     "general": {
       "title": "一般",
@@ -1561,7 +1592,12 @@
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
       "transcribeAgainFailed": "Could not transcribe it: {{error}}",
       "noTranscript": "No transcript — transcribe the recording with the ⟲ button.",
-      "noTranscriptNoAudio": "No transcript."
+      "noTranscriptNoAudio": "No transcript.",
+      "view": {
+        "label": "話者付き／話者なしでテキストを表示",
+        "text": "テキスト",
+        "speakers": "話者"
+      }
     },
     "debug": {
       "title": "デバッグ",
@@ -1903,7 +1939,69 @@
       "error": "モデルの読み込みに失敗しました",
       "noMatches": "一致するモデルがありません — カスタムIDを入力してください"
     },
-    "revealHint": "オンにすると、さらに設定が表示されます。"
+    "revealHint": "オンにすると、さらに設定が表示されます。",
+    "sttServer": {
+      "server": {
+        "title": "あなたの STT サーバー",
+        "description": "OpenAI 文字起こし API に対応した、自分の音声認識サーバー（この PC 上またはネットワーク上）。話者を区別できる場合、Handy は誰が何を話したかを保存します。"
+      },
+      "url": {
+        "title": "サーバーのアドレス",
+        "description": "**バージョンを含むサーバーの API アドレス**（例: http://192.168.1.10:8000/v1）。Handy は各録音を {address}/audio/transcriptions に送信します。"
+      },
+      "key": {
+        "title": "API キー",
+        "description": "サーバーが求める場合のみ。Bearer トークンとして送信されます。",
+        "placeholder": "任意"
+      },
+      "test": {
+        "title": "サーバーをテスト",
+        "description": "サーバーに利用可能なモデルを問い合わせ（GET {address}/models）、下のモデル一覧に入力します。",
+        "button": "テスト",
+        "busy": "テスト中…",
+        "ok": "接続済み · {{count}} 個のモデル",
+        "failed": "サーバーに接続できませんでした: {{error}}"
+      },
+      "use": {
+        "title": "音声入力に使用",
+        "description": "STT サーバーを音声入力用のモデルにします。モデルページで選択したり、そこでフォールバックとして設定したりすることもできます。",
+        "button": "音声入力に使用",
+        "inUse": "音声入力に使用中"
+      },
+      "transcription": {
+        "title": "文字起こし",
+        "description": "停止時に各録音を一括でサーバーに送るため、録音全体で話者が一貫して区別されます。"
+      },
+      "model": {
+        "title": "テキスト用モデル",
+        "description": "**話者なしのプレーンテキスト用のサーバーモデル**。既定値: transcribe。"
+      },
+      "speakers": {
+        "label": "話者を区別する",
+        "description": "**サーバーの話者付きモデル（話者分離）を使用し**、話者付きテキストを履歴のプレーンテキストの横に保存します。話者の発言ごとに \"A: …\" の段落が 1 つ作られます。声が 1 人だけの場合はテキストのみです。"
+      },
+      "speakersModel": {
+        "title": "話者付きモデル",
+        "description": "**話者を区別するサーバーのモデル。** OpenAI 形式のセグメントを返すモデル（例: transcribe-diarize-openai）でも、\"A: …\" の段落で応答するモデルでも動作します。"
+      },
+      "paste": {
+        "title": "貼り付ける内容",
+        "description": "**録音後に貼り付けるテキスト。** 履歴にはどちらの場合も両方が保存され、テキスト / 話者の切り替えでどちらでも表示・コピーできます。",
+        "options": {
+          "text": "テキストのみ",
+          "speakers": "話者付きテキスト"
+        }
+      },
+      "customWords": "カスタム単語（一般 › カスタム単語）は語彙（prompt フィールド）としてサーバーに送信され、他のモデルと同様に応答内で修正されます。",
+      "affixText": {
+        "title": "プレーンテキストの前後",
+        "description": "プレーンテキストとして貼り付ける録音の前後に追加するテキスト。例: 出どころを示すラベル。全体の接頭辞と接尾辞の内側に入ります。"
+      },
+      "affixSpeakers": {
+        "title": "話者付きテキストの前後",
+        "description": "話者付きで貼り付ける録音の前後に追加するテキスト。例: \"会議メモ:\"。全体の接頭辞と接尾辞の内側に入ります。"
+      }
+    }
   },
   "common": {
     "loading": "読み込み中...",
@@ -1976,7 +2074,8 @@
     "transcriptionFailed": "文字起こしに失敗しました: {{reason}}。選択したモデルが正常に動作しているか確認して、もう一度お試しください。",
     "pasteFailedHistoryOnly": "文字起こしの貼り付けに失敗しました: {{reason}}。クリップボードは変更されていません — テキストは履歴に保存されています。{{recovery}}",
     "recoverWithPasteLast": "{{shortcut}}を押して貼り付けてください。",
-    "recoverFromHistory": "設定 › 履歴を開いてコピーしてください。"
+    "recoverFromHistory": "設定 › 履歴を開いてコピーしてください。",
+    "transcriptionFallback": "{{from}} がこの録音を文字起こしできなかったため、{{to}} が文字起こししました"
   },
   "flm": {
     "windowsApplicationControlBlocked": "Windows アプリケーション制御は、flm.exe が署名されていないためブロックしました。NPU エンジンは利用できません。別の文字起こしモデルを選択してください。",
@@ -2224,6 +2323,22 @@
       "proxy": {
         "title": "Works behind a proxy that asks for a sign-in",
         "description": "Model downloads, update checks and online providers now use the proxy set in Windows and sign in to it with your Windows account (NTLM / Negotiate), as a browser does. A manual proxy with a user name and password can be set in Advanced settings > Proxy."
+      },
+      "sttServer": {
+        "title": "話者に対応した独自の STT サーバー",
+        "description": "詳細設定 › STT サーバーで、自分の音声認識サーバー（OpenAI 互換）を接続できます。話者を区別できる場合、履歴にはプレーンテキストの横に話者付きの録音が表示され、どちらを貼り付けるかを選べます。それぞれ独自の接頭辞と接尾辞を設定できます。"
+      },
+      "failover": {
+        "title": "最初のモデルが失敗したときの 2 番目・3 番目のモデル",
+        "description": "モデルページで最大 2 つの追加モデルを選べます。音声入力モデルが録音を文字起こしできないとき（サーバーが停止している、ネットワークが切れた）は次のモデルが担当し、オンラインモデルは録音開始と同時に確認されます。"
+      },
+      "huggingFace": {
+        "title": "Hugging Face の Parakeet モデル",
+        "description": "モデルページで Hugging Face から新しい、またはファインチューニングされた Parakeet モデルを検索し、確認して追加できます。Handy 同梱の Parakeet と同じようにこの PC で動作します。"
+      },
+      "modelSettings": {
+        "title": "カードからモデルの設定を開く",
+        "description": "モデルカードの歯車、または使用中のモデルのカードをクリックすると、そのモデル固有の設定が開きます。履歴の再文字起こしボタンのアイコンが新しくなりました。"
       }
     },
     "installed": "インストール済み"

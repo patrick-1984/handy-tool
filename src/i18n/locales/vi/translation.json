@@ -70,7 +70,8 @@
     "transcriptionProviders": "Nhà cung cấp phiên âm",
     "llmProviders": "Nhà cung cấp LLM",
     "advancedSettings": "Cài đặt nâng cao",
-    "moreTools": "Công cụ khác"
+    "moreTools": "Công cụ khác",
+    "sttServer": "Máy chủ STT"
   },
   "helpMode": {
     "button": "Chế độ trợ giúp: trỏ vào một cài đặt để xem nó làm gì",
@@ -548,7 +549,8 @@
     "cancelDownload": "Hủy tải xuống",
     "ready": "Sẵn sàng",
     "useModel": "Dùng mô hình này",
-    "inUse": "Được dùng cho mọi lần đọc chính tả."
+    "inUse": "Được dùng cho mọi lần đọc chính tả.",
+    "configureModel": "Cài đặt của {{modelName}}"
   },
   "settings": {
     "modelSettings": {
@@ -574,7 +576,36 @@
       },
       "noModelsMatch": "Không có mô hình nào khớp với bộ lọc này.",
       "yourModels": "Mô hình đã tải",
-      "availableModels": "Có sẵn để tải xuống"
+      "availableModels": "Có sẵn để tải xuống",
+      "fallback": {
+        "title": "Nếu mô hình đọc chính tả thất bại",
+        "description": "Tối đa hai mô hình bổ sung, được thử theo thứ tự này khi một bản ghi không thể chép lời: máy chủ ngừng hoạt động, mất mạng, yêu cầu thất bại. Mô hình trực tuyến được kiểm tra khi bản ghi bắt đầu, và mô hình tiếp theo sẽ thay thế ngay nếu nó không phản hồi.",
+        "none": "Không có",
+        "second": {
+          "title": "Mô hình thứ hai",
+          "description": "Chép lời bản ghi khi mô hình đọc chính tả của bạn không thể. Bất kỳ mô hình đã tải xuống hoặc trực tuyến nào."
+        },
+        "third": {
+          "title": "Mô hình thứ ba",
+          "description": "Chép lời bản ghi khi cả mô hình thứ hai cũng không thể."
+        }
+      },
+      "huggingFace": {
+        "title": "Parakeet từ Hugging Face",
+        "description": "Các mô hình Parakeet mới hơn hoặc đã tinh chỉnh (bản xuất ONNX có cấu trúc giống mô hình đi kèm Handy), được chạy bởi engine Parakeet riêng của Handy trên PC này.",
+        "searchDescription": "**Tìm mô hình Parakeet ONNX trên Hugging Face**, được tải nhiều nhất trước, hoặc nhập kho dưới dạng owner/name. Kiểm tra một mô hình để biết Handy có dùng được không và kích thước bao nhiêu, rồi thêm nó: nó sẽ được tải xuống như mọi mô hình.",
+        "placeholder": "Tìm kiếm, hoặc owner/name",
+        "search": "Tìm kiếm",
+        "searchFailed": "Không thể tìm trên Hugging Face: {{error}}",
+        "checkFailed": "Không thể đọc mô hình: {{error}}",
+        "noResults": "Không tìm thấy mô hình Parakeet ONNX nào.",
+        "downloads": "{{count}} lượt tải",
+        "size": "{{size}} MB",
+        "incompatible": "không dùng được: {{reason}}",
+        "check": "Kiểm tra",
+        "added": "Đã thêm",
+        "add": "Thêm và tải xuống"
+      }
     },
     "general": {
       "title": "Chung",
@@ -1561,7 +1592,12 @@
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
       "transcribeAgainFailed": "Could not transcribe it: {{error}}",
       "noTranscript": "No transcript — transcribe the recording with the ⟲ button.",
-      "noTranscriptNoAudio": "No transcript."
+      "noTranscriptNoAudio": "No transcript.",
+      "view": {
+        "label": "Hiện văn bản có hoặc không có người nói",
+        "text": "Văn bản",
+        "speakers": "Người nói"
+      }
     },
     "debug": {
       "title": "Gỡ lỗi",
@@ -1903,7 +1939,69 @@
       "error": "Không thể tải mô hình",
       "noMatches": "Không có mô hình khớp — nhập để dùng id tùy chỉnh"
     },
-    "revealHint": "Bật để xem thêm cài đặt."
+    "revealHint": "Bật để xem thêm cài đặt.",
+    "sttServer": {
+      "server": {
+        "title": "Máy chủ STT của bạn",
+        "description": "Máy chủ chuyển giọng nói thành văn bản của riêng bạn (trên PC này hoặc trong mạng của bạn) hỗ trợ API chép lời của OpenAI. Nếu nó phân biệt được người nói, Handy sẽ lưu ai đã nói gì."
+      },
+      "url": {
+        "title": "Địa chỉ máy chủ",
+        "description": "**Địa chỉ API của máy chủ, kèm phiên bản**, ví dụ http://192.168.1.10:8000/v1. Handy gửi mỗi bản ghi đến {address}/audio/transcriptions."
+      },
+      "key": {
+        "title": "Khóa API",
+        "description": "Chỉ khi máy chủ yêu cầu. Được gửi dưới dạng bearer token.",
+        "placeholder": "Tùy chọn"
+      },
+      "test": {
+        "title": "Kiểm tra máy chủ",
+        "description": "Hỏi máy chủ có những mô hình nào (GET {address}/models) và điền vào các danh sách mô hình bên dưới.",
+        "button": "Kiểm tra",
+        "busy": "Đang kiểm tra…",
+        "ok": "Đã kết nối · {{count}} mô hình",
+        "failed": "Không thể kết nối máy chủ: {{error}}"
+      },
+      "use": {
+        "title": "Dùng để đọc chính tả",
+        "description": "Đặt máy chủ STT làm mô hình đọc chính tả của bạn. Bạn cũng có thể chọn nó trên trang Mô hình hoặc đặt nó làm dự phòng ở đó.",
+        "button": "Dùng để đọc chính tả",
+        "inUse": "Đang dùng để đọc chính tả"
+      },
+      "transcription": {
+        "title": "Chép lời",
+        "description": "Mỗi bản ghi được gửi đến máy chủ trọn vẹn khi bạn dừng, để người nói được phân biệt nhất quán trong toàn bộ bản ghi."
+      },
+      "model": {
+        "title": "Mô hình cho văn bản",
+        "description": "**Mô hình của máy chủ cho văn bản thuần**, không có người nói. Mặc định: transcribe."
+      },
+      "speakers": {
+        "label": "Phân biệt người nói",
+        "description": "**Dùng mô hình có người nói của máy chủ (phân tách người nói)** và lưu văn bản có người nói trong Lịch sử bên cạnh văn bản thuần, mỗi lượt nói một đoạn \"A: …\". Nếu chỉ có một giọng thì chỉ có văn bản."
+      },
+      "speakersModel": {
+        "title": "Mô hình có người nói",
+        "description": "**Mô hình của máy chủ phân biệt người nói.** Mô hình trả về phân đoạn kiểu OpenAI (ví dụ transcribe-diarize-openai) hoặc mô hình trả lời bằng các đoạn \"A: …\" đều dùng được."
+      },
+      "paste": {
+        "title": "Dán nội dung gì",
+        "description": "**Văn bản được dán sau một bản ghi.** Lịch sử luôn giữ cả hai, và công tắc Văn bản / Người nói của nó hiển thị và sao chép bất kỳ bản nào.",
+        "options": {
+          "text": "Chỉ văn bản",
+          "speakers": "Văn bản có người nói"
+        }
+      },
+      "customWords": "Các từ tùy chỉnh của bạn (Chung › Từ tùy chỉnh) được gửi đến máy chủ làm từ vựng (trường prompt) và được sửa trong câu trả lời của nó, như với mọi mô hình.",
+      "affixText": {
+        "title": "Quanh văn bản thuần",
+        "description": "Văn bản thêm vào trước và sau bản ghi được dán dưới dạng văn bản thuần, ví dụ nhãn cho biết nguồn gốc. Nằm bên trong tiền tố và hậu tố chung."
+      },
+      "affixSpeakers": {
+        "title": "Quanh văn bản có người nói",
+        "description": "Văn bản thêm vào trước và sau bản ghi được dán kèm người nói, ví dụ \"Ghi chú cuộc họp:\". Nằm bên trong tiền tố và hậu tố chung."
+      }
+    }
   },
   "common": {
     "loading": "Đang tải...",
@@ -1983,7 +2081,8 @@
     "transcriptionFailed": "Phiên âm không thành công: {{reason}}. Hãy kiểm tra xem mô hình đã chọn có hoạt động không, rồi thử lại.",
     "pasteFailedHistoryOnly": "Dán bản phiên âm không thành công: {{reason}}. Clipboard không bị thay đổi — văn bản đã được lưu trong Lịch sử. {{recovery}}",
     "recoverWithPasteLast": "Nhấn {{shortcut}} để dán.",
-    "recoverFromHistory": "Mở Cài đặt › Lịch sử để sao chép."
+    "recoverFromHistory": "Mở Cài đặt › Lịch sử để sao chép.",
+    "transcriptionFallback": "{{from}} không thể chép lời bản ghi này, nên {{to}} đã chép lời thay"
   },
   "flm": {
     "windowsApplicationControlBlocked": "Kiểm soát ứng dụng Windows đã chặn flm.exe vì tệp này chưa được ký. Công cụ NPU không khả dụng. Hãy chọn một mô hình phiên âm khác.",
@@ -2224,6 +2323,22 @@
       "proxy": {
         "title": "Works behind a proxy that asks for a sign-in",
         "description": "Model downloads, update checks and online providers now use the proxy set in Windows and sign in to it with your Windows account (NTLM / Negotiate), as a browser does. A manual proxy with a user name and password can be set in Advanced settings > Proxy."
+      },
+      "sttServer": {
+        "title": "Máy chủ STT của riêng bạn, có người nói",
+        "description": "Kết nối máy chủ chuyển giọng nói thành văn bản của riêng bạn (tương thích OpenAI) trong Cài đặt nâng cao › Máy chủ STT. Nếu nó phân biệt được người nói, Lịch sử hiển thị bản ghi có người nói bên cạnh văn bản thuần, và bạn chọn bản nào được dán, mỗi bản có tiền tố và hậu tố riêng."
+      },
+      "failover": {
+        "title": "Mô hình thứ hai và thứ ba nếu mô hình đầu thất bại",
+        "description": "Chọn tối đa hai mô hình bổ sung trên trang Mô hình. Khi mô hình đọc chính tả không thể chép lời một bản ghi (máy chủ của nó ngừng hoạt động, mất mạng), mô hình tiếp theo sẽ làm, và mô hình trực tuyến được kiểm tra ngay khi bản ghi bắt đầu."
+      },
+      "huggingFace": {
+        "title": "Mô hình Parakeet từ Hugging Face",
+        "description": "Tìm các mô hình Parakeet mới hơn hoặc đã tinh chỉnh trên Hugging Face từ trang Mô hình, kiểm tra một mô hình và thêm nó: nó chạy trên PC này giống như Parakeet đi kèm Handy."
+      },
+      "modelSettings": {
+        "title": "Cài đặt của mô hình từ thẻ của nó",
+        "description": "Biểu tượng bánh răng trên thẻ mô hình, hoặc nhấp vào thẻ của mô hình đang dùng, sẽ mở cài đặt riêng của mô hình đó. Nút Chép lời lại trong Lịch sử có biểu tượng mới."
       }
     },
     "installed": "Đã cài"

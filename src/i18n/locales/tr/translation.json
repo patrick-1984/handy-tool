@@ -70,7 +70,8 @@
     "transcriptionProviders": "Transkripsiyon sağlayıcıları",
     "llmProviders": "LLM sağlayıcıları",
     "advancedSettings": "Gelişmiş ayarlar",
-    "moreTools": "Diğer araçlar"
+    "moreTools": "Diğer araçlar",
+    "sttServer": "STT sunucusu"
   },
   "helpMode": {
     "button": "Yardım modu: ne yaptığını görmek için bir ayarın üzerine gelin",
@@ -548,7 +549,8 @@
     "cancelDownload": "İndirmeyi iptal et",
     "ready": "Hazır",
     "useModel": "Bu modeli kullan",
-    "inUse": "Tüm dikteler için kullanılıyor."
+    "inUse": "Tüm dikteler için kullanılıyor.",
+    "configureModel": "{{modelName}} ayarları"
   },
   "settings": {
     "modelSettings": {
@@ -574,7 +576,36 @@
       },
       "noModelsMatch": "Bu filtreyle eşleşen model yok.",
       "yourModels": "İndirilen modeller",
-      "availableModels": "İndirilebilir"
+      "availableModels": "İndirilebilir",
+      "fallback": {
+        "title": "Dikte modeliniz başarısız olursa",
+        "description": "Bir kayıt yazıya dökülemediğinde bu sırayla denenen en fazla iki ek model: sunucu çalışmıyor, ağ koptu, bir istek başarısız oldu. Çevrimiçi bir model kayıt başlarken kontrol edilir ve yanıt vermezse sıradaki model hemen devralır.",
+        "none": "Yok",
+        "second": {
+          "title": "İkinci model",
+          "description": "Dikte modeliniz yapamadığında kaydı yazıya döker. İndirilmiş veya çevrimiçi herhangi bir model."
+        },
+        "third": {
+          "title": "Üçüncü model",
+          "description": "İkinci model de yapamadığında kaydı yazıya döker."
+        }
+      },
+      "huggingFace": {
+        "title": "Hugging Face'ten Parakeet",
+        "description": "Daha yeni veya ince ayarlı Parakeet modelleri (Handy ile gelenle aynı düzende ONNX dışa aktarımları), bu PC'de Handy'nin kendi Parakeet motoruyla çalıştırılır.",
+        "searchDescription": "**Hugging Face'te Parakeet ONNX modellerini arar**, en çok indirilenler önce; ya da bir depoyu owner/name olarak yazın. Handy'nin kullanıp kullanamayacağını ve boyutunu görmek için birini kontrol edin, sonra ekleyin: her model gibi indirilir.",
+        "placeholder": "Ara veya owner/name",
+        "search": "Ara",
+        "searchFailed": "Hugging Face'te arama yapılamadı: {{error}}",
+        "checkFailed": "Model okunamadı: {{error}}",
+        "noResults": "Parakeet ONNX modeli bulunamadı.",
+        "downloads": "{{count}} indirme",
+        "size": "{{size}} MB",
+        "incompatible": "kullanılamaz: {{reason}}",
+        "check": "Kontrol et",
+        "added": "Eklendi",
+        "add": "Ekle ve indir"
+      }
     },
     "general": {
       "title": "Genel",
@@ -1561,7 +1592,12 @@
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
       "transcribeAgainFailed": "Could not transcribe it: {{error}}",
       "noTranscript": "No transcript — transcribe the recording with the ⟲ button.",
-      "noTranscriptNoAudio": "No transcript."
+      "noTranscriptNoAudio": "No transcript.",
+      "view": {
+        "label": "Metni konuşmacılarla veya konuşmacılar olmadan göster",
+        "text": "Metin",
+        "speakers": "Konuşmacılar"
+      }
     },
     "debug": {
       "title": "Hata Ayıklama",
@@ -1903,7 +1939,69 @@
       "error": "Modeller yüklenemedi",
       "noMatches": "Eşleşen model yok — özel bir kimlik kullanmak için yazın"
     },
-    "revealHint": "Daha fazla ayar görmek için açın."
+    "revealHint": "Daha fazla ayar görmek için açın.",
+    "sttServer": {
+      "server": {
+        "title": "STT sunucunuz",
+        "description": "OpenAI transkripsiyon API'sini destekleyen kendi konuşmadan metne sunucunuz (bu PC'de veya ağınızda). Konuşmacıları ayırt edebiliyorsa Handy kimin ne söylediğini kaydeder."
+      },
+      "url": {
+        "title": "Sunucu adresi",
+        "description": "**Sunucunun sürümünü içeren API adresi**, ör. http://192.168.1.10:8000/v1. Handy her kaydı {address}/audio/transcriptions adresine gönderir."
+      },
+      "key": {
+        "title": "API anahtarı",
+        "description": "Yalnızca sunucunuz istiyorsa. Bearer token olarak gönderilir.",
+        "placeholder": "İsteğe bağlı"
+      },
+      "test": {
+        "title": "Sunucuyu test et",
+        "description": "Sunucuya hangi modellere sahip olduğunu sorar (GET {address}/models) ve aşağıdaki model listelerini doldurur.",
+        "button": "Test et",
+        "busy": "Test ediliyor…",
+        "ok": "Bağlandı · {{count}} model",
+        "failed": "Sunucuya ulaşılamadı: {{error}}"
+      },
+      "use": {
+        "title": "Dikte için kullan",
+        "description": "STT sunucusunu dikte modeliniz yapar. Ayrıca Modeller sayfasında seçebilir veya orada yedek olarak ayarlayabilirsiniz.",
+        "button": "Dikte için kullan",
+        "inUse": "Dikte için kullanılıyor"
+      },
+      "transcription": {
+        "title": "Transkripsiyon",
+        "description": "Her kayıt, durdurduğunuzda sunucuya tek parça halinde gider; böylece konuşmacılar kayıt boyunca tutarlı biçimde ayırt edilir."
+      },
+      "model": {
+        "title": "Metin modeli",
+        "description": "**Sunucunun düz metin modeli**, konuşmacısız. Varsayılan: transcribe."
+      },
+      "speakers": {
+        "label": "Konuşmacıları ayırt et",
+        "description": "**Sunucunun konuşmacılı modelini (diarizasyon) kullanır** ve konuşmacılı metni Geçmiş'te düz metnin yanına kaydeder; her konuşma sırası için bir \"A: …\" paragrafı. Tek ses varsa yalnızca metin olur."
+      },
+      "speakersModel": {
+        "title": "Konuşmacılı model",
+        "description": "**Sunucunun konuşmacıları ayırt eden modeli.** OpenAI tarzı segmentler veren bir model (ör. transcribe-diarize-openai) de, \"A: …\" paragraflarıyla yanıt veren bir model de çalışır."
+      },
+      "paste": {
+        "title": "Ne yapıştırılsın",
+        "description": "**Bir kayıttan sonra yapıştırılan metin.** Geçmiş her durumda ikisini de saklar ve Metin / Konuşmacılar anahtarı istediğinizi gösterir ve kopyalar.",
+        "options": {
+          "text": "Yalnızca metin",
+          "speakers": "Konuşmacılı metin"
+        }
+      },
+      "customWords": "Özel kelimeleriniz (Genel › Özel kelimeler) sunucuya kelime dağarcığı olarak (prompt alanı) gönderilir ve her modelde olduğu gibi yanıtında düzeltilir.",
+      "affixText": {
+        "title": "Düz metnin çevresine",
+        "description": "Düz metin olarak yapıştırılan bir kaydın önüne ve arkasına eklenen metin, ör. nereden geldiğini belirten bir etiket. Genel önek ve sonekin içine yerleşir."
+      },
+      "affixSpeakers": {
+        "title": "Konuşmacılı metnin çevresine",
+        "description": "Konuşmacılarla yapıştırılan bir kaydın önüne ve arkasına eklenen metin, ör. \"Toplantı notları:\". Genel önek ve sonekin içine yerleşir."
+      }
+    }
   },
   "common": {
     "loading": "Yükleniyor...",
@@ -1976,7 +2074,8 @@
     "transcriptionFailed": "Transkripsiyon başarısız oldu: {{reason}}. Seçili modelinizin çalıştığından emin olun ve tekrar deneyin.",
     "pasteFailedHistoryOnly": "Transkripsiyon yapıştırılamadı: {{reason}}. Panonuz değiştirilmedi — metin Geçmiş'te kaydedildi. {{recovery}}",
     "recoverWithPasteLast": "Yapıştırmak için {{shortcut}} tuşuna basın.",
-    "recoverFromHistory": "Kopyalamak için Ayarlar › Geçmiş'i açın."
+    "recoverFromHistory": "Kopyalamak için Ayarlar › Geçmiş'i açın.",
+    "transcriptionFallback": "{{from}} bu kaydı yazıya dökemedi, bu yüzden {{to}} döktü"
   },
   "flm": {
     "windowsApplicationControlBlocked": "Windows Uygulama Denetimi, imzalı olmadığı için flm.exe dosyasını engelledi. NPU altyapısı kullanılamıyor. Farklı bir transkripsiyon modeli seçin.",
@@ -2224,6 +2323,22 @@
       "proxy": {
         "title": "Works behind a proxy that asks for a sign-in",
         "description": "Model downloads, update checks and online providers now use the proxy set in Windows and sign in to it with your Windows account (NTLM / Negotiate), as a browser does. A manual proxy with a user name and password can be set in Advanced settings > Proxy."
+      },
+      "sttServer": {
+        "title": "Konuşmacılarıyla kendi STT sunucunuz",
+        "description": "Kendi konuşmadan metne sunucunuzu (OpenAI uyumlu) Gelişmiş ayarlar › STT sunucusu bölümünden bağlayın. Konuşmacıları ayırt ediyorsa Geçmiş, kaydı konuşmacılarla düz metnin yanında gösterir ve hangisinin yapıştırılacağını, her biri kendi önek ve sonekiyle, siz seçersiniz."
+      },
+      "failover": {
+        "title": "İlki başarısız olursa ikinci ve üçüncü bir model",
+        "description": "Modeller sayfasında en fazla iki ek model seçin. Dikte modeliniz bir kaydı yazıya dökemediğinde (sunucusu çalışmıyor, ağ koptu) sıradaki döker ve çevrimiçi bir model kayıt başlar başlamaz kontrol edilir."
+      },
+      "huggingFace": {
+        "title": "Hugging Face'ten Parakeet modelleri",
+        "description": "Modeller sayfasında Hugging Face'te daha yeni veya ince ayarlı Parakeet modellerini arayın, birini kontrol edip ekleyin: Handy ile gelen Parakeet gibi bu PC'de çalışır."
+      },
+      "modelSettings": {
+        "title": "Bir modelin ayarları kartından",
+        "description": "Bir model kartındaki dişli simgesi veya kullanılan modelin kartına tıklamak o modelin kendi ayarlarını açar. Geçmiş'teki Yeniden yazıya dök düğmesinin yeni bir simgesi var."
       }
     },
     "installed": "Yüklü"

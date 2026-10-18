@@ -923,6 +923,7 @@ impl TranscriptionManager {
             audio,
             language.as_deref(),
             Some(prompt.as_str()),
+            use_speakers,
         )?;
         let correct = |text: &str| {
             let corrected = if settings.custom_words.is_empty() {
@@ -944,6 +945,26 @@ impl TranscriptionManager {
             .diarized
             .map(|d| stt_server::correct_diarized(&d, |s| correct(s)));
         Ok(result)
+    }
+
+    /// A dictation take on the Custom STT server: text and, with speakers on,
+    /// the speaker text - only while `expected_model` is the loaded engine.
+    pub fn stt_server_take_expecting(
+        &self,
+        expected_model: &str,
+        audio: &[f32],
+    ) -> Result<crate::managers::stt_server::SttServerResult> {
+        {
+            let engine_guard = self.lock_engine();
+            if !matches!(&engine_guard.engine, Some(LoadedEngine::SttServer)) {
+                return Err(anyhow::anyhow!("The STT server is not the loaded model"));
+            }
+            Self::ensure_expected_model(&engine_guard, expected_model)?;
+        }
+        let settings = get_settings(&self.app_handle);
+        let result = self.stt_server_request(&settings, audio, true);
+        self.maybe_unload_immediately("STT server");
+        result
     }
 
     /// History's "Transcribe again" for a Custom STT server take: the whole
@@ -1880,8 +1901,10 @@ impl TranscriptionManager {
             if matches!(&engine_guard.engine, Some(LoadedEngine::SttServer)) {
                 Self::ensure_expected_model(&engine_guard, expected_model)?;
                 drop(engine_guard);
-                let result = self.stt_server_request(&settings, &audio, true)?;
-                crate::managers::stt_server::set_session_diarized(result.diarized);
+                // Plain text only here: watched folders and other shared-path
+                // callers come through too. A take's speaker text comes from
+                // `stt_server_take_expecting` (failover::transcribe).
+                let result = self.stt_server_request(&settings, &audio, false)?;
                 self.maybe_unload_immediately("STT server");
                 return Ok((result.text, None));
             }

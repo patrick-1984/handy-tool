@@ -1521,7 +1521,7 @@ impl ShortcutAction for TranscribeAction {
         // Start a fresh per-recording OpenRouter cost tally.
         crate::managers::openrouter_transcription::reset_session_cost();
         crate::managers::stt_server::reset_session_diarized();
-        crate::managers::failover::start_take(app, ts);
+        crate::managers::failover::start_take(app);
 
         let mut recording_started = false;
         let mut start_failure = None;

@@ -70,7 +70,8 @@
     "transcriptionProviders": "Dostawcy transkrypcji",
     "llmProviders": "Dostawcy LLM",
     "advancedSettings": "Ustawienia zaawansowane",
-    "moreTools": "Więcej narzędzi"
+    "moreTools": "Więcej narzędzi",
+    "sttServer": "Serwer STT"
   },
   "helpMode": {
     "button": "Tryb pomocy: wskaż ustawienie, aby zobaczyć, co robi",
@@ -548,7 +549,8 @@
     "cancelDownload": "Anuluj pobieranie",
     "ready": "Gotowy",
     "useModel": "Użyj tego modelu",
-    "inUse": "Używany do całego dyktowania."
+    "inUse": "Używany do całego dyktowania.",
+    "configureModel": "Ustawienia modelu {{modelName}}"
   },
   "settings": {
     "modelSettings": {
@@ -574,7 +576,36 @@
       },
       "noModelsMatch": "Żadne modele nie pasują do tego filtra.",
       "yourModels": "Pobrane modele",
-      "availableModels": "Dostępne do pobrania"
+      "availableModels": "Dostępne do pobrania",
+      "fallback": {
+        "title": "Gdy model dyktowania zawiedzie",
+        "description": "Maksymalnie dwa dodatkowe modele, próbowane w tej kolejności, gdy nagrania nie da się przetranskrybować: serwer nie działa, sieć padła, żądanie się nie powiodło. Model online jest sprawdzany na początku nagrania, a jeśli nie odpowiada, od razu przejmuje kolejny model.",
+        "none": "Brak",
+        "second": {
+          "title": "Drugi model",
+          "description": "Transkrybuje nagranie, gdy nie może tego zrobić Twój model dyktowania. Dowolny pobrany model lub model online."
+        },
+        "third": {
+          "title": "Trzeci model",
+          "description": "Transkrybuje nagranie, gdy nie może tego zrobić również drugi model."
+        }
+      },
+      "huggingFace": {
+        "title": "Parakeet z Hugging Face",
+        "description": "Nowsze lub dostrojone modele Parakeet (eksporty ONNX o takiej samej strukturze jak model dostarczany z Handy), uruchamiane przez własny silnik Parakeet Handy na tym komputerze.",
+        "searchDescription": "**Wyszukuje modele Parakeet ONNX na Hugging Face**, od najczęściej pobieranych, albo wpisz repozytorium jako owner/name. Sprawdź model, aby zobaczyć, czy Handy może go użyć i ile zajmuje, a potem go dodaj: pobierze się jak każdy model.",
+        "placeholder": "Szukaj lub owner/name",
+        "search": "Szukaj",
+        "searchFailed": "Nie udało się przeszukać Hugging Face: {{error}}",
+        "checkFailed": "Nie udało się odczytać modelu: {{error}}",
+        "noResults": "Nie znaleziono modeli Parakeet ONNX.",
+        "downloads": "Pobrania: {{count}}",
+        "size": "{{size}} MB",
+        "incompatible": "nie do użycia: {{reason}}",
+        "check": "Sprawdź",
+        "added": "Dodano",
+        "add": "Dodaj i pobierz"
+      }
     },
     "general": {
       "title": "Ogólne",
@@ -1561,7 +1592,12 @@
       "transcribeAgainConfirm": "Zastąpić tę transkrypcję nową transkrypcją nagrania?",
       "transcribeAgainFailed": "Nie udało się przetranskrybować: {{error}}",
       "noTranscript": "Brak transkrypcji — przetranskrybuj nagranie przyciskiem ⟲.",
-      "noTranscriptNoAudio": "Brak transkrypcji."
+      "noTranscriptNoAudio": "Brak transkrypcji.",
+      "view": {
+        "label": "Pokaż tekst z mówcami lub bez nich",
+        "text": "Tekst",
+        "speakers": "Mówcy"
+      }
     },
     "debug": {
       "title": "Debugowanie",
@@ -1903,7 +1939,69 @@
       "error": "Nie udało się wczytać modeli",
       "noMatches": "Brak pasujących modeli — wpisz, aby użyć niestandardowego identyfikatora"
     },
-    "revealHint": "Włącz, aby zobaczyć więcej ustawień."
+    "revealHint": "Włącz, aby zobaczyć więcej ustawień.",
+    "sttServer": {
+      "server": {
+        "title": "Twój serwer STT",
+        "description": "Własny serwer rozpoznawania mowy (na tym komputerze lub w Twojej sieci), obsługujący API transkrypcji OpenAI. Jeśli potrafi rozróżniać mówców, Handy zapisuje, kto co powiedział."
+      },
+      "url": {
+        "title": "Adres serwera",
+        "description": "**Adres API serwera, z wersją**, np. http://192.168.1.10:8000/v1. Handy wysyła każde nagranie na {address}/audio/transcriptions."
+      },
+      "key": {
+        "title": "Klucz API",
+        "description": "Tylko jeśli serwer go wymaga. Wysyłany jako token bearer.",
+        "placeholder": "Opcjonalnie"
+      },
+      "test": {
+        "title": "Przetestuj serwer",
+        "description": "Pyta serwer, jakie ma modele (GET {address}/models), i wypełnia poniższe listy modeli.",
+        "button": "Testuj",
+        "busy": "Testowanie…",
+        "ok": "Połączono · modele: {{count}}",
+        "failed": "Nie udało się połączyć z serwerem: {{error}}"
+      },
+      "use": {
+        "title": "Używaj do dyktowania",
+        "description": "Ustawia serwer STT jako Twój model dyktowania. Możesz go też wybrać na stronie Modele lub ustawić tam jako model zapasowy.",
+        "button": "Używaj do dyktowania",
+        "inUse": "Używany do dyktowania"
+      },
+      "transcription": {
+        "title": "Transkrypcja",
+        "description": "Po zatrzymaniu każde nagranie trafia na serwer w całości, dzięki czemu mówcy są rozróżniani spójnie w całym nagraniu."
+      },
+      "model": {
+        "title": "Model do tekstu",
+        "description": "**Model serwera do zwykłego tekstu**, bez mówców. Domyślnie: transcribe."
+      },
+      "speakers": {
+        "label": "Rozróżniaj mówców",
+        "description": "**Używa modelu serwera z mówcami (diaryzacja)** i zapisuje tekst z mówcami w Historii obok zwykłego tekstu, jeden akapit \"A: …\" na każdą wypowiedź. Przy jednym głosie jest tylko tekst."
+      },
+      "speakersModel": {
+        "title": "Model z mówcami",
+        "description": "**Model serwera, który rozróżnia mówców.** Działa zarówno model z segmentami w stylu OpenAI (np. transcribe-diarize-openai), jak i taki, który odpowiada akapitami \"A: …\"."
+      },
+      "paste": {
+        "title": "Co wklejać",
+        "description": "**Tekst wklejany po nagraniu.** Historia i tak zachowuje oba, a jej przełącznik Tekst / Mówcy pokazuje i kopiuje każdy z nich.",
+        "options": {
+          "text": "Tylko tekst",
+          "speakers": "Tekst z mówcami"
+        }
+      },
+      "customWords": "Twoje własne słowa (Ogólne › Własne słowa) są wysyłane na serwer jako słownictwo (pole prompt) i poprawiane w jego odpowiedzi, jak w przypadku każdego modelu.",
+      "affixText": {
+        "title": "Wokół zwykłego tekstu",
+        "description": "Tekst dodawany przed i po nagraniu wklejanym jako zwykły tekst, np. etykieta mówiąca, skąd pochodzi. Trafia wewnątrz ogólnego prefiksu i sufiksu."
+      },
+      "affixSpeakers": {
+        "title": "Wokół tekstu z mówcami",
+        "description": "Tekst dodawany przed i po nagraniu wklejanym z mówcami, np. \"Notatki ze spotkania:\". Trafia wewnątrz ogólnego prefiksu i sufiksu."
+      }
+    }
   },
   "common": {
     "loading": "Wczytywanie...",
@@ -2049,7 +2147,8 @@
     "transcriptionFailed": "Transkrypcja nie powiodła się: {{reason}}. Sprawdź, czy wybrany model działa poprawnie, i spróbuj ponownie.",
     "pasteFailedHistoryOnly": "Wklejanie transkrypcji nie powiodło się: {{reason}}. Schowek pozostał bez zmian — tekst został zapisany w Historii. {{recovery}}",
     "recoverWithPasteLast": "Naciśnij {{shortcut}}, aby go wkleić.",
-    "recoverFromHistory": "Otwórz Ustawienia › Historia, aby go skopiować."
+    "recoverFromHistory": "Otwórz Ustawienia › Historia, aby go skopiować.",
+    "transcriptionFallback": "{{from}} nie mógł przetranskrybować tego nagrania, więc zrobił to {{to}}"
   },
   "flm": {
     "windowsApplicationControlBlocked": "Funkcja Kontrola aplikacji systemu Windows zablokowała plik flm.exe, ponieważ nie jest podpisany. Silnik NPU jest niedostępny. Wybierz inny model transkrypcji.",
@@ -2224,6 +2323,22 @@
       "proxy": {
         "title": "Działa za proxy, które wymaga logowania",
         "description": "Pobieranie modeli, sprawdzanie aktualizacji i dostawcy online używają teraz proxy ustawionego w Windows i logują się do niego kontem Windows (NTLM / Negotiate), tak jak przeglądarka. Ręczne proxy z nazwą użytkownika i hasłem ustawisz w Ustawieniach zaawansowanych > Proxy."
+      },
+      "sttServer": {
+        "title": "Własny serwer STT, z mówcami",
+        "description": "Podłącz własny serwer rozpoznawania mowy (zgodny z OpenAI) w Ustawienia zaawansowane › Serwer STT. Jeśli rozróżnia mówców, Historia pokazuje nagranie z mówcami obok zwykłego tekstu, a Ty wybierasz, który wariant jest wklejany, każdy z własnym prefiksem i sufiksem."
+      },
+      "failover": {
+        "title": "Drugi i trzeci model, gdy pierwszy zawiedzie",
+        "description": "Wybierz do dwóch dodatkowych modeli na stronie Modele. Gdy Twój model dyktowania nie może przetranskrybować nagrania (jego serwer nie działa, sieć padła), robi to kolejny, a model online jest sprawdzany zaraz na początku nagrania."
+      },
+      "huggingFace": {
+        "title": "Modele Parakeet z Hugging Face",
+        "description": "Wyszukaj na stronie Modele nowsze lub dostrojone modele Parakeet na Hugging Face, sprawdź wybrany i dodaj go: działa na tym komputerze tak jak Parakeet dostarczany z Handy."
+      },
+      "modelSettings": {
+        "title": "Ustawienia modelu z jego karty",
+        "description": "Ikona zębatki na karcie modelu albo kliknięcie karty używanego modelu otwiera ustawienia tego modelu. Przycisk Transkrybuj ponownie w Historii ma nową ikonę."
       }
     },
     "installed": "Zainstalowana"

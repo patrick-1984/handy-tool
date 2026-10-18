@@ -70,7 +70,8 @@
     "transcriptionProviders": "Poskytovatelé přepisu",
     "llmProviders": "Poskytovatelé LLM",
     "advancedSettings": "Pokročilá nastavení",
-    "moreTools": "Další nástroje"
+    "moreTools": "Další nástroje",
+    "sttServer": "Server STT"
   },
   "helpMode": {
     "button": "Režim nápovědy: najeďte na nastavení a uvidíte, co dělá",
@@ -548,7 +549,8 @@
     "cancelDownload": "Zrušit stahování",
     "ready": "Připraveno",
     "useModel": "Použít tento model",
-    "inUse": "Používá se pro veškeré diktování."
+    "inUse": "Používá se pro veškeré diktování.",
+    "configureModel": "Nastavení modelu {{modelName}}"
   },
   "settings": {
     "modelSettings": {
@@ -574,7 +576,36 @@
       },
       "noModelsMatch": "Tomuto filtru neodpovídají žádné modely.",
       "yourModels": "Stažené modely",
-      "availableModels": "Dostupné ke stažení"
+      "availableModels": "Dostupné ke stažení",
+      "fallback": {
+        "title": "Když model pro diktování selže",
+        "description": "Až dva další modely, zkoušené v tomto pořadí, když záznam nelze přepsat: server neběží, vypadla síť, požadavek selhal. Online model se ověří na začátku záznamu, a pokud neodpovídá, okamžitě převezme práci další model.",
+        "none": "Žádný",
+        "second": {
+          "title": "Druhý model",
+          "description": "Přepíše záznam, když to váš model pro diktování nezvládne. Libovolný stažený nebo online model."
+        },
+        "third": {
+          "title": "Třetí model",
+          "description": "Přepíše záznam, když to nezvládne ani druhý model."
+        }
+      },
+      "huggingFace": {
+        "title": "Parakeet z Hugging Face",
+        "description": "Novější nebo doladěné modely Parakeet (exporty ONNX se stejnou strukturou jako model dodávaný s Handy), spouštěné vlastním enginem Parakeet aplikace Handy na tomto PC.",
+        "searchDescription": "**Vyhledá modely Parakeet ONNX na Hugging Face**, nejstahovanější první, nebo zadejte repozitář jako owner/name. Ověřte model, abyste zjistili, zda ho Handy může použít a jak je velký, a pak ho přidejte: stáhne se jako každý jiný model.",
+        "placeholder": "Hledat, nebo owner/name",
+        "search": "Hledat",
+        "searchFailed": "Hledání na Hugging Face selhalo: {{error}}",
+        "checkFailed": "Model nelze načíst: {{error}}",
+        "noResults": "Nebyly nalezeny žádné modely Parakeet ONNX.",
+        "downloads": "Stažení: {{count}}",
+        "size": "{{size}} MB",
+        "incompatible": "nepoužitelný: {{reason}}",
+        "check": "Ověřit",
+        "added": "Přidáno",
+        "add": "Přidat a stáhnout"
+      }
     },
     "general": {
       "title": "Obecné",
@@ -1561,7 +1592,12 @@
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
       "transcribeAgainFailed": "Could not transcribe it: {{error}}",
       "noTranscript": "No transcript — transcribe the recording with the ⟲ button.",
-      "noTranscriptNoAudio": "No transcript."
+      "noTranscriptNoAudio": "No transcript.",
+      "view": {
+        "label": "Zobrazit text s mluvčími nebo bez nich",
+        "text": "Text",
+        "speakers": "Mluvčí"
+      }
     },
     "debug": {
       "title": "Ladění",
@@ -1903,7 +1939,69 @@
       "error": "Nepodařilo se načíst modely",
       "noMatches": "Žádné odpovídající modely — napište pro použití vlastního id"
     },
-    "revealHint": "Zapnutím zobrazíte další nastavení."
+    "revealHint": "Zapnutím zobrazíte další nastavení.",
+    "sttServer": {
+      "server": {
+        "title": "Váš server STT",
+        "description": "Vlastní server pro převod řeči na text (na tomto PC nebo ve vaší síti), který podporuje transkripční API OpenAI. Pokud umí rozlišit mluvčí, Handy uloží, kdo co řekl."
+      },
+      "url": {
+        "title": "Adresa serveru",
+        "description": "**Adresa API serveru, včetně verze**, např. http://192.168.1.10:8000/v1. Handy posílá každý záznam na {address}/audio/transcriptions."
+      },
+      "key": {
+        "title": "Klíč API",
+        "description": "Jen pokud ho server vyžaduje. Odesílá se jako bearer token.",
+        "placeholder": "Volitelné"
+      },
+      "test": {
+        "title": "Otestovat server",
+        "description": "Zeptá se serveru, jaké má modely (GET {address}/models), a vyplní seznamy modelů níže.",
+        "button": "Otestovat",
+        "busy": "Testování…",
+        "ok": "Připojeno · modely: {{count}}",
+        "failed": "Server není dostupný: {{error}}"
+      },
+      "use": {
+        "title": "Použít pro diktování",
+        "description": "Nastaví server STT jako váš model pro diktování. Můžete ho také vybrat na stránce Modely nebo ho tam nastavit jako záložní.",
+        "button": "Použít pro diktování",
+        "inUse": "Používá se pro diktování"
+      },
+      "transcription": {
+        "title": "Přepis",
+        "description": "Každý záznam se po zastavení odešle na server vcelku, aby byli mluvčí v celém záznamu rozlišeni konzistentně."
+      },
+      "model": {
+        "title": "Model pro text",
+        "description": "**Model serveru pro prostý text**, bez mluvčích. Výchozí: transcribe."
+      },
+      "speakers": {
+        "label": "Rozlišovat mluvčí",
+        "description": "**Použije model serveru s mluvčími (diarizace)** a uloží text s mluvčími do Historie vedle prostého textu, jeden odstavec \"A: …\" na každou promluvu. Při jednom hlase je jen text."
+      },
+      "speakersModel": {
+        "title": "Model s mluvčími",
+        "description": "**Model serveru, který rozlišuje mluvčí.** Funguje model se segmenty ve stylu OpenAI (např. transcribe-diarize-openai) i model, který odpovídá odstavci \"A: …\"."
+      },
+      "paste": {
+        "title": "Co vložit",
+        "description": "**Text vložený po záznamu.** Historie v každém případě uchovává obojí a její přepínač Text / Mluvčí zobrazí a zkopíruje kterýkoli z nich.",
+        "options": {
+          "text": "Jen text",
+          "speakers": "Text s mluvčími"
+        }
+      },
+      "customWords": "Vaše vlastní slova (Obecné › Vlastní slova) se posílají na server jako slovník (pole prompt) a opravují se v jeho odpovědi, stejně jako u každého modelu.",
+      "affixText": {
+        "title": "Kolem prostého textu",
+        "description": "Text přidaný před a za záznam vložený jako prostý text, např. štítek s informací, odkud pochází. Vkládá se uvnitř obecné předpony a přípony."
+      },
+      "affixSpeakers": {
+        "title": "Kolem textu s mluvčími",
+        "description": "Text přidaný před a za záznam vložený s mluvčími, např. \"Poznámky ze schůzky:\". Vkládá se uvnitř obecné předpony a přípony."
+      }
+    }
   },
   "common": {
     "loading": "Načítání...",
@@ -1976,7 +2074,8 @@
     "transcriptionFailed": "Přepis se nezdařil: {{reason}}. Zkontrolujte, že vybraný model funguje, a zkuste to znovu.",
     "pasteFailedHistoryOnly": "Vložení přepisu se nezdařilo: {{reason}}. Schránka zůstala beze změny — text je uložen v historii. {{recovery}}",
     "recoverWithPasteLast": "Stisknutím {{shortcut}} jej vložíte.",
-    "recoverFromHistory": "Otevřete Nastavení › Historie a zkopírujte jej."
+    "recoverFromHistory": "Otevřete Nastavení › Historie a zkopírujte jej.",
+    "transcriptionFallback": "{{from}} tento záznam nepřepsal, takže ho přepsal {{to}}"
   },
   "flm": {
     "windowsApplicationControlBlocked": "Řízení aplikací ve Windows zablokovalo flm.exe, protože není podepsaný. Modul NPU není dostupný. Zvolte jiný model přepisu.",
@@ -2224,6 +2323,22 @@
       "proxy": {
         "title": "Works behind a proxy that asks for a sign-in",
         "description": "Model downloads, update checks and online providers now use the proxy set in Windows and sign in to it with your Windows account (NTLM / Negotiate), as a browser does. A manual proxy with a user name and password can be set in Advanced settings > Proxy."
+      },
+      "sttServer": {
+        "title": "Vlastní server STT, s mluvčími",
+        "description": "Připojte vlastní server pro převod řeči na text (kompatibilní s OpenAI) v Pokročilá nastavení › Server STT. Pokud rozlišuje mluvčí, Historie zobrazí záznam s mluvčími vedle prostého textu a vy si vyberete, který se vloží, každý s vlastní předponou a příponou."
+      },
+      "failover": {
+        "title": "Druhý a třetí model, když první selže",
+        "description": "Vyberte až dva další modely na stránce Modely. Když váš model pro diktování nemůže záznam přepsat (jeho server neběží, vypadla síť), přepíše ho další a online model se ověří hned na začátku záznamu."
+      },
+      "huggingFace": {
+        "title": "Modely Parakeet z Hugging Face",
+        "description": "Na stránce Modely vyhledejte na Hugging Face novější nebo doladěné modely Parakeet, ověřte jeden a přidejte ho: běží na tomto PC stejně jako Parakeet dodávaný s Handy."
+      },
+      "modelSettings": {
+        "title": "Nastavení modelu z jeho karty",
+        "description": "Ozubené kolo na kartě modelu nebo kliknutí na kartu používaného modelu otevře vlastní nastavení tohoto modelu. Tlačítko Přepsat znovu v Historii má novou ikonu."
       }
     },
     "installed": "Nainstalovaná"

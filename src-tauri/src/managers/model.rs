@@ -1092,46 +1092,55 @@ impl ModelManager {
         }
     }
 
-    /// Folders `hf-*` holding a `handy-hf.json` marker: finished ones as
-    /// downloaded models, `*.partial-dir` ones as models still to finish.
+    /// Finished Hugging Face models (`hf-*` folders with a marker) as
+    /// downloaded, and ones still downloading (in `.hf-partial/`) as models
+    /// to finish. A folder renamed by hand (id not matching its repo) is
+    /// skipped.
     fn discover_hf_parakeet_models(
         models_dir: &Path,
         available_models: &mut HashMap<String, ModelInfo>,
     ) {
-        use super::hf_parakeet::{self, STAGING_SUFFIX};
-        let Ok(entries) = fs::read_dir(models_dir) else {
-            return;
-        };
-        let mut found: Vec<(String, hf_parakeet::Marker, bool)> = Vec::new();
-        for entry in entries.flatten() {
-            let path = entry.path();
-            let Some(name) = path
-                .file_name()
-                .and_then(|n| n.to_str())
-                .map(str::to_string)
-            else {
-                continue;
+        use super::hf_parakeet::{self, STAGING_DIR};
+        let scan =
+            |dir: &Path, downloaded: bool, out: &mut Vec<(String, hf_parakeet::Marker, bool)>| {
+                let Ok(entries) = fs::read_dir(dir) else {
+                    return;
+                };
+                for entry in entries.flatten() {
+                    let path = entry.path();
+                    let Some(name) = path
+                        .file_name()
+                        .and_then(|n| n.to_str())
+                        .map(str::to_string)
+                    else {
+                        continue;
+                    };
+                    if !path.is_dir() || !name.starts_with("hf-") {
+                        continue;
+                    }
+                    let Some(marker) = hf_parakeet::read_marker(&path) else {
+                        continue;
+                    };
+                    if name != hf_parakeet::model_id_for(&marker.repo) {
+                        continue;
+                    }
+                    out.push((name, marker, downloaded));
+                }
             };
-            if !path.is_dir() || !name.starts_with("hf-") {
-                continue;
-            }
-            let Some(marker) = hf_parakeet::read_marker(&path) else {
-                continue;
-            };
-            let (id, downloaded) = match name.strip_suffix(STAGING_SUFFIX) {
-                Some(id) => (id.to_string(), false),
-                None => (name.clone(), true),
-            };
-            if id != hf_parakeet::model_id_for(&marker.repo) {
-                continue; // a folder renamed by hand
-            }
-            found.push((id, marker, downloaded));
-        }
-        // A finished folder wins over a leftover staging one.
-        found.sort_by_key(|(_, _, downloaded)| *downloaded);
+        let mut found = Vec::new();
+        scan(&models_dir.join(STAGING_DIR), false, &mut found);
+        // Finished folders come last, so they win over a leftover download.
+        scan(models_dir, true, &mut found);
         for (id, marker, downloaded) in found {
             available_models.insert(id.clone(), Self::hf_parakeet_info(&id, &marker, downloaded));
         }
+    }
+
+    /// The staging folder of a Hugging Face model's download.
+    fn hf_staging_dir(&self, id: &str) -> PathBuf {
+        self.models_dir
+            .join(super::hf_parakeet::STAGING_DIR)
+            .join(id)
     }
 
     /// Adds a Parakeet model from Hugging Face (not downloaded yet): its
@@ -1139,9 +1148,10 @@ impl ModelManager {
     pub fn add_hf_parakeet_model(
         &self,
         repo: &str,
+        revision: &str,
         files: Vec<super::hf_parakeet::HfFile>,
     ) -> Result<ModelInfo> {
-        use super::hf_parakeet::{self, STAGING_SUFFIX};
+        use super::hf_parakeet;
         if !hf_parakeet::valid_repo(repo) {
             return Err(anyhow::anyhow!(
                 "not a Hugging Face repo id (owner/name): {repo}"
@@ -1153,9 +1163,10 @@ impl ModelManager {
         }
         let marker = hf_parakeet::Marker {
             repo: repo.to_string(),
+            revision: revision.to_string(),
             files,
         };
-        let staging = self.models_dir.join(format!("{id}{STAGING_SUFFIX}"));
+        let staging = self.hf_staging_dir(&id);
         fs::create_dir_all(&staging)?;
         hf_parakeet::write_marker(&staging, &marker)?;
         let info = Self::hf_parakeet_info(&id, &marker, false);
@@ -1178,11 +1189,9 @@ impl ModelManager {
         mut cleanup_guard: RegistrationGuard<'_>,
         model_info: &ModelInfo,
     ) -> Result<()> {
-        use super::hf_parakeet::{self, STAGING_SUFFIX};
+        use super::hf_parakeet;
         let model_path = self.models_dir.join(&model_info.filename);
-        let staging = self
-            .models_dir
-            .join(format!("{}{STAGING_SUFFIX}", &model_info.filename));
+        let staging = self.hf_staging_dir(&model_info.filename);
         let marker = hf_parakeet::read_marker(&staging).ok_or_else(|| {
             anyhow::anyhow!("This Hugging Face model's file list is missing; add it again")
         })?;
@@ -1220,17 +1229,34 @@ impl ModelManager {
             if file.path.contains(['/', '\\']) || file.path.contains("..") {
                 return Err(anyhow::anyhow!("unexpected file name: {}", file.path));
             }
-            if done_size(file).is_some() {
-                continue;
-            }
             let target = staging.join(&file.path);
+            if target.exists() {
+                if hf_parakeet::file_matches(&target, file)? {
+                    continue;
+                }
+                // Wrong size or hash: fetch it again.
+                downloaded =
+                    downloaded.saturating_sub(target.metadata().map(|m| m.len()).unwrap_or(0));
+                fs::remove_file(&target)?;
+            }
             let part = staging.join(format!("{}.part", file.path));
             let mut resume_from = part.metadata().map(|m| m.len()).unwrap_or(0);
             if resume_from > file.size {
                 let _ = fs::remove_file(&part);
                 resume_from = 0;
             }
-            let url = hf_parakeet::file_url(&marker.repo, &file.path);
+            // All of it arrived before (a cancel or crash just before the
+            // rename): check it and put it in place without asking again.
+            if resume_from == file.size {
+                if hf_parakeet::file_matches(&part, file)? {
+                    fs::rename(&part, &target)?;
+                    downloaded += file.size;
+                    continue;
+                }
+                let _ = fs::remove_file(&part);
+                resume_from = 0;
+            }
+            let url = hf_parakeet::file_url(&marker.repo, &marker.revision, &file.path);
             info!(
                 "Hugging Face: {} -> {} (from byte {})",
                 url,
@@ -1309,6 +1335,13 @@ impl ModelManager {
                     file.path,
                     file.size,
                     got
+                ));
+            }
+            if !hf_parakeet::file_matches(&part, file)? {
+                let _ = fs::remove_file(&part);
+                return Err(anyhow::anyhow!(
+                    "{} from Hugging Face does not match its checksum; try again",
+                    file.path
                 ));
             }
             fs::rename(&part, &target)?;
@@ -1966,11 +1999,7 @@ impl ModelManager {
         }
 
         // A Hugging Face model's unfinished download folder.
-        let staging = self.models_dir.join(format!(
-            "{}{}",
-            &model_info.filename,
-            super::hf_parakeet::STAGING_SUFFIX
-        ));
+        let staging = self.hf_staging_dir(&model_info.filename);
         if model_info.is_custom && staging.is_dir() {
             info!("Deleting unfinished download folder at: {:?}", staging);
             fs::remove_dir_all(&staging)?;

@@ -70,7 +70,8 @@
     "transcriptionProviders": "مزودو التفريغ الصوتي",
     "llmProviders": "مزودو LLM",
     "advancedSettings": "إعدادات متقدمة",
-    "moreTools": "أدوات إضافية"
+    "moreTools": "أدوات إضافية",
+    "sttServer": "خادم STT"
   },
   "helpMode": {
     "button": "وضع المساعدة: أشر إلى إعداد لترى ما يفعله",
@@ -548,7 +549,8 @@
     },
     "ready": "جاهز",
     "useModel": "استخدام هذا النموذج",
-    "inUse": "يُستخدم لكل الإملاء."
+    "inUse": "يُستخدم لكل الإملاء.",
+    "configureModel": "إعدادات {{modelName}}"
   },
   "settings": {
     "general": {
@@ -1536,7 +1538,12 @@
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
       "transcribeAgainFailed": "Could not transcribe it: {{error}}",
       "noTranscript": "No transcript — transcribe the recording with the ⟲ button.",
-      "noTranscriptNoAudio": "No transcript."
+      "noTranscriptNoAudio": "No transcript.",
+      "view": {
+        "label": "عرض النص مع المتحدثين أو بدونهم",
+        "text": "النص",
+        "speakers": "المتحدثون"
+      }
     },
     "debug": {
       "title": "تصحيح الأخطاء",
@@ -1658,7 +1665,36 @@
         "translation": "ترجمة",
         "allLanguages": "جميع اللغات"
       },
-      "noModelsMatch": "لا توجد نماذج مطابقة لهذا الفلتر."
+      "noModelsMatch": "لا توجد نماذج مطابقة لهذا الفلتر.",
+      "fallback": {
+        "title": "إذا فشل نموذج الإملاء",
+        "description": "ما يصل إلى نموذجين إضافيين، يُجرَّبان بهذا الترتيب عندما يتعذّر تفريغ التسجيل: الخادم متوقف، انقطعت الشبكة، فشل طلب. يُفحص النموذج المتصل بالإنترنت عند بدء التسجيل، ويتولى النموذج التالي المهمة فورًا إذا لم يستجب.",
+        "none": "لا شيء",
+        "second": {
+          "title": "النموذج الثاني",
+          "description": "يفرّغ التسجيل عندما يتعذّر ذلك على نموذج الإملاء. أي نموذج منزَّل أو متصل بالإنترنت."
+        },
+        "third": {
+          "title": "النموذج الثالث",
+          "description": "يفرّغ التسجيل عندما يتعذّر ذلك على النموذج الثاني أيضًا."
+        }
+      },
+      "huggingFace": {
+        "title": "Parakeet من Hugging Face",
+        "description": "نماذج Parakeet أحدث أو مضبوطة بدقة (تصديرات ONNX بنفس بنية النموذج المرفق مع Handy)، يشغّلها محرك Parakeet الخاص بـ Handy على هذا الحاسوب.",
+        "searchDescription": "**يبحث في Hugging Face عن نماذج Parakeet ONNX**، الأكثر تنزيلًا أولًا، أو اكتب مستودعًا بصيغة owner/name. افحص نموذجًا لمعرفة ما إذا كان Handy يستطيع استخدامه وما حجمه، ثم أضفه: يُنزَّل مثل أي نموذج.",
+        "placeholder": "ابحث، أو owner/name",
+        "search": "بحث",
+        "searchFailed": "تعذّر البحث في Hugging Face: {{error}}",
+        "checkFailed": "تعذّرت قراءة النموذج: {{error}}",
+        "noResults": "لم يُعثر على نماذج Parakeet ONNX.",
+        "downloads": "{{count}} تنزيلات",
+        "size": "{{size}} MB",
+        "incompatible": "غير قابل للاستخدام: {{reason}}",
+        "check": "فحص",
+        "added": "تمت الإضافة",
+        "add": "إضافة وتنزيل"
+      }
     },
     "jumper": {
       "remoteMatch": {
@@ -1903,7 +1939,69 @@
       "error": "فشل تحميل النماذج",
       "noMatches": "لا توجد نماذج مطابقة — اكتب لاستخدام معرّف مخصص"
     },
-    "revealHint": "شغّله لرؤية مزيد من الإعدادات."
+    "revealHint": "شغّله لرؤية مزيد من الإعدادات.",
+    "sttServer": {
+      "server": {
+        "title": "خادم STT الخاص بك",
+        "description": "خادم خاص بك لتحويل الكلام إلى نص (على هذا الحاسوب أو على شبكتك) يدعم واجهة التفريغ الصوتي من OpenAI. إذا كان يستطيع التمييز بين المتحدثين، يحفظ Handy من قال ماذا."
+      },
+      "url": {
+        "title": "عنوان الخادم",
+        "description": "**عنوان API للخادم مع رقم الإصدار**، مثل http://192.168.1.10:8000/v1. يرسل Handy كل تسجيل إلى {address}/audio/transcriptions."
+      },
+      "key": {
+        "title": "مفتاح API",
+        "description": "فقط إذا طلبه الخادم. يُرسل كرمز bearer.",
+        "placeholder": "اختياري"
+      },
+      "test": {
+        "title": "اختبار الخادم",
+        "description": "يسأل الخادم عن النماذج المتوفرة لديه (GET {address}/models) ويملأ قوائم النماذج أدناه.",
+        "button": "اختبار",
+        "busy": "جارٍ الاختبار…",
+        "ok": "متصل · {{count}} نماذج",
+        "failed": "تعذّر الوصول إلى الخادم: {{error}}"
+      },
+      "use": {
+        "title": "استخدامه للإملاء",
+        "description": "يجعل خادم STT نموذج الإملاء لديك. يمكنك أيضًا اختياره من صفحة النماذج، أو تعيينه هناك كنموذج احتياطي.",
+        "button": "استخدام للإملاء",
+        "inUse": "مستخدم للإملاء"
+      },
+      "transcription": {
+        "title": "التفريغ الصوتي",
+        "description": "يُرسل كل تسجيل إلى الخادم دفعة واحدة عند الإيقاف، حتى يُميَّز المتحدثون بشكل متسق على امتداده."
+      },
+      "model": {
+        "title": "نموذج النص",
+        "description": "**نموذج الخادم للنص العادي**، بدون متحدثين. الافتراضي: transcribe."
+      },
+      "speakers": {
+        "label": "التمييز بين المتحدثين",
+        "description": "**يستخدم نموذج الخادم المزوّد بالمتحدثين (فصل المتحدثين)** ويحفظ النص مع المتحدثين في السجل بجانب النص العادي، فقرة \"A: …\" واحدة لكل دور كلام. مع صوت واحد يكون هناك النص فقط."
+      },
+      "speakersModel": {
+        "title": "نموذج المتحدثين",
+        "description": "**نموذج الخادم الذي يميّز بين المتحدثين.** يعمل كل من النموذج الذي يعيد مقاطع بأسلوب OpenAI (مثل transcribe-diarize-openai) والنموذج الذي يجيب بفقرات \"A: …\"."
+      },
+      "paste": {
+        "title": "ما الذي يُلصق",
+        "description": "**النص الذي يُلصق بعد التسجيل.** يحتفظ السجل بكليهما في كل الأحوال، ويعرض مبدّل النص / المتحدثين فيه أيًّا منهما وينسخه.",
+        "options": {
+          "text": "النص فقط",
+          "speakers": "النص مع المتحدثين"
+        }
+      },
+      "customWords": "تُرسل كلماتك المخصصة (عام › الكلمات المخصصة) إلى الخادم كمفردات (حقل prompt) وتُصحَّح في إجابته، كما هو الحال مع كل نموذج.",
+      "affixText": {
+        "title": "حول النص العادي",
+        "description": "نص يُضاف قبل وبعد التسجيل الملصق كنص عادي، مثل تسمية توضح مصدره. يأتي داخل البادئة واللاحقة العامتين."
+      },
+      "affixSpeakers": {
+        "title": "حول النص مع المتحدثين",
+        "description": "نص يُضاف قبل وبعد التسجيل الملصق مع المتحدثين، مثل \"ملاحظات الاجتماع:\". يأتي داخل البادئة واللاحقة العامتين."
+      }
+    }
   },
   "common": {
     "loading": "...جاري التحميل",
@@ -1976,7 +2074,8 @@
     "transcriptionFailed": "فشل التفريغ الصوتي: {{reason}}. تحقق من أن النموذج المحدد يعمل بشكل صحيح، ثم حاول مرة أخرى.",
     "pasteFailedHistoryOnly": "فشل لصق التفريغ الصوتي: {{reason}}. لم تتغير الحافظة — النص محفوظ في السجل. {{recovery}}",
     "recoverWithPasteLast": "اضغط {{shortcut}} للصقه.",
-    "recoverFromHistory": "افتح الإعدادات › السجل لنسخه."
+    "recoverFromHistory": "افتح الإعدادات › السجل لنسخه.",
+    "transcriptionFallback": "تعذّر على {{from}} تفريغ هذا التسجيل، لذا قام {{to}} بتفريغه"
   },
   "flm": {
     "windowsApplicationControlBlocked": "حظر التحكم في تطبيقات Windows الملف flm.exe لأنه غير موقّع. محرك NPU غير متاح. اختر نموذج نسخ مختلفًا.",
@@ -2224,6 +2323,22 @@
       "proxy": {
         "title": "Works behind a proxy that asks for a sign-in",
         "description": "Model downloads, update checks and online providers now use the proxy set in Windows and sign in to it with your Windows account (NTLM / Negotiate), as a browser does. A manual proxy with a user name and password can be set in Advanced settings > Proxy."
+      },
+      "sttServer": {
+        "title": "خادم STT خاص بك، مع المتحدثين",
+        "description": "اربط خادمك الخاص لتحويل الكلام إلى نص (متوافق مع OpenAI) من الإعدادات المتقدمة › خادم STT. إذا كان يميّز بين المتحدثين، يعرض السجل التسجيل مع المتحدثين بجانب النص العادي، وتختار أنت أيّهما يُلصق، ولكلٍّ منهما بادئته ولاحقته."
+      },
+      "failover": {
+        "title": "نموذج ثانٍ وثالث إذا فشل الأول",
+        "description": "اختر ما يصل إلى نموذجين إضافيين من صفحة النماذج. عندما يتعذّر على نموذج الإملاء تفريغ تسجيل (خادمه متوقف، انقطعت الشبكة) يتولى ذلك النموذج التالي، ويُفحص النموذج المتصل بالإنترنت فور بدء التسجيل."
+      },
+      "huggingFace": {
+        "title": "نماذج Parakeet من Hugging Face",
+        "description": "ابحث في Hugging Face عن نماذج Parakeet أحدث أو مضبوطة بدقة من صفحة النماذج، وافحص أحدها وأضفه: يعمل على هذا الحاسوب مثل Parakeet المرفق مع Handy."
+      },
+      "modelSettings": {
+        "title": "إعدادات النموذج من بطاقته",
+        "description": "يفتح الترس على بطاقة النموذج، أو النقر على بطاقة النموذج المستخدم، إعدادات ذلك النموذج. لزر إعادة التفريغ في السجل أيقونة جديدة."
       }
     },
     "installed": "مثبّت"

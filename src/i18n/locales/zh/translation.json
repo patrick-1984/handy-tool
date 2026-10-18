@@ -70,7 +70,8 @@
     "transcriptionProviders": "转录提供商",
     "llmProviders": "LLM 提供商",
     "advancedSettings": "高级设置",
-    "moreTools": "更多工具"
+    "moreTools": "更多工具",
+    "sttServer": "STT 服务器"
   },
   "helpMode": {
     "button": "帮助模式：将鼠标指向设置即可查看其作用",
@@ -548,7 +549,8 @@
     "cancelDownload": "取消下载",
     "ready": "就绪",
     "useModel": "使用此模型",
-    "inUse": "用于所有听写。"
+    "inUse": "用于所有听写。",
+    "configureModel": "{{modelName}} 的设置"
   },
   "settings": {
     "modelSettings": {
@@ -574,7 +576,36 @@
       },
       "noModelsMatch": "没有符合此筛选条件的模型。",
       "yourModels": "已下载的模型",
-      "availableModels": "可供下载"
+      "availableModels": "可供下载",
+      "fallback": {
+        "title": "听写模型失败时",
+        "description": "最多两个额外模型，在录音无法转录时（服务器宕机、网络中断、请求失败）按此顺序尝试。在线模型会在录音开始时检查，如果它没有响应，下一个模型会立即接替。",
+        "none": "无",
+        "second": {
+          "title": "第二个模型",
+          "description": "在听写模型无法转录时转录录音。可以是任何已下载或在线模型。"
+        },
+        "third": {
+          "title": "第三个模型",
+          "description": "在第二个模型也无法转录时转录录音。"
+        }
+      },
+      "huggingFace": {
+        "title": "来自 Hugging Face 的 Parakeet",
+        "description": "更新或微调过的 Parakeet 模型（与 Handy 自带模型结构相同的 ONNX 导出），由 Handy 自己的 Parakeet 引擎在本机运行。",
+        "searchDescription": "**在 Hugging Face 上搜索 Parakeet ONNX 模型**，按下载量排序，或以 owner/name 形式输入仓库。检查一个模型以了解 Handy 能否使用及其大小，然后添加它：它会像其他模型一样下载。",
+        "placeholder": "搜索，或 owner/name",
+        "search": "搜索",
+        "searchFailed": "无法搜索 Hugging Face：{{error}}",
+        "checkFailed": "无法读取模型：{{error}}",
+        "noResults": "未找到 Parakeet ONNX 模型。",
+        "downloads": "{{count}} 次下载",
+        "size": "{{size}} MB",
+        "incompatible": "无法使用：{{reason}}",
+        "check": "检查",
+        "added": "已添加",
+        "add": "添加并下载"
+      }
     },
     "general": {
       "title": "通用",
@@ -1561,7 +1592,12 @@
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
       "transcribeAgainFailed": "Could not transcribe it: {{error}}",
       "noTranscript": "No transcript — transcribe the recording with the ⟲ button.",
-      "noTranscriptNoAudio": "No transcript."
+      "noTranscriptNoAudio": "No transcript.",
+      "view": {
+        "label": "显示带说话人或不带说话人的文本",
+        "text": "文本",
+        "speakers": "说话人"
+      }
     },
     "debug": {
       "title": "调试",
@@ -1903,7 +1939,69 @@
       "error": "加载模型失败",
       "noMatches": "没有匹配的模型——输入以使用自定义 ID"
     },
-    "revealHint": "打开它可查看更多设置。"
+    "revealHint": "打开它可查看更多设置。",
+    "sttServer": {
+      "server": {
+        "title": "你的 STT 服务器",
+        "description": "你自己的语音转文字服务器（在本机或你的网络中），支持 OpenAI 转录 API。如果它能区分说话人，Handy 会保存谁说了什么。"
+      },
+      "url": {
+        "title": "服务器地址",
+        "description": "**服务器的 API 地址，包含版本**，例如 http://192.168.1.10:8000/v1。Handy 会将每段录音发送到 {address}/audio/transcriptions。"
+      },
+      "key": {
+        "title": "API 密钥",
+        "description": "仅在服务器要求时填写。以 Bearer 令牌形式发送。",
+        "placeholder": "可选"
+      },
+      "test": {
+        "title": "测试服务器",
+        "description": "向服务器查询可用模型（GET {address}/models），并填充下方的模型列表。",
+        "button": "测试",
+        "busy": "正在测试…",
+        "ok": "已连接 · {{count}} 个模型",
+        "failed": "无法连接服务器：{{error}}"
+      },
+      "use": {
+        "title": "用于听写",
+        "description": "将 STT 服务器设为你的听写模型。你也可以在模型页面选择它，或在那里将其设为备用模型。",
+        "button": "用于听写",
+        "inUse": "正在用于听写"
+      },
+      "transcription": {
+        "title": "转录",
+        "description": "停止时每段录音会整体发送到服务器，从而在整段录音中一致地区分说话人。"
+      },
+      "model": {
+        "title": "文本模型",
+        "description": "**服务器的纯文本模型**，不含说话人。默认：transcribe。"
+      },
+      "speakers": {
+        "label": "区分说话人",
+        "description": "**使用服务器的说话人模型（说话人分离）**，并将带说话人的文本保存在历史记录中纯文本旁边，每次发言轮次一个 \"A: …\" 段落。只有一个声音时仅保留文本。"
+      },
+      "speakersModel": {
+        "title": "说话人模型",
+        "description": "**服务器中用于区分说话人的模型。** 返回 OpenAI 风格分段的模型（例如 transcribe-diarize-openai）或以 \"A: …\" 段落回复的模型均可使用。"
+      },
+      "paste": {
+        "title": "粘贴内容",
+        "description": "**录音后粘贴的文本。** 无论如何历史记录都会保留两者，其文本 / 说话人切换可显示和复制任意一种。",
+        "options": {
+          "text": "仅文本",
+          "speakers": "带说话人的文本"
+        }
+      },
+      "customWords": "你的自定义词汇（常规 › 自定义词汇）会作为词表（prompt 字段）发送到服务器，并像所有模型一样在其回复中进行纠正。",
+      "affixText": {
+        "title": "纯文本前后",
+        "description": "以纯文本粘贴录音时在前后添加的文本，例如说明其来源的标签。位于通用前缀和后缀之内。"
+      },
+      "affixSpeakers": {
+        "title": "带说话人文本前后",
+        "description": "以带说话人方式粘贴录音时在前后添加的文本，例如 \"会议记录：\"。位于通用前缀和后缀之内。"
+      }
+    }
   },
   "common": {
     "loading": "加载中...",
@@ -1976,7 +2074,8 @@
     "transcriptionFailed": "转录失败：{{reason}}。请检查所选模型是否正常工作，然后重试。",
     "pasteFailedHistoryOnly": "粘贴转录失败：{{reason}}。剪贴板未作更改 — 文本已保存到历史记录中。{{recovery}}",
     "recoverWithPasteLast": "按 {{shortcut}} 粘贴。",
-    "recoverFromHistory": "打开设置 › 历史记录以复制文本。"
+    "recoverFromHistory": "打开设置 › 历史记录以复制文本。",
+    "transcriptionFallback": "{{from}} 无法转录此录音，因此由 {{to}} 完成转录"
   },
   "flm": {
     "windowsApplicationControlBlocked": "Windows 应用控制已阻止 flm.exe，因为它没有数字签名。NPU 引擎不可用。请选择其他转录模型。",
@@ -2224,6 +2323,22 @@
       "proxy": {
         "title": "Works behind a proxy that asks for a sign-in",
         "description": "Model downloads, update checks and online providers now use the proxy set in Windows and sign in to it with your Windows account (NTLM / Negotiate), as a browser does. A manual proxy with a user name and password can be set in Advanced settings > Proxy."
+      },
+      "sttServer": {
+        "title": "你自己的 STT 服务器，支持说话人",
+        "description": "在 高级设置 › STT 服务器 中连接你自己的语音转文字服务器（兼容 OpenAI）。如果它能区分说话人，历史记录会在纯文本旁显示带说话人的录音，并由你选择粘贴哪一种，每种都有自己的前缀和后缀。"
+      },
+      "failover": {
+        "title": "首个模型失败时的第二、第三个模型",
+        "description": "在模型页面选择最多两个额外模型。当听写模型无法转录录音时（其服务器宕机、网络中断），由下一个模型转录，在线模型会在录音开始时立即检查。"
+      },
+      "huggingFace": {
+        "title": "来自 Hugging Face 的 Parakeet 模型",
+        "description": "在模型页面中搜索 Hugging Face 上更新或微调过的 Parakeet 模型，检查后添加：它会像 Handy 自带的 Parakeet 一样在本机运行。"
+      },
+      "modelSettings": {
+        "title": "从模型卡片打开其设置",
+        "description": "点击模型卡片上的齿轮，或点击正在使用的模型的卡片，即可打开该模型自己的设置。历史记录中的重新转录按钮换了新图标。"
       }
     },
     "installed": "已安装"

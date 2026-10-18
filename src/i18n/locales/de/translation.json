@@ -70,7 +70,8 @@
     "transcriptionProviders": "Transkriptionsanbieter",
     "llmProviders": "LLM-Anbieter",
     "advancedSettings": "Erweiterte Einstellungen",
-    "moreTools": "Weitere Werkzeuge"
+    "moreTools": "Weitere Werkzeuge",
+    "sttServer": "STT-Server"
   },
   "helpMode": {
     "button": "Hilfemodus: auf eine Einstellung zeigen, um zu sehen, was sie tut",
@@ -548,7 +549,8 @@
     "cancelDownload": "Download abbrechen",
     "ready": "Bereit",
     "useModel": "Dieses Modell verwenden",
-    "inUse": "Wird für alles Diktieren verwendet."
+    "inUse": "Wird für alles Diktieren verwendet.",
+    "configureModel": "Einstellungen von {{modelName}}"
   },
   "settings": {
     "modelSettings": {
@@ -574,7 +576,36 @@
       },
       "noModelsMatch": "Keine Modelle entsprechen diesem Filter.",
       "yourModels": "Heruntergeladene Modelle",
-      "availableModels": "Zum Download verfügbar"
+      "availableModels": "Zum Download verfügbar",
+      "fallback": {
+        "title": "Wenn dein Diktiermodell ausfällt",
+        "description": "Bis zu zwei weitere Modelle, in dieser Reihenfolge versucht, wenn eine Aufnahme nicht transkribiert werden kann: Der Server ist nicht erreichbar, das Netzwerk ist weg, eine Anfrage ist fehlgeschlagen. Ein Online-Modell wird beim Start der Aufnahme geprüft, und das nächste Modell übernimmt sofort, wenn es nicht antwortet.",
+        "none": "Keines",
+        "second": {
+          "title": "Zweites Modell",
+          "description": "Transkribiert die Aufnahme, wenn dein Diktiermodell es nicht kann. Jedes heruntergeladene oder Online-Modell."
+        },
+        "third": {
+          "title": "Drittes Modell",
+          "description": "Transkribiert die Aufnahme, wenn auch das zweite Modell es nicht kann."
+        }
+      },
+      "huggingFace": {
+        "title": "Parakeet von Hugging Face",
+        "description": "Neuere oder feinabgestimmte Parakeet-Modelle (ONNX-Exporte im gleichen Aufbau wie das mitgelieferte), ausgeführt von Handys eigener Parakeet-Engine auf diesem PC.",
+        "searchDescription": "**Durchsucht Hugging Face nach Parakeet-ONNX-Modellen**, die meistgeladenen zuerst, oder gib ein Repo als owner/name ein. Prüfe eines, um zu sehen, ob Handy es nutzen kann und wie groß es ist, und füge es dann hinzu: Es wird wie jedes Modell heruntergeladen.",
+        "placeholder": "Suchen oder owner/name",
+        "search": "Suchen",
+        "searchFailed": "Suche auf Hugging Face fehlgeschlagen: {{error}}",
+        "checkFailed": "Modell konnte nicht gelesen werden: {{error}}",
+        "noResults": "Keine Parakeet-ONNX-Modelle gefunden.",
+        "downloads": "{{count}} Downloads",
+        "size": "{{size}} MB",
+        "incompatible": "nicht nutzbar: {{reason}}",
+        "check": "Prüfen",
+        "added": "Hinzugefügt",
+        "add": "Hinzufügen und herunterladen"
+      }
     },
     "general": {
       "title": "Allgemein",
@@ -1561,7 +1592,12 @@
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
       "transcribeAgainFailed": "Could not transcribe it: {{error}}",
       "noTranscript": "No transcript — transcribe the recording with the ⟲ button.",
-      "noTranscriptNoAudio": "No transcript."
+      "noTranscriptNoAudio": "No transcript.",
+      "view": {
+        "label": "Text mit oder ohne Sprecher anzeigen",
+        "text": "Text",
+        "speakers": "Sprecher"
+      }
     },
     "debug": {
       "title": "Debug",
@@ -1903,7 +1939,69 @@
       "error": "Modelle konnten nicht geladen werden",
       "noMatches": "Keine passenden Modelle — tippe, um eine benutzerdefinierte ID zu verwenden"
     },
-    "revealHint": "Schalte es ein, um mehr Einstellungen zu sehen."
+    "revealHint": "Schalte es ein, um mehr Einstellungen zu sehen.",
+    "sttServer": {
+      "server": {
+        "title": "Dein STT-Server",
+        "description": "Ein eigener Spracherkennungsserver (auf diesem PC oder in deinem Netzwerk), der die OpenAI-Transkriptions-API spricht. Wenn er Sprecher unterscheiden kann, speichert Handy, wer was gesagt hat."
+      },
+      "url": {
+        "title": "Serveradresse",
+        "description": "**Die API-Adresse des Servers, mit Version**, z. B. http://192.168.1.10:8000/v1. Handy sendet jede Aufnahme an {address}/audio/transcriptions."
+      },
+      "key": {
+        "title": "API-Schlüssel",
+        "description": "Nur wenn dein Server einen verlangt. Wird als Bearer-Token gesendet.",
+        "placeholder": "Optional"
+      },
+      "test": {
+        "title": "Server testen",
+        "description": "Fragt den Server nach seinen Modellen (GET {address}/models) und füllt die Modelllisten unten.",
+        "button": "Testen",
+        "busy": "Wird getestet…",
+        "ok": "Verbunden · {{count}} Modelle",
+        "failed": "Server nicht erreichbar: {{error}}"
+      },
+      "use": {
+        "title": "Für das Diktieren verwenden",
+        "description": "Macht den STT-Server zu deinem Diktiermodell. Du kannst ihn auch auf der Seite Modelle auswählen oder dort als Ausweichmodell festlegen.",
+        "button": "Zum Diktieren verwenden",
+        "inUse": "Wird zum Diktieren verwendet"
+      },
+      "transcription": {
+        "title": "Transkription",
+        "description": "Jede Aufnahme geht beim Stoppen am Stück an den Server, damit die Sprecher durchgehend einheitlich unterschieden werden."
+      },
+      "model": {
+        "title": "Modell für Text",
+        "description": "**Das Modell des Servers für reinen Text**, ohne Sprecher. Standard: transcribe."
+      },
+      "speakers": {
+        "label": "Sprecher unterscheiden",
+        "description": "**Verwendet das Sprechermodell des Servers (Diarisierung)** und speichert den Text mit Sprechern im Verlauf neben dem reinen Text, ein \"A: …\"-Absatz pro Sprecherwechsel. Bei nur einer Stimme gibt es nur den Text."
+      },
+      "speakersModel": {
+        "title": "Modell mit Sprechern",
+        "description": "**Das Modell des Servers, das Sprecher unterscheidet.** Ein Modell mit Segmenten im OpenAI-Stil (z. B. transcribe-diarize-openai) oder eines, das mit \"A: …\"-Absätzen antwortet, funktioniert beides."
+      },
+      "paste": {
+        "title": "Was eingefügt wird",
+        "description": "**Der nach einer Aufnahme eingefügte Text.** Der Verlauf behält in jedem Fall beide, und sein Umschalter Text / Sprecher zeigt und kopiert jeden davon.",
+        "options": {
+          "text": "Nur Text",
+          "speakers": "Text mit Sprechern"
+        }
+      },
+      "customWords": "Deine benutzerdefinierten Wörter (Allgemein › Benutzerdefinierte Wörter) werden als Vokabular (das Feld prompt) an den Server gesendet und in seiner Antwort korrigiert, wie bei jedem Modell.",
+      "affixText": {
+        "title": "Rund um den reinen Text",
+        "description": "Text vor und nach einer als reiner Text eingefügten Aufnahme, z. B. ein Hinweis, woher sie stammt. Steht innerhalb des allgemeinen Präfixes und Suffixes."
+      },
+      "affixSpeakers": {
+        "title": "Rund um den Text mit Sprechern",
+        "description": "Text vor und nach einer mit Sprechern eingefügten Aufnahme, z. B. \"Besprechungsnotizen:\". Steht innerhalb des allgemeinen Präfixes und Suffixes."
+      }
+    }
   },
   "common": {
     "loading": "Wird geladen...",
@@ -1976,7 +2074,8 @@
     "transcriptionFailed": "Transkription fehlgeschlagen: {{reason}}. Prüfe, ob dein ausgewähltes Modell funktioniert, und versuche es erneut.",
     "pasteFailedHistoryOnly": "Einfügen der Transkription fehlgeschlagen: {{reason}}. Deine Zwischenablage blieb unverändert — der Text wurde im Verlauf gespeichert. {{recovery}}",
     "recoverWithPasteLast": "Drücke {{shortcut}}, um ihn einzufügen.",
-    "recoverFromHistory": "Öffne Einstellungen › Verlauf, um ihn zu kopieren."
+    "recoverFromHistory": "Öffne Einstellungen › Verlauf, um ihn zu kopieren.",
+    "transcriptionFallback": "{{from}} konnte diese Aufnahme nicht transkribieren, daher hat {{to}} übernommen"
   },
   "flm": {
     "windowsApplicationControlBlocked": "Die Windows-Anwendungssteuerung hat flm.exe blockiert, weil die Datei nicht signiert ist. Die NPU-Engine ist nicht verfügbar. Wähle ein anderes Transkriptionsmodell.",
@@ -2224,6 +2323,22 @@
       "proxy": {
         "title": "Works behind a proxy that asks for a sign-in",
         "description": "Model downloads, update checks and online providers now use the proxy set in Windows and sign in to it with your Windows account (NTLM / Negotiate), as a browser does. A manual proxy with a user name and password can be set in Advanced settings > Proxy."
+      },
+      "sttServer": {
+        "title": "Dein eigener STT-Server, mit Sprechern",
+        "description": "Verbinde einen eigenen Spracherkennungsserver (OpenAI-kompatibel) unter Erweiterte Einstellungen › STT-Server. Wenn er die Sprecher unterscheidet, zeigt der Verlauf die Aufnahme mit Sprechern neben dem reinen Text, und du wählst, welcher eingefügt wird, jeweils mit eigenem Präfix und Suffix."
+      },
+      "failover": {
+        "title": "Ein zweites und drittes Modell, falls das erste ausfällt",
+        "description": "Wähle auf der Seite Modelle bis zu zwei weitere Modelle. Wenn dein Diktiermodell eine Aufnahme nicht transkribieren kann (sein Server ist nicht erreichbar, das Netzwerk ist weg), übernimmt das nächste, und ein Online-Modell wird geprüft, sobald die Aufnahme beginnt."
+      },
+      "huggingFace": {
+        "title": "Parakeet-Modelle von Hugging Face",
+        "description": "Suche auf der Seite Modelle auf Hugging Face nach neueren oder feinabgestimmten Parakeet-Modellen, prüfe eines und füge es hinzu: Es läuft auf diesem PC wie das mitgelieferte Parakeet von Handy."
+      },
+      "modelSettings": {
+        "title": "Die Einstellungen eines Modells über seine Karte",
+        "description": "Das Zahnrad auf einer Modellkarte oder ein Klick auf die Karte des verwendeten Modells öffnet die eigenen Einstellungen dieses Modells. Die Schaltfläche Erneut transkribieren im Verlauf hat ein neues Symbol."
       }
     },
     "installed": "Installiert"

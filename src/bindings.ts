@@ -4144,7 +4144,14 @@ export type SttServerInfo = { models: SttServerModel[]; backend: string | null }
 /**
  * A file in a Hugging Face repo.
  */
-export type HfFile = { path: string; size: number };
+export type HfFile = {
+  path: string;
+  size: number;
+  /**
+   * SHA-256 of a large (LFS) file, as Hugging Face lists it.
+   */
+  sha256?: string | null;
+};
 /**
  * One search hit.
  */

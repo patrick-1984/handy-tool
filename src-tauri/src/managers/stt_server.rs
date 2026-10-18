@@ -49,8 +49,10 @@ pub struct SttServerInfo {
     pub backend: Option<String>,
 }
 
-// The speaker text of the take being recorded: set by the engine, taken when
-// the take is saved to History (like OpenRouter's per-take cost).
+// The speaker text of the take being recorded: set by the take's own
+// transcription (failover::transcribe, only for the take that is current),
+// taken when the take is saved to History (like OpenRouter's per-take cost).
+// Never written by watched folders or file jobs.
 static SESSION_DIARIZED: Mutex<Option<String>> = Mutex::new(None);
 
 /// Forget any speaker text (call at recording start).
@@ -91,6 +93,7 @@ pub fn transcribe(
     audio: &[f32],
     language: Option<&str>,
     prompt: Option<&str>,
+    speakers: bool,
 ) -> Result<SttServerResult> {
     let ogg = crate::audio_toolkit::audio::encode_samples_to_ogg_opus(audio)?;
     let url = endpoint(base_url, "audio/transcriptions");
@@ -111,7 +114,11 @@ pub fn transcribe(
     if !api_key.trim().is_empty() {
         req = req.set("Authorization", &format!("Bearer {}", api_key.trim()));
     }
+    // A stalled server must not hold the take (and the engine lock) forever:
+    // two minutes plus the take's own length, generous for a slow server.
+    let audio_secs = audio.len() as u64 / 16_000;
     let response = req
+        .timeout(std::time::Duration::from_secs(120 + audio_secs))
         .send_bytes(&body)
         .map_err(|e| anyhow::anyhow!("{url}: {e}"))?;
     let text = response
@@ -119,7 +126,7 @@ pub fn transcribe(
         .map_err(|e| anyhow::anyhow!("Failed to read the STT server's answer: {e}"))?;
     let value: serde_json::Value = serde_json::from_str(&text)
         .map_err(|e| anyhow::anyhow!("The STT server's answer is not JSON: {e}"))?;
-    let result = parse_response(&value);
+    let result = parse_response(&value, speakers);
     debug!(
         "STT server: {} chars, speaker text: {}",
         result.text.len(),
@@ -180,15 +187,31 @@ fn multipart_body(
     body
 }
 
+/// Looks like a diarization speaker label: `A`, `B2`, `Speaker 1`,
+/// `SPEAKER_00` - not an ordinary word such as `Note`.
+fn speaker_like(label: &str) -> bool {
+    let mut chars = label.chars();
+    let letter_then_digits = matches!(chars.next(), Some(c) if c.is_ascii_uppercase())
+        && chars.all(|c| c.is_ascii_digit())
+        && label.len() <= 3;
+    let lower = label.to_ascii_lowercase();
+    let numbered = lower
+        .strip_prefix("speaker")
+        .map(|rest| rest.trim_start_matches([' ', '_', '-']))
+        .is_some_and(|n| !n.is_empty() && n.len() <= 3 && n.chars().all(|c| c.is_ascii_digit()));
+    letter_then_digits || numbered
+}
+
 /// A speaker label at the start of a readable-style paragraph: `A: text`.
 fn split_label(paragraph: &str) -> Option<(&str, &str)> {
     let (label, rest) = paragraph.split_once(':')?;
     let label = label.trim();
-    let short = !label.is_empty() && label.chars().count() <= 24 && !label.contains('\n');
-    short.then_some((label, rest.trim()))
+    speaker_like(label).then_some((label, rest.trim()))
 }
 
-pub(crate) fn parse_response(value: &serde_json::Value) -> SttServerResult {
+/// `speakers`: a speakers model was asked for - only then is a readable
+/// `A: ...` answer split into speaker text and plain text.
+pub(crate) fn parse_response(value: &serde_json::Value, speakers: bool) -> SttServerResult {
     let text = value
         .get("text")
         .and_then(|v| v.as_str())
@@ -261,6 +284,12 @@ pub(crate) fn parse_response(value: &serde_json::Value) -> SttServerResult {
         };
     }
 
+    if !speakers {
+        return SttServerResult {
+            text,
+            diarized: None,
+        };
+    }
     // Readable style: "A: ...\n\nB: ..." paragraphs.
     let paragraphs: Vec<&str> = text
         .split("\n\n")
@@ -334,9 +363,37 @@ mod tests {
     use super::*;
     use serde_json::json;
 
+    fn parse_response_t(value: &serde_json::Value) -> SttServerResult {
+        parse_response(value, true)
+    }
+
+    #[test]
+    fn ordinary_colon_paragraphs_are_not_speakers() {
+        let v = json!({"text": "Note: keep the original\n\nAction: send the invoice"});
+        let r = parse_response(&v, true);
+        assert_eq!(r.diarized, None);
+        assert_eq!(
+            r.text,
+            "Note: keep the original\n\nAction: send the invoice"
+        );
+        // Plain-text mode never strips labels, even real-looking ones.
+        let r = parse_response(&json!({"text": "A: one\n\nB: two"}), false);
+        assert_eq!(
+            r,
+            SttServerResult {
+                text: "A: one\n\nB: two".into(),
+                diarized: None
+            }
+        );
+        // Numbered labels count.
+        let r = parse_response(&json!({"text": "Speaker 1: hi\n\nSPEAKER_02: yo"}), true);
+        assert_eq!(r.text, "hi yo");
+        assert!(speaker_like("B2") && !speaker_like("Note") && !speaker_like("ABCD"));
+    }
+
     #[test]
     fn openai_segments_become_speaker_paragraphs() {
-        let r = parse_response(&json!({
+        let r = parse_response_t(&json!({
             "text": "zobaczyć to wprost Tak jest, dokładnie. dalej",
             "segments": [
                 {"speaker": "A", "text": "zobaczyć to wprost"},
@@ -354,7 +411,7 @@ mod tests {
 
     #[test]
     fn one_voice_has_no_speaker_text() {
-        let r = parse_response(&json!({
+        let r = parse_response_t(&json!({
             "text": "hello there",
             "segments": [{"speaker": "A", "text": "hello"}, {"speaker": "A", "text": "there"}]
         }));
@@ -365,22 +422,23 @@ mod tests {
                 diarized: None
             }
         );
-        let r = parse_response(&json!({"text": "just text"}));
+        let r = parse_response_t(&json!({"text": "just text"}));
         assert_eq!(r.diarized, None);
         assert_eq!(r.text, "just text");
     }
 
     #[test]
     fn readable_style_keeps_paragraphs_and_strips_labels_for_text() {
-        let r =
-            parse_response(&json!({"text": "A: first part\n\nB: second: with colon\n\nA: third"}));
+        let r = parse_response_t(
+            &json!({"text": "A: first part\n\nB: second: with colon\n\nA: third"}),
+        );
         assert_eq!(r.text, "first part second: with colon third");
         assert_eq!(
             r.diarized.as_deref(),
             Some("A: first part\n\nB: second: with colon\n\nA: third")
         );
         // A colon in ordinary prose is not a speaker turn.
-        let r = parse_response(&json!({"text": "Note: one paragraph only"}));
+        let r = parse_response_t(&json!({"text": "Note: one paragraph only"}));
         assert_eq!(r.diarized, None);
     }
 

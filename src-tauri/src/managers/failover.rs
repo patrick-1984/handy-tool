@@ -39,7 +39,8 @@ pub struct FallbackEvent {
 
 #[derive(Default)]
 struct TakeState {
-    /// The take (recording timestamp) this state belongs to.
+    /// The take this state belongs to: a number unique to each take (never
+    /// reused, unlike the recording's second-resolution timestamp).
     take: u64,
     /// `Some(false)` = the dictation model is down for this take.
     primary_up: Option<bool>,
@@ -48,6 +49,8 @@ struct TakeState {
     /// The app was told about this take's switch already.
     announced: bool,
 }
+
+static TAKE_SEQ: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
 static STATE: Mutex<TakeState> = Mutex::new(TakeState {
     take: 0,
@@ -139,7 +142,8 @@ fn probe(url: &str, key: &str) -> Result<(), String> {
 
 /// A new take: forget the last one and, when fallbacks are set and the
 /// dictation model is online, check it in the background.
-pub fn start_take(app: &AppHandle, take: u64) {
+pub fn start_take(app: &AppHandle) {
+    let take = TAKE_SEQ.fetch_add(1, std::sync::atomic::Ordering::SeqCst) + 1;
     *state() = TakeState {
         take,
         ..Default::default()
@@ -199,7 +203,28 @@ pub fn transcribe(
     tm: &TranscriptionManager,
     samples: Vec<f32>,
 ) -> anyhow::Result<String> {
+    // Everything below belongs to the take current NOW; a chunk of an
+    // abandoned take that finishes later never touches the next one.
+    let take = state().take;
     let settings = get_settings(app);
+    let primary = settings.selected_model.clone();
+    let primary_is_stt = app
+        .try_state::<Arc<ModelManager>>()
+        .and_then(|m| m.get_model_info(&primary))
+        .is_some_and(|i| matches!(i.engine_type, EngineType::SttServer));
+    // The dictation model's own call. On the STT server a take also brings
+    // its speaker text, kept for this take only.
+    let run_primary = |samples: Vec<f32>| -> anyhow::Result<String> {
+        if primary_is_stt {
+            let result = tm.stt_server_take_expecting(&primary, &samples)?;
+            if state().take == take {
+                crate::managers::stt_server::set_session_diarized(result.diarized);
+            }
+            Ok(result.text)
+        } else {
+            tm.transcribe(samples)
+        }
+    };
     let chain = match app.try_state::<Arc<ModelManager>>() {
         Some(models) => fallback_chain(&settings, |id| {
             crate::commands::models::model_usable(&models, &settings, id)
@@ -207,18 +232,23 @@ pub fn transcribe(
         None => Vec::new(),
     };
     if chain.is_empty() {
-        return tm.transcribe(samples);
+        return run_primary(samples);
     }
-    let primary = settings.selected_model.clone();
-    let primary_down = state().primary_up == Some(false);
+    let primary_down = {
+        let st = state();
+        st.take == take && st.primary_up == Some(false)
+    };
     let reason = if primary_down {
         "it did not answer at the start of the take".to_string()
     } else {
-        match tm.transcribe(samples.clone()) {
+        match run_primary(samples.clone()) {
             Ok(text) => return Ok(text),
             Err(e) => {
                 warn!("Failover: {primary} failed ({e}); trying the next model");
-                state().primary_up = Some(false);
+                let mut st = state();
+                if st.take == take {
+                    st.primary_up = Some(false);
+                }
                 e.to_string()
             }
         }
@@ -231,8 +261,12 @@ pub fn transcribe(
                 info!("Failover: transcribed with {to} instead of {primary}");
                 let announce = {
                     let mut st = state();
-                    st.used_label = Some(format!("{to} — fallback"));
-                    !std::mem::replace(&mut st.announced, true)
+                    if st.take != take {
+                        false
+                    } else {
+                        st.used_label = Some(format!("{to} — fallback"));
+                        !std::mem::replace(&mut st.announced, true)
+                    }
                 };
                 if announce {
                     let _ = app.emit(
