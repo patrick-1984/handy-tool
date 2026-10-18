@@ -70,7 +70,8 @@
     "transcriptionProviders": "Fournisseurs de transcription",
     "llmProviders": "Fournisseurs LLM",
     "advancedSettings": "Paramètres avancés",
-    "moreTools": "Plus d'outils"
+    "moreTools": "Plus d'outils",
+    "sttServer": "Serveur STT"
   },
   "helpMode": {
     "button": "Mode aide : pointez un réglage pour voir ce qu’il fait",
@@ -548,7 +549,8 @@
     "cancelDownload": "Annuler le téléchargement",
     "ready": "Prêt",
     "useModel": "Utiliser ce modèle",
-    "inUse": "Utilisé pour toutes les dictées."
+    "inUse": "Utilisé pour toutes les dictées.",
+    "configureModel": "Paramètres de {{modelName}}"
   },
   "settings": {
     "modelSettings": {
@@ -574,7 +576,36 @@
       },
       "noModelsMatch": "Aucun modèle ne correspond à ce filtre.",
       "yourModels": "Modèles téléchargés",
-      "availableModels": "Disponibles au téléchargement"
+      "availableModels": "Disponibles au téléchargement",
+      "fallback": {
+        "title": "Si votre modèle de dictée échoue",
+        "description": "Jusqu'à deux modèles supplémentaires, essayés dans cet ordre lorsqu'une prise ne peut pas être transcrite : le serveur est hors service, le réseau a lâché, une requête a échoué. Un modèle en ligne est vérifié au début de la prise, et le modèle suivant prend aussitôt le relais s'il ne répond pas.",
+        "none": "Aucun",
+        "second": {
+          "title": "Deuxième modèle",
+          "description": "Transcrit la prise lorsque votre modèle de dictée n'y parvient pas. N'importe quel modèle téléchargé ou en ligne."
+        },
+        "third": {
+          "title": "Troisième modèle",
+          "description": "Transcrit la prise lorsque le deuxième modèle n'y parvient pas non plus."
+        }
+      },
+      "huggingFace": {
+        "title": "Parakeet depuis Hugging Face",
+        "description": "Modèles Parakeet plus récents ou affinés (exports ONNX organisés comme celui fourni avec Handy), exécutés par le moteur Parakeet de Handy sur ce PC.",
+        "searchDescription": "**Recherche des modèles Parakeet ONNX sur Hugging Face**, les plus téléchargés d'abord, ou saisissez un dépôt sous la forme owner/name. Vérifiez-en un pour savoir si Handy peut l'utiliser et quelle est sa taille, puis ajoutez-le : il se télécharge comme n'importe quel modèle.",
+        "placeholder": "Rechercher, ou owner/name",
+        "search": "Rechercher",
+        "searchFailed": "Impossible de rechercher sur Hugging Face : {{error}}",
+        "checkFailed": "Impossible de lire le modèle : {{error}}",
+        "noResults": "Aucun modèle Parakeet ONNX trouvé.",
+        "downloads": "{{count}} téléchargements",
+        "size": "{{size}} MB",
+        "incompatible": "inutilisable : {{reason}}",
+        "check": "Vérifier",
+        "added": "Ajouté",
+        "add": "Ajouter et télécharger"
+      }
     },
     "general": {
       "title": "Général",
@@ -1561,7 +1592,12 @@
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
       "transcribeAgainFailed": "Could not transcribe it: {{error}}",
       "noTranscript": "No transcript — transcribe the recording with the ⟲ button.",
-      "noTranscriptNoAudio": "No transcript."
+      "noTranscriptNoAudio": "No transcript.",
+      "view": {
+        "label": "Afficher le texte avec ou sans intervenants",
+        "text": "Texte",
+        "speakers": "Intervenants"
+      }
     },
     "debug": {
       "title": "Débogage",
@@ -1903,7 +1939,69 @@
       "error": "Échec du chargement des modèles",
       "noMatches": "Aucun modèle correspondant — tapez pour utiliser un identifiant personnalisé"
     },
-    "revealHint": "Activez pour voir plus de réglages."
+    "revealHint": "Activez pour voir plus de réglages.",
+    "sttServer": {
+      "server": {
+        "title": "Votre serveur STT",
+        "description": "Un serveur de reconnaissance vocale à vous (sur ce PC ou sur votre réseau) compatible avec l'API de transcription OpenAI. S'il sait distinguer les intervenants, Handy enregistre qui a dit quoi."
+      },
+      "url": {
+        "title": "Adresse du serveur",
+        "description": "**L'adresse API du serveur, avec sa version**, p. ex. http://192.168.1.10:8000/v1. Handy envoie chaque prise à {address}/audio/transcriptions."
+      },
+      "key": {
+        "title": "Clé API",
+        "description": "Uniquement si votre serveur en demande une. Envoyée comme jeton bearer.",
+        "placeholder": "Facultatif"
+      },
+      "test": {
+        "title": "Tester le serveur",
+        "description": "Demande au serveur quels modèles il propose (GET {address}/models) et remplit les listes de modèles ci-dessous.",
+        "button": "Tester",
+        "busy": "Test en cours…",
+        "ok": "Connecté · {{count}} modèles",
+        "failed": "Impossible de joindre le serveur : {{error}}"
+      },
+      "use": {
+        "title": "L'utiliser pour la dictée",
+        "description": "Fait du serveur STT votre modèle de dictée. Vous pouvez aussi le choisir sur la page Modèles, ou l'y définir comme modèle de secours.",
+        "button": "Utiliser pour la dictée",
+        "inUse": "Utilisé pour la dictée"
+      },
+      "transcription": {
+        "title": "Transcription",
+        "description": "Chaque prise est envoyée au serveur d'un seul bloc à l'arrêt, afin que les intervenants soient distingués de façon cohérente sur toute la prise."
+      },
+      "model": {
+        "title": "Modèle pour le texte",
+        "description": "**Le modèle du serveur pour le texte brut**, sans intervenants. Par défaut : transcribe."
+      },
+      "speakers": {
+        "label": "Distinguer les intervenants",
+        "description": "**Utilise le modèle du serveur avec intervenants (diarisation)** et enregistre le texte avec intervenants dans l'Historique à côté du texte brut, un paragraphe \"A: …\" par tour de parole. Avec une seule voix, il n'y a que le texte."
+      },
+      "speakersModel": {
+        "title": "Modèle avec intervenants",
+        "description": "**Le modèle du serveur qui distingue les intervenants.** Un modèle avec des segments de style OpenAI (p. ex. transcribe-diarize-openai) ou un modèle qui répond par des paragraphes \"A: …\" conviennent tous les deux."
+      },
+      "paste": {
+        "title": "Ce qui est collé",
+        "description": "**Le texte collé après une prise.** L'Historique conserve les deux dans tous les cas, et son sélecteur Texte / Intervenants affiche et copie l'un ou l'autre.",
+        "options": {
+          "text": "Texte seul",
+          "speakers": "Texte avec intervenants"
+        }
+      },
+      "customWords": "Vos mots personnalisés (Général › Mots personnalisés) sont envoyés au serveur comme vocabulaire (le champ prompt) et corrigés dans sa réponse, comme pour tout modèle.",
+      "affixText": {
+        "title": "Autour du texte brut",
+        "description": "Texte ajouté avant et après une prise collée en texte brut, p. ex. une étiquette indiquant sa provenance. Se place à l'intérieur du préfixe et du suffixe généraux."
+      },
+      "affixSpeakers": {
+        "title": "Autour du texte avec intervenants",
+        "description": "Texte ajouté avant et après une prise collée avec intervenants, p. ex. \"Notes de réunion :\". Se place à l'intérieur du préfixe et du suffixe généraux."
+      }
+    }
   },
   "common": {
     "loading": "Chargement...",
@@ -1983,7 +2081,8 @@
     "transcriptionFailed": "La transcription a échoué : {{reason}}. Vérifiez que le modèle sélectionné fonctionne, puis réessayez.",
     "pasteFailedHistoryOnly": "Le collage de la transcription a échoué : {{reason}}. Votre presse-papiers n'a pas été modifié — le texte est enregistré dans l'historique. {{recovery}}",
     "recoverWithPasteLast": "Appuyez sur {{shortcut}} pour le coller.",
-    "recoverFromHistory": "Ouvrez Paramètres › Historique pour le copier."
+    "recoverFromHistory": "Ouvrez Paramètres › Historique pour le copier.",
+    "transcriptionFallback": "{{from}} n'a pas pu transcrire cette prise, {{to}} l'a donc fait"
   },
   "flm": {
     "windowsApplicationControlBlocked": "Le contrôle des applications Windows a bloqué flm.exe car il n'est pas signé. Le moteur NPU est indisponible. Choisissez un autre modèle de transcription.",
@@ -2224,6 +2323,22 @@
       "proxy": {
         "title": "Works behind a proxy that asks for a sign-in",
         "description": "Model downloads, update checks and online providers now use the proxy set in Windows and sign in to it with your Windows account (NTLM / Negotiate), as a browser does. A manual proxy with a user name and password can be set in Advanced settings > Proxy."
+      },
+      "sttServer": {
+        "title": "Votre propre serveur STT, avec intervenants",
+        "description": "Connectez votre propre serveur de reconnaissance vocale (compatible OpenAI) dans Paramètres avancés › Serveur STT. S'il distingue les intervenants, l'Historique affiche la prise avec intervenants à côté du texte brut, et vous choisissez laquelle est collée, chacune avec son propre préfixe et suffixe."
+      },
+      "failover": {
+        "title": "Un deuxième et un troisième modèle si le premier échoue",
+        "description": "Choisissez jusqu'à deux modèles supplémentaires sur la page Modèles. Lorsque votre modèle de dictée ne peut pas transcrire une prise (son serveur est hors service, le réseau a lâché), le suivant s'en charge, et un modèle en ligne est vérifié dès le début de la prise."
+      },
+      "huggingFace": {
+        "title": "Modèles Parakeet depuis Hugging Face",
+        "description": "Recherchez sur Hugging Face des modèles Parakeet plus récents ou affinés depuis la page Modèles, vérifiez-en un et ajoutez-le : il tourne sur ce PC comme le Parakeet fourni avec Handy."
+      },
+      "modelSettings": {
+        "title": "Les paramètres d'un modèle depuis sa carte",
+        "description": "L'engrenage d'une carte de modèle, ou un clic sur la carte du modèle utilisé, ouvre les paramètres propres à ce modèle. Le bouton Transcrire à nouveau de l'Historique a une nouvelle icône."
       }
     },
     "installed": "Installée"

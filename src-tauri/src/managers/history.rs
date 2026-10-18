@@ -238,6 +238,9 @@ static MIGRATIONS: &[M] = &[
             last_ts INTEGER
         );",
     ),
+    // The take's text with speakers (a Custom STT server with speakers on):
+    // one "A: ..." paragraph per speaker turn. NULL = no speaker text.
+    M::up("ALTER TABLE transcription_history ADD COLUMN diarized_text TEXT;"),
 ];
 
 /// Totals carried forward from history rows that retention has deleted, so
@@ -275,6 +278,10 @@ pub struct HistoryEntry {
     /// file is a fault rather than policy - the UI must distinguish the two.
     #[serde(default)]
     pub audio_purged_at: Option<i64>,
+    /// The text with speakers, one `A: ...` paragraph per turn, when the
+    /// engine told the speakers apart (Custom STT server). `None` otherwise.
+    #[serde(default)]
+    pub diarized_text: Option<String>,
 }
 
 pub struct HistoryManager {
@@ -486,6 +493,7 @@ impl HistoryManager {
                         None,
                         None,
                         None,
+                        None,
                     ) {
                         error!("Failed to add recovered recording to history: {}", e);
                         continue;
@@ -609,6 +617,7 @@ impl HistoryManager {
                     None,
                     None,
                     None,
+                    None,
                 ) {
                     error!("Failed to add recovered recording to history: {}", e);
                     continue;
@@ -649,6 +658,7 @@ impl HistoryManager {
         cost_usd: Option<f64>,
         duration_seconds: Option<f64>,
         model_used: Option<String>,
+        diarized_text: Option<String>,
     ) -> Result<()> {
         // The first free second from there: never write over another take's WAV.
         let mut timestamp = timestamp.unwrap_or_else(|| Utc::now().timestamp());
@@ -684,6 +694,7 @@ impl HistoryManager {
             cost_usd,
             duration_seconds,
             model_used,
+            diarized_text,
         )
         .await
     }
@@ -703,6 +714,7 @@ impl HistoryManager {
         cost_usd: Option<f64>,
         duration_seconds: Option<f64>,
         model_used: Option<String>,
+        diarized_text: Option<String>,
     ) -> Result<()> {
         let title = self.format_timestamp_title(timestamp);
         // The take's transcript beside its recording (`handy-{ts}.txt`), from
@@ -725,6 +737,7 @@ impl HistoryManager {
                 cost_usd,
                 duration_seconds,
                 model_used,
+                diarized_text,
             )?;
             if let Some((name, text)) = text_file {
                 if let Err(e) = create_text_file_in(&self.recordings_dir, &name, &text) {
@@ -756,13 +769,14 @@ impl HistoryManager {
         cost_usd: Option<f64>,
         duration_seconds: Option<f64>,
         model_used: Option<String>,
+        diarized_text: Option<String>,
     ) -> Result<()> {
         let conn = self.get_connection()?;
         conn.execute(
             // audio_purged_at is deliberately NOT set here: a new row's audio exists,
             // and NULL is what "never purged on purpose" means.
-            "INSERT INTO transcription_history (file_name, timestamp, saved, title, transcription_text, post_processed_text, post_process_prompt, cost_usd, duration_seconds, model_used) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
-            params![file_name, timestamp, false, title, transcription_text, post_processed_text, post_process_prompt, cost_usd, duration_seconds, model_used],
+            "INSERT INTO transcription_history (file_name, timestamp, saved, title, transcription_text, post_processed_text, post_process_prompt, cost_usd, duration_seconds, model_used, diarized_text) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
+            params![file_name, timestamp, false, title, transcription_text, post_processed_text, post_process_prompt, cost_usd, duration_seconds, model_used, diarized_text],
         )?;
 
         debug!("Saved transcription to database");
@@ -1032,7 +1046,7 @@ impl HistoryManager {
     pub async fn get_history_entries(&self) -> Result<Vec<HistoryEntry>> {
         let conn = self.get_connection()?;
         let mut stmt = conn.prepare(
-            "SELECT id, file_name, timestamp, saved, title, transcription_text, post_processed_text, post_process_prompt, cost_usd, duration_seconds, model_used, audio_purged_at FROM transcription_history ORDER BY timestamp DESC"
+            "SELECT id, file_name, timestamp, saved, title, transcription_text, post_processed_text, post_process_prompt, cost_usd, duration_seconds, model_used, audio_purged_at, diarized_text FROM transcription_history ORDER BY timestamp DESC"
         )?;
 
         let rows = stmt.query_map([], |row| {
@@ -1049,6 +1063,7 @@ impl HistoryManager {
                 duration_seconds: row.get("duration_seconds")?,
                 model_used: row.get("model_used")?,
                 audio_purged_at: row.get("audio_purged_at")?,
+                diarized_text: row.get("diarized_text")?,
             })
         })?;
 
@@ -1108,7 +1123,7 @@ impl HistoryManager {
 
     fn get_latest_entry_with_conn(conn: &Connection) -> Result<Option<HistoryEntry>> {
         let mut stmt = conn.prepare(
-            "SELECT id, file_name, timestamp, saved, title, transcription_text, post_processed_text, post_process_prompt, cost_usd, duration_seconds, model_used, audio_purged_at
+            "SELECT id, file_name, timestamp, saved, title, transcription_text, post_processed_text, post_process_prompt, cost_usd, duration_seconds, model_used, audio_purged_at, diarized_text
              FROM transcription_history
              ORDER BY timestamp DESC
              LIMIT 1",
@@ -1129,6 +1144,7 @@ impl HistoryManager {
                     duration_seconds: row.get("duration_seconds")?,
                     model_used: row.get("model_used")?,
                     audio_purged_at: row.get("audio_purged_at")?,
+                    diarized_text: row.get("diarized_text")?,
                 })
             })
             .optional()?;
@@ -1261,14 +1277,20 @@ impl HistoryManager {
     /// under the same lock as deletion and retention. The file follows first
     /// (only a file Handy wrote, see `rewrite_text_file`) - a failed write
     /// leaves both as they were - and is put back if the row cannot be updated.
-    pub fn replace_transcription(&self, id: i64, text: &str, model: Option<String>) -> Result<()> {
+    pub fn replace_transcription(
+        &self,
+        id: i64,
+        text: &str,
+        model: Option<String>,
+        diarized: Option<&str>,
+    ) -> Result<()> {
         let _files = self.text_files.lock().unwrap_or_else(|p| p.into_inner());
         let entry = self
             .entry_by_id(id)?
             .ok_or_else(|| anyhow::anyhow!("the history entry no longer exists"))?;
         let file_changed =
             self.rewrite_text_file(&entry.file_name, &entry.transcription_text, text, false)?;
-        if let Err(e) = self.update_transcription_row(id, text, model) {
+        if let Err(e) = self.update_transcription_row(id, text, model, diarized) {
             if file_changed {
                 if let Err(e) =
                     self.rewrite_text_file(&entry.file_name, text, &entry.transcription_text, true)
@@ -1281,11 +1303,19 @@ impl HistoryManager {
         Ok(())
     }
 
-    fn update_transcription_row(&self, id: i64, text: &str, model: Option<String>) -> Result<()> {
+    /// The row's new text; its speaker text is replaced too (`None` clears a
+    /// stale one from an earlier transcription).
+    fn update_transcription_row(
+        &self,
+        id: i64,
+        text: &str,
+        model: Option<String>,
+        diarized: Option<&str>,
+    ) -> Result<()> {
         let conn = self.get_connection()?;
         let changed = conn.execute(
-            "UPDATE transcription_history SET transcription_text = ?1, post_processed_text = NULL, post_process_prompt = NULL, model_used = COALESCE(?2, model_used) WHERE id = ?3",
-            params![text, model, id],
+            "UPDATE transcription_history SET transcription_text = ?1, post_processed_text = NULL, post_process_prompt = NULL, model_used = COALESCE(?2, model_used), diarized_text = ?4 WHERE id = ?3",
+            params![text, model, id, diarized],
         )?;
         if changed != 1 {
             return Err(anyhow::anyhow!("the history entry no longer exists"));
@@ -1303,7 +1333,7 @@ impl HistoryManager {
     fn entry_by_id(&self, id: i64) -> Result<Option<HistoryEntry>> {
         let conn = self.get_connection()?;
         let mut stmt = conn.prepare(
-            "SELECT id, file_name, timestamp, saved, title, transcription_text, post_processed_text, post_process_prompt, cost_usd, duration_seconds, model_used, audio_purged_at
+            "SELECT id, file_name, timestamp, saved, title, transcription_text, post_processed_text, post_process_prompt, cost_usd, duration_seconds, model_used, audio_purged_at, diarized_text
              FROM transcription_history WHERE id = ?1",
         )?;
 
@@ -1322,6 +1352,7 @@ impl HistoryManager {
                     duration_seconds: row.get("duration_seconds")?,
                     model_used: row.get("model_used")?,
                     audio_purged_at: row.get("audio_purged_at")?,
+                    diarized_text: row.get("diarized_text")?,
                 })
             })
             .optional()?;
@@ -1478,7 +1509,8 @@ mod tests {
                 cost_usd REAL,
                 duration_seconds REAL,
                 model_used TEXT,
-                audio_purged_at INTEGER
+                audio_purged_at INTEGER,
+                diarized_text TEXT
             );",
         )
         .expect("create transcription_history table");

@@ -1,6 +1,6 @@
 [package]
 name = "handy"
-version = "2.3.1"
+version = "2.4.0"
 description = "Handy"
 authors = ["pr"]
 edition = "2024"
@@ -77,6 +77,7 @@ transcribe-rs = { path = "../transcribe-rs-local", features = ["whisper", "parak
 handy-keys = "0.2.1"
 ferrous-opencc = "0.2.3"
 ureq = "2"
+sha2 = "0.10"
 dirs = "5"
 tiny_http = "0.12"
 uuid = { version = "1", features = ["v4"] }

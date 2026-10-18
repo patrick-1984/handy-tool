@@ -70,7 +70,8 @@
     "transcriptionProviders": "전사 제공자",
     "llmProviders": "LLM 제공자",
     "advancedSettings": "고급 설정",
-    "moreTools": "추가 도구"
+    "moreTools": "추가 도구",
+    "sttServer": "STT 서버"
   },
   "helpMode": {
     "button": "도움말 모드: 설정 위에 마우스를 올리면 설명이 표시됩니다",
@@ -548,7 +549,8 @@
     },
     "ready": "준비됨",
     "useModel": "이 모델 사용",
-    "inUse": "모든 받아쓰기에 사용됩니다."
+    "inUse": "모든 받아쓰기에 사용됩니다.",
+    "configureModel": "{{modelName}} 설정"
   },
   "settings": {
     "modelSettings": {
@@ -983,7 +985,36 @@
         "translation": "번역",
         "allLanguages": "모든 언어"
       },
-      "noModelsMatch": "이 필터에 맞는 모델이 없습니다."
+      "noModelsMatch": "이 필터에 맞는 모델이 없습니다.",
+      "fallback": {
+        "title": "받아쓰기 모델이 실패할 경우",
+        "description": "녹음을 전사할 수 없을 때(서버 중단, 네트워크 끊김, 요청 실패) 이 순서대로 시도하는 최대 두 개의 추가 모델. 온라인 모델은 녹음 시작 시 확인되며, 응답이 없으면 다음 모델이 즉시 이어받습니다.",
+        "none": "없음",
+        "second": {
+          "title": "두 번째 모델",
+          "description": "받아쓰기 모델이 전사하지 못할 때 녹음을 전사합니다. 다운로드한 모델이나 온라인 모델 모두 가능합니다."
+        },
+        "third": {
+          "title": "세 번째 모델",
+          "description": "두 번째 모델도 전사하지 못할 때 녹음을 전사합니다."
+        }
+      },
+      "huggingFace": {
+        "title": "Hugging Face의 Parakeet",
+        "description": "더 새롭거나 미세 조정된 Parakeet 모델(Handy에 포함된 모델과 같은 구조의 ONNX 내보내기)을 이 PC에서 Handy 자체 Parakeet 엔진으로 실행합니다.",
+        "searchDescription": "**Hugging Face에서 Parakeet ONNX 모델을 검색합니다**(다운로드 많은 순). 또는 리포지토리를 owner/name 형식으로 입력하세요. 모델을 확인하면 Handy에서 사용할 수 있는지와 크기를 알 수 있으며, 추가하면 다른 모델처럼 다운로드됩니다.",
+        "placeholder": "검색 또는 owner/name",
+        "search": "검색",
+        "searchFailed": "Hugging Face를 검색할 수 없습니다: {{error}}",
+        "checkFailed": "모델을 읽을 수 없습니다: {{error}}",
+        "noResults": "Parakeet ONNX 모델을 찾을 수 없습니다.",
+        "downloads": "다운로드 {{count}}회",
+        "size": "{{size}} MB",
+        "incompatible": "사용 불가: {{reason}}",
+        "check": "확인",
+        "added": "추가됨",
+        "add": "추가 및 다운로드"
+      }
     },
     "advanced": {
       "groups": {
@@ -1561,7 +1592,12 @@
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
       "transcribeAgainFailed": "Could not transcribe it: {{error}}",
       "noTranscript": "No transcript — transcribe the recording with the ⟲ button.",
-      "noTranscriptNoAudio": "No transcript."
+      "noTranscriptNoAudio": "No transcript.",
+      "view": {
+        "label": "화자 포함 또는 화자 없이 텍스트 표시",
+        "text": "텍스트",
+        "speakers": "화자"
+      }
     },
     "debug": {
       "title": "디버그",
@@ -1903,7 +1939,69 @@
       "error": "모델을 불러오지 못했습니다",
       "noMatches": "일치하는 모델 없음 — 사용자 정의 ID를 입력하세요"
     },
-    "revealHint": "켜면 더 많은 설정이 보입니다."
+    "revealHint": "켜면 더 많은 설정이 보입니다.",
+    "sttServer": {
+      "server": {
+        "title": "내 STT 서버",
+        "description": "OpenAI 전사 API를 지원하는 직접 운영하는 음성 인식 서버(이 PC 또는 네트워크상). 화자를 구분할 수 있으면 Handy가 누가 무엇을 말했는지 저장합니다."
+      },
+      "url": {
+        "title": "서버 주소",
+        "description": "**버전을 포함한 서버의 API 주소**, 예: http://192.168.1.10:8000/v1. Handy는 각 녹음을 {address}/audio/transcriptions로 보냅니다."
+      },
+      "key": {
+        "title": "API 키",
+        "description": "서버가 요구하는 경우에만 필요합니다. Bearer 토큰으로 전송됩니다.",
+        "placeholder": "선택 사항"
+      },
+      "test": {
+        "title": "서버 테스트",
+        "description": "서버에 사용 가능한 모델을 묻고(GET {address}/models) 아래 모델 목록을 채웁니다.",
+        "button": "테스트",
+        "busy": "테스트 중…",
+        "ok": "연결됨 · 모델 {{count}}개",
+        "failed": "서버에 연결할 수 없습니다: {{error}}"
+      },
+      "use": {
+        "title": "받아쓰기에 사용",
+        "description": "STT 서버를 받아쓰기 모델로 설정합니다. 모델 페이지에서 선택하거나 그곳에서 대체 모델로 설정할 수도 있습니다.",
+        "button": "받아쓰기에 사용",
+        "inUse": "받아쓰기에 사용 중"
+      },
+      "transcription": {
+        "title": "전사",
+        "description": "녹음을 멈추면 각 녹음이 한 번에 서버로 전송되므로 녹음 전체에서 화자가 일관되게 구분됩니다."
+      },
+      "model": {
+        "title": "텍스트용 모델",
+        "description": "**화자 없는 일반 텍스트용 서버 모델**. 기본값: transcribe."
+      },
+      "speakers": {
+        "label": "화자 구분",
+        "description": "**서버의 화자 모델(화자 분리)을 사용하고** 화자가 포함된 텍스트를 기록에 일반 텍스트 옆에 저장합니다. 화자의 발언마다 \"A: …\" 단락이 하나씩 생깁니다. 목소리가 하나뿐이면 텍스트만 있습니다."
+      },
+      "speakersModel": {
+        "title": "화자 포함 모델",
+        "description": "**화자를 구분하는 서버 모델.** OpenAI 스타일 세그먼트를 제공하는 모델(예: transcribe-diarize-openai)이나 \"A: …\" 단락으로 응답하는 모델 모두 사용할 수 있습니다."
+      },
+      "paste": {
+        "title": "붙여넣을 내용",
+        "description": "**녹음 후 붙여넣는 텍스트.** 기록에는 어느 경우든 둘 다 보관되며, 텍스트 / 화자 전환으로 둘 중 하나를 표시하고 복사할 수 있습니다.",
+        "options": {
+          "text": "텍스트만",
+          "speakers": "화자 포함 텍스트"
+        }
+      },
+      "customWords": "사용자 지정 단어(일반 › 사용자 지정 단어)는 어휘(prompt 필드)로 서버에 전송되고, 다른 모든 모델처럼 응답에서 교정됩니다.",
+      "affixText": {
+        "title": "일반 텍스트 앞뒤",
+        "description": "일반 텍스트로 붙여넣는 녹음 앞뒤에 추가되는 텍스트, 예: 출처를 나타내는 라벨. 전체 접두사와 접미사 안쪽에 들어갑니다."
+      },
+      "affixSpeakers": {
+        "title": "화자 포함 텍스트 앞뒤",
+        "description": "화자와 함께 붙여넣는 녹음 앞뒤에 추가되는 텍스트, 예: \"회의 메모:\". 전체 접두사와 접미사 안쪽에 들어갑니다."
+      }
+    }
   },
   "common": {
     "loading": "로딩 중...",
@@ -1976,7 +2074,8 @@
     "transcriptionFailed": "전사에 실패했습니다: {{reason}}. 선택한 모델이 정상 작동하는지 확인한 후 다시 시도하세요.",
     "pasteFailedHistoryOnly": "전사 결과 붙여넣기에 실패했습니다: {{reason}}. 클립보드는 변경되지 않았습니다 — 텍스트는 히스토리에 저장되었습니다. {{recovery}}",
     "recoverWithPasteLast": "{{shortcut}}을 눌러 붙여넣으세요.",
-    "recoverFromHistory": "설정 › 히스토리를 열어 복사하세요."
+    "recoverFromHistory": "설정 › 히스토리를 열어 복사하세요.",
+    "transcriptionFallback": "{{from}}이(가) 이 녹음을 전사하지 못해 {{to}}이(가) 전사했습니다"
   },
   "flm": {
     "windowsApplicationControlBlocked": "Windows 애플리케이션 제어가 서명되지 않은 flm.exe를 차단했습니다. NPU 엔진을 사용할 수 없습니다. 다른 음성 기록 모델을 선택하세요.",
@@ -2224,6 +2323,22 @@
       "proxy": {
         "title": "Works behind a proxy that asks for a sign-in",
         "description": "Model downloads, update checks and online providers now use the proxy set in Windows and sign in to it with your Windows account (NTLM / Negotiate), as a browser does. A manual proxy with a user name and password can be set in Advanced settings > Proxy."
+      },
+      "sttServer": {
+        "title": "화자를 지원하는 나만의 STT 서버",
+        "description": "고급 설정 › STT 서버에서 직접 운영하는 음성 인식 서버(OpenAI 호환)를 연결하세요. 화자를 구분하면 기록에서 일반 텍스트 옆에 화자 포함 녹음이 표시되고, 어느 쪽을 붙여넣을지 선택할 수 있으며 각각 고유한 접두사와 접미사를 가집니다."
+      },
+      "failover": {
+        "title": "첫 번째 모델이 실패하면 두 번째, 세 번째 모델",
+        "description": "모델 페이지에서 최대 두 개의 추가 모델을 선택하세요. 받아쓰기 모델이 녹음을 전사하지 못하면(서버 중단, 네트워크 끊김) 다음 모델이 전사하며, 온라인 모델은 녹음이 시작되자마자 확인됩니다."
+      },
+      "huggingFace": {
+        "title": "Hugging Face의 Parakeet 모델",
+        "description": "모델 페이지에서 Hugging Face의 더 새롭거나 미세 조정된 Parakeet 모델을 검색하고, 확인한 뒤 추가하세요. Handy에 포함된 Parakeet처럼 이 PC에서 실행됩니다."
+      },
+      "modelSettings": {
+        "title": "카드에서 여는 모델 설정",
+        "description": "모델 카드의 톱니바퀴를 누르거나 사용 중인 모델의 카드를 클릭하면 해당 모델의 설정이 열립니다. 기록의 다시 전사 버튼에 새 아이콘이 적용되었습니다."
       }
     },
     "installed": "설치됨"

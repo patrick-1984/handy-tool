@@ -1,5 +1,38 @@
 # Changelog
 
+## [2.4.0] - 2026-10-18
+
+### Added
+
+- **Your own STT server, with speakers (Advanced settings › STT server).** A new model, Custom STT
+  server, sends each take to a speech-to-text server of your own (OpenAI-compatible
+  `/audio/transcriptions`, on this PC or your network) in one piece when you stop. Test fills the
+  model lists from the server's own `/models`. With "Tell the speakers apart" on, the server's
+  diarization model is used and History keeps the take with speakers ("A: …" paragraph per turn)
+  next to the plain text; you choose which one is pasted, and each has its own prefix and suffix.
+  Your custom words go to the server as vocabulary (`prompt`) and are corrected in its answer, as
+  for every model. History's "Transcribe again" sends the whole recording again, with speakers.
+- **A second and third model if the first fails (Models › If your dictation model fails).** When
+  your dictation model cannot transcribe a take - its server is down, the network dropped, a
+  request failed - the next model in your order does, the whole take or each 10-minute piece. An
+  online dictation model is checked as soon as the take starts, so a server that does not answer
+  is skipped at once; after one failure the rest of the take goes straight to the next model.
+  Any downloaded or online model can be in the order. History says which model transcribed, and
+  a message tells you when Handy switched.
+- **Parakeet models from Hugging Face (Models › Parakeet from Hugging Face).** Search Hugging Face
+  for Parakeet ONNX models (or type owner/name), check one - Handy tells you whether its engine
+  can read it and how big it is - and add it: it downloads file by file (resumable, each file
+  checked) and runs on this PC like the Parakeet Handy ships, e.g. newer "ultra" weights or a
+  model tuned for one language.
+- **A model's settings from its card.** Model cards with settings of their own (online models,
+  the STT server, Hugging Face models, Whisper's language) have a gear, and a click on the card of
+  the model in use opens its settings.
+
+### Changed
+
+- **History's "Transcribe again" has a new icon** (captions instead of the circular arrow); its
+  tooltip is unchanged.
+
 ## [2.3.1] - 2026-10-15
 
 ### Fixed

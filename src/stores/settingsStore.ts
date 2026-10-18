@@ -303,6 +303,56 @@ const settingUpdaters: {
     commands.changePreserveTranscriptionsSetting(value as boolean),
   recording_text_file: (value) =>
     commands.changeRecordingTextFileSetting(value as boolean),
+  stt_server_url: (value) =>
+    commands.changeSttServerSetting("stt_server_url", String(value)),
+  stt_server_key: (value) =>
+    commands.changeSttServerSetting("stt_server_key", String(value)),
+  stt_server_model: (value) =>
+    commands.changeSttServerSetting("stt_server_model", String(value)),
+  stt_server_speakers: (value) =>
+    commands.changeSttServerSetting("stt_server_speakers", String(value)),
+  stt_server_speakers_model: (value) =>
+    commands.changeSttServerSetting("stt_server_speakers_model", String(value)),
+  stt_server_paste: (value) =>
+    commands.changeSttServerSetting("stt_server_paste", String(value)),
+  stt_text_prefix_enabled: (value) =>
+    commands.changeSttServerSetting("stt_text_prefix_enabled", String(value)),
+  stt_text_prefix_text: (value) =>
+    commands.changeSttServerSetting("stt_text_prefix_text", String(value)),
+  stt_text_prefix_newline: (value) =>
+    commands.changeSttServerSetting("stt_text_prefix_newline", String(value)),
+  stt_text_suffix_enabled: (value) =>
+    commands.changeSttServerSetting("stt_text_suffix_enabled", String(value)),
+  stt_text_suffix_text: (value) =>
+    commands.changeSttServerSetting("stt_text_suffix_text", String(value)),
+  stt_text_suffix_newline: (value) =>
+    commands.changeSttServerSetting("stt_text_suffix_newline", String(value)),
+  stt_speakers_prefix_enabled: (value) =>
+    commands.changeSttServerSetting(
+      "stt_speakers_prefix_enabled",
+      String(value),
+    ),
+  stt_speakers_prefix_text: (value) =>
+    commands.changeSttServerSetting("stt_speakers_prefix_text", String(value)),
+  stt_speakers_prefix_newline: (value) =>
+    commands.changeSttServerSetting(
+      "stt_speakers_prefix_newline",
+      String(value),
+    ),
+  stt_speakers_suffix_enabled: (value) =>
+    commands.changeSttServerSetting(
+      "stt_speakers_suffix_enabled",
+      String(value),
+    ),
+  stt_speakers_suffix_text: (value) =>
+    commands.changeSttServerSetting("stt_speakers_suffix_text", String(value)),
+  stt_speakers_suffix_newline: (value) =>
+    commands.changeSttServerSetting(
+      "stt_speakers_suffix_newline",
+      String(value),
+    ),
+  transcription_fallbacks: (value) =>
+    commands.changeTranscriptionFallbacksSetting(value as string[]),
   capture_source: (value) =>
     commands.changeCaptureSourceSetting(value as string),
   system_audio_device: (value) =>

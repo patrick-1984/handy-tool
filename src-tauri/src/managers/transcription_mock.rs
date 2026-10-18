@@ -115,6 +115,21 @@ impl TranscriptionManager {
         Ok(String::new())
     }
 
+    pub fn stt_server_take(
+        &self,
+        _audio: &[f32],
+    ) -> Result<crate::managers::stt_server::SttServerResult> {
+        Ok(Default::default())
+    }
+
+    pub fn stt_server_take_expecting(
+        &self,
+        _expected_model: &str,
+        _audio: &[f32],
+    ) -> Result<crate::managers::stt_server::SttServerResult> {
+        Ok(Default::default())
+    }
+
     pub fn set_live_transcribing(&self, _active: bool) {}
 
     pub fn set_batch_transcribing(&self, _active: bool) {}

@@ -18,7 +18,7 @@ import {
   X,
   HardDrive,
   Clock,
-  RotateCcw,
+  Captions,
   Loader2,
 } from "lucide-react";
 import { convertFileSrc } from "@tauri-apps/api/core";
@@ -150,6 +150,7 @@ export const HistorySettings: React.FC = () => {
         entry.title,
         entry.transcription_text,
         entry.post_processed_text,
+        entry.diarized_text,
       ]),
     );
   }, [historyEntries, matcher]);
@@ -319,7 +320,7 @@ export const HistorySettings: React.FC = () => {
             entry={entry}
             matcher={matcher}
             onToggleSaved={() => toggleSaved(entry.id)}
-            onCopyText={() => copyToClipboard(entry.transcription_text)}
+            onCopyText={(text) => copyToClipboard(text)}
             getAudioUrl={getAudioUrl}
             deleteAudio={deleteAudioEntry}
           />
@@ -429,7 +430,8 @@ interface HistoryEntryProps {
   entry: HistoryEntry;
   matcher: SearchMatcher | null;
   onToggleSaved: () => void;
-  onCopyText: () => void;
+  /** Copies the text the row shows (plain, or with speakers). */
+  onCopyText: (text: string) => void;
   getAudioUrl: (fileName: string) => Promise<string | null>;
   deleteAudio: (id: number) => Promise<void>;
 }
@@ -473,6 +475,11 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
   const [showCopied, setShowCopied] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const [transcribeError, setTranscribeError] = useState<string | null>(null);
+  // A take with speakers shows them by default; "Text" shows it without.
+  const speakerText = entry.diarized_text?.trim() || null;
+  const [showSpeakers, setShowSpeakers] = useState(true);
+  const shownSpeakers = speakerText !== null && showSpeakers;
+  const shownText = shownSpeakers ? speakerText : entry.transcription_text;
   const noText = entry.transcription_text.trim() === "";
   // The audio is still there (History's clean-up can delete it, keeping the text).
   const hasAudio = entry.audio_purged_at == null;
@@ -502,7 +509,7 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
   );
 
   const handleCopyText = () => {
-    onCopyText();
+    onCopyText(shownText);
     setShowCopied(true);
     setTimeout(() => setShowCopied(false), 2000);
   };
@@ -550,7 +557,7 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
               {transcribing ? (
                 <Loader2 width={16} height={16} className="animate-spin" />
               ) : (
-                <RotateCcw width={16} height={16} />
+                <Captions width={16} height={16} />
               )}
             </button>
           )}
@@ -596,9 +603,38 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
             : t("settings.history.noTranscriptNoAudio")}
         </p>
       ) : (
-        <p className="text-sm select-text cursor-text">
-          <HighlightedText text={entry.transcription_text} matcher={matcher} />
-        </p>
+        <>
+          {speakerText !== null && (
+            <div
+              className="inline-flex self-start rounded-md border border-border p-0.5 text-xs"
+              role="group"
+              aria-label={t("settings.history.view.label")}
+            >
+              {([false, true] as const).map((speakers) => (
+                <button
+                  key={String(speakers)}
+                  type="button"
+                  onClick={() => setShowSpeakers(speakers)}
+                  aria-pressed={showSpeakers === speakers}
+                  className={`px-2 py-0.5 rounded cursor-pointer transition-colors ${
+                    showSpeakers === speakers
+                      ? "bg-accent-soft text-accent-text font-medium"
+                      : "text-text-secondary hover:bg-hover"
+                  }`}
+                >
+                  {speakers
+                    ? t("settings.history.view.speakers")
+                    : t("settings.history.view.text")}
+                </button>
+              ))}
+            </div>
+          )}
+          <p
+            className={`text-sm select-text cursor-text ${shownSpeakers ? "whitespace-pre-line" : ""}`}
+          >
+            <HighlightedText text={shownText} matcher={matcher} />
+          </p>
+        </>
       )}
       {transcribeError && (
         <p className="text-xs text-err-text">

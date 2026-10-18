@@ -1421,6 +1421,54 @@ export const commands = {
       else return { status: "error", error: e as any };
     }
   },
+  async changeSttServerSetting(field: string, value: string): Promise<Result<null, string>> {
+    try {
+      return { status: "ok", data: await TAURI_INVOKE("change_stt_server_setting", { field, value }) };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  async changeTranscriptionFallbacksSetting(models: string[]): Promise<Result<null, string>> {
+    try {
+      return { status: "ok", data: await TAURI_INVOKE("change_transcription_fallbacks_setting", { models }) };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  async getSttServerInfo(url: string, key: string): Promise<Result<SttServerInfo, string>> {
+    try {
+      return { status: "ok", data: await TAURI_INVOKE("get_stt_server_info", { url, key }) };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  async searchHfParakeetModels(query: string): Promise<Result<HfModelSummary[], string>> {
+    try {
+      return { status: "ok", data: await TAURI_INVOKE("search_hf_parakeet_models", { query }) };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  async checkHfParakeetModel(repo: string): Promise<Result<HfRepoCheck, string>> {
+    try {
+      return { status: "ok", data: await TAURI_INVOKE("check_hf_parakeet_model", { repo }) };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  async addHfParakeetModel(repo: string): Promise<Result<ModelInfo, string>> {
+    try {
+      return { status: "ok", data: await TAURI_INVOKE("add_hf_parakeet_model", { repo }) };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
   async changeRecordingTextFileSetting(
     enabled: boolean,
   ): Promise<Result<null, string>> {
@@ -3431,6 +3479,25 @@ export type AppSettings = {
   openrouter_transcription_key?: string;
   openrouter_transcription_language?: string;
   openrouter_transcription_translate_to_english?: boolean;
+  transcription_fallbacks?: string[];
+  stt_server_url?: string;
+  stt_server_key?: string;
+  stt_server_model?: string;
+  stt_server_speakers?: boolean;
+  stt_server_speakers_model?: string;
+  stt_server_paste?: SttServerPaste;
+  stt_text_prefix_enabled?: boolean;
+  stt_text_prefix_text?: string;
+  stt_text_prefix_newline?: boolean;
+  stt_text_suffix_enabled?: boolean;
+  stt_text_suffix_text?: string;
+  stt_text_suffix_newline?: boolean;
+  stt_speakers_prefix_enabled?: boolean;
+  stt_speakers_prefix_text?: string;
+  stt_speakers_prefix_newline?: boolean;
+  stt_speakers_suffix_enabled?: boolean;
+  stt_speakers_suffix_text?: string;
+  stt_speakers_suffix_newline?: boolean;
   api_transcription_language?: string;
   api_transcription_translate_to_english?: boolean;
   custom_asr_config_migrated?: boolean;
@@ -3812,7 +3879,12 @@ export type EngineType =
    * endpoint or chat `input_audio`). Unlike ApiWhisper it participates in
    * the live/chunked per-segment pipeline.
    */
-  | "OpenRouterWhisper";
+  | "OpenRouterWhisper"
+  /**
+   * A Custom STT server (OpenAI-compatible, optionally with speakers): one
+   * request per take, see managers/stt_server.rs.
+   */
+  | "SttServer";
 export type HistoryEntry = {
   id: number;
   file_name: string;
@@ -3841,6 +3913,11 @@ export type HistoryEntry = {
    * file is a fault rather than policy - the UI must distinguish the two.
    */
   audio_purged_at?: number | null;
+  /**
+   * The text with speakers, one `A: ...` paragraph per turn, when the
+   * engine told the speakers apart (Custom STT server). `None` otherwise.
+   */
+  diarized_text?: string | null;
 };
 /**
  * Result of changing keyboard implementation
@@ -4051,6 +4128,45 @@ export type OpenRouterModelPrice = {
 /**
  * Which OpenRouter endpoint the OpenRouter transcription engine uses.
  */
+/**
+ * What a Custom STT server take pastes when speakers are on.
+ */
+export type SttServerPaste = "text" | "speakers";
+/**
+ * One model the server offers (`GET {base}/models`).
+ */
+export type SttServerModel = { id: string; description: string };
+/**
+ * The server's answer to `GET {base}/models`: its models and, when it says,
+ * what runs behind them.
+ */
+export type SttServerInfo = { models: SttServerModel[]; backend: string | null };
+/**
+ * A file in a Hugging Face repo.
+ */
+export type HfFile = {
+  path: string;
+  size: number;
+  /**
+   * SHA-256 of a large (LFS) file, as Hugging Face lists it.
+   */
+  sha256?: string | null;
+};
+/**
+ * One search hit.
+ */
+export type HfModelSummary = { repo: string; downloads: number };
+/**
+ * What a repo offers Handy.
+ */
+export type HfRepoCheck = {
+  repo: string;
+  compatible: boolean;
+  reason: string | null;
+  files: HfFile[];
+  total_mb: number;
+  model_id: string;
+};
 export type OpenRouterTranscriptionRoute =
   /**
    * Dedicated `/audio/transcriptions` JSON endpoint (Whisper-style models).

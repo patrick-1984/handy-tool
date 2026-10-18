@@ -70,7 +70,8 @@
     "transcriptionProviders": "轉錄供應商",
     "llmProviders": "LLM 供應商",
     "advancedSettings": "進階設定",
-    "moreTools": "更多工具"
+    "moreTools": "更多工具",
+    "sttServer": "STT 伺服器"
   },
   "helpMode": {
     "button": "說明模式：將滑鼠指向設定即可查看其作用",
@@ -548,7 +549,8 @@
     },
     "ready": "就緒",
     "useModel": "使用此模型",
-    "inUse": "用於所有聽寫。"
+    "inUse": "用於所有聽寫。",
+    "configureModel": "{{modelName}} 的設定"
   },
   "settings": {
     "modelSettings": {
@@ -938,7 +940,36 @@
         "translation": "翻譯",
         "allLanguages": "所有語言"
       },
-      "noModelsMatch": "沒有符合此篩選條件的模型"
+      "noModelsMatch": "沒有符合此篩選條件的模型",
+      "fallback": {
+        "title": "聽寫模型失敗時",
+        "description": "最多兩個額外模型，在錄音無法轉錄時（伺服器停擺、網路中斷、請求失敗）依此順序嘗試。線上模型會在錄音開始時檢查，若沒有回應，下一個模型會立即接手。",
+        "none": "無",
+        "second": {
+          "title": "第二個模型",
+          "description": "在聽寫模型無法轉錄時轉錄錄音。可以是任何已下載或線上模型。"
+        },
+        "third": {
+          "title": "第三個模型",
+          "description": "在第二個模型也無法轉錄時轉錄錄音。"
+        }
+      },
+      "huggingFace": {
+        "title": "來自 Hugging Face 的 Parakeet",
+        "description": "較新或經微調的 Parakeet 模型（與 Handy 內建模型結構相同的 ONNX 匯出），由 Handy 自己的 Parakeet 引擎在這台電腦上執行。",
+        "searchDescription": "**在 Hugging Face 上搜尋 Parakeet ONNX 模型**，依下載次數排序，或以 owner/name 格式輸入儲存庫。檢查模型以了解 Handy 能否使用及其大小，然後加入：它會像其他模型一樣下載。",
+        "placeholder": "搜尋，或 owner/name",
+        "search": "搜尋",
+        "searchFailed": "無法搜尋 Hugging Face：{{error}}",
+        "checkFailed": "無法讀取模型：{{error}}",
+        "noResults": "找不到 Parakeet ONNX 模型。",
+        "downloads": "{{count}} 次下載",
+        "size": "{{size}} MB",
+        "incompatible": "無法使用：{{reason}}",
+        "check": "檢查",
+        "added": "已加入",
+        "add": "加入並下載"
+      }
     },
     "sound": {
       "title": "聲音",
@@ -1561,7 +1592,12 @@
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
       "transcribeAgainFailed": "Could not transcribe it: {{error}}",
       "noTranscript": "No transcript — transcribe the recording with the ⟲ button.",
-      "noTranscriptNoAudio": "No transcript."
+      "noTranscriptNoAudio": "No transcript.",
+      "view": {
+        "label": "顯示含講者或不含講者的文字",
+        "text": "文字",
+        "speakers": "講者"
+      }
     },
     "debug": {
       "title": "偵錯",
@@ -1903,7 +1939,69 @@
       "error": "載入模型失敗",
       "noMatches": "沒有符合的模型——輸入以使用自訂 ID"
     },
-    "revealHint": "開啟即可查看更多設定。"
+    "revealHint": "開啟即可查看更多設定。",
+    "sttServer": {
+      "server": {
+        "title": "你的 STT 伺服器",
+        "description": "你自己的語音轉文字伺服器（在這台電腦或你的網路上），支援 OpenAI 轉錄 API。若它能區分講者，Handy 會儲存誰說了什麼。"
+      },
+      "url": {
+        "title": "伺服器位址",
+        "description": "**伺服器的 API 位址，含版本**，例如 http://192.168.1.10:8000/v1。Handy 會將每段錄音傳送到 {address}/audio/transcriptions。"
+      },
+      "key": {
+        "title": "API 金鑰",
+        "description": "僅在伺服器要求時填寫。以 Bearer 權杖傳送。",
+        "placeholder": "選填"
+      },
+      "test": {
+        "title": "測試伺服器",
+        "description": "向伺服器查詢可用模型（GET {address}/models），並填入下方的模型清單。",
+        "button": "測試",
+        "busy": "測試中…",
+        "ok": "已連線 · {{count}} 個模型",
+        "failed": "無法連線到伺服器：{{error}}"
+      },
+      "use": {
+        "title": "用於聽寫",
+        "description": "將 STT 伺服器設為你的聽寫模型。你也可以在模型頁面選擇它，或在那裡將其設為備援模型。",
+        "button": "用於聽寫",
+        "inUse": "正用於聽寫"
+      },
+      "transcription": {
+        "title": "轉錄",
+        "description": "停止時每段錄音會整段傳送到伺服器，讓整段錄音中的講者區分保持一致。"
+      },
+      "model": {
+        "title": "文字模型",
+        "description": "**伺服器的純文字模型**，不含講者。預設：transcribe。"
+      },
+      "speakers": {
+        "label": "區分講者",
+        "description": "**使用伺服器的講者模型（講者分離）**，並將含講者的文字儲存在歷史記錄中純文字旁，每次發言輪次一個 \"A: …\" 段落。只有一個聲音時僅保留文字。"
+      },
+      "speakersModel": {
+        "title": "講者模型",
+        "description": "**伺服器中用於區分講者的模型。** 回傳 OpenAI 風格分段的模型（例如 transcribe-diarize-openai）或以 \"A: …\" 段落回覆的模型皆可使用。"
+      },
+      "paste": {
+        "title": "要貼上的內容",
+        "description": "**錄音後貼上的文字。** 不論如何歷史記錄都會保留兩者，其文字 / 講者切換可顯示並複製任一種。",
+        "options": {
+          "text": "僅文字",
+          "speakers": "含講者的文字"
+        }
+      },
+      "customWords": "你的自訂字詞（一般 › 自訂字詞）會作為詞彙（prompt 欄位）傳送到伺服器，並和所有模型一樣在其回覆中修正。",
+      "affixText": {
+        "title": "純文字前後",
+        "description": "以純文字貼上錄音時在前後加入的文字，例如說明來源的標籤。位於通用前綴與後綴之內。"
+      },
+      "affixSpeakers": {
+        "title": "含講者文字前後",
+        "description": "以含講者方式貼上錄音時在前後加入的文字，例如 \"會議筆記：\"。位於通用前綴與後綴之內。"
+      }
+    }
   },
   "common": {
     "loading": "載入中...",
@@ -1976,7 +2074,8 @@
     "transcriptionFailed": "轉錄失敗:{{reason}}。請確認所選模型正常運作,然後再試一次",
     "pasteFailedHistoryOnly": "貼上轉錄失敗：{{reason}}。剪貼簿未被更動 — 文字已儲存於歷史紀錄中。{{recovery}}",
     "recoverWithPasteLast": "按下 {{shortcut}} 即可貼上。",
-    "recoverFromHistory": "開啟設定 › 歷史紀錄以複製文字。"
+    "recoverFromHistory": "開啟設定 › 歷史紀錄以複製文字。",
+    "transcriptionFallback": "{{from}} 無法轉錄此錄音，因此改由 {{to}} 轉錄"
   },
   "flm": {
     "windowsApplicationControlBlocked": "Windows 應用程式控制已封鎖 flm.exe，因為它未經數位簽署。NPU 引擎無法使用。請選擇其他轉錄模型。",
@@ -2224,6 +2323,22 @@
       "proxy": {
         "title": "Works behind a proxy that asks for a sign-in",
         "description": "Model downloads, update checks and online providers now use the proxy set in Windows and sign in to it with your Windows account (NTLM / Negotiate), as a browser does. A manual proxy with a user name and password can be set in Advanced settings > Proxy."
+      },
+      "sttServer": {
+        "title": "你自己的 STT 伺服器，支援講者",
+        "description": "在 進階設定 › STT 伺服器 中連接你自己的語音轉文字伺服器（相容 OpenAI）。若它能區分講者，歷史記錄會在純文字旁顯示含講者的錄音，並由你選擇貼上哪一種，各自擁有自己的前綴與後綴。"
+      },
+      "failover": {
+        "title": "第一個模型失敗時的第二、第三個模型",
+        "description": "在模型頁面選擇最多兩個額外模型。當聽寫模型無法轉錄錄音時（其伺服器停擺、網路中斷），由下一個模型轉錄，線上模型會在錄音一開始時就檢查。"
+      },
+      "huggingFace": {
+        "title": "來自 Hugging Face 的 Parakeet 模型",
+        "description": "在模型頁面搜尋 Hugging Face 上較新或經微調的 Parakeet 模型，檢查後加入：它會像 Handy 內建的 Parakeet 一樣在這台電腦上執行。"
+      },
+      "modelSettings": {
+        "title": "從模型卡片開啟其設定",
+        "description": "點選模型卡片上的齒輪，或點選正在使用的模型卡片，即可開啟該模型自己的設定。歷史記錄中的重新轉錄按鈕換上了新圖示。"
       }
     },
     "installed": "已安裝"

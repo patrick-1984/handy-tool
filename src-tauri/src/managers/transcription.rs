@@ -357,6 +357,16 @@ enum LoadedEngine {
     FlmWhisper,
     ApiWhisper,
     OpenRouterWhisper,
+    SttServer,
+}
+
+thread_local! {
+    /// Set by `stt_server_take_expecting` around its `transcribe_inner` call:
+    /// `Some(None)` = this call is a dictation take that wants its speaker
+    /// text; the STT branch fills it in. Same thread, so no other caller
+    /// (watched folders, files) ever sees it.
+    static STT_TAKE_SPEAKERS: std::cell::RefCell<Option<Option<String>>> =
+        const { std::cell::RefCell::new(None) };
 }
 
 /// The loaded engine AND the model ID it was loaded for, behind ONE mutex
@@ -754,7 +764,7 @@ impl TranscriptionManager {
                     LoadedEngine::ApiWhisper => {
                         // No resources to release — stateless HTTP client
                     }
-                    LoadedEngine::OpenRouterWhisper => {
+                    LoadedEngine::OpenRouterWhisper | LoadedEngine::SttServer => {
                         // No resources to release — stateless HTTP client
                     }
                 }
@@ -887,6 +897,90 @@ impl TranscriptionManager {
         Ok(filter_transcription_output(&corrected))
     }
 
+    /// One Custom STT server request with the current settings. `speakers`:
+    /// use the speakers model when speakers are on (a take); `false` always
+    /// asks for plain text (pieces of a file, fallbacks). Custom words are sent
+    /// as the prompt and corrected afterwards, in the speaker text too.
+    fn stt_server_request(
+        &self,
+        settings: &crate::settings::AppSettings,
+        audio: &[f32],
+        speakers: bool,
+    ) -> Result<crate::managers::stt_server::SttServerResult> {
+        use crate::managers::stt_server;
+        if settings.stt_server_url.trim().is_empty() {
+            return Err(anyhow::anyhow!(
+                "The STT server address is not set. Set it in Advanced settings > STT server."
+            ));
+        }
+        if audio.is_empty() {
+            return Ok(Default::default());
+        }
+        let use_speakers = speakers && settings.stt_server_speakers;
+        let model = if use_speakers {
+            settings.stt_server_speakers_model.trim()
+        } else {
+            settings.stt_server_model.trim()
+        };
+        // "auto" stays unset: the server detects the language itself.
+        let language = normalize_language_for_engine(&settings.selected_language);
+        let prompt = settings.custom_words.join(", ");
+        let mut result = stt_server::transcribe(
+            &settings.stt_server_url,
+            &settings.stt_server_key,
+            model,
+            audio,
+            language.as_deref(),
+            Some(prompt.as_str()),
+            use_speakers,
+        )?;
+        let correct = |text: &str| {
+            let corrected = if settings.custom_words.is_empty() {
+                text.to_string()
+            } else {
+                apply_custom_words(
+                    text,
+                    &settings.custom_words,
+                    settings.word_correction_threshold,
+                )
+            };
+            filter_transcription_output(&corrected)
+        };
+        result.text = correct(&result.text);
+        if !use_speakers {
+            result.diarized = None;
+        }
+        result.diarized = result
+            .diarized
+            .map(|d| stt_server::correct_diarized(&d, |s| correct(s)));
+        Ok(result)
+    }
+
+    /// A dictation take on the Custom STT server: text and, with speakers on,
+    /// the speaker text. Goes through `transcribe_inner` like any take (it
+    /// waits for a model still loading and keeps the model's idle timer
+    /// fresh).
+    pub fn stt_server_take_expecting(
+        &self,
+        expected_model: &str,
+        audio: &[f32],
+    ) -> Result<crate::managers::stt_server::SttServerResult> {
+        STT_TAKE_SPEAKERS.with(|c| *c.borrow_mut() = Some(None));
+        let result = self.transcribe_inner(expected_model, audio.to_vec(), false);
+        let diarized = STT_TAKE_SPEAKERS.with(|c| c.borrow_mut().take()).flatten();
+        result.map(|(text, _)| crate::managers::stt_server::SttServerResult { text, diarized })
+    }
+
+    /// History's "Transcribe again" for a Custom STT server take: the whole
+    /// recording in one request, with speakers when they are on.
+    pub fn stt_server_take(
+        &self,
+        audio: &[f32],
+    ) -> Result<crate::managers::stt_server::SttServerResult> {
+        let settings = get_settings(&self.app_handle);
+        self.stt_server_request(&settings, audio, true)
+    }
+
     /// An online engine (API, OpenRouter) for a file: straight to its endpoint,
     /// never through the dictation slot, so a file can use one whatever the
     /// dictation model is. Same request, language and custom words as a take;
@@ -942,6 +1036,12 @@ impl TranscriptionManager {
                     settings.openrouter_transcription_audio_format,
                     translate,
                 )?
+            }
+            EngineType::SttServer => {
+                // Already corrected (custom words) inside the request helper.
+                return self
+                    .stt_server_request(&settings, &audio, false)
+                    .map(|r| r.text);
             }
             _ => {
                 return Err(anyhow::anyhow!("'{}' is not an online model", model_id));
@@ -1485,6 +1585,29 @@ impl TranscriptionManager {
                 );
                 LoadedEngine::OpenRouterWhisper
             }
+            EngineType::SttServer => {
+                let settings = get_settings(&self.app_handle);
+                if settings.stt_server_url.trim().is_empty() {
+                    let error_msg =
+                        "The STT server address is not set. Set it in Advanced settings > STT server."
+                            .to_string();
+                    let _ = self.app_handle.emit(
+                        "model-state-changed",
+                        ModelStateEvent {
+                            event_type: "loading_failed".to_string(),
+                            model_id: Some(model_id.to_string()),
+                            model_name: Some(model_info.name.clone()),
+                            error: Some(error_msg.clone()),
+                        },
+                    );
+                    return Err(anyhow::anyhow!(error_msg));
+                }
+                info!(
+                    "STT server engine selected (url: {}, speakers: {})",
+                    settings.stt_server_url, settings.stt_server_speakers
+                );
+                LoadedEngine::SttServer
+            }
         };
 
         // Finding 8(b): update the engine AND its model ID together, under
@@ -1775,6 +1898,26 @@ impl TranscriptionManager {
             }
         }
 
+        // Custom STT server: one request for the whole take; its speaker text
+        // (if any) is kept for the take's History row.
+        {
+            let engine_guard = self.lock_engine();
+            if matches!(&engine_guard.engine, Some(LoadedEngine::SttServer)) {
+                Self::ensure_expected_model(&engine_guard, expected_model)?;
+                drop(engine_guard);
+                // Plain text for watched folders and other shared-path
+                // callers; a dictation take (`stt_server_take_expecting`)
+                // also gets its speaker text.
+                let take = STT_TAKE_SPEAKERS.with(|c| c.borrow().is_some());
+                let result = self.stt_server_request(&settings, &audio, take)?;
+                if take {
+                    STT_TAKE_SPEAKERS.with(|c| *c.borrow_mut() = Some(result.diarized));
+                }
+                self.maybe_unload_immediately("STT server");
+                return Ok((result.text, None));
+            }
+        }
+
         // If API Whisper engine is active, POST to the configured endpoint
         {
             let engine_guard = self.lock_engine();
@@ -2044,6 +2187,12 @@ impl TranscriptionManager {
                             // Handled earlier via the OpenRouter path; never reached.
                             Err(anyhow::anyhow!(
                                 "OpenRouterWhisper engine should use the OpenRouter path"
+                            ))
+                        }
+                        LoadedEngine::SttServer => {
+                            // Handled earlier via the STT server path; never reached.
+                            Err(anyhow::anyhow!(
+                                "SttServer engine should use the STT server path"
                             ))
                         }
                     }
@@ -2423,6 +2572,9 @@ impl TranscriptionManager {
             }
             LoadedEngine::OpenRouterWhisper => Err(anyhow::anyhow!(
                 "OpenRouterWhisper engine should use the OpenRouter path"
+            )),
+            LoadedEngine::SttServer => Err(anyhow::anyhow!(
+                "SttServer engine should use the STT server path"
             )),
         }
     }

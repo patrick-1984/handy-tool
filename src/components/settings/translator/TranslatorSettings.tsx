@@ -164,7 +164,9 @@ export const TranslatorSettings: React.FC = () => {
     (m) =>
       m.id === fileModelId &&
       m.is_downloaded &&
-      (!["ApiWhisper", "OpenRouterWhisper"].includes(m.engine_type) ||
+      (!["ApiWhisper", "OpenRouterWhisper", "SttServer"].includes(
+        m.engine_type,
+      ) ||
         m.id === getSetting("selected_model")),
   );
   const modelOptions = [

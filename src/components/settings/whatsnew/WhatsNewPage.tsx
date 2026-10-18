@@ -37,6 +37,27 @@ interface Item {
  */
 const RELEASES: { version: string; items: Item[] }[] = [
   {
+    version: "2.4.0",
+    items: [
+      {
+        key: "sttServer",
+        section: "sttServer",
+        titleKeys: ["settings.sttServer.url.title"],
+      },
+      {
+        key: "failover",
+        section: "models",
+        titleKeys: ["settings.models.fallback.second.title"],
+      },
+      {
+        key: "huggingFace",
+        section: "models",
+        titleKeys: ["settings.models.huggingFace.title"],
+      },
+      { key: "modelSettings", section: "models" },
+    ],
+  },
+  {
     version: "2.3.1",
     items: [{ key: "longTakes", section: "history", historyTab: "recordings" }],
   },

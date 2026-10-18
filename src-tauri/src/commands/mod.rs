@@ -3,6 +3,7 @@ pub mod files;
 pub mod history;
 pub mod models;
 pub mod proxy;
+pub mod stt_hf;
 pub mod transcription;
 pub mod translator;
 

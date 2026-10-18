@@ -299,7 +299,9 @@ const TranscribeFile: React.FC<{ onFinished: () => void }> = ({
   // their endpoint, beside whatever dictation uses. The one picked last is
   // remembered; until then, the dictation model.
   const isOnline = (m: ModelInfo) =>
-    m.engine_type === "ApiWhisper" || m.engine_type === "OpenRouterWhisper";
+    m.engine_type === "ApiWhisper" ||
+    m.engine_type === "OpenRouterWhisper" ||
+    m.engine_type === "SttServer";
   const fileModels = models;
   const savedModel = (getSetting("file_model") as string) ?? "";
   const modelId = fileModels.some((m) => m.id === savedModel)
