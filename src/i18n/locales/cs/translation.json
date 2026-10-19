@@ -591,7 +591,7 @@
         }
       },
       "huggingFace": {
-        "title": "Parakeet z Hugging Face",
+        "title": "Jiná verze z Hugging Face",
         "description": "Novější nebo doladěné modely Parakeet (exporty ONNX se stejnou strukturou jako model dodávaný s Handy), spouštěné vlastním enginem Parakeet aplikace Handy na tomto PC.",
         "searchDescription": "**Vyhledá modely Parakeet ONNX na Hugging Face**, nejstahovanější první, nebo zadejte repozitář jako owner/name. Ověřte model, abyste zjistili, zda ho Handy může použít a jak je velký, a pak ho přidejte: stáhne se jako každý jiný model.",
         "placeholder": "Hledat, nebo owner/name",
@@ -605,6 +605,30 @@
         "check": "Ověřit",
         "added": "Přidáno",
         "add": "Přidat a stáhnout"
+      },
+      "parakeet": {
+        "title": "Verze Parakeet",
+        "description": "Vyberte, který Parakeet bude přepisovat: ten vestavěný v Handy, nebo novější či doladěnou verzi z Hugging Face. Všechny běží na tomto PC, na procesoru.",
+        "close": "Zavřít",
+        "builtIn": "Vestavěný",
+        "fromHuggingFace": "Z Hugging Face",
+        "inUse": "Používá se",
+        "use": "Použít",
+        "cardVariant": "Používá se jako {{name}}",
+        "builtInDetail": {
+          "v3": "Model od NVIDIA, 25 evropských jazyků",
+          "v2": "Model od NVIDIA, jen angličtina"
+        },
+        "suggested": {
+          "ultra": {
+            "title": "Parakeet Ultra",
+            "detail": "vylepšená v3 od moondream, přesnější, stejně rychlá"
+          },
+          "ultraNoUnk": {
+            "title": "Parakeet Ultra, plná přesnost",
+            "detail": "stejný Ultra, větší, nikdy nevypíše token neznámého slova"
+          }
+        }
       }
     },
     "general": {
@@ -2339,6 +2363,14 @@
       "modelSettings": {
         "title": "Nastavení modelu z jeho karty",
         "description": "Ozubené kolo na kartě modelu nebo kliknutí na kartu používaného modelu otevře vlastní nastavení tohoto modelu. Tlačítko Přepsat znovu v Historii má novou ikonu."
+      },
+      "parakeetVersions": {
+        "title": "Vyberte si verzi Parakeet, včetně Ultra",
+        "description": "Ozubené kolo na kartě Parakeet otevře jeho verze: vestavěnou, Parakeet Ultra (přesnější, stejně rychlý) a jakoukoli kompatibilní verzi z Hugging Face. Exporty Ultra bez zvukového předzpracování teď fungují: Handy dodá vlastní."
+      },
+      "logArchive": {
+        "title": "Staré logy se komprimují",
+        "description": "Když log dosáhne 10 MB, začne nový soubor a starý se zkomprimuje a odloží (nejnovějších 20, nejvýše 30 dní)."
       }
     },
     "installed": "Nainstalovaná"

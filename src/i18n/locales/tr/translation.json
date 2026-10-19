@@ -591,7 +591,7 @@
         }
       },
       "huggingFace": {
-        "title": "Hugging Face'ten Parakeet",
+        "title": "Hugging Face'ten başka bir sürüm",
         "description": "Daha yeni veya ince ayarlı Parakeet modelleri (Handy ile gelenle aynı düzende ONNX dışa aktarımları), bu PC'de Handy'nin kendi Parakeet motoruyla çalıştırılır.",
         "searchDescription": "**Hugging Face'te Parakeet ONNX modellerini arar**, en çok indirilenler önce; ya da bir depoyu owner/name olarak yazın. Handy'nin kullanıp kullanamayacağını ve boyutunu görmek için birini kontrol edin, sonra ekleyin: her model gibi indirilir.",
         "placeholder": "Ara veya owner/name",
@@ -605,6 +605,30 @@
         "check": "Kontrol et",
         "added": "Eklendi",
         "add": "Ekle ve indir"
+      },
+      "parakeet": {
+        "title": "Parakeet sürümleri",
+        "description": "Hangi Parakeet'in yazıya dökeceğini seçin: Handy'de yerleşik olanı ya da Hugging Face'ten daha yeni veya ince ayarlı bir sürümü. Hepsi bu PC'de, işlemcide çalışır.",
+        "close": "Kapat",
+        "builtIn": "Yerleşik",
+        "fromHuggingFace": "Hugging Face'ten",
+        "inUse": "Kullanılıyor",
+        "use": "Kullan",
+        "cardVariant": "{{name}} olarak kullanılıyor",
+        "builtInDetail": {
+          "v3": "NVIDIA'nın modeli, 25 Avrupa dili",
+          "v2": "NVIDIA'nın modeli, yalnızca İngilizce"
+        },
+        "suggested": {
+          "ultra": {
+            "title": "Parakeet Ultra",
+            "detail": "moondream'in geliştirdiği v3, daha doğru, aynı hızda"
+          },
+          "ultraNoUnk": {
+            "title": "Parakeet Ultra, tam hassasiyet",
+            "detail": "aynı Ultra, daha büyük, bilinmeyen kelime belirtecini asla üretmez"
+          }
+        }
       }
     },
     "general": {
@@ -2339,6 +2363,14 @@
       "modelSettings": {
         "title": "Bir modelin ayarları kartından",
         "description": "Bir model kartındaki dişli simgesi veya kullanılan modelin kartına tıklamak o modelin kendi ayarlarını açar. Geçmiş'teki Yeniden yazıya dök düğmesinin yeni bir simgesi var."
+      },
+      "parakeetVersions": {
+        "title": "Ultra dahil Parakeet sürümünüzü seçin",
+        "description": "Parakeet kartındaki dişli simgesi sürümlerini açar: yerleşik olanı, Parakeet Ultra'yı (daha doğru, aynı hızda) ve Hugging Face'ten uyumlu her sürümü. Ses ön işlemcisini içermeyen Ultra dışa aktarımları artık çalışıyor: Handy kendisininkini sağlar."
+      },
+      "logArchive": {
+        "title": "Eski günlükler sıkıştırılır",
+        "description": "Günlük 10 MB'a ulaştığında yeni bir dosya başlar, eskisi sıkıştırılıp kenara ayrılır (en yeni 20 tanesi, en fazla 30 gün)."
       }
     },
     "installed": "Yüklü"

@@ -591,7 +591,7 @@
         }
       },
       "huggingFace": {
-        "title": "Parakeet z Hugging Face",
+        "title": "Inna wersja z Hugging Face",
         "description": "Nowsze lub dostrojone modele Parakeet (eksporty ONNX o takiej samej strukturze jak model dostarczany z Handy), uruchamiane przez własny silnik Parakeet Handy na tym komputerze.",
         "searchDescription": "**Wyszukuje modele Parakeet ONNX na Hugging Face**, od najczęściej pobieranych, albo wpisz repozytorium jako owner/name. Sprawdź model, aby zobaczyć, czy Handy może go użyć i ile zajmuje, a potem go dodaj: pobierze się jak każdy model.",
         "placeholder": "Szukaj lub owner/name",
@@ -605,6 +605,30 @@
         "check": "Sprawdź",
         "added": "Dodano",
         "add": "Dodaj i pobierz"
+      },
+      "parakeet": {
+        "title": "Wersje Parakeet",
+        "description": "Wybierz, który Parakeet ma transkrybować: wbudowany w Handy albo nowszą lub dostrojoną wersję z Hugging Face. Wszystkie działają na tym komputerze, na procesorze.",
+        "close": "Zamknij",
+        "builtIn": "Wbudowany",
+        "fromHuggingFace": "Z Hugging Face",
+        "inUse": "W użyciu",
+        "use": "Użyj",
+        "cardVariant": "W użyciu jako {{name}}",
+        "builtInDetail": {
+          "v3": "Model NVIDIA, 25 języków europejskich",
+          "v2": "Model NVIDIA, tylko angielski"
+        },
+        "suggested": {
+          "ultra": {
+            "title": "Parakeet Ultra",
+            "detail": "ulepszona v3 od moondream, dokładniejsza, tak samo szybka"
+          },
+          "ultraNoUnk": {
+            "title": "Parakeet Ultra, pełna precyzja",
+            "detail": "ten sam Ultra, większy, nigdy nie zwraca tokenu nieznanego słowa"
+          }
+        }
       }
     },
     "general": {
@@ -2339,6 +2363,14 @@
       "modelSettings": {
         "title": "Ustawienia modelu z jego karty",
         "description": "Ikona zębatki na karcie modelu albo kliknięcie karty używanego modelu otwiera ustawienia tego modelu. Przycisk Transkrybuj ponownie w Historii ma nową ikonę."
+      },
+      "parakeetVersions": {
+        "title": "Wybierz swoją wersję Parakeet, także Ultra",
+        "description": "Ikona zębatki na karcie Parakeet otwiera jego wersje: wbudowaną, Parakeet Ultra (dokładniejszy, tak samo szybki) i każdą zgodną wersję z Hugging Face. Eksporty Ultra bez preprocesora audio teraz działają: Handy dostarcza własny."
+      },
+      "logArchive": {
+        "title": "Stare logi są kompresowane",
+        "description": "Gdy log osiągnie 10 MB, zaczyna się nowy plik, a stary jest kompresowany i odkładany (20 najnowszych, maksymalnie przez 30 dni)."
       }
     },
     "installed": "Zainstalowana"

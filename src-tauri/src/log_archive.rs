@@ -26,12 +26,33 @@ fn is_archive(name: &str) -> bool {
     name.starts_with("handy_") && name.ends_with(".log.gz")
 }
 
-/// gzip `path` into `<path>.gz` (via a temp name), then remove `path`.
-fn compress(path: &Path) -> std::io::Result<PathBuf> {
-    let gz = PathBuf::from(format!("{}.gz", path.display()));
-    let tmp = PathBuf::from(format!("{}.gz.tmp", path.display()));
+/// Suffix of a rotated log claimed for compression: renamed away first, so
+/// a log the plugin rotates to the same name meanwhile is a different file
+/// and is never removed by mistake.
+const CLAIMED: &str = ".archiving";
+
+/// gzip the claimed file `claimed` (`handy_x.log.archiving`) into
+/// `handy_x.log.gz` (via a temp name; an existing archive of that name gets a
+/// numbered one), give the archive the log's own modification time, then
+/// remove `claimed`.
+fn compress(claimed: &Path, modified: SystemTime) -> std::io::Result<PathBuf> {
+    let log_name = claimed
+        .file_name()
+        .and_then(|n| n.to_str())
+        .and_then(|n| n.strip_suffix(CLAIMED))
+        .unwrap_or("handy_log.log")
+        .to_string();
+    let dir = claimed.parent().unwrap_or(Path::new("."));
+    let mut gz = dir.join(format!("{log_name}.gz"));
+    let mut n = 1;
+    while gz.exists() {
+        let stem = log_name.strip_suffix(".log").unwrap_or(&log_name);
+        gz = dir.join(format!("{stem}-{n}.log.gz"));
+        n += 1;
+    }
+    let tmp = PathBuf::from(format!("{}.tmp", gz.display()));
     {
-        let mut input = fs::File::open(path)?;
+        let mut input = fs::File::open(claimed)?;
         let out = fs::File::create(&tmp)?;
         let mut encoder = flate2::write::GzEncoder::new(out, flate2::Compression::default());
         let mut buf = vec![0u8; 1 << 16];
@@ -42,10 +63,13 @@ fn compress(path: &Path) -> std::io::Result<PathBuf> {
             }
             encoder.write_all(&buf[..n])?;
         }
-        encoder.finish()?.sync_all()?;
+        let out = encoder.finish()?;
+        out.sync_all()?;
+        // The archive keeps the log's age (retention and order go by it).
+        let _ = out.set_modified(modified);
     }
     fs::rename(&tmp, &gz)?;
-    fs::remove_file(path)?;
+    fs::remove_file(claimed)?;
     Ok(gz)
 }
 
@@ -55,8 +79,7 @@ pub fn archive_once(dir: &Path, now: SystemTime) -> (usize, usize) {
     let Ok(entries) = fs::read_dir(dir) else {
         return (0, 0);
     };
-    let mut compressed = 0;
-    let mut archives: Vec<(SystemTime, PathBuf)> = Vec::new();
+    let mut to_compress: Vec<PathBuf> = Vec::new();
     for entry in entries.flatten() {
         let path = entry.path();
         let Some(name) = path
@@ -70,32 +93,44 @@ pub fn archive_once(dir: &Path, now: SystemTime) -> (usize, usize) {
             continue;
         }
         if is_rotated_log(&name) {
-            match compress(&path) {
-                Ok(gz) => {
-                    compressed += 1;
-                    let modified = fs::metadata(&gz).and_then(|m| m.modified()).unwrap_or(now);
-                    archives.push((modified, gz));
-                }
-                Err(e) => warn!("Could not compress the log {}: {}", name, e),
+            // Claim it under a name of its own before touching it.
+            let claimed = dir.join(format!("{name}{CLAIMED}"));
+            if !claimed.exists() && fs::rename(&path, &claimed).is_ok() {
+                to_compress.push(claimed);
             }
-        } else if is_archive(&name) {
-            let modified = entry.metadata().and_then(|m| m.modified()).unwrap_or(now);
-            archives.push((modified, path));
+        } else if name.starts_with("handy_") && name.ends_with(&format!(".log{CLAIMED}")) {
+            // Claimed by a pass the app's exit cut short: finish it.
+            to_compress.push(path);
         } else if name.starts_with("handy_") && name.ends_with(".log.gz.tmp") {
-            // A compression cut short (the app closed): its plain log is still
-            // there and is compressed again.
             let _ = fs::remove_file(&path);
         }
     }
-    // Newest first; drop past KEEP or older than MAX_AGE.
+    let mut compressed = 0;
+    for claimed in to_compress {
+        let modified = fs::metadata(&claimed)
+            .and_then(|m| m.modified())
+            .unwrap_or(now);
+        match compress(&claimed, modified) {
+            Ok(_) => compressed += 1,
+            Err(e) => warn!("Could not compress the log {}: {}", claimed.display(), e),
+        }
+    }
+    // Archives, newest log first; drop past KEEP or older than MAX_AGE.
+    let mut archives: Vec<(SystemTime, PathBuf)> = fs::read_dir(dir)
+        .map(|entries| {
+            entries
+                .flatten()
+                .filter(|e| e.file_name().to_str().is_some_and(is_archive))
+                .filter_map(|e| Some((e.metadata().ok()?.modified().ok()?, e.path())))
+                .collect()
+        })
+        .unwrap_or_default();
     archives.sort_by(|a, b| b.0.cmp(&a.0));
     let mut removed = 0;
     for (i, (modified, path)) in archives.iter().enumerate() {
         let too_old = now.duration_since(*modified).unwrap_or_default() > MAX_AGE;
-        if i >= KEEP || too_old {
-            if fs::remove_file(path).is_ok() {
-                removed += 1;
-            }
+        if (i >= KEEP || too_old) && fs::remove_file(path).is_ok() {
+            removed += 1;
         }
     }
     (compressed, removed)
@@ -155,6 +190,40 @@ mod tests {
         // Far in the future: everything is too old.
         let (_, removed) = archive_once(d, SystemTime::now() + MAX_AGE * 2);
         assert_eq!(removed, KEEP);
+    }
+
+    #[test]
+    fn an_archive_keeps_the_age_of_its_log_and_a_name_clash_is_numbered() {
+        let dir = tempfile::tempdir().unwrap();
+        let d = dir.path();
+        let log = d.join("handy_2026-01-01_00-00-00.log");
+        fs::write(&log, "january").unwrap();
+        let january = SystemTime::now() - Duration::from_secs(60 * 24 * 3600);
+        fs::File::options()
+            .write(true)
+            .open(&log)
+            .unwrap()
+            .set_modified(january)
+            .unwrap();
+        fs::write(d.join("handy_2026-01-01_00-00-00.log.gz"), "older archive").unwrap();
+        let (compressed, _) = archive_once(d, SystemTime::now());
+        assert_eq!(compressed, 1);
+        let gz = d.join("handy_2026-01-01_00-00-00-1.log.gz");
+        // Its age is the log's, so it is past MAX_AGE and pruned straight away.
+        assert!(!gz.exists());
+        assert!(!log.exists());
+        assert!(!d.join("handy_2026-01-01_00-00-00.log.archiving").exists());
+    }
+
+    #[test]
+    fn a_claimed_log_left_by_an_interrupted_pass_is_finished() {
+        let dir = tempfile::tempdir().unwrap();
+        let d = dir.path();
+        fs::write(d.join("handy_x.log.archiving"), "half done").unwrap();
+        let (compressed, _) = archive_once(d, SystemTime::now());
+        assert_eq!(compressed, 1);
+        assert!(d.join("handy_x.log.gz").exists());
+        assert!(!d.join("handy_x.log.archiving").exists());
     }
 
     #[test]

@@ -591,7 +591,7 @@
         }
       },
       "huggingFace": {
-        "title": "Hugging Face の Parakeet",
+        "title": "Hugging Face の別のバージョン",
         "description": "新しい、またはファインチューニングされた Parakeet モデル（Handy 同梱モデルと同じ構成の ONNX エクスポート）を、この PC 上の Handy 独自の Parakeet エンジンで実行します。",
         "searchDescription": "**Hugging Face で Parakeet ONNX モデルを検索します**（ダウンロード数順）。リポジトリを owner/name 形式で入力することもできます。モデルを確認すると Handy で使えるかとサイズがわかります。その後追加すると、他のモデルと同様にダウンロードされます。",
         "placeholder": "検索、または owner/name",
@@ -605,6 +605,30 @@
         "check": "確認",
         "added": "追加済み",
         "add": "追加してダウンロード"
+      },
+      "parakeet": {
+        "title": "Parakeet のバージョン",
+        "description": "文字起こしに使う Parakeet を選びます。Handy に組み込まれたもの、または Hugging Face の新しい版やファインチューニング版です。どれもこの PC のプロセッサー上で動作します。",
+        "close": "閉じる",
+        "builtIn": "組み込み",
+        "fromHuggingFace": "Hugging Face から",
+        "inUse": "使用中",
+        "use": "使用する",
+        "cardVariant": "{{name}} として使用中",
+        "builtInDetail": {
+          "v3": "NVIDIA のモデル、ヨーロッパの 25 言語",
+          "v2": "NVIDIA のモデル、英語のみ"
+        },
+        "suggested": {
+          "ultra": {
+            "title": "Parakeet Ultra",
+            "detail": "moondream による改良版 v3。より正確で、速度は同じ"
+          },
+          "ultraNoUnk": {
+            "title": "Parakeet Ultra（フル精度）",
+            "detail": "同じ Ultra のより大きい版。未知語トークンを出力しません"
+          }
+        }
       }
     },
     "general": {
@@ -2339,6 +2363,14 @@
       "modelSettings": {
         "title": "カードからモデルの設定を開く",
         "description": "モデルカードの歯車、または使用中のモデルのカードをクリックすると、そのモデル固有の設定が開きます。履歴の再文字起こしボタンのアイコンが新しくなりました。"
+      },
+      "parakeetVersions": {
+        "title": "Parakeet のバージョンを選択（Ultra も）",
+        "description": "Parakeet カードの歯車でバージョンを選べます：組み込み版、Parakeet Ultra（より正確で速度は同じ）、Hugging Face の互換バージョン。音声前処理を含まない Ultra のエクスポートも動作するようになりました。Handy が独自の前処理を用意します。"
+      },
+      "logArchive": {
+        "title": "古いログを圧縮",
+        "description": "ログが 10 MB に達すると新しいファイルを開始し、古いファイルは圧縮して保管します（最新の 20 個、最長 30 日間）。"
       }
     },
     "installed": "インストール済み"

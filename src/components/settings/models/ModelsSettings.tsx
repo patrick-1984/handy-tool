@@ -136,14 +136,21 @@ export const ModelsSettings: React.FC = () => {
   const [parakeetOpen, setParakeetOpen] = useState(false);
   // A Parakeet version from Hugging Face in use: the Parakeet V3 card stands
   // for it (those versions are chosen in the card's settings, not as cards).
+  const isHfParakeet = (m: ModelInfo) =>
+    m.id.startsWith("hf-") && isParakeetVersion(m);
   const activeHf = models.find(
-    (m: ModelInfo) => m.id === currentModel && m.id.startsWith("hf-"),
+    (m: ModelInfo) => m.id === currentModel && isHfParakeet(m),
   );
   const PARAKEET_CARD = "parakeet-tdt-0.6b-v3";
-  const cardStatus = (model: ModelInfo): ModelCardStatus =>
-    activeHf && model.id === PARAKEET_CARD
+  const isProxy = (model: ModelInfo) =>
+    activeHf !== undefined && model.id === PARAKEET_CARD;
+  const cardStatus = (model: ModelInfo): ModelCardStatus => {
+    const own = getModelStatus(model.id);
+    // The card's own download or extraction still shows.
+    return isProxy(model) && own !== "downloading" && own !== "extracting"
       ? "active"
-      : getModelStatus(model.id);
+      : own;
+  };
   const cardVariant = (model: ModelInfo) =>
     activeHf && model.id === PARAKEET_CARD
       ? getTranslatedModelName(activeHf, t)
@@ -210,8 +217,8 @@ export const ModelsSettings: React.FC = () => {
     const available: ModelInfo[] = [];
 
     for (const model of filteredModels) {
-      // Versions from Hugging Face live in Parakeet's settings.
-      if (model.id.startsWith("hf-")) continue;
+      // Parakeet versions from Hugging Face live in Parakeet's settings.
+      if (isHfParakeet(model)) continue;
       if (activeHf && model.id === PARAKEET_CARD) {
         downloaded.push(model);
         continue;
@@ -376,7 +383,9 @@ export const ModelsSettings: React.FC = () => {
                   onSelect={handleModelSelect}
                   onDownload={handleModelDownload}
                   onDelete={
-                    isExternalEngine(model) ? undefined : handleModelDelete
+                    isExternalEngine(model) || isProxy(model)
+                      ? undefined
+                      : handleModelDelete
                   }
                   onCancel={handleModelCancel}
                   onConfigure={configureFor(model)}
@@ -402,7 +411,9 @@ export const ModelsSettings: React.FC = () => {
                     onSelect={handleModelSelect}
                     onDownload={handleModelDownload}
                     onDelete={
-                      isExternalEngine(model) ? undefined : handleModelDelete
+                      isExternalEngine(model) || isProxy(model)
+                        ? undefined
+                        : handleModelDelete
                     }
                     onCancel={handleModelCancel}
                     onConfigure={configureFor(model)}

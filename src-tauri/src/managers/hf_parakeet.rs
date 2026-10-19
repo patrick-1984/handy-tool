@@ -386,6 +386,7 @@ pub async fn tree(repo: &str) -> anyhow::Result<RepoListing> {
                     .and_then(|o| o.as_str())
                     .filter(|o| o.len() == 64 && o.chars().all(|c| c.is_ascii_hexdigit()))
                     .map(str::to_lowercase),
+                source: None,
             })
         })
         .collect::<Vec<_>>())
