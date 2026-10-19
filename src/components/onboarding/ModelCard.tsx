@@ -42,6 +42,9 @@ interface ModelCardProps {
   onDownload?: (modelId: string) => void;
   /** Opens the model's own settings (a gear on the card; a click on the
    *  card of the model in use goes there too). */
+  /** The version in use when it is not the card's own model (a Parakeet
+   *  version from Hugging Face shown on the Parakeet card). */
+  activeVariant?: string;
   onConfigure?: (modelId: string) => void;
   onDelete?: (modelId: string) => void;
   onCancel?: (modelId: string) => void;
@@ -109,6 +112,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
   onDownload,
   onDelete,
   onConfigure,
+  activeVariant,
   onCancel,
   downloadProgress,
   downloadSpeed,
@@ -237,7 +241,13 @@ const ModelCard: React.FC<ModelCardProps> = ({
 
       {displayDescription && (
         <p className="text-[13px] leading-[18px] text-text-secondary line-clamp-2">
-          {status === "active" ? t("modelSelector.inUse") : displayDescription}
+          {status === "active"
+            ? activeVariant
+              ? t("settings.models.parakeet.cardVariant", {
+                  name: activeVariant,
+                })
+              : t("modelSelector.inUse")
+            : displayDescription}
         </p>
       )}
 

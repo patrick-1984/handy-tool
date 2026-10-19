@@ -591,7 +591,7 @@
         }
       },
       "huggingFace": {
-        "title": "Parakeet từ Hugging Face",
+        "title": "Phiên bản khác từ Hugging Face",
         "description": "Các mô hình Parakeet mới hơn hoặc đã tinh chỉnh (bản xuất ONNX có cấu trúc giống mô hình đi kèm Handy), được chạy bởi engine Parakeet riêng của Handy trên PC này.",
         "searchDescription": "**Tìm mô hình Parakeet ONNX trên Hugging Face**, được tải nhiều nhất trước, hoặc nhập kho dưới dạng owner/name. Kiểm tra một mô hình để biết Handy có dùng được không và kích thước bao nhiêu, rồi thêm nó: nó sẽ được tải xuống như mọi mô hình.",
         "placeholder": "Tìm kiếm, hoặc owner/name",
@@ -605,6 +605,30 @@
         "check": "Kiểm tra",
         "added": "Đã thêm",
         "add": "Thêm và tải xuống"
+      },
+      "parakeet": {
+        "title": "Các phiên bản Parakeet",
+        "description": "Chọn Parakeet nào sẽ chép lời: bản tích hợp sẵn trong Handy, hoặc một phiên bản mới hơn hay đã tinh chỉnh từ Hugging Face. Tất cả đều chạy trên PC này, trên bộ xử lý.",
+        "close": "Đóng",
+        "builtIn": "Tích hợp sẵn",
+        "fromHuggingFace": "Từ Hugging Face",
+        "inUse": "Đang dùng",
+        "use": "Dùng",
+        "cardVariant": "Đang dùng dưới tên {{name}}",
+        "builtInDetail": {
+          "v3": "Mô hình của NVIDIA, 25 ngôn ngữ châu Âu",
+          "v2": "Mô hình của NVIDIA, chỉ tiếng Anh"
+        },
+        "suggested": {
+          "ultra": {
+            "title": "Parakeet Ultra",
+            "detail": "bản v3 cải tiến của moondream, chính xác hơn, tốc độ như cũ"
+          },
+          "ultraNoUnk": {
+            "title": "Parakeet Ultra, độ chính xác đầy đủ",
+            "detail": "vẫn là Ultra, dung lượng lớn hơn, không bao giờ xuất token từ không xác định"
+          }
+        }
       }
     },
     "general": {
@@ -2339,6 +2363,14 @@
       "modelSettings": {
         "title": "Cài đặt của mô hình từ thẻ của nó",
         "description": "Biểu tượng bánh răng trên thẻ mô hình, hoặc nhấp vào thẻ của mô hình đang dùng, sẽ mở cài đặt riêng của mô hình đó. Nút Chép lời lại trong Lịch sử có biểu tượng mới."
+      },
+      "parakeetVersions": {
+        "title": "Chọn phiên bản Parakeet, kể cả Ultra",
+        "description": "Biểu tượng bánh răng trên thẻ Parakeet mở các phiên bản của nó: bản tích hợp sẵn, Parakeet Ultra (chính xác hơn, tốc độ như cũ) và mọi phiên bản tương thích từ Hugging Face. Các bản xuất Ultra không kèm bộ tiền xử lý âm thanh giờ đã hoạt động: Handy tự cung cấp bộ của mình."
+      },
+      "logArchive": {
+        "title": "Nhật ký cũ được nén",
+        "description": "Khi nhật ký đạt 10 MB, một tệp mới được bắt đầu và tệp cũ được nén và cất riêng (20 tệp mới nhất, tối đa 30 ngày)."
       }
     },
     "installed": "Đã cài"

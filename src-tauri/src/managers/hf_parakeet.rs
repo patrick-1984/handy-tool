@@ -20,6 +20,37 @@ use specta::Type;
 use std::path::Path;
 
 pub const MARKER: &str = "handy-hf.json";
+
+/// The audio preprocessor (128-band mel spectrogram) of the Parakeet TDT
+/// 0.6B family, from the repo Handy's own Parakeet comes from. Newer exports
+/// in the onnx-asr layout (e.g. the "ultra" ones) leave it out because the
+/// onnx-asr library ships it; Handy's engine needs it in the model folder, so
+/// for that family it is taken from here, pinned and checked.
+pub const BASE_PREPROCESSOR_REPO: &str = "istupakov/parakeet-tdt-0.6b-v3-onnx";
+pub const BASE_PREPROCESSOR_REVISION: &str = "8f23f0c03c8761650bdb5b40aaf3e40d2c15f1ce";
+pub const BASE_PREPROCESSOR_SHA256: &str =
+    "a9fde1486ebfcc08f328d75ad4610c67835fea58c73ba57e3209a6f6cf019e9f";
+pub const BASE_PREPROCESSOR_SIZE: u64 = 139_764;
+
+/// Models known to share that preprocessor: the repo id or a declared base
+/// model names the Parakeet TDT 0.6B family (v2, v3, ultra).
+pub fn uses_base_preprocessor(repo: &str, base_models: &[String]) -> bool {
+    std::iter::once(repo)
+        .chain(base_models.iter().map(String::as_str))
+        .map(str::to_ascii_lowercase)
+        .any(|name| name.contains("parakeet-tdt-0.6b") || name.contains("parakeet-ultra"))
+}
+
+fn base_preprocessor() -> HfFile {
+    HfFile {
+        path: "nemo128.onnx".to_string(),
+        size: BASE_PREPROCESSOR_SIZE,
+        sha256: Some(BASE_PREPROCESSOR_SHA256.to_string()),
+        source: Some(format!(
+            "{BASE_PREPROCESSOR_REPO}@{BASE_PREPROCESSOR_REVISION}"
+        )),
+    }
+}
 /// Where downloads in progress live, inside the models folder.
 pub const STAGING_DIR: &str = ".hf-partial";
 const HF: &str = "https://huggingface.co";
@@ -32,6 +63,10 @@ pub struct HfFile {
     /// SHA-256 of a large (LFS) file, as Hugging Face lists it.
     #[serde(default)]
     pub sha256: Option<String>,
+    /// Taken from another repo (`owner/name@commit`) - the shared
+    /// preprocessor. `None` = from the model's own repo.
+    #[serde(default)]
+    pub source: Option<String>,
 }
 
 /// One search hit.
@@ -53,6 +88,9 @@ pub struct HfRepoCheck {
     pub total_mb: u64,
     /// The id the model gets in Handy.
     pub model_id: String,
+    /// The audio preprocessor comes from Handy's own Parakeet repo (the
+    /// model's repo leaves it out).
+    pub preprocessor_from_base: bool,
 }
 
 /// The marker written into a Hugging Face model's folder.
@@ -85,7 +123,9 @@ pub fn model_id_for(repo: &str) -> String {
 }
 
 /// The files Handy needs from a repo's file list, or why it cannot use it.
-pub fn pick_files(tree: &[HfFile]) -> Result<Vec<HfFile>, String> {
+/// `base_preprocessor`: the repo belongs to the Parakeet TDT 0.6B family, so a
+/// missing `nemo128.onnx` is taken from Handy's own Parakeet repo.
+pub fn pick_files(tree: &[HfFile], base_preprocessor: bool) -> Result<Vec<HfFile>, String> {
     let find = |name: &str| tree.iter().find(|f| f.path == name).cloned();
     let (encoder, decoder) = match (
         find("encoder-model.int8.onnx"),
@@ -106,7 +146,16 @@ pub fn pick_files(tree: &[HfFile]) -> Result<Vec<HfFile>, String> {
             ),
         },
     };
-    let preprocessor = find("nemo128.onnx").ok_or("no nemo128.onnx (the audio preprocessor)")?;
+    let preprocessor = match find("nemo128.onnx") {
+        Some(own) => own,
+        None if base_preprocessor => self::base_preprocessor(),
+        None => {
+            return Err(
+                "no nemo128.onnx (the audio preprocessor), and it is not a Parakeet TDT 0.6B model whose preprocessor Handy has"
+                    .to_string(),
+            );
+        }
+    };
     let vocab = find("vocab.txt").ok_or("no vocab.txt")?;
     let mut files = encoder;
     files.push(decoder);
@@ -118,12 +167,13 @@ pub fn pick_files(tree: &[HfFile]) -> Result<Vec<HfFile>, String> {
     Ok(files)
 }
 
-pub fn check_tree(repo: &str, tree: &[HfFile]) -> HfRepoCheck {
-    match pick_files(tree) {
+pub fn check_tree(repo: &str, tree: &[HfFile], base_preprocessor: bool) -> HfRepoCheck {
+    match pick_files(tree, base_preprocessor) {
         Ok(files) => HfRepoCheck {
             repo: repo.to_string(),
             compatible: true,
             reason: None,
+            preprocessor_from_base: files.iter().any(|f| f.source.is_some()),
             total_mb: files
                 .iter()
                 .map(|f| f.size)
@@ -139,6 +189,7 @@ pub fn check_tree(repo: &str, tree: &[HfFile]) -> HfRepoCheck {
             files: Vec::new(),
             total_mb: 0,
             model_id: model_id_for(repo),
+            preprocessor_from_base: false,
         },
     }
 }
@@ -151,6 +202,19 @@ pub fn file_url(repo: &str, revision: &str, path: &str) -> String {
         "main"
     };
     format!("{HF}/{repo}/resolve/{revision}/{path}")
+}
+
+/// Where one file of a model comes from: its `source` (`owner/name@commit`)
+/// when it is borrowed, else the model's repo at the model's commit.
+pub fn file_url_for(repo: &str, revision: &str, file: &HfFile) -> Option<String> {
+    match &file.source {
+        Some(source) => {
+            let (src_repo, src_rev) = source.split_once('@')?;
+            (valid_repo(src_repo) && valid_revision(src_rev))
+                .then(|| file_url(src_repo, src_rev, &file.path))
+        }
+        None => Some(file_url(repo, revision, &file.path)),
+    }
 }
 
 /// A commit id (hex).
@@ -252,8 +316,37 @@ pub async fn search(query: &str) -> anyhow::Result<Vec<HfModelSummary>> {
         .collect())
 }
 
+/// What `tree` learns about a repo.
+pub struct RepoListing {
+    pub revision: String,
+    pub files: Vec<HfFile>,
+    /// Declared base models (model card `base_model`, `base_model:` tags).
+    pub base_models: Vec<String>,
+}
+
+/// The base models a repo declares.
+fn base_models_of(info: &serde_json::Value) -> Vec<String> {
+    let mut out = Vec::new();
+    match info.pointer("/cardData/base_model") {
+        Some(serde_json::Value::String(s)) => out.push(s.clone()),
+        Some(serde_json::Value::Array(list)) => {
+            out.extend(list.iter().filter_map(|v| v.as_str().map(str::to_string)))
+        }
+        _ => {}
+    }
+    if let Some(tags) = info.get("tags").and_then(|t| t.as_array()) {
+        for tag in tags.iter().filter_map(|t| t.as_str()) {
+            if let Some(rest) = tag.strip_prefix("base_model:") {
+                // "base_model:finetune:owner/name" or "base_model:owner/name"
+                out.push(rest.rsplit(':').next().unwrap_or(rest).to_string());
+            }
+        }
+    }
+    out
+}
+
 /// The repo's current commit and its files (top level) at that commit.
-pub async fn tree(repo: &str) -> anyhow::Result<(String, Vec<HfFile>)> {
+pub async fn tree(repo: &str) -> anyhow::Result<RepoListing> {
     if !valid_repo(repo) {
         anyhow::bail!("not a Hugging Face repo id (owner/name): {repo}");
     }
@@ -293,10 +386,15 @@ pub async fn tree(repo: &str) -> anyhow::Result<(String, Vec<HfFile>)> {
                     .and_then(|o| o.as_str())
                     .filter(|o| o.len() == 64 && o.chars().all(|c| c.is_ascii_hexdigit()))
                     .map(str::to_lowercase),
+                source: None,
             })
         })
         .collect::<Vec<_>>())
-    .map(|files| (revision, files))
+    .map(|files| RepoListing {
+        revision,
+        files,
+        base_models: base_models_of(&info),
+    })
 }
 
 #[cfg(test)]
@@ -308,7 +406,66 @@ mod tests {
             path: path.into(),
             size,
             sha256: None,
+            source: None,
         }
+    }
+
+    #[test]
+    fn an_ultra_export_without_its_preprocessor_takes_handys() {
+        // Masterx/parakeet-tdt-0.6b-ultra-onnx: onnx-asr layout, no nemo128.onnx.
+        let tree = vec![
+            f("decoder_joint-model.int8.onnx", 17),
+            f("encoder-model.int8.onnx", 621),
+            f("vocab.txt", 1),
+        ];
+        let bases = vec!["moondream/parakeet-ultra".to_string()];
+        assert!(uses_base_preprocessor(
+            "Masterx/parakeet-tdt-0.6b-ultra-onnx",
+            &[]
+        ));
+        assert!(uses_base_preprocessor("someone/model", &bases));
+        assert!(!uses_base_preprocessor("someone/parakeet-ctc-110m", &[]));
+        let check = check_tree("Masterx/parakeet-tdt-0.6b-ultra-onnx", &tree, true);
+        assert!(check.compatible && check.preprocessor_from_base);
+        let pre = check
+            .files
+            .iter()
+            .find(|f| f.path == "nemo128.onnx")
+            .unwrap();
+        assert_eq!(pre.size, BASE_PREPROCESSOR_SIZE);
+        assert_eq!(
+            file_url_for("Masterx/x", "abcdef1", pre).unwrap(),
+            format!(
+                "https://huggingface.co/{BASE_PREPROCESSOR_REPO}/resolve/{BASE_PREPROCESSOR_REVISION}/nemo128.onnx"
+            )
+        );
+        let enc = check
+            .files
+            .iter()
+            .find(|f| f.path == "encoder-model.int8.onnx")
+            .unwrap();
+        assert_eq!(
+            file_url_for("Masterx/x", "abcdef1", enc).unwrap(),
+            "https://huggingface.co/Masterx/x/resolve/abcdef1/encoder-model.int8.onnx"
+        );
+        // Outside the family it is still refused.
+        assert!(!check_tree("someone/other", &tree, false).compatible);
+        // A bad source never becomes a URL.
+        let mut bad = pre.clone();
+        bad.source = Some("../x@zz".into());
+        assert_eq!(file_url_for("a/b", "abcdef1", &bad), None);
+    }
+
+    #[test]
+    fn base_models_come_from_the_card_and_tags() {
+        let info = serde_json::json!({
+            "cardData": {"base_model": ["moondream/parakeet-ultra"]},
+            "tags": ["onnx", "base_model:finetune:nvidia/parakeet-tdt-0.6b-v3"]
+        });
+        assert_eq!(
+            base_models_of(&info),
+            vec!["moondream/parakeet-ultra", "nvidia/parakeet-tdt-0.6b-v3"]
+        );
     }
 
     #[test]
@@ -322,6 +479,7 @@ mod tests {
             path: "vocab.txt".into(),
             size: 3,
             sha256: Some(s.into()),
+            source: None,
         };
         assert!(file_matches(&p, &with(sha)).unwrap());
         assert!(!file_matches(&p, &with(&"00".repeat(32))).unwrap());
@@ -342,7 +500,7 @@ mod tests {
             f("nemo128.onnx", 1),
             f("vocab.txt", 1),
         ];
-        let names: Vec<String> = pick_files(&tree)
+        let names: Vec<String> = pick_files(&tree, false)
             .unwrap()
             .into_iter()
             .map(|f| f.path)
@@ -368,7 +526,7 @@ mod tests {
             f("nemo128.onnx", 1),
             f("vocab.txt", 1),
         ];
-        let names: Vec<String> = pick_files(&tree)
+        let names: Vec<String> = pick_files(&tree, false)
             .unwrap()
             .into_iter()
             .map(|f| f.path)
@@ -383,15 +541,18 @@ mod tests {
                 "vocab.txt"
             ]
         );
-        let check = check_tree("o/r", &[f("model.onnx", 1)]);
+        let check = check_tree("o/r", &[f("model.onnx", 1)], false);
         assert!(!check.compatible);
         assert!(check.reason.unwrap().contains("encoder"));
         assert!(
-            pick_files(&[
-                f("encoder-model.onnx", 1),
-                f("decoder_joint-model.onnx", 1),
-                f("vocab.txt", 1)
-            ])
+            pick_files(
+                &[
+                    f("encoder-model.onnx", 1),
+                    f("decoder_joint-model.onnx", 1),
+                    f("vocab.txt", 1)
+                ],
+                false
+            )
             .unwrap_err()
             .contains("nemo128")
         );

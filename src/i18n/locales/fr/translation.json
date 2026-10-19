@@ -591,7 +591,7 @@
         }
       },
       "huggingFace": {
-        "title": "Parakeet depuis Hugging Face",
+        "title": "Une autre version depuis Hugging Face",
         "description": "Modèles Parakeet plus récents ou affinés (exports ONNX organisés comme celui fourni avec Handy), exécutés par le moteur Parakeet de Handy sur ce PC.",
         "searchDescription": "**Recherche des modèles Parakeet ONNX sur Hugging Face**, les plus téléchargés d'abord, ou saisissez un dépôt sous la forme owner/name. Vérifiez-en un pour savoir si Handy peut l'utiliser et quelle est sa taille, puis ajoutez-le : il se télécharge comme n'importe quel modèle.",
         "placeholder": "Rechercher, ou owner/name",
@@ -605,6 +605,30 @@
         "check": "Vérifier",
         "added": "Ajouté",
         "add": "Ajouter et télécharger"
+      },
+      "parakeet": {
+        "title": "Versions de Parakeet",
+        "description": "Choisissez quel Parakeet transcrit : celui intégré à Handy, ou une version plus récente ou affinée depuis Hugging Face. Toutes s'exécutent sur ce PC, sur le processeur.",
+        "close": "Fermer",
+        "builtIn": "Intégré",
+        "fromHuggingFace": "Depuis Hugging Face",
+        "inUse": "Utilisé",
+        "use": "Utiliser",
+        "cardVariant": "Utilisé en tant que {{name}}",
+        "builtInDetail": {
+          "v3": "Modèle de NVIDIA, 25 langues européennes",
+          "v2": "Modèle de NVIDIA, anglais uniquement"
+        },
+        "suggested": {
+          "ultra": {
+            "title": "Parakeet Ultra",
+            "detail": "la v3 améliorée par moondream, plus précise, même vitesse"
+          },
+          "ultraNoUnk": {
+            "title": "Parakeet Ultra, pleine précision",
+            "detail": "le même Ultra, plus volumineux, ne produit jamais le jeton de mot inconnu"
+          }
+        }
       }
     },
     "general": {
@@ -2339,6 +2363,14 @@
       "modelSettings": {
         "title": "Les paramètres d'un modèle depuis sa carte",
         "description": "L'engrenage d'une carte de modèle, ou un clic sur la carte du modèle utilisé, ouvre les paramètres propres à ce modèle. Le bouton Transcrire à nouveau de l'Historique a une nouvelle icône."
+      },
+      "parakeetVersions": {
+        "title": "Choisissez votre version de Parakeet, y compris Ultra",
+        "description": "L'engrenage de la carte Parakeet ouvre ses versions : celle intégrée, Parakeet Ultra (plus précise, même vitesse) et toute version compatible de Hugging Face. Les exports Ultra sans préprocesseur audio fonctionnent désormais : Handy fournit le sien."
+      },
+      "logArchive": {
+        "title": "Les anciens journaux sont compressés",
+        "description": "Quand le journal atteint 10 MB, un nouveau fichier est créé et l'ancien est compressé et mis de côté (les 20 plus récents, pendant 30 jours au plus)."
       }
     },
     "installed": "Installée"

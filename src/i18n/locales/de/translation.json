@@ -591,7 +591,7 @@
         }
       },
       "huggingFace": {
-        "title": "Parakeet von Hugging Face",
+        "title": "Eine andere Version von Hugging Face",
         "description": "Neuere oder feinabgestimmte Parakeet-Modelle (ONNX-Exporte im gleichen Aufbau wie das mitgelieferte), ausgeführt von Handys eigener Parakeet-Engine auf diesem PC.",
         "searchDescription": "**Durchsucht Hugging Face nach Parakeet-ONNX-Modellen**, die meistgeladenen zuerst, oder gib ein Repo als owner/name ein. Prüfe eines, um zu sehen, ob Handy es nutzen kann und wie groß es ist, und füge es dann hinzu: Es wird wie jedes Modell heruntergeladen.",
         "placeholder": "Suchen oder owner/name",
@@ -605,6 +605,30 @@
         "check": "Prüfen",
         "added": "Hinzugefügt",
         "add": "Hinzufügen und herunterladen"
+      },
+      "parakeet": {
+        "title": "Parakeet-Versionen",
+        "description": "Wähle, welches Parakeet transkribiert: das in Handy integrierte oder eine neuere bzw. feinabgestimmte Version von Hugging Face. Alle laufen auf diesem PC, auf dem Prozessor.",
+        "close": "Schließen",
+        "builtIn": "Integriert",
+        "fromHuggingFace": "Von Hugging Face",
+        "inUse": "In Verwendung",
+        "use": "Verwenden",
+        "cardVariant": "Verwendet als {{name}}",
+        "builtInDetail": {
+          "v3": "Modell von NVIDIA, 25 europäische Sprachen",
+          "v2": "Modell von NVIDIA, nur Englisch"
+        },
+        "suggested": {
+          "ultra": {
+            "title": "Parakeet Ultra",
+            "detail": "das verbesserte v3 von moondream, genauer, gleich schnell"
+          },
+          "ultraNoUnk": {
+            "title": "Parakeet Ultra, volle Präzision",
+            "detail": "dasselbe Ultra, größer, gibt nie das Token für unbekannte Wörter aus"
+          }
+        }
       }
     },
     "general": {
@@ -2339,6 +2363,14 @@
       "modelSettings": {
         "title": "Die Einstellungen eines Modells über seine Karte",
         "description": "Das Zahnrad auf einer Modellkarte oder ein Klick auf die Karte des verwendeten Modells öffnet die eigenen Einstellungen dieses Modells. Die Schaltfläche Erneut transkribieren im Verlauf hat ein neues Symbol."
+      },
+      "parakeetVersions": {
+        "title": "Wähle deine Parakeet-Version, auch Ultra",
+        "description": "Das Zahnrad auf der Parakeet-Karte öffnet seine Versionen: die integrierte, Parakeet Ultra (genauer, gleich schnell) und jede kompatible Version von Hugging Face. Ultra-Exporte ohne Audio-Vorverarbeitung funktionieren jetzt: Handy liefert seine eigene."
+      },
+      "logArchive": {
+        "title": "Alte Logs werden komprimiert",
+        "description": "Erreicht das Log 10 MB, beginnt eine neue Datei, und die alte wird komprimiert und abgelegt (die neuesten 20, bis zu 30 Tage lang)."
       }
     },
     "installed": "Installiert"

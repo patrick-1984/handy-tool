@@ -37,6 +37,13 @@ interface Item {
  */
 const RELEASES: { version: string; items: Item[] }[] = [
   {
+    version: "2.4.1",
+    items: [
+      { key: "parakeetVersions", section: "models" },
+      { key: "logArchive" },
+    ],
+  },
+  {
     version: "2.4.0",
     items: [
       {
@@ -49,11 +56,7 @@ const RELEASES: { version: string; items: Item[] }[] = [
         section: "models",
         titleKeys: ["settings.models.fallback.second.title"],
       },
-      {
-        key: "huggingFace",
-        section: "models",
-        titleKeys: ["settings.models.huggingFace.title"],
-      },
+      { key: "huggingFace", section: "models" },
       { key: "modelSettings", section: "models" },
     ],
   },

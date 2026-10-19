@@ -36,9 +36,6 @@ export const modelConfigTarget = (
     case "SttServer":
       return { section: "sttServer", titleKey: "settings.sttServer.url.title" };
     default:
-      if (model.id.startsWith("hf-")) {
-        return { section: "models", titleKey: HF_SECTION_TITLE_KEY };
-      }
       if (LANGUAGE_ENGINES.includes(model.engine_type)) {
         return {
           section: "general",

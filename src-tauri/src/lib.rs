@@ -13,6 +13,7 @@ mod helpers;
 mod input;
 mod keyboard_layouts;
 mod llm_client;
+mod log_archive;
 mod managers;
 mod mcp;
 mod model_testing;
@@ -709,8 +710,9 @@ pub fn run(cli_args: CliArgs) {
         .plugin(
             LogBuilder::new()
                 .level(log::LevelFilter::Trace) // Set to most verbose level globally
-                // Keep at most three 10 MB files: enough recent context for
-                // diagnostics while bounding retained dictation metadata to ~30 MB.
+                // Cut at 10 MB; each rotated file is then compressed into a
+                // .log.gz archive by log_archive.rs (newest 20, at most 30
+                // days). KeepSome(3) stays as a safety net for plain files.
                 .max_file_size(10_000_000)
                 .rotation_strategy(RotationStrategy::KeepSome(3))
                 .clear_targets()
@@ -861,6 +863,11 @@ pub fn run(cli_args: CliArgs) {
             }
 
             initialize_core_logic(&app_handle);
+
+            // Rotated logs are compressed and old archives pruned (log_archive.rs).
+            if let Ok(dir) = portable::resolve_log_dir(&app_handle) {
+                log_archive::start(dir);
+            }
 
             // Start the localhost MCP/CLI server if enabled, and best-effort
             // install the `handy` CLI onto PATH (so the app "ships" the CLI).

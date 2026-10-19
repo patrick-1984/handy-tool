@@ -1680,7 +1680,7 @@
         }
       },
       "huggingFace": {
-        "title": "Parakeet من Hugging Face",
+        "title": "إصدار آخر من Hugging Face",
         "description": "نماذج Parakeet أحدث أو مضبوطة بدقة (تصديرات ONNX بنفس بنية النموذج المرفق مع Handy)، يشغّلها محرك Parakeet الخاص بـ Handy على هذا الحاسوب.",
         "searchDescription": "**يبحث في Hugging Face عن نماذج Parakeet ONNX**، الأكثر تنزيلًا أولًا، أو اكتب مستودعًا بصيغة owner/name. افحص نموذجًا لمعرفة ما إذا كان Handy يستطيع استخدامه وما حجمه، ثم أضفه: يُنزَّل مثل أي نموذج.",
         "placeholder": "ابحث، أو owner/name",
@@ -1694,6 +1694,30 @@
         "check": "فحص",
         "added": "تمت الإضافة",
         "add": "إضافة وتنزيل"
+      },
+      "parakeet": {
+        "title": "إصدارات Parakeet",
+        "description": "اختر أي Parakeet يتولى التفريغ: المدمج في Handy، أو إصدارًا أحدث أو مضبوطًا بدقة من Hugging Face. تعمل كلها على هذا الحاسوب، على المعالج.",
+        "close": "إغلاق",
+        "builtIn": "مدمج",
+        "fromHuggingFace": "من Hugging Face",
+        "inUse": "قيد الاستخدام",
+        "use": "استخدام",
+        "cardVariant": "قيد الاستخدام باسم {{name}}",
+        "builtInDetail": {
+          "v3": "نموذج NVIDIA، 25 لغة أوروبية",
+          "v2": "نموذج NVIDIA، الإنجليزية فقط"
+        },
+        "suggested": {
+          "ultra": {
+            "title": "Parakeet Ultra",
+            "detail": "إصدار v3 المحسّن من moondream، أدق وبالسرعة نفسها"
+          },
+          "ultraNoUnk": {
+            "title": "Parakeet Ultra، بدقة كاملة",
+            "detail": "Ultra نفسه، أكبر حجمًا، ولا يُخرج أبدًا رمز الكلمة غير المعروفة"
+          }
+        }
       }
     },
     "jumper": {
@@ -2339,6 +2363,14 @@
       "modelSettings": {
         "title": "إعدادات النموذج من بطاقته",
         "description": "يفتح الترس على بطاقة النموذج، أو النقر على بطاقة النموذج المستخدم، إعدادات ذلك النموذج. لزر إعادة التفريغ في السجل أيقونة جديدة."
+      },
+      "parakeetVersions": {
+        "title": "اختر إصدار Parakeet، بما في ذلك Ultra",
+        "description": "يفتح الترس على بطاقة Parakeet إصداراته: المدمج، وParakeet Ultra (أدق وبالسرعة نفسها)، وأي إصدار متوافق من Hugging Face. أصبحت تصديرات Ultra التي لا تتضمن المعالج المسبق للصوت تعمل الآن: يوفّر Handy معالجه الخاص."
+      },
+      "logArchive": {
+        "title": "ضغط السجلات القديمة",
+        "description": "عندما يبلغ السجل 10 MB يبدأ ملفًا جديدًا ويُضغط الملف القديم ويُحفظ جانبًا (أحدث 20 ملفًا، لمدة تصل إلى 30 يومًا)."
       }
     },
     "installed": "مثبّت"

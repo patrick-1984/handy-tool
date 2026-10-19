@@ -955,7 +955,7 @@
         }
       },
       "huggingFace": {
-        "title": "來自 Hugging Face 的 Parakeet",
+        "title": "來自 Hugging Face 的其他版本",
         "description": "較新或經微調的 Parakeet 模型（與 Handy 內建模型結構相同的 ONNX 匯出），由 Handy 自己的 Parakeet 引擎在這台電腦上執行。",
         "searchDescription": "**在 Hugging Face 上搜尋 Parakeet ONNX 模型**，依下載次數排序，或以 owner/name 格式輸入儲存庫。檢查模型以了解 Handy 能否使用及其大小，然後加入：它會像其他模型一樣下載。",
         "placeholder": "搜尋，或 owner/name",
@@ -969,6 +969,30 @@
         "check": "檢查",
         "added": "已加入",
         "add": "加入並下載"
+      },
+      "parakeet": {
+        "title": "Parakeet 版本",
+        "description": "選擇由哪個 Parakeet 轉錄：Handy 內建的版本，或來自 Hugging Face 的較新版或微調版。它們都在這台電腦的處理器上執行。",
+        "close": "關閉",
+        "builtIn": "內建",
+        "fromHuggingFace": "來自 Hugging Face",
+        "inUse": "使用中",
+        "use": "使用",
+        "cardVariant": "以 {{name}} 使用中",
+        "builtInDetail": {
+          "v3": "NVIDIA 的模型，支援 25 種歐洲語言",
+          "v2": "NVIDIA 的模型，僅英文"
+        },
+        "suggested": {
+          "ultra": {
+            "title": "Parakeet Ultra",
+            "detail": "moondream 改良的 v3，更準確，速度不變"
+          },
+          "ultraNoUnk": {
+            "title": "Parakeet Ultra（全精度）",
+            "detail": "同一個 Ultra，檔案更大，絕不輸出未知詞標記"
+          }
+        }
       }
     },
     "sound": {
@@ -2339,6 +2363,14 @@
       "modelSettings": {
         "title": "從模型卡片開啟其設定",
         "description": "點選模型卡片上的齒輪，或點選正在使用的模型卡片，即可開啟該模型自己的設定。歷史記錄中的重新轉錄按鈕換上了新圖示。"
+      },
+      "parakeetVersions": {
+        "title": "選擇你的 Parakeet 版本，包括 Ultra",
+        "description": "Parakeet 卡片上的齒輪可開啟其版本清單：內建版本、Parakeet Ultra（更準確，速度不變）以及 Hugging Face 上任何相容的版本。省略了音訊前處理器的 Ultra 匯出現在也能使用：Handy 會提供自己的前處理器。"
+      },
+      "logArchive": {
+        "title": "舊記錄檔會被壓縮",
+        "description": "記錄檔達到 10 MB 時會建立新檔案，舊檔案則被壓縮並另行保存（保留最新的 20 個，最長 30 天）。"
       }
     },
     "installed": "已安裝"

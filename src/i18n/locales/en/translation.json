@@ -968,7 +968,7 @@
         }
       },
       "huggingFace": {
-        "title": "Parakeet from Hugging Face",
+        "title": "Another version from Hugging Face",
         "description": "Newer or fine-tuned Parakeet models (ONNX exports laid out like the one Handy ships), read by Handy's own Parakeet engine on this PC.",
         "searchDescription": "**Searches Hugging Face for Parakeet ONNX models**, most downloaded first, or type a repo as owner/name. Check one to see whether Handy can use it and how big it is, then add it: it downloads like any model.",
         "placeholder": "Search, or owner/name",
@@ -982,6 +982,30 @@
         "check": "Check",
         "added": "Added",
         "add": "Add and download"
+      },
+      "parakeet": {
+        "title": "Parakeet versions",
+        "description": "Choose which Parakeet transcribes: the one built into Handy, or a newer or fine-tuned version from Hugging Face. All of them run on this PC, on the processor.",
+        "close": "Close",
+        "builtIn": "Built in",
+        "fromHuggingFace": "From Hugging Face",
+        "inUse": "In use",
+        "use": "Use",
+        "cardVariant": "In use as {{name}}",
+        "builtInDetail": {
+          "v3": "NVIDIA's model, 25 European languages",
+          "v2": "NVIDIA's model, English only"
+        },
+        "suggested": {
+          "ultra": {
+            "title": "Parakeet Ultra",
+            "detail": "moondream's improved v3, more accurate, same speed"
+          },
+          "ultraNoUnk": {
+            "title": "Parakeet Ultra, full precision",
+            "detail": "the same Ultra, larger, never outputs the unknown-word token"
+          }
+        }
       }
     },
     "jumper": {
@@ -2339,6 +2363,14 @@
       "modelSettings": {
         "title": "A model's settings from its card",
         "description": "The gear on a model card, or a click on the card of the model in use, opens that model's own settings. History's Transcribe again button has a new icon."
+      },
+      "parakeetVersions": {
+        "title": "Choose your Parakeet version, including Ultra",
+        "description": "The gear on the Parakeet card opens its versions: the built-in one, Parakeet Ultra (more accurate, same speed) and any compatible version from Hugging Face. Ultra exports that leave out the audio preprocessor now work: Handy supplies its own."
+      },
+      "logArchive": {
+        "title": "Old logs are compressed",
+        "description": "When the log reaches 10 MB it starts a new file and the old one is compressed and set aside (the newest 20, for up to 30 days)."
       }
     },
     "installed": "Installed"
