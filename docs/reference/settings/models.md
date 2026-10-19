@@ -46,10 +46,10 @@ Catalog: [Cancel a stuck download and it stops now](../../features.md#cancel-a-s
 
 Up to two more models, tried in this order when the dictation model cannot transcribe a take (its server is down, the network dropped, a request failed) - the whole take or each 10-minute piece. An online dictation model is checked when the take starts, so a server that does not answer is skipped at once, and after one failure the rest of the take goes straight to the next model. Any downloaded or online model can be picked. History shows the model that transcribed. **Default:** None.
 
-## Parakeet from Hugging Face
+## Parakeet versions
 
-`Models › Parakeet from Hugging Face`
+`Models › Parakeet versions`
 
-Searches Hugging Face for Parakeet ONNX models (or takes a repo typed as owner/name). `Check` tells whether Handy's Parakeet engine can read it (it needs `encoder-model`, `decoder_joint-model`, `nemo128.onnx` and `vocab.txt`, int8 preferred) and how big it is; `Add and download` adds it to Downloaded Models and downloads it file by file, resumably. It then runs on this PC like the Parakeet Handy ships. **Default:** nothing added.
+Opened by the gear on the Parakeet card, or a click on it while it is in use. Lists the built-in Parakeet V3 and V2, Parakeet Ultra and Parakeet Ultra, full precision from Hugging Face (`Add and download`, then `Use`), the versions you added, and `Another version from Hugging Face`: a search (or owner/name) with `Check`, which tells whether Handy's Parakeet engine can read a repo (it needs `encoder-model` and `decoder_joint-model`, int8 preferred, and `vocab.txt`; for the Parakeet TDT 0.6B family a missing `nemo128.onnx` preprocessor is taken from Handy's own Parakeet) and how big it is. Downloads are pinned to one commit, resumable and checked. A Hugging Face version in use shows on the Parakeet card. **Default:** the built-in Parakeet.
 
 A model card with settings of its own has a gear (`Settings of <model name>`), and a click on the card of the model in use opens those settings.

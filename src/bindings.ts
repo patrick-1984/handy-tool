@@ -4151,6 +4151,11 @@ export type HfFile = {
    * SHA-256 of a large (LFS) file, as Hugging Face lists it.
    */
   sha256?: string | null;
+  /**
+   * Taken from another repo (`owner/name@commit`) - the shared
+   * preprocessor. `None` = from the model's own repo.
+   */
+  source?: string | null;
 };
 /**
  * One search hit.
@@ -4166,6 +4171,11 @@ export type HfRepoCheck = {
   files: HfFile[];
   total_mb: number;
   model_id: string;
+  /**
+   * The audio preprocessor comes from Handy's own Parakeet repo (the
+   * model's repo leaves it out).
+   */
+  preprocessor_from_base: boolean;
 };
 export type OpenRouterTranscriptionRoute =
   /**

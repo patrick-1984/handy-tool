@@ -13,7 +13,8 @@ import { SectionTitle } from "../../ui/SettingsGroup";
 import { useNavStore } from "../../../stores/navStore";
 import { modelConfigTarget, openModelConfig } from "./modelConfig";
 import { FallbackSettings } from "./FallbackSettings";
-import { HuggingFaceParakeet } from "./HuggingFaceParakeet";
+import { ParakeetVersions, isParakeetVersion } from "./ParakeetVersions";
+import { getTranslatedModelName } from "../../../lib/utils/modelTranslation";
 
 /** Model cards: two side by side when there is room. */
 const MODEL_GRID = "grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-3";
@@ -132,9 +133,25 @@ export const ModelsSettings: React.FC = () => {
   };
 
   const navigateTo = useNavStore((s) => s.navigateTo);
+  const [parakeetOpen, setParakeetOpen] = useState(false);
+  // A Parakeet version from Hugging Face in use: the Parakeet V3 card stands
+  // for it (those versions are chosen in the card's settings, not as cards).
+  const activeHf = models.find(
+    (m: ModelInfo) => m.id === currentModel && m.id.startsWith("hf-"),
+  );
+  const PARAKEET_CARD = "parakeet-tdt-0.6b-v3";
+  const cardStatus = (model: ModelInfo): ModelCardStatus =>
+    activeHf && model.id === PARAKEET_CARD
+      ? "active"
+      : getModelStatus(model.id);
+  const cardVariant = (model: ModelInfo) =>
+    activeHf && model.id === PARAKEET_CARD
+      ? getTranslatedModelName(activeHf, t)
+      : undefined;
   // A model with settings of its own gets a gear (and a click on it while in
-  // use opens them).
+  // use opens them). Parakeet's settings are its versions.
   const configureFor = (model: ModelInfo) => {
+    if (isParakeetVersion(model)) return () => setParakeetOpen(true);
     const target = modelConfigTarget(model);
     return target
       ? () => openModelConfig(target, (section) => navigateTo(section), t)
@@ -193,6 +210,12 @@ export const ModelsSettings: React.FC = () => {
     const available: ModelInfo[] = [];
 
     for (const model of filteredModels) {
+      // Versions from Hugging Face live in Parakeet's settings.
+      if (model.id.startsWith("hf-")) continue;
+      if (activeHf && model.id === PARAKEET_CARD) {
+        downloaded.push(model);
+        continue;
+      }
       if (
         model.is_custom ||
         model.is_downloaded ||
@@ -207,8 +230,9 @@ export const ModelsSettings: React.FC = () => {
 
     // Sort: active model first, then non-custom, then custom at the bottom
     downloaded.sort((a, b) => {
-      if (a.id === currentModel) return -1;
-      if (b.id === currentModel) return 1;
+      const activeId = activeHf ? PARAKEET_CARD : currentModel;
+      if (a.id === activeId) return -1;
+      if (b.id === activeId) return 1;
       if (a.is_custom !== b.is_custom) return a.is_custom ? 1 : -1;
       return 0;
     });
@@ -217,7 +241,13 @@ export const ModelsSettings: React.FC = () => {
       downloadedModels: downloaded,
       availableModels: available,
     };
-  }, [filteredModels, downloadingModels, extractingModels, currentModel]);
+  }, [
+    filteredModels,
+    downloadingModels,
+    extractingModels,
+    currentModel,
+    activeHf,
+  ]);
 
   if (loading) {
     return (
@@ -341,7 +371,8 @@ export const ModelsSettings: React.FC = () => {
                 <ModelCard
                   key={model.id}
                   model={model}
-                  status={getModelStatus(model.id)}
+                  status={cardStatus(model)}
+                  activeVariant={cardVariant(model)}
                   onSelect={handleModelSelect}
                   onDownload={handleModelDownload}
                   onDelete={
@@ -366,7 +397,8 @@ export const ModelsSettings: React.FC = () => {
                   <ModelCard
                     key={model.id}
                     model={model}
-                    status={getModelStatus(model.id)}
+                    status={cardStatus(model)}
+                    activeVariant={cardVariant(model)}
                     onSelect={handleModelSelect}
                     onDownload={handleModelDownload}
                     onDelete={
@@ -389,7 +421,9 @@ export const ModelsSettings: React.FC = () => {
         </div>
       )}
       <FallbackSettings />
-      <HuggingFaceParakeet />
+      {parakeetOpen && (
+        <ParakeetVersions onClose={() => setParakeetOpen(false)} />
+      )}
     </div>
   );
 };

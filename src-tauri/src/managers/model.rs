@@ -1256,7 +1256,8 @@ impl ModelManager {
                 let _ = fs::remove_file(&part);
                 resume_from = 0;
             }
-            let url = hf_parakeet::file_url(&marker.repo, &marker.revision, &file.path);
+            let url = hf_parakeet::file_url_for(&marker.repo, &marker.revision, file)
+                .ok_or_else(|| anyhow::anyhow!("bad source for {}", file.path))?;
             info!(
                 "Hugging Face: {} -> {} (from byte {})",
                 url,

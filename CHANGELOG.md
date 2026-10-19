@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.4.1] - 2026-10-19
+
+### Changed
+
+- **Parakeet versions are chosen in Parakeet's settings.** The gear on the Parakeet card (or a
+  click on it while in use) opens its versions: the built-in v3 and v2, Parakeet Ultra and Ultra
+  in full precision from Hugging Face (one click: add, download, use), the versions you added,
+  and a search for others. A Hugging Face version in use shows on the Parakeet card; they no
+  longer appear as separate cards or in a section at the bottom of the Models page.
+
+### Fixed
+
+- **Parakeet Ultra from Hugging Face is accepted.** Exports in the onnx-asr layout (e.g. the
+  "ultra" ones, moondream's improved Parakeet TDT 0.6B v3) leave out the audio preprocessor
+  (`nemo128.onnx`), so Check called them not usable. For the Parakeet TDT 0.6B family Handy now
+  supplies the preprocessor from its own Parakeet (pinned and checked), which gives word-for-word
+  the same result as the preprocessor these exports are made for. Check and Add are logged.
+- **Old logs are compressed and set aside.** When the log reaches 10 MB it starts a new file; the
+  old one is now compressed (`handy_<date>.log.gz`, about a tenth of the size) and the newest 20
+  archives are kept, for up to 30 days.
+
 ## [2.4.0] - 2026-10-18
 
 ### Added

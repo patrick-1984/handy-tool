@@ -34,8 +34,26 @@ pub async fn search_hf_parakeet_models(query: String) -> Result<Vec<HfModelSumma
 #[specta::specta]
 pub async fn check_hf_parakeet_model(repo: String) -> Result<HfRepoCheck, String> {
     let repo = repo.trim().to_string();
-    let (_, tree) = hf_parakeet::tree(&repo).await.map_err(|e| e.to_string())?;
-    Ok(hf_parakeet::check_tree(&repo, &tree))
+    let listing = hf_parakeet::tree(&repo).await.map_err(|e| {
+        log::warn!("Hugging Face: could not read {repo}: {e}");
+        e.to_string()
+    })?;
+    let base = hf_parakeet::uses_base_preprocessor(&repo, &listing.base_models);
+    let check = hf_parakeet::check_tree(&repo, &listing.files, base);
+    log::info!(
+        "Hugging Face: {} at {} - {}",
+        repo,
+        listing.revision,
+        match &check.reason {
+            None if check.preprocessor_from_base => format!(
+                "usable, {} MB (preprocessor from Handy's Parakeet)",
+                check.total_mb
+            ),
+            None => format!("usable, {} MB", check.total_mb),
+            Some(reason) => format!("not usable: {reason}"),
+        }
+    );
+    Ok(check)
 }
 
 /// Adds a compatible repo as a model (the frontend then downloads it like any
@@ -47,10 +65,12 @@ pub async fn add_hf_parakeet_model(
     repo: String,
 ) -> Result<ModelInfo, String> {
     let repo = repo.trim().to_string();
-    let (revision, tree) = hf_parakeet::tree(&repo).await.map_err(|e| e.to_string())?;
-    let files = hf_parakeet::pick_files(&tree)
+    let listing = hf_parakeet::tree(&repo).await.map_err(|e| e.to_string())?;
+    let base = hf_parakeet::uses_base_preprocessor(&repo, &listing.base_models);
+    let files = hf_parakeet::pick_files(&listing.files, base)
         .map_err(|reason| format!("Handy cannot use {repo}: {reason}"))?;
+    log::info!("Hugging Face: adding {} at {}", repo, listing.revision);
     model_manager
-        .add_hf_parakeet_model(&repo, &revision, files)
+        .add_hf_parakeet_model(&repo, &listing.revision, files)
         .map_err(|e| e.to_string())
 }
