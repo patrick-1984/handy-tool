@@ -122,6 +122,13 @@ impl TranscriptionManager {
         Ok(Default::default())
     }
 
+    pub fn stt_server_speakers_direct(
+        &self,
+        _audio: &[f32],
+    ) -> Result<crate::managers::stt_server::SttServerResult> {
+        Ok(Default::default())
+    }
+
     pub fn stt_server_take_expecting(
         &self,
         _expected_model: &str,

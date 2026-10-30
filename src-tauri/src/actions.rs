@@ -210,8 +210,12 @@ struct ChunkedSession {
     /// stop — so nothing goes over the network mid-recording (the on-disk Opus
     /// chunks are still written for crash safety).
     deferred: bool,
-    /// Buffered per-chunk PCM (only used when `deferred`).
+    /// Buffered per-chunk PCM (when `deferred`, or `keep_pcm`).
     pcm: Mutex<BTreeMap<usize, Vec<f32>>>,
+    /// Chunks are transcribed as they close AND their PCM is kept, for one
+    /// whole-take request after stop (Custom STT server with speakers on: the
+    /// pieces give the text on the fly, the whole take gives the speakers).
+    keep_pcm: bool,
     /// Chunks whose transcription ERRORED (engine failure), distinct from a
     /// legitimately-empty transcript. If the assembled text is empty AND this
     /// is > 0, the take FAILED (e.g. FLM's ASR model not loaded) rather than
@@ -229,9 +233,10 @@ struct ChunkedSession {
 }
 
 impl ChunkedSession {
-    fn new(ts: u64, deferred: bool) -> Self {
+    fn new(ts: u64, deferred: bool, keep_pcm: bool) -> Self {
         Self {
             ts,
+            keep_pcm,
             transcripts: Mutex::new(BTreeMap::new()),
             closed_count: AtomicUsize::new(0),
             done_count: AtomicUsize::new(0),
@@ -1631,13 +1636,16 @@ impl ShortcutAction for TranscribeAction {
                 } else {
                     settings.transcription_mode == TranscriptionMode::Live
                 };
-            // The API engine and the Custom STT server get the whole take in
-            // one request on stop (the STT server needs it to tell the
-            // speakers apart consistently).
+            // The API engine and the Custom STT server never stream a live
+            // preview; with crash-safe recording on they transcribe each piece
+            // as it closes, like a local model (failover covers a dropped
+            // request), and only fall back to one request on stop without it.
             let is_api_model = matches!(
                 settings.selected_model.as_str(),
                 "api-whisper" | "stt-server"
             );
+            let stt_speakers =
+                settings.selected_model == "stt-server" && settings.stt_server_speakers;
             // OpenRouter transcription must never stream audio mid-recording (the
             // user may hit network drops). It uses the on-disk chunked recording
             // for crash safety, but transcribes the WHOLE recording in one request
@@ -1646,7 +1654,7 @@ impl ShortcutAction for TranscribeAction {
             let is_openrouter = settings.selected_model == "openrouter-transcription";
 
             let plan_live = is_live_mode && !is_api_model && !is_openrouter;
-            let plan_chunked = !plan_live && settings.crash_resilient_recording && !is_api_model;
+            let plan_chunked = !plan_live && settings.crash_resilient_recording;
             *RECORDING_PLAN.lock().unwrap() = Some(RecordingPlan {
                 live: plan_live,
                 chunked: plan_chunked,
@@ -1663,7 +1671,7 @@ impl ShortcutAction for TranscribeAction {
                 // we instead buffer each chunk's PCM and transcribe the whole
                 // recording once on stop (no per-chunk network calls).
                 tm_seg.set_live_transcribing(true);
-                let session = Arc::new(ChunkedSession::new(ts, is_openrouter));
+                let session = Arc::new(ChunkedSession::new(ts, is_openrouter, stt_speakers));
                 *CHUNKED_SESSION.lock().unwrap() = Some(Arc::clone(&session));
                 let tm_chunk = Arc::clone(&tm_seg);
                 let app_chunk = app.clone();
@@ -1694,6 +1702,11 @@ impl ShortcutAction for TranscribeAction {
                     let session_inner = Arc::clone(&session);
                     let idx = closed.index;
                     let pcm = closed.pcm;
+                    if session.keep_pcm {
+                        if let Ok(mut map) = session.pcm.lock() {
+                            map.insert(idx, pcm.clone());
+                        }
+                    }
                     if let Ok(mut unfinished) = session.unfinished.lock() {
                         unfinished.insert(idx, pcm.len());
                     }
@@ -1724,7 +1737,7 @@ impl ShortcutAction for TranscribeAction {
                             *transcribing = Some(idx);
                         }
                         let text = match crate::managers::failover::transcribe(
-                            &app_inner, &tm_inner, take_chunk, pcm,
+                            &app_inner, &tm_inner, take_chunk, false, pcm,
                         ) {
                             Ok(t) => t,
                             Err(e) => {
@@ -1804,24 +1817,23 @@ impl ShortcutAction for TranscribeAction {
         let is_ptt_binding = binding_id == "transcribe_ptt";
         let plan = RECORDING_PLAN.lock().ok().and_then(|mut g| g.take());
         let is_openrouter = settings_snapshot.selected_model == "openrouter-transcription";
+        let is_api_model = matches!(
+            settings_snapshot.selected_model.as_str(),
+            "api-whisper" | "stt-server"
+        );
         let fallback_live = !is_openrouter
+            && !is_api_model
             && (settings_snapshot.live_text_box_enabled
                 || if is_ptt_binding {
                     settings_snapshot.transcription_mode_ptt == TranscriptionMode::Live
                 } else {
                     settings_snapshot.transcription_mode == TranscriptionMode::Live
                 });
-        let is_api_model = matches!(
-            settings_snapshot.selected_model.as_str(),
-            "api-whisper" | "stt-server"
-        );
         let use_live = plan.map(|p| p.live).unwrap_or(fallback_live);
         let crash_safe = plan
             .map(|p| p.crash_safe)
             .unwrap_or(settings_snapshot.crash_resilient_recording);
-        let use_chunked = plan
-            .map(|p| p.chunked)
-            .unwrap_or(crash_safe && !use_live && !is_api_model);
+        let use_chunked = plan.map(|p| p.chunked).unwrap_or(crash_safe && !use_live);
         debug!(
             "Transcription pipeline: use_live={}, use_chunked={}, is_ptt={}, planned={}",
             use_live,
@@ -1953,8 +1965,12 @@ impl ShortcutAction for TranscribeAction {
                     // to 100% before delivery, not after it. Not for deferred
                     // (OpenRouter) takes - their one request is still to come -
                     // nor after the backstop (done_count also counts failures).
+                    let paste_waits_for_speakers = session.keep_pcm
+                        && get_settings(&ah).stt_server_paste
+                            == crate::settings::SttServerPaste::Speakers;
                     let text_ready = done == total
                         && !session.deferred
+                        && !paste_waits_for_speakers
                         && session.error_count.load(Ordering::SeqCst) == 0
                         && !session.assemble().trim().is_empty()
                         && take_generation_current(take_gen);
@@ -1985,7 +2001,7 @@ impl ShortcutAction for TranscribeAction {
                                 .lock()
                                 .unwrap_or_else(|poisoned| poisoned.into_inner());
                             raw_text = match crate::managers::failover::transcribe(
-                                &ah, &tm, take_stop, full,
+                                &ah, &tm, take_stop, true, full,
                             ) {
                                 Ok(t) => t,
                                 Err(e) => {
@@ -2000,6 +2016,33 @@ impl ShortcutAction for TranscribeAction {
                         }
                     } else {
                         raw_text = session.assemble();
+                        // Custom STT server with speakers: the pieces gave the
+                        // text; one request with the whole take gives who said
+                        // what (History, and the paste when that is the choice).
+                        // A failure only loses the speaker text.
+                        if session.keep_pcm
+                            && !raw_text.trim().is_empty()
+                            && take_generation_current(take_gen)
+                        {
+                            let full = session.assemble_pcm();
+                            let model = get_settings(&ah).selected_model;
+                            let _serial = CHUNK_TRANSCRIBE_LOCK
+                                .lock()
+                                .unwrap_or_else(|poisoned| poisoned.into_inner());
+                            match tm.stt_server_take_expecting(&model, &full) {
+                                Ok(result) => {
+                                    if let Some(speakers) = result.diarized {
+                                        crate::managers::stt_server::set_session_diarized(
+                                            take_stop,
+                                            Some(speakers),
+                                        );
+                                    }
+                                }
+                                Err(e) => warn!(
+                                    "STT server: the take's speakers request failed ({e}); keeping the text"
+                                ),
+                            }
+                        }
                     }
                     // Snapshot any engine error before `session` drops.
                     if session.error_count.load(Ordering::SeqCst) > 0 {
@@ -2037,7 +2080,24 @@ impl ShortcutAction for TranscribeAction {
                 }
 
                 let settings = get_settings(&ah);
-                let mut text = raw_text.clone();
+                // A Custom STT server take: its speaker text (if any) for History,
+                // and pasted instead of the text when that is the choice.
+                let stt_take = settings.selected_model == "stt-server";
+                let speaker_text = if stt_take {
+                    crate::managers::stt_server::take_session_diarized(take_stop)
+                } else {
+                    None
+                };
+                let paste_speakers = stt_take
+                    && settings.stt_server_speakers
+                    && settings.stt_server_paste == crate::settings::SttServerPaste::Speakers
+                    && speaker_text.is_some();
+                let base_text = if paste_speakers {
+                    speaker_text.clone().unwrap_or_default()
+                } else {
+                    raw_text.clone()
+                };
+                let mut text = base_text.clone();
                 let mut post_processed_text: Option<String> = None;
                 let mut post_process_prompt: Option<String> = None;
 
@@ -2076,7 +2136,7 @@ impl ShortcutAction for TranscribeAction {
                                 post_process_prompt = Some(prompt.prompt.clone());
                             }
                         }
-                    } else if text != raw_text {
+                    } else if text != base_text {
                         post_processed_text = Some(text.clone());
                     }
                 }
@@ -2134,7 +2194,7 @@ impl ShortcutAction for TranscribeAction {
                         cost,
                         duration,
                         model,
-                        None,
+                        speaker_text.clone(),
                     )
                     .await;
                 } else {
@@ -2168,8 +2228,16 @@ impl ShortcutAction for TranscribeAction {
                     // cannot re-apply affixes to text that already carries them.
                     let delivered = {
                         let st = get_settings(&ah);
+                        let inner = if stt_take {
+                            crate::settings::apply_affixes(
+                                &text,
+                                &st.stt_affixes_for(paste_speakers),
+                            )
+                        } else {
+                            text.clone()
+                        };
                         crate::settings::apply_affixes(
-                            &text,
+                            &inner,
                             &st.affixes_for(submit_override.is_some()),
                         )
                     };
@@ -2380,7 +2448,8 @@ impl ShortcutAction for TranscribeAction {
                         .lock()
                         .unwrap_or_else(|poisoned| poisoned.into_inner());
                     let progress = ProgressTicker::start(&ah, running_transcription_remaining);
-                    match crate::managers::failover::transcribe(&ah, &tm, take_stop, samples) {
+                    match crate::managers::failover::transcribe(&ah, &tm, take_stop, true, samples)
+                    {
                         Ok(text) => {
                             // 100% only for text to deliver (not an empty result
                             // or a take cancelled meanwhile).
@@ -3706,7 +3775,7 @@ mod chunk_handover_tests {
 
     #[test]
     fn only_chunks_finished_without_a_gap_are_handed_over() {
-        let session = ChunkedSession::new(0, false);
+        let session = ChunkedSession::new(0, false, false);
         {
             let mut transcripts = session.transcripts.lock().unwrap();
             transcripts.insert(0, Some("first part".into()));

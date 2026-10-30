@@ -166,6 +166,34 @@ fn begin_running_job(
     RunningJobGuard
 }
 
+/// An online engine's request (API, OpenRouter, STT server) on the dictation
+/// path: published as the running job (so the overlay's percentage has an
+/// estimate from this engine's recent requests) and timed for the next ones.
+/// `speed_key` names the engine and mode (the STT server with speakers is
+/// slower than without).
+fn timed_online_request<T>(
+    speed_key: &str,
+    audio_secs: f32,
+    request: impl FnOnce() -> Result<T>,
+) -> Result<T> {
+    let started = std::time::Instant::now();
+    let job_guard = begin_running_job(
+        Some(started),
+        expected_transcription_secs(speed_key, audio_secs),
+        Arc::new(AtomicI32::new(-1)),
+    );
+    let result = request();
+    drop(job_guard);
+    if result.is_ok() {
+        record_model_timing(
+            speed_key.to_string(),
+            audio_secs,
+            started.elapsed().as_secs_f32(),
+        );
+    }
+    result
+}
+
 /// Keeps a successful call's timing for the model's estimates; clips too short
 /// to say anything about speed are skipped.
 fn record_model_timing(speed_key: String, audio_secs: f32, took: f32) {
@@ -969,6 +997,18 @@ impl TranscriptionManager {
         let result = self.transcribe_inner(expected_model, audio.to_vec(), false);
         let diarized = STT_TAKE_SPEAKERS.with(|c| c.borrow_mut().take()).flatten();
         result.map(|(text, _)| crate::managers::stt_server::SttServerResult { text, diarized })
+    }
+
+    /// History's "Transcribe again with speakers": the whole recording to the
+    /// Custom STT server's speakers model, whatever the dictation model is and
+    /// whether speakers are on for takes.
+    pub fn stt_server_speakers_direct(
+        &self,
+        audio: &[f32],
+    ) -> Result<crate::managers::stt_server::SttServerResult> {
+        let mut settings = get_settings(&self.app_handle);
+        settings.stt_server_speakers = true;
+        self.stt_server_request(&settings, audio, true)
     }
 
     /// History's "Transcribe again" for a Custom STT server take: the whole
@@ -1909,7 +1949,15 @@ impl TranscriptionManager {
                 // callers; a dictation take (`stt_server_take_expecting`)
                 // also gets its speaker text.
                 let take = STT_TAKE_SPEAKERS.with(|c| c.borrow().is_some());
-                let result = self.stt_server_request(&settings, &audio, take)?;
+                let speed_key = if take && settings.stt_server_speakers {
+                    format!("{expected_model}+speakers")
+                } else {
+                    expected_model.to_string()
+                };
+                let audio_secs = audio.len() as f32 / 16_000.0;
+                let result = timed_online_request(&speed_key, audio_secs, || {
+                    self.stt_server_request(&settings, &audio, take)
+                })?;
                 if take {
                     STT_TAKE_SPEAKERS.with(|c| *c.borrow_mut() = Some(result.diarized));
                 }
@@ -1926,14 +1974,17 @@ impl TranscriptionManager {
                 drop(engine_guard);
                 let language = normalize_language_for_engine(&settings.selected_language)
                     .or_else(|| Some("en".to_string()));
-                let raw_text = crate::managers::api_transcription::transcribe(
-                    &settings.api_transcription_url,
-                    &settings.api_transcription_key,
-                    &settings.api_transcription_model,
-                    audio,
-                    language.as_deref(),
-                    effective_translate,
-                )?;
+                let audio_secs = audio.len() as f32 / 16_000.0;
+                let raw_text = timed_online_request(expected_model, audio_secs, || {
+                    crate::managers::api_transcription::transcribe(
+                        &settings.api_transcription_url,
+                        &settings.api_transcription_key,
+                        &settings.api_transcription_model,
+                        audio,
+                        language.as_deref(),
+                        effective_translate,
+                    )
+                })?;
                 let corrected = if !settings.custom_words.is_empty() {
                     apply_custom_words(
                         &raw_text,
@@ -1984,16 +2035,19 @@ impl TranscriptionManager {
                     settings.openrouter_transcription_route,
                     crate::settings::OpenRouterTranscriptionRoute::Chat
                 ) && effective_translate;
-                let raw_text = crate::managers::openrouter_transcription::transcribe(
-                    base_url,
-                    api_key,
-                    model,
-                    &audio,
-                    language.as_deref(),
-                    settings.openrouter_transcription_route,
-                    settings.openrouter_transcription_audio_format,
-                    translate,
-                )?;
+                let audio_secs = audio.len() as f32 / 16_000.0;
+                let raw_text = timed_online_request(expected_model, audio_secs, || {
+                    crate::managers::openrouter_transcription::transcribe(
+                        base_url,
+                        api_key,
+                        model,
+                        &audio,
+                        language.as_deref(),
+                        settings.openrouter_transcription_route,
+                        settings.openrouter_transcription_audio_format,
+                        translate,
+                    )
+                })?;
                 let corrected = if !settings.custom_words.is_empty() {
                     apply_custom_words(
                         &raw_text,

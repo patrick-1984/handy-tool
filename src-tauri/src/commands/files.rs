@@ -766,9 +766,163 @@ pub async fn retranscribe_history_entry(app: AppHandle, id: i64) -> Result<Strin
     Ok(text)
 }
 
+/// What "Transcribe again with speakers" did.
+#[derive(Serialize, Clone, Debug, Type)]
+pub struct SpeakersResult {
+    /// The new plain text.
+    pub text: String,
+    /// The server told two or more speakers apart (else: one voice, no
+    /// speaker text).
+    pub speakers: bool,
+}
+
+/// Why the speakers request cannot run, as `CODE` or `CODE|detail` - the app
+/// turns it into a message with a way to fix it:
+/// `STT_SERVER_NOT_SET`, `STT_SPEAKERS_MODEL_NOT_SET`,
+/// `STT_SERVER_UNREACHABLE|<error>`, `STT_SPEAKERS_MODEL_MISSING|<model>|<models it has>`.
+fn speakers_preflight(
+    settings: &AppSettings,
+    info: Result<crate::managers::stt_server::SttServerInfo, String>,
+) -> Result<(), String> {
+    let model = settings.stt_server_speakers_model.trim();
+    if model.is_empty() {
+        return Err("STT_SPEAKERS_MODEL_NOT_SET".into());
+    }
+    let info = info.map_err(|e| format!("STT_SERVER_UNREACHABLE|{e}"))?;
+    // A server that lists models must list this one.
+    if !info.models.is_empty() && !info.models.iter().any(|m| m.id == model) {
+        let available = info
+            .models
+            .iter()
+            .map(|m| m.id.as_str())
+            .collect::<Vec<_>>()
+            .join(", ");
+        return Err(format!("STT_SPEAKERS_MODEL_MISSING|{model}|{available}"));
+    }
+    Ok(())
+}
+
+/// History's "Transcribe again with speakers": the recording, whole, to the
+/// Custom STT server's speakers model (whatever the dictation model is). The
+/// row gets the plain text and the text with speakers.
+#[tauri::command]
+#[specta::specta]
+pub async fn retranscribe_history_entry_speakers(
+    app: AppHandle,
+    id: i64,
+) -> Result<SpeakersResult, String> {
+    let settings = get_settings(&app);
+    if settings.stt_server_url.trim().is_empty() {
+        return Err("STT_SERVER_NOT_SET".into());
+    }
+    let (url, key) = (
+        settings.stt_server_url.clone(),
+        settings.stt_server_key.clone(),
+    );
+    let info = tauri::async_runtime::spawn_blocking(move || {
+        crate::managers::stt_server::list_models(&url, &key).map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| e.to_string())?;
+    speakers_preflight(&settings, info)?;
+
+    let history = Arc::clone(
+        app.state::<Arc<crate::managers::history::HistoryManager>>()
+            .inner(),
+    );
+    let entry = history
+        .get_entry_by_id(id)
+        .await
+        .map_err(|e| e.to_string())?
+        .ok_or("the history entry no longer exists")?;
+    let files = history
+        .recording_files_for(&entry.file_name)
+        .map_err(|e| e.to_string())?;
+    if RETRANSCRIBING.swap(true, Ordering::SeqCst) {
+        return Err("another recording is being transcribed".into());
+    }
+    let guard = RetranscribeGuard;
+    if crate::transcription_coordinator::update_pending() {
+        return Err("an update is being installed; try again after the restart".into());
+    }
+    let app_job = app.clone();
+    let result = tauri::async_runtime::spawn_blocking(
+        move || -> Result<crate::managers::stt_server::SttServerResult, String> {
+            let mut samples = Vec::new();
+            for file in &files {
+                samples.extend(decode_audio_file(file).map_err(|e| e.to_string())?);
+            }
+            info!(
+                "History: transcribing entry {id} again with speakers ({:.0} s)",
+                samples.len() as f64 / SAMPLE_HZ
+            );
+            app_job
+                .state::<Arc<TranscriptionManager>>()
+                .stt_server_speakers_direct(&samples)
+                .map_err(|e| e.to_string())
+        },
+    )
+    .await
+    .map_err(|e| e.to_string())??;
+    let label = Some(format!(
+        "{} — STT server",
+        settings.stt_server_speakers_model.trim()
+    ));
+    history
+        .replace_transcription(id, &result.text, label, result.diarized.as_deref())
+        .map_err(|e| e.to_string())?;
+    drop(guard);
+    info!(
+        "History: entry {id} transcribed again with speakers ({} chars, speakers: {})",
+        result.text.len(),
+        result.diarized.is_some()
+    );
+    Ok(SpeakersResult {
+        speakers: result.diarized.is_some(),
+        text: result.text,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn speakers_preflight_names_what_is_missing() {
+        use crate::managers::stt_server::{SttServerInfo, SttServerModel};
+        let mut s = crate::settings::get_default_settings();
+        let info = |ids: &[&str]| -> Result<SttServerInfo, String> {
+            Ok(SttServerInfo {
+                models: ids
+                    .iter()
+                    .map(|id| SttServerModel {
+                        id: id.to_string(),
+                        description: String::new(),
+                    })
+                    .collect(),
+                backend: None,
+            })
+        };
+        assert_eq!(
+            speakers_preflight(&s, info(&["transcribe", "transcribe-diarize-openai"])),
+            Ok(())
+        );
+        // A server that does not list models is trusted.
+        assert_eq!(speakers_preflight(&s, info(&[])), Ok(()));
+        assert_eq!(
+            speakers_preflight(&s, info(&["transcribe"])),
+            Err("STT_SPEAKERS_MODEL_MISSING|transcribe-diarize-openai|transcribe".into())
+        );
+        assert_eq!(
+            speakers_preflight(&s, Err("refused".into())),
+            Err("STT_SERVER_UNREACHABLE|refused".into())
+        );
+        s.stt_server_speakers_model = " ".into();
+        assert_eq!(
+            speakers_preflight(&s, info(&[])),
+            Err("STT_SPEAKERS_MODEL_NOT_SET".into())
+        );
+    }
 
     #[test]
     fn unique_stem_never_reuses_a_taken_name() {
