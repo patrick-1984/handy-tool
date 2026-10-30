@@ -18,7 +18,8 @@
     "recoverWithPasteLast": "Press {{shortcut}} to paste it.",
     "recoverFromHistory": "Open Settings › History to copy it.",
     "transcriptionFallback": "{{from}} could not transcribe this take, so {{to}} did",
-    "transcriptionIncomplete": "Part of this take could not be transcribed (pieces missing: {{count}}), so the text is incomplete. The whole recording is in History: use Transcribe again there."
+    "transcriptionIncomplete": "Part of this take could not be transcribed (pieces missing: {{count}}), so the text is incomplete. The whole recording is in History: use Transcribe again there.",
+    "speakersFailed": "The speakers of this take could not be found, so History has its text only. To try again: History › ⋯ › Transcribe again with speakers."
   },
   "sidebar": {
     "general": "General",
@@ -2290,7 +2291,11 @@
       },
       "afterTake": {
         "label": "Find the speakers after each take",
-        "description": "**After the text is pasted**, the take is read again on this PC to tell the speakers apart, and the text with speakers is added to it in History. The paste never waits for it. Works with models on this PC (not online ones)."
+        "description": "**After the text is pasted**, the take is read again on this PC to tell the speakers apart, and the text with speakers is added to it in History. The paste waits for it only with \"Paste the text with speakers\". Works with models on this PC (not online ones)."
+      },
+      "paste": {
+        "label": "Paste the text with speakers",
+        "description": "**The paste waits** until the speakers are found on this PC, then pastes the text with speakers instead of the plain text, like the STT server's \"What to paste\". It takes about a tenth of the take's length plus transcribing each turn. With one voice, or if it fails, the plain text is pasted."
       },
       "source": {
         "title": "\"Transcribe again with speakers\" uses",
@@ -2654,6 +2659,18 @@
       "historyTour": {
         "title": "Show me how: History",
         "description": "A short guided tour of everything new in History below. Find it in Setups, or under \"Show me how\" on the History page."
+      },
+      "speakersPaste": {
+        "title": "Speakers on this PC: in the model settings, and pasted",
+        "description": "The speakers settings are now on the Models page and in Parakeet's settings too. New: \"Paste the text with speakers\" pastes the text with speakers after a take (it waits for them), like the STT server's \"What to paste\"."
+      },
+      "progressKept": {
+        "title": "The transcribing pill always shows it is working",
+        "description": "Handy now remembers how fast each model is across restarts and updates, so the percentage shows from the first take; until it knows, a light circles the pill."
+      },
+      "historyFixes": {
+        "title": "History: tidier filters, steady numbers",
+        "description": "The date and length filters are narrower and stay inside the window. In Combine, each recording keeps the number it got when you picked it, however you reorder them."
       },
       "localSpeakers": {
         "title": "Speakers on this PC",

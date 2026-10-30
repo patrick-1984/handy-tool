@@ -2276,7 +2276,11 @@
       },
       "afterTake": {
         "label": "Sprecher nach jeder Aufnahme erkennen",
-        "description": "**Nachdem der Text eingefügt wurde**, wird die Aufnahme auf diesem PC erneut gelesen, um die Sprecher zu unterscheiden, und der Text mit Sprechern wird ihr im Verlauf hinzugefügt. Das Einfügen wartet nie darauf. Funktioniert mit Modellen auf diesem PC (nicht mit Online-Modellen)."
+        "description": "**Nachdem der Text eingefügt wurde**, wird die Aufnahme auf diesem PC erneut gelesen, um die Sprecher zu unterscheiden, und der Text mit Sprechern wird ihr im Verlauf hinzugefügt. Das Einfügen wartet nur bei „Text mit Sprechern einfügen“ darauf. Funktioniert mit Modellen auf diesem PC (nicht mit Online-Modellen)."
+      },
+      "paste": {
+        "label": "Text mit Sprechern einfügen",
+        "description": "**Das Einfügen wartet**, bis die Sprecher auf diesem PC erkannt sind, und fügt dann statt des reinen Textes den Text mit Sprechern ein, wie „Was eingefügt wird“ beim STT-Server. Das dauert etwa ein Zehntel der Aufnahmelänge plus die Transkription jedes Redebeitrags. Bei nur einer Stimme oder wenn es fehlschlägt, wird der reine Text eingefügt."
       },
       "source": {
         "title": "\"Erneut mit Sprechern transkribieren\" verwendet",
@@ -2362,7 +2366,8 @@
     "recoverWithPasteLast": "Drücke {{shortcut}}, um ihn einzufügen.",
     "recoverFromHistory": "Öffne Einstellungen › Verlauf, um ihn zu kopieren.",
     "transcriptionFallback": "{{from}} konnte diese Aufnahme nicht transkribieren, daher hat {{to}} übernommen",
-    "transcriptionIncomplete": "Ein Teil dieser Aufnahme konnte nicht transkribiert werden (fehlende Stücke: {{count}}), der Text ist also unvollständig. Die ganze Aufnahme ist im Verlauf: Transkribiere sie dort erneut."
+    "transcriptionIncomplete": "Ein Teil dieser Aufnahme konnte nicht transkribiert werden (fehlende Stücke: {{count}}), der Text ist also unvollständig. Die ganze Aufnahme ist im Verlauf: Transkribiere sie dort erneut.",
+    "speakersFailed": "Die Sprecher dieser Aufnahme konnten nicht erkannt werden, daher enthält der Verlauf nur ihren Text. Zum erneuten Versuchen: Verlauf › ⋯ › Erneut mit Sprechern transkribieren."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Die Windows-Anwendungssteuerung hat flm.exe blockiert, weil die Datei nicht signiert ist. Die NPU-Engine ist nicht verfügbar. Wähle ein anderes Transkriptionsmodell.",
@@ -2654,6 +2659,18 @@
       "historyTour": {
         "title": "Zeig mir, wie: Verlauf",
         "description": "Eine kurze geführte Tour durch alle Neuerungen im Verlauf weiter unten. Du findest sie unter Einrichtungen oder unter „Zeig mir, wie“ auf der Verlaufsseite."
+      },
+      "speakersPaste": {
+        "title": "Sprecher auf diesem PC: in den Modelleinstellungen und eingefügt",
+        "description": "Die Sprecher-Einstellungen findest du jetzt auch auf der Seite Modelle und in den Einstellungen von Parakeet. Neu: „Text mit Sprechern einfügen“ fügt nach einer Aufnahme den Text mit Sprechern ein (es wartet auf sie), wie „Was eingefügt wird“ beim STT-Server."
+      },
+      "progressKept": {
+        "title": "Die Transkriptions-Pille zeigt immer, dass sie arbeitet",
+        "description": "Handy merkt sich jetzt über Neustarts und Updates hinweg, wie schnell jedes Modell ist, sodass der Prozentwert ab der ersten Aufnahme angezeigt wird; solange es das nicht weiß, kreist ein Licht um die Pille."
+      },
+      "historyFixes": {
+        "title": "Verlauf: aufgeräumtere Filter, feste Nummern",
+        "description": "Die Datums- und Längenfilter sind schmaler und bleiben im Fenster. Beim Kombinieren behält jede Aufnahme die Nummer, die sie beim Auswählen bekommen hat, egal wie du sie umsortierst."
       },
       "localSpeakers": {
         "title": "Sprecher auf diesem PC",

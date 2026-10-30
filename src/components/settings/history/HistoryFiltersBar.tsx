@@ -40,7 +40,7 @@ export const HistoryFiltersBar: React.FC<{
         }))}
         selectedValue={filter.date}
         onSelect={(v) => onChange({ ...filter, date: v as DateRange })}
-        className="w-44 [&>button]:w-full"
+        className="w-36 [&>button]:w-full [&>button]:min-w-0"
       />
       {filter.date === "custom" && (
         <span className="inline-flex items-center gap-1 text-xs text-text-secondary">
@@ -70,7 +70,7 @@ export const HistoryFiltersBar: React.FC<{
         }))}
         selectedValue={filter.length}
         onSelect={(v) => onChange({ ...filter, length: v as LengthBucket })}
-        className="w-40 [&>button]:w-full"
+        className="w-32 [&>button]:w-full [&>button]:min-w-0"
       />
     </div>
   );

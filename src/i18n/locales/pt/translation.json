@@ -2276,7 +2276,11 @@
       },
       "afterTake": {
         "label": "Identificar os falantes após cada gravação",
-        "description": "**Depois que o texto é colado**, a gravação é lida novamente neste PC para distinguir os falantes, e o texto com falantes é adicionado a ela no Histórico. A colagem nunca espera por isso. Funciona com modelos deste PC (não com os online)."
+        "description": "**Depois que o texto é colado**, a gravação é lida novamente neste PC para distinguir os falantes, e o texto com falantes é adicionado a ela no Histórico. A colagem só espera por isso com \"Colar o texto com falantes\". Funciona com modelos deste PC (não com os online)."
+      },
+      "paste": {
+        "label": "Colar o texto com falantes",
+        "description": "**A colagem espera** até que os falantes sejam identificados neste PC e então cola o texto com falantes em vez do texto simples, como o \"O que colar\" do servidor STT. Leva cerca de um décimo da duração da gravação, mais a transcrição de cada fala. Com uma só voz, ou se falhar, o texto simples é colado."
       },
       "source": {
         "title": "\"Transcrever novamente com falantes\" usa",
@@ -2362,7 +2366,8 @@
     "recoverWithPasteLast": "Pressione {{shortcut}} para colá-lo.",
     "recoverFromHistory": "Abra Configurações › Histórico para copiá-lo.",
     "transcriptionFallback": "{{from}} não conseguiu transcrever esta gravação, então {{to}} transcreveu",
-    "transcriptionIncomplete": "Parte desta gravação não pôde ser transcrita (trechos em falta: {{count}}), por isso o texto está incompleto. A gravação completa está no Histórico: transcreve-a de novo lá."
+    "transcriptionIncomplete": "Parte desta gravação não pôde ser transcrita (trechos em falta: {{count}}), por isso o texto está incompleto. A gravação completa está no Histórico: transcreve-a de novo lá.",
+    "speakersFailed": "Não foi possível identificar os falantes desta gravação, por isso o Histórico tem só o texto. Para tentar de novo: Histórico › ⋯ › Transcrever novamente com falantes."
   },
   "flm": {
     "windowsApplicationControlBlocked": "O Controle de Aplicativos do Windows bloqueou o flm.exe porque ele não está assinado. O mecanismo NPU não está disponível. Escolha outro modelo de transcrição.",
@@ -2654,6 +2659,18 @@
       "historyTour": {
         "title": "Mostre-me como: Histórico",
         "description": "Um tour guiado rápido por todas as novidades do Histórico abaixo. Encontre-o em Configurações ou em \"Mostre-me como\" na página Histórico."
+      },
+      "speakersPaste": {
+        "title": "Falantes neste PC: nas configurações do modelo, e colados",
+        "description": "As configurações de falantes agora também estão na página Modelos e nas configurações do Parakeet. Novo: \"Colar o texto com falantes\" cola o texto com falantes após uma gravação (espera por eles), como o \"O que colar\" do servidor STT."
+      },
+      "progressKept": {
+        "title": "A pílula de transcrição sempre mostra que está trabalhando",
+        "description": "O Handy agora lembra a velocidade de cada modelo entre reinícios e atualizações, então a porcentagem aparece desde a primeira gravação; enquanto não sabe, uma luz circula a pílula."
+      },
+      "historyFixes": {
+        "title": "Histórico: filtros mais organizados, números estáveis",
+        "description": "Os filtros de data e duração estão mais estreitos e ficam dentro da janela. Em Combinar, cada gravação mantém o número que recebeu quando você a escolheu, não importa como você as reordene."
       },
       "localSpeakers": {
         "title": "Falantes neste PC",

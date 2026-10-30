@@ -1357,6 +1357,10 @@ pub struct AppSettings {
     /// after the paste) and add them to its History row. Off by default.
     #[serde(default)]
     pub local_speakers_after_take: bool,
+    /// With `local_speakers_after_take`: paste the text with speakers, which
+    /// waits for them (like the STT server's "What to paste"). Off by default.
+    #[serde(default)]
+    pub local_speakers_paste: bool,
     /// History › Combine: when several recordings are copied as one text.
     /// Keep each take's Transcribe prefix/suffix around it (default off).
     #[serde(default)]
@@ -2661,11 +2665,16 @@ impl AppSettings {
                     other => return Err(format!("unknown speakers source: {other}")),
                 }
             }
-            "local_speakers_after_take" => {
-                self.local_speakers_after_take = match value {
+            "local_speakers_after_take" | "local_speakers_paste" => {
+                let flag = match value {
                     "true" => true,
                     "false" => false,
                     other => return Err(format!("not a true/false value: {other}")),
+                };
+                if field == "local_speakers_paste" {
+                    self.local_speakers_paste = flag;
+                } else {
+                    self.local_speakers_after_take = flag;
                 }
             }
             other => return Err(format!("unknown speakers setting: {other}")),
@@ -3080,6 +3089,7 @@ pub fn get_default_settings() -> AppSettings {
         transcription_fallbacks: Vec::new(),
         speakers_source: SpeakersSource::default(),
         local_speakers_after_take: false,
+        local_speakers_paste: false,
         combine_keep_take_affixes: false,
         combine_separator: CombineSeparator::default(),
         combine_prefix_enabled: false,

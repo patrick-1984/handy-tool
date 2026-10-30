@@ -2276,7 +2276,11 @@
       },
       "afterTake": {
         "label": "Rozpoznawaj mówców po każdym nagraniu",
-        "description": "**Po wklejeniu tekstu** nagranie jest ponownie odczytywane na tym komputerze, aby rozróżnić mówców, a tekst z mówcami zostaje do niego dodany w Historii. Wklejanie nigdy na to nie czeka. Działa z modelami na tym komputerze (nie z modelami online)."
+        "description": "**Po wklejeniu tekstu** nagranie jest ponownie odczytywane na tym komputerze, aby rozróżnić mówców, a tekst z mówcami zostaje do niego dodany w Historii. Wklejanie czeka na to tylko przy „Wklej tekst z mówcami”. Działa z modelami na tym komputerze (nie z modelami online)."
+      },
+      "paste": {
+        "label": "Wklej tekst z mówcami",
+        "description": "**Wklejanie czeka**, aż mówcy zostaną rozpoznani na tym komputerze, a potem wkleja tekst z mówcami zamiast samego tekstu, jak „Co wklejać” serwera STT. Trwa to około jednej dziesiątej długości nagrania plus transkrypcja każdej wypowiedzi. Przy jednym głosie albo gdy się nie uda, wklejany jest sam tekst."
       },
       "source": {
         "title": "\"Transkrybuj ponownie z mówcami\" używa",
@@ -2435,7 +2439,8 @@
     "recoverWithPasteLast": "Naciśnij {{shortcut}}, aby go wkleić.",
     "recoverFromHistory": "Otwórz Ustawienia › Historia, aby go skopiować.",
     "transcriptionFallback": "{{from}} nie mógł przetranskrybować tego nagrania, więc zrobił to {{to}}",
-    "transcriptionIncomplete": "Części nagrania nie udało się przetranskrybować (brakujące fragmenty: {{count}}), więc tekst jest niepełny. Całe nagranie jest w Historii: użyj tam „Transkrybuj ponownie”."
+    "transcriptionIncomplete": "Części nagrania nie udało się przetranskrybować (brakujące fragmenty: {{count}}), więc tekst jest niepełny. Całe nagranie jest w Historii: użyj tam „Transkrybuj ponownie”.",
+    "speakersFailed": "Nie udało się rozpoznać mówców tego nagrania, więc Historia ma tylko jego tekst. Aby spróbować ponownie: Historia › ⋯ › Transkrybuj ponownie z mówcami."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Funkcja Kontrola aplikacji systemu Windows zablokowała plik flm.exe, ponieważ nie jest podpisany. Silnik NPU jest niedostępny. Wybierz inny model transkrypcji.",
@@ -2654,6 +2659,18 @@
       "historyTour": {
         "title": "Pokaż mi jak: Historia",
         "description": "Krótka wycieczka z przewodnikiem po wszystkich nowościach w Historii opisanych niżej. Znajdziesz ją w Konfiguracjach albo pod „Pokaż mi jak” na stronie Historii."
+      },
+      "speakersPaste": {
+        "title": "Mówcy na tym komputerze: w ustawieniach modelu i przy wklejaniu",
+        "description": "Ustawienia mówców są teraz także na stronie Modele i w ustawieniach Parakeeta. Nowość: „Wklej tekst z mówcami” wkleja po nagraniu tekst z mówcami (czeka na nich), jak „Co wklejać” serwera STT."
+      },
+      "progressKept": {
+        "title": "Pigułka transkrypcji zawsze pokazuje, że pracuje",
+        "description": "Handy pamięta teraz, jak szybki jest każdy model, także po ponownym uruchomieniu i aktualizacji, więc procent widać od pierwszego nagrania; dopóki tego nie wie, wokół pigułki krąży światełko."
+      },
+      "historyFixes": {
+        "title": "Historia: schludniejsze filtry, stałe numery",
+        "description": "Filtry daty i długości są węższe i nie wychodzą poza okno. W Połącz każde nagranie zachowuje numer nadany przy wyborze, niezależnie od tego, jak zmienisz ich kolejność."
       },
       "localSpeakers": {
         "title": "Mówcy na tym komputerze",

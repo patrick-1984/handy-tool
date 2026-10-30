@@ -1521,9 +1521,14 @@ speakers after each take** on, each take is also read again in the background af
 pasted — the paste never waits for it — and the text with speakers is added to its History row,
 as long as the row's text is still that take's. It runs only with dictation models on this PC,
 never with an online one (that would send the whole take out again unasked), and only once the
-speakers model is downloaded; when only one voice is heard, nothing is added.
-**Where.** `Advanced settings › Speakers`.
-**Since.** 2.5.0.
+speakers model is downloaded; when only one voice is heard, nothing is added. With **Paste the
+text with speakers** also on (2.5.1), the paste waits instead: the speakers are found before
+delivery and the text with speakers is pasted, like the STT server's `What to paste`; with one
+voice, or if it fails, the plain text is pasted.
+**Where.** `Advanced settings › Speakers`; the same settings are on the Models page and in
+Parakeet's settings (its card's gear), and a local model's gear opens them when it has no other
+settings.
+**Since.** 2.5.0 (pasted text with speakers and the Models page since 2.5.1).
 
 <!-- prov: speakers on this PC | src: src/components/settings/speakers/SpeakersSection.tsx; src-tauri/src/diarize/mod.rs; src-tauri/src/actions.rs; src-tauri/src/commands/files.rs; src-tauri/src/settings.rs; src/i18n/locales/en/translation.json | claim: behavior -->
 

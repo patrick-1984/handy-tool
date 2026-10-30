@@ -1,6 +1,6 @@
 # Speakers settings
 
-Open `Advanced settings › Speakers`. The tab holds the speakers model that tells who said what on this PC, and chooses where History's `Transcribe again with speakers` does it: on this PC or on your [STT server](stt-server.md).
+Open `Advanced settings › Speakers` (the same settings are on the `Models` page and in Parakeet's settings). The tab holds the speakers model that tells who said what on this PC, and chooses where History's `Transcribe again with speakers` does it: on this PC or on your [STT server](stt-server.md).
 
 Catalog: [Who said what, worked out on this PC](../../features.md#speakers-on-this-pc); [Find out who said what in a recording](../../features.md#transcribe-again-with-speakers).
 
@@ -19,6 +19,12 @@ The model's card. `Download (141 MB)` fetches it once from Hugging Face, with a 
 After a take's text is pasted, reads the take again on this PC and adds the text with speakers to its History row. It works with dictation models on this PC only, not online ones, and can be switched on once the speakers model is downloaded. **Default:** Off.
 
 Catalog: [Who said what, worked out on this PC](../../features.md#speakers-on-this-pc).
+
+### Paste the text with speakers
+
+`Advanced settings › Speakers › Paste the text with speakers`
+
+With `Find the speakers after each take` on: the paste waits until the speakers are found on this PC and pastes the text with speakers instead of the plain text, like the STT server's `What to paste`. The pill shows `Processing...` meanwhile. With one voice, an online dictation model, or a failure, the plain text is pasted. History keeps both texts either way. **Default:** Off.
 
 ### "Transcribe again with speakers" uses
 

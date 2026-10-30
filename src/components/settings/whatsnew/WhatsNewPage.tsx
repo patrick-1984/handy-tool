@@ -37,6 +37,18 @@ interface Item {
  */
 const RELEASES: { version: string; items: Item[] }[] = [
   {
+    version: "2.5.1",
+    items: [
+      {
+        key: "speakersPaste",
+        section: "speakers",
+        titleKeys: ["settings.speakers.paste.label"],
+      },
+      { key: "progressKept" },
+      { key: "historyFixes", section: "history", historyTab: "recordings" },
+    ],
+  },
+  {
     version: "2.5.0",
     items: [
       {

@@ -11,6 +11,7 @@ import { getTranslatedModelName } from "../../../lib/utils/modelTranslation";
 import { formatModelSize } from "../../../lib/utils/format";
 import { commands, type ModelInfo } from "@/bindings";
 import { HuggingFaceParakeet } from "./HuggingFaceParakeet";
+import { SpeakersSection } from "../speakers/SpeakersSection";
 
 /** Handy's own Parakeet models (built in, from Handy's server). */
 export const BUILT_IN_PARAKEET = [
@@ -289,6 +290,8 @@ export const ParakeetVersions: React.FC<{ onClose: () => void }> = ({
             </div>
           </div>
           <HuggingFaceParakeet />
+          {/* Parakeet with speakers, like the STT server's speakers model. */}
+          <SpeakersSection />
         </div>
       </div>
     </div>,

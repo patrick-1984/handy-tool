@@ -2276,7 +2276,11 @@
       },
       "afterTake": {
         "label": "Riconosci i parlanti dopo ogni ripresa",
-        "description": "**Dopo che il testo è stato incollato**, la ripresa viene riletta su questo PC per distinguere i parlanti, e il testo con i parlanti le viene aggiunto nella Cronologia. L'incollaggio non lo aspetta mai. Funziona con i modelli su questo PC (non con quelli online)."
+        "description": "**Dopo che il testo è stato incollato**, la ripresa viene riletta su questo PC per distinguere i parlanti, e il testo con i parlanti le viene aggiunto nella Cronologia. L'incollaggio lo aspetta solo con «Incolla il testo con i parlanti». Funziona con i modelli su questo PC (non con quelli online)."
+      },
+      "paste": {
+        "label": "Incolla il testo con i parlanti",
+        "description": "**L'incollaggio aspetta** che i parlanti siano riconosciuti su questo PC, poi incolla il testo con i parlanti invece del solo testo, come «Cosa incollare» del server STT. Richiede circa un decimo della durata della ripresa più la trascrizione di ogni intervento. Con una sola voce, o se non riesce, viene incollato il solo testo."
       },
       "source": {
         "title": "\"Trascrivi di nuovo con i parlanti\" usa",
@@ -2362,7 +2366,8 @@
     "recoverWithPasteLast": "Premi {{shortcut}} per incollarlo.",
     "recoverFromHistory": "Apri Impostazioni › Cronologia per copiarlo.",
     "transcriptionFallback": "{{from}} non è riuscito a trascrivere questa registrazione, quindi l'ha fatto {{to}}",
-    "transcriptionIncomplete": "Una parte di questa registrazione non è stata trascritta (pezzi mancanti: {{count}}), quindi il testo è incompleto. La registrazione completa è nella Cronologia: trascrivila di nuovo da lì."
+    "transcriptionIncomplete": "Una parte di questa registrazione non è stata trascritta (pezzi mancanti: {{count}}), quindi il testo è incompleto. La registrazione completa è nella Cronologia: trascrivila di nuovo da lì.",
+    "speakersFailed": "Non è stato possibile riconoscere i parlanti di questa ripresa, quindi la Cronologia ne ha solo il testo. Per riprovare: Cronologia › ⋯ › Trascrivi di nuovo con i parlanti."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Controllo app di Windows ha bloccato flm.exe perché non è firmato. Il motore NPU non è disponibile. Scegli un altro modello di trascrizione.",
@@ -2654,6 +2659,18 @@
       "historyTour": {
         "title": "Mostrami come: Cronologia",
         "description": "Un breve tour guidato di tutte le novità della Cronologia qui sotto. Lo trovi in Configurazioni o in «Mostrami come» nella pagina Cronologia."
+      },
+      "speakersPaste": {
+        "title": "Parlanti su questo PC: nelle impostazioni del modello, e incollati",
+        "description": "Le impostazioni dei parlanti ora sono anche nella pagina Modelli e nelle impostazioni di Parakeet. Novità: «Incolla il testo con i parlanti» incolla il testo con i parlanti dopo una ripresa (li aspetta), come «Cosa incollare» del server STT."
+      },
+      "progressKept": {
+        "title": "La pillola di trascrizione mostra sempre che sta lavorando",
+        "description": "Handy ora ricorda quanto è veloce ogni modello anche dopo riavvii e aggiornamenti, così la percentuale appare dalla prima ripresa; finché non lo sa, una luce gira intorno alla pillola."
+      },
+      "historyFixes": {
+        "title": "Cronologia: filtri più ordinati, numeri stabili",
+        "description": "I filtri per data e durata sono più stretti e restano dentro la finestra. In Unisci, ogni registrazione mantiene il numero che ha ricevuto quando l'hai scelta, comunque tu le riordini."
       },
       "localSpeakers": {
         "title": "Parlanti su questo PC",

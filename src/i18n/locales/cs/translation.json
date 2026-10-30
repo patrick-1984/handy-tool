@@ -2276,7 +2276,11 @@
       },
       "afterTake": {
         "label": "Rozpoznat mluvčí po každém záznamu",
-        "description": "**Po vložení textu** se záznam na tomto PC přečte znovu, aby se rozlišili mluvčí, a text s mluvčími se k němu přidá v Historii. Vložení na to nikdy nečeká. Funguje s modely na tomto PC (ne s online modely)."
+        "description": "**Po vložení textu** se záznam na tomto PC přečte znovu, aby se rozlišili mluvčí, a text s mluvčími se k němu přidá v Historii. Vložení na to čeká jen s volbou „Vložit text s mluvčími“. Funguje s modely na tomto PC (ne s online modely)."
+      },
+      "paste": {
+        "label": "Vložit text s mluvčími",
+        "description": "**Vložení počká**, až se na tomto PC rozpoznají mluvčí, a pak místo samotného textu vloží text s mluvčími, jako „Co vložit“ u STT serveru. Trvá to zhruba desetinu délky záznamu plus přepis každé promluvy. S jedním hlasem, nebo pokud se to nepodaří, se vloží samotný text."
       },
       "source": {
         "title": "\"Přepsat znovu s mluvčími\" používá",
@@ -2362,7 +2366,8 @@
     "recoverWithPasteLast": "Stisknutím {{shortcut}} jej vložíte.",
     "recoverFromHistory": "Otevřete Nastavení › Historie a zkopírujte jej.",
     "transcriptionFallback": "{{from}} tento záznam nepřepsal, takže ho přepsal {{to}}",
-    "transcriptionIncomplete": "Část nahrávky se nepodařilo přepsat (chybějící části: {{count}}), text proto není úplný. Celá nahrávka je v Historii: přepište ji tam znovu."
+    "transcriptionIncomplete": "Část nahrávky se nepodařilo přepsat (chybějící části: {{count}}), text proto není úplný. Celá nahrávka je v Historii: přepište ji tam znovu.",
+    "speakersFailed": "Mluvčí tohoto záznamu se nepodařilo rozpoznat, Historie proto obsahuje jen jeho text. Chcete-li to zkusit znovu: Historie › ⋯ › Přepsat znovu s mluvčími."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Řízení aplikací ve Windows zablokovalo flm.exe, protože není podepsaný. Modul NPU není dostupný. Zvolte jiný model přepisu.",
@@ -2654,6 +2659,18 @@
       "historyTour": {
         "title": "Ukázat jak: Historie",
         "description": "Krátká prohlídka všech novinek v Historii popsaných níže. Najdete ji v Průvodcích nebo pod „Ukázat jak“ na stránce Historie."
+      },
+      "speakersPaste": {
+        "title": "Mluvčí na tomto PC: v nastavení modelu a při vkládání",
+        "description": "Nastavení mluvčích je nyní také na stránce Modely a v nastavení Parakeetu. Novinka: „Vložit text s mluvčími“ po záznamu vloží text s mluvčími (počká na ně), jako „Co vložit“ u STT serveru."
+      },
+      "progressKept": {
+        "title": "Pilulka přepisu vždy ukazuje, že pracuje",
+        "description": "Handy si nyní pamatuje rychlost každého modelu i po restartech a aktualizacích, takže procenta se zobrazují od prvního záznamu; dokud ji nezná, obíhá pilulku světlo."
+      },
+      "historyFixes": {
+        "title": "Historie: úhlednější filtry, stálá čísla",
+        "description": "Filtry data a délky jsou užší a zůstávají uvnitř okna. Ve Spojit si každá nahrávka ponechá číslo, které dostala při výběru, ať je seřadíte jakkoli."
       },
       "localSpeakers": {
         "title": "Mluvčí na tomto PC",

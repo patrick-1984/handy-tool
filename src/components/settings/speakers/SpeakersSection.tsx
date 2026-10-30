@@ -67,6 +67,7 @@ export const SpeakersSection: React.FC = () => {
       : 0;
   const source = (getSetting("speakers_source") ?? "auto") as SpeakersSource;
   const afterTake = getSetting("local_speakers_after_take") ?? false;
+  const pasteSpeakers = getSetting("local_speakers_paste") ?? false;
 
   return (
     <div className="space-y-4">
@@ -139,6 +140,16 @@ export const SpeakersSection: React.FC = () => {
           disabled={!downloaded}
           label={t("settings.speakers.afterTake.label")}
           description={t("settings.speakers.afterTake.description")}
+          descriptionMode="tooltip"
+          grouped={true}
+        />
+        <ToggleSwitch
+          checked={pasteSpeakers}
+          onChange={(v) => updateSetting("local_speakers_paste", v)}
+          isUpdating={isUpdating("local_speakers_paste")}
+          disabled={!downloaded || !afterTake}
+          label={t("settings.speakers.paste.label")}
+          description={t("settings.speakers.paste.description")}
           descriptionMode="tooltip"
           grouped={true}
         />

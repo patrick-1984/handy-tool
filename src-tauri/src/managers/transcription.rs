@@ -93,6 +93,11 @@ const TIMING_LENGTH_SIGMA: f64 = 0.5;
 const TIMING_LENGTH_GROWTH: f64 = 0.3;
 /// The shown percentage follows the estimate up to here, then slows down.
 const PROGRESS_LINEAR_UNTIL: f32 = 0.7;
+/// The STT server's requests with speakers are timed apart from plain ones.
+const SPEAKERS_KEY_SUFFIX: &str = "+speakers";
+/// Until a speakers request has been timed: a plain request's estimate times
+/// this (telling the speakers apart is extra work on the server).
+const SPEAKERS_FALLBACK_FACTOR: f32 = 1.5;
 
 /// Expected wall time, in seconds, of transcribing `audio_secs` of audio with
 /// `model_id`. Time per audio second is not constant - on a slow PC Parakeet took
@@ -101,6 +106,18 @@ const PROGRESS_LINEAR_UNTIL: f32 = 0.7;
 /// length first, so an unusual length still gets an answer. None until the model
 /// has a timing.
 pub fn expected_transcription_secs(model_id: &str, audio_secs: f32) -> Option<f32> {
+    let timed = MODEL_TIMINGS
+        .lock()
+        .ok()?
+        .get(model_id)
+        .is_some_and(|c| !c.is_empty());
+    if !timed {
+        // A speakers request not timed yet: the same server's plain requests
+        // (the take's own pieces are among them) give a first estimate.
+        let plain = model_id.strip_suffix(SPEAKERS_KEY_SUFFIX)?;
+        return expected_transcription_secs(plain, audio_secs)
+            .map(|secs| secs * SPEAKERS_FALLBACK_FACTOR);
+    }
     let timings = MODEL_TIMINGS.lock().ok()?;
     let calls = timings.get(model_id).filter(|c| !c.is_empty())?;
     let newest = calls.len() - 1;
@@ -200,12 +217,88 @@ fn record_model_timing(speed_key: String, audio_secs: f32, took: f32) {
     if audio_secs < MIN_TIMING_SAMPLE_SECS || speed_key.is_empty() {
         return;
     }
-    if let Ok(mut timings) = MODEL_TIMINGS.lock() {
-        let calls = timings.entry(speed_key).or_default();
-        if calls.len() == TIMINGS_KEPT {
-            calls.pop_front();
+    // Held from the change to the write: an older snapshot never overwrites a newer one.
+    let _write = TIMINGS_WRITE.lock().unwrap_or_else(|p| p.into_inner());
+    let snapshot = match MODEL_TIMINGS.lock() {
+        Ok(mut timings) => {
+            let calls = timings.entry(speed_key).or_default();
+            if calls.len() == TIMINGS_KEPT {
+                calls.pop_front();
+            }
+            calls.push_back((audio_secs, took));
+            timings.clone()
         }
-        calls.push_back((audio_secs, took));
+        Err(_) => return,
+    };
+    save_model_timings(&snapshot);
+}
+
+/// Where the timings are kept between runs (set once at startup). Before 2.5.1
+/// they lived in memory only: after every restart - an update is one - the
+/// overlay had no estimate, so no percentage and no progress line, until the
+/// model had been timed again.
+static TIMINGS_FILE: std::sync::OnceLock<std::path::PathBuf> = std::sync::OnceLock::new();
+/// Serializes the file writes (engine calls can finish on different threads);
+/// taken before MODEL_TIMINGS, never inside it.
+static TIMINGS_WRITE: Mutex<()> = Mutex::new(());
+
+type TimingsMap = BTreeMap<String, VecDeque<(f32, f32)>>;
+
+/// Reads the timings saved by an earlier run (missing or unreadable = none).
+fn load_model_timings(path: std::path::PathBuf) {
+    if let Some(saved) = std::fs::read(&path)
+        .ok()
+        .and_then(|bytes| parse_timings(&bytes))
+    {
+        if let Ok(mut timings) = MODEL_TIMINGS.lock() {
+            for (key, calls) in saved {
+                timings.entry(key).or_insert(calls);
+            }
+        }
+    }
+    let _ = TIMINGS_FILE.set(path);
+}
+
+/// The saved file's timings: clips too short to count and anything out of
+/// range dropped, at most TIMINGS_KEPT per model (the newest).
+fn parse_timings(bytes: &[u8]) -> Option<TimingsMap> {
+    let raw: BTreeMap<String, Vec<(f32, f32)>> = serde_json::from_slice(bytes).ok()?;
+    Some(
+        raw.into_iter()
+            .map(|(key, calls)| {
+                let mut calls: VecDeque<_> = calls
+                    .into_iter()
+                    .filter(|&(secs, took)| {
+                        secs.is_finite()
+                            && took.is_finite()
+                            && secs >= MIN_TIMING_SAMPLE_SECS
+                            && took > 0.0
+                    })
+                    .collect();
+                while calls.len() > TIMINGS_KEPT {
+                    calls.pop_front();
+                }
+                (key, calls)
+            })
+            .filter(|(key, calls)| !key.is_empty() && !calls.is_empty())
+            .collect(),
+    )
+}
+
+/// Called with TIMINGS_WRITE held.
+fn save_model_timings(timings: &TimingsMap) {
+    let Some(path) = TIMINGS_FILE.get() else {
+        return;
+    };
+    let Ok(json) = serde_json::to_vec(timings) else {
+        return;
+    };
+    // Whole file or nothing: written aside, then put in place.
+    let tmp = path.with_extension("json.tmp");
+    if std::fs::write(&tmp, json).is_ok() {
+        if let Err(e) = std::fs::rename(&tmp, path) {
+            debug!("Could not keep the transcription timings: {e}");
+        }
     }
 }
 
@@ -504,6 +597,10 @@ impl Clone for TranscriptionManager {
 
 impl TranscriptionManager {
     pub fn new(app_handle: &AppHandle, model_manager: Arc<ModelManager>) -> Result<Self> {
+        // The overlay's estimates start from the last run's timings.
+        if let Ok(dir) = crate::portable::resolve_app_data_dir(app_handle) {
+            load_model_timings(dir.join("model_timings.json"));
+        }
         let manager = Self {
             engine: Arc::new(Mutex::new(EngineState {
                 engine: None,
@@ -1953,7 +2050,7 @@ impl TranscriptionManager {
                 // also gets its speaker text.
                 let take = STT_TAKE_SPEAKERS.with(|c| c.borrow().is_some());
                 let speed_key = if take && settings.stt_server_speakers {
-                    format!("{expected_model}+speakers")
+                    format!("{expected_model}{SPEAKERS_KEY_SUFFIX}")
                 } else {
                     expected_model.to_string()
                 };
@@ -2967,6 +3064,45 @@ mod progress_estimate_tests {
         let long = expected_transcription_secs(id, 20.0).unwrap();
         assert!(long > 4.0 * short);
         MODEL_TIMINGS.lock().unwrap().remove(id);
+    }
+
+    #[test]
+    fn a_speakers_request_not_timed_yet_borrows_the_plain_estimate() {
+        let id = "progress-estimate-test-server";
+        let speakers = format!("{id}+speakers");
+        assert!(expected_transcription_secs(&speakers, 10.0).is_none());
+        MODEL_TIMINGS
+            .lock()
+            .unwrap()
+            .insert(id.into(), VecDeque::from(vec![(10.0, 1.0); 3]));
+        let plain = expected_transcription_secs(id, 10.0).unwrap();
+        let borrowed = expected_transcription_secs(&speakers, 10.0).unwrap();
+        assert!((borrowed - plain * 1.5).abs() < 0.01);
+        // Its own timings win once it has them.
+        MODEL_TIMINGS
+            .lock()
+            .unwrap()
+            .insert(speakers.clone(), VecDeque::from(vec![(10.0, 4.0); 3]));
+        assert!((expected_transcription_secs(&speakers, 10.0).unwrap() - 4.0).abs() < 0.01);
+        MODEL_TIMINGS.lock().unwrap().remove(id);
+        MODEL_TIMINGS.lock().unwrap().remove(&speakers);
+    }
+
+    #[test]
+    fn saved_timings_are_read_back_without_bad_or_short_entries() {
+        let json = br#"{"m":[[5.0,0.7],[0.5,0.1],[6.0,-1.0]],"":[[5.0,1.0]],"e":[]}"#;
+        let parsed = super::parse_timings(json).unwrap();
+        assert_eq!(parsed.len(), 1);
+        assert_eq!(parsed["m"], VecDeque::from(vec![(5.0, 0.7)]));
+        assert!(super::parse_timings(b"not json").is_none());
+        let many = format!(
+            "{{\"m\":[{}]}}",
+            vec!["[5.0,1.0]"; super::TIMINGS_KEPT + 3].join(",")
+        );
+        assert_eq!(
+            super::parse_timings(many.as_bytes()).unwrap()["m"].len(),
+            super::TIMINGS_KEPT
+        );
     }
 }
 
