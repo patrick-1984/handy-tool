@@ -2660,6 +2660,10 @@
         "title": "教我怎麼用：歷史紀錄",
         "description": "簡短的引導式介紹，涵蓋下方歷史紀錄的所有新功能。可在「設定精靈」中找到，或在歷史紀錄頁面點選「教我怎麼用」。"
       },
+      "speakersModelFix": {
+        "title": "本機說話者辨識現已可用",
+        "description": "第一個說話者模型無法在 Handy 中執行（「Could not find an implementation for ConvInteger」）。Handy 現在改用全精度模型（492 MB），速度也快約三倍；請在 進階設定 › 說話者 中重新下載。"
+      },
       "speakersPaste": {
         "title": "在這台電腦上區分說話者：模型設定中可用，並可貼上",
         "description": "說話者設定現在也位於模型頁面和 Parakeet 的設定中。新增：「貼上含說話者的文字」會在錄音後貼上含說話者的文字（會等待說話者區分完成），就像 STT 伺服器的「要貼上的內容」。"

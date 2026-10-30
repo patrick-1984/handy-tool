@@ -2660,6 +2660,10 @@
         "title": "Chỉ cho tôi: Lịch sử",
         "description": "Một chuyến tham quan có hướng dẫn ngắn về mọi điểm mới trong Lịch sử bên dưới. Tìm nó trong Thiết lập, hoặc dưới \"Chỉ cho tôi\" trên trang Lịch sử."
       },
+      "speakersModelFix": {
+        "title": "Nhận diện người nói trên PC này đã hoạt động",
+        "description": "Mô hình người nói đầu tiên không chạy được trong Handy (\"Could not find an implementation for ConvInteger\"). Handy giờ dùng mô hình độ chính xác đầy đủ (492 MB), còn nhanh hơn khoảng ba lần; hãy tải lại trong Cài đặt nâng cao › Người nói."
+      },
       "speakersPaste": {
         "title": "Người nói trên PC này: trong cài đặt mô hình, và khi dán",
         "description": "Cài đặt người nói giờ cũng có trên trang Mô hình và trong cài đặt của Parakeet. Mới: \"Dán văn bản có người nói\" dán văn bản có người nói sau một bản ghi (có chờ người nói), giống \"Dán nội dung gì\" của máy chủ STT."

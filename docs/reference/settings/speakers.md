@@ -10,7 +10,7 @@ Catalog: [Who said what, worked out on this PC](../../features.md#speakers-on-th
 
 `Advanced settings › Speakers › Speakers model (NVIDIA Sortformer v2.1)`
 
-The model's card. `Download (141 MB)` fetches it once from Hugging Face, with a progress bar and `Cancel`; afterwards the card shows `Downloaded` and `Delete`, which asks first and removes it from this PC (it can be downloaded again any time). The `NVIDIA Open Model License` link on the card opens the license of the model's weights. **Default:** not downloaded.
+The model's card. `Download (492 MB)` fetches it once from Hugging Face, with a progress bar and `Cancel`; afterwards the card shows `Downloaded` and `Delete`, which asks first and removes it from this PC (it can be downloaded again any time). The `NVIDIA Open Model License` link on the card opens the license of the model's weights. **Default:** not downloaded.
 
 ### Find the speakers after each take
 

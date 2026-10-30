@@ -22,13 +22,22 @@ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter};
 
-/// The int8 export (141 MB) of NVIDIA's model, pinned to a commit and checked
-/// by SHA-256 (christopherthompson81/sortformer_parakeet_onnx).
+/// The full-precision (fp32) export (492 MB) of NVIDIA's model, pinned to a
+/// commit and checked by SHA-256 (christopherthompson81/sortformer_parakeet_onnx).
+/// Not the int8 export (2.5.0/2.5.1): its convolutions are `ConvInteger` with
+/// int8 weights, which the ONNX Runtime bundled with ort 2.0.0-rc.10 cannot
+/// run ("Could not find an implementation for ConvInteger(10)"); fp32 runs
+/// everywhere and is ~3x faster on a CPU (RTF ~0.03).
 const REPO: &str = "christopherthompson81/sortformer_parakeet_onnx";
 const REVISION: &str = "434632d5eefa7ae83743cd02a8a26e64ce9fc1dd";
-const FILE: &str = "diar_streaming_sortformer_4spk-v2.1_int8.onnx";
-const SHA256: &str = "b269f59d84be02016eaac6ff6d7fe514f58b26954ea8a613d41e7a0230ff36bb";
-pub const SIZE: u64 = 141_011_330;
+const FILE: &str = "diar_streaming_sortformer_4spk-v2.1.onnx";
+const SHA256: &str = "d853932ae552342c48693b8d9dc02709f2d850c80a37cb5b422d14f599b7b8bc";
+pub const SIZE: u64 = 492_268_840;
+/// The int8 file 2.5.0/2.5.1 downloaded: unusable, deleted when seen.
+const UNUSABLE_FILES: [&str; 2] = [
+    "diar_streaming_sortformer_4spk-v2.1_int8.onnx",
+    "diar_streaming_sortformer_4spk-v2.1_int8.onnx.part",
+];
 const DIR: &str = "sortformer-4spk-v2.1";
 pub const LICENSE_URL: &str =
     "https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/";
@@ -36,7 +45,7 @@ pub const LICENSE_URL: &str =
 static DOWNLOADING: AtomicBool = AtomicBool::new(false);
 static CANCEL: AtomicBool = AtomicBool::new(false);
 static DOWNLOADED_BYTES: AtomicU64 = AtomicU64::new(0);
-/// One speakers job at a time (the model takes ~0.4 GB while it runs).
+/// One speakers job at a time (the model takes ~1 GB while it runs).
 static JOB: Mutex<()> = Mutex::new(());
 
 fn spec() -> HfFile {
@@ -77,7 +86,25 @@ pub struct LocalSpeakersStatus {
     pub license_url: String,
 }
 
+/// Removes the unusable int8 model an earlier version downloaded (only those
+/// two exact names, in the speakers model's own folder).
+fn remove_unusable(app: &AppHandle) {
+    let Ok(dir) = model_dir(app) else {
+        return;
+    };
+    for name in UNUSABLE_FILES {
+        let path = dir.join(name);
+        if path.exists() {
+            match std::fs::remove_file(&path) {
+                Ok(()) => info!("Speakers model: removed the unusable {name}"),
+                Err(e) => warn!("Speakers model: could not remove {name}: {e}"),
+            }
+        }
+    }
+}
+
 pub fn status(app: &AppHandle) -> LocalSpeakersStatus {
+    remove_unusable(app);
     LocalSpeakersStatus {
         downloaded: is_downloaded(app),
         downloading: DOWNLOADING.load(Ordering::SeqCst),
@@ -332,8 +359,10 @@ mod tests {
     }
 
     #[test]
-    fn the_pinned_file_is_the_int8_export() {
+    fn the_pinned_file_is_the_fp32_export() {
         assert_eq!(spec().size, SIZE);
+        assert!(!FILE.contains("int8"));
+        assert!(UNUSABLE_FILES.iter().all(|f| *f != FILE));
         assert_eq!(REVISION.len(), 40);
         assert_eq!(SHA256.len(), 64);
     }

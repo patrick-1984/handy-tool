@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.5.2] - 2026-10-30
+
+### Fixed
+
+- **Speakers on this PC failed with "Could not find an implementation for ConvInteger(10)".**
+  The 141 MB int8 export of the speakers model uses integer convolutions that the ONNX Runtime
+  bundled with Handy cannot run, so every speakers job on this PC failed. Handy now downloads the
+  full-precision export (492 MB, same pinned revision, checked by SHA-256), which runs everywhere
+  and is about three times faster on a CPU. The unusable 141 MB file is deleted automatically;
+  download the model again in Advanced settings › Speakers (or on the Models page).
+
 ## [2.5.1] - 2026-10-30
 
 ### Added

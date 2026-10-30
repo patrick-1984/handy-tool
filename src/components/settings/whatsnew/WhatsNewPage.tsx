@@ -37,6 +37,16 @@ interface Item {
  */
 const RELEASES: { version: string; items: Item[] }[] = [
   {
+    version: "2.5.2",
+    items: [
+      {
+        key: "speakersModelFix",
+        section: "speakers",
+        titleKeys: ["settings.speakers.model.name"],
+      },
+    ],
+  },
+  {
     version: "2.5.1",
     items: [
       {

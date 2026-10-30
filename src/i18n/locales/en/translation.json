@@ -2660,6 +2660,10 @@
         "title": "Show me how: History",
         "description": "A short guided tour of everything new in History below. Find it in Setups, or under \"Show me how\" on the History page."
       },
+      "speakersModelFix": {
+        "title": "Speakers on this PC work now",
+        "description": "The first speakers model could not run in Handy (\"Could not find an implementation for ConvInteger\"). Handy now uses the full-precision model (492 MB), which also runs about three times faster; download it again in Advanced settings › Speakers."
+      },
       "speakersPaste": {
         "title": "Speakers on this PC: in the model settings, and pasted",
         "description": "The speakers settings are now on the Models page and in Parakeet's settings too. New: \"Paste the text with speakers\" pastes the text with speakers after a take (it waits for them), like the STT server's \"What to paste\"."
