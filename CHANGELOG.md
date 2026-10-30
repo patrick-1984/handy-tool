@@ -10,6 +10,8 @@
   full-precision export (492 MB, same pinned revision, checked by SHA-256), which runs everywhere
   and is about three times faster on a CPU. The unusable 141 MB file is deleted automatically;
   download the model again in Advanced settings › Speakers (or on the Models page).
+- **"Paste the text with speakers" failed silently.** When the speakers could not be found before
+  the paste, the plain text was pasted with only a log line; it now also shows a warning.
 
 ## [2.5.1] - 2026-10-30
 

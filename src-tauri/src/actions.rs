@@ -462,12 +462,16 @@ async fn local_speakers_before_paste(
             );
             found.diarized
         }
+        // Said, not only logged (it used to fail silently take after take):
+        // the plain text is pasted and History can try again.
         Ok(Err(e)) => {
             warn!("Speakers before the paste: {e}; pasting the text");
+            let _ = app.emit("speakers-failed", e);
             None
         }
         Err(e) => {
             warn!("Speakers before the paste: {e}; pasting the text");
+            let _ = app.emit("speakers-failed", e.to_string());
             None
         }
     }
