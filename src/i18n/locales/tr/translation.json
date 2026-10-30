@@ -2276,7 +2276,11 @@
       },
       "afterTake": {
         "label": "Her kayıttan sonra konuşmacıları bul",
-        "description": "**Metin yapıştırıldıktan sonra** kayıt, konuşmacıları ayırt etmek için bu bilgisayarda yeniden okunur ve konuşmacılı metin Geçmiş'te kayda eklenir. Yapıştırma asla bunu beklemez. Bu bilgisayardaki modellerle çalışır (çevrimiçi modellerle değil)."
+        "description": "**Metin yapıştırıldıktan sonra** kayıt, konuşmacıları ayırt etmek için bu bilgisayarda yeniden okunur ve konuşmacılı metin Geçmiş'te kayda eklenir. Yapıştırma bunu yalnızca \"Metni konuşmacılarla yapıştır\" açıkken bekler. Bu bilgisayardaki modellerle çalışır (çevrimiçi modellerle değil)."
+      },
+      "paste": {
+        "label": "Metni konuşmacılarla yapıştır",
+        "description": "**Yapıştırma, konuşmacılar bu bilgisayarda bulunana kadar bekler**, ardından düz metin yerine konuşmacılı metni yapıştırır; STT sunucusunun \"Ne yapıştırılsın\" ayarı gibi. Bu, kaydın uzunluğunun yaklaşık onda biri kadar sürer, artı her konuşma sırasının yazıya dökülmesi. Tek ses varsa veya başarısız olursa düz metin yapıştırılır."
       },
       "source": {
         "title": "\"Konuşmacılarla yeniden transkribe et\" şunu kullanır",
@@ -2362,7 +2366,8 @@
     "recoverWithPasteLast": "Yapıştırmak için {{shortcut}} tuşuna basın.",
     "recoverFromHistory": "Kopyalamak için Ayarlar › Geçmiş'i açın.",
     "transcriptionFallback": "{{from}} bu kaydı yazıya dökemedi, bu yüzden {{to}} döktü",
-    "transcriptionIncomplete": "Bu kaydın bir kısmı yazıya dökülemedi (eksik parça: {{count}}), bu yüzden metin eksik. Kaydın tamamı Geçmiş'te: oradan yeniden yazıya dök."
+    "transcriptionIncomplete": "Bu kaydın bir kısmı yazıya dökülemedi (eksik parça: {{count}}), bu yüzden metin eksik. Kaydın tamamı Geçmiş'te: oradan yeniden yazıya dök.",
+    "speakersFailed": "Bu kaydın konuşmacıları bulunamadı, bu yüzden Geçmiş'te yalnızca metni var. Yeniden denemek için: Geçmiş › ⋯ › Konuşmacılarla yeniden transkribe et."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Windows Uygulama Denetimi, imzalı olmadığı için flm.exe dosyasını engelledi. NPU altyapısı kullanılamıyor. Farklı bir transkripsiyon modeli seçin.",
@@ -2654,6 +2659,18 @@
       "historyTour": {
         "title": "Bana göster: Geçmiş",
         "description": "Aşağıdaki tüm Geçmiş yeniliklerine kısa, rehberli bir tur. Kurulumlar'da veya Geçmiş sayfasındaki \"Bana göster\" altında bulabilirsiniz."
+      },
+      "speakersPaste": {
+        "title": "Bu bilgisayarda konuşmacılar: model ayarlarında ve yapıştırmada",
+        "description": "Konuşmacı ayarları artık Modeller sayfasında ve Parakeet'in ayarlarında da var. Yeni: \"Metni konuşmacılarla yapıştır\", bir kayıttan sonra konuşmacılı metni yapıştırır (onları bekler); STT sunucusunun \"Ne yapıştırılsın\" ayarı gibi."
+      },
+      "progressKept": {
+        "title": "Transkripsiyon hapı her zaman çalıştığını gösterir",
+        "description": "Handy artık her modelin ne kadar hızlı olduğunu yeniden başlatmalar ve güncellemeler boyunca hatırlıyor, bu yüzden yüzde ilk kayıttan itibaren görünür; bunu öğrenene kadar hapın etrafında bir ışık döner."
+      },
+      "historyFixes": {
+        "title": "Geçmiş: daha düzenli filtreler, sabit numaralar",
+        "description": "Tarih ve uzunluk filtreleri daha dar ve pencerenin içinde kalıyor. Birleştir'de her kayıt, seçtiğinizde aldığı numarayı, onları nasıl yeniden sıralarsanız sıralayın korur."
       },
       "localSpeakers": {
         "title": "Bu bilgisayarda konuşmacılar",

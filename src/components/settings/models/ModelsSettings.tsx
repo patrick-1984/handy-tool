@@ -13,6 +13,7 @@ import { SectionTitle } from "../../ui/SettingsGroup";
 import { useNavStore } from "../../../stores/navStore";
 import { modelConfigTarget, openModelConfig } from "./modelConfig";
 import { FallbackSettings } from "./FallbackSettings";
+import { SpeakersSection } from "../speakers/SpeakersSection";
 import { ParakeetVersions, isParakeetVersion } from "./ParakeetVersions";
 import { getTranslatedModelName } from "../../../lib/utils/modelTranslation";
 
@@ -431,6 +432,9 @@ export const ModelsSettings: React.FC = () => {
           {t("settings.models.noModelsMatch")}
         </div>
       )}
+      {/* Speakers on this PC: the local models' counterpart of the STT
+          server's speakers model (also under More settings › Speakers). */}
+      <SpeakersSection />
       <FallbackSettings />
       {parakeetOpen && (
         <ParakeetVersions onClose={() => setParakeetOpen(false)} />

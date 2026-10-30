@@ -42,7 +42,10 @@ export const modelConfigTarget = (
           titleKey: "settings.general.language.title",
         };
       }
-      return null;
+      // A model on this PC with nothing else to set: its settings are the
+      // speakers (found on this PC with the dictation model, like the STT
+      // server's speakers model).
+      return { section: "speakers", titleKey: "settings.speakers.title" };
   }
 };
 

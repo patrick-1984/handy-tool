@@ -2276,7 +2276,11 @@
       },
       "afterTake": {
         "label": "Xác định người nói sau mỗi bản ghi",
-        "description": "**Sau khi văn bản được dán**, bản ghi được đọc lại trên PC này để phân biệt người nói, và văn bản kèm người nói được thêm vào bản ghi đó trong Lịch sử. Việc dán không bao giờ phải chờ. Hoạt động với các mô hình trên PC này (không phải mô hình trực tuyến)."
+        "description": "**Sau khi văn bản được dán**, bản ghi được đọc lại trên PC này để phân biệt người nói, và văn bản kèm người nói được thêm vào bản ghi đó trong Lịch sử. Việc dán chỉ chờ khi bật \"Dán văn bản có người nói\". Hoạt động với các mô hình trên PC này (không phải mô hình trực tuyến)."
+      },
+      "paste": {
+        "label": "Dán văn bản có người nói",
+        "description": "**Việc dán sẽ chờ** cho đến khi xác định được người nói trên PC này, rồi dán văn bản có người nói thay cho văn bản thường, giống \"Dán nội dung gì\" của máy chủ STT. Việc này mất khoảng một phần mười độ dài bản ghi, cộng thêm thời gian phiên âm từng lượt nói. Nếu chỉ có một giọng, hoặc nếu thất bại, văn bản thường sẽ được dán."
       },
       "source": {
         "title": "\"Phiên âm lại theo người nói\" sử dụng",
@@ -2369,7 +2373,8 @@
     "recoverWithPasteLast": "Nhấn {{shortcut}} để dán.",
     "recoverFromHistory": "Mở Cài đặt › Lịch sử để sao chép.",
     "transcriptionFallback": "{{from}} không thể chép lời bản ghi này, nên {{to}} đã chép lời thay",
-    "transcriptionIncomplete": "Không thể chép lời một phần của bản ghi này (thiếu {{count}} đoạn), nên văn bản chưa đầy đủ. Toàn bộ bản ghi có trong Lịch sử: hãy chép lời lại ở đó."
+    "transcriptionIncomplete": "Không thể chép lời một phần của bản ghi này (thiếu {{count}} đoạn), nên văn bản chưa đầy đủ. Toàn bộ bản ghi có trong Lịch sử: hãy chép lời lại ở đó.",
+    "speakersFailed": "Không thể xác định người nói của bản ghi này, nên Lịch sử chỉ có văn bản của nó. Để thử lại: Lịch sử › ⋯ › Phiên âm lại theo người nói."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Kiểm soát ứng dụng Windows đã chặn flm.exe vì tệp này chưa được ký. Công cụ NPU không khả dụng. Hãy chọn một mô hình phiên âm khác.",
@@ -2654,6 +2659,18 @@
       "historyTour": {
         "title": "Chỉ cho tôi: Lịch sử",
         "description": "Một chuyến tham quan có hướng dẫn ngắn về mọi điểm mới trong Lịch sử bên dưới. Tìm nó trong Thiết lập, hoặc dưới \"Chỉ cho tôi\" trên trang Lịch sử."
+      },
+      "speakersPaste": {
+        "title": "Người nói trên PC này: trong cài đặt mô hình, và khi dán",
+        "description": "Cài đặt người nói giờ cũng có trên trang Mô hình và trong cài đặt của Parakeet. Mới: \"Dán văn bản có người nói\" dán văn bản có người nói sau một bản ghi (có chờ người nói), giống \"Dán nội dung gì\" của máy chủ STT."
+      },
+      "progressKept": {
+        "title": "Thanh phiên âm luôn cho thấy nó đang làm việc",
+        "description": "Handy giờ ghi nhớ tốc độ của từng mô hình qua các lần khởi động lại và cập nhật, nên phần trăm hiển thị ngay từ bản ghi đầu tiên; khi chưa biết, một vệt sáng chạy quanh thanh."
+      },
+      "historyFixes": {
+        "title": "Lịch sử: bộ lọc gọn hơn, số thứ tự ổn định",
+        "description": "Bộ lọc ngày và độ dài hẹp hơn và nằm gọn trong cửa sổ. Trong Ghép, mỗi bản ghi giữ số thứ tự nhận được khi bạn chọn, dù bạn sắp xếp lại thế nào."
       },
       "localSpeakers": {
         "title": "Người nói trên PC này",

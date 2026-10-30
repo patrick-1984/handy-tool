@@ -1,5 +1,28 @@
 # Changelog
 
+## [2.5.1] - 2026-10-30
+
+### Added
+
+- **Paste the text with speakers, on this PC.** Advanced settings › Speakers › "Paste the text
+  with speakers" (with "Find the speakers after each take") makes the paste wait for the speakers
+  and paste the text with speakers, like the STT server's "What to paste". One voice or a failure
+  pastes the plain text.
+- **Speakers in the model settings.** The speakers settings are also on the Models page and in
+  Parakeet's settings; a local model's gear opens them when it has nothing else to set.
+
+### Fixed
+
+- **The transcribing pill showed no progress after a restart or update.** Model timings were kept
+  in memory only, so the percentage and the progress line/ring stayed away until each model had
+  been timed again. They are now saved (`model_timings.json`), the STT server's speakers request
+  borrows the plain requests' estimate until it is timed itself, and until any estimate exists
+  a light circles the pill instead.
+- **History filters overflowed the window.** The date and length filters had a hidden 190 px
+  minimum width; they are narrower now and stay inside the row.
+- **Combine renumbered rows when reordered.** Each recording keeps the number it got when you
+  picked it (the one in the History list), so a reordered queue reads e.g. 3, 1, 2.
+
 ## [2.5.0] - 2026-10-30
 
 ### Added

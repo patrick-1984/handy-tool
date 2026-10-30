@@ -176,6 +176,14 @@ function App() {
           { description: e.payload.reason || undefined, duration: 12000 },
         ),
     );
+    // A take's speakers, asked for after its text was pasted, could not be
+    // found: History keeps the text alone and can try again.
+    const unlistenSpeakers = listen<string>("speakers-failed", (e) =>
+      toast.warning(t("toasts.speakersFailed"), {
+        description: e.payload || undefined,
+        duration: 12000,
+      }),
+    );
     // The dictation model failed (or did not answer the take's heartbeat) and
     // the next model in the failover order transcribed instead.
     const unlistenFallback = listen<{
@@ -196,6 +204,7 @@ function App() {
       unlistenPaste.then((f) => f());
       unlistenTranscribe.then((f) => f());
       unlistenIncomplete.then((f) => f());
+      unlistenSpeakers.then((f) => f());
       unlistenFallback.then((f) => f());
     };
   }, [t, pasteLastKey]);

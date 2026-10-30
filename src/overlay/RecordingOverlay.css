@@ -359,7 +359,10 @@
   .float-button {
     transition-duration: 0.01ms;
   }
-  .overlay-spinner {
+  .overlay-spinner,
+  .progress-lap,
+  .progress-lap::before,
+  .progress-lap::after {
     animation: none;
   }
 }

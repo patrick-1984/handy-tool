@@ -2276,7 +2276,11 @@
       },
       "afterTake": {
         "label": "Identificar a los hablantes después de cada toma",
-        "description": "**Después de pegar el texto**, la toma se vuelve a leer en este PC para distinguir a los hablantes, y el texto con hablantes se le añade en el Historial. El pegado nunca lo espera. Funciona con modelos de este PC (no con los modelos en línea)."
+        "description": "**Después de pegar el texto**, la toma se vuelve a leer en este PC para distinguir a los hablantes, y el texto con hablantes se le añade en el Historial. El pegado solo lo espera con «Pegar el texto con hablantes». Funciona con modelos de este PC (no con los modelos en línea)."
+      },
+      "paste": {
+        "label": "Pegar el texto con hablantes",
+        "description": "**El pegado espera** hasta que se identifican los hablantes en este PC y luego pega el texto con hablantes en lugar del texto sin hablantes, como «Qué pegar» del servidor STT. Tarda aproximadamente una décima parte de la duración de la toma más la transcripción de cada intervención. Con una sola voz, o si falla, se pega el texto sin hablantes."
       },
       "source": {
         "title": "\"Transcribir de nuevo con hablantes\" usa",
@@ -2369,7 +2373,8 @@
     "recoverWithPasteLast": "Pulsa {{shortcut}} para pegarlo.",
     "recoverFromHistory": "Abre Configuración › Historial para copiarlo.",
     "transcriptionFallback": "{{from}} no pudo transcribir esta toma, así que lo hizo {{to}}",
-    "transcriptionIncomplete": "Parte de esta toma no se pudo transcribir (fragmentos que faltan: {{count}}), así que el texto está incompleto. La grabación completa está en el Historial: vuelve a transcribirla allí."
+    "transcriptionIncomplete": "Parte de esta toma no se pudo transcribir (fragmentos que faltan: {{count}}), así que el texto está incompleto. La grabación completa está en el Historial: vuelve a transcribirla allí.",
+    "speakersFailed": "No se pudieron identificar los hablantes de esta toma, así que el Historial solo tiene su texto. Para volver a intentarlo: Historial › ⋯ › Transcribir de nuevo con hablantes."
   },
   "flm": {
     "windowsApplicationControlBlocked": "El Control de aplicaciones de Windows bloqueó flm.exe porque no está firmado. El motor NPU no está disponible. Elige otro modelo de transcripción.",
@@ -2654,6 +2659,18 @@
       "historyTour": {
         "title": "Muéstrame cómo: Historial",
         "description": "Un breve recorrido guiado por todas las novedades del Historial que verás abajo. Lo encontrarás en Configuraciones o en «Muéstrame cómo» en la página Historial."
+      },
+      "speakersPaste": {
+        "title": "Hablantes en este PC: en los ajustes del modelo, y pegados",
+        "description": "Los ajustes de hablantes ahora también están en la página Modelos y en los ajustes de Parakeet. Novedad: «Pegar el texto con hablantes» pega el texto con hablantes después de una toma (los espera), como «Qué pegar» del servidor STT."
+      },
+      "progressKept": {
+        "title": "La píldora de transcripción siempre muestra que está trabajando",
+        "description": "Handy ahora recuerda lo rápido que es cada modelo entre reinicios y actualizaciones, así que el porcentaje aparece desde la primera toma; mientras no lo sabe, una luz recorre la píldora."
+      },
+      "historyFixes": {
+        "title": "Historial: filtros más ordenados, números estables",
+        "description": "Los filtros de fecha y duración son más estrechos y no se salen de la ventana. En Combinar, cada grabación conserva el número que recibió al elegirla, aunque las reordenes."
       },
       "localSpeakers": {
         "title": "Hablantes en este PC",

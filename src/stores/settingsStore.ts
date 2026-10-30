@@ -357,6 +357,8 @@ const settingUpdaters: {
     commands.changeSpeakersSetting("speakers_source", String(value)),
   local_speakers_after_take: (value) =>
     commands.changeSpeakersSetting("local_speakers_after_take", String(value)),
+  local_speakers_paste: (value) =>
+    commands.changeSpeakersSetting("local_speakers_paste", String(value)),
   combine_separator: (value) =>
     commands.changeCombineSetting("combine_separator", String(value)),
   combine_prefix_enabled: (value) =>

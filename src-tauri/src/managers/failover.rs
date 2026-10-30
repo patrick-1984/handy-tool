@@ -141,6 +141,17 @@ fn probe(url: &str, key: &str) -> Result<(), String> {
 }
 
 /// The current take's number (capture it where the take's work is set up).
+/// The stop-time retry of a take's failed pieces asks the dictation model
+/// again: a failure during recording marked it down, but it may be back by
+/// now (and the fallbacks may be the ones down). Marked down again if it
+/// fails again.
+pub fn retry_primary(take: u64) {
+    let mut st = state();
+    if st.take == take && st.primary_up == Some(false) {
+        st.primary_up = None;
+    }
+}
+
 pub fn current_take() -> u64 {
     state().take
 }

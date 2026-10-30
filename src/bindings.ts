@@ -3535,6 +3535,11 @@ export type AppSettings = {
   openrouter_transcription_translate_to_english?: boolean;
   speakers_source?: SpeakersSource;
   local_speakers_after_take?: boolean;
+  /**
+   * With `local_speakers_after_take`: paste the text with speakers, which
+   * waits for them (like the STT server's "What to paste"). Off by default.
+   */
+  local_speakers_paste?: boolean;
   combine_keep_take_affixes?: boolean;
   combine_separator?: CombineSeparator;
   combine_prefix_enabled?: boolean;

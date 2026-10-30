@@ -505,11 +505,16 @@ const RecordingOverlay: React.FC = () => {
             />
           </div>
         )}
-      {progressStyle === "lap" && state === "transcribing" && (
-        // Progress Style: lap - a thin light with a fading tail circling the
-        // edge, one lap every 1.6 s; the figure is in the words.
-        <div className="progress-lap" aria-hidden />
-      )}
+      {state === "transcribing" &&
+        (progressStyle === "lap" ||
+          // Line and ring need a figure; until there is one (no timings for
+          // this model yet, or the first half second) the lap shows it working.
+          (shownProgress === null &&
+            (progressStyle === "line" || progressStyle === "ring"))) && (
+          // Progress Style: lap - a thin light with a fading tail circling the
+          // edge, one lap every 1.6 s; the figure is in the words.
+          <div className="progress-lap" aria-hidden />
+        )}
     </div>
   );
 };

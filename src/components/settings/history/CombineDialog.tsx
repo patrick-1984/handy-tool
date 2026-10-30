@@ -242,8 +242,10 @@ export const CombineDialog: React.FC<Props> = ({
                 >
                   <GripVertical className="w-4 h-4" />
                 </button>
+                {/* The number it has in the History list (the click order),
+                    so a moved row keeps it: 3, 1, 2 after rearranging. */}
                 <span className="mt-0.5 w-5 shrink-0 text-xs font-semibold tabular-nums text-accent-text text-end">
-                  {index + 1}.
+                  {ids.indexOf(id) + 1}.
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs text-text-secondary tabular-nums">

@@ -396,9 +396,81 @@ fn spawn_local_speakers_after_take(
                 }
                 None => debug!("Speakers for {file_name}: one voice"),
             },
-            Err(e) => warn!("Speakers for {file_name}: {e}"),
+            Err(e) => {
+                warn!("Speakers for {file_name}: {e}");
+                let _ = app.emit("speakers-failed", e);
+            }
         }
     });
+}
+
+/// Speakers › "after each take" with "Paste the text with speakers", on this
+/// PC: the take's speakers BEFORE delivery, so the text with speakers is what
+/// gets pasted (like the STT server's "What to paste"). `audio` is the take
+/// (or None: read back from its saved recording). None = not asked for, not
+/// possible (online model, model not downloaded), one voice, or it failed -
+/// the plain text is pasted then, and History can still add speakers later.
+async fn local_speakers_before_paste(
+    app: &AppHandle,
+    settings: &AppSettings,
+    text: &str,
+    audio: Option<Vec<f32>>,
+    file_name: &str,
+) -> Option<String> {
+    if !(settings.local_speakers_after_take && settings.local_speakers_paste)
+        || text.trim().is_empty()
+        || !crate::diarize::is_downloaded(app)
+    {
+        return None;
+    }
+    let model = settings.selected_model.clone();
+    let info = app
+        .state::<Arc<crate::managers::model::ModelManager>>()
+        .get_model_info(&model)
+        .filter(|m| m.is_downloaded && !m.engine_type.is_online())?;
+    let external = info.engine_type.is_external();
+    let app_bg = app.clone();
+    let file_name = file_name.to_string();
+    let started = Instant::now();
+    // The pill says it is still working (its percentage was the text's).
+    show_processing_overlay(app);
+    let result = tauri::async_runtime::spawn_blocking(move || {
+        let samples = match audio {
+            Some(samples) => samples,
+            None => {
+                let dir =
+                    crate::portable::resolve_app_data_dir(&app_bg).map_err(|e| e.to_string())?;
+                crate::audio_toolkit::audio::decode_audio_file(
+                    &dir.join("recordings").join(&file_name),
+                )
+                .map_err(|e| e.to_string())?
+            }
+        };
+        crate::commands::files::local_speakers(&app_bg, &samples, &model, external)
+    })
+    .await;
+    match result {
+        Ok(Ok(found)) => {
+            info!(
+                "Speakers before the paste: {} in {:.1} s",
+                if found.diarized.is_some() {
+                    "found"
+                } else {
+                    "one voice"
+                },
+                started.elapsed().as_secs_f32()
+            );
+            found.diarized
+        }
+        Ok(Err(e)) => {
+            warn!("Speakers before the paste: {e}; pasting the text");
+            None
+        }
+        Err(e) => {
+            warn!("Speakers before the paste: {e}; pasting the text");
+            None
+        }
+    }
 }
 
 static CHUNKED_SESSION: Lazy<Mutex<Option<Arc<ChunkedSession>>>> = Lazy::new(|| Mutex::new(None));
@@ -2030,6 +2102,10 @@ impl ShortcutAction for TranscribeAction {
                 play_feedback_sound(&ah, SoundType::Stop);
 
                 let mut raw_text = String::new();
+                // A piece still being transcribed after the backstop holds the
+                // transcription lock: nothing else may wait for it (the
+                // speakers before the paste are skipped).
+                let mut pieces_unfinished = false;
                 let mut produced_audio = false;
                 let mut total_samples: u64 = 0;
                 // Set (from inside the session scope) when a segment's
@@ -2110,6 +2186,7 @@ impl ShortcutAction for TranscribeAction {
                             total
                         );
                     }
+                    pieces_unfinished = done < total;
                     total_samples = session.total_samples.load(Ordering::SeqCst);
                     if session.deferred {
                         // Deferred (OpenRouter): all chunk PCM is now buffered —
@@ -2174,6 +2251,10 @@ impl ShortcutAction for TranscribeAction {
                             let deadline = Duration::from_secs_f32(60.0 + failed_secs);
                             let (rs, rah, rtm) =
                                 (Arc::clone(&session), ah.clone(), Arc::clone(&tm));
+                            crate::managers::failover::retry_primary(take_stop);
+                            // A new phase: the pill's figure starts again
+                            // (spinner and circling light until it has one).
+                            show_transcribing_overlay(&ah);
                             let retry = tauri::async_runtime::spawn_blocking(move || {
                                 let _serial = CHUNK_TRANSCRIBE_LOCK
                                     .lock()
@@ -2225,15 +2306,19 @@ impl ShortcutAction for TranscribeAction {
                         if whole_needed {
                             let full = session.assemble_pcm();
                             if !full.is_empty() {
+                                // A new phase: the figure starts from 0 again
+                                // instead of waiting to pass the pieces' one.
+                                show_transcribing_overlay(&ah);
                                 let progress = ProgressTicker::start(
                                     &ah,
                                     crate::managers::transcription::running_transcription_remaining,
                                 );
-                                // Bounded like the retries: generous for the
-                                // take's length, never forever.
-                                let deadline = Duration::from_secs_f32(
-                                    120.0 + full.len() as f32 / 16_000.0 * 0.5,
-                                );
+                                // Bounded like the retries, never forever, but
+                                // never shorter than the request's own HTTP
+                                // timeout (120 s + the take's length): an answer
+                                // the server still gives in time is kept.
+                                let deadline =
+                                    Duration::from_secs_f32(125.0 + full.len() as f32 / 16_000.0);
                                 let (wah, wtm) = (ah.clone(), Arc::clone(&tm));
                                 let whole = tauri::async_runtime::spawn_blocking(move || {
                                     let _serial = CHUNK_TRANSCRIBE_LOCK
@@ -2353,15 +2438,31 @@ impl ShortcutAction for TranscribeAction {
                 // A Custom STT server take: its speaker text (if any) for History,
                 // and pasted instead of the text when that is the choice.
                 let stt_take = settings.selected_model == "stt-server";
-                let speaker_text = if stt_take && !whole_timed_out {
-                    crate::managers::stt_server::take_session_diarized(take_stop)
+                // Speakers on this PC, pasted: found now, before delivery
+                // (the background job after the paste is then not needed).
+                let local_speaker_text = if take_generation_current(take_gen) && !pieces_unfinished
+                {
+                    local_speakers_before_paste(
+                        &ah,
+                        &settings,
+                        &raw_text,
+                        None,
+                        &format!("handy-{}.opus", ts),
+                    )
+                    .await
                 } else {
                     None
                 };
-                let paste_speakers = stt_take
+                let speaker_text = if stt_take && !whole_timed_out {
+                    crate::managers::stt_server::take_session_diarized(take_stop)
+                } else {
+                    local_speaker_text.clone()
+                };
+                let paste_speakers = (stt_take
                     && settings.stt_server_speakers
                     && settings.stt_server_paste == crate::settings::SttServerPaste::Speakers
-                    && speaker_text.is_some();
+                    && speaker_text.is_some())
+                    || local_speaker_text.is_some();
                 let base_text = if paste_speakers {
                     speaker_text.clone().unwrap_or_default()
                 } else {
@@ -2474,6 +2575,7 @@ impl ShortcutAction for TranscribeAction {
                     // Speakers › "after each take", on this PC: the saved
                     // recording is read back in the background.
                     if settings.local_speakers_after_take
+                        && !settings.local_speakers_paste
                         && speakers_later.is_none()
                         && opus_ok
                         && !(stt_take && settings.stt_server_speakers)
@@ -2496,6 +2598,7 @@ impl ShortcutAction for TranscribeAction {
                         let settings_bg = get_settings(&ah);
                         let file_name = format!("handy-{}.opus", ts);
                         let text_bg = raw_text.clone();
+                        let ah_bg = ah.clone();
                         crate::commands::files::BACKGROUND_SPEAKERS.fetch_add(1, Ordering::SeqCst);
                         std::thread::spawn(move || {
                             // Released however the thread ends (even a panic).
@@ -2518,9 +2621,14 @@ impl ShortcutAction for TranscribeAction {
                                     }
                                     None => debug!("Speakers for {file_name}: one voice"),
                                 },
-                                Err(e) => warn!(
-                                    "STT server: the take's speakers request failed ({e}); keeping the text"
-                                ),
+                                Err(e) => {
+                                    warn!(
+                                        "STT server: the take's speakers request failed ({e}); keeping the text"
+                                    );
+                                    // Said, not only logged: History has the
+                                    // text alone and can try again.
+                                    let _ = ah_bg.emit("speakers-failed", e.to_string());
+                                }
                             }
                         });
                     }
@@ -2827,16 +2935,34 @@ impl ShortcutAction for TranscribeAction {
                             // speaker text when that is the choice (History
                             // keeps both), inside the server's own affixes.
                             let stt_take = settings.selected_model == "stt-server";
-                            let speaker_text = if stt_take {
-                                crate::managers::stt_server::take_session_diarized(take_stop)
+                            // Speakers on this PC, pasted: found now, before
+                            // delivery, from the take's audio in memory.
+                            let local_speaker_text = if take_generation_current(take_gen)
+                                && settings.local_speakers_after_take
+                                && settings.local_speakers_paste
+                            {
+                                local_speakers_before_paste(
+                                    &ah,
+                                    &settings,
+                                    &transcription,
+                                    Some(samples_clone.clone()),
+                                    "",
+                                )
+                                .await
                             } else {
                                 None
                             };
-                            let paste_speakers = stt_take
+                            let speaker_text = if stt_take {
+                                crate::managers::stt_server::take_session_diarized(take_stop)
+                            } else {
+                                local_speaker_text.clone()
+                            };
+                            let paste_speakers = (stt_take
                                 && settings.stt_server_speakers
                                 && settings.stt_server_paste
                                     == crate::settings::SttServerPaste::Speakers
-                                && speaker_text.is_some();
+                                && speaker_text.is_some())
+                                || local_speaker_text.is_some();
                             let base_text = if paste_speakers {
                                 speaker_text.clone().unwrap_or_default()
                             } else {
@@ -2924,6 +3050,7 @@ impl ShortcutAction for TranscribeAction {
                             // Speakers › "after each take", on this PC.
                             if let Some(file_name) = saved.filter(|_| {
                                 settings.local_speakers_after_take
+                                    && !settings.local_speakers_paste
                                     && !(stt_take && settings.stt_server_speakers)
                                     && !transcription.trim().is_empty()
                                     && take_generation_current(take_gen)

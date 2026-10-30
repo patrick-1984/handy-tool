@@ -2276,7 +2276,11 @@
       },
       "afterTake": {
         "label": "Identifier les locuteurs après chaque prise",
-        "description": "**Une fois le texte collé**, la prise est relue sur ce PC pour distinguer les locuteurs, et le texte avec les locuteurs y est ajouté dans l'Historique. Le collage ne l'attend jamais. Fonctionne avec les modèles de ce PC (pas avec les modèles en ligne)."
+        "description": "**Une fois le texte collé**, la prise est relue sur ce PC pour distinguer les locuteurs, et le texte avec les locuteurs y est ajouté dans l'Historique. Le collage ne l'attend qu'avec « Coller le texte avec les locuteurs ». Fonctionne avec les modèles de ce PC (pas avec les modèles en ligne)."
+      },
+      "paste": {
+        "label": "Coller le texte avec les locuteurs",
+        "description": "**Le collage attend** que les locuteurs soient identifiés sur ce PC, puis colle le texte avec les locuteurs au lieu du texte seul, comme « Ce qui est collé » du serveur STT. Cela prend environ un dixième de la durée de la prise, plus la transcription de chaque tour de parole. Avec une seule voix, ou en cas d'échec, le texte seul est collé."
       },
       "source": {
         "title": "\"Transcrire à nouveau avec les locuteurs\" utilise",
@@ -2369,7 +2373,8 @@
     "recoverWithPasteLast": "Appuyez sur {{shortcut}} pour le coller.",
     "recoverFromHistory": "Ouvrez Paramètres › Historique pour le copier.",
     "transcriptionFallback": "{{from}} n'a pas pu transcrire cette prise, {{to}} l'a donc fait",
-    "transcriptionIncomplete": "Une partie de cette prise n'a pas pu être transcrite (morceaux manquants : {{count}}) : le texte est incomplet. L'enregistrement complet est dans l'Historique : transcrivez-le à nouveau depuis là."
+    "transcriptionIncomplete": "Une partie de cette prise n'a pas pu être transcrite (morceaux manquants : {{count}}) : le texte est incomplet. L'enregistrement complet est dans l'Historique : transcrivez-le à nouveau depuis là.",
+    "speakersFailed": "Les locuteurs de cette prise n'ont pas pu être identifiés : l'Historique n'en contient que le texte. Pour réessayer : Historique › ⋯ › Transcrire à nouveau avec les locuteurs."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Le contrôle des applications Windows a bloqué flm.exe car il n'est pas signé. Le moteur NPU est indisponible. Choisissez un autre modèle de transcription.",
@@ -2654,6 +2659,18 @@
       "historyTour": {
         "title": "Montrez-moi comment : Historique",
         "description": "Une courte visite guidée de toutes les nouveautés de l'Historique ci-dessous. Elle se trouve dans Configurations, ou sous « Montrez-moi comment » sur la page Historique."
+      },
+      "speakersPaste": {
+        "title": "Locuteurs sur ce PC : dans les paramètres du modèle, et collés",
+        "description": "Les paramètres des locuteurs sont désormais aussi sur la page Modèles et dans les paramètres de Parakeet. Nouveau : « Coller le texte avec les locuteurs » colle le texte avec les locuteurs après une prise (il les attend), comme « Ce qui est collé » du serveur STT."
+      },
+      "progressKept": {
+        "title": "La pilule de transcription montre toujours qu'elle travaille",
+        "description": "Handy mémorise désormais la vitesse de chaque modèle d'un redémarrage et d'une mise à jour à l'autre, si bien que le pourcentage s'affiche dès la première prise ; tant qu'il ne la connaît pas, une lumière fait le tour de la pilule."
+      },
+      "historyFixes": {
+        "title": "Historique : filtres plus nets, numéros stables",
+        "description": "Les filtres de date et de durée sont plus étroits et restent dans la fenêtre. Dans Combiner, chaque enregistrement garde le numéro reçu quand vous l'avez choisi, quel que soit l'ordre que vous leur donnez."
       },
       "localSpeakers": {
         "title": "Locuteurs sur ce PC",
