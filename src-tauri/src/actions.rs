@@ -2076,7 +2076,12 @@ impl ShortcutAction for TranscribeAction {
                             .lock()
                             .map(|f| f.iter().copied().collect())
                             .unwrap_or_default();
+                        // Past the wait's backstop a worker may still hold the
+                        // engine lock: no recovery that would wait on it (the
+                        // gap is reported instead).
+                        let backstop_hit = done < total;
                         if session.keep_pcm
+                            && !backstop_hit
                             && !failed.is_empty()
                             && take_generation_current(take_gen)
                         {
@@ -2112,6 +2117,7 @@ impl ShortcutAction for TranscribeAction {
                         // also brings who said what (kept for this take).
                         // Only a speakers take keeps every piece's PCM.
                         let whole_needed = session.speakers
+                            && !backstop_hit
                             && take_generation_current(take_gen)
                             && (gap > 0 || paste_waits_for_speakers || raw_text.trim().is_empty());
                         let mut whole_error: Option<String> = None;
