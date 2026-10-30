@@ -72,7 +72,8 @@
     "advancedSettings": "고급 설정",
     "moreTools": "추가 도구",
     "sttServer": "STT 서버",
-    "combine": "녹음 합치기"
+    "combine": "녹음 합치기",
+    "speakers": "화자"
   },
   "helpMode": {
     "button": "도움말 모드: 설정 위에 마우스를 올리면 설명이 표시됩니다",
@@ -512,7 +513,7 @@
           },
           "speakers": {
             "title": "화자 구분하여 다시 전사",
-            "text": "녹음 전체를 STT 서버로 보내 화자를 구분합니다. 빠진 것이 있으면 무엇인지 알려 주고 STT 서버 설정을 엽니다."
+            "text": "이 PC(고급 설정 › 화자) 또는 STT 서버에서 화자를 구분합니다. 빠진 것이 있으면 무엇인지 알려 주고 해당 설정을 엽니다."
           },
           "delete": {
             "title": "삭제",
@@ -1771,7 +1772,7 @@
         },
         "speakers": {
           "label": "화자 구분하여 다시 전사",
-          "hint": "화자를 구분하기 위해 녹음 전체를 STT 서버로 보냅니다."
+          "hint": "화자를 구분하고(이 PC 또는 STT 서버에서) 녹음을 다시 전사합니다."
         },
         "name": {
           "label": "이름 지정…",
@@ -1793,8 +1794,12 @@
           "notSet": "화자를 구분하려면 STT 서버가 필요합니다. 고급 설정 › STT 서버에서 주소를 설정하세요.",
           "modelNotSet": "화자 구분 모델이 선택되지 않았습니다. 고급 설정 › STT 서버에서 선택하세요.",
           "unreachable": "STT 서버가 응답하지 않았습니다: {{error}}. 고급 설정 › STT 서버에서 주소를 확인하세요.",
-          "modelMissing": "STT 서버에 \"{{model}}\" 모델이 없습니다(사용 가능: {{available}}). 고급 설정 › STT 서버에서 화자 구분 모델을 선택하세요."
-        }
+          "modelMissing": "STT 서버에 \"{{model}}\" 모델이 없습니다(사용 가능: {{available}}). 고급 설정 › STT 서버에서 화자 구분 모델을 선택하세요.",
+          "speakersNotSet": "화자를 구분하려면 이 PC의 화자 모델이나 STT 서버가 필요합니다. 고급 설정 › 화자에서 모델을 다운로드하세요.",
+          "localNotDownloaded": "화자 모델이 아직 이 PC에 없습니다. 고급 설정 › 화자에서 다운로드하세요.",
+          "needsLocalModel": "이 PC에서는 화자의 말을 받아쓰기 모델로 받아쓰는데, 지금 모델은 온라인 모델입니다. 받아쓰기에 이 PC의 모델을 선택하거나 고급 설정 › 화자에서 STT 서버를 선택하세요."
+        },
+        "openSpeakers": "화자 설정"
       },
       "name": {
         "placeholder": "이 녹음의 이름 입력",
@@ -2253,6 +2258,35 @@
         "title": "합친 텍스트 앞뒤",
         "description": "합친 텍스트에 붙일 나만의 시작과 끝, 예: \"회의 메모:\"."
       }
+    },
+    "speakers": {
+      "title": "화자",
+      "description": "녹음에서 누가 무엇을 말했는지 구분합니다. 한 번만 다운로드하면 되는 화자 모델로 이 PC에서, 또는 STT 서버에서 구분합니다.",
+      "model": {
+        "name": "화자 모델 (NVIDIA Sortformer v2.1)",
+        "description": "STT 서버가 사용하는 모델을 이 PC의 프로세서에서 실행합니다. 최대 4명의 화자를 구분하며, 어떤 데이터도 PC 밖으로 나가지 않습니다. {{size}} MB 일회성 다운로드입니다.",
+        "license": "NVIDIA Open Model License",
+        "download": "다운로드 ({{size}} MB)",
+        "cancel": "취소",
+        "downloaded": "다운로드됨",
+        "delete": "삭제",
+        "deleteConfirm": "이 PC에서 화자 모델을 삭제할까요? 언제든지 다시 다운로드할 수 있습니다.",
+        "downloadFailed": "화자 모델을 다운로드할 수 없습니다: {{error}}",
+        "ready": "화자 모델이 준비되었습니다."
+      },
+      "afterTake": {
+        "label": "녹음할 때마다 화자 구분",
+        "description": "**텍스트를 붙여 넣은 후** 이 PC에서 녹음을 다시 읽어 화자를 구분하고, 화자가 표시된 텍스트를 히스토리의 해당 녹음에 추가합니다. 붙여넣기는 이를 기다리지 않습니다. 이 PC의 모델에서 작동합니다(온라인 모델 제외)."
+      },
+      "source": {
+        "title": "\"화자 구분하여 다시 전사\" 사용 위치",
+        "description": "히스토리에서 화자를 구분하는 위치입니다. 자동: 화자 모델이 다운로드되어 있으면 이 PC, 아니면 STT 서버.",
+        "options": {
+          "auto": "자동",
+          "local": "이 PC",
+          "stt_server": "STT 서버"
+        }
+      }
     }
   },
   "common": {
@@ -2620,6 +2654,10 @@
       "historyTour": {
         "title": "방법 보기: 히스토리",
         "description": "아래 히스토리의 모든 새 기능을 짧게 안내하는 가이드 투어입니다. 설정 안내에서 또는 히스토리 페이지의 '방법 보기'에서 찾을 수 있습니다."
+      },
+      "localSpeakers": {
+        "title": "이 PC에서 화자 구분",
+        "description": "고급 설정 › 화자에서 NVIDIA의 화자 모델(STT 서버가 사용하는 모델)을 다운로드하면 서버 없이 누가 무엇을 말했는지 구분할 수 있습니다. 히스토리에서, 또는 녹음할 때마다."
       }
     },
     "installed": "설치됨"

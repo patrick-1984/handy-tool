@@ -72,7 +72,8 @@
     "advancedSettings": "Configurações avançadas",
     "moreTools": "Mais ferramentas",
     "sttServer": "Servidor STT",
-    "combine": "Combinar gravações"
+    "combine": "Combinar gravações",
+    "speakers": "Falantes"
   },
   "helpMode": {
     "button": "Modo de ajuda: aponte para uma configuração para ver o que ela faz",
@@ -512,7 +513,7 @@
           },
           "speakers": {
             "title": "Transcrever novamente com falantes",
-            "text": "Envia a gravação inteira ao seu servidor STT, que distingue os falantes. Se faltar algo, ele avisa o que é e abre as configurações do servidor STT."
+            "text": "Distingue os falantes, neste PC (Configurações avançadas › Falantes) ou no seu servidor STT. Se faltar algo, ele avisa o que é e abre as configurações certas."
           },
           "delete": {
             "title": "Excluir",
@@ -1771,7 +1772,7 @@
         },
         "speakers": {
           "label": "Transcrever novamente com falantes",
-          "hint": "Envia a gravação inteira ao seu servidor STT para distinguir os falantes."
+          "hint": "Distingue os falantes (neste PC ou no seu servidor STT) e transcreve a gravação novamente."
         },
         "name": {
           "label": "Nomear…",
@@ -1793,8 +1794,12 @@
           "notSet": "Distinguir falantes requer um servidor STT. Defina o endereço dele em Configurações avançadas › Servidor STT.",
           "modelNotSet": "Nenhum modelo com falantes foi escolhido. Escolha um em Configurações avançadas › Servidor STT.",
           "unreachable": "O servidor STT não respondeu: {{error}}. Verifique o endereço dele em Configurações avançadas › Servidor STT.",
-          "modelMissing": "O servidor STT não tem o modelo \"{{model}}\" (disponíveis: {{available}}). Escolha o modelo com falantes dele em Configurações avançadas › Servidor STT."
-        }
+          "modelMissing": "O servidor STT não tem o modelo \"{{model}}\" (disponíveis: {{available}}). Escolha o modelo com falantes dele em Configurações avançadas › Servidor STT.",
+          "speakersNotSet": "Para distinguir os falantes é preciso o modelo de falantes neste PC ou um servidor STT. Baixe o modelo em Configurações avançadas › Falantes.",
+          "localNotDownloaded": "O modelo de falantes ainda não está neste PC. Baixe-o em Configurações avançadas › Falantes.",
+          "needsLocalModel": "Neste PC, as palavras dos falantes são transcritas com o seu modelo de ditado, que é um modelo online. Escolha um modelo neste PC para ditar ou o servidor STT em Configurações avançadas › Falantes."
+        },
+        "openSpeakers": "Configurações de falantes"
       },
       "name": {
         "placeholder": "Dê um nome a esta gravação",
@@ -2253,6 +2258,35 @@
         "title": "Em volta do texto combinado",
         "description": "Seu próprio início e fim para o texto combinado, por ex. \"Notas da reunião:\"."
       }
+    },
+    "speakers": {
+      "title": "Falantes",
+      "description": "Saiba quem disse o quê em uma gravação: neste PC, com um modelo de falantes que você baixa uma única vez, ou no seu servidor STT.",
+      "model": {
+        "name": "Modelo de falantes (NVIDIA Sortformer v2.1)",
+        "description": "O modelo que o servidor STT usa, executado no processador deste PC: até quatro falantes, nada sai do PC. Um download único de {{size}} MB.",
+        "license": "NVIDIA Open Model License",
+        "download": "Baixar ({{size}} MB)",
+        "cancel": "Cancelar",
+        "downloaded": "Baixado",
+        "delete": "Excluir",
+        "deleteConfirm": "Excluir o modelo de falantes deste PC? Você pode baixá-lo novamente a qualquer momento.",
+        "downloadFailed": "Não foi possível baixar o modelo de falantes: {{error}}",
+        "ready": "O modelo de falantes está pronto."
+      },
+      "afterTake": {
+        "label": "Identificar os falantes após cada gravação",
+        "description": "**Depois que o texto é colado**, a gravação é lida novamente neste PC para distinguir os falantes, e o texto com falantes é adicionado a ela no Histórico. A colagem nunca espera por isso. Funciona com modelos deste PC (não com os online)."
+      },
+      "source": {
+        "title": "\"Transcrever novamente com falantes\" usa",
+        "description": "Onde o Histórico distingue os falantes. Automático: este PC assim que o modelo de falantes for baixado; caso contrário, o servidor STT.",
+        "options": {
+          "auto": "Automático",
+          "local": "Este PC",
+          "stt_server": "Servidor STT"
+        }
+      }
     }
   },
   "common": {
@@ -2620,6 +2654,10 @@
       "historyTour": {
         "title": "Mostre-me como: Histórico",
         "description": "Um tour guiado rápido por todas as novidades do Histórico abaixo. Encontre-o em Configurações ou em \"Mostre-me como\" na página Histórico."
+      },
+      "localSpeakers": {
+        "title": "Falantes neste PC",
+        "description": "Baixe o modelo de falantes da NVIDIA (o mesmo que o servidor STT usa) em Configurações avançadas › Falantes e saiba quem disse o quê sem servidor: no Histórico ou após cada gravação."
       }
     },
     "installed": "Instalada"

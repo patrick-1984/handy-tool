@@ -72,7 +72,8 @@
     "advancedSettings": "Pokročilá nastavení",
     "moreTools": "Další nástroje",
     "sttServer": "Server STT",
-    "combine": "Spojení nahrávek"
+    "combine": "Spojení nahrávek",
+    "speakers": "Mluvčí"
   },
   "helpMode": {
     "button": "Režim nápovědy: najeďte na nastavení a uvidíte, co dělá",
@@ -512,7 +513,7 @@
           },
           "speakers": {
             "title": "Přepsat znovu s mluvčími",
-            "text": "Odešle celou nahrávku na váš STT server, který rozliší mluvčí. Pokud něco chybí, řekne co a otevře nastavení STT serveru."
+            "text": "Rozliší mluvčí na tomto PC (Pokročilá nastavení › Mluvčí) nebo na vašem STT serveru. Pokud něco chybí, řekne co a otevře správné nastavení."
           },
           "delete": {
             "title": "Smazat",
@@ -1771,7 +1772,7 @@
         },
         "speakers": {
           "label": "Přepsat znovu s mluvčími",
-          "hint": "Odešle celou nahrávku na váš STT server, aby rozlišil mluvčí."
+          "hint": "Rozliší mluvčí (na tomto PC nebo na vašem STT serveru) a nahrávku znovu přepíše."
         },
         "name": {
           "label": "Pojmenovat…",
@@ -1793,8 +1794,12 @@
           "notSet": "Rozlišení mluvčích vyžaduje server STT. Nastavte jeho adresu v Pokročilá nastavení › Server STT.",
           "modelNotSet": "Není vybrán žádný model s mluvčími. Vyberte ho v Pokročilá nastavení › Server STT.",
           "unreachable": "Server STT neodpověděl: {{error}}. Zkontrolujte jeho adresu v Pokročilá nastavení › Server STT.",
-          "modelMissing": "Server STT nemá model \"{{model}}\" (má: {{available}}). Vyberte jeho model s mluvčími v Pokročilá nastavení › Server STT."
-        }
+          "modelMissing": "Server STT nemá model \"{{model}}\" (má: {{available}}). Vyberte jeho model s mluvčími v Pokročilá nastavení › Server STT.",
+          "speakersNotSet": "K rozlišení mluvčích je potřeba model mluvčích na tomto PC nebo STT server. Stáhněte model v Pokročilá nastavení › Mluvčí.",
+          "localNotDownloaded": "Model mluvčích na tomto PC zatím není. Stáhněte ho v Pokročilá nastavení › Mluvčí.",
+          "needsLocalModel": "Na tomto PC se slova mluvčích přepisují vaším modelem pro diktování, a ten je online. Vyberte pro diktování model na tomto PC, nebo server STT v Pokročilá nastavení › Mluvčí."
+        },
+        "openSpeakers": "Nastavení mluvčích"
       },
       "name": {
         "placeholder": "Pojmenujte tuto nahrávku",
@@ -2253,6 +2258,35 @@
         "title": "Kolem spojeného textu",
         "description": "Vlastní začátek a konec spojeného textu, např. \"Poznámky ze schůzky:\"."
       }
+    },
+    "speakers": {
+      "title": "Mluvčí",
+      "description": "Rozpoznejte, kdo co v nahrávce řekl: na tomto PC s modelem mluvčích, který stáhnete jednou, nebo na vašem STT serveru.",
+      "model": {
+        "name": "Model mluvčích (NVIDIA Sortformer v2.1)",
+        "description": "Model, který používá STT server, spuštěný na procesoru tohoto PC: až čtyři mluvčí, nic neopustí PC. Jednorázové stažení {{size}} MB.",
+        "license": "NVIDIA Open Model License",
+        "download": "Stáhnout ({{size}} MB)",
+        "cancel": "Zrušit",
+        "downloaded": "Staženo",
+        "delete": "Smazat",
+        "deleteConfirm": "Smazat model mluvčích z tohoto PC? Kdykoli ho můžete stáhnout znovu.",
+        "downloadFailed": "Model mluvčích se nepodařilo stáhnout: {{error}}",
+        "ready": "Model mluvčích je připraven."
+      },
+      "afterTake": {
+        "label": "Rozpoznat mluvčí po každém záznamu",
+        "description": "**Po vložení textu** se záznam na tomto PC přečte znovu, aby se rozlišili mluvčí, a text s mluvčími se k němu přidá v Historii. Vložení na to nikdy nečeká. Funguje s modely na tomto PC (ne s online modely)."
+      },
+      "source": {
+        "title": "\"Přepsat znovu s mluvčími\" používá",
+        "description": "Kde Historie rozlišuje mluvčí. Automaticky: toto PC, jakmile je stažen jeho model mluvčích, jinak STT server.",
+        "options": {
+          "auto": "Automaticky",
+          "local": "Toto PC",
+          "stt_server": "Server STT"
+        }
+      }
     }
   },
   "common": {
@@ -2620,6 +2654,10 @@
       "historyTour": {
         "title": "Ukázat jak: Historie",
         "description": "Krátká prohlídka všech novinek v Historii popsaných níže. Najdete ji v Průvodcích nebo pod „Ukázat jak“ na stránce Historie."
+      },
+      "localSpeakers": {
+        "title": "Mluvčí na tomto PC",
+        "description": "Stáhněte model mluvčích od NVIDIA (ten, který používá STT server) v Pokročilá nastavení › Mluvčí a rozpoznejte, kdo co řekl, bez serveru: v Historii nebo po každém záznamu."
       }
     },
     "installed": "Nainstalovaná"

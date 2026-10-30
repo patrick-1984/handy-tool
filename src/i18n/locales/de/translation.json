@@ -72,7 +72,8 @@
     "advancedSettings": "Erweiterte Einstellungen",
     "moreTools": "Weitere Werkzeuge",
     "sttServer": "STT-Server",
-    "combine": "Aufnahmen kombinieren"
+    "combine": "Aufnahmen kombinieren",
+    "speakers": "Sprecher"
   },
   "helpMode": {
     "button": "Hilfemodus: auf eine Einstellung zeigen, um zu sehen, was sie tut",
@@ -512,7 +513,7 @@
           },
           "speakers": {
             "title": "Erneut mit Sprechern transkribieren",
-            "text": "Sendet die ganze Aufnahme an deinen STT-Server, der die Sprecher unterscheidet. Fehlt etwas, wird angezeigt, was, und die STT-Server-Einstellungen öffnen sich."
+            "text": "Unterscheidet die Sprecher, auf diesem PC (Erweiterte Einstellungen › Sprecher) oder auf deinem STT-Server. Fehlt etwas, wird angezeigt, was, und die passenden Einstellungen öffnen sich."
           },
           "delete": {
             "title": "Löschen",
@@ -1771,7 +1772,7 @@
         },
         "speakers": {
           "label": "Erneut mit Sprechern transkribieren",
-          "hint": "Sendet die ganze Aufnahme an deinen STT-Server, um die Sprecher zu unterscheiden."
+          "hint": "Unterscheidet die Sprecher (auf diesem PC oder auf deinem STT-Server) und transkribiert die Aufnahme erneut."
         },
         "name": {
           "label": "Benennen…",
@@ -1793,8 +1794,12 @@
           "notSet": "Zum Unterscheiden der Sprecher wird ein STT-Server benötigt. Lege seine Adresse unter Erweiterte Einstellungen › STT-Server fest.",
           "modelNotSet": "Kein Modell mit Sprechern ausgewählt. Wähle eines unter Erweiterte Einstellungen › STT-Server.",
           "unreachable": "Der STT-Server hat nicht geantwortet: {{error}}. Prüfe seine Adresse unter Erweiterte Einstellungen › STT-Server.",
-          "modelMissing": "Der STT-Server hat kein Modell \"{{model}}\" (verfügbar: {{available}}). Wähle sein Modell mit Sprechern unter Erweiterte Einstellungen › STT-Server."
-        }
+          "modelMissing": "Der STT-Server hat kein Modell \"{{model}}\" (verfügbar: {{available}}). Wähle sein Modell mit Sprechern unter Erweiterte Einstellungen › STT-Server.",
+          "speakersNotSet": "Zum Unterscheiden der Sprecher brauchst du das Sprechermodell auf diesem PC oder einen STT-Server. Lade das Modell unter Erweiterte Einstellungen › Sprecher herunter.",
+          "localNotDownloaded": "Das Sprechermodell ist noch nicht auf diesem PC. Lade es unter Erweiterte Einstellungen › Sprecher herunter.",
+          "needsLocalModel": "Auf diesem PC werden die Worte der Sprecher mit deinem Diktiermodell transkribiert, und das ist ein Online-Modell. Wähle zum Diktieren ein Modell auf diesem PC oder den STT-Server unter Erweiterte Einstellungen › Sprecher."
+        },
+        "openSpeakers": "Sprecher-Einstellungen"
       },
       "name": {
         "placeholder": "Diese Aufnahme benennen",
@@ -2253,6 +2258,35 @@
         "title": "Um den kombinierten Text",
         "description": "Dein eigener Anfang und dein eigenes Ende für den kombinierten Text, z. B. \"Besprechungsnotizen:\"."
       }
+    },
+    "speakers": {
+      "title": "Sprecher",
+      "description": "Erkenne, wer in einer Aufnahme was gesagt hat: auf diesem PC mit einem Sprechermodell, das du einmal herunterlädst, oder auf deinem STT-Server.",
+      "model": {
+        "name": "Sprechermodell (NVIDIA Sortformer v2.1)",
+        "description": "Das Modell, das auch der STT-Server nutzt, läuft auf dem Prozessor dieses PCs: bis zu vier Sprecher, nichts verlässt den PC. Einmaliger Download von {{size}} MB.",
+        "license": "NVIDIA Open Model License",
+        "download": "Herunterladen ({{size}} MB)",
+        "cancel": "Abbrechen",
+        "downloaded": "Heruntergeladen",
+        "delete": "Löschen",
+        "deleteConfirm": "Sprechermodell von diesem PC löschen? Du kannst es jederzeit erneut herunterladen.",
+        "downloadFailed": "Das Sprechermodell konnte nicht heruntergeladen werden: {{error}}",
+        "ready": "Das Sprechermodell ist bereit."
+      },
+      "afterTake": {
+        "label": "Sprecher nach jeder Aufnahme erkennen",
+        "description": "**Nachdem der Text eingefügt wurde**, wird die Aufnahme auf diesem PC erneut gelesen, um die Sprecher zu unterscheiden, und der Text mit Sprechern wird ihr im Verlauf hinzugefügt. Das Einfügen wartet nie darauf. Funktioniert mit Modellen auf diesem PC (nicht mit Online-Modellen)."
+      },
+      "source": {
+        "title": "\"Erneut mit Sprechern transkribieren\" verwendet",
+        "description": "Wo der Verlauf die Sprecher unterscheidet. Automatisch: dieser PC, sobald sein Sprechermodell heruntergeladen ist, sonst der STT-Server.",
+        "options": {
+          "auto": "Automatisch",
+          "local": "Dieser PC",
+          "stt_server": "STT-Server"
+        }
+      }
     }
   },
   "common": {
@@ -2620,6 +2654,10 @@
       "historyTour": {
         "title": "Zeig mir, wie: Verlauf",
         "description": "Eine kurze geführte Tour durch alle Neuerungen im Verlauf weiter unten. Du findest sie unter Einrichtungen oder unter „Zeig mir, wie“ auf der Verlaufsseite."
+      },
+      "localSpeakers": {
+        "title": "Sprecher auf diesem PC",
+        "description": "Lade das Sprechermodell von NVIDIA (dasselbe, das der STT-Server nutzt) unter Erweiterte Einstellungen › Sprecher herunter und erkenne ohne Server, wer was gesagt hat: im Verlauf oder nach jeder Aufnahme."
       }
     },
     "installed": "Installiert"

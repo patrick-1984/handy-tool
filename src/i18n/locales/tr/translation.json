@@ -72,7 +72,8 @@
     "advancedSettings": "Gelişmiş ayarlar",
     "moreTools": "Diğer araçlar",
     "sttServer": "STT sunucusu",
-    "combine": "Kayıtları birleştir"
+    "combine": "Kayıtları birleştir",
+    "speakers": "Konuşmacılar"
   },
   "helpMode": {
     "button": "Yardım modu: ne yaptığını görmek için bir ayarın üzerine gelin",
@@ -512,7 +513,7 @@
           },
           "speakers": {
             "title": "Konuşmacılarla yeniden transkribe et",
-            "text": "Kaydın tamamını, konuşmacıları birbirinden ayıran STT sunucunuza gönderir. Bir şey eksikse neyin eksik olduğunu söyler ve STT sunucusu ayarlarını açar."
+            "text": "Konuşmacıları bu bilgisayarda (Gelişmiş ayarlar › Konuşmacılar) veya STT sunucunuzda ayırt eder. Bir şey eksikse neyin eksik olduğunu söyler ve doğru ayarları açar."
           },
           "delete": {
             "title": "Sil",
@@ -1771,7 +1772,7 @@
         },
         "speakers": {
           "label": "Konuşmacılarla yeniden transkribe et",
-          "hint": "Konuşmacıları ayırt etmek için kaydın tamamını STT sunucuna gönderir."
+          "hint": "Konuşmacıları ayırt eder (bu bilgisayarda veya STT sunucunuzda) ve kaydı yeniden transkribe eder."
         },
         "name": {
           "label": "Ad ver…",
@@ -1793,8 +1794,12 @@
           "notSet": "Konuşmacıları ayırt etmek için bir STT sunucusu gerekir. Adresini Gelişmiş ayarlar › STT sunucusu bölümünde ayarla.",
           "modelNotSet": "Konuşmacılı bir model seçilmedi. Gelişmiş ayarlar › STT sunucusu bölümünden birini seç.",
           "unreachable": "STT sunucusu yanıt vermedi: {{error}}. Adresini Gelişmiş ayarlar › STT sunucusu bölümünde kontrol et.",
-          "modelMissing": "STT sunucusunda \"{{model}}\" modeli yok (mevcut: {{available}}). Konuşmacılı modelini Gelişmiş ayarlar › STT sunucusu bölümünden seç."
-        }
+          "modelMissing": "STT sunucusunda \"{{model}}\" modeli yok (mevcut: {{available}}). Konuşmacılı modelini Gelişmiş ayarlar › STT sunucusu bölümünden seç.",
+          "speakersNotSet": "Konuşmacıları ayırt etmek için bu bilgisayarda konuşmacı modeli veya bir STT sunucusu gerekir. Modeli Gelişmiş ayarlar › Konuşmacılar bölümünden indirin.",
+          "localNotDownloaded": "Konuşmacı modeli henüz bu bilgisayarda değil. Gelişmiş ayarlar › Konuşmacılar bölümünden indirin.",
+          "needsLocalModel": "Bu bilgisayarda konuşmacıların sözleri dikte modelinizle yazıya dökülür ve bu bir çevrimiçi model. Dikte için bu bilgisayardaki bir modeli seçin ya da Gelişmiş ayarlar › Konuşmacılar bölümünde STT sunucusunu seçin."
+        },
+        "openSpeakers": "Konuşmacı ayarları"
       },
       "name": {
         "placeholder": "Bu kayda bir ad ver",
@@ -2253,6 +2258,35 @@
         "title": "Birleşik metnin çevresinde",
         "description": "Birleşik metin için kendi başlangıcın ve sonun, ör. \"Toplantı notları:\"."
       }
+    },
+    "speakers": {
+      "title": "Konuşmacılar",
+      "description": "Bir kayıtta kimin ne söylediğini ayırt edin: bir kez indirdiğiniz konuşmacı modeliyle bu bilgisayarda veya STT sunucunuzda.",
+      "model": {
+        "name": "Konuşmacı modeli (NVIDIA Sortformer v2.1)",
+        "description": "STT sunucusunun kullandığı model, bu bilgisayarın işlemcisinde çalışır: en fazla dört konuşmacı, hiçbir şey bilgisayardan çıkmaz. Tek seferlik {{size}} MB indirme.",
+        "license": "NVIDIA Open Model License",
+        "download": "İndir ({{size}} MB)",
+        "cancel": "İptal",
+        "downloaded": "İndirildi",
+        "delete": "Sil",
+        "deleteConfirm": "Konuşmacı modeli bu bilgisayardan silinsin mi? İstediğiniz zaman yeniden indirebilirsiniz.",
+        "downloadFailed": "Konuşmacı modeli indirilemedi: {{error}}",
+        "ready": "Konuşmacı modeli hazır."
+      },
+      "afterTake": {
+        "label": "Her kayıttan sonra konuşmacıları bul",
+        "description": "**Metin yapıştırıldıktan sonra** kayıt, konuşmacıları ayırt etmek için bu bilgisayarda yeniden okunur ve konuşmacılı metin Geçmiş'te kayda eklenir. Yapıştırma asla bunu beklemez. Bu bilgisayardaki modellerle çalışır (çevrimiçi modellerle değil)."
+      },
+      "source": {
+        "title": "\"Konuşmacılarla yeniden transkribe et\" şunu kullanır",
+        "description": "Geçmiş'in konuşmacıları nerede ayırt ettiği. Otomatik: konuşmacı modeli indirildiyse bu bilgisayar, aksi halde STT sunucusu.",
+        "options": {
+          "auto": "Otomatik",
+          "local": "Bu bilgisayar",
+          "stt_server": "STT sunucusu"
+        }
+      }
     }
   },
   "common": {
@@ -2620,6 +2654,10 @@
       "historyTour": {
         "title": "Bana göster: Geçmiş",
         "description": "Aşağıdaki tüm Geçmiş yeniliklerine kısa, rehberli bir tur. Kurulumlar'da veya Geçmiş sayfasındaki \"Bana göster\" altında bulabilirsiniz."
+      },
+      "localSpeakers": {
+        "title": "Bu bilgisayarda konuşmacılar",
+        "description": "NVIDIA'nın konuşmacı modelini (STT sunucusunun kullandığı model) Gelişmiş ayarlar › Konuşmacılar bölümünden indirin ve kimin ne söylediğini sunucu olmadan ayırt edin: Geçmiş'te veya her kayıttan sonra."
       }
     },
     "installed": "Yüklü"

@@ -72,7 +72,8 @@
     "advancedSettings": "進階設定",
     "moreTools": "更多工具",
     "sttServer": "STT 伺服器",
-    "combine": "合併錄音"
+    "combine": "合併錄音",
+    "speakers": "說話者"
   },
   "helpMode": {
     "button": "說明模式：將滑鼠指向設定即可查看其作用",
@@ -512,7 +513,7 @@
           },
           "speakers": {
             "title": "依說話者重新轉錄",
-            "text": "將整段錄音傳送到你的 STT 伺服器，由它區分說話者。如果缺少什麼，會說明缺少的項目並開啟 STT 伺服器設定。"
+            "text": "在這台電腦（進階設定 › 說話者）或你的 STT 伺服器上區分說話者。如果缺少什麼，會說明缺少的項目並開啟相應的設定。"
           },
           "delete": {
             "title": "刪除",
@@ -1771,7 +1772,7 @@
         },
         "speakers": {
           "label": "依說話者重新轉錄",
-          "hint": "將整段錄音傳送到你的 STT 伺服器以區分說話者。"
+          "hint": "區分說話者（在這台電腦或你的 STT 伺服器上）並重新轉錄錄音。"
         },
         "name": {
           "label": "命名…",
@@ -1793,8 +1794,12 @@
           "notSet": "區分說話者需要 STT 伺服器。請在 進階設定 › STT 伺服器 中設定其位址。",
           "modelNotSet": "尚未選擇支援說話者的模型。請在 進階設定 › STT 伺服器 中選擇一個。",
           "unreachable": "STT 伺服器沒有回應：{{error}}。請在 進階設定 › STT 伺服器 中檢查其位址。",
-          "modelMissing": "STT 伺服器沒有模型 \"{{model}}\"（可用：{{available}}）。請在 進階設定 › STT 伺服器 中選擇其支援說話者的模型。"
-        }
+          "modelMissing": "STT 伺服器沒有模型 \"{{model}}\"（可用：{{available}}）。請在 進階設定 › STT 伺服器 中選擇其支援說話者的模型。",
+          "speakersNotSet": "區分說話者需要這台電腦上的說話者模型或 STT 伺服器。請在 進階設定 › 說話者 中下載模型。",
+          "localNotDownloaded": "這台電腦上還沒有說話者模型。請在 進階設定 › 說話者 中下載。",
+          "needsLocalModel": "在這台電腦上，說話者的話由你的聽寫模型轉寫，而它是線上模型。請為聽寫選擇這台電腦上的模型，或在 進階設定 › 說話者 中選擇 STT 伺服器。"
+        },
+        "openSpeakers": "說話者設定"
       },
       "name": {
         "placeholder": "為此錄音命名",
@@ -2253,6 +2258,35 @@
         "title": "合併文字的前後",
         "description": "合併文字的自訂開頭和結尾，例如 \"會議筆記：\"。"
       }
+    },
+    "speakers": {
+      "title": "說話者",
+      "description": "區分錄音中誰說了什麼：在這台電腦上使用只需下載一次的說話者模型，或在你的 STT 伺服器上。",
+      "model": {
+        "name": "說話者模型（NVIDIA Sortformer v2.1）",
+        "description": "與 STT 伺服器相同的模型，在這台電腦的處理器上執行：最多四位說話者，資料不會離開電腦。一次性下載 {{size}} MB。",
+        "license": "NVIDIA Open Model License",
+        "download": "下載（{{size}} MB）",
+        "cancel": "取消",
+        "downloaded": "已下載",
+        "delete": "刪除",
+        "deleteConfirm": "要從這台電腦刪除說話者模型嗎？你可以隨時重新下載。",
+        "downloadFailed": "無法下載說話者模型：{{error}}",
+        "ready": "說話者模型已就緒。"
+      },
+      "afterTake": {
+        "label": "每次錄音後區分說話者",
+        "description": "**文字貼上後**，會在這台電腦上重新讀取錄音以區分說話者，並將含說話者的文字加入歷史紀錄中的該錄音。貼上絕不會等待它。適用於這台電腦上的模型（不適用於線上模型）。"
+      },
+      "source": {
+        "title": "\"依說話者重新轉錄\" 使用",
+        "description": "歷史紀錄在哪裡區分說話者。自動：下載說話者模型後使用這台電腦，否則使用 STT 伺服器。",
+        "options": {
+          "auto": "自動",
+          "local": "這台電腦",
+          "stt_server": "STT 伺服器"
+        }
+      }
     }
   },
   "common": {
@@ -2620,6 +2654,10 @@
       "historyTour": {
         "title": "教我怎麼用：歷史紀錄",
         "description": "簡短的引導式介紹，涵蓋下方歷史紀錄的所有新功能。可在「設定精靈」中找到，或在歷史紀錄頁面點選「教我怎麼用」。"
+      },
+      "localSpeakers": {
+        "title": "在這台電腦上區分說話者",
+        "description": "在 進階設定 › 說話者 中下載 NVIDIA 的說話者模型（即 STT 伺服器使用的模型），無需伺服器即可區分誰說了什麼：在歷史紀錄中，或在每次錄音後。"
       }
     },
     "installed": "已安裝"

@@ -72,7 +72,8 @@
     "advancedSettings": "Ustawienia zaawansowane",
     "moreTools": "Więcej narzędzi",
     "sttServer": "Serwer STT",
-    "combine": "Łączenie nagrań"
+    "combine": "Łączenie nagrań",
+    "speakers": "Mówcy"
   },
   "helpMode": {
     "button": "Tryb pomocy: wskaż ustawienie, aby zobaczyć, co robi",
@@ -512,7 +513,7 @@
           },
           "speakers": {
             "title": "Transkrybuj ponownie z mówcami",
-            "text": "Wysyła całe nagranie do twojego serwera STT, który rozróżnia mówców. Jeśli czegoś brakuje, informuje czego i otwiera ustawienia serwera STT."
+            "text": "Rozróżnia mówców, na tym komputerze (Ustawienia zaawansowane › Mówcy) albo na twoim serwerze STT. Jeśli czegoś brakuje, informuje czego i otwiera właściwe ustawienia."
           },
           "delete": {
             "title": "Usuń",
@@ -1771,7 +1772,7 @@
         },
         "speakers": {
           "label": "Transkrybuj ponownie z mówcami",
-          "hint": "Wysyła całe nagranie do twojego serwera STT, aby rozróżnić mówców."
+          "hint": "Rozróżnia mówców (na tym komputerze lub na twoim serwerze STT) i ponownie transkrybuje nagranie."
         },
         "name": {
           "label": "Nazwij…",
@@ -1793,8 +1794,12 @@
           "notSet": "Rozróżnianie mówców wymaga serwera STT. Ustaw jego adres w Ustawienia zaawansowane › Serwer STT.",
           "modelNotSet": "Nie wybrano modelu z mówcami. Wybierz go w Ustawienia zaawansowane › Serwer STT.",
           "unreachable": "Serwer STT nie odpowiedział: {{error}}. Sprawdź jego adres w Ustawienia zaawansowane › Serwer STT.",
-          "modelMissing": "Serwer STT nie ma modelu \"{{model}}\" (dostępne: {{available}}). Wybierz jego model z mówcami w Ustawienia zaawansowane › Serwer STT."
-        }
+          "modelMissing": "Serwer STT nie ma modelu \"{{model}}\" (dostępne: {{available}}). Wybierz jego model z mówcami w Ustawienia zaawansowane › Serwer STT.",
+          "speakersNotSet": "Do rozróżniania mówców potrzebujesz modelu mówców na tym komputerze albo serwera STT. Pobierz model w Ustawienia zaawansowane › Mówcy.",
+          "localNotDownloaded": "Modelu mówców nie ma jeszcze na tym komputerze. Pobierz go w Ustawienia zaawansowane › Mówcy.",
+          "needsLocalModel": "Na tym komputerze słowa mówców transkrybuje twój model dyktowania, a to model online. Wybierz do dyktowania model działający na tym komputerze albo wybierz serwer STT w Ustawienia zaawansowane › Mówcy."
+        },
+        "openSpeakers": "Ustawienia mówców"
       },
       "name": {
         "placeholder": "Nazwij to nagranie",
@@ -2253,6 +2258,35 @@
         "title": "Wokół połączonego tekstu",
         "description": "Twój własny początek i koniec połączonego tekstu, np. \"Notatki ze spotkania:\"."
       }
+    },
+    "speakers": {
+      "title": "Mówcy",
+      "description": "Rozpoznaj, kto co powiedział w nagraniu: na tym komputerze z modelem mówców, który pobierasz raz, albo na twoim serwerze STT.",
+      "model": {
+        "name": "Model mówców (NVIDIA Sortformer v2.1)",
+        "description": "Model, którego używa serwer STT, uruchamiany na procesorze tego komputera: do czterech mówców, nic nie opuszcza komputera. Jednorazowe pobranie {{size}} MB.",
+        "license": "NVIDIA Open Model License",
+        "download": "Pobierz ({{size}} MB)",
+        "cancel": "Anuluj",
+        "downloaded": "Pobrano",
+        "delete": "Usuń",
+        "deleteConfirm": "Usunąć model mówców z tego komputera? Możesz go pobrać ponownie w dowolnej chwili.",
+        "downloadFailed": "Nie udało się pobrać modelu mówców: {{error}}",
+        "ready": "Model mówców jest gotowy."
+      },
+      "afterTake": {
+        "label": "Rozpoznawaj mówców po każdym nagraniu",
+        "description": "**Po wklejeniu tekstu** nagranie jest ponownie odczytywane na tym komputerze, aby rozróżnić mówców, a tekst z mówcami zostaje do niego dodany w Historii. Wklejanie nigdy na to nie czeka. Działa z modelami na tym komputerze (nie z modelami online)."
+      },
+      "source": {
+        "title": "\"Transkrybuj ponownie z mówcami\" używa",
+        "description": "Gdzie Historia rozróżnia mówców. Automatycznie: ten komputer, gdy model mówców jest pobrany, w przeciwnym razie serwer STT.",
+        "options": {
+          "auto": "Automatycznie",
+          "local": "Ten komputer",
+          "stt_server": "Serwer STT"
+        }
+      }
     }
   },
   "common": {
@@ -2620,6 +2654,10 @@
       "historyTour": {
         "title": "Pokaż mi jak: Historia",
         "description": "Krótka wycieczka z przewodnikiem po wszystkich nowościach w Historii opisanych niżej. Znajdziesz ją w Konfiguracjach albo pod „Pokaż mi jak” na stronie Historii."
+      },
+      "localSpeakers": {
+        "title": "Mówcy na tym komputerze",
+        "description": "Pobierz model mówców od NVIDIA (ten, którego używa serwer STT) w Ustawienia zaawansowane › Mówcy i rozpoznawaj, kto co powiedział, bez serwera: w Historii albo po każdym nagraniu."
       }
     },
     "installed": "Zainstalowana"
