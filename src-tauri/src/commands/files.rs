@@ -67,6 +67,10 @@ pub enum FileJob {
 }
 
 static JOB: Lazy<Mutex<Option<FileJob>>> = Lazy::new(|| Mutex::new(None));
+/// Speaker requests of takes already delivered, still running (their result
+/// exists only in that thread until it lands in History): the updater waits.
+pub static BACKGROUND_SPEAKERS: std::sync::atomic::AtomicUsize =
+    std::sync::atomic::AtomicUsize::new(0);
 static CANCEL: AtomicBool = AtomicBool::new(false);
 /// Serializes read-modify-write of the log file.
 static LOG_LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
@@ -76,6 +80,7 @@ static LOG_LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
 /// History's "Transcribe again" counts too (its text is not saved yet either).
 pub fn file_job_running() -> bool {
     RETRANSCRIBING.load(Ordering::SeqCst)
+        || BACKGROUND_SPEAKERS.load(Ordering::SeqCst) > 0
         || matches!(
             *JOB.lock().unwrap_or_else(|p| p.into_inner()),
             Some(FileJob::Decoding { .. } | FileJob::Transcribing { .. })

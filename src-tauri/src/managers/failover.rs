@@ -244,7 +244,9 @@ pub fn transcribe(
     if chain.is_empty() {
         return run_primary(samples);
     }
-    let primary_down = {
+    // A whole-take STT request goes to the speakers model, which can be up
+    // while the plain model (that marked the primary down) is not: try it.
+    let primary_down = !(primary_is_stt && whole_take) && {
         let st = state();
         st.take == take && st.primary_up == Some(false)
     };

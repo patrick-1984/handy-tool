@@ -1332,11 +1332,18 @@ impl HistoryManager {
     /// A take's speaker text that arrived after the take was saved (the STT
     /// server's whole-take request runs after delivery). Only fills an empty
     /// one: a row transcribed again meanwhile keeps its newer speaker text.
-    pub fn set_diarized_for_file(&self, file_name: &str, diarized: &str) -> Result<()> {
+    /// `for_text`: the transcript the speakers were asked for; a row whose
+    /// text changed since (transcribed again) does not take them.
+    pub fn set_diarized_for_file(
+        &self,
+        file_name: &str,
+        for_text: &str,
+        diarized: &str,
+    ) -> Result<()> {
         let conn = self.get_connection()?;
         let changed = conn.execute(
-            "UPDATE transcription_history SET diarized_text = ?1 WHERE file_name = ?2 AND diarized_text IS NULL",
-            params![diarized, file_name],
+            "UPDATE transcription_history SET diarized_text = ?1 WHERE file_name = ?2 AND diarized_text IS NULL AND transcription_text = ?3",
+            params![diarized, file_name, for_text],
         )?;
         if changed == 0 {
             return Err(anyhow::anyhow!(

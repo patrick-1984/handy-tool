@@ -212,9 +212,9 @@ struct ChunkedSession {
     deferred: bool,
     /// Buffered per-chunk PCM (when `deferred`, or `keep_pcm`).
     pcm: Mutex<BTreeMap<usize, Vec<f32>>>,
-    /// Chunks are transcribed as they close AND their PCM is kept (online
-    /// engines: API, Custom STT server), so a piece whose request failed can be
-    /// sent again at stop, and the whole take can be sent once when needed.
+    /// Online engines (API, Custom STT server): a piece whose request failed
+    /// keeps its PCM, to be sent again at stop. With `speakers` every piece's
+    /// PCM is kept, for the whole-take request.
     keep_pcm: bool,
     /// Custom STT server with speakers on: the pieces give the text on the
     /// fly, one whole-take request after stop gives who said what.
@@ -1720,11 +1720,14 @@ impl ShortcutAction for TranscribeAction {
                     let session_inner = Arc::clone(&session);
                     let idx = closed.index;
                     let pcm = closed.pcm;
-                    if session.keep_pcm {
+                    if session.speakers {
                         if let Ok(mut map) = session.pcm.lock() {
                             map.insert(idx, pcm.clone());
                         }
                     }
+                    // An online piece without speakers: a copy only while its
+                    // request runs, kept if it fails (sent again at stop).
+                    let retry_copy = (session.keep_pcm && !session.speakers).then(|| pcm.clone());
                     if let Ok(mut unfinished) = session.unfinished.lock() {
                         unfinished.insert(idx, pcm.len());
                     }
@@ -1769,6 +1772,11 @@ impl ShortcutAction for TranscribeAction {
                                 }
                                 if let Ok(mut failed) = session_inner.failed.lock() {
                                     failed.insert(idx);
+                                }
+                                if let Some(copy) = retry_copy {
+                                    if let Ok(mut map) = session_inner.pcm.lock() {
+                                        map.insert(idx, copy);
+                                    }
                                 }
                                 String::new()
                             }
@@ -2083,11 +2091,13 @@ impl ShortcutAction for TranscribeAction {
                         // pieces left a gap, gave no text at all, or the paste is
                         // the speaker text. On the STT server with speakers on it
                         // also brings who said what (kept for this take).
-                        let whole_needed = session.keep_pcm
+                        // Only a speakers take keeps every piece's PCM.
+                        let whole_needed = session.speakers
                             && take_generation_current(take_gen)
                             && (still_failed > 0
-                                || (session.speakers
-                                    && (paste_waits_for_speakers || raw_text.trim().is_empty())));
+                                || paste_waits_for_speakers
+                                || raw_text.trim().is_empty());
+                        let mut whole_error: Option<String> = None;
                         if whole_needed {
                             let full = session.assemble_pcm();
                             if !full.is_empty() {
@@ -2114,9 +2124,12 @@ impl ShortcutAction for TranscribeAction {
                                             }
                                         }
                                     }
-                                    Err(e) => warn!(
-                                        "The whole-take request failed ({e}); keeping the pieces' text"
-                                    ),
+                                    Err(e) => {
+                                        warn!(
+                                            "The whole-take request failed ({e}); keeping the pieces' text"
+                                        );
+                                        whole_error = Some(e.to_string());
+                                    }
                                 }
                             }
                         } else if speakers_wanted && !raw_text.trim().is_empty() {
@@ -2125,11 +2138,29 @@ impl ShortcutAction for TranscribeAction {
                             // the History row, so the paste does not wait.
                             speakers_later = Some(session.assemble_pcm());
                         }
-                        missing_pieces = session.failed.lock().map(|f| f.len()).unwrap_or(0);
-                        if missing_pieces == 0 && session.keep_pcm {
+                        // Missing: pieces that failed, and pieces still
+                        // without a result (in flight past the wait's backstop).
+                        let in_flight = session
+                            .transcripts
+                            .lock()
+                            .map(|t| t.values().filter(|v| v.is_none()).count())
+                            .unwrap_or(0);
+                        missing_pieces =
+                            session.failed.lock().map(|f| f.len()).unwrap_or(0) + in_flight;
+                        if missing_pieces == 0 && session.keep_pcm && whole_error.is_none() {
                             // Every piece has text now: earlier failures are
                             // recovered, not errors of the take.
                             session.error_count.store(0, Ordering::SeqCst);
+                        }
+                        // 5. The whole-take request failed and no text came at
+                        // all: that is the take's error (not silence).
+                        if let Some(e) = whole_error {
+                            if raw_text.trim().is_empty() {
+                                session.error_count.fetch_add(1, Ordering::SeqCst);
+                                if let Ok(mut le) = session.last_error.lock() {
+                                    *le = Some(e);
+                                }
+                            }
                         }
                     }
                     // Snapshot any engine error before `session` drops.
@@ -2307,12 +2338,23 @@ impl ShortcutAction for TranscribeAction {
                         // The settings of this take, not of whenever it answers.
                         let settings_bg = get_settings(&ah);
                         let file_name = format!("handy-{}.opus", ts);
+                        let text_bg = raw_text.clone();
+                        crate::commands::files::BACKGROUND_SPEAKERS.fetch_add(1, Ordering::SeqCst);
                         std::thread::spawn(move || {
+                            // Released however the thread ends (even a panic).
+                            struct Running;
+                            impl Drop for Running {
+                                fn drop(&mut self) {
+                                    crate::commands::files::BACKGROUND_SPEAKERS
+                                        .fetch_sub(1, Ordering::SeqCst);
+                                }
+                            }
+                            let _running = Running;
                             match tm_bg.stt_server_speakers_direct(&settings_bg, &full) {
                                 Ok(result) => match result.diarized {
                                     Some(speakers) => {
-                                        if let Err(e) =
-                                            hm_bg.set_diarized_for_file(&file_name, &speakers)
+                                        if let Err(e) = hm_bg
+                                            .set_diarized_for_file(&file_name, &text_bg, &speakers)
                                         {
                                             warn!("Speakers for {file_name}: not saved ({e})");
                                         }
