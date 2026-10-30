@@ -11,6 +11,7 @@ export {
   PostProcessingSection,
 } from "./advanced/AdvancedSettings";
 export { SttServerSection } from "./stt-server/SttServerSection";
+export { CombineSection } from "./combine/CombineSection";
 export { DebugSettings } from "./debug/DebugSettings";
 export { CurrentAudioView } from "./current-audio/CurrentAudioView";
 export { HistorySettings } from "./history/HistorySettings";

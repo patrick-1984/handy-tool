@@ -124,6 +124,7 @@ impl TranscriptionManager {
 
     pub fn stt_server_speakers_direct(
         &self,
+        _settings: &crate::settings::AppSettings,
         _audio: &[f32],
     ) -> Result<crate::managers::stt_server::SttServerResult> {
         Ok(Default::default())
@@ -132,7 +133,7 @@ impl TranscriptionManager {
     pub fn stt_server_take_expecting(
         &self,
         _expected_model: &str,
-        _audio: &[f32],
+        _audio: Vec<f32>,
     ) -> Result<crate::managers::stt_server::SttServerResult> {
         Ok(Default::default())
     }

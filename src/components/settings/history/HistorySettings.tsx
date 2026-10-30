@@ -20,7 +20,13 @@ import {
   Clock,
   Captions,
   Loader2,
+  Users,
+  Pencil,
+  Tag,
+  Combine,
+  CircleHelp,
 } from "lucide-react";
+import { toast } from "sonner";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { toSingleOggStream } from "@/lib/utils/oggChain";
 import { listen } from "@tauri-apps/api/event";
@@ -35,6 +41,15 @@ import { PreserveTranscriptions } from "../PreserveTranscriptions";
 import { RecordingTextFile } from "../RecordingTextFile";
 import { HistoryLimit } from "../HistoryLimit";
 import { RecordingRetentionPeriodSelector } from "../RecordingRetentionPeriod";
+import { HistoryRowMenu, type RowMenuItem } from "./HistoryRowMenu";
+import { HistoryFiltersBar } from "./HistoryFiltersBar";
+import { CombineDialog } from "./CombineDialog";
+import {
+  NO_FILTER,
+  isNarrowed,
+  matchesFilter,
+  type HistoryFilter,
+} from "./historyFilters";
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
 /** A take's length as a clock reads it: "0:18", "12:05", "1:02:07". */
@@ -89,7 +104,6 @@ const detailParts = (e: HistoryEntry): string[] => {
 };
 import {
   buildMatcher,
-  fieldsMatch,
   highlightSegments,
   snippetAroundFirstMatch,
   type SearchMatcher,
@@ -116,22 +130,74 @@ const OpenRecordingsButton: React.FC<OpenRecordingsButtonProps> = ({
   </Button>
 );
 
-/** Copy, star and delete on a recording: icon buttons without a frame. */
+/** Copy, star and "⋯" on a recording: icon buttons without a frame. */
 const ICON_BUTTON =
   "inline-flex items-center justify-center h-7 w-7 rounded-md text-text-secondary hover:bg-hover hover:text-text transition-colors cursor-pointer";
 
 /** Entries drawn at a time on the Recordings tab. */
 const HISTORY_PAGE = 20;
 
+/** "Transcribe again with speakers" refused before sending: the message and
+ *  whether it is fixed in Advanced settings › STT server. */
+const speakersErrorMessage = (
+  error: string,
+  t: (key: string, o?: Record<string, unknown>) => string,
+): { message: string; toSettings: boolean } => {
+  const [code, detail = "", extra = ""] = error.split("|");
+  switch (code) {
+    case "STT_SERVER_NOT_SET":
+      return {
+        message: t("settings.history.speakers.errors.notSet"),
+        toSettings: true,
+      };
+    case "STT_SPEAKERS_MODEL_NOT_SET":
+      return {
+        message: t("settings.history.speakers.errors.modelNotSet"),
+        toSettings: true,
+      };
+    case "STT_SERVER_UNREACHABLE":
+      return {
+        message: t("settings.history.speakers.errors.unreachable", {
+          error: detail,
+        }),
+        toSettings: true,
+      };
+    case "STT_SPEAKERS_MODEL_MISSING":
+      return {
+        message: t("settings.history.speakers.errors.modelMissing", {
+          model: detail,
+          available: extra || "—",
+        }),
+        toSettings: true,
+      };
+    default:
+      return {
+        message: t("settings.history.transcribeAgainFailed", { error }),
+        toSettings: false,
+      };
+  }
+};
+
 export const HistorySettings: React.FC = () => {
   const { t } = useTranslation();
   const tab = useNavStore((state) => state.historyTab);
   const setTab = useNavStore((state) => state.setHistoryTab);
+  const startSetup = useNavStore((state) => state.startSetup);
   const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [filter, setFilter] = useState<HistoryFilter>(NO_FILTER);
+  // Recordings picked for Combine, in the order they were clicked.
+  const [selected, setSelected] = useState<number[]>([]);
+  const [combineOpen, setCombineOpen] = useState(false);
+  // The last recording removed from the selection closes Combine for good
+  // (selecting again must not reopen it by itself).
+  useEffect(() => {
+    if (selected.length === 0) setCombineOpen(false);
+  }, [selected.length]);
+  const onList = tab === "recordings" || tab === "favorites";
 
   useEffect(() => {
     const handle = setTimeout(() => setDebouncedSearch(searchInput), 200);
@@ -144,21 +210,31 @@ export const HistorySettings: React.FC = () => {
   );
 
   const filteredEntries = useMemo(() => {
-    if (!matcher) return historyEntries;
-    return historyEntries.filter((entry) =>
-      fieldsMatch(matcher, [
-        entry.title,
-        entry.transcription_text,
-        entry.post_processed_text,
-        entry.diarized_text,
-      ]),
+    const now = Date.now() / 1000;
+    const f: HistoryFilter = {
+      ...filter,
+      matcher,
+      favoritesOnly: tab === "favorites" || filter.favoritesOnly,
+    };
+    return historyEntries.filter((entry) => matchesFilter(entry, f, now));
+  }, [historyEntries, matcher, filter, tab]);
+
+  // A recording deleted meanwhile leaves the selection.
+  useEffect(() => {
+    setSelected((ids) =>
+      ids.filter((id) => historyEntries.some((e) => e.id === id)),
     );
-  }, [historyEntries, matcher]);
+  }, [historyEntries]);
+
+  const toggleSelect = (id: number) =>
+    setSelected((ids) =>
+      ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id],
+    );
 
   // Drawing every entry at once (each with its own audio player) made the page
   // lag; draw a page at a time and add the next as the list nears its end.
   const [shownCount, setShownCount] = useState(HISTORY_PAGE);
-  useEffect(() => setShownCount(HISTORY_PAGE), [matcher]);
+  useEffect(() => setShownCount(HISTORY_PAGE), [matcher, filter, tab]);
   const moreRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = moreRef.current;
@@ -195,26 +271,11 @@ export const HistorySettings: React.FC = () => {
 
   useEffect(() => {
     loadHistoryEntries();
-
-    // Listen for history update events
-    const setupListener = async () => {
-      const unlisten = await listen("history-updated", () => {
-        console.log("History updated, reloading entries...");
-        loadHistoryEntries();
-      });
-
-      // Return cleanup function
-      return unlisten;
-    };
-
-    let unlistenPromise = setupListener();
-
+    const unlistenPromise = listen("history-updated", () => {
+      loadHistoryEntries();
+    });
     return () => {
-      unlistenPromise.then((unlisten) => {
-        if (unlisten) {
-          unlisten();
-        }
-      });
+      unlistenPromise.then((unlisten) => unlisten());
     };
   }, [loadHistoryEntries]);
 
@@ -285,6 +346,7 @@ export const HistorySettings: React.FC = () => {
   };
 
   const showSearchBar = !loading && historyEntries.length > 0;
+  const narrowed = matcher !== null || isNarrowed(filter);
 
   let body: React.ReactNode;
   if (loading) {
@@ -308,7 +370,9 @@ export const HistorySettings: React.FC = () => {
   } else if (filteredEntries.length === 0) {
     body = (
       <div className="card px-4 py-8 text-center text-[13px] text-text-secondary">
-        {t("settings.history.search.noMatches")}
+        {tab === "favorites" && !narrowed
+          ? t("settings.history.favorites.empty")
+          : t("settings.history.search.noMatches")}
       </div>
     );
   } else {
@@ -319,6 +383,8 @@ export const HistorySettings: React.FC = () => {
             key={entry.id}
             entry={entry}
             matcher={matcher}
+            selectedIndex={selected.indexOf(entry.id)}
+            onToggleSelect={() => toggleSelect(entry.id)}
             onToggleSaved={() => toggleSaved(entry.id)}
             onCopyText={(text) => copyToClipboard(text)}
             getAudioUrl={getAudioUrl}
@@ -342,6 +408,10 @@ export const HistorySettings: React.FC = () => {
               label: t("settings.history.tabs.recordings"),
             },
             {
+              id: "favorites",
+              label: t("settings.history.tabs.favorites"),
+            },
+            {
               id: "statistics",
               label: t("settings.history.tabs.statistics"),
             },
@@ -354,17 +424,25 @@ export const HistorySettings: React.FC = () => {
           onSelect={setTab}
         />
       </div>
-      {tab === "recordings" && (
+      {onList && (
         <div className="space-y-2">
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={() => startSetup("history")}
+              className="inline-flex items-center gap-1.5 h-8 px-2 rounded-md text-[13px] text-accent-text hover:bg-hover cursor-pointer"
+            >
+              <CircleHelp className="w-3.5 h-3.5" aria-hidden />
+              {t("settings.history.showMeHow")}
+            </button>
             <OpenRecordingsButton
               onClick={openRecordingsFolder}
               label={t("settings.history.openFolder")}
             />
           </div>
           {showSearchBar && (
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1 max-w-md">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative flex-1 min-w-[220px] max-w-md">
                 <Search className="absolute start-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-secondary pointer-events-none" />
                 <input
                   type="text"
@@ -383,13 +461,18 @@ export const HistorySettings: React.FC = () => {
                   </button>
                 )}
               </div>
-              {matcher && (
+              <HistoryFiltersBar
+                filter={filter}
+                onChange={setFilter}
+                showFavorites={tab === "recordings"}
+              />
+              {narrowed && (
                 <span className="text-xs text-text-secondary whitespace-nowrap">
                   {t("settings.history.search.matches", {
                     matched: filteredEntries.length,
                     total: historyEntries.length,
                   })}
-                  {matcher.isRegex && (
+                  {matcher?.isRegex && (
                     <span
                       className="ms-1.5 px-1 py-0.5 rounded-sm bg-accent-soft text-accent-text font-mono"
                       title={t("settings.history.search.regexActive")}
@@ -401,8 +484,42 @@ export const HistorySettings: React.FC = () => {
               )}
             </div>
           )}
+          {selected.length > 0 && (
+            <div className="sticky top-12 z-20 flex items-center justify-between gap-2 rounded-lg border border-accent/40 bg-accent-soft px-3 py-2">
+              <span className="text-sm text-accent-text">
+                {t("settings.history.combine.selected", {
+                  count: selected.length,
+                })}
+              </span>
+              <span className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setSelected([])}
+                >
+                  {t("settings.history.combine.clear")}
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => setCombineOpen(true)}
+                >
+                  <Combine className="w-3.5 h-3.5" />
+                  {t("settings.history.combine.open")}
+                </Button>
+              </span>
+            </div>
+          )}
           {body}
         </div>
+      )}
+      {combineOpen && selected.length > 0 && (
+        <CombineDialog
+          ids={selected}
+          entries={historyEntries}
+          onRemove={(id) => setSelected((ids) => ids.filter((x) => x !== id))}
+          onClose={() => setCombineOpen(false)}
+        />
       )}
       {/* The same figures as Providers' cost report, without the money. */}
       {tab === "statistics" && <TranscriptionCostReport variant="stats" />}
@@ -429,6 +546,9 @@ export const HistorySettings: React.FC = () => {
 interface HistoryEntryProps {
   entry: HistoryEntry;
   matcher: SearchMatcher | null;
+  /** Place in the Combine queue (0-based), or -1 when not selected. */
+  selectedIndex: number;
+  onToggleSelect: () => void;
   onToggleSaved: () => void;
   /** Copies the text the row shows (plain, or with speakers). */
   onCopyText: (text: string) => void;
@@ -463,18 +583,99 @@ const HighlightedText: React.FC<{
   );
 };
 
+/** A recording's name: shown after its details, edited in place. */
+const NameField: React.FC<{
+  entry: HistoryEntry;
+  editing: boolean;
+  setEditing: (v: boolean) => void;
+  matcher: SearchMatcher | null;
+}> = ({ entry, editing, setEditing, matcher }) => {
+  const { t } = useTranslation();
+  const [value, setValue] = useState(entry.name ?? "");
+  useEffect(() => {
+    if (editing) setValue(entry.name ?? "");
+  }, [editing, entry.name]);
+  const save = async () => {
+    const result = await commands.renameHistoryEntry(entry.id, value);
+    if (result.status === "error") {
+      toast.error(t("settings.history.name.failed", { error: result.error }));
+      return;
+    }
+    setEditing(false);
+  };
+  if (editing) {
+    return (
+      <span className="inline-flex items-center gap-1">
+        <input
+          autoFocus
+          type="text"
+          value={value}
+          // 120 characters as the backend counts them (code points, so an
+          // emoji is one, not two UTF-16 units).
+          onChange={(e) =>
+            setValue(Array.from(e.target.value).slice(0, 120).join(""))
+          }
+          onKeyDown={(e) => {
+            if (e.key === "Enter") void save();
+            if (e.key === "Escape") setEditing(false);
+          }}
+          placeholder={t("settings.history.name.placeholder")}
+          className="h-6 w-48 rounded border border-control-border bg-control px-1.5 text-[13px] text-text focus:outline-none focus:shadow-[inset_0_-2px_0_var(--color-accent)]"
+          aria-label={t("settings.history.name.label")}
+        />
+        <button
+          type="button"
+          onClick={() => void save()}
+          className="inline-flex items-center justify-center h-6 w-6 rounded text-accent-text hover:bg-hover cursor-pointer"
+          title={t("settings.history.name.save")}
+          aria-label={t("settings.history.name.save")}
+        >
+          <Check className="w-3.5 h-3.5" />
+        </button>
+        <button
+          type="button"
+          onClick={() => setEditing(false)}
+          className="inline-flex items-center justify-center h-6 w-6 rounded text-text-secondary hover:bg-hover cursor-pointer"
+          title={t("settings.history.name.cancel")}
+          aria-label={t("settings.history.name.cancel")}
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
+      </span>
+    );
+  }
+  if (!entry.name) return null;
+  return (
+    <button
+      type="button"
+      onClick={() => setEditing(true)}
+      className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 bg-accent-soft text-accent-text text-[12px] font-medium cursor-pointer hover:opacity-90"
+      title={t("settings.history.name.edit")}
+    >
+      <Tag className="w-3 h-3" aria-hidden />
+      <HighlightedText text={entry.name} matcher={matcher} />
+    </button>
+  );
+};
+
 const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
   entry,
   matcher,
+  selectedIndex,
+  onToggleSelect,
   onToggleSaved,
   onCopyText,
   getAudioUrl,
   deleteAudio,
 }) => {
   const { t, i18n } = useTranslation();
+  const navigateTo = useNavStore((s) => s.navigateTo);
   const [showCopied, setShowCopied] = useState(false);
-  const [transcribing, setTranscribing] = useState(false);
+  const [transcribing, setTranscribing] = useState<null | "text" | "speakers">(
+    null,
+  );
   const [transcribeError, setTranscribeError] = useState<string | null>(null);
+  const [naming, setNaming] = useState(false);
   // A take with speakers shows them by default; "Text" shows it without.
   const speakerText = entry.diarized_text?.trim() || null;
   const [showSpeakers, setShowSpeakers] = useState(true);
@@ -483,6 +684,7 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
   const noText = entry.transcription_text.trim() === "";
   // The audio is still there (History's clean-up can delete it, keeping the text).
   const hasAudio = entry.audio_purged_at == null;
+  const selected = selectedIndex >= 0;
 
   // "Transcribe again": reads the recording again with the dictation model
   // (a take recorded without a model, or whose transcription failed). The
@@ -493,13 +695,44 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
       !window.confirm(t("settings.history.transcribeAgainConfirm"))
     )
       return;
-    setTranscribing(true);
+    setTranscribing("text");
     setTranscribeError(null);
     try {
       const result = await commands.retranscribeHistoryEntry(entry.id);
       if (result.status === "error") setTranscribeError(result.error);
     } finally {
-      setTranscribing(false);
+      setTranscribing(null);
+    }
+  };
+
+  // "Transcribe again with speakers": the whole recording to the STT server's
+  // speakers model. A missing or unreachable server says what to set up.
+  const handleTranscribeSpeakers = async () => {
+    if (!noText && !window.confirm(t("settings.history.speakers.confirm")))
+      return;
+    setTranscribing("speakers");
+    setTranscribeError(null);
+    try {
+      const result = await commands.retranscribeHistoryEntrySpeakers(entry.id);
+      if (result.status === "error") {
+        const { message, toSettings } = speakersErrorMessage(result.error, t);
+        toast.error(message, {
+          duration: 10000,
+          action: toSettings
+            ? {
+                label: t("settings.history.speakers.openSettings"),
+                onClick: () => navigateTo("sttServer"),
+              }
+            : undefined,
+        });
+        if (!toSettings) setTranscribeError(result.error);
+      } else if (!result.data.speakers) {
+        toast.info(t("settings.history.speakers.oneVoice"));
+      } else {
+        setShowSpeakers(true);
+      }
+    } finally {
+      setTranscribing(null);
     }
   };
 
@@ -515,20 +748,82 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
   };
 
   const handleDeleteEntry = async () => {
+    if (!window.confirm(t("settings.history.deleteConfirm"))) return;
     try {
       await deleteAudio(entry.id);
     } catch (error) {
       console.error("Failed to delete entry:", error);
-      alert("Failed to delete entry. Please try again.");
+      toast.error(t("settings.history.deleteFailed"));
     }
   };
+
+  const menuItems: RowMenuItem[] = [
+    ...(hasAudio
+      ? [
+          {
+            key: "again",
+            icon: Captions,
+            label: t("settings.history.menu.again.label"),
+            hint: t("settings.history.menu.again.hint"),
+            onSelect: () => void handleTranscribeAgain(),
+            disabled: transcribing !== null,
+          },
+          {
+            key: "speakers",
+            icon: Users,
+            label: t("settings.history.menu.speakers.label"),
+            hint: t("settings.history.menu.speakers.hint"),
+            onSelect: () => void handleTranscribeSpeakers(),
+            disabled: transcribing !== null,
+          },
+        ]
+      : []),
+    {
+      key: "name",
+      icon: Pencil,
+      label: entry.name
+        ? t("settings.history.menu.rename.label")
+        : t("settings.history.menu.name.label"),
+      hint: t("settings.history.menu.name.hint"),
+      onSelect: () => setNaming(true),
+    },
+    {
+      key: "delete",
+      icon: Trash2,
+      label: t("settings.history.menu.delete.label"),
+      hint: t("settings.history.menu.delete.hint"),
+      onSelect: () => void handleDeleteEntry(),
+      danger: true,
+    },
+  ];
 
   const formattedDate = recordedAt(Number(entry.timestamp), i18n.language);
 
   return (
-    <div className="card px-4 py-3 flex flex-col gap-2.5">
-      <div className="flex justify-between items-center">
-        <p className="flex flex-wrap items-center gap-x-1.5 text-[13px] text-text-secondary">
+    <div
+      className={`card px-4 py-3 flex flex-col gap-2.5 ${
+        entry.saved ? "border-s-[3px] border-s-accent" : ""
+      } ${selected ? "ring-1 ring-accent" : ""}`}
+    >
+      <div className="flex justify-between items-center gap-2">
+        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[13px] text-text-secondary min-w-0">
+          <label
+            className="inline-flex items-center cursor-pointer me-0.5"
+            title={t("settings.history.combine.select")}
+          >
+            <input
+              type="checkbox"
+              checked={selected}
+              onChange={onToggleSelect}
+              className="accent-[var(--color-accent)]"
+              aria-label={t("settings.history.combine.select")}
+            />
+            {selected && (
+              <span className="ms-1 text-[11px] font-semibold tabular-nums text-accent-text">
+                {selectedIndex + 1}
+              </span>
+            )}
+          </label>
           <span className="font-semibold text-text">{formattedDate}</span>
           {entry.duration_seconds != null && (
             <>
@@ -545,21 +840,21 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
               <span>{part}</span>
             </React.Fragment>
           ))}
-        </p>
-        <div className="flex items-center gap-1">
-          {hasAudio && (
-            <button
-              onClick={handleTranscribeAgain}
-              disabled={transcribing}
-              className={`${ICON_BUTTON} ${noText ? "!text-accent" : ""} disabled:cursor-wait`}
-              title={t("settings.history.transcribeAgain")}
-            >
-              {transcribing ? (
-                <Loader2 width={16} height={16} className="animate-spin" />
-              ) : (
-                <Captions width={16} height={16} />
-              )}
-            </button>
+          <NameField
+            entry={entry}
+            editing={naming}
+            setEditing={setNaming}
+            matcher={matcher}
+          />
+        </div>
+        <div className="flex items-center gap-1 shrink-0">
+          {transcribing !== null && (
+            <Loader2
+              width={16}
+              height={16}
+              className="animate-spin text-text-secondary"
+              aria-label={t("settings.history.menu.working")}
+            />
           )}
           <button
             onClick={handleCopyText}
@@ -587,13 +882,7 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
               fill={entry.saved ? "currentColor" : "none"}
             />
           </button>
-          <button
-            onClick={handleDeleteEntry}
-            className={`${ICON_BUTTON} hover:!bg-err-bg hover:!text-err-text`}
-            title={t("settings.history.delete")}
-          >
-            <Trash2 width={16} height={16} />
-          </button>
+          <HistoryRowMenu items={menuItems} buttonClassName={ICON_BUTTON} />
         </div>
       </div>
       {noText ? (

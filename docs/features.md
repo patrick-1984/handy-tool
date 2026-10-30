@@ -264,12 +264,14 @@ across a boundary. When you stop, up to the last 3 seconds before the press are 
 speech detector had not accepted them yet, as long as they hold continuous sound at a speech
 level (since 2.0.5). This is how a
 Post-Recording take with a model that runs on this PC works
-while Crash-Safe Recording is on; with it off, the whole take is transcribed in one pass when
-you stop. When what is left still takes more than half a second, the overlay shows how
+while Crash-Safe Recording is on — and, since 2.5.0, any take with the API model or the STT
+server, described under [Online models have the text ready when you stop](#online-models-transcribe-while-you-record); with it off, the whole take is transcribed in
+one pass when you stop. When what is left still takes more than half a second, the overlay shows how
 far it is — **Transcribing 42%**. It counts the seconds of work left when you stopped (every
 segment still waiting, weighed by its length) and is estimated from this machine's recent
 transcriptions of a similar length, since a long segment takes more time per second of audio
-than a short one; Whisper's own figure is used as a floor. Past about 70% it slows down
+than a short one; Whisper's own figure is used as a floor. Online models get the same estimate
+(see [A progress estimate for online models too](#progress-estimates-for-online-models)). Past about 70% it slows down
 smoothly, so a transcription that runs longer than expected keeps creeping on rather than
 sitting at 99%. When the text is ready it jumps to 100% while the text is being pasted. Before
 2.0.4 it got there only after the paste, so a take that finished sooner than estimated could
@@ -1368,7 +1370,9 @@ while it still holds that recording's text, so a note of yours under that name s
 <a id="what-did-i-dictate-last-tuesday"></a>
 **The situation.** You know you said it. You do not know when, and scrolling is not working.
 **What Handy does.** A search bar filters History as you type, case-insensitively across the
-transcript, the post-processed text and the title. A query containing regular-expression
+transcript, the post-processed text, the text with speakers, the title and the recording's name
+(names and the text with speakers since 2.5.0). It works together with the filters next to it,
+described under [Narrow History to favorites, a time and a length](#narrow-history-by-favorites-date-and-length). A query containing regular-expression
 characters becomes a live regular expression, marked with a badge, falling back to a literal
 search if the pattern is invalid. Matches are highlighted, long transcripts show a snippet
 centered on the first hit, and a counter tells you where you are.
@@ -1424,20 +1428,132 @@ saved and when you change the setting; it never touches entries you have marked 
 <a id="keep-the-ones-that-matter"></a>
 **The situation.** One transcript out of a hundred is worth keeping and your retention setting
 is about to delete it.
-**What Handy does.** Marking an entry as saved excludes it from every automatic cleanup — the
-row and its audio stay until you delete them yourself.
+**What Handy does.** Marking an entry as saved — the star on its row — excludes it from every
+automatic cleanup — the row and its audio stay until you delete them yourself. A starred entry is
+also a favorite: it gets a colored edge in Recordings and appears on the Favorites tab.
 **Where.** `History › Recordings › Save transcription`.
-**Since.** Present since the fork's early releases.
+**Since.** Present since the fork's early releases; favorites since 2.5.0.
 
 ### Copy or delete a single entry
 
 <a id="copy-or-delete-a-single-entry"></a>
 **The situation.** You want yesterday's transcript on the clipboard, or you want one entry gone
 right now.
-**What Handy does.** Per-row buttons copy the transcription to the clipboard or delete the entry
+**What Handy does.** The copy button on the row puts the transcription on the clipboard. Delete,
+in the row's ⋯ menu, asks "Delete this recording and its text?" and then removes the entry
 together with its audio and any chunk siblings.
-**Where.** `History › Recordings › Copy transcription to clipboard` and `History › Recordings › Delete entry`.
-**Since.** Present since the fork's early releases.
+**Where.** `History › Recordings › Copy transcription to clipboard` and
+`History › Recordings › More actions › Delete`.
+**Since.** Present since the fork's early releases. Delete moved into the ⋯ menu and asks first
+since 2.5.0.
+
+### Fewer icons on each recording, every action explained
+
+<a id="fewer-icons-every-action-explained"></a>
+**The situation.** Every History row carried a strip of small icons, and you had to hover over
+each one to remember which did what — next to a Delete that acted on the first click.
+**What Handy does.** A row shows only the two actions used most: copy the text, and the star.
+Everything else sits in the row's ⋯ menu, each item with a line on what it does:
+**Transcribe again** (reads the recording again with your dictation model and replaces the text;
+it asks first when the row already has text), **Transcribe again with speakers** (see
+[Find out who said what in a recording](#transcribe-again-with-speakers)), **Name…** (**Rename…**
+once the recording has a name) and **Delete**, which asks before removing anything. The two
+Transcribe again items appear only for a recording that still has its audio. The menu closes on
+a choice, on Escape or on a click outside it.
+**Where.** `History › Recordings › More actions`.
+**Since.** 2.5.0.
+
+<!-- prov: history row menu | src: src/components/settings/history/HistorySettings.tsx; src/components/settings/history/HistoryRowMenu.tsx; src/i18n/locales/en/translation.json | claim: behavior -->
+
+### Find out who said what in a recording
+
+<a id="transcribe-again-with-speakers"></a>
+**The situation.** You recorded a meeting or a call, and the transcript is one block of text with
+no way to tell whose words are whose.
+**What Handy does.** **Transcribe again with speakers** sends the whole recording to the speaker
+model of your STT server, which tells the speakers apart. Telling speakers apart needs that
+server — Handy does not do it on this PC. If the row already has text, it first asks "Replace
+this transcript with a new one, with the speakers told apart?". Before sending, Handy checks that
+a server address and a model with speakers are set and that the server has that model. If not,
+the message says what is missing and offers **STT server settings**, which opens the page where
+it is fixed:
+
+- no address: "Telling speakers apart needs an STT server. Set its address in Advanced settings › STT server."
+- no model with speakers: "No model with speakers is chosen. Pick one in Advanced settings › STT server."
+- the server does not answer: "The STT server did not answer: … Check its address in Advanced settings › STT server."
+- the model is not on the server: "The STT server has no model "…" (it has: …). Pick its model with speakers in Advanced settings › STT server."
+
+When it works, the row keeps both texts and its **Text** / **Speakers** switch shows and copies
+either one. If the server heard only one voice, the recording is transcribed again and a note
+says there is no text with speakers.
+**Where.** `History › Recordings › More actions › Transcribe again with speakers`; the server is
+set up in `Advanced settings › STT server`.
+**Since.** 2.5.0.
+
+<!-- prov: transcribe again with speakers | src: src/components/settings/history/HistorySettings.tsx; src-tauri/src/managers/stt_server.rs; src-tauri/src/commands/files.rs; src/i18n/locales/en/translation.json | claim: behavior -->
+
+### Give a recording a name you will recognize
+
+<a id="name-a-recording"></a>
+**The situation.** A list of dates and times tells you when you said something, not what it was.
+"Tuesday 14:02" could be the budget call or a shopping list.
+**What Handy does.** A recording can carry a name, shown next to its date and time. Choose
+**Name…** in the row's ⋯ menu, or click an existing name to change it; press ✓ or Enter to keep
+it and Escape to cancel. An empty name removes it. Search finds recordings by their name.
+**Where.** `History › Recordings › More actions › Name…`.
+**Since.** 2.5.0.
+
+<!-- prov: history names | src: src/components/settings/history/HistorySettings.tsx; src/components/settings/history/historyFilters.ts; src/i18n/locales/en/translation.json | claim: behavior -->
+
+### Narrow History to favorites, a time and a length
+
+<a id="narrow-history-by-favorites-date-and-length"></a>
+**The situation.** You remember roughly when you recorded something, or that it was the long
+one — but the search box only knows words.
+**What Handy does.** Three filters sit next to the search box and work together with it:
+**Favorites only** (recordings you starred), a time list (**Any time**, the last 3 hours,
+12 hours, 24 hours, 7 days or 30 days, or **Custom dates…** with a From and a To date) and a
+length list (**Any length**, under 10 s, 10–30 s, 30 s–1 min, 1–2 min, 2–5 min, 5–10 min, over
+10 min), so a long meeting is quick to spot. A **Favorites** tab between Recordings and
+Statistics lists only the starred recordings; there the time and length filters still apply.
+**Where.** `History › Recordings › Favorites only` and the two lists next to it; the tab is
+`History › Favorites`.
+**Since.** 2.5.0.
+
+<!-- prov: history filters and favorites tab | src: src/components/settings/history/HistoryFiltersBar.tsx; src/components/settings/history/historyFilters.ts; src/components/settings/history/HistorySettings.tsx; src/i18n/locales/en/translation.json | claim: behavior -->
+
+### Several takes, copied as one text
+
+<a id="combine-recordings"></a>
+**The situation.** One thought took four takes, or a meeting's notes are spread over a dozen
+recordings, and copying them one at a time means pasting, switching back and losing the order.
+**What Handy does.** Tick the box on each recording you want; the number on the box is its place
+in the list, in the order you ticked them. **Combine…** opens the list: each recording with its
+number, time, length and first two lines. Keep them **As picked**, sort them **Oldest first** or
+**Newest first**, or drag a row by its grip; a row can be removed from the list. **Copy as one
+text** copies them joined, and confirms with a ✓. Recordings without text are skipped. When
+some have a text with speakers, **Use the text with speakers** chooses which text goes in. What
+goes between the recordings, whether each keeps your Transcribe prefix and suffix, and a
+beginning and end for the whole text are settings.
+**Where.** `History › Recordings › Select to combine`, then `Combine…`; the settings are on
+`Advanced settings › Combine recordings`.
+**Since.** 2.5.0.
+
+<!-- prov: combine recordings | src: src/components/settings/history/CombineDialog.tsx; src/components/settings/history/combine.ts; src/components/settings/history/HistorySettings.tsx; src/components/settings/combine/CombineSection.tsx; src-tauri/src/settings.rs; src/i18n/locales/en/translation.json | claim: behavior -->
+
+### A guided tour of History
+
+<a id="a-guided-tour-of-history"></a>
+**The situation.** History gained names, favorites, filters, a menu and Combine in one release,
+and you would rather see them once than discover them by accident.
+**What Handy does.** **Show me how** runs a short tour: finding a
+recording (search, favorites, time and length), naming one, the ⋯ menu, and combining several
+into one text. Its last step holds the real Combine settings, so what you set there is kept;
+**Open History** ends the tour on the Recordings tab.
+**Where.** `Setups › History`, or **Show me how** on the `History` page.
+**Since.** 2.5.0.
+
+<!-- prov: history tour | src: src/components/settings/setups/HistorySetup.tsx; src/components/settings/setups/SetupsPage.tsx; src/components/settings/history/HistorySettings.tsx; src/i18n/locales/en/translation.json | claim: behavior -->
 
 ### How much have I dictated?
 
@@ -1557,11 +1673,47 @@ sum of all of them.
 transcription server.
 **What Handy does.** An engine that POSTs your recording to any `/v1/audio/transcriptions`
 server — Groq, OpenAI, faster-whisper-server, your own — configured with a URL, a key and a
-model name. It always sends one request at the end of the recording rather than uploading
-repeatedly during it. When the language is set to automatic it sends English explicitly, because
+model name. With Crash-Safe Recording on (the default) it transcribes the take piece by piece
+while you record, as described under [Online models have the text ready when you stop](#online-models-transcribe-while-you-record); with it off it sends one request when you
+stop. When the language is set to automatic it sends English explicitly, because
 these endpoints need to be told.
 **Where.** `Advanced settings › Transcription providers › API Transcription (OpenAI-compatible) › API URL`.
-**Since.** 0.8.2.
+**Since.** 0.8.2; transcribing while you record since 2.5.0.
+
+### Online models have the text ready when you stop
+
+<a id="online-models-transcribe-while-you-record"></a>
+**The situation.** With an online model, a long take was sent as a whole when you stopped, so
+you waited for the entire recording to upload and be transcribed before any text arrived.
+**What Handy does.** The API model and the STT server transcribe the take while you record, as
+models on this PC do: each piece cut at a pause is sent as soon as it closes, so the text is
+ready right after you stop. If a request fails — a dropped connection included — the failover
+models you chose on the Models page take over that piece and the rest of the take. With **Tell the speakers apart** on,
+the STT server also gets the whole take once after you stop, because speaker labels are only
+consistent across one request; if that request fails, you still get the plain text from the
+pieces. With **What to paste** set to the text with speakers, the paste waits for that request.
+OpenRouter Transcription is not part of this: it still sends the whole take in one request when
+you stop. Without Crash-Safe Recording, the API model and the STT server also send one request
+when you stop.
+**Where.** No control of its own — it follows `History › Settings › Crash-Safe Recording = On`,
+the default; failover is `Models › If your dictation model fails`.
+**Since.** 2.5.0. Before, both were sent the whole take at stop.
+
+<!-- prov: online models per piece | src: src-tauri/src/actions.rs; src-tauri/src/managers/transcription.rs; src-tauri/src/managers/failover.rs; src-tauri/src/managers/stt_server.rs; src-tauri/src/managers/api_transcription.rs | claim: behavior -->
+
+### A progress estimate for online models too
+
+<a id="progress-estimates-for-online-models"></a>
+**The situation.** With a model on this PC the overlay shows how far the transcription is; with
+an online model it could only tell you it was waiting.
+**What Handy does.** API, OpenRouter and STT server transcriptions learn how long they take per
+second of audio from their recent requests, as local models do, and the overlay's percentage
+shows an estimate from them. The STT server with speakers is timed apart from the STT server
+without, since it is slower. Until a model has been timed once there is nothing to estimate from.
+**Where.** No control — this is always active.
+**Since.** 2.5.0.
+
+<!-- prov: online progress estimates | src: src-tauri/src/managers/transcription.rs | claim: behavior -->
 
 ### One OpenRouter key, many speech models
 

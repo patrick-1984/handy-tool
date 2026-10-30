@@ -226,7 +226,7 @@ pub fn transcribe(
     // whole-take request after stop).
     let run_primary = |samples: Vec<f32>| -> anyhow::Result<String> {
         if primary_is_stt && whole_take {
-            let result = tm.stt_server_take_expecting(&primary, &samples)?;
+            let result = tm.stt_server_take_expecting(&primary, samples)?;
             if state().take == take {
                 crate::managers::stt_server::set_session_diarized(take, result.diarized);
             }

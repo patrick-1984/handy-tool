@@ -71,7 +71,8 @@
     "llmProviders": "LLM sağlayıcıları",
     "advancedSettings": "Gelişmiş ayarlar",
     "moreTools": "Diğer araçlar",
-    "sttServer": "STT sunucusu"
+    "sttServer": "STT sunucusu",
+    "combine": "Kayıtları birleştir"
   },
   "helpMode": {
     "button": "Yardım modu: ne yaptığını görmek için bir ayarın üzerine gelin",
@@ -166,6 +167,11 @@
       "appearance": {
         "title": "Görünüm",
         "description": "Kayıt hapının ve canlı metin kutusunun nasıl göründüğü: hapın yeri ve boyutu, ses çubukları, ilerlemeyi nasıl gösterdiği ve canlı metin kutusu; her seçenek siz seçmeden önce hareket hâlinde gösterilir."
+      },
+      "showMeHow": "Bana göster",
+      "history": {
+        "title": "Geçmiş",
+        "description": "Geçmiş'teki yeniliklere kısa bir tur: arama, favoriler, tarih ve uzunlukla bir kaydı bulma, ona ad verme, ⋯ menüsü ve birkaç kaydı tek bir metinde birleştirme."
       }
     },
     "closeSetup": "Kurulumu kapat",
@@ -431,6 +437,112 @@
         "title": "Kısayollarınız bu bilgisayarda tutuluyor",
         "body": "Hangi kısayolların bu bilgisayarda kalacağını istediğiniz zaman Kısayollar sayfasında, Kısayol Koruyucu altında değiştirebilirsiniz."
       }
+    },
+    "history": {
+      "name": {
+        "title": "Bir kayda ad verin",
+        "body": "Ad, kaydın tarih ve saatinin yanında görünür.",
+        "tips": {
+          "add": {
+            "title": "Ad ekleyin",
+            "text": "⋯ menüsünde Ad ver… seçeneğini seçin veya değiştirmek için ada tıklayın."
+          },
+          "save": {
+            "title": "Kaydedin",
+            "text": "Saklamak için ✓ veya Enter'a, iptal etmek için Escape'e basın. Boş bir ad, adı kaldırır."
+          }
+        }
+      },
+      "openHistory": "Geçmiş'i aç",
+      "intro": {
+        "title": "Kayıtlarınızı bulmak ve yeniden kullanmak artık daha kolay",
+        "body": "Geçmiş, her kaydı metniyle birlikte saklar. Artık onlarla neler yapabileceğiniz aşağıda; her adım birkaç saniye sürer.",
+        "tips": {
+          "find": {
+            "title": "Bul",
+            "text": "Metinde ve adlarda arayın; listeyi favorilere, bir zaman aralığına ve bir uzunluğa göre daraltın."
+          },
+          "name": {
+            "title": "Ad ver",
+            "text": "Bir kayda daha sonra tanıyacağınız bir ad verin."
+          },
+          "menu": {
+            "title": "Diğer işlemler",
+            "text": "⋯ menüsünden yeniden transkribe edin, konuşmacılarla transkribe edin veya silin."
+          },
+          "combine": {
+            "title": "Birleştir",
+            "text": "Birkaç kaydı seçtiğiniz sırayla tek bir metin olarak kopyalayın."
+          }
+        }
+      },
+      "find": {
+        "title": "Bir kaydı bulun",
+        "body": "Arama kutusunun yanında üç filtre var. Aramayla birlikte çalışırlar.",
+        "tips": {
+          "search": {
+            "title": "Arama",
+            "text": "Metinde, konuşmacılı metinde ve kaydın adında sözcükleri bulur."
+          },
+          "favorites": {
+            "title": "Favoriler",
+            "text": "Bir kayıttaki yıldız onu favori yapar: Kayıtlar'da renkli bir kenarlık alır ve Favoriler sekmesinde görünür. \"Yalnızca favoriler\" diğerlerini gizler."
+          },
+          "date": {
+            "title": "Ne zaman",
+            "text": "Son 3 veya 12 saat, gün, hafta veya ay ya da seçtiğiniz tarihler."
+          },
+          "length": {
+            "title": "Ne kadar uzun",
+            "text": "10 saniyenin altından 10 dakikanın üzerine kadar; böylece uzun bir toplantı hemen göze çarpar."
+          }
+        }
+      },
+      "menu": {
+        "title": "Daha az simge, daha çok işlem",
+        "body": "Her kayıt yalnızca en çok kullandığınız iki işlemi gösterir; diğerleri, her biri ne yaptığını anlatan bir satırla ⋯ menüsündedir.",
+        "tips": {
+          "icons": {
+            "title": "Kopyala ve yıldız",
+            "text": "Her zaman satırda: metni kopyalayın veya kaydı favori yapın."
+          },
+          "again": {
+            "title": "Yeniden transkribe et",
+            "text": "Kaydı mevcut modelinizle yeniden okur ve metnini değiştirir."
+          },
+          "speakers": {
+            "title": "Konuşmacılarla yeniden transkribe et",
+            "text": "Kaydın tamamını, konuşmacıları birbirinden ayıran STT sunucunuza gönderir. Bir şey eksikse neyin eksik olduğunu söyler ve STT sunucusu ayarlarını açar."
+          },
+          "delete": {
+            "title": "Sil",
+            "text": "Önce sorar, ardından kaydı ve metnini kaldırır."
+          }
+        }
+      },
+      "combine": {
+        "title": "Birkaç kaydı birleştirin",
+        "body": "Bir düşünce birkaç denemede söylendiğinde veya bütün bir toplantının notları için kullanışlıdır.",
+        "tips": {
+          "tick": {
+            "title": "İşaretleyin",
+            "text": "Her kayıttaki kutuyu işaretleyin. Üzerindeki sayı, işaretleme sıranıza göre listedeki yeridir."
+          },
+          "order": {
+            "title": "Sıraya koyun",
+            "text": "Birleştir… seçeneğini seçin: seçtiğiniz sırada bırakın, en eskiler veya en yeniler önce olacak şekilde sıralayın ya da bir satırı tutamağından sürükleyin."
+          },
+          "copy": {
+            "title": "Tek metin olarak kopyalayın",
+            "text": "Kayıtları birleştirerek kopyalar ve bir ✓ ile onaylar. Konuşmacılar varsa konuşmacılı metni kullanabilirsiniz."
+          }
+        }
+      },
+      "settings": {
+        "title": "Nasıl birleştirilirler",
+        "body": "Bunlar gerçek ayarlardır (Gelişmiş ayarlar › Kayıtları birleştir altında da bulunur): kayıtların arasına ne konacağı ve kendi başlangıcınız ile bitişiniz."
+      },
+      "tourName": "Geçmiş"
     }
   },
   "onboarding": {
@@ -1588,7 +1700,8 @@
       "tabs": {
         "recordings": "Kayıtlar",
         "statistics": "İstatistikler",
-        "settings": "Ayarlar"
+        "settings": "Ayarlar",
+        "favorites": "Favoriler"
       },
       "stats": {
         "title": "Kayıt istatistikleri",
@@ -1621,7 +1734,101 @@
         "label": "Metni konuşmacılarla veya konuşmacılar olmadan göster",
         "text": "Metin",
         "speakers": "Konuşmacılar"
-      }
+      },
+      "favorites": {
+        "empty": "Henüz favori yok. Bir kayıttaki yıldız onu buraya ekler."
+      },
+      "filters": {
+        "favoritesOnly": "Yalnızca favoriler",
+        "from": "Başlangıç",
+        "to": "Bitiş",
+        "date": {
+          "any": "Herhangi bir zaman",
+          "3h": "Son 3 saat",
+          "12h": "Son 12 saat",
+          "24h": "Son 24 saat",
+          "7d": "Son 7 gün",
+          "30d": "Son 30 gün",
+          "custom": "Özel tarihler…"
+        },
+        "length": {
+          "any": "Herhangi bir süre",
+          "under10s": "10 sn altı",
+          "10to30s": "10–30 sn",
+          "30sTo1m": "30 sn–1 dk",
+          "1to2m": "1–2 dk",
+          "2to5m": "2–5 dk",
+          "5to10m": "5–10 dk",
+          "over10m": "10 dk üstü"
+        }
+      },
+      "menu": {
+        "more": "Diğer işlemler",
+        "working": "Transkribe ediliyor…",
+        "again": {
+          "label": "Yeniden transkribe et",
+          "hint": "Kaydı dikte modelinle yeniden okur ve metni değiştirir."
+        },
+        "speakers": {
+          "label": "Konuşmacılarla yeniden transkribe et",
+          "hint": "Konuşmacıları ayırt etmek için kaydın tamamını STT sunucuna gönderir."
+        },
+        "name": {
+          "label": "Ad ver…",
+          "hint": "Bu kayıt için yanında gösterilen ve aramada bulunan bir ad."
+        },
+        "rename": {
+          "label": "Yeniden adlandır…"
+        },
+        "delete": {
+          "label": "Sil",
+          "hint": "Kaydı ve metnini Geçmiş'ten kaldırır."
+        }
+      },
+      "speakers": {
+        "confirm": "Bu transkripsiyon, konuşmacıları ayrılmış yenisiyle değiştirilsin mi?",
+        "openSettings": "STT sunucusu ayarları",
+        "oneVoice": "Yeniden transkribe edildi: sunucu yalnızca tek bir ses duydu, bu yüzden konuşmacılı metin yok.",
+        "errors": {
+          "notSet": "Konuşmacıları ayırt etmek için bir STT sunucusu gerekir. Adresini Gelişmiş ayarlar › STT sunucusu bölümünde ayarla.",
+          "modelNotSet": "Konuşmacılı bir model seçilmedi. Gelişmiş ayarlar › STT sunucusu bölümünden birini seç.",
+          "unreachable": "STT sunucusu yanıt vermedi: {{error}}. Adresini Gelişmiş ayarlar › STT sunucusu bölümünde kontrol et.",
+          "modelMissing": "STT sunucusunda \"{{model}}\" modeli yok (mevcut: {{available}}). Konuşmacılı modelini Gelişmiş ayarlar › STT sunucusu bölümünden seç."
+        }
+      },
+      "name": {
+        "placeholder": "Bu kayda bir ad ver",
+        "label": "Kayıt adı",
+        "save": "Adı kaydet",
+        "cancel": "İptal",
+        "edit": "Yeniden adlandır",
+        "failed": "Ad kaydedilemedi: {{error}}"
+      },
+      "deleteConfirm": "Bu kayıt ve metni silinsin mi?",
+      "deleteFailed": "Kayıt silinemedi. Tekrar dene.",
+      "combine": {
+        "select": "Birleştirmek için seç",
+        "selected": "{{count}} seçildi",
+        "clear": "Temizle",
+        "open": "Birleştir…",
+        "title": "{{count}} kaydı birleştir",
+        "description": "Bu sırayla tek metin olarak kopyalanır. Taşımak için bir satırı tutamacından sürükle.",
+        "close": "Kapat",
+        "order": {
+          "custom": "Seçildiği gibi",
+          "oldest": "Önce en eski",
+          "newest": "Önce en yeni"
+        },
+        "useSpeakers": "Konuşmacılı metni kullan",
+        "drag": "Taşımak için sürükle",
+        "remove": "Listeden kaldır",
+        "noText": "(metin yok)",
+        "copy": "Tek metin olarak kopyala",
+        "copied": "{{count}} kayıt tek metin olarak kopyalandı",
+        "copiedShort": "Kopyalandı",
+        "copyFailed": "Kopyalanamadı: {{error}}"
+      },
+      "showMeHow": "Bana göster"
     },
     "debug": {
       "title": "Hata Ayıklama",
@@ -2025,6 +2232,27 @@
         "title": "Konuşmacılı metnin çevresine",
         "description": "Konuşmacılarla yapıştırılan bir kaydın önüne ve arkasına eklenen metin, ör. \"Toplantı notları:\". Genel önek ve sonekin içine yerleşir."
       }
+    },
+    "combine": {
+      "title": "Kayıtları birleştir",
+      "description": "Geçmiş'in, seçip tek metin olarak kopyaladığın birden çok kaydı nasıl birleştirdiği.",
+      "separator": {
+        "title": "Kayıtlar arasında",
+        "description": "Birleşik metinde iki kayıt arasına ne konacağı.",
+        "options": {
+          "blank_line": "Boş satır",
+          "new_line": "Yeni satır",
+          "space": "Boşluk"
+        }
+      },
+      "keepTakeAffixes": {
+        "label": "Her kaydın önekini ve sonekini koru",
+        "description": "**Transkribe Et önekini ve sonekini her kaydın çevresine ekler**, yapıştırıldığındaki gibi. Varsayılan olarak kapalı: kayıtlar eksiz birleştirilir."
+      },
+      "affixes": {
+        "title": "Birleşik metnin çevresinde",
+        "description": "Birleşik metin için kendi başlangıcın ve sonun, ör. \"Toplantı notları:\"."
+      }
     }
   },
   "common": {
@@ -2099,7 +2327,8 @@
     "pasteFailedHistoryOnly": "Transkripsiyon yapıştırılamadı: {{reason}}. Panonuz değiştirilmedi — metin Geçmiş'te kaydedildi. {{recovery}}",
     "recoverWithPasteLast": "Yapıştırmak için {{shortcut}} tuşuna basın.",
     "recoverFromHistory": "Kopyalamak için Ayarlar › Geçmiş'i açın.",
-    "transcriptionFallback": "{{from}} bu kaydı yazıya dökemedi, bu yüzden {{to}} döktü"
+    "transcriptionFallback": "{{from}} bu kaydı yazıya dökemedi, bu yüzden {{to}} döktü",
+    "transcriptionIncomplete": "Bu kaydın bir kısmı yazıya dökülemedi (eksik parça: {{count}}), bu yüzden metin eksik. Kaydın tamamı Geçmiş'te: oradan yeniden yazıya dök."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Windows Uygulama Denetimi, imzalı olmadığı için flm.exe dosyasını engelledi. NPU altyapısı kullanılamıyor. Farklı bir transkripsiyon modeli seçin.",
@@ -2371,6 +2600,26 @@
       "logArchive": {
         "title": "Eski günlükler sıkıştırılır",
         "description": "Günlük 10 MB'a ulaştığında yeni bir dosya başlar, eskisi sıkıştırılıp kenara ayrılır (en yeni 20 tanesi, en fazla 30 gün)."
+      },
+      "historyMenu": {
+        "title": "Geçmiş: daha az simge, daha çok işlem",
+        "description": "Kopyala ve yıldız her kayıtta kalıyor; Yeniden transkribe et, Konuşmacılarla yeniden transkribe et, Ad ver ve Sil, her biri kısa bir açıklamayla ⋯ menüsüne taşındı."
+      },
+      "historyFavorites": {
+        "title": "Favoriler, adlar ve filtreler",
+        "description": "Favorilerin kendi sekmesi var ve Kayıtlar'da işaretleniyor. Bir kayda ad ver (metniyle birlikte aranır) ve favorilere, tarihe (son 3 saatten son 30 güne veya kendi tarihlerin) ve süreye göre filtrele."
+      },
+      "combine": {
+        "title": "Birden çok kaydı tek metinde birleştir",
+        "description": "Kayıtları işaretle ve Birleştir'i seç: sıraya koy (seçildiği gibi, önce en eski veya en yeni ya da sürükleyerek) ve tek metin olarak kopyala. Gelişmiş ayarlar › Kayıtları birleştir, aralarına ve çevrelerine ne konacağını belirler."
+      },
+      "onlineOnTheFly": {
+        "title": "Çevrimiçi modeller sen konuşurken transkribe ediyor",
+        "description": "API modeli ve STT sunucun artık bir kaydın her parçasını yerel modeller gibi anında transkribe ediyor, böylece metin durdurduktan hemen sonra hazır. Konuşmacılar açıkken, kimin ne söylediği için kaydın tamamı sonda bir kez gönderilir. İlerlemeleri artık bir süre tahmini de gösteriyor."
+      },
+      "historyTour": {
+        "title": "Bana göster: Geçmiş",
+        "description": "Aşağıdaki tüm Geçmiş yeniliklerine kısa, rehberli bir tur. Kurulumlar'da veya Geçmiş sayfasındaki \"Bana göster\" altında bulabilirsiniz."
       }
     },
     "installed": "Yüklü"

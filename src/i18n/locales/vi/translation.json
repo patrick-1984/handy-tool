@@ -71,7 +71,8 @@
     "llmProviders": "Nhà cung cấp LLM",
     "advancedSettings": "Cài đặt nâng cao",
     "moreTools": "Công cụ khác",
-    "sttServer": "Máy chủ STT"
+    "sttServer": "Máy chủ STT",
+    "combine": "Ghép bản ghi"
   },
   "helpMode": {
     "button": "Chế độ trợ giúp: trỏ vào một cài đặt để xem nó làm gì",
@@ -166,6 +167,11 @@
       "appearance": {
         "title": "Giao diện",
         "description": "Thanh ghi âm và hộp văn bản trực tiếp trông như thế nào: vị trí và kích thước của thanh ghi âm, thanh âm thanh, cách hiện tiến độ, và hộp văn bản trực tiếp, với mỗi lựa chọn được xem chuyển động trước khi bạn chọn."
+      },
+      "showMeHow": "Chỉ cho tôi",
+      "history": {
+        "title": "Lịch sử",
+        "description": "Một chuyến tham quan ngắn về những điểm mới trong Lịch sử: tìm bản ghi bằng tìm kiếm, mục yêu thích, ngày và độ dài, đặt tên, menu ⋯ và ghép nhiều bản ghi thành một văn bản."
       }
     },
     "closeSetup": "Đóng thiết lập",
@@ -431,6 +437,112 @@
         "title": "Phím tắt của bạn đã được giữ lại",
         "body": "Bạn có thể đổi những phím tắt ở lại trên máy tính này bất cứ lúc nào trong trang Phím tắt, mục Shortcut Keeper."
       }
+    },
+    "history": {
+      "name": {
+        "title": "Đặt tên cho bản ghi",
+        "body": "Tên nằm cạnh ngày và giờ của bản ghi.",
+        "tips": {
+          "add": {
+            "title": "Thêm tên",
+            "text": "Chọn Đặt tên… trong menu ⋯, hoặc bấm vào tên để đổi."
+          },
+          "save": {
+            "title": "Lưu lại",
+            "text": "Nhấn ✓ hoặc Enter để giữ, Escape để hủy. Để trống tên sẽ xóa tên."
+          }
+        }
+      },
+      "openHistory": "Mở Lịch sử",
+      "intro": {
+        "title": "Bản ghi của bạn, dễ tìm và dễ dùng lại hơn",
+        "body": "Lịch sử lưu mọi bản ghi cùng văn bản của nó. Đây là những gì bạn có thể làm với chúng bây giờ; mỗi bước chỉ mất vài giây.",
+        "tips": {
+          "find": {
+            "title": "Tìm",
+            "text": "Tìm trong văn bản và tên, rồi thu hẹp danh sách theo mục yêu thích, thời gian và độ dài."
+          },
+          "name": {
+            "title": "Đặt tên",
+            "text": "Đặt cho bản ghi một cái tên bạn sẽ nhận ra sau này."
+          },
+          "menu": {
+            "title": "Thêm thao tác",
+            "text": "Phiên âm lại, phiên âm theo người nói hoặc xóa, từ menu ⋯."
+          },
+          "combine": {
+            "title": "Ghép",
+            "text": "Sao chép nhiều bản ghi thành một văn bản, theo thứ tự bạn chọn."
+          }
+        }
+      },
+      "find": {
+        "title": "Tìm một bản ghi",
+        "body": "Cạnh ô tìm kiếm có ba bộ lọc. Chúng hoạt động cùng với tìm kiếm.",
+        "tips": {
+          "search": {
+            "title": "Tìm kiếm",
+            "text": "Tìm từ trong văn bản, văn bản theo người nói và tên của bản ghi."
+          },
+          "favorites": {
+            "title": "Yêu thích",
+            "text": "Ngôi sao trên bản ghi biến nó thành mục yêu thích: nó có viền màu trong Bản ghi và xuất hiện ở thẻ Yêu thích. \"Chỉ mục yêu thích\" ẩn phần còn lại."
+          },
+          "date": {
+            "title": "Khi nào",
+            "text": "3 hoặc 12 giờ qua, ngày, tuần hoặc tháng qua, hoặc những ngày bạn chọn."
+          },
+          "length": {
+            "title": "Dài bao lâu",
+            "text": "Từ dưới 10 giây đến hơn 10 phút, để dễ nhận ra một cuộc họp dài."
+          }
+        }
+      },
+      "menu": {
+        "title": "Ít biểu tượng hơn, nhiều thao tác hơn",
+        "body": "Mỗi bản ghi chỉ hiện hai thao tác bạn dùng nhiều nhất; phần còn lại nằm trong menu ⋯, mỗi mục có một dòng mô tả.",
+        "tips": {
+          "icons": {
+            "title": "Sao chép và gắn sao",
+            "text": "Luôn có trên hàng: sao chép văn bản hoặc đánh dấu yêu thích."
+          },
+          "again": {
+            "title": "Phiên âm lại",
+            "text": "Đọc lại bản ghi bằng mô hình hiện tại của bạn và thay thế văn bản của nó."
+          },
+          "speakers": {
+            "title": "Phiên âm lại theo người nói",
+            "text": "Gửi toàn bộ bản ghi đến máy chủ STT của bạn để phân biệt người nói. Nếu thiếu gì, nó cho biết thiếu gì và mở cài đặt máy chủ STT."
+          },
+          "delete": {
+            "title": "Xóa",
+            "text": "Hỏi trước, sau đó xóa bản ghi và văn bản của nó."
+          }
+        }
+      },
+      "combine": {
+        "title": "Ghép nhiều bản ghi",
+        "body": "Hữu ích khi một ý cần vài lần ghi, hoặc để ghi chú cả một cuộc họp.",
+        "tips": {
+          "tick": {
+            "title": "Đánh dấu chọn",
+            "text": "Đánh dấu ô trên từng bản ghi. Số trên ô là vị trí của nó trong danh sách, theo thứ tự bạn đánh dấu."
+          },
+          "order": {
+            "title": "Sắp xếp thứ tự",
+            "text": "Chọn Ghép…: giữ nguyên thứ tự đã chọn, sắp xếp cũ nhất hoặc mới nhất trước, hoặc kéo một hàng bằng tay nắm của nó."
+          },
+          "copy": {
+            "title": "Sao chép thành một văn bản",
+            "text": "Sao chép chúng nối liền nhau và xác nhận bằng dấu ✓. Khi có người nói, bạn có thể dùng văn bản theo người nói."
+          }
+        }
+      },
+      "settings": {
+        "title": "Cách chúng được nối",
+        "body": "Đây là các cài đặt thực (cũng có trong Cài đặt nâng cao › Ghép bản ghi): nội dung đặt giữa các bản ghi, cùng phần mở đầu và kết thúc của riêng bạn."
+      },
+      "tourName": "Lịch sử"
     }
   },
   "onboarding": {
@@ -1588,7 +1700,8 @@
       "tabs": {
         "recordings": "Bản ghi",
         "statistics": "Thống kê",
-        "settings": "Cài đặt"
+        "settings": "Cài đặt",
+        "favorites": "Yêu thích"
       },
       "stats": {
         "title": "Thống kê ghi âm",
@@ -1621,7 +1734,101 @@
         "label": "Hiện văn bản có hoặc không có người nói",
         "text": "Văn bản",
         "speakers": "Người nói"
-      }
+      },
+      "favorites": {
+        "empty": "Chưa có mục yêu thích. Ngôi sao trên bản ghi sẽ thêm nó vào đây."
+      },
+      "filters": {
+        "favoritesOnly": "Chỉ mục yêu thích",
+        "from": "Từ",
+        "to": "Đến",
+        "date": {
+          "any": "Mọi lúc",
+          "3h": "3 giờ qua",
+          "12h": "12 giờ qua",
+          "24h": "24 giờ qua",
+          "7d": "7 ngày qua",
+          "30d": "30 ngày qua",
+          "custom": "Ngày tùy chọn…"
+        },
+        "length": {
+          "any": "Mọi độ dài",
+          "under10s": "Dưới 10 giây",
+          "10to30s": "10–30 giây",
+          "30sTo1m": "30 giây–1 phút",
+          "1to2m": "1–2 phút",
+          "2to5m": "2–5 phút",
+          "5to10m": "5–10 phút",
+          "over10m": "Trên 10 phút"
+        }
+      },
+      "menu": {
+        "more": "Thao tác khác",
+        "working": "Đang phiên âm…",
+        "again": {
+          "label": "Phiên âm lại",
+          "hint": "Đọc lại bản ghi bằng mô hình đọc chính tả của bạn và thay thế văn bản."
+        },
+        "speakers": {
+          "label": "Phiên âm lại theo người nói",
+          "hint": "Gửi toàn bộ bản ghi đến máy chủ STT của bạn để phân biệt người nói."
+        },
+        "name": {
+          "label": "Đặt tên…",
+          "hint": "Tên cho bản ghi này, hiển thị bên cạnh và tìm được khi tìm kiếm."
+        },
+        "rename": {
+          "label": "Đổi tên…"
+        },
+        "delete": {
+          "label": "Xóa",
+          "hint": "Xóa bản ghi và văn bản của nó khỏi Lịch sử."
+        }
+      },
+      "speakers": {
+        "confirm": "Thay bản phiên âm này bằng bản mới có phân biệt người nói?",
+        "openSettings": "Cài đặt máy chủ STT",
+        "oneVoice": "Đã phiên âm lại: máy chủ chỉ nghe thấy một giọng nói nên không có văn bản theo người nói.",
+        "errors": {
+          "notSet": "Phân biệt người nói cần một máy chủ STT. Đặt địa chỉ của nó trong Cài đặt nâng cao › Máy chủ STT.",
+          "modelNotSet": "Chưa chọn mô hình hỗ trợ người nói. Hãy chọn một trong Cài đặt nâng cao › Máy chủ STT.",
+          "unreachable": "Máy chủ STT không phản hồi: {{error}}. Kiểm tra địa chỉ của nó trong Cài đặt nâng cao › Máy chủ STT.",
+          "modelMissing": "Máy chủ STT không có mô hình \"{{model}}\" (hiện có: {{available}}). Chọn mô hình hỗ trợ người nói của nó trong Cài đặt nâng cao › Máy chủ STT."
+        }
+      },
+      "name": {
+        "placeholder": "Đặt tên cho bản ghi này",
+        "label": "Tên bản ghi",
+        "save": "Lưu tên",
+        "cancel": "Hủy",
+        "edit": "Đổi tên",
+        "failed": "Không thể lưu tên: {{error}}"
+      },
+      "deleteConfirm": "Xóa bản ghi này và văn bản của nó?",
+      "deleteFailed": "Không thể xóa bản ghi. Hãy thử lại.",
+      "combine": {
+        "select": "Chọn để ghép",
+        "selected": "Đã chọn {{count}}",
+        "clear": "Bỏ chọn",
+        "open": "Ghép…",
+        "title": "Ghép {{count}} bản ghi",
+        "description": "Được sao chép thành một văn bản theo thứ tự này. Kéo tay nắm của một hàng để di chuyển nó.",
+        "close": "Đóng",
+        "order": {
+          "custom": "Theo thứ tự chọn",
+          "oldest": "Cũ nhất trước",
+          "newest": "Mới nhất trước"
+        },
+        "useSpeakers": "Dùng văn bản theo người nói",
+        "drag": "Kéo để di chuyển",
+        "remove": "Xóa khỏi danh sách",
+        "noText": "(không có văn bản)",
+        "copy": "Sao chép thành một văn bản",
+        "copied": "Đã sao chép {{count}} bản ghi thành một văn bản",
+        "copiedShort": "Đã sao chép",
+        "copyFailed": "Không thể sao chép: {{error}}"
+      },
+      "showMeHow": "Chỉ cho tôi"
     },
     "debug": {
       "title": "Gỡ lỗi",
@@ -2025,6 +2232,27 @@
         "title": "Quanh văn bản có người nói",
         "description": "Văn bản thêm vào trước và sau bản ghi được dán kèm người nói, ví dụ \"Ghi chú cuộc họp:\". Nằm bên trong tiền tố và hậu tố chung."
       }
+    },
+    "combine": {
+      "title": "Ghép bản ghi",
+      "description": "Cách Lịch sử nối nhiều bản ghi bạn chọn và sao chép thành một văn bản.",
+      "separator": {
+        "title": "Giữa các bản ghi",
+        "description": "Nội dung đặt giữa hai bản ghi trong văn bản đã ghép.",
+        "options": {
+          "blank_line": "Một dòng trống",
+          "new_line": "Một dòng mới",
+          "space": "Một dấu cách"
+        }
+      },
+      "keepTakeAffixes": {
+        "label": "Giữ tiền tố và hậu tố của từng bản ghi",
+        "description": "**Thêm tiền tố và hậu tố Phiên âm của bạn quanh mỗi bản ghi** trong văn bản đã ghép, như khi dán. Mặc định tắt: các bản ghi được nối nguyên trạng."
+      },
+      "affixes": {
+        "title": "Quanh văn bản đã ghép",
+        "description": "Phần mở đầu và kết thúc riêng của bạn cho văn bản đã ghép, ví dụ \"Ghi chú cuộc họp:\"."
+      }
     }
   },
   "common": {
@@ -2106,7 +2334,8 @@
     "pasteFailedHistoryOnly": "Dán bản phiên âm không thành công: {{reason}}. Clipboard không bị thay đổi — văn bản đã được lưu trong Lịch sử. {{recovery}}",
     "recoverWithPasteLast": "Nhấn {{shortcut}} để dán.",
     "recoverFromHistory": "Mở Cài đặt › Lịch sử để sao chép.",
-    "transcriptionFallback": "{{from}} không thể chép lời bản ghi này, nên {{to}} đã chép lời thay"
+    "transcriptionFallback": "{{from}} không thể chép lời bản ghi này, nên {{to}} đã chép lời thay",
+    "transcriptionIncomplete": "Không thể chép lời một phần của bản ghi này (thiếu {{count}} đoạn), nên văn bản chưa đầy đủ. Toàn bộ bản ghi có trong Lịch sử: hãy chép lời lại ở đó."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Kiểm soát ứng dụng Windows đã chặn flm.exe vì tệp này chưa được ký. Công cụ NPU không khả dụng. Hãy chọn một mô hình phiên âm khác.",
@@ -2371,6 +2600,26 @@
       "logArchive": {
         "title": "Nhật ký cũ được nén",
         "description": "Khi nhật ký đạt 10 MB, một tệp mới được bắt đầu và tệp cũ được nén và cất riêng (20 tệp mới nhất, tối đa 30 ngày)."
+      },
+      "historyMenu": {
+        "title": "Lịch sử: ít biểu tượng hơn, nhiều thao tác hơn",
+        "description": "Sao chép và ngôi sao vẫn ở trên mỗi bản ghi; Phiên âm lại, Phiên âm lại theo người nói, Đặt tên và Xóa đã chuyển vào menu ⋯, mỗi mục có một giải thích ngắn."
+      },
+      "historyFavorites": {
+        "title": "Yêu thích, tên và bộ lọc",
+        "description": "Mục yêu thích có thẻ riêng và được đánh dấu trong Bản ghi. Đặt tên cho bản ghi (được tìm cùng văn bản của nó) và lọc theo yêu thích, ngày (từ 3 giờ qua đến 30 ngày qua, hoặc ngày của bạn) và độ dài."
+      },
+      "combine": {
+        "title": "Ghép nhiều bản ghi thành một văn bản",
+        "description": "Đánh dấu các bản ghi và chọn Ghép: sắp xếp chúng (theo thứ tự chọn, cũ nhất hoặc mới nhất trước, hoặc kéo thả) rồi sao chép thành một văn bản. Cài đặt nâng cao › Ghép bản ghi quy định nội dung đặt giữa và quanh chúng."
+      },
+      "onlineOnTheFly": {
+        "title": "Mô hình trực tuyến phiên âm ngay khi bạn nói",
+        "description": "Mô hình API và máy chủ STT của bạn giờ phiên âm từng phần của bản ghi ngay trong lúc nói, như các mô hình cục bộ, nên văn bản sẵn sàng ngay khi bạn dừng. Khi bật người nói, toàn bộ bản ghi được gửi một lần ở cuối để xác định ai nói gì. Tiến trình của chúng cũng hiển thị thời gian ước tính."
+      },
+      "historyTour": {
+        "title": "Chỉ cho tôi: Lịch sử",
+        "description": "Một chuyến tham quan có hướng dẫn ngắn về mọi điểm mới trong Lịch sử bên dưới. Tìm nó trong Thiết lập, hoặc dưới \"Chỉ cho tôi\" trên trang Lịch sử."
       }
     },
     "installed": "Đã cài"

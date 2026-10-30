@@ -7,7 +7,7 @@ import { ToggleSwitch } from "../ui/ToggleSwitch";
 import { useSettings } from "../../hooks/useSettings";
 import { TEXT_FIELD } from "../ui/controlClasses";
 
-type Flow = "output" | "submit" | "stt_text" | "stt_speakers";
+type Flow = "output" | "submit" | "stt_text" | "stt_speakers" | "combine";
 
 interface AffixSettingsProps {
   /** Which delivery flow these affixes belong to: plain Transcribe, or

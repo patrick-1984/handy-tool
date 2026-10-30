@@ -26,6 +26,14 @@ Runs on the page: what the AI should do with your words (a ready prompt or your 
 
 Catalog: [A guided setup for post-processing](../../features.md#a-guided-setup-for-post-processing).
 
+### History
+
+`Setups › History`
+
+Its button reads `Show me how`. A tour, not a setup: what History can do now, finding a recording (search, favorites, time and length), naming one, the ⋯ menu (Transcribe again, with speakers, Delete), and combining several recordings into one text. Its last step holds the real [Combine recordings](combine.md) settings, so a choice made there is kept; `Open History` ends it on the Recordings tab. Also started by `Show me how` on the `History` page. **Default:** not run.
+
+Catalog: [A guided tour of History](../../features.md#a-guided-tour-of-history).
+
 ### Jumper
 
 `Setups › Jumper`

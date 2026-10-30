@@ -13,8 +13,15 @@ Treat History as part of dictation, not as an archive you visit months later. It
 - [A crash mid-dictation costs you nothing](../features.md#a-crash-mid-dictation-costs-you-nothing)
 - [Recordings that don't eat your disk](../features.md#recordings-that-dont-eat-your-disk)
 - [What did I dictate last Tuesday?](../features.md#what-did-i-dictate-last-tuesday)
+- [Narrow History to favorites, a time and a length](../features.md#narrow-history-by-favorites-date-and-length)
+- [Give a recording a name you will recognize](../features.md#name-a-recording)
+- [Fewer icons on each recording, every action explained](../features.md#fewer-icons-every-action-explained)
+- [Find out who said what in a recording](../features.md#transcribe-again-with-speakers)
+- [Several takes, copied as one text](../features.md#combine-recordings)
+- [A guided tour of History](../features.md#a-guided-tour-of-history)
 - [Hear what it heard](../features.md#hear-what-it-heard)
 - [Keep the ones that matter](../features.md#keep-the-ones-that-matter)
+- [Copy or delete a single entry](../features.md#copy-or-delete-a-single-entry)
 - [Escape stops the delivery, not your words](../features.md#escape-stops-the-delivery-not-your-words)
 - [Don't keep audio forever](../features.md#dont-keep-audio-forever)
 - [How long it was, which engine ran it, what it cost](../features.md#how-long-which-engine-what-it-cost)
@@ -24,6 +31,7 @@ Treat History as part of dictation, not as an archive you visit months later. It
 ## Settings that matter
 
 - [History settings](../reference/settings/history.md)
+- [Combine recordings settings](../reference/settings/combine.md)
 - [Transcription and Advanced settings](../reference/settings/advanced.md)
 - [General settings](../reference/settings/general.md)
 

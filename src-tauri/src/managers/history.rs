@@ -1329,6 +1329,26 @@ impl HistoryManager {
         Ok(())
     }
 
+    /// A take's speaker text that arrived after the take was saved (the STT
+    /// server's whole-take request runs after delivery). Only fills an empty
+    /// one: a row transcribed again meanwhile keeps its newer speaker text.
+    pub fn set_diarized_for_file(&self, file_name: &str, diarized: &str) -> Result<()> {
+        let conn = self.get_connection()?;
+        let changed = conn.execute(
+            "UPDATE transcription_history SET diarized_text = ?1 WHERE file_name = ?2 AND diarized_text IS NULL",
+            params![diarized, file_name],
+        )?;
+        if changed == 0 {
+            return Err(anyhow::anyhow!(
+                "no row without speaker text for this recording"
+            ));
+        }
+        if let Err(e) = self.app_handle.emit("history-updated", ()) {
+            error!("Failed to emit history-updated event: {}", e);
+        }
+        Ok(())
+    }
+
     /// The row's new text; its speaker text is replaced too (`None` clears a
     /// stale one from an earlier transcription).
     fn update_transcription_row(

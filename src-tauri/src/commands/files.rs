@@ -846,6 +846,7 @@ pub async fn retranscribe_history_entry_speakers(
         return Err("an update is being installed; try again after the restart".into());
     }
     let app_job = app.clone();
+    let settings_job = settings.clone();
     let result = tauri::async_runtime::spawn_blocking(
         move || -> Result<crate::managers::stt_server::SttServerResult, String> {
             let mut samples = Vec::new();
@@ -858,7 +859,7 @@ pub async fn retranscribe_history_entry_speakers(
             );
             app_job
                 .state::<Arc<TranscriptionManager>>()
-                .stt_server_speakers_direct(&samples)
+                .stt_server_speakers_direct(&settings_job, &samples)
                 .map_err(|e| e.to_string())
         },
     )

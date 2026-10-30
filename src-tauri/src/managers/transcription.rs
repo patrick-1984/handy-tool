@@ -991,10 +991,10 @@ impl TranscriptionManager {
     pub fn stt_server_take_expecting(
         &self,
         expected_model: &str,
-        audio: &[f32],
+        audio: Vec<f32>,
     ) -> Result<crate::managers::stt_server::SttServerResult> {
         STT_TAKE_SPEAKERS.with(|c| *c.borrow_mut() = Some(None));
-        let result = self.transcribe_inner(expected_model, audio.to_vec(), false);
+        let result = self.transcribe_inner(expected_model, audio, false);
         let diarized = STT_TAKE_SPEAKERS.with(|c| c.borrow_mut().take()).flatten();
         result.map(|(text, _)| crate::managers::stt_server::SttServerResult { text, diarized })
     }
@@ -1002,11 +1002,14 @@ impl TranscriptionManager {
     /// History's "Transcribe again with speakers": the whole recording to the
     /// Custom STT server's speakers model, whatever the dictation model is and
     /// whether speakers are on for takes.
+    /// `settings`: the snapshot the caller checked (a change made meanwhile
+    /// does not switch the server or model under it).
     pub fn stt_server_speakers_direct(
         &self,
+        settings: &crate::settings::AppSettings,
         audio: &[f32],
     ) -> Result<crate::managers::stt_server::SttServerResult> {
-        let mut settings = get_settings(&self.app_handle);
+        let mut settings = settings.clone();
         settings.stt_server_speakers = true;
         self.stt_server_request(&settings, audio, true)
     }

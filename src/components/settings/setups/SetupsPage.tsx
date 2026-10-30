@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ArrowRight,
+  History,
   Mic,
   MonitorDot,
   MoveUpRight,
@@ -15,6 +16,7 @@ import { useOsType } from "../../../hooks/useOsType";
 import { JumperSetup } from "./JumperSetup";
 import { PostProcessingSetup } from "./PostProcessingSetup";
 import { RemoteDesktopSetup } from "./RemoteDesktopSetup";
+import { HistorySetup } from "./HistorySetup";
 import { AppearanceSetup } from "./appearance/AppearanceSetup";
 import { useNavStore, type FeatureSetup } from "../../../stores/navStore";
 
@@ -42,6 +44,7 @@ export const SetupsPage: React.FC = () => {
   if (running === "jumper") return <JumperSetup onClose={close} />;
   if (running === "postProcessing")
     return <PostProcessingSetup onClose={close} />;
+  if (running === "history") return <HistorySetup onClose={close} />;
   if (running === "remote" && osType === "windows")
     return <RemoteDesktopSetup onClose={close} />;
 
@@ -93,6 +96,12 @@ export const SetupsPage: React.FC = () => {
         {card("basic", Mic, runSetupAgain)}
         {card("appearance", Palette, () => setRunning("appearance"))}
         {card("postProcessing", Sparkles, () => setRunning("postProcessing"))}
+        {card(
+          "history",
+          History,
+          () => setRunning("history"),
+          t("setup.catalog.showMeHow"),
+        )}
         {/* The Jumper is Windows-only. */}
         {osType === "windows" &&
           card(
