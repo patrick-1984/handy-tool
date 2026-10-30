@@ -418,12 +418,13 @@ pub struct Turn {
     pub end: f32,
 }
 
-/// Turns shorter than this join a neighbour (too short to transcribe well).
-const MIN_TURN_SECS: f32 = 1.0;
+/// Turns shorter than this join a neighbour (too short to transcribe well;
+/// 0.8 s keeps a real short answer, measured on a two-speaker sample).
+const MIN_TURN_SECS: f32 = 0.8;
 
 /// Splits a recording of `total_secs` into speaker turns that cover it all:
 /// each 80 ms frame goes to the most likely speaker among those active there;
-/// a pause is shared between the turns around it; turns under a second join
+/// a pause is shared between the turns around it; turns under 0.8 s join
 /// the one before them. No speech found: one turn, speaker 0.
 pub fn turns(smoothed: &[f32], segs: &[Segment], total_secs: f32) -> Vec<Turn> {
     let frames = smoothed.len() / SPK;
