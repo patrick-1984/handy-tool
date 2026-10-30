@@ -2280,7 +2280,7 @@
       },
       "source": {
         "title": "\"Trascrivi di nuovo con i parlanti\" usa",
-        "description": "Dove la Cronologia distingue i parlanti. Automatico: questo PC una volta scaricato il suo modello dei parlanti, altrimenti il server STT.",
+        "description": "Dove la Cronologia distingue i parlanti. Automatico: questo PC quando il suo modello dei parlanti è scaricato e detti con un modello su questo PC; altrimenti il server STT.",
         "options": {
           "auto": "Automatico",
           "local": "Questo PC",

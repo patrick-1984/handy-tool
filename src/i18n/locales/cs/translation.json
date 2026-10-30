@@ -2280,7 +2280,7 @@
       },
       "source": {
         "title": "\"Přepsat znovu s mluvčími\" používá",
-        "description": "Kde Historie rozlišuje mluvčí. Automaticky: toto PC, jakmile je stažen jeho model mluvčích, jinak STT server.",
+        "description": "Kde Historie rozlišuje mluvčí. Automaticky: toto PC, jakmile je stažen model mluvčích a diktujete modelem na tomto PC; jinak server STT.",
         "options": {
           "auto": "Automaticky",
           "local": "Toto PC",

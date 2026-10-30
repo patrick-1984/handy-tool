@@ -2280,7 +2280,7 @@
       },
       "source": {
         "title": "\"Konuşmacılarla yeniden transkribe et\" şunu kullanır",
-        "description": "Geçmiş'in konuşmacıları nerede ayırt ettiği. Otomatik: konuşmacı modeli indirildiyse bu bilgisayar, aksi halde STT sunucusu.",
+        "description": "Geçmiş'in konuşmacıları nerede ayırt ettiği. Otomatik: konuşmacı modeli indirilmişse ve bu bilgisayardaki bir modelle dikte ediyorsanız bu bilgisayar; aksi halde STT sunucusu.",
         "options": {
           "auto": "Otomatik",
           "local": "Bu bilgisayar",

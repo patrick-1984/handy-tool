@@ -2280,7 +2280,7 @@
       },
       "source": {
         "title": "\"Erneut mit Sprechern transkribieren\" verwendet",
-        "description": "Wo der Verlauf die Sprecher unterscheidet. Automatisch: dieser PC, sobald sein Sprechermodell heruntergeladen ist, sonst der STT-Server.",
+        "description": "Wo der Verlauf die Sprecher unterscheidet. Automatisch: dieser PC, sobald sein Sprechermodell heruntergeladen ist und du mit einem Modell auf diesem PC diktierst; sonst der STT-Server.",
         "options": {
           "auto": "Automatisch",
           "local": "Dieser PC",

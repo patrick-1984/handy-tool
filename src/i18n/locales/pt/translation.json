@@ -2280,7 +2280,7 @@
       },
       "source": {
         "title": "\"Transcrever novamente com falantes\" usa",
-        "description": "Onde o Histórico distingue os falantes. Automático: este PC assim que o modelo de falantes for baixado; caso contrário, o servidor STT.",
+        "description": "Onde o Histórico distingue os falantes. Automático: este PC quando o modelo de falantes estiver transferido e você ditar com um modelo neste PC; caso contrário, o servidor STT.",
         "options": {
           "auto": "Automático",
           "local": "Este PC",

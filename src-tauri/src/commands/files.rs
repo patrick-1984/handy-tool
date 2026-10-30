@@ -851,6 +851,15 @@ pub(crate) fn local_speakers(
     model: &str,
     external: bool,
 ) -> Result<crate::diarize::Speakers, String> {
+    // Enforced here, at the point of use: on this PC, nothing goes online
+    // (whatever was checked earlier, the model may have changed since).
+    let online = app
+        .state::<Arc<ModelManager>>()
+        .get_model_info(model)
+        .is_none_or(|m| m.engine_type.is_online());
+    if online {
+        return Err("LOCAL_SPEAKERS_NEEDS_LOCAL_MODEL".into());
+    }
     let tm = app.state::<Arc<TranscriptionManager>>();
     crate::diarize::speakers_for(app, samples, |turn| {
         let mut parts = Vec::new();

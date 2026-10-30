@@ -2280,7 +2280,7 @@
       },
       "source": {
         "title": "\"Transcribir de nuevo con hablantes\" usa",
-        "description": "Dónde distingue el Historial a los hablantes. Automático: este PC cuando su modelo de hablantes esté descargado; si no, el servidor STT.",
+        "description": "Dónde distingue el Historial a los hablantes. Automático: este PC cuando su modelo de hablantes está descargado y dictas con un modelo de este PC; si no, el servidor STT.",
         "options": {
           "auto": "Automático",
           "local": "Este PC",

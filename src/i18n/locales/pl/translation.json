@@ -2280,7 +2280,7 @@
       },
       "source": {
         "title": "\"Transkrybuj ponownie z mówcami\" używa",
-        "description": "Gdzie Historia rozróżnia mówców. Automatycznie: ten komputer, gdy model mówców jest pobrany, w przeciwnym razie serwer STT.",
+        "description": "Gdzie Historia rozpoznaje mówców. Automatycznie: ten komputer, gdy model mówców jest pobrany, a dyktujesz modelem działającym na tym komputerze; w przeciwnym razie serwer STT.",
         "options": {
           "auto": "Automatycznie",
           "local": "Ten komputer",

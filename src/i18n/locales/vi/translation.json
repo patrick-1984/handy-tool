@@ -2280,7 +2280,7 @@
       },
       "source": {
         "title": "\"Phiên âm lại theo người nói\" sử dụng",
-        "description": "Nơi Lịch sử phân biệt người nói. Tự động: PC này khi mô hình người nói đã được tải xuống, nếu không thì máy chủ STT.",
+        "description": "Nơi Lịch sử phân biệt người nói. Tự động: máy này khi mô hình người nói đã được tải và bạn đọc chính tả bằng mô hình trên máy này; nếu không thì máy chủ STT.",
         "options": {
           "auto": "Tự động",
           "local": "PC này",

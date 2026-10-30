@@ -2280,7 +2280,7 @@
       },
       "source": {
         "title": "\"Transcrire à nouveau avec les locuteurs\" utilise",
-        "description": "Où l'Historique distingue les locuteurs. Automatique : ce PC une fois son modèle de locuteurs téléchargé, sinon le serveur STT.",
+        "description": "Où l'Historique distingue les locuteurs. Automatique : ce PC une fois son modèle de locuteurs téléchargé et si vous dictez avec un modèle sur ce PC ; sinon le serveur STT.",
         "options": {
           "auto": "Automatique",
           "local": "Ce PC",

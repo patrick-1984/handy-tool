@@ -2294,7 +2294,7 @@
       },
       "source": {
         "title": "\"Transcribe again with speakers\" uses",
-        "description": "Where History tells the speakers apart. Automatic: this PC once its speakers model is downloaded, otherwise the STT server.",
+        "description": "Where History tells the speakers apart. Automatic: this PC once its speakers model is downloaded and you dictate with a model on this PC; otherwise the STT server.",
         "options": {
           "auto": "Automatic",
           "local": "This PC",

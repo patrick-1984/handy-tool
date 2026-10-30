@@ -17,6 +17,7 @@ Treat History as part of dictation, not as an archive you visit months later. It
 - [Give a recording a name you will recognize](../features.md#name-a-recording)
 - [Fewer icons on each recording, every action explained](../features.md#fewer-icons-every-action-explained)
 - [Find out who said what in a recording](../features.md#transcribe-again-with-speakers)
+- [Who said what, worked out on this PC](../features.md#speakers-on-this-pc)
 - [Several takes, copied as one text](../features.md#combine-recordings)
 - [A guided tour of History](../features.md#a-guided-tour-of-history)
 - [Hear what it heard](../features.md#hear-what-it-heard)
@@ -32,6 +33,7 @@ Treat History as part of dictation, not as an archive you visit months later. It
 
 - [History settings](../reference/settings/history.md)
 - [Combine recordings settings](../reference/settings/combine.md)
+- [Speakers settings](../reference/settings/speakers.md)
 - [Transcription and Advanced settings](../reference/settings/advanced.md)
 - [General settings](../reference/settings/general.md)
 
