@@ -1789,7 +1789,7 @@
       "speakers": {
         "confirm": "Zastąpić tę transkrypcję nową, z rozróżnionymi mówcami?",
         "openSettings": "Ustawienia serwera STT",
-        "oneVoice": "Transkrybowano ponownie: serwer usłyszał tylko jeden głos, więc nie ma tekstu z mówcami.",
+        "oneVoice": "Przetranskrybowano ponownie: słychać tylko jeden głos, więc nie ma tekstu z podziałem na mówców.",
         "errors": {
           "notSet": "Rozróżnianie mówców wymaga serwera STT. Ustaw jego adres w Ustawienia zaawansowane › Serwer STT.",
           "modelNotSet": "Nie wybrano modelu z mówcami. Wybierz go w Ustawienia zaawansowane › Serwer STT.",

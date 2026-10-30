@@ -2022,7 +2022,7 @@
       "speakers": {
         "confirm": "Replace this transcript with a new one, with the speakers told apart?",
         "openSettings": "STT server settings",
-        "oneVoice": "Transcribed again: the server heard only one voice, so there is no text with speakers.",
+        "oneVoice": "Transcribed again: only one voice was heard, so there is no text with speakers.",
         "errors": {
           "notSet": "Telling speakers apart needs an STT server. Set its address in Advanced settings › STT server.",
           "modelNotSet": "No model with speakers is chosen. Pick one in Advanced settings › STT server.",

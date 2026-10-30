@@ -1789,7 +1789,7 @@
       "speakers": {
         "confirm": "Substituir esta transcrição por uma nova, com os falantes distinguidos?",
         "openSettings": "Configurações do servidor STT",
-        "oneVoice": "Transcrita novamente: o servidor ouviu só uma voz, então não há texto com falantes.",
+        "oneVoice": "Transcrito novamente: só se ouviu uma voz, por isso não há texto com falantes.",
         "errors": {
           "notSet": "Distinguir falantes requer um servidor STT. Defina o endereço dele em Configurações avançadas › Servidor STT.",
           "modelNotSet": "Nenhum modelo com falantes foi escolhido. Escolha um em Configurações avançadas › Servidor STT.",

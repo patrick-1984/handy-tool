@@ -1789,7 +1789,7 @@
       "speakers": {
         "confirm": "Bu transkripsiyon, konuşmacıları ayrılmış yenisiyle değiştirilsin mi?",
         "openSettings": "STT sunucusu ayarları",
-        "oneVoice": "Yeniden transkribe edildi: sunucu yalnızca tek bir ses duydu, bu yüzden konuşmacılı metin yok.",
+        "oneVoice": "Yeniden yazıya döküldü: yalnızca bir ses duyuldu, bu yüzden konuşmacılı metin yok.",
         "errors": {
           "notSet": "Konuşmacıları ayırt etmek için bir STT sunucusu gerekir. Adresini Gelişmiş ayarlar › STT sunucusu bölümünde ayarla.",
           "modelNotSet": "Konuşmacılı bir model seçilmedi. Gelişmiş ayarlar › STT sunucusu bölümünden birini seç.",

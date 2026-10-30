@@ -1789,7 +1789,7 @@
       "speakers": {
         "confirm": "Thay bản phiên âm này bằng bản mới có phân biệt người nói?",
         "openSettings": "Cài đặt máy chủ STT",
-        "oneVoice": "Đã phiên âm lại: máy chủ chỉ nghe thấy một giọng nói nên không có văn bản theo người nói.",
+        "oneVoice": "Đã chép lời lại: chỉ nghe thấy một giọng, nên không có văn bản theo người nói.",
         "errors": {
           "notSet": "Phân biệt người nói cần một máy chủ STT. Đặt địa chỉ của nó trong Cài đặt nâng cao › Máy chủ STT.",
           "modelNotSet": "Chưa chọn mô hình hỗ trợ người nói. Hãy chọn một trong Cài đặt nâng cao › Máy chủ STT.",

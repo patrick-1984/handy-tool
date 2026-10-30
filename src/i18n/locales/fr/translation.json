@@ -1789,7 +1789,7 @@
       "speakers": {
         "confirm": "Remplacer cette transcription par une nouvelle, avec les locuteurs distingués ?",
         "openSettings": "Paramètres du serveur STT",
-        "oneVoice": "Transcrit à nouveau : le serveur n'a entendu qu'une seule voix, il n'y a donc pas de texte avec locuteurs.",
+        "oneVoice": "Transcrit à nouveau : une seule voix a été entendue, il n'y a donc pas de texte avec locuteurs.",
         "errors": {
           "notSet": "Distinguer les locuteurs nécessite un serveur STT. Indiquez son adresse dans Paramètres avancés › Serveur STT.",
           "modelNotSet": "Aucun modèle avec locuteurs n'est choisi. Choisissez-en un dans Paramètres avancés › Serveur STT.",

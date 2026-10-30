@@ -1789,7 +1789,7 @@
       "speakers": {
         "confirm": "Diese Transkription durch eine neue ersetzen, in der die Sprecher unterschieden werden?",
         "openSettings": "STT-Server-Einstellungen",
-        "oneVoice": "Erneut transkribiert: Der Server hat nur eine Stimme gehört, daher gibt es keinen Text mit Sprechern.",
+        "oneVoice": "Erneut transkribiert: Es war nur eine Stimme zu hören, daher gibt es keinen Text mit Sprechern.",
         "errors": {
           "notSet": "Zum Unterscheiden der Sprecher wird ein STT-Server benötigt. Lege seine Adresse unter Erweiterte Einstellungen › STT-Server fest.",
           "modelNotSet": "Kein Modell mit Sprechern ausgewählt. Wähle eines unter Erweiterte Einstellungen › STT-Server.",

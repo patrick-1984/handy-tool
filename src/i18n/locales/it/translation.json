@@ -1789,7 +1789,7 @@
       "speakers": {
         "confirm": "Sostituire questa trascrizione con una nuova, con i parlanti distinti?",
         "openSettings": "Impostazioni server STT",
-        "oneVoice": "Trascritta di nuovo: il server ha sentito una sola voce, quindi non c'è testo con i parlanti.",
+        "oneVoice": "Trascritto di nuovo: si sentiva una sola voce, quindi non c'è testo con i parlanti.",
         "errors": {
           "notSet": "Per distinguere i parlanti serve un server STT. Imposta il suo indirizzo in Impostazioni avanzate › Server STT.",
           "modelNotSet": "Nessun modello con parlanti scelto. Scegline uno in Impostazioni avanzate › Server STT.",

@@ -1789,7 +1789,7 @@
       "speakers": {
         "confirm": "Nahradit tento přepis novým, s rozlišenými mluvčími?",
         "openSettings": "Nastavení serveru STT",
-        "oneVoice": "Přepsáno znovu: server slyšel jen jeden hlas, takže text s mluvčími neexistuje.",
+        "oneVoice": "Znovu přepsáno: byl slyšet jen jeden hlas, takže text s mluvčími není.",
         "errors": {
           "notSet": "Rozlišení mluvčích vyžaduje server STT. Nastavte jeho adresu v Pokročilá nastavení › Server STT.",
           "modelNotSet": "Není vybrán žádný model s mluvčími. Vyberte ho v Pokročilá nastavení › Server STT.",

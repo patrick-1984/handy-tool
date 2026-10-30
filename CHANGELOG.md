@@ -13,10 +13,11 @@
   speakers to History in the background after the paste (models on this PC only).
 - **Show me how: History.** A short guided tour (Setups, or "Show me how" on the History page)
   of everything below, ending on the real Combine settings.
-- **Transcribe again with speakers.** A recording's ⋯ menu sends the whole recording to the STT
-  server's speaker model. Before sending, Handy checks that a server address and a speaker model
-  are set and that the server has that model; if not, the message says what is missing and opens
-  the STT server settings.
+- **Transcribe again with speakers.** A recording's ⋯ menu tells the speakers apart, on this PC
+  (below) or with the STT server's speaker model. Before starting, Handy checks what that needs
+  (the speakers model downloaded and a dictation model on this PC; or a server address, a speaker
+  model, and that the server has it); if something is missing, the message says what and opens
+  the right settings.
 - **Names for recordings.** A name next to the date and time (⋯ › Name…, ✓ to keep it); search
   finds it.
 - **Favorites tab** between Recordings and Statistics; favorites have a coloured edge in
