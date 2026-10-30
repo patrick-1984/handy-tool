@@ -2660,6 +2660,10 @@
         "title": "Mostre-me como: Histórico",
         "description": "Um tour guiado rápido por todas as novidades do Histórico abaixo. Encontre-o em Configurações ou em \"Mostre-me como\" na página Histórico."
       },
+      "speakersModelFix": {
+        "title": "Os falantes neste PC já funcionam",
+        "description": "O primeiro modelo de falantes não conseguia ser executado no Handy (\"Could not find an implementation for ConvInteger\"). O Handy usa agora o modelo de precisão total (492 MB), que também é cerca de três vezes mais rápido; baixe-o novamente em Configurações avançadas › Falantes."
+      },
       "speakersPaste": {
         "title": "Falantes neste PC: nas configurações do modelo, e colados",
         "description": "As configurações de falantes agora também estão na página Modelos e nas configurações do Parakeet. Novo: \"Colar o texto com falantes\" cola o texto com falantes após uma gravação (espera por eles), como o \"O que colar\" do servidor STT."

@@ -2660,6 +2660,10 @@
         "title": "Ukázat jak: Historie",
         "description": "Krátká prohlídka všech novinek v Historii popsaných níže. Najdete ji v Průvodcích nebo pod „Ukázat jak“ na stránce Historie."
       },
+      "speakersModelFix": {
+        "title": "Mluvčí na tomto počítači nyní fungují",
+        "description": "První model mluvčích nešel v Handy spustit („Could not find an implementation for ConvInteger“). Handy nyní používá model v plné přesnosti (492 MB), který je navíc asi třikrát rychlejší; stáhněte jej znovu v Pokročilém nastavení › Mluvčí."
+      },
       "speakersPaste": {
         "title": "Mluvčí na tomto PC: v nastavení modelu a při vkládání",
         "description": "Nastavení mluvčích je nyní také na stránce Modely a v nastavení Parakeetu. Novinka: „Vložit text s mluvčími“ po záznamu vloží text s mluvčími (počká na ně), jako „Co vložit“ u STT serveru."

@@ -83,7 +83,7 @@ export const SpeakersSection: React.FC = () => {
             </h3>
             <p className="text-[13px] leading-[1.5] text-text-secondary">
               {t("settings.speakers.model.description", {
-                size: mb(status?.size_bytes ?? 141_011_330),
+                size: mb(status?.size_bytes ?? 492_268_840),
               })}{" "}
               <button
                 type="button"
@@ -128,7 +128,7 @@ export const SpeakersSection: React.FC = () => {
             <Button variant="primary" onClick={() => void download()}>
               <Download className="w-3.5 h-3.5" aria-hidden />
               {t("settings.speakers.model.download", {
-                size: mb(status?.size_bytes ?? 141_011_330),
+                size: mb(status?.size_bytes ?? 492_268_840),
               })}
             </Button>
           )}

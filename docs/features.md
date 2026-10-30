@@ -1507,8 +1507,8 @@ between this PC and the server is `Advanced settings › Speakers`, and the serv
 **The situation.** You want a meeting's text split by speaker, but you have no STT server, or the
 recording should not leave the PC.
 **What Handy does.** `Advanced settings › Speakers` offers NVIDIA's Streaming Sortformer v2.1 —
-the speaker model the STT server uses — as an optional one-time download of 141 MB (an int8
-export), pinned to a fixed revision on Hugging Face and checked by SHA-256 before it is used. It
+the speaker model the STT server uses — as an optional one-time download of 492 MB (the full-precision
+export; 2.5.0–2.5.1 fetched a 141 MB int8 export that could not run, removed by 2.5.2), pinned to a fixed revision on Hugging Face and checked by SHA-256 before it is used. It
 runs on this PC's processor, tells apart up to four speakers, and nothing leaves the PC. It first
 finds who speaks when; each speaker's turn is then transcribed with your dictation model, so it
 works with every model on this PC, FLM included, and gives the same `A: …` paragraphs as the STT

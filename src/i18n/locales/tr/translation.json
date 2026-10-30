@@ -2660,6 +2660,10 @@
         "title": "Bana göster: Geçmiş",
         "description": "Aşağıdaki tüm Geçmiş yeniliklerine kısa, rehberli bir tur. Kurulumlar'da veya Geçmiş sayfasındaki \"Bana göster\" altında bulabilirsiniz."
       },
+      "speakersModelFix": {
+        "title": "Bu bilgisayarda konuşmacılar artık çalışıyor",
+        "description": "İlk konuşmacı modeli Handy'de çalışamıyordu (\"Could not find an implementation for ConvInteger\"). Handy artık tam hassasiyetli modeli (492 MB) kullanıyor; bu model yaklaşık üç kat daha hızlı. Gelişmiş ayarlar › Konuşmacılar bölümünden yeniden indirin."
+      },
       "speakersPaste": {
         "title": "Bu bilgisayarda konuşmacılar: model ayarlarında ve yapıştırmada",
         "description": "Konuşmacı ayarları artık Modeller sayfasında ve Parakeet'in ayarlarında da var. Yeni: \"Metni konuşmacılarla yapıştır\", bir kayıttan sonra konuşmacılı metni yapıştırır (onları bekler); STT sunucusunun \"Ne yapıştırılsın\" ayarı gibi."

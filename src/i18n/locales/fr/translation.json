@@ -2660,6 +2660,10 @@
         "title": "Montrez-moi comment : Historique",
         "description": "Une courte visite guidée de toutes les nouveautés de l'Historique ci-dessous. Elle se trouve dans Configurations, ou sous « Montrez-moi comment » sur la page Historique."
       },
+      "speakersModelFix": {
+        "title": "Les locuteurs sur ce PC fonctionnent désormais",
+        "description": "Le premier modèle de locuteurs ne pouvait pas tourner dans Handy (« Could not find an implementation for ConvInteger »). Handy utilise maintenant le modèle en pleine précision (492 Mo), environ trois fois plus rapide ; téléchargez-le de nouveau dans Paramètres avancés › Locuteurs."
+      },
       "speakersPaste": {
         "title": "Locuteurs sur ce PC : dans les paramètres du modèle, et collés",
         "description": "Les paramètres des locuteurs sont désormais aussi sur la page Modèles et dans les paramètres de Parakeet. Nouveau : « Coller le texte avec les locuteurs » colle le texte avec les locuteurs après une prise (il les attend), comme « Ce qui est collé » du serveur STT."

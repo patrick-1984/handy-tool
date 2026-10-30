@@ -2660,6 +2660,10 @@
         "title": "Zeig mir, wie: Verlauf",
         "description": "Eine kurze geführte Tour durch alle Neuerungen im Verlauf weiter unten. Du findest sie unter Einrichtungen oder unter „Zeig mir, wie“ auf der Verlaufsseite."
       },
+      "speakersModelFix": {
+        "title": "Sprecher auf diesem PC funktionieren jetzt",
+        "description": "Das erste Sprechermodell lief in Handy nicht („Could not find an implementation for ConvInteger“). Handy nutzt jetzt das Modell in voller Genauigkeit (492 MB), das auch etwa dreimal schneller ist; lade es in den erweiterten Einstellungen › Sprecher erneut herunter."
+      },
       "speakersPaste": {
         "title": "Sprecher auf diesem PC: in den Modelleinstellungen und eingefügt",
         "description": "Die Sprecher-Einstellungen findest du jetzt auch auf der Seite Modelle und in den Einstellungen von Parakeet. Neu: „Text mit Sprechern einfügen“ fügt nach einer Aufnahme den Text mit Sprechern ein (es wartet auf sie), wie „Was eingefügt wird“ beim STT-Server."

@@ -2660,6 +2660,10 @@
         "title": "Muéstrame cómo: Historial",
         "description": "Un breve recorrido guiado por todas las novedades del Historial que verás abajo. Lo encontrarás en Configuraciones o en «Muéstrame cómo» en la página Historial."
       },
+      "speakersModelFix": {
+        "title": "Los hablantes en este PC ya funcionan",
+        "description": "El primer modelo de hablantes no podía ejecutarse en Handy («Could not find an implementation for ConvInteger»). Handy usa ahora el modelo de precisión completa (492 MB), que además es unas tres veces más rápido; descárgalo de nuevo en Ajustes avanzados › Hablantes."
+      },
       "speakersPaste": {
         "title": "Hablantes en este PC: en los ajustes del modelo, y pegados",
         "description": "Los ajustes de hablantes ahora también están en la página Modelos y en los ajustes de Parakeet. Novedad: «Pegar el texto con hablantes» pega el texto con hablantes después de una toma (los espera), como «Qué pegar» del servidor STT."

@@ -2660,6 +2660,10 @@
         "title": "Pokaż mi jak: Historia",
         "description": "Krótka wycieczka z przewodnikiem po wszystkich nowościach w Historii opisanych niżej. Znajdziesz ją w Konfiguracjach albo pod „Pokaż mi jak” na stronie Historii."
       },
+      "speakersModelFix": {
+        "title": "Rozpoznawanie mówców na tym komputerze już działa",
+        "description": "Pierwszy model mówców nie mógł działać w Handy („Could not find an implementation for ConvInteger”). Handy używa teraz modelu pełnej precyzji (492 MB), który działa też około trzy razy szybciej; pobierz go ponownie w Ustawieniach zaawansowanych › Mówcy."
+      },
       "speakersPaste": {
         "title": "Mówcy na tym komputerze: w ustawieniach modelu i przy wklejaniu",
         "description": "Ustawienia mówców są teraz także na stronie Modele i w ustawieniach Parakeeta. Nowość: „Wklej tekst z mówcami” wkleja po nagraniu tekst z mówcami (czeka na nich), jak „Co wklejać” serwera STT."

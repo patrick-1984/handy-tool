@@ -2660,6 +2660,10 @@
         "title": "Mostrami come: Cronologia",
         "description": "Un breve tour guidato di tutte le novità della Cronologia qui sotto. Lo trovi in Configurazioni o in «Mostrami come» nella pagina Cronologia."
       },
+      "speakersModelFix": {
+        "title": "I parlanti su questo PC ora funzionano",
+        "description": "Il primo modello dei parlanti non poteva funzionare in Handy («Could not find an implementation for ConvInteger»). Handy usa ora il modello a precisione piena (492 MB), circa tre volte più veloce; scaricalo di nuovo in Impostazioni avanzate › Parlanti."
+      },
       "speakersPaste": {
         "title": "Parlanti su questo PC: nelle impostazioni del modello, e incollati",
         "description": "Le impostazioni dei parlanti ora sono anche nella pagina Modelli e nelle impostazioni di Parakeet. Novità: «Incolla il testo con i parlanti» incolla il testo con i parlanti dopo una ripresa (li aspetta), come «Cosa incollare» del server STT."
