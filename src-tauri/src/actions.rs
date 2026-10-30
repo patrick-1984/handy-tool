@@ -2085,27 +2085,58 @@ impl ShortcutAction for TranscribeAction {
                             && !failed.is_empty()
                             && take_generation_current(take_gen)
                         {
-                            let _serial = CHUNK_TRANSCRIBE_LOCK
+                            // On a blocking thread, waited for only so long: a
+                            // request that never answers (or the engine lock
+                            // held elsewhere) must not hold the take back.
+                            // Past the deadline the gap is reported; a late
+                            // answer lands after the snapshot and is ignored.
+                            let failed_secs: f32 = session
+                                .pcm
                                 .lock()
-                                .unwrap_or_else(|poisoned| poisoned.into_inner());
-                            for idx in failed {
-                                let piece =
-                                    session.pcm.lock().ok().and_then(|m| m.get(&idx).cloned());
-                                let Some(piece) = piece else { continue };
-                                match crate::managers::failover::transcribe(
-                                    &ah, &tm, take_stop, false, piece,
-                                ) {
-                                    Ok(t) => {
-                                        info!("Chunk {idx}: transcribed on the second try");
-                                        if let Ok(mut map) = session.transcripts.lock() {
-                                            map.insert(idx, Some(t));
+                                .map(|m| {
+                                    failed
+                                        .iter()
+                                        .filter_map(|i| m.get(i))
+                                        .map(|p| p.len() as f32 / 16_000.0)
+                                        .sum()
+                                })
+                                .unwrap_or(0.0);
+                            let deadline = Duration::from_secs_f32(60.0 + failed_secs);
+                            let (rs, rah, rtm) =
+                                (Arc::clone(&session), ah.clone(), Arc::clone(&tm));
+                            let retry = tauri::async_runtime::spawn_blocking(move || {
+                                let _serial = CHUNK_TRANSCRIBE_LOCK
+                                    .lock()
+                                    .unwrap_or_else(|poisoned| poisoned.into_inner());
+                                for idx in failed {
+                                    let piece =
+                                        rs.pcm.lock().ok().and_then(|m| m.get(&idx).cloned());
+                                    let Some(piece) = piece else { continue };
+                                    match crate::managers::failover::transcribe(
+                                        &rah, &rtm, take_stop, false, piece,
+                                    ) {
+                                        Ok(t) => {
+                                            info!("Chunk {idx}: transcribed on the second try");
+                                            // Text first, then off the failed list:
+                                            // a snapshot never sees it in neither.
+                                            if let Ok(mut map) = rs.transcripts.lock() {
+                                                if let Ok(mut f) = rs.failed.lock() {
+                                                    map.insert(idx, Some(t));
+                                                    f.remove(&idx);
+                                                }
+                                            }
                                         }
-                                        if let Ok(mut f) = session.failed.lock() {
-                                            f.remove(&idx);
+                                        Err(e) => {
+                                            warn!("Chunk {idx}: the second try failed too ({e})")
                                         }
                                     }
-                                    Err(e) => warn!("Chunk {idx}: the second try failed too ({e})"),
                                 }
+                            });
+                            if tokio::time::timeout(deadline, retry).await.is_err() {
+                                warn!(
+                                    "Retrying the failed pieces took over {}s; reporting them as missing",
+                                    deadline.as_secs()
+                                );
                             }
                         }
                         let (text, mut gap) = session.assemble_with_missing();
@@ -2128,12 +2159,29 @@ impl ShortcutAction for TranscribeAction {
                                     &ah,
                                     crate::managers::transcription::running_transcription_remaining,
                                 );
-                                let _serial = CHUNK_TRANSCRIBE_LOCK
-                                    .lock()
-                                    .unwrap_or_else(|poisoned| poisoned.into_inner());
-                                match crate::managers::failover::transcribe(
-                                    &ah, &tm, take_stop, true, full,
-                                ) {
+                                // Bounded like the retries: generous for the
+                                // take's length, never forever.
+                                let deadline = Duration::from_secs_f32(
+                                    120.0 + full.len() as f32 / 16_000.0 * 0.5,
+                                );
+                                let (wah, wtm) = (ah.clone(), Arc::clone(&tm));
+                                let whole = tauri::async_runtime::spawn_blocking(move || {
+                                    let _serial = CHUNK_TRANSCRIBE_LOCK
+                                        .lock()
+                                        .unwrap_or_else(|poisoned| poisoned.into_inner());
+                                    crate::managers::failover::transcribe(
+                                        &wah, &wtm, take_stop, true, full,
+                                    )
+                                });
+                                let outcome = match tokio::time::timeout(deadline, whole).await {
+                                    Ok(Ok(result)) => result,
+                                    Ok(Err(e)) => Err(anyhow::anyhow!("{e}")),
+                                    Err(_) => Err(anyhow::anyhow!(
+                                        "no answer within {}s",
+                                        deadline.as_secs()
+                                    )),
+                                };
+                                match outcome {
                                     Ok(t) => {
                                         progress.finish();
                                         // Complete pieces stay the text; a gap
