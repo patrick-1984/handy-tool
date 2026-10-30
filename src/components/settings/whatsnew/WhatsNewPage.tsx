@@ -37,6 +37,28 @@ interface Item {
  */
 const RELEASES: { version: string; items: Item[] }[] = [
   {
+    version: "2.5.0",
+    items: [
+      {
+        key: "historyTour",
+        section: "setups",
+        titleKeys: ["setup.catalog.history.title"],
+      },
+      { key: "historyMenu", section: "history", historyTab: "recordings" },
+      {
+        key: "historyFavorites",
+        section: "history",
+        historyTab: "favorites",
+      },
+      {
+        key: "combine",
+        section: "combine",
+        titleKeys: ["settings.combine.separator.title"],
+      },
+      { key: "onlineOnTheFly", section: "models" },
+    ],
+  },
+  {
     version: "2.4.1",
     items: [
       { key: "parakeetVersions", section: "models" },

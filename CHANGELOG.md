@@ -1,5 +1,41 @@
 # Changelog
 
+## [2.5.0] - 2026-10-30
+
+### Added
+
+- **Show me how: History.** A short guided tour (Setups, or "Show me how" on the History page)
+  of everything below, ending on the real Combine settings.
+- **Transcribe again with speakers.** A recording's ⋯ menu sends the whole recording to the STT
+  server's speaker model. Before sending, Handy checks that a server address and a speaker model
+  are set and that the server has that model; if not, the message says what is missing and opens
+  the STT server settings.
+- **Names for recordings.** A name next to the date and time (⋯ › Name…, ✓ to keep it); search
+  finds it.
+- **Favorites tab** between Recordings and Statistics; favorites have a coloured edge in
+  Recordings.
+- **Filters next to the search:** favorites only; date (last 3 h, 12 h, day, week, month, or
+  your own dates); length (under 10 s, 10–30 s, 30 s–1 min, 1–2 min, 2–5 min, 5–10 min, over
+  10 min — buckets from real take lengths).
+- **Combine recordings.** Tick several recordings and choose Combine…: they are listed in the
+  order you ticked them (or oldest/newest first, or dragged by the grip), each with its number,
+  time, length and first two lines, and copied as one text. A new Advanced settings tab,
+  Combine recordings, sets what goes between them, whether each keeps its own prefix/suffix
+  (off by default), and a prefix/suffix around the whole text.
+
+### Changed
+
+- **History rows show only Copy and the star.** Transcribe again, Transcribe again with speakers,
+  Name and Delete moved into a ⋯ menu, each with a line on what it does. Delete now asks first.
+- **Online models transcribe while you record again.** The API model and the STT server
+  transcribe each VAD-cut piece of a take during recording (as local models do), so the text is
+  ready right after you stop. They had been sent the whole take at the end: the API engine was
+  built for few calls, and the STT server for consistent speaker labels across the take. Failover
+  now covers a dropped connection, and with speakers on, the STT server still gets the whole take
+  once after stop for the speaker labels (the plain text from the pieces is kept if that fails).
+- **Progress estimates for online models.** API, OpenRouter and STT server transcriptions learn
+  how long they take per second of audio, as local models do, and the progress shows an estimate.
+
 ## [2.4.1] - 2026-10-19
 
 ### Changed

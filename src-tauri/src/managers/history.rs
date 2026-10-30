@@ -241,6 +241,8 @@ static MIGRATIONS: &[M] = &[
     // The take's text with speakers (a Custom STT server with speakers on):
     // one "A: ..." paragraph per speaker turn. NULL = no speaker text.
     M::up("ALTER TABLE transcription_history ADD COLUMN diarized_text TEXT;"),
+    // A name the user gives a recording (History), searched with its text.
+    M::up("ALTER TABLE transcription_history ADD COLUMN name TEXT;"),
 ];
 
 /// Totals carried forward from history rows that retention has deleted, so
@@ -282,6 +284,9 @@ pub struct HistoryEntry {
     /// engine told the speakers apart (Custom STT server). `None` otherwise.
     #[serde(default)]
     pub diarized_text: Option<String>,
+    /// A name the user gave the recording; `None` = unnamed.
+    #[serde(default)]
+    pub name: Option<String>,
 }
 
 pub struct HistoryManager {
@@ -1046,7 +1051,7 @@ impl HistoryManager {
     pub async fn get_history_entries(&self) -> Result<Vec<HistoryEntry>> {
         let conn = self.get_connection()?;
         let mut stmt = conn.prepare(
-            "SELECT id, file_name, timestamp, saved, title, transcription_text, post_processed_text, post_process_prompt, cost_usd, duration_seconds, model_used, audio_purged_at, diarized_text FROM transcription_history ORDER BY timestamp DESC"
+            "SELECT id, file_name, timestamp, saved, title, transcription_text, post_processed_text, post_process_prompt, cost_usd, duration_seconds, model_used, audio_purged_at, diarized_text, name FROM transcription_history ORDER BY timestamp DESC"
         )?;
 
         let rows = stmt.query_map([], |row| {
@@ -1064,6 +1069,7 @@ impl HistoryManager {
                 model_used: row.get("model_used")?,
                 audio_purged_at: row.get("audio_purged_at")?,
                 diarized_text: row.get("diarized_text")?,
+                name: row.get("name")?,
             })
         })?;
 
@@ -1123,7 +1129,7 @@ impl HistoryManager {
 
     fn get_latest_entry_with_conn(conn: &Connection) -> Result<Option<HistoryEntry>> {
         let mut stmt = conn.prepare(
-            "SELECT id, file_name, timestamp, saved, title, transcription_text, post_processed_text, post_process_prompt, cost_usd, duration_seconds, model_used, audio_purged_at, diarized_text
+            "SELECT id, file_name, timestamp, saved, title, transcription_text, post_processed_text, post_process_prompt, cost_usd, duration_seconds, model_used, audio_purged_at, diarized_text, name
              FROM transcription_history
              ORDER BY timestamp DESC
              LIMIT 1",
@@ -1145,11 +1151,31 @@ impl HistoryManager {
                     model_used: row.get("model_used")?,
                     audio_purged_at: row.get("audio_purged_at")?,
                     diarized_text: row.get("diarized_text")?,
+                    name: row.get("name")?,
                 })
             })
             .optional()?;
 
         Ok(entry)
+    }
+
+    /// Names a recording (`None` or blank = no name). At most 120 characters.
+    pub async fn set_entry_name(&self, id: i64, name: Option<String>) -> Result<()> {
+        let name = name
+            .map(|n| n.trim().chars().take(120).collect::<String>())
+            .filter(|n| !n.is_empty());
+        let conn = self.get_connection()?;
+        let changed = conn.execute(
+            "UPDATE transcription_history SET name = ?1 WHERE id = ?2",
+            params![name, id],
+        )?;
+        if changed != 1 {
+            return Err(anyhow::anyhow!("the history entry no longer exists"));
+        }
+        if let Err(e) = self.app_handle.emit("history-updated", ()) {
+            error!("Failed to emit history-updated event: {}", e);
+        }
+        Ok(())
     }
 
     pub async fn toggle_saved_status(&self, id: i64) -> Result<()> {
@@ -1303,6 +1329,33 @@ impl HistoryManager {
         Ok(())
     }
 
+    /// A take's speaker text that arrived after the take was saved (the STT
+    /// server's whole-take request runs after delivery). Only fills an empty
+    /// one: a row transcribed again meanwhile keeps its newer speaker text.
+    /// `for_text`: the transcript the speakers were asked for; a row whose
+    /// text changed since (transcribed again) does not take them.
+    pub fn set_diarized_for_file(
+        &self,
+        file_name: &str,
+        for_text: &str,
+        diarized: &str,
+    ) -> Result<()> {
+        let conn = self.get_connection()?;
+        let changed = conn.execute(
+            "UPDATE transcription_history SET diarized_text = ?1 WHERE file_name = ?2 AND diarized_text IS NULL AND transcription_text = ?3",
+            params![diarized, file_name, for_text],
+        )?;
+        if changed == 0 {
+            return Err(anyhow::anyhow!(
+                "no row without speaker text for this recording"
+            ));
+        }
+        if let Err(e) = self.app_handle.emit("history-updated", ()) {
+            error!("Failed to emit history-updated event: {}", e);
+        }
+        Ok(())
+    }
+
     /// The row's new text; its speaker text is replaced too (`None` clears a
     /// stale one from an earlier transcription).
     fn update_transcription_row(
@@ -1333,7 +1386,7 @@ impl HistoryManager {
     fn entry_by_id(&self, id: i64) -> Result<Option<HistoryEntry>> {
         let conn = self.get_connection()?;
         let mut stmt = conn.prepare(
-            "SELECT id, file_name, timestamp, saved, title, transcription_text, post_processed_text, post_process_prompt, cost_usd, duration_seconds, model_used, audio_purged_at, diarized_text
+            "SELECT id, file_name, timestamp, saved, title, transcription_text, post_processed_text, post_process_prompt, cost_usd, duration_seconds, model_used, audio_purged_at, diarized_text, name
              FROM transcription_history WHERE id = ?1",
         )?;
 
@@ -1353,6 +1406,7 @@ impl HistoryManager {
                     model_used: row.get("model_used")?,
                     audio_purged_at: row.get("audio_purged_at")?,
                     diarized_text: row.get("diarized_text")?,
+                    name: row.get("name")?,
                 })
             })
             .optional()?;
@@ -1510,7 +1564,8 @@ mod tests {
                 duration_seconds REAL,
                 model_used TEXT,
                 audio_purged_at INTEGER,
-                diarized_text TEXT
+                diarized_text TEXT,
+                name TEXT
             );",
         )
         .expect("create transcription_history table");

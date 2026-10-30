@@ -17,7 +17,8 @@
     "pasteFailedHistoryOnly": "Pasting the transcription failed: {{reason}}. Your clipboard was left untouched — the text is saved in History. {{recovery}}",
     "recoverWithPasteLast": "Press {{shortcut}} to paste it.",
     "recoverFromHistory": "Open Settings › History to copy it.",
-    "transcriptionFallback": "{{from}} could not transcribe this take, so {{to}} did"
+    "transcriptionFallback": "{{from}} could not transcribe this take, so {{to}} did",
+    "transcriptionIncomplete": "Part of this take could not be transcribed (pieces missing: {{count}}), so the text is incomplete. The whole recording is in History: use Transcribe again there."
   },
   "sidebar": {
     "general": "General",
@@ -84,7 +85,8 @@
     "llmProviders": "LLM providers",
     "advancedSettings": "Advanced settings",
     "moreTools": "More Tools",
-    "sttServer": "STT server"
+    "sttServer": "STT server",
+    "combine": "Combine recordings"
   },
   "helpMode": {
     "button": "Help mode: point at a setting to see what it does",
@@ -179,6 +181,11 @@
       "appearance": {
         "title": "Appearance",
         "description": "How the recording pill and the live text box look: the pill's place and size, its sound bars, how it shows progress, and the live text box, with every choice shown moving before you pick it."
+      },
+      "showMeHow": "Show me how",
+      "history": {
+        "title": "History",
+        "description": "A short tour of what is new in History: finding a recording with search, favorites, date and length, naming it, the ⋯ menu, and combining several recordings into one text."
       }
     },
     "closeSetup": "Close setup",
@@ -444,6 +451,112 @@
         "title": "Your shortcuts are kept",
         "body": "Change which shortcuts stay on this PC any time on the Shortcuts page, under Shortcut Keeper."
       }
+    },
+    "history": {
+      "name": {
+        "title": "Name a recording",
+        "body": "A name sits next to the date and time of the recording.",
+        "tips": {
+          "add": {
+            "title": "Add a name",
+            "text": "Choose Name… in the ⋯ menu, or click the name to change it."
+          },
+          "save": {
+            "title": "Save it",
+            "text": "Press ✓ or Enter to keep it, Escape to cancel. An empty name removes it."
+          }
+        }
+      },
+      "openHistory": "Open History",
+      "intro": {
+        "title": "Your recordings, easier to find and reuse",
+        "body": "History keeps every recording with its text. Here is what you can do with them now; each step takes a few seconds.",
+        "tips": {
+          "find": {
+            "title": "Find",
+            "text": "Search the text and names, and narrow the list to favorites, a time and a length."
+          },
+          "name": {
+            "title": "Name",
+            "text": "Give a recording a name you will recognise later."
+          },
+          "menu": {
+            "title": "More actions",
+            "text": "Transcribe again, with speakers, or delete, from the ⋯ menu."
+          },
+          "combine": {
+            "title": "Combine",
+            "text": "Copy several recordings as one text, in the order you choose."
+          }
+        }
+      },
+      "find": {
+        "title": "Find a recording",
+        "body": "Next to the search box are three filters. They work together with the search.",
+        "tips": {
+          "search": {
+            "title": "Search",
+            "text": "Finds words in the text, the text with speakers and the recording's name."
+          },
+          "favorites": {
+            "title": "Favorites",
+            "text": "The star on a recording makes it a favorite: it gets a coloured edge in Recordings and appears in the Favorites tab. \"Favorites only\" hides the rest."
+          },
+          "date": {
+            "title": "When",
+            "text": "The last 3 or 12 hours, day, week or month, or dates you pick."
+          },
+          "length": {
+            "title": "How long",
+            "text": "From under 10 seconds to over 10 minutes, so a long meeting is quick to spot."
+          }
+        }
+      },
+      "menu": {
+        "title": "Fewer icons, more actions",
+        "body": "Each recording shows only the two actions you use most; the rest are in the ⋯ menu, each with a line on what it does.",
+        "tips": {
+          "icons": {
+            "title": "Copy and star",
+            "text": "Always on the row: copy the text, or make it a favorite."
+          },
+          "again": {
+            "title": "Transcribe again",
+            "text": "Reads the recording again with your current model and replaces its text."
+          },
+          "speakers": {
+            "title": "Transcribe again with speakers",
+            "text": "Sends the whole recording to your STT server, which tells the speakers apart. If something is missing, it says what and opens the STT server settings."
+          },
+          "delete": {
+            "title": "Delete",
+            "text": "Asks first, then removes the recording and its text."
+          }
+        }
+      },
+      "combine": {
+        "title": "Combine several recordings",
+        "body": "Useful when one thought took a few takes, or for notes from a whole meeting.",
+        "tips": {
+          "tick": {
+            "title": "Tick them",
+            "text": "Tick the box on each recording. The number on it is its place in the list, in the order you ticked them."
+          },
+          "order": {
+            "title": "Put them in order",
+            "text": "Choose Combine…: keep them as picked, sort oldest or newest first, or drag a row by its grip."
+          },
+          "copy": {
+            "title": "Copy as one text",
+            "text": "Copies them joined together and confirms with a ✓. With speakers, you can use the text with speakers."
+          }
+        }
+      },
+      "settings": {
+        "title": "How they are joined",
+        "body": "These are the real settings (also in Advanced settings › Combine recordings): what goes between recordings, and your own beginning and end."
+      },
+      "tourName": "History"
     }
   },
   "onboarding": {
@@ -1820,7 +1933,8 @@
       "tabs": {
         "recordings": "Recordings",
         "statistics": "Statistics",
-        "settings": "Settings"
+        "settings": "Settings",
+        "favorites": "Favorites"
       },
       "stats": {
         "title": "Recording statistics",
@@ -1853,7 +1967,101 @@
         "label": "Show the text with or without speakers",
         "text": "Text",
         "speakers": "Speakers"
-      }
+      },
+      "favorites": {
+        "empty": "No favorites yet. The star on a recording adds it here."
+      },
+      "filters": {
+        "favoritesOnly": "Favorites only",
+        "from": "From",
+        "to": "To",
+        "date": {
+          "any": "Any time",
+          "3h": "Last 3 hours",
+          "12h": "Last 12 hours",
+          "24h": "Last 24 hours",
+          "7d": "Last 7 days",
+          "30d": "Last 30 days",
+          "custom": "Custom dates…"
+        },
+        "length": {
+          "any": "Any length",
+          "under10s": "Under 10 s",
+          "10to30s": "10–30 s",
+          "30sTo1m": "30 s–1 min",
+          "1to2m": "1–2 min",
+          "2to5m": "2–5 min",
+          "5to10m": "5–10 min",
+          "over10m": "Over 10 min"
+        }
+      },
+      "menu": {
+        "more": "More actions",
+        "working": "Transcribing…",
+        "again": {
+          "label": "Transcribe again",
+          "hint": "Reads the recording again with your dictation model and replaces the text."
+        },
+        "speakers": {
+          "label": "Transcribe again with speakers",
+          "hint": "Sends the whole recording to your STT server to tell the speakers apart."
+        },
+        "name": {
+          "label": "Name…",
+          "hint": "A name for this recording, shown next to it and found by search."
+        },
+        "rename": {
+          "label": "Rename…"
+        },
+        "delete": {
+          "label": "Delete",
+          "hint": "Removes the recording and its text from History."
+        }
+      },
+      "speakers": {
+        "confirm": "Replace this transcript with a new one, with the speakers told apart?",
+        "openSettings": "STT server settings",
+        "oneVoice": "Transcribed again: the server heard only one voice, so there is no text with speakers.",
+        "errors": {
+          "notSet": "Telling speakers apart needs an STT server. Set its address in Advanced settings › STT server.",
+          "modelNotSet": "No model with speakers is chosen. Pick one in Advanced settings › STT server.",
+          "unreachable": "The STT server did not answer: {{error}}. Check its address in Advanced settings › STT server.",
+          "modelMissing": "The STT server has no model \"{{model}}\" (it has: {{available}}). Pick its model with speakers in Advanced settings › STT server."
+        }
+      },
+      "name": {
+        "placeholder": "Name this recording",
+        "label": "Recording name",
+        "save": "Save the name",
+        "cancel": "Cancel",
+        "edit": "Rename",
+        "failed": "Could not save the name: {{error}}"
+      },
+      "deleteConfirm": "Delete this recording and its text?",
+      "deleteFailed": "Could not delete the recording. Try again.",
+      "combine": {
+        "select": "Select to combine",
+        "selected": "{{count}} selected",
+        "clear": "Clear",
+        "open": "Combine…",
+        "title": "Combine {{count}} recordings",
+        "description": "Copied as one text, in this order. Drag a row by its grip to move it.",
+        "close": "Close",
+        "order": {
+          "custom": "As picked",
+          "oldest": "Oldest first",
+          "newest": "Newest first"
+        },
+        "useSpeakers": "Use the text with speakers",
+        "drag": "Drag to move",
+        "remove": "Remove from the list",
+        "noText": "(no text)",
+        "copy": "Copy as one text",
+        "copied": "{{count}} recordings copied as one text",
+        "copiedShort": "Copied",
+        "copyFailed": "Could not copy: {{error}}"
+      },
+      "showMeHow": "Show me how"
     },
     "debug": {
       "title": "Debug",
@@ -2037,6 +2245,27 @@
       "affixSpeakers": {
         "title": "Around the text with speakers",
         "description": "Text added before and after a take pasted with speakers, e.g. \"Meeting notes:\". Comes inside the general prefix and suffix."
+      }
+    },
+    "combine": {
+      "title": "Combine recordings",
+      "description": "How History joins several recordings you select and copy as one text.",
+      "separator": {
+        "title": "Between recordings",
+        "description": "What goes between two recordings in the combined text.",
+        "options": {
+          "blank_line": "An empty line",
+          "new_line": "A new line",
+          "space": "A space"
+        }
+      },
+      "keepTakeAffixes": {
+        "label": "Keep each recording's prefix and suffix",
+        "description": "**Adds your Transcribe prefix and suffix around every recording** in the combined text, as when it was pasted. Off by default: the recordings are joined bare."
+      },
+      "affixes": {
+        "title": "Around the combined text",
+        "description": "Your own beginning and end for the combined text, e.g. \"Meeting notes:\"."
       }
     }
   },
@@ -2371,6 +2600,26 @@
       "logArchive": {
         "title": "Old logs are compressed",
         "description": "When the log reaches 10 MB it starts a new file and the old one is compressed and set aside (the newest 20, for up to 30 days)."
+      },
+      "historyMenu": {
+        "title": "History: fewer icons, more actions",
+        "description": "Copy and the star stay on each recording; Transcribe again, Transcribe again with speakers, Name and Delete moved into the ⋯ menu, each with a short explanation."
+      },
+      "historyFavorites": {
+        "title": "Favorites, names and filters",
+        "description": "Favorites have their own tab and are marked in Recordings. Give a recording a name (searched with its text), and filter by favorites, date (last 3 hours to last 30 days, or your dates) and length."
+      },
+      "combine": {
+        "title": "Combine several recordings into one text",
+        "description": "Tick recordings and choose Combine: put them in order (as picked, oldest or newest first, or drag), and copy them as one text. Advanced settings › Combine recordings sets what goes between and around them."
+      },
+      "onlineOnTheFly": {
+        "title": "Online models transcribe while you speak",
+        "description": "The API model and your STT server now transcribe each piece of a take as you go, like local models, so the text is ready right after you stop. With speakers on, the whole take is sent once at the end for who said what. Their progress shows a time estimate too."
+      },
+      "historyTour": {
+        "title": "Show me how: History",
+        "description": "A short guided tour of everything new in History below. Find it in Setups, or under \"Show me how\" on the History page."
       }
     },
     "installed": "Installed"

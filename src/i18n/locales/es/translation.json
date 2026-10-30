@@ -71,7 +71,8 @@
     "llmProviders": "Proveedores LLM",
     "advancedSettings": "Ajustes avanzados",
     "moreTools": "Más herramientas",
-    "sttServer": "Servidor STT"
+    "sttServer": "Servidor STT",
+    "combine": "Combinar grabaciones"
   },
   "helpMode": {
     "button": "Modo ayuda: señala un ajuste para ver qué hace",
@@ -166,6 +167,11 @@
       "appearance": {
         "title": "Apariencia",
         "description": "Cómo se ven la píldora de grabación y el cuadro de texto en vivo: la posición y el tamaño de la píldora, sus barras de sonido, cómo muestra el progreso, y el cuadro de texto en vivo, con cada opción mostrándose en movimiento antes de elegirla."
+      },
+      "showMeHow": "Muéstrame cómo",
+      "history": {
+        "title": "Historial",
+        "description": "Un breve recorrido por las novedades del Historial: encontrar una grabación con la búsqueda, los favoritos, la fecha y la duración, ponerle nombre, el menú ⋯ y combinar varias grabaciones en un solo texto."
       }
     },
     "closeSetup": "Cerrar configuración",
@@ -431,6 +437,112 @@
         "title": "Tus atajos se mantienen",
         "body": "Cambia cuando quieras qué atajos se quedan en este PC en la página Atajos, en Shortcut Keeper."
       }
+    },
+    "history": {
+      "name": {
+        "title": "Ponerle nombre a una grabación",
+        "body": "El nombre aparece junto a la fecha y la hora de la grabación.",
+        "tips": {
+          "add": {
+            "title": "Añadir un nombre",
+            "text": "Elige Nombrar… en el menú ⋯, o haz clic en el nombre para cambiarlo."
+          },
+          "save": {
+            "title": "Guardarlo",
+            "text": "Pulsa ✓ o Intro para conservarlo, Escape para cancelar. Un nombre vacío lo quita."
+          }
+        }
+      },
+      "openHistory": "Abrir Historial",
+      "intro": {
+        "title": "Tus grabaciones, más fáciles de encontrar y reutilizar",
+        "body": "El Historial guarda cada grabación con su texto. Esto es lo que ahora puedes hacer con ellas; cada paso lleva unos segundos.",
+        "tips": {
+          "find": {
+            "title": "Encontrar",
+            "text": "Busca en el texto y en los nombres, y filtra la lista por favoritos, un periodo y una duración."
+          },
+          "name": {
+            "title": "Nombrar",
+            "text": "Ponle a una grabación un nombre que reconozcas más tarde."
+          },
+          "menu": {
+            "title": "Más acciones",
+            "text": "Transcribir de nuevo, con hablantes, o eliminar, desde el menú ⋯."
+          },
+          "combine": {
+            "title": "Combinar",
+            "text": "Copia varias grabaciones como un solo texto, en el orden que elijas."
+          }
+        }
+      },
+      "find": {
+        "title": "Encontrar una grabación",
+        "body": "Junto al cuadro de búsqueda hay tres filtros. Funcionan junto con la búsqueda.",
+        "tips": {
+          "search": {
+            "title": "Búsqueda",
+            "text": "Encuentra palabras en el texto, en el texto con hablantes y en el nombre de la grabación."
+          },
+          "favorites": {
+            "title": "Favoritos",
+            "text": "La estrella de una grabación la convierte en favorita: recibe un borde de color en Grabaciones y aparece en la pestaña Favoritos. «Solo favoritos» oculta el resto."
+          },
+          "date": {
+            "title": "Cuándo",
+            "text": "Las últimas 3 o 12 horas, el último día, semana o mes, o las fechas que elijas."
+          },
+          "length": {
+            "title": "Duración",
+            "text": "De menos de 10 segundos a más de 10 minutos, para encontrar rápido una reunión larga."
+          }
+        }
+      },
+      "menu": {
+        "title": "Menos iconos, más acciones",
+        "body": "Cada grabación muestra solo las dos acciones que más usas; el resto está en el menú ⋯, cada una con una línea que explica qué hace.",
+        "tips": {
+          "icons": {
+            "title": "Copiar y estrella",
+            "text": "Siempre en la fila: copia el texto o márcala como favorita."
+          },
+          "again": {
+            "title": "Transcribir de nuevo",
+            "text": "Vuelve a leer la grabación con tu modelo actual y reemplaza su texto."
+          },
+          "speakers": {
+            "title": "Transcribir de nuevo con hablantes",
+            "text": "Envía la grabación completa a tu servidor STT, que distingue a los hablantes. Si falta algo, indica qué y abre los ajustes del servidor STT."
+          },
+          "delete": {
+            "title": "Eliminar",
+            "text": "Pregunta primero y luego elimina la grabación y su texto."
+          }
+        }
+      },
+      "combine": {
+        "title": "Combinar varias grabaciones",
+        "body": "Útil cuando una idea necesitó varias tomas, o para las notas de toda una reunión.",
+        "tips": {
+          "tick": {
+            "title": "Márcalas",
+            "text": "Marca la casilla de cada grabación. El número que aparece es su posición en la lista, en el orden en que las marcaste."
+          },
+          "order": {
+            "title": "Ordénalas",
+            "text": "Elige Combinar…: déjalas como las elegiste, ordénalas de la más antigua o de la más reciente primero, o arrastra una fila por su asa."
+          },
+          "copy": {
+            "title": "Copiar como un solo texto",
+            "text": "Las copia unidas y lo confirma con un ✓. Con hablantes, puedes usar el texto con hablantes."
+          }
+        }
+      },
+      "settings": {
+        "title": "Cómo se unen",
+        "body": "Estos son los ajustes reales (también en Ajustes avanzados › Combinar grabaciones): lo que va entre las grabaciones, y tu propio inicio y final."
+      },
+      "tourName": "Historial"
     }
   },
   "onboarding": {
@@ -1588,7 +1700,8 @@
       "tabs": {
         "recordings": "Grabaciones",
         "statistics": "Estadísticas",
-        "settings": "Ajustes"
+        "settings": "Ajustes",
+        "favorites": "Favoritos"
       },
       "stats": {
         "title": "Estadísticas de grabación",
@@ -1621,7 +1734,101 @@
         "label": "Mostrar el texto con o sin hablantes",
         "text": "Texto",
         "speakers": "Hablantes"
-      }
+      },
+      "favorites": {
+        "empty": "Aún no hay favoritos. La estrella de una grabación la añade aquí."
+      },
+      "filters": {
+        "favoritesOnly": "Solo favoritos",
+        "from": "Desde",
+        "to": "Hasta",
+        "date": {
+          "any": "Cualquier fecha",
+          "3h": "Últimas 3 horas",
+          "12h": "Últimas 12 horas",
+          "24h": "Últimas 24 horas",
+          "7d": "Últimos 7 días",
+          "30d": "Últimos 30 días",
+          "custom": "Fechas personalizadas…"
+        },
+        "length": {
+          "any": "Cualquier duración",
+          "under10s": "Menos de 10 s",
+          "10to30s": "10–30 s",
+          "30sTo1m": "30 s–1 min",
+          "1to2m": "1–2 min",
+          "2to5m": "2–5 min",
+          "5to10m": "5–10 min",
+          "over10m": "Más de 10 min"
+        }
+      },
+      "menu": {
+        "more": "Más acciones",
+        "working": "Transcribiendo…",
+        "again": {
+          "label": "Transcribir de nuevo",
+          "hint": "Vuelve a leer la grabación con tu modelo de dictado y reemplaza el texto."
+        },
+        "speakers": {
+          "label": "Transcribir de nuevo con hablantes",
+          "hint": "Envía toda la grabación a tu servidor STT para distinguir a los hablantes."
+        },
+        "name": {
+          "label": "Nombrar…",
+          "hint": "Un nombre para esta grabación, que se muestra a su lado y se encuentra al buscar."
+        },
+        "rename": {
+          "label": "Cambiar nombre…"
+        },
+        "delete": {
+          "label": "Eliminar",
+          "hint": "Quita la grabación y su texto del Historial."
+        }
+      },
+      "speakers": {
+        "confirm": "¿Reemplazar esta transcripción por una nueva, con los hablantes diferenciados?",
+        "openSettings": "Ajustes del servidor STT",
+        "oneVoice": "Transcrita de nuevo: el servidor solo oyó una voz, así que no hay texto con hablantes.",
+        "errors": {
+          "notSet": "Distinguir hablantes requiere un servidor STT. Indica su dirección en Ajustes avanzados › Servidor STT.",
+          "modelNotSet": "No hay ningún modelo con hablantes elegido. Elige uno en Ajustes avanzados › Servidor STT.",
+          "unreachable": "El servidor STT no respondió: {{error}}. Revisa su dirección en Ajustes avanzados › Servidor STT.",
+          "modelMissing": "El servidor STT no tiene el modelo \"{{model}}\" (tiene: {{available}}). Elige su modelo con hablantes en Ajustes avanzados › Servidor STT."
+        }
+      },
+      "name": {
+        "placeholder": "Nombra esta grabación",
+        "label": "Nombre de la grabación",
+        "save": "Guardar el nombre",
+        "cancel": "Cancelar",
+        "edit": "Cambiar nombre",
+        "failed": "No se pudo guardar el nombre: {{error}}"
+      },
+      "deleteConfirm": "¿Eliminar esta grabación y su texto?",
+      "deleteFailed": "No se pudo eliminar la grabación. Inténtalo de nuevo.",
+      "combine": {
+        "select": "Seleccionar para combinar",
+        "selected": "{{count}} seleccionadas",
+        "clear": "Borrar",
+        "open": "Combinar…",
+        "title": "Combinar {{count}} grabaciones",
+        "description": "Se copian como un solo texto, en este orden. Arrastra una fila por su asa para moverla.",
+        "close": "Cerrar",
+        "order": {
+          "custom": "Según selección",
+          "oldest": "Más antiguas primero",
+          "newest": "Más recientes primero"
+        },
+        "useSpeakers": "Usar el texto con hablantes",
+        "drag": "Arrastra para mover",
+        "remove": "Quitar de la lista",
+        "noText": "(sin texto)",
+        "copy": "Copiar como un solo texto",
+        "copied": "{{count}} grabaciones copiadas como un solo texto",
+        "copiedShort": "Copiado",
+        "copyFailed": "No se pudo copiar: {{error}}"
+      },
+      "showMeHow": "Muéstrame cómo"
     },
     "debug": {
       "title": "Depuración",
@@ -2025,6 +2232,27 @@
         "title": "Alrededor del texto con hablantes",
         "description": "Texto añadido antes y después de una toma pegada con hablantes, p. ej. \"Notas de la reunión:\". Va dentro del prefijo y sufijo generales."
       }
+    },
+    "combine": {
+      "title": "Combinar grabaciones",
+      "description": "Cómo une el Historial varias grabaciones que seleccionas y copias como un solo texto.",
+      "separator": {
+        "title": "Entre grabaciones",
+        "description": "Qué va entre dos grabaciones en el texto combinado.",
+        "options": {
+          "blank_line": "Una línea vacía",
+          "new_line": "Un salto de línea",
+          "space": "Un espacio"
+        }
+      },
+      "keepTakeAffixes": {
+        "label": "Mantener el prefijo y el sufijo de cada grabación",
+        "description": "**Añade tu prefijo y sufijo de Transcribir alrededor de cada grabación** en el texto combinado, como al pegarla. Desactivado por defecto: las grabaciones se unen sin añadidos."
+      },
+      "affixes": {
+        "title": "Alrededor del texto combinado",
+        "description": "Tu propio inicio y final para el texto combinado, p. ej. \"Notas de la reunión:\"."
+      }
     }
   },
   "common": {
@@ -2106,7 +2334,8 @@
     "pasteFailedHistoryOnly": "No se pudo pegar la transcripción: {{reason}}. Tu portapapeles no se modificó — el texto se guardó en el Historial. {{recovery}}",
     "recoverWithPasteLast": "Pulsa {{shortcut}} para pegarlo.",
     "recoverFromHistory": "Abre Configuración › Historial para copiarlo.",
-    "transcriptionFallback": "{{from}} no pudo transcribir esta toma, así que lo hizo {{to}}"
+    "transcriptionFallback": "{{from}} no pudo transcribir esta toma, así que lo hizo {{to}}",
+    "transcriptionIncomplete": "Parte de esta toma no se pudo transcribir (fragmentos que faltan: {{count}}), así que el texto está incompleto. La grabación completa está en el Historial: vuelve a transcribirla allí."
   },
   "flm": {
     "windowsApplicationControlBlocked": "El Control de aplicaciones de Windows bloqueó flm.exe porque no está firmado. El motor NPU no está disponible. Elige otro modelo de transcripción.",
@@ -2371,6 +2600,26 @@
       "logArchive": {
         "title": "Los registros antiguos se comprimen",
         "description": "Cuando el registro llega a 10 MB se empieza un archivo nuevo y el anterior se comprime y se guarda aparte (los 20 más recientes, hasta 30 días)."
+      },
+      "historyMenu": {
+        "title": "Historial: menos iconos, más acciones",
+        "description": "Copiar y la estrella siguen en cada grabación; Transcribir de nuevo, Transcribir de nuevo con hablantes, Nombrar y Eliminar pasan al menú ⋯, cada uno con una breve explicación."
+      },
+      "historyFavorites": {
+        "title": "Favoritos, nombres y filtros",
+        "description": "Los favoritos tienen su propia pestaña y se marcan en Grabaciones. Ponle nombre a una grabación (se busca junto con su texto) y filtra por favoritos, fecha (de las últimas 3 horas a los últimos 30 días, o tus fechas) y duración."
+      },
+      "combine": {
+        "title": "Combina varias grabaciones en un solo texto",
+        "description": "Marca grabaciones y elige Combinar: ordénalas (según selección, más antiguas o más recientes primero, o arrastrando) y cópialas como un solo texto. Ajustes avanzados › Combinar grabaciones define qué va entre ellas y a su alrededor."
+      },
+      "onlineOnTheFly": {
+        "title": "Los modelos en línea transcriben mientras hablas",
+        "description": "El modelo API y tu servidor STT ahora transcriben cada fragmento de una toma sobre la marcha, como los modelos locales, así que el texto está listo justo al detener. Con hablantes activado, la toma completa se envía una vez al final para saber quién dijo qué. Su progreso también muestra un tiempo estimado."
+      },
+      "historyTour": {
+        "title": "Muéstrame cómo: Historial",
+        "description": "Un breve recorrido guiado por todas las novedades del Historial que verás abajo. Lo encontrarás en Configuraciones o en «Muéstrame cómo» en la página Historial."
       }
     },
     "installed": "Instalada"

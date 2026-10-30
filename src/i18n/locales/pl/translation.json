@@ -71,7 +71,8 @@
     "llmProviders": "Dostawcy LLM",
     "advancedSettings": "Ustawienia zaawansowane",
     "moreTools": "Więcej narzędzi",
-    "sttServer": "Serwer STT"
+    "sttServer": "Serwer STT",
+    "combine": "Łączenie nagrań"
   },
   "helpMode": {
     "button": "Tryb pomocy: wskaż ustawienie, aby zobaczyć, co robi",
@@ -166,6 +167,11 @@
       "appearance": {
         "title": "Wygląd",
         "description": "Jak wyglądają pigułka nagrywania i pole tekstu na żywo: położenie i rozmiar pigułki, jej paski dźwięku, sposób pokazywania postępu oraz pole tekstu na żywo — każda opcja pokazana w ruchu, zanim wybierzesz."
+      },
+      "showMeHow": "Pokaż mi jak",
+      "history": {
+        "title": "Historia",
+        "description": "Krótka wycieczka po nowościach w Historii: znajdowanie nagrania wyszukiwarką, ulubionymi, datą i długością, nadawanie mu nazwy, menu ⋯ i łączenie kilku nagrań w jeden tekst."
       }
     },
     "closeSetup": "Zamknij konfigurację",
@@ -431,6 +437,112 @@
         "title": "Twoje skróty są zachowane",
         "body": "Które skróty zostają na tym komputerze, zmienisz w dowolnej chwili na stronie Skróty, w sekcji Strażnik skrótów."
       }
+    },
+    "history": {
+      "name": {
+        "title": "Nazwij nagranie",
+        "body": "Nazwa wyświetla się obok daty i godziny nagrania.",
+        "tips": {
+          "add": {
+            "title": "Dodaj nazwę",
+            "text": "Wybierz Nazwij… w menu ⋯ albo kliknij nazwę, aby ją zmienić."
+          },
+          "save": {
+            "title": "Zapisz ją",
+            "text": "Naciśnij ✓ lub Enter, aby ją zachować, albo Escape, aby anulować. Pusta nazwa usuwa nazwę."
+          }
+        }
+      },
+      "openHistory": "Otwórz Historię",
+      "intro": {
+        "title": "Twoje nagrania – łatwiej je znaleźć i użyć ponownie",
+        "body": "Historia przechowuje każde nagranie razem z jego tekstem. Oto, co możesz teraz z nimi zrobić; każdy krok zajmuje kilka sekund.",
+        "tips": {
+          "find": {
+            "title": "Znajdź",
+            "text": "Przeszukuj tekst i nazwy oraz zawężaj listę do ulubionych, czasu i długości."
+          },
+          "name": {
+            "title": "Nazwij",
+            "text": "Nadaj nagraniu nazwę, którą później rozpoznasz."
+          },
+          "menu": {
+            "title": "Więcej akcji",
+            "text": "Transkrybuj ponownie, z mówcami, albo usuń – z menu ⋯."
+          },
+          "combine": {
+            "title": "Połącz",
+            "text": "Skopiuj kilka nagrań jako jeden tekst, w wybranej przez siebie kolejności."
+          }
+        }
+      },
+      "find": {
+        "title": "Znajdź nagranie",
+        "body": "Obok pola wyszukiwania są trzy filtry. Działają razem z wyszukiwaniem.",
+        "tips": {
+          "search": {
+            "title": "Wyszukiwanie",
+            "text": "Znajduje słowa w tekście, w tekście z mówcami i w nazwie nagrania."
+          },
+          "favorites": {
+            "title": "Ulubione",
+            "text": "Gwiazdka przy nagraniu dodaje je do ulubionych: dostaje kolorową krawędź w zakładce Nagrania i pojawia się w zakładce Ulubione. „Tylko ulubione” ukrywa resztę."
+          },
+          "date": {
+            "title": "Kiedy",
+            "text": "Ostatnie 3 lub 12 godzin, dzień, tydzień lub miesiąc albo wybrane przez ciebie daty."
+          },
+          "length": {
+            "title": "Jak długie",
+            "text": "Od poniżej 10 sekund do ponad 10 minut, więc długie spotkanie łatwo wypatrzysz."
+          }
+        }
+      },
+      "menu": {
+        "title": "Mniej ikon, więcej akcji",
+        "body": "Każde nagranie pokazuje tylko dwie akcje, których używasz najczęściej; reszta jest w menu ⋯, każda z linijką opisu, co robi.",
+        "tips": {
+          "icons": {
+            "title": "Kopiowanie i gwiazdka",
+            "text": "Zawsze w wierszu: skopiuj tekst albo dodaj nagranie do ulubionych."
+          },
+          "again": {
+            "title": "Transkrybuj ponownie",
+            "text": "Odczytuje nagranie ponownie twoim bieżącym modelem i zastępuje jego tekst."
+          },
+          "speakers": {
+            "title": "Transkrybuj ponownie z mówcami",
+            "text": "Wysyła całe nagranie do twojego serwera STT, który rozróżnia mówców. Jeśli czegoś brakuje, informuje czego i otwiera ustawienia serwera STT."
+          },
+          "delete": {
+            "title": "Usuń",
+            "text": "Najpierw pyta, a potem usuwa nagranie i jego tekst."
+          }
+        }
+      },
+      "combine": {
+        "title": "Połącz kilka nagrań",
+        "body": "Przydaje się, gdy jedna myśl wymagała kilku podejść, albo do notatek z całego spotkania.",
+        "tips": {
+          "tick": {
+            "title": "Zaznacz je",
+            "text": "Zaznacz pole przy każdym nagraniu. Liczba na nim to jego miejsce na liście, w kolejności zaznaczania."
+          },
+          "order": {
+            "title": "Ustaw kolejność",
+            "text": "Wybierz Połącz…: zostaw kolejność wyboru, posortuj od najstarszych lub najnowszych albo przeciągnij wiersz za uchwyt."
+          },
+          "copy": {
+            "title": "Skopiuj jako jeden tekst",
+            "text": "Kopiuje je połączone i potwierdza znakiem ✓. Przy nagraniach z mówcami możesz użyć tekstu z mówcami."
+          }
+        }
+      },
+      "settings": {
+        "title": "Jak są łączone",
+        "body": "To prawdziwe ustawienia (także w Ustawienia zaawansowane › Łączenie nagrań): co trafia między nagrania oraz twój własny początek i koniec."
+      },
+      "tourName": "Historia"
     }
   },
   "onboarding": {
@@ -1588,7 +1700,8 @@
       "tabs": {
         "recordings": "Nagrania",
         "statistics": "Statystyki",
-        "settings": "Ustawienia"
+        "settings": "Ustawienia",
+        "favorites": "Ulubione"
       },
       "stats": {
         "title": "Statystyki nagrań",
@@ -1621,7 +1734,101 @@
         "label": "Pokaż tekst z mówcami lub bez nich",
         "text": "Tekst",
         "speakers": "Mówcy"
-      }
+      },
+      "favorites": {
+        "empty": "Brak ulubionych. Gwiazdka przy nagraniu dodaje je tutaj."
+      },
+      "filters": {
+        "favoritesOnly": "Tylko ulubione",
+        "from": "Od",
+        "to": "Do",
+        "date": {
+          "any": "Dowolny czas",
+          "3h": "Ostatnie 3 godziny",
+          "12h": "Ostatnie 12 godzin",
+          "24h": "Ostatnie 24 godziny",
+          "7d": "Ostatnie 7 dni",
+          "30d": "Ostatnie 30 dni",
+          "custom": "Własne daty…"
+        },
+        "length": {
+          "any": "Dowolna długość",
+          "under10s": "Poniżej 10 s",
+          "10to30s": "10–30 s",
+          "30sTo1m": "30 s–1 min",
+          "1to2m": "1–2 min",
+          "2to5m": "2–5 min",
+          "5to10m": "5–10 min",
+          "over10m": "Powyżej 10 min"
+        }
+      },
+      "menu": {
+        "more": "Więcej akcji",
+        "working": "Transkrybowanie…",
+        "again": {
+          "label": "Transkrybuj ponownie",
+          "hint": "Odczytuje nagranie ponownie twoim modelem dyktowania i zastępuje tekst."
+        },
+        "speakers": {
+          "label": "Transkrybuj ponownie z mówcami",
+          "hint": "Wysyła całe nagranie do twojego serwera STT, aby rozróżnić mówców."
+        },
+        "name": {
+          "label": "Nazwij…",
+          "hint": "Nazwa tego nagrania, wyświetlana obok niego i uwzględniana w wyszukiwaniu."
+        },
+        "rename": {
+          "label": "Zmień nazwę…"
+        },
+        "delete": {
+          "label": "Usuń",
+          "hint": "Usuwa nagranie i jego tekst z historii."
+        }
+      },
+      "speakers": {
+        "confirm": "Zastąpić tę transkrypcję nową, z rozróżnionymi mówcami?",
+        "openSettings": "Ustawienia serwera STT",
+        "oneVoice": "Transkrybowano ponownie: serwer usłyszał tylko jeden głos, więc nie ma tekstu z mówcami.",
+        "errors": {
+          "notSet": "Rozróżnianie mówców wymaga serwera STT. Ustaw jego adres w Ustawienia zaawansowane › Serwer STT.",
+          "modelNotSet": "Nie wybrano modelu z mówcami. Wybierz go w Ustawienia zaawansowane › Serwer STT.",
+          "unreachable": "Serwer STT nie odpowiedział: {{error}}. Sprawdź jego adres w Ustawienia zaawansowane › Serwer STT.",
+          "modelMissing": "Serwer STT nie ma modelu \"{{model}}\" (dostępne: {{available}}). Wybierz jego model z mówcami w Ustawienia zaawansowane › Serwer STT."
+        }
+      },
+      "name": {
+        "placeholder": "Nazwij to nagranie",
+        "label": "Nazwa nagrania",
+        "save": "Zapisz nazwę",
+        "cancel": "Anuluj",
+        "edit": "Zmień nazwę",
+        "failed": "Nie udało się zapisać nazwy: {{error}}"
+      },
+      "deleteConfirm": "Usunąć to nagranie i jego tekst?",
+      "deleteFailed": "Nie udało się usunąć nagrania. Spróbuj ponownie.",
+      "combine": {
+        "select": "Zaznacz, aby połączyć",
+        "selected": "Zaznaczono: {{count}}",
+        "clear": "Wyczyść",
+        "open": "Połącz…",
+        "title": "Połącz nagrania ({{count}})",
+        "description": "Kopiowane jako jeden tekst, w tej kolejności. Przeciągnij wiersz za uchwyt, aby go przesunąć.",
+        "close": "Zamknij",
+        "order": {
+          "custom": "Jak zaznaczono",
+          "oldest": "Od najstarszych",
+          "newest": "Od najnowszych"
+        },
+        "useSpeakers": "Użyj tekstu z mówcami",
+        "drag": "Przeciągnij, aby przesunąć",
+        "remove": "Usuń z listy",
+        "noText": "(brak tekstu)",
+        "copy": "Kopiuj jako jeden tekst",
+        "copied": "Skopiowano nagrania jako jeden tekst: {{count}}",
+        "copiedShort": "Skopiowano",
+        "copyFailed": "Nie udało się skopiować: {{error}}"
+      },
+      "showMeHow": "Pokaż mi jak"
     },
     "debug": {
       "title": "Debugowanie",
@@ -2025,6 +2232,27 @@
         "title": "Wokół tekstu z mówcami",
         "description": "Tekst dodawany przed i po nagraniu wklejanym z mówcami, np. \"Notatki ze spotkania:\". Trafia wewnątrz ogólnego prefiksu i sufiksu."
       }
+    },
+    "combine": {
+      "title": "Łączenie nagrań",
+      "description": "Jak historia łączy kilka zaznaczonych nagrań, które kopiujesz jako jeden tekst.",
+      "separator": {
+        "title": "Między nagraniami",
+        "description": "Co trafia między dwa nagrania w połączonym tekście.",
+        "options": {
+          "blank_line": "Pusty wiersz",
+          "new_line": "Nowy wiersz",
+          "space": "Spacja"
+        }
+      },
+      "keepTakeAffixes": {
+        "label": "Zachowaj prefiks i sufiks każdego nagrania",
+        "description": "**Dodaje twój prefiks i sufiks z Transkrybuj wokół każdego nagrania** w połączonym tekście, tak jak przy wklejaniu. Domyślnie wyłączone: nagrania są łączone bez dodatków."
+      },
+      "affixes": {
+        "title": "Wokół połączonego tekstu",
+        "description": "Twój własny początek i koniec połączonego tekstu, np. \"Notatki ze spotkania:\"."
+      }
     }
   },
   "common": {
@@ -2172,7 +2400,8 @@
     "pasteFailedHistoryOnly": "Wklejanie transkrypcji nie powiodło się: {{reason}}. Schowek pozostał bez zmian — tekst został zapisany w Historii. {{recovery}}",
     "recoverWithPasteLast": "Naciśnij {{shortcut}}, aby go wkleić.",
     "recoverFromHistory": "Otwórz Ustawienia › Historia, aby go skopiować.",
-    "transcriptionFallback": "{{from}} nie mógł przetranskrybować tego nagrania, więc zrobił to {{to}}"
+    "transcriptionFallback": "{{from}} nie mógł przetranskrybować tego nagrania, więc zrobił to {{to}}",
+    "transcriptionIncomplete": "Części nagrania nie udało się przetranskrybować (brakujące fragmenty: {{count}}), więc tekst jest niepełny. Całe nagranie jest w Historii: użyj tam „Transkrybuj ponownie”."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Funkcja Kontrola aplikacji systemu Windows zablokowała plik flm.exe, ponieważ nie jest podpisany. Silnik NPU jest niedostępny. Wybierz inny model transkrypcji.",
@@ -2371,6 +2600,26 @@
       "logArchive": {
         "title": "Stare logi są kompresowane",
         "description": "Gdy log osiągnie 10 MB, zaczyna się nowy plik, a stary jest kompresowany i odkładany (20 najnowszych, maksymalnie przez 30 dni)."
+      },
+      "historyMenu": {
+        "title": "Historia: mniej ikon, więcej akcji",
+        "description": "Kopiowanie i gwiazdka zostają przy każdym nagraniu; Transkrybuj ponownie, Transkrybuj ponownie z mówcami, Nazwij i Usuń trafiły do menu ⋯, każde z krótkim objaśnieniem."
+      },
+      "historyFavorites": {
+        "title": "Ulubione, nazwy i filtry",
+        "description": "Ulubione mają własną kartę i są oznaczone w Nagraniach. Nadaj nagraniu nazwę (przeszukiwaną razem z tekstem) i filtruj według ulubionych, daty (od ostatnich 3 godzin do ostatnich 30 dni lub własne daty) i długości."
+      },
+      "combine": {
+        "title": "Połącz kilka nagrań w jeden tekst",
+        "description": "Zaznacz nagrania i wybierz Połącz: ustaw kolejność (jak zaznaczono, od najstarszych lub najnowszych albo przeciągając) i skopiuj je jako jeden tekst. Ustawienia zaawansowane › Łączenie nagrań określa, co trafia między nie i wokół nich."
+      },
+      "onlineOnTheFly": {
+        "title": "Modele online transkrybują, gdy mówisz",
+        "description": "Model API i twój serwer STT transkrybują teraz każdy fragment nagrania na bieżąco, jak modele lokalne, więc tekst jest gotowy zaraz po zatrzymaniu. Przy włączonych mówcach całe nagranie jest wysyłane raz na końcu, aby ustalić, kto co powiedział. Ich postęp pokazuje też szacowany czas."
+      },
+      "historyTour": {
+        "title": "Pokaż mi jak: Historia",
+        "description": "Krótka wycieczka z przewodnikiem po wszystkich nowościach w Historii opisanych niżej. Znajdziesz ją w Konfiguracjach albo pod „Pokaż mi jak” na stronie Historii."
       }
     },
     "installed": "Zainstalowana"

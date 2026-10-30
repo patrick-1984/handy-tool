@@ -40,6 +40,20 @@ pub async fn backfill_history_durations(
         .map_err(|e| e.to_string())
 }
 
+/// Names a recording in History (an empty name removes it).
+#[tauri::command]
+#[specta::specta]
+pub async fn rename_history_entry(
+    history_manager: State<'_, Arc<HistoryManager>>,
+    id: i64,
+    name: String,
+) -> Result<(), String> {
+    history_manager
+        .set_entry_name(id, Some(name))
+        .await
+        .map_err(|e| e.to_string())
+}
+
 #[tauri::command]
 #[specta::specta]
 pub async fn toggle_history_entry_saved(

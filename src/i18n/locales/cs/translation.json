@@ -71,7 +71,8 @@
     "llmProviders": "Poskytovatelé LLM",
     "advancedSettings": "Pokročilá nastavení",
     "moreTools": "Další nástroje",
-    "sttServer": "Server STT"
+    "sttServer": "Server STT",
+    "combine": "Spojení nahrávek"
   },
   "helpMode": {
     "button": "Režim nápovědy: najeďte na nastavení a uvidíte, co dělá",
@@ -166,6 +167,11 @@
       "appearance": {
         "title": "Vzhled",
         "description": "Jak vypadá pilulka nahrávání a živý text: umístění a velikost pilulky, její zvukové pruhy, jak ukazuje průběh, a živý text — všechny možnosti se ukazují v pohybu, než si vyberete."
+      },
+      "showMeHow": "Ukázat jak",
+      "history": {
+        "title": "Historie",
+        "description": "Krátká prohlídka novinek v Historii: hledání nahrávky podle textu, oblíbených, data a délky, pojmenování, nabídka ⋯ a spojení více nahrávek do jednoho textu."
       }
     },
     "closeSetup": "Zavřít průvodce",
@@ -431,6 +437,112 @@
         "title": "Vaše zkratky jsou ponechané",
         "body": "Které zkratky zůstanou na tomto počítači, můžete kdykoli změnit na stránce Zkratky v části Strážce zkratek."
       }
+    },
+    "history": {
+      "name": {
+        "title": "Pojmenovat nahrávku",
+        "body": "Název se zobrazuje vedle data a času nahrávky.",
+        "tips": {
+          "add": {
+            "title": "Přidat název",
+            "text": "Zvolte Pojmenovat… v nabídce ⋯, nebo klikněte na název a změňte ho."
+          },
+          "save": {
+            "title": "Uložit",
+            "text": "Stiskněte ✓ nebo Enter pro uložení, Escape pro zrušení. Prázdný název ho odstraní."
+          }
+        }
+      },
+      "openHistory": "Otevřít Historii",
+      "intro": {
+        "title": "Vaše nahrávky: snadněji je najdete a znovu použijete",
+        "body": "Historie uchovává každou nahrávku s jejím textem. Tady je, co s nimi teď můžete dělat; každý krok zabere pár sekund.",
+        "tips": {
+          "find": {
+            "title": "Najít",
+            "text": "Hledejte v textu a názvech a zužte seznam na oblíbené, časové období a délku."
+          },
+          "name": {
+            "title": "Pojmenovat",
+            "text": "Dejte nahrávce název, podle kterého ji později poznáte."
+          },
+          "menu": {
+            "title": "Další akce",
+            "text": "Přepsat znovu, s mluvčími, nebo smazat – v nabídce ⋯."
+          },
+          "combine": {
+            "title": "Spojit",
+            "text": "Zkopírujte několik nahrávek jako jeden text v pořadí, které si zvolíte."
+          }
+        }
+      },
+      "find": {
+        "title": "Najít nahrávku",
+        "body": "Vedle pole hledání jsou tři filtry. Fungují společně s hledáním.",
+        "tips": {
+          "search": {
+            "title": "Hledání",
+            "text": "Najde slova v textu, v textu s mluvčími a v názvu nahrávky."
+          },
+          "favorites": {
+            "title": "Oblíbené",
+            "text": "Hvězdička udělá z nahrávky oblíbenou: v Nahrávkách dostane barevný okraj a objeví se na kartě Oblíbené. „Jen oblíbené“ skryje ostatní."
+          },
+          "date": {
+            "title": "Kdy",
+            "text": "Posledních 3 nebo 12 hodin, den, týden či měsíc, nebo vámi zvolená data."
+          },
+          "length": {
+            "title": "Jak dlouhé",
+            "text": "Od méně než 10 sekund po více než 10 minut, takže dlouhou schůzku rychle najdete."
+          }
+        }
+      },
+      "menu": {
+        "title": "Méně ikon, více akcí",
+        "body": "Každá nahrávka ukazuje jen dvě nejpoužívanější akce; ostatní jsou v nabídce ⋯, každá s řádkem o tom, co dělá.",
+        "tips": {
+          "icons": {
+            "title": "Kopírovat a hvězdička",
+            "text": "Vždy na řádku: zkopírovat text, nebo nahrávku označit jako oblíbenou."
+          },
+          "again": {
+            "title": "Přepsat znovu",
+            "text": "Přečte nahrávku znovu aktuálním modelem a nahradí její text."
+          },
+          "speakers": {
+            "title": "Přepsat znovu s mluvčími",
+            "text": "Odešle celou nahrávku na váš STT server, který rozliší mluvčí. Pokud něco chybí, řekne co a otevře nastavení STT serveru."
+          },
+          "delete": {
+            "title": "Smazat",
+            "text": "Nejdřív se zeptá, pak odstraní nahrávku i její text."
+          }
+        }
+      },
+      "combine": {
+        "title": "Spojit více nahrávek",
+        "body": "Hodí se, když myšlenka zabrala několik pokusů, nebo pro poznámky z celé schůzky.",
+        "tips": {
+          "tick": {
+            "title": "Zaškrtněte je",
+            "text": "Zaškrtněte políčko u každé nahrávky. Číslo na něm je její místo v seznamu, v pořadí, v jakém jste je zaškrtli."
+          },
+          "order": {
+            "title": "Seřaďte je",
+            "text": "Zvolte Spojit…: ponechte pořadí výběru, seřaďte od nejstarší nebo nejnovější, nebo přetáhněte řádek za úchyt."
+          },
+          "copy": {
+            "title": "Kopírovat jako jeden text",
+            "text": "Zkopíruje je spojené a potvrdí to znakem ✓. S mluvčími můžete použít text s mluvčími."
+          }
+        }
+      },
+      "settings": {
+        "title": "Jak se spojují",
+        "body": "Toto jsou skutečná nastavení (také v Pokročilá nastavení › Spojení nahrávek): co se vloží mezi nahrávky a váš vlastní začátek a konec."
+      },
+      "tourName": "Historie"
     }
   },
   "onboarding": {
@@ -1588,7 +1700,8 @@
       "tabs": {
         "recordings": "Nahrávky",
         "statistics": "Statistiky",
-        "settings": "Nastavení"
+        "settings": "Nastavení",
+        "favorites": "Oblíbené"
       },
       "stats": {
         "title": "Statistiky nahrávání",
@@ -1621,7 +1734,101 @@
         "label": "Zobrazit text s mluvčími nebo bez nich",
         "text": "Text",
         "speakers": "Mluvčí"
-      }
+      },
+      "favorites": {
+        "empty": "Zatím žádné oblíbené. Hvězdička u nahrávky ji přidá sem."
+      },
+      "filters": {
+        "favoritesOnly": "Jen oblíbené",
+        "from": "Od",
+        "to": "Do",
+        "date": {
+          "any": "Kdykoli",
+          "3h": "Poslední 3 hodiny",
+          "12h": "Posledních 12 hodin",
+          "24h": "Posledních 24 hodin",
+          "7d": "Posledních 7 dní",
+          "30d": "Posledních 30 dní",
+          "custom": "Vlastní data…"
+        },
+        "length": {
+          "any": "Libovolná délka",
+          "under10s": "Pod 10 s",
+          "10to30s": "10–30 s",
+          "30sTo1m": "30 s–1 min",
+          "1to2m": "1–2 min",
+          "2to5m": "2–5 min",
+          "5to10m": "5–10 min",
+          "over10m": "Nad 10 min"
+        }
+      },
+      "menu": {
+        "more": "Další akce",
+        "working": "Přepisuje se…",
+        "again": {
+          "label": "Přepsat znovu",
+          "hint": "Znovu přečte nahrávku vaším modelem diktování a nahradí text."
+        },
+        "speakers": {
+          "label": "Přepsat znovu s mluvčími",
+          "hint": "Odešle celou nahrávku na váš STT server, aby rozlišil mluvčí."
+        },
+        "name": {
+          "label": "Pojmenovat…",
+          "hint": "Název této nahrávky, zobrazený vedle ní a nalezitelný vyhledáváním."
+        },
+        "rename": {
+          "label": "Přejmenovat…"
+        },
+        "delete": {
+          "label": "Smazat",
+          "hint": "Odstraní nahrávku a její text z Historie."
+        }
+      },
+      "speakers": {
+        "confirm": "Nahradit tento přepis novým, s rozlišenými mluvčími?",
+        "openSettings": "Nastavení serveru STT",
+        "oneVoice": "Přepsáno znovu: server slyšel jen jeden hlas, takže text s mluvčími neexistuje.",
+        "errors": {
+          "notSet": "Rozlišení mluvčích vyžaduje server STT. Nastavte jeho adresu v Pokročilá nastavení › Server STT.",
+          "modelNotSet": "Není vybrán žádný model s mluvčími. Vyberte ho v Pokročilá nastavení › Server STT.",
+          "unreachable": "Server STT neodpověděl: {{error}}. Zkontrolujte jeho adresu v Pokročilá nastavení › Server STT.",
+          "modelMissing": "Server STT nemá model \"{{model}}\" (má: {{available}}). Vyberte jeho model s mluvčími v Pokročilá nastavení › Server STT."
+        }
+      },
+      "name": {
+        "placeholder": "Pojmenujte tuto nahrávku",
+        "label": "Název nahrávky",
+        "save": "Uložit název",
+        "cancel": "Zrušit",
+        "edit": "Přejmenovat",
+        "failed": "Název se nepodařilo uložit: {{error}}"
+      },
+      "deleteConfirm": "Smazat tuto nahrávku a její text?",
+      "deleteFailed": "Nahrávku se nepodařilo smazat. Zkuste to znovu.",
+      "combine": {
+        "select": "Vybrat ke spojení",
+        "selected": "Vybráno: {{count}}",
+        "clear": "Vymazat",
+        "open": "Spojit…",
+        "title": "Spojit nahrávky ({{count}})",
+        "description": "Zkopírují se jako jeden text v tomto pořadí. Řádek přesunete přetažením za úchyt.",
+        "close": "Zavřít",
+        "order": {
+          "custom": "Podle výběru",
+          "oldest": "Od nejstarších",
+          "newest": "Od nejnovějších"
+        },
+        "useSpeakers": "Použít text s mluvčími",
+        "drag": "Přetažením přesunete",
+        "remove": "Odebrat ze seznamu",
+        "noText": "(bez textu)",
+        "copy": "Kopírovat jako jeden text",
+        "copied": "Nahrávky zkopírovány jako jeden text: {{count}}",
+        "copiedShort": "Zkopírováno",
+        "copyFailed": "Kopírování selhalo: {{error}}"
+      },
+      "showMeHow": "Ukázat jak"
     },
     "debug": {
       "title": "Ladění",
@@ -2025,6 +2232,27 @@
         "title": "Kolem textu s mluvčími",
         "description": "Text přidaný před a za záznam vložený s mluvčími, např. \"Poznámky ze schůzky:\". Vkládá se uvnitř obecné předpony a přípony."
       }
+    },
+    "combine": {
+      "title": "Spojení nahrávek",
+      "description": "Jak Historie spojuje více vybraných nahrávek, které kopírujete jako jeden text.",
+      "separator": {
+        "title": "Mezi nahrávkami",
+        "description": "Co je ve spojeném textu mezi dvěma nahrávkami.",
+        "options": {
+          "blank_line": "Prázdný řádek",
+          "new_line": "Nový řádek",
+          "space": "Mezera"
+        }
+      },
+      "keepTakeAffixes": {
+        "label": "Zachovat předponu a příponu každé nahrávky",
+        "description": "**Přidá vaši předponu a příponu z Přepisu kolem každé nahrávky** ve spojeném textu, jako při vložení. Ve výchozím stavu vypnuto: nahrávky se spojí bez doplňků."
+      },
+      "affixes": {
+        "title": "Kolem spojeného textu",
+        "description": "Vlastní začátek a konec spojeného textu, např. \"Poznámky ze schůzky:\"."
+      }
     }
   },
   "common": {
@@ -2099,7 +2327,8 @@
     "pasteFailedHistoryOnly": "Vložení přepisu se nezdařilo: {{reason}}. Schránka zůstala beze změny — text je uložen v historii. {{recovery}}",
     "recoverWithPasteLast": "Stisknutím {{shortcut}} jej vložíte.",
     "recoverFromHistory": "Otevřete Nastavení › Historie a zkopírujte jej.",
-    "transcriptionFallback": "{{from}} tento záznam nepřepsal, takže ho přepsal {{to}}"
+    "transcriptionFallback": "{{from}} tento záznam nepřepsal, takže ho přepsal {{to}}",
+    "transcriptionIncomplete": "Část nahrávky se nepodařilo přepsat (chybějící části: {{count}}), text proto není úplný. Celá nahrávka je v Historii: přepište ji tam znovu."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Řízení aplikací ve Windows zablokovalo flm.exe, protože není podepsaný. Modul NPU není dostupný. Zvolte jiný model přepisu.",
@@ -2371,6 +2600,26 @@
       "logArchive": {
         "title": "Staré logy se komprimují",
         "description": "Když log dosáhne 10 MB, začne nový soubor a starý se zkomprimuje a odloží (nejnovějších 20, nejvýše 30 dní)."
+      },
+      "historyMenu": {
+        "title": "Historie: méně ikon, více akcí",
+        "description": "Kopírování a hvězdička zůstávají u každé nahrávky; Přepsat znovu, Přepsat znovu s mluvčími, Pojmenovat a Smazat se přesunuly do nabídky ⋯, každá s krátkým vysvětlením."
+      },
+      "historyFavorites": {
+        "title": "Oblíbené, názvy a filtry",
+        "description": "Oblíbené mají vlastní kartu a jsou označené v Nahrávkách. Pojmenujte nahrávku (vyhledává se spolu s jejím textem) a filtrujte podle oblíbených, data (od posledních 3 hodin po posledních 30 dní nebo vlastní data) a délky."
+      },
+      "combine": {
+        "title": "Spojte více nahrávek do jednoho textu",
+        "description": "Zaškrtněte nahrávky a zvolte Spojit: seřaďte je (podle výběru, od nejstarších či nejnovějších nebo přetažením) a zkopírujte je jako jeden text. Pokročilá nastavení › Spojení nahrávek určuje, co je mezi nimi a kolem nich."
+      },
+      "onlineOnTheFly": {
+        "title": "Online modely přepisují, zatímco mluvíte",
+        "description": "Model API a váš STT server nyní přepisují každou část záznamu průběžně, jako lokální modely, takže text je hotový hned po zastavení. Se zapnutými mluvčími se celý záznam na konci odešle jednou, aby se zjistilo, kdo co řekl. Jejich průběh nyní ukazuje i odhad času."
+      },
+      "historyTour": {
+        "title": "Ukázat jak: Historie",
+        "description": "Krátká prohlídka všech novinek v Historii popsaných níže. Najdete ji v Průvodcích nebo pod „Ukázat jak“ na stránce Historie."
       }
     },
     "installed": "Nainstalovaná"

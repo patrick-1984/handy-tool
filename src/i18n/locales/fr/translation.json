@@ -71,7 +71,8 @@
     "llmProviders": "Fournisseurs LLM",
     "advancedSettings": "Paramètres avancés",
     "moreTools": "Plus d'outils",
-    "sttServer": "Serveur STT"
+    "sttServer": "Serveur STT",
+    "combine": "Combiner des enregistrements"
   },
   "helpMode": {
     "button": "Mode aide : pointez un réglage pour voir ce qu’il fait",
@@ -166,6 +167,11 @@
       "appearance": {
         "title": "Apparence",
         "description": "L'apparence de la pilule d'enregistrement et de la zone de texte en direct : la place et la taille de la pilule, ses barres de son, comment elle montre la progression, et la zone de texte en direct, avec chaque choix montré en mouvement avant que vous le choisissiez."
+      },
+      "showMeHow": "Montrez-moi comment",
+      "history": {
+        "title": "Historique",
+        "description": "Une courte visite des nouveautés de l'Historique : retrouver un enregistrement par la recherche, les favoris, la date et la durée, le nommer, le menu ⋯ et combiner plusieurs enregistrements en un seul texte."
       }
     },
     "closeSetup": "Fermer la configuration",
@@ -431,6 +437,112 @@
         "title": "Vos raccourcis sont gardés",
         "body": "Changez à tout moment les raccourcis qui restent sur ce PC dans la page Raccourcis, sous Shortcut Keeper."
       }
+    },
+    "history": {
+      "name": {
+        "title": "Nommer un enregistrement",
+        "body": "Le nom s'affiche à côté de la date et de l'heure de l'enregistrement.",
+        "tips": {
+          "add": {
+            "title": "Ajouter un nom",
+            "text": "Choisissez Nommer… dans le menu ⋯, ou cliquez sur le nom pour le modifier."
+          },
+          "save": {
+            "title": "Valider",
+            "text": "Appuyez sur ✓ ou Entrée pour le garder, sur Échap pour annuler. Un nom vide le supprime."
+          }
+        }
+      },
+      "openHistory": "Ouvrir l'Historique",
+      "intro": {
+        "title": "Vos enregistrements, plus faciles à retrouver et à réutiliser",
+        "body": "L'Historique conserve chaque enregistrement avec son texte. Voici ce que vous pouvez désormais en faire ; chaque étape ne prend que quelques secondes.",
+        "tips": {
+          "find": {
+            "title": "Retrouver",
+            "text": "Cherchez dans le texte et les noms, et limitez la liste aux favoris, à une période et à une durée."
+          },
+          "name": {
+            "title": "Nommer",
+            "text": "Donnez à un enregistrement un nom que vous reconnaîtrez plus tard."
+          },
+          "menu": {
+            "title": "Plus d'actions",
+            "text": "Transcrire à nouveau, avec les locuteurs, ou supprimer, depuis le menu ⋯."
+          },
+          "combine": {
+            "title": "Combiner",
+            "text": "Copiez plusieurs enregistrements en un seul texte, dans l'ordre de votre choix."
+          }
+        }
+      },
+      "find": {
+        "title": "Retrouver un enregistrement",
+        "body": "À côté du champ de recherche se trouvent trois filtres. Ils fonctionnent avec la recherche.",
+        "tips": {
+          "search": {
+            "title": "Recherche",
+            "text": "Trouve des mots dans le texte, dans le texte avec les locuteurs et dans le nom de l'enregistrement."
+          },
+          "favorites": {
+            "title": "Favoris",
+            "text": "L'étoile d'un enregistrement en fait un favori : il reçoit une bordure colorée dans Enregistrements et apparaît dans l'onglet Favoris. « Favoris uniquement » masque le reste."
+          },
+          "date": {
+            "title": "Quand",
+            "text": "Les 3 ou 12 dernières heures, le dernier jour, la dernière semaine ou le dernier mois, ou les dates de votre choix."
+          },
+          "length": {
+            "title": "Durée",
+            "text": "De moins de 10 secondes à plus de 10 minutes, pour repérer vite une longue réunion."
+          }
+        }
+      },
+      "menu": {
+        "title": "Moins d'icônes, plus d'actions",
+        "body": "Chaque enregistrement n'affiche que les deux actions que vous utilisez le plus ; les autres sont dans le menu ⋯, chacune avec une ligne expliquant ce qu'elle fait.",
+        "tips": {
+          "icons": {
+            "title": "Copier et étoile",
+            "text": "Toujours sur la ligne : copier le texte ou en faire un favori."
+          },
+          "again": {
+            "title": "Transcrire à nouveau",
+            "text": "Relit l'enregistrement avec votre modèle actuel et remplace son texte."
+          },
+          "speakers": {
+            "title": "Transcrire à nouveau avec les locuteurs",
+            "text": "Envoie tout l'enregistrement à votre serveur STT, qui distingue les locuteurs. S'il manque quelque chose, un message l'indique et les paramètres du serveur STT s'ouvrent."
+          },
+          "delete": {
+            "title": "Supprimer",
+            "text": "Demande d'abord confirmation, puis supprime l'enregistrement et son texte."
+          }
+        }
+      },
+      "combine": {
+        "title": "Combiner plusieurs enregistrements",
+        "body": "Pratique quand une idée a demandé plusieurs prises, ou pour les notes d'une réunion entière.",
+        "tips": {
+          "tick": {
+            "title": "Cochez-les",
+            "text": "Cochez la case de chaque enregistrement. Le numéro affiché est sa place dans la liste, dans l'ordre où vous les avez cochés."
+          },
+          "order": {
+            "title": "Mettez-les en ordre",
+            "text": "Choisissez Combiner… : gardez l'ordre de sélection, triez du plus ancien ou du plus récent, ou faites glisser une ligne par sa poignée."
+          },
+          "copy": {
+            "title": "Copier en un seul texte",
+            "text": "Les copie bout à bout et confirme par un ✓. Avec les locuteurs, vous pouvez utiliser le texte avec les locuteurs."
+          }
+        }
+      },
+      "settings": {
+        "title": "Comment ils sont assemblés",
+        "body": "Ce sont les vrais paramètres (aussi dans Paramètres avancés › Combiner des enregistrements) : ce qui sépare les enregistrements, ainsi que votre propre début et votre propre fin."
+      },
+      "tourName": "Historique"
     }
   },
   "onboarding": {
@@ -1588,7 +1700,8 @@
       "tabs": {
         "recordings": "Enregistrements",
         "statistics": "Statistiques",
-        "settings": "Paramètres"
+        "settings": "Paramètres",
+        "favorites": "Favoris"
       },
       "stats": {
         "title": "Statistiques d'enregistrement",
@@ -1621,7 +1734,101 @@
         "label": "Afficher le texte avec ou sans intervenants",
         "text": "Texte",
         "speakers": "Intervenants"
-      }
+      },
+      "favorites": {
+        "empty": "Aucun favori pour l'instant. L'étoile d'un enregistrement l'ajoute ici."
+      },
+      "filters": {
+        "favoritesOnly": "Favoris uniquement",
+        "from": "Du",
+        "to": "Au",
+        "date": {
+          "any": "N'importe quand",
+          "3h": "3 dernières heures",
+          "12h": "12 dernières heures",
+          "24h": "24 dernières heures",
+          "7d": "7 derniers jours",
+          "30d": "30 derniers jours",
+          "custom": "Dates personnalisées…"
+        },
+        "length": {
+          "any": "Toute durée",
+          "under10s": "Moins de 10 s",
+          "10to30s": "10–30 s",
+          "30sTo1m": "30 s–1 min",
+          "1to2m": "1–2 min",
+          "2to5m": "2–5 min",
+          "5to10m": "5–10 min",
+          "over10m": "Plus de 10 min"
+        }
+      },
+      "menu": {
+        "more": "Plus d'actions",
+        "working": "Transcription…",
+        "again": {
+          "label": "Transcrire à nouveau",
+          "hint": "Relit l'enregistrement avec votre modèle de dictée et remplace le texte."
+        },
+        "speakers": {
+          "label": "Transcrire à nouveau avec les locuteurs",
+          "hint": "Envoie tout l'enregistrement à votre serveur STT pour distinguer les locuteurs."
+        },
+        "name": {
+          "label": "Nommer…",
+          "hint": "Un nom pour cet enregistrement, affiché à côté et trouvé par la recherche."
+        },
+        "rename": {
+          "label": "Renommer…"
+        },
+        "delete": {
+          "label": "Supprimer",
+          "hint": "Retire l'enregistrement et son texte de l'Historique."
+        }
+      },
+      "speakers": {
+        "confirm": "Remplacer cette transcription par une nouvelle, avec les locuteurs distingués ?",
+        "openSettings": "Paramètres du serveur STT",
+        "oneVoice": "Transcrit à nouveau : le serveur n'a entendu qu'une seule voix, il n'y a donc pas de texte avec locuteurs.",
+        "errors": {
+          "notSet": "Distinguer les locuteurs nécessite un serveur STT. Indiquez son adresse dans Paramètres avancés › Serveur STT.",
+          "modelNotSet": "Aucun modèle avec locuteurs n'est choisi. Choisissez-en un dans Paramètres avancés › Serveur STT.",
+          "unreachable": "Le serveur STT n'a pas répondu : {{error}}. Vérifiez son adresse dans Paramètres avancés › Serveur STT.",
+          "modelMissing": "Le serveur STT n'a pas de modèle \"{{model}}\" (disponibles : {{available}}). Choisissez son modèle avec locuteurs dans Paramètres avancés › Serveur STT."
+        }
+      },
+      "name": {
+        "placeholder": "Nommer cet enregistrement",
+        "label": "Nom de l'enregistrement",
+        "save": "Enregistrer le nom",
+        "cancel": "Annuler",
+        "edit": "Renommer",
+        "failed": "Impossible d'enregistrer le nom : {{error}}"
+      },
+      "deleteConfirm": "Supprimer cet enregistrement et son texte ?",
+      "deleteFailed": "Impossible de supprimer l'enregistrement. Réessayez.",
+      "combine": {
+        "select": "Sélectionner pour combiner",
+        "selected": "{{count}} sélectionné(s)",
+        "clear": "Effacer",
+        "open": "Combiner…",
+        "title": "Combiner {{count}} enregistrements",
+        "description": "Copiés en un seul texte, dans cet ordre. Faites glisser une ligne par sa poignée pour la déplacer.",
+        "close": "Fermer",
+        "order": {
+          "custom": "Ordre de sélection",
+          "oldest": "Plus anciens d'abord",
+          "newest": "Plus récents d'abord"
+        },
+        "useSpeakers": "Utiliser le texte avec locuteurs",
+        "drag": "Glisser pour déplacer",
+        "remove": "Retirer de la liste",
+        "noText": "(pas de texte)",
+        "copy": "Copier en un seul texte",
+        "copied": "{{count}} enregistrements copiés en un seul texte",
+        "copiedShort": "Copié",
+        "copyFailed": "Impossible de copier : {{error}}"
+      },
+      "showMeHow": "Montrez-moi comment"
     },
     "debug": {
       "title": "Débogage",
@@ -2025,6 +2232,27 @@
         "title": "Autour du texte avec intervenants",
         "description": "Texte ajouté avant et après une prise collée avec intervenants, p. ex. \"Notes de réunion :\". Se place à l'intérieur du préfixe et du suffixe généraux."
       }
+    },
+    "combine": {
+      "title": "Combiner des enregistrements",
+      "description": "Comment l'Historique assemble plusieurs enregistrements que vous sélectionnez et copiez en un seul texte.",
+      "separator": {
+        "title": "Entre les enregistrements",
+        "description": "Ce qui sépare deux enregistrements dans le texte combiné.",
+        "options": {
+          "blank_line": "Une ligne vide",
+          "new_line": "Un retour à la ligne",
+          "space": "Une espace"
+        }
+      },
+      "keepTakeAffixes": {
+        "label": "Conserver le préfixe et le suffixe de chaque enregistrement",
+        "description": "**Ajoute votre préfixe et suffixe de Transcrire autour de chaque enregistrement** dans le texte combiné, comme lors du collage. Désactivé par défaut : les enregistrements sont joints tels quels."
+      },
+      "affixes": {
+        "title": "Autour du texte combiné",
+        "description": "Votre propre début et fin pour le texte combiné, par ex. \"Notes de réunion :\"."
+      }
     }
   },
   "common": {
@@ -2106,7 +2334,8 @@
     "pasteFailedHistoryOnly": "Le collage de la transcription a échoué : {{reason}}. Votre presse-papiers n'a pas été modifié — le texte est enregistré dans l'historique. {{recovery}}",
     "recoverWithPasteLast": "Appuyez sur {{shortcut}} pour le coller.",
     "recoverFromHistory": "Ouvrez Paramètres › Historique pour le copier.",
-    "transcriptionFallback": "{{from}} n'a pas pu transcrire cette prise, {{to}} l'a donc fait"
+    "transcriptionFallback": "{{from}} n'a pas pu transcrire cette prise, {{to}} l'a donc fait",
+    "transcriptionIncomplete": "Une partie de cette prise n'a pas pu être transcrite (morceaux manquants : {{count}}) : le texte est incomplet. L'enregistrement complet est dans l'Historique : transcrivez-le à nouveau depuis là."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Le contrôle des applications Windows a bloqué flm.exe car il n'est pas signé. Le moteur NPU est indisponible. Choisissez un autre modèle de transcription.",
@@ -2371,6 +2600,26 @@
       "logArchive": {
         "title": "Les anciens journaux sont compressés",
         "description": "Quand le journal atteint 10 MB, un nouveau fichier est créé et l'ancien est compressé et mis de côté (les 20 plus récents, pendant 30 jours au plus)."
+      },
+      "historyMenu": {
+        "title": "Historique : moins d'icônes, plus d'actions",
+        "description": "Copier et l'étoile restent sur chaque enregistrement ; Transcrire à nouveau, Transcrire à nouveau avec les locuteurs, Nommer et Supprimer passent dans le menu ⋯, chacun avec une courte explication."
+      },
+      "historyFavorites": {
+        "title": "Favoris, noms et filtres",
+        "description": "Les favoris ont leur propre onglet et sont signalés dans Enregistrements. Donnez un nom à un enregistrement (recherché avec son texte) et filtrez par favoris, date (des 3 dernières heures aux 30 derniers jours, ou vos dates) et durée."
+      },
+      "combine": {
+        "title": "Combiner plusieurs enregistrements en un seul texte",
+        "description": "Cochez des enregistrements et choisissez Combiner : mettez-les dans l'ordre (ordre de sélection, plus anciens ou plus récents d'abord, ou par glisser) et copiez-les en un seul texte. Paramètres avancés › Combiner des enregistrements définit ce qui va entre eux et autour."
+      },
+      "onlineOnTheFly": {
+        "title": "Les modèles en ligne transcrivent pendant que vous parlez",
+        "description": "Le modèle API et votre serveur STT transcrivent désormais chaque morceau d'une prise au fur et à mesure, comme les modèles locaux, pour que le texte soit prêt dès l'arrêt. Avec les locuteurs activés, toute la prise est envoyée une fois à la fin pour savoir qui a dit quoi. Leur progression affiche aussi une estimation du temps."
+      },
+      "historyTour": {
+        "title": "Montrez-moi comment : Historique",
+        "description": "Une courte visite guidée de toutes les nouveautés de l'Historique ci-dessous. Elle se trouve dans Configurations, ou sous « Montrez-moi comment » sur la page Historique."
       }
     },
     "installed": "Installée"

@@ -791,6 +791,19 @@ pub struct TranscriptionPolicySnapshot {
     pub word_correction_threshold: f64,
 }
 
+/// What goes between two takes when recordings are combined.
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum CombineSeparator {
+    /// An empty line (paragraphs).
+    #[default]
+    BlankLine,
+    /// A line break.
+    NewLine,
+    /// A space (one running text).
+    Space,
+}
+
 /// What a Custom STT server take pastes when speakers are on.
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type, Default)]
 #[serde(rename_all = "snake_case")]
@@ -1324,6 +1337,26 @@ pub struct AppSettings {
     pub openrouter_transcription_language: String,
     #[serde(default)]
     pub openrouter_transcription_translate_to_english: bool,
+    /// History › Combine: when several recordings are copied as one text.
+    /// Keep each take's Transcribe prefix/suffix around it (default off).
+    #[serde(default)]
+    pub combine_keep_take_affixes: bool,
+    /// What goes between two takes.
+    #[serde(default)]
+    pub combine_separator: CombineSeparator,
+    /// The combined text's own beginning and end.
+    #[serde(default)]
+    pub combine_prefix_enabled: bool,
+    #[serde(default)]
+    pub combine_prefix_text: String,
+    #[serde(default = "default_affix_newline")]
+    pub combine_prefix_newline: bool,
+    #[serde(default)]
+    pub combine_suffix_enabled: bool,
+    #[serde(default)]
+    pub combine_suffix_text: String,
+    #[serde(default = "default_affix_newline")]
+    pub combine_suffix_newline: bool,
     /// Transcription failover: up to two more models (ids), tried in order
     /// when the dictation model cannot transcribe a take (see
     /// managers/failover.rs). Empty = off.
@@ -2597,6 +2630,34 @@ impl AppSettings {
         Ok(())
     }
 
+    /// Sets one History › Combine setting from the UI (`field` = its name).
+    pub fn set_combine_field(&mut self, field: &str, value: &str) -> Result<(), String> {
+        let flag = || match value {
+            "true" => Ok(true),
+            "false" => Ok(false),
+            other => Err(format!("not a true/false value: {other}")),
+        };
+        match field {
+            "combine_keep_take_affixes" => self.combine_keep_take_affixes = flag()?,
+            "combine_separator" => {
+                self.combine_separator = match value {
+                    "blank_line" => CombineSeparator::BlankLine,
+                    "new_line" => CombineSeparator::NewLine,
+                    "space" => CombineSeparator::Space,
+                    other => return Err(format!("unknown separator: {other}")),
+                }
+            }
+            "combine_prefix_enabled" => self.combine_prefix_enabled = flag()?,
+            "combine_prefix_text" => self.combine_prefix_text = value.to_string(),
+            "combine_prefix_newline" => self.combine_prefix_newline = flag()?,
+            "combine_suffix_enabled" => self.combine_suffix_enabled = flag()?,
+            "combine_suffix_text" => self.combine_suffix_text = value.to_string(),
+            "combine_suffix_newline" => self.combine_suffix_newline = flag()?,
+            other => return Err(format!("unknown combine setting: {other}")),
+        }
+        Ok(())
+    }
+
     pub fn affixes_for(&self, submit: bool) -> AffixSpec<'_> {
         if submit {
             AffixSpec {
@@ -2974,6 +3035,14 @@ pub fn get_default_settings() -> AppSettings {
         openrouter_transcription_model: default_openrouter_transcription_model(),
         openrouter_transcription_route: OpenRouterTranscriptionRoute::default(),
         transcription_fallbacks: Vec::new(),
+        combine_keep_take_affixes: false,
+        combine_separator: CombineSeparator::default(),
+        combine_prefix_enabled: false,
+        combine_prefix_text: String::new(),
+        combine_prefix_newline: default_affix_newline(),
+        combine_suffix_enabled: false,
+        combine_suffix_text: String::new(),
+        combine_suffix_newline: default_affix_newline(),
         stt_server_url: String::new(),
         stt_server_key: String::new(),
         stt_server_model: default_stt_server_model(),
@@ -3551,6 +3620,24 @@ mod tests {
         );
         assert!(s.set_stt_server_field("selected_model", "x").is_err());
         assert!(s.set_stt_server_field("stt_server_paste", "both").is_err());
+    }
+
+    #[test]
+    fn combine_settings_default_off_and_set_by_name() {
+        let mut s = get_default_settings();
+        assert!(!s.combine_keep_take_affixes);
+        assert_eq!(s.combine_separator, CombineSeparator::BlankLine);
+        assert!(!s.combine_prefix_enabled && !s.combine_suffix_enabled);
+        s.set_combine_field("combine_separator", "space").unwrap();
+        s.set_combine_field("combine_keep_take_affixes", "true")
+            .unwrap();
+        s.set_combine_field("combine_prefix_text", "Notes:")
+            .unwrap();
+        assert_eq!(s.combine_separator, CombineSeparator::Space);
+        assert!(s.combine_keep_take_affixes);
+        assert_eq!(s.combine_prefix_text, "Notes:");
+        assert!(s.set_combine_field("combine_separator", "tab").is_err());
+        assert!(s.set_combine_field("stt_server_url", "x").is_err());
     }
 
     #[test]

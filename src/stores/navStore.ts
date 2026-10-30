@@ -1,13 +1,14 @@
 import { create } from "zustand";
 import type { SidebarSection } from "@/components/Sidebar";
 
-export type HistoryTab = "recordings" | "statistics" | "settings";
+export type HistoryTab = "recordings" | "favorites" | "statistics" | "settings";
 /** The feature setups that run on the Setups page. */
 export type FeatureSetup =
   | "appearance"
   | "postProcessing"
   | "jumper"
-  | "remote";
+  | "remote"
+  | "history";
 
 interface NavStore {
   currentSection: SidebarSection;

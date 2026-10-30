@@ -8,7 +8,7 @@ Open `Advanced settings › STT server`. The page connects a speech-to-text serv
 
 `Advanced settings › STT server › Server address`
 
-The server's API address with its version, e.g. `http://192.168.1.10:8000/v1`. Each take is sent to `{address}/audio/transcriptions` as Ogg/Opus in one request when you stop. **Default:** empty (not set up).
+The server's API address with its version, e.g. `http://192.168.1.10:8000/v1`. Requests go to `{address}/audio/transcriptions` as Ogg/Opus. With `History › Settings › Crash-Safe Recording` on (the default) each piece of a take is sent while you record; with it off, the whole take in one request when you stop ([Online models have the text ready when you stop](../../features.md#online-models-transcribe-while-you-record)). **Default:** empty (not set up).
 
 ### API key
 
@@ -40,7 +40,7 @@ The server's model for plain text. **Default:** `transcribe`.
 
 `Advanced settings › STT server › Tell the speakers apart`
 
-Uses the model with speakers instead and saves the take with speakers in History, one `A: …` paragraph per speaker turn, next to the plain text. A model answering with OpenAI-style segments (speaker, start, end) or with `A: …` paragraphs both work; with one voice there is only the text. **Default:** Off.
+With Crash-Safe Recording on, the text still comes from the pieces sent while you record, and the whole take is sent once to the model with speakers after you stop (if that fails, the plain text is kept); with it off, the take goes to the model with speakers in one request. Saves the take with speakers in History, one `A: …` paragraph per speaker turn, next to the plain text. A model answering with OpenAI-style segments (speaker, start, end) or with `A: …` paragraphs both work; with one voice there is only the text. **Default:** Off.
 
 ### Model with speakers
 
@@ -52,7 +52,7 @@ Uses the model with speakers instead and saves the take with speakers in History
 
 `Advanced settings › STT server › What to paste`
 
-`Text only` or `Text with speakers`. History keeps both either way; a row's `Text` / `Speakers` switch shows and copies either one. **Default:** `Text only`.
+`Text only` or `Text with speakers`. With `Text with speakers` the paste waits for the whole-take request after you stop. History keeps both either way; a row's `Text` / `Speakers` switch shows and copies either one. **Default:** `Text only`.
 
 Custom words are sent to the server as vocabulary (the OpenAI `prompt` field) and corrected in its answer, in the speaker text too, as for every model.
 

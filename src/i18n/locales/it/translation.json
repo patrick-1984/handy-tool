@@ -71,7 +71,8 @@
     "llmProviders": "Provider LLM",
     "advancedSettings": "Impostazioni avanzate",
     "moreTools": "Altri strumenti",
-    "sttServer": "Server STT"
+    "sttServer": "Server STT",
+    "combine": "Unisci registrazioni"
   },
   "helpMode": {
     "button": "Modalità aiuto: punta un’impostazione per vedere cosa fa",
@@ -166,6 +167,11 @@
       "appearance": {
         "title": "Aspetto",
         "description": "Come appaiono la pillola di registrazione e il riquadro testo dal vivo: la posizione e la dimensione della pillola, le sue barre del suono, come mostra l'avanzamento, e il riquadro testo dal vivo, con ogni scelta mostrata in movimento prima che tu la scelga."
+      },
+      "showMeHow": "Mostrami come",
+      "history": {
+        "title": "Cronologia",
+        "description": "Un breve tour delle novità della Cronologia: trovare una registrazione con la ricerca, i preferiti, la data e la durata, darle un nome, il menu ⋯ e unire più registrazioni in un unico testo."
       }
     },
     "closeSetup": "Chiudi configurazione",
@@ -431,6 +437,112 @@
         "title": "Le tue scorciatoie sono mantenute",
         "body": "Cambia in qualsiasi momento quali scorciatoie restano su questo PC nella pagina Scorciatoie, sotto Shortcut Keeper."
       }
+    },
+    "history": {
+      "name": {
+        "title": "Dare un nome a una registrazione",
+        "body": "Il nome compare accanto alla data e all'ora della registrazione.",
+        "tips": {
+          "add": {
+            "title": "Aggiungi un nome",
+            "text": "Scegli Assegna nome… nel menu ⋯, oppure fai clic sul nome per cambiarlo."
+          },
+          "save": {
+            "title": "Salvalo",
+            "text": "Premi ✓ o Invio per confermare, Esc per annullare. Un nome vuoto lo rimuove."
+          }
+        }
+      },
+      "openHistory": "Apri Cronologia",
+      "intro": {
+        "title": "Le tue registrazioni, più facili da trovare e riutilizzare",
+        "body": "La Cronologia conserva ogni registrazione con il suo testo. Ecco cosa puoi farci ora; ogni passaggio richiede pochi secondi.",
+        "tips": {
+          "find": {
+            "title": "Trova",
+            "text": "Cerca nel testo e nei nomi e restringi l'elenco a preferiti, un periodo e una durata."
+          },
+          "name": {
+            "title": "Nome",
+            "text": "Dai a una registrazione un nome che riconoscerai in seguito."
+          },
+          "menu": {
+            "title": "Altre azioni",
+            "text": "Trascrivi di nuovo, con i parlanti, o elimina, dal menu ⋯."
+          },
+          "combine": {
+            "title": "Unisci",
+            "text": "Copia più registrazioni come un unico testo, nell'ordine che scegli."
+          }
+        }
+      },
+      "find": {
+        "title": "Trovare una registrazione",
+        "body": "Accanto alla casella di ricerca ci sono tre filtri. Funzionano insieme alla ricerca.",
+        "tips": {
+          "search": {
+            "title": "Ricerca",
+            "text": "Trova parole nel testo, nel testo con i parlanti e nel nome della registrazione."
+          },
+          "favorites": {
+            "title": "Preferiti",
+            "text": "La stella su una registrazione la rende preferita: riceve un bordo colorato in Registrazioni e compare nella scheda Preferiti. «Solo preferiti» nasconde il resto."
+          },
+          "date": {
+            "title": "Quando",
+            "text": "Le ultime 3 o 12 ore, l'ultimo giorno, settimana o mese, oppure date a tua scelta."
+          },
+          "length": {
+            "title": "Durata",
+            "text": "Da meno di 10 secondi a oltre 10 minuti, così una riunione lunga si trova subito."
+          }
+        }
+      },
+      "menu": {
+        "title": "Meno icone, più azioni",
+        "body": "Ogni registrazione mostra solo le due azioni che usi di più; le altre sono nel menu ⋯, ognuna con una riga che spiega cosa fa.",
+        "tips": {
+          "icons": {
+            "title": "Copia e stella",
+            "text": "Sempre sulla riga: copia il testo o rendila preferita."
+          },
+          "again": {
+            "title": "Trascrivi di nuovo",
+            "text": "Rilegge la registrazione con il tuo modello attuale e ne sostituisce il testo."
+          },
+          "speakers": {
+            "title": "Trascrivi di nuovo con i parlanti",
+            "text": "Invia l'intera registrazione al tuo server STT, che distingue i parlanti. Se manca qualcosa, ti dice cosa e apre le impostazioni del server STT."
+          },
+          "delete": {
+            "title": "Elimina",
+            "text": "Chiede prima conferma, poi rimuove la registrazione e il suo testo."
+          }
+        }
+      },
+      "combine": {
+        "title": "Unire più registrazioni",
+        "body": "Utile quando un pensiero ha richiesto più tentativi, o per gli appunti di un'intera riunione.",
+        "tips": {
+          "tick": {
+            "title": "Spuntale",
+            "text": "Spunta la casella di ogni registrazione. Il numero indica la sua posizione nell'elenco, nell'ordine in cui le hai spuntate."
+          },
+          "order": {
+            "title": "Mettile in ordine",
+            "text": "Scegli Unisci…: mantienile come le hai scelte, ordinale dalla più vecchia o dalla più recente, oppure trascina una riga dalla sua maniglia."
+          },
+          "copy": {
+            "title": "Copia come un unico testo",
+            "text": "Le copia unite e conferma con una ✓. Con i parlanti, puoi usare il testo con i parlanti."
+          }
+        }
+      },
+      "settings": {
+        "title": "Come vengono unite",
+        "body": "Queste sono le impostazioni reali (anche in Impostazioni avanzate › Unisci registrazioni): cosa va tra una registrazione e l'altra, e il tuo inizio e la tua fine."
+      },
+      "tourName": "Cronologia"
     }
   },
   "onboarding": {
@@ -1588,7 +1700,8 @@
       "tabs": {
         "recordings": "Registrazioni",
         "statistics": "Statistiche",
-        "settings": "Impostazioni"
+        "settings": "Impostazioni",
+        "favorites": "Preferiti"
       },
       "stats": {
         "title": "Statistiche di registrazione",
@@ -1621,7 +1734,101 @@
         "label": "Mostra il testo con o senza parlanti",
         "text": "Testo",
         "speakers": "Parlanti"
-      }
+      },
+      "favorites": {
+        "empty": "Ancora nessun preferito. La stella su una registrazione la aggiunge qui."
+      },
+      "filters": {
+        "favoritesOnly": "Solo preferiti",
+        "from": "Da",
+        "to": "A",
+        "date": {
+          "any": "Qualsiasi data",
+          "3h": "Ultime 3 ore",
+          "12h": "Ultime 12 ore",
+          "24h": "Ultime 24 ore",
+          "7d": "Ultimi 7 giorni",
+          "30d": "Ultimi 30 giorni",
+          "custom": "Date personalizzate…"
+        },
+        "length": {
+          "any": "Qualsiasi durata",
+          "under10s": "Meno di 10 s",
+          "10to30s": "10–30 s",
+          "30sTo1m": "30 s–1 min",
+          "1to2m": "1–2 min",
+          "2to5m": "2–5 min",
+          "5to10m": "5–10 min",
+          "over10m": "Oltre 10 min"
+        }
+      },
+      "menu": {
+        "more": "Altre azioni",
+        "working": "Trascrizione…",
+        "again": {
+          "label": "Trascrivi di nuovo",
+          "hint": "Rilegge la registrazione con il tuo modello di dettatura e sostituisce il testo."
+        },
+        "speakers": {
+          "label": "Trascrivi di nuovo con i parlanti",
+          "hint": "Invia l'intera registrazione al tuo server STT per distinguere i parlanti."
+        },
+        "name": {
+          "label": "Assegna nome…",
+          "hint": "Un nome per questa registrazione, mostrato accanto a essa e trovato dalla ricerca."
+        },
+        "rename": {
+          "label": "Rinomina…"
+        },
+        "delete": {
+          "label": "Elimina",
+          "hint": "Rimuove la registrazione e il suo testo dalla Cronologia."
+        }
+      },
+      "speakers": {
+        "confirm": "Sostituire questa trascrizione con una nuova, con i parlanti distinti?",
+        "openSettings": "Impostazioni server STT",
+        "oneVoice": "Trascritta di nuovo: il server ha sentito una sola voce, quindi non c'è testo con i parlanti.",
+        "errors": {
+          "notSet": "Per distinguere i parlanti serve un server STT. Imposta il suo indirizzo in Impostazioni avanzate › Server STT.",
+          "modelNotSet": "Nessun modello con parlanti scelto. Scegline uno in Impostazioni avanzate › Server STT.",
+          "unreachable": "Il server STT non ha risposto: {{error}}. Controlla il suo indirizzo in Impostazioni avanzate › Server STT.",
+          "modelMissing": "Il server STT non ha il modello \"{{model}}\" (disponibili: {{available}}). Scegli il suo modello con parlanti in Impostazioni avanzate › Server STT."
+        }
+      },
+      "name": {
+        "placeholder": "Dai un nome a questa registrazione",
+        "label": "Nome della registrazione",
+        "save": "Salva il nome",
+        "cancel": "Annulla",
+        "edit": "Rinomina",
+        "failed": "Impossibile salvare il nome: {{error}}"
+      },
+      "deleteConfirm": "Eliminare questa registrazione e il suo testo?",
+      "deleteFailed": "Impossibile eliminare la registrazione. Riprova.",
+      "combine": {
+        "select": "Seleziona per unire",
+        "selected": "{{count}} selezionate",
+        "clear": "Cancella",
+        "open": "Unisci…",
+        "title": "Unisci {{count}} registrazioni",
+        "description": "Copiate come un unico testo, in quest'ordine. Trascina una riga dalla maniglia per spostarla.",
+        "close": "Chiudi",
+        "order": {
+          "custom": "Come selezionate",
+          "oldest": "Prima le più vecchie",
+          "newest": "Prima le più recenti"
+        },
+        "useSpeakers": "Usa il testo con i parlanti",
+        "drag": "Trascina per spostare",
+        "remove": "Rimuovi dall'elenco",
+        "noText": "(nessun testo)",
+        "copy": "Copia come un unico testo",
+        "copied": "{{count}} registrazioni copiate come un unico testo",
+        "copiedShort": "Copiato",
+        "copyFailed": "Impossibile copiare: {{error}}"
+      },
+      "showMeHow": "Mostrami come"
     },
     "debug": {
       "title": "Debug",
@@ -2025,6 +2232,27 @@
         "title": "Intorno al testo con parlanti",
         "description": "Testo aggiunto prima e dopo una registrazione incollata con parlanti, ad es. \"Note della riunione:\". Si trova all'interno del prefisso e suffisso generali."
       }
+    },
+    "combine": {
+      "title": "Unisci registrazioni",
+      "description": "Come la Cronologia unisce più registrazioni che selezioni e copi come un unico testo.",
+      "separator": {
+        "title": "Tra le registrazioni",
+        "description": "Cosa va tra due registrazioni nel testo unito.",
+        "options": {
+          "blank_line": "Una riga vuota",
+          "new_line": "Un a capo",
+          "space": "Uno spazio"
+        }
+      },
+      "keepTakeAffixes": {
+        "label": "Mantieni prefisso e suffisso di ogni registrazione",
+        "description": "**Aggiunge il tuo prefisso e suffisso di Trascrivi attorno a ogni registrazione** nel testo unito, come quando è stata incollata. Disattivato per impostazione predefinita: le registrazioni vengono unite senza aggiunte."
+      },
+      "affixes": {
+        "title": "Attorno al testo unito",
+        "description": "Il tuo inizio e la tua fine per il testo unito, ad es. \"Note della riunione:\"."
+      }
     }
   },
   "common": {
@@ -2099,7 +2327,8 @@
     "pasteFailedHistoryOnly": "Impossibile incollare la trascrizione: {{reason}}. Gli appunti non sono stati modificati — il testo è stato salvato nella Cronologia. {{recovery}}",
     "recoverWithPasteLast": "Premi {{shortcut}} per incollarlo.",
     "recoverFromHistory": "Apri Impostazioni › Cronologia per copiarlo.",
-    "transcriptionFallback": "{{from}} non è riuscito a trascrivere questa registrazione, quindi l'ha fatto {{to}}"
+    "transcriptionFallback": "{{from}} non è riuscito a trascrivere questa registrazione, quindi l'ha fatto {{to}}",
+    "transcriptionIncomplete": "Una parte di questa registrazione non è stata trascritta (pezzi mancanti: {{count}}), quindi il testo è incompleto. La registrazione completa è nella Cronologia: trascrivila di nuovo da lì."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Controllo app di Windows ha bloccato flm.exe perché non è firmato. Il motore NPU non è disponibile. Scegli un altro modello di trascrizione.",
@@ -2371,6 +2600,26 @@
       "logArchive": {
         "title": "I log vecchi vengono compressi",
         "description": "Quando il log raggiunge 10 MB si inizia un nuovo file e quello vecchio viene compresso e messo da parte (i 20 più recenti, per un massimo di 30 giorni)."
+      },
+      "historyMenu": {
+        "title": "Cronologia: meno icone, più azioni",
+        "description": "Copia e la stella restano su ogni registrazione; Trascrivi di nuovo, Trascrivi di nuovo con i parlanti, Assegna nome ed Elimina sono passati nel menu ⋯, ognuno con una breve spiegazione."
+      },
+      "historyFavorites": {
+        "title": "Preferiti, nomi e filtri",
+        "description": "I preferiti hanno una scheda tutta loro e sono contrassegnati in Registrazioni. Dai un nome a una registrazione (cercato insieme al suo testo) e filtra per preferiti, data (dalle ultime 3 ore agli ultimi 30 giorni, o le tue date) e durata."
+      },
+      "combine": {
+        "title": "Unisci più registrazioni in un unico testo",
+        "description": "Spunta le registrazioni e scegli Unisci: mettile in ordine (come selezionate, prima le più vecchie o le più recenti, o trascinando) e copiale come un unico testo. Impostazioni avanzate › Unisci registrazioni stabilisce cosa va tra e attorno a esse."
+      },
+      "onlineOnTheFly": {
+        "title": "I modelli online trascrivono mentre parli",
+        "description": "Il modello API e il tuo server STT ora trascrivono ogni pezzo di una ripresa man mano, come i modelli locali, così il testo è pronto subito dopo l'arresto. Con i parlanti attivi, l'intera ripresa viene inviata una volta alla fine per sapere chi ha detto cosa. Il loro avanzamento mostra anche una stima del tempo."
+      },
+      "historyTour": {
+        "title": "Mostrami come: Cronologia",
+        "description": "Un breve tour guidato di tutte le novità della Cronologia qui sotto. Lo trovi in Configurazioni o in «Mostrami come» nella pagina Cronologia."
       }
     },
     "installed": "Installata"

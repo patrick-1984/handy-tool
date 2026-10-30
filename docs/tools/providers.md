@@ -12,6 +12,7 @@ Stay local when the machine can carry the work. Configure a remote speech endpoi
 
 - [Pick the engine that fits the machine](../features.md#pick-the-engine-that-fits-the-machine)
 - [Point it at any OpenAI-compatible speech endpoint](../features.md#point-it-at-any-openai-compatible-speech-endpoint)
+- [Online models have the text ready when you stop](../features.md#online-models-transcribe-while-you-record)
 - [One OpenRouter key, many speech models](../features.md#one-openrouter-key-many-speech-models)
 - [Configure a provider once, use it everywhere](../features.md#configure-a-provider-once-use-it-everywhere)
 - [Whisper-style, or an audio-capable chat model](../features.md#whisper-style-or-an-audio-capable-chat-model)

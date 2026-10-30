@@ -166,6 +166,16 @@ function App() {
         { duration: 10000 },
       ),
     );
+    // Some pieces of a take stayed without text after their second try: the
+    // text is pasted, but it is not the whole take.
+    const unlistenIncomplete = listen<{ missing: number; reason: string }>(
+      "transcription-incomplete",
+      (e) =>
+        toast.warning(
+          t("toasts.transcriptionIncomplete", { count: e.payload.missing }),
+          { description: e.payload.reason || undefined, duration: 12000 },
+        ),
+    );
     // The dictation model failed (or did not answer the take's heartbeat) and
     // the next model in the failover order transcribed instead.
     const unlistenFallback = listen<{
@@ -185,6 +195,7 @@ function App() {
       unlisten.then((f) => f());
       unlistenPaste.then((f) => f());
       unlistenTranscribe.then((f) => f());
+      unlistenIncomplete.then((f) => f());
       unlistenFallback.then((f) => f());
     };
   }, [t, pasteLastKey]);

@@ -351,6 +351,22 @@ const settingUpdaters: {
       "stt_speakers_suffix_newline",
       String(value),
     ),
+  combine_keep_take_affixes: (value) =>
+    commands.changeCombineSetting("combine_keep_take_affixes", String(value)),
+  combine_separator: (value) =>
+    commands.changeCombineSetting("combine_separator", String(value)),
+  combine_prefix_enabled: (value) =>
+    commands.changeCombineSetting("combine_prefix_enabled", String(value)),
+  combine_prefix_text: (value) =>
+    commands.changeCombineSetting("combine_prefix_text", String(value)),
+  combine_prefix_newline: (value) =>
+    commands.changeCombineSetting("combine_prefix_newline", String(value)),
+  combine_suffix_enabled: (value) =>
+    commands.changeCombineSetting("combine_suffix_enabled", String(value)),
+  combine_suffix_text: (value) =>
+    commands.changeCombineSetting("combine_suffix_text", String(value)),
+  combine_suffix_newline: (value) =>
+    commands.changeCombineSetting("combine_suffix_newline", String(value)),
   transcription_fallbacks: (value) =>
     commands.changeTranscriptionFallbacksSetting(value as string[]),
   capture_source: (value) =>

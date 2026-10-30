@@ -207,6 +207,7 @@ pub fn transcribe(
     app: &AppHandle,
     tm: &TranscriptionManager,
     take: u64,
+    whole_take: bool,
     samples: Vec<f32>,
 ) -> anyhow::Result<String> {
     // `take` = the take this work belongs to (captured when it was set up),
@@ -220,9 +221,12 @@ pub fn transcribe(
         .is_some_and(|i| matches!(i.engine_type, EngineType::SttServer));
     // The dictation model's own call. On the STT server a take also brings
     // its speaker text, kept for this take only.
+    // `whole_take`: the whole recording (single request, deferred); a piece of
+    // a chunked take asks for plain text only (its speakers come from one
+    // whole-take request after stop).
     let run_primary = |samples: Vec<f32>| -> anyhow::Result<String> {
-        if primary_is_stt {
-            let result = tm.stt_server_take_expecting(&primary, &samples)?;
+        if primary_is_stt && whole_take {
+            let result = tm.stt_server_take_expecting(&primary, samples)?;
             if state().take == take {
                 crate::managers::stt_server::set_session_diarized(take, result.diarized);
             }
@@ -240,7 +244,9 @@ pub fn transcribe(
     if chain.is_empty() {
         return run_primary(samples);
     }
-    let primary_down = {
+    // A whole-take STT request goes to the speakers model, which can be up
+    // while the plain model (that marked the primary down) is not: try it.
+    let primary_down = !(primary_is_stt && whole_take) && {
         let st = state();
         st.take == take && st.primary_up == Some(false)
     };

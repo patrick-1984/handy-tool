@@ -228,6 +228,7 @@ mod tests {
             model_used: None,
             audio_purged_at: None,
             diarized_text: None,
+            name: None,
         }
     }
 

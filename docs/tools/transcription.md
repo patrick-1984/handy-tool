@@ -14,6 +14,8 @@ Use ordinary transcription when you want the words in the field under your curso
 - [Hold a key for a one-line thought](../features.md#hold-to-talk)
 - [Watch the text appear, or wait for the most accurate pass](../features.md#live-or-post-recording)
 - [A thirty-minute dictation is already transcribed when you stop](../features.md#a-thirty-minute-dictation-is-already-transcribed-when-you-stop)
+- [Online models have the text ready when you stop](../features.md#online-models-transcribe-while-you-record)
+- [A progress estimate for online models too](../features.md#progress-estimates-for-online-models)
 - [Speak any language, get English](../features.md#speak-any-language-get-english)
 - [Every engine keeps your last word](../features.md#every-engine-keeps-your-last-word)
 - [Transcribe without tying up the CPU or GPU](../features.md#use-the-npu-in-your-laptop)

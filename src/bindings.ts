@@ -1469,6 +1469,30 @@ export const commands = {
       else return { status: "error", error: e as any };
     }
   },
+  async renameHistoryEntry(id: number, name: string): Promise<Result<null, string>> {
+    try {
+      return { status: "ok", data: await TAURI_INVOKE("rename_history_entry", { id, name }) };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  async retranscribeHistoryEntrySpeakers(id: number): Promise<Result<SpeakersResult, string>> {
+    try {
+      return { status: "ok", data: await TAURI_INVOKE("retranscribe_history_entry_speakers", { id }) };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  async changeCombineSetting(field: string, value: string): Promise<Result<null, string>> {
+    try {
+      return { status: "ok", data: await TAURI_INVOKE("change_combine_setting", { field, value }) };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
   async changeRecordingTextFileSetting(
     enabled: boolean,
   ): Promise<Result<null, string>> {
@@ -3479,6 +3503,14 @@ export type AppSettings = {
   openrouter_transcription_key?: string;
   openrouter_transcription_language?: string;
   openrouter_transcription_translate_to_english?: boolean;
+  combine_keep_take_affixes?: boolean;
+  combine_separator?: CombineSeparator;
+  combine_prefix_enabled?: boolean;
+  combine_prefix_text?: string;
+  combine_prefix_newline?: boolean;
+  combine_suffix_enabled?: boolean;
+  combine_suffix_text?: string;
+  combine_suffix_newline?: boolean;
   transcription_fallbacks?: string[];
   stt_server_url?: string;
   stt_server_key?: string;
@@ -3918,6 +3950,10 @@ export type HistoryEntry = {
    * engine told the speakers apart (Custom STT server). `None` otherwise.
    */
   diarized_text?: string | null;
+  /**
+   * A name the user gave the recording; `None` = unnamed.
+   */
+  name?: string | null;
 };
 /**
  * Result of changing keyboard implementation
@@ -4132,6 +4168,14 @@ export type OpenRouterModelPrice = {
  * What a Custom STT server take pastes when speakers are on.
  */
 export type SttServerPaste = "text" | "speakers";
+/**
+ * What goes between two takes when recordings are combined.
+ */
+export type CombineSeparator = "blank_line" | "new_line" | "space";
+/**
+ * What "Transcribe again with speakers" did.
+ */
+export type SpeakersResult = { text: string; speakers: boolean };
 /**
  * One model the server offers (`GET {base}/models`).
  */

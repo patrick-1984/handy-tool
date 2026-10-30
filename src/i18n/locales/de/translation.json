@@ -71,7 +71,8 @@
     "llmProviders": "LLM-Anbieter",
     "advancedSettings": "Erweiterte Einstellungen",
     "moreTools": "Weitere Werkzeuge",
-    "sttServer": "STT-Server"
+    "sttServer": "STT-Server",
+    "combine": "Aufnahmen kombinieren"
   },
   "helpMode": {
     "button": "Hilfemodus: auf eine Einstellung zeigen, um zu sehen, was sie tut",
@@ -166,6 +167,11 @@
       "appearance": {
         "title": "Aussehen",
         "description": "Wie die Aufnahme-Pille und das Live-Textfeld aussehen: Ort und Größe der Pille, ihre Pegelbalken, wie sie den Fortschritt zeigt, und das Live-Textfeld — jede Wahl in Bewegung gezeigt, bevor du sie triffst."
+      },
+      "showMeHow": "Zeig mir, wie",
+      "history": {
+        "title": "Verlauf",
+        "description": "Eine kurze Tour durch die Neuerungen im Verlauf: eine Aufnahme über Suche, Favoriten, Datum und Länge finden, sie benennen, das ⋯-Menü und mehrere Aufnahmen zu einem Text kombinieren."
       }
     },
     "closeSetup": "Einrichtung schließen",
@@ -431,6 +437,112 @@
         "title": "Deine Tastenkürzel werden behalten",
         "body": "Welche Tastenkürzel auf diesem PC bleiben, änderst du jederzeit auf der Seite Tastenkürzel unter Shortcut Keeper."
       }
+    },
+    "history": {
+      "name": {
+        "title": "Eine Aufnahme benennen",
+        "body": "Der Name steht neben Datum und Uhrzeit der Aufnahme.",
+        "tips": {
+          "add": {
+            "title": "Namen hinzufügen",
+            "text": "Wähle „Benennen…“ im ⋯-Menü oder klicke auf den Namen, um ihn zu ändern."
+          },
+          "save": {
+            "title": "Speichern",
+            "text": "Drücke ✓ oder Enter zum Übernehmen, Escape zum Abbrechen. Ein leerer Name entfernt ihn."
+          }
+        }
+      },
+      "openHistory": "Verlauf öffnen",
+      "intro": {
+        "title": "Deine Aufnahmen – leichter zu finden und wiederzuverwenden",
+        "body": "Der Verlauf speichert jede Aufnahme mit ihrem Text. Das kannst du jetzt damit tun; jeder Schritt dauert nur ein paar Sekunden.",
+        "tips": {
+          "find": {
+            "title": "Finden",
+            "text": "Durchsuche Texte und Namen und grenze die Liste auf Favoriten, einen Zeitraum und eine Länge ein."
+          },
+          "name": {
+            "title": "Benennen",
+            "text": "Gib einer Aufnahme einen Namen, den du später wiedererkennst."
+          },
+          "menu": {
+            "title": "Weitere Aktionen",
+            "text": "Erneut transkribieren, mit Sprechern oder löschen – über das ⋯-Menü."
+          },
+          "combine": {
+            "title": "Kombinieren",
+            "text": "Kopiere mehrere Aufnahmen als einen Text, in der Reihenfolge, die du wählst."
+          }
+        }
+      },
+      "find": {
+        "title": "Eine Aufnahme finden",
+        "body": "Neben dem Suchfeld gibt es drei Filter. Sie wirken zusammen mit der Suche.",
+        "tips": {
+          "search": {
+            "title": "Suche",
+            "text": "Findet Wörter im Text, im Text mit Sprechern und im Namen der Aufnahme."
+          },
+          "favorites": {
+            "title": "Favoriten",
+            "text": "Der Stern an einer Aufnahme macht sie zum Favoriten: Sie bekommt unter „Aufnahmen“ einen farbigen Rand und erscheint im Tab „Favoriten“. „Nur Favoriten“ blendet den Rest aus."
+          },
+          "date": {
+            "title": "Wann",
+            "text": "Die letzten 3 oder 12 Stunden, der letzte Tag, die letzte Woche oder der letzte Monat oder selbst gewählte Daten."
+          },
+          "length": {
+            "title": "Wie lang",
+            "text": "Von unter 10 Sekunden bis über 10 Minuten – so findest du ein langes Meeting schnell."
+          }
+        }
+      },
+      "menu": {
+        "title": "Weniger Symbole, mehr Aktionen",
+        "body": "Jede Aufnahme zeigt nur die zwei Aktionen, die du am häufigsten nutzt; der Rest steckt im ⋯-Menü, jeweils mit einer Zeile dazu, was sie tut.",
+        "tips": {
+          "icons": {
+            "title": "Kopieren und Stern",
+            "text": "Immer in der Zeile: den Text kopieren oder die Aufnahme zum Favoriten machen."
+          },
+          "again": {
+            "title": "Erneut transkribieren",
+            "text": "Liest die Aufnahme mit deinem aktuellen Modell erneut ein und ersetzt ihren Text."
+          },
+          "speakers": {
+            "title": "Erneut mit Sprechern transkribieren",
+            "text": "Sendet die ganze Aufnahme an deinen STT-Server, der die Sprecher unterscheidet. Fehlt etwas, wird angezeigt, was, und die STT-Server-Einstellungen öffnen sich."
+          },
+          "delete": {
+            "title": "Löschen",
+            "text": "Fragt zuerst nach und entfernt dann die Aufnahme und ihren Text."
+          }
+        }
+      },
+      "combine": {
+        "title": "Mehrere Aufnahmen kombinieren",
+        "body": "Praktisch, wenn ein Gedanke mehrere Anläufe gebraucht hat, oder für Notizen aus einem ganzen Meeting.",
+        "tips": {
+          "tick": {
+            "title": "Anhaken",
+            "text": "Hake das Kästchen an jeder Aufnahme an. Die Zahl darauf ist ihr Platz in der Liste, in der Reihenfolge, in der du sie angehakt hast."
+          },
+          "order": {
+            "title": "In Reihenfolge bringen",
+            "text": "Wähle „Kombinieren…“: Behalte die gewählte Reihenfolge, sortiere älteste oder neueste zuerst oder ziehe eine Zeile an ihrem Griff."
+          },
+          "copy": {
+            "title": "Als einen Text kopieren",
+            "text": "Kopiert sie zusammengefügt und bestätigt mit einem ✓. Mit Sprechern kannst du den Text mit Sprechern verwenden."
+          }
+        }
+      },
+      "settings": {
+        "title": "Wie sie verbunden werden",
+        "body": "Das sind die echten Einstellungen (auch unter Erweiterte Einstellungen › Aufnahmen kombinieren): was zwischen den Aufnahmen steht und dein eigener Anfang und Schluss."
+      },
+      "tourName": "Verlauf"
     }
   },
   "onboarding": {
@@ -1588,7 +1700,8 @@
       "tabs": {
         "recordings": "Aufnahmen",
         "statistics": "Statistik",
-        "settings": "Einstellungen"
+        "settings": "Einstellungen",
+        "favorites": "Favoriten"
       },
       "stats": {
         "title": "Aufnahme-Statistik",
@@ -1621,7 +1734,101 @@
         "label": "Text mit oder ohne Sprecher anzeigen",
         "text": "Text",
         "speakers": "Sprecher"
-      }
+      },
+      "favorites": {
+        "empty": "Noch keine Favoriten. Der Stern an einer Aufnahme fügt sie hier hinzu."
+      },
+      "filters": {
+        "favoritesOnly": "Nur Favoriten",
+        "from": "Von",
+        "to": "Bis",
+        "date": {
+          "any": "Beliebige Zeit",
+          "3h": "Letzte 3 Stunden",
+          "12h": "Letzte 12 Stunden",
+          "24h": "Letzte 24 Stunden",
+          "7d": "Letzte 7 Tage",
+          "30d": "Letzte 30 Tage",
+          "custom": "Eigene Daten…"
+        },
+        "length": {
+          "any": "Beliebige Länge",
+          "under10s": "Unter 10 s",
+          "10to30s": "10–30 s",
+          "30sTo1m": "30 s–1 min",
+          "1to2m": "1–2 min",
+          "2to5m": "2–5 min",
+          "5to10m": "5–10 min",
+          "over10m": "Über 10 min"
+        }
+      },
+      "menu": {
+        "more": "Weitere Aktionen",
+        "working": "Wird transkribiert…",
+        "again": {
+          "label": "Erneut transkribieren",
+          "hint": "Liest die Aufnahme erneut mit deinem Diktiermodell und ersetzt den Text."
+        },
+        "speakers": {
+          "label": "Erneut mit Sprechern transkribieren",
+          "hint": "Sendet die ganze Aufnahme an deinen STT-Server, um die Sprecher zu unterscheiden."
+        },
+        "name": {
+          "label": "Benennen…",
+          "hint": "Ein Name für diese Aufnahme, der daneben angezeigt und von der Suche gefunden wird."
+        },
+        "rename": {
+          "label": "Umbenennen…"
+        },
+        "delete": {
+          "label": "Löschen",
+          "hint": "Entfernt die Aufnahme und ihren Text aus dem Verlauf."
+        }
+      },
+      "speakers": {
+        "confirm": "Diese Transkription durch eine neue ersetzen, in der die Sprecher unterschieden werden?",
+        "openSettings": "STT-Server-Einstellungen",
+        "oneVoice": "Erneut transkribiert: Der Server hat nur eine Stimme gehört, daher gibt es keinen Text mit Sprechern.",
+        "errors": {
+          "notSet": "Zum Unterscheiden der Sprecher wird ein STT-Server benötigt. Lege seine Adresse unter Erweiterte Einstellungen › STT-Server fest.",
+          "modelNotSet": "Kein Modell mit Sprechern ausgewählt. Wähle eines unter Erweiterte Einstellungen › STT-Server.",
+          "unreachable": "Der STT-Server hat nicht geantwortet: {{error}}. Prüfe seine Adresse unter Erweiterte Einstellungen › STT-Server.",
+          "modelMissing": "Der STT-Server hat kein Modell \"{{model}}\" (verfügbar: {{available}}). Wähle sein Modell mit Sprechern unter Erweiterte Einstellungen › STT-Server."
+        }
+      },
+      "name": {
+        "placeholder": "Diese Aufnahme benennen",
+        "label": "Name der Aufnahme",
+        "save": "Namen speichern",
+        "cancel": "Abbrechen",
+        "edit": "Umbenennen",
+        "failed": "Name konnte nicht gespeichert werden: {{error}}"
+      },
+      "deleteConfirm": "Diese Aufnahme und ihren Text löschen?",
+      "deleteFailed": "Aufnahme konnte nicht gelöscht werden. Versuche es erneut.",
+      "combine": {
+        "select": "Zum Kombinieren auswählen",
+        "selected": "{{count}} ausgewählt",
+        "clear": "Leeren",
+        "open": "Kombinieren…",
+        "title": "{{count}} Aufnahmen kombinieren",
+        "description": "Wird als ein Text in dieser Reihenfolge kopiert. Ziehe eine Zeile am Griff, um sie zu verschieben.",
+        "close": "Schließen",
+        "order": {
+          "custom": "Wie ausgewählt",
+          "oldest": "Älteste zuerst",
+          "newest": "Neueste zuerst"
+        },
+        "useSpeakers": "Text mit Sprechern verwenden",
+        "drag": "Zum Verschieben ziehen",
+        "remove": "Aus der Liste entfernen",
+        "noText": "(kein Text)",
+        "copy": "Als ein Text kopieren",
+        "copied": "{{count}} Aufnahmen als ein Text kopiert",
+        "copiedShort": "Kopiert",
+        "copyFailed": "Kopieren fehlgeschlagen: {{error}}"
+      },
+      "showMeHow": "Zeig mir, wie"
     },
     "debug": {
       "title": "Debug",
@@ -2025,6 +2232,27 @@
         "title": "Rund um den Text mit Sprechern",
         "description": "Text vor und nach einer mit Sprechern eingefügten Aufnahme, z. B. \"Besprechungsnotizen:\". Steht innerhalb des allgemeinen Präfixes und Suffixes."
       }
+    },
+    "combine": {
+      "title": "Aufnahmen kombinieren",
+      "description": "Wie der Verlauf mehrere ausgewählte Aufnahmen zusammenfügt, die du als ein Text kopierst.",
+      "separator": {
+        "title": "Zwischen Aufnahmen",
+        "description": "Was im kombinierten Text zwischen zwei Aufnahmen steht.",
+        "options": {
+          "blank_line": "Eine Leerzeile",
+          "new_line": "Ein Zeilenumbruch",
+          "space": "Ein Leerzeichen"
+        }
+      },
+      "keepTakeAffixes": {
+        "label": "Präfix und Suffix jeder Aufnahme behalten",
+        "description": "**Fügt dein Transkribieren-Präfix und -Suffix um jede Aufnahme** im kombinierten Text ein, wie beim Einfügen. Standardmäßig aus: Die Aufnahmen werden ohne Zusätze verbunden."
+      },
+      "affixes": {
+        "title": "Um den kombinierten Text",
+        "description": "Dein eigener Anfang und dein eigenes Ende für den kombinierten Text, z. B. \"Besprechungsnotizen:\"."
+      }
     }
   },
   "common": {
@@ -2099,7 +2327,8 @@
     "pasteFailedHistoryOnly": "Einfügen der Transkription fehlgeschlagen: {{reason}}. Deine Zwischenablage blieb unverändert — der Text wurde im Verlauf gespeichert. {{recovery}}",
     "recoverWithPasteLast": "Drücke {{shortcut}}, um ihn einzufügen.",
     "recoverFromHistory": "Öffne Einstellungen › Verlauf, um ihn zu kopieren.",
-    "transcriptionFallback": "{{from}} konnte diese Aufnahme nicht transkribieren, daher hat {{to}} übernommen"
+    "transcriptionFallback": "{{from}} konnte diese Aufnahme nicht transkribieren, daher hat {{to}} übernommen",
+    "transcriptionIncomplete": "Ein Teil dieser Aufnahme konnte nicht transkribiert werden (fehlende Stücke: {{count}}), der Text ist also unvollständig. Die ganze Aufnahme ist im Verlauf: Transkribiere sie dort erneut."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Die Windows-Anwendungssteuerung hat flm.exe blockiert, weil die Datei nicht signiert ist. Die NPU-Engine ist nicht verfügbar. Wähle ein anderes Transkriptionsmodell.",
@@ -2371,6 +2600,26 @@
       "logArchive": {
         "title": "Alte Logs werden komprimiert",
         "description": "Erreicht das Log 10 MB, beginnt eine neue Datei, und die alte wird komprimiert und abgelegt (die neuesten 20, bis zu 30 Tage lang)."
+      },
+      "historyMenu": {
+        "title": "Verlauf: weniger Symbole, mehr Aktionen",
+        "description": "Kopieren und der Stern bleiben an jeder Aufnahme; Erneut transkribieren, Erneut mit Sprechern transkribieren, Benennen und Löschen sind ins ⋯-Menü gewandert, jeweils mit einer kurzen Erklärung."
+      },
+      "historyFavorites": {
+        "title": "Favoriten, Namen und Filter",
+        "description": "Favoriten haben einen eigenen Tab und sind unter Aufnahmen markiert. Gib einer Aufnahme einen Namen (wird mit ihrem Text durchsucht) und filtere nach Favoriten, Datum (letzte 3 Stunden bis letzte 30 Tage oder eigene Daten) und Länge."
+      },
+      "combine": {
+        "title": "Mehrere Aufnahmen zu einem Text kombinieren",
+        "description": "Hake Aufnahmen an und wähle Kombinieren: Bringe sie in eine Reihenfolge (wie ausgewählt, älteste oder neueste zuerst, oder per Ziehen) und kopiere sie als ein Text. Erweiterte Einstellungen › Aufnahmen kombinieren legt fest, was zwischen und um sie steht."
+      },
+      "onlineOnTheFly": {
+        "title": "Online-Modelle transkribieren, während du sprichst",
+        "description": "Das API-Modell und dein STT-Server transkribieren jetzt jedes Stück einer Aufnahme laufend, wie lokale Modelle, sodass der Text direkt nach dem Stoppen bereitsteht. Mit aktivierten Sprechern wird die ganze Aufnahme am Ende einmal gesendet, um zu erkennen, wer was gesagt hat. Ihr Fortschritt zeigt auch eine Zeitschätzung."
+      },
+      "historyTour": {
+        "title": "Zeig mir, wie: Verlauf",
+        "description": "Eine kurze geführte Tour durch alle Neuerungen im Verlauf weiter unten. Du findest sie unter Einrichtungen oder unter „Zeig mir, wie“ auf der Verlaufsseite."
       }
     },
     "installed": "Installiert"
