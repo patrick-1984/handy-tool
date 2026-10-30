@@ -791,6 +791,19 @@ pub struct TranscriptionPolicySnapshot {
     pub word_correction_threshold: f64,
 }
 
+/// Where "Transcribe again with speakers" tells the speakers apart.
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum SpeakersSource {
+    /// This PC when its speakers model is downloaded, else the STT server.
+    #[default]
+    Auto,
+    /// The speakers model on this PC.
+    Local,
+    /// The Custom STT server.
+    SttServer,
+}
+
 /// What goes between two takes when recordings are combined.
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type, Default)]
 #[serde(rename_all = "snake_case")]
@@ -1337,6 +1350,13 @@ pub struct AppSettings {
     pub openrouter_transcription_language: String,
     #[serde(default)]
     pub openrouter_transcription_translate_to_english: bool,
+    /// Speakers: where History's "Transcribe again with speakers" runs.
+    #[serde(default)]
+    pub speakers_source: SpeakersSource,
+    /// After each take, find its speakers on this PC (in the background,
+    /// after the paste) and add them to its History row. Off by default.
+    #[serde(default)]
+    pub local_speakers_after_take: bool,
     /// History › Combine: when several recordings are copied as one text.
     /// Keep each take's Transcribe prefix/suffix around it (default off).
     #[serde(default)]
@@ -2630,6 +2650,29 @@ impl AppSettings {
         Ok(())
     }
 
+    /// Sets one Speakers setting from the UI (`field` = its name).
+    pub fn set_speakers_field(&mut self, field: &str, value: &str) -> Result<(), String> {
+        match field {
+            "speakers_source" => {
+                self.speakers_source = match value {
+                    "auto" => SpeakersSource::Auto,
+                    "local" => SpeakersSource::Local,
+                    "stt_server" => SpeakersSource::SttServer,
+                    other => return Err(format!("unknown speakers source: {other}")),
+                }
+            }
+            "local_speakers_after_take" => {
+                self.local_speakers_after_take = match value {
+                    "true" => true,
+                    "false" => false,
+                    other => return Err(format!("not a true/false value: {other}")),
+                }
+            }
+            other => return Err(format!("unknown speakers setting: {other}")),
+        }
+        Ok(())
+    }
+
     /// Sets one History › Combine setting from the UI (`field` = its name).
     pub fn set_combine_field(&mut self, field: &str, value: &str) -> Result<(), String> {
         let flag = || match value {
@@ -3035,6 +3078,8 @@ pub fn get_default_settings() -> AppSettings {
         openrouter_transcription_model: default_openrouter_transcription_model(),
         openrouter_transcription_route: OpenRouterTranscriptionRoute::default(),
         transcription_fallbacks: Vec::new(),
+        speakers_source: SpeakersSource::default(),
+        local_speakers_after_take: false,
         combine_keep_take_affixes: false,
         combine_separator: CombineSeparator::default(),
         combine_prefix_enabled: false,
@@ -3626,6 +3671,8 @@ mod tests {
     fn combine_settings_default_off_and_set_by_name() {
         let mut s = get_default_settings();
         assert!(!s.combine_keep_take_affixes);
+        assert_eq!(s.speakers_source, SpeakersSource::Auto);
+        assert!(!s.local_speakers_after_take);
         assert_eq!(s.combine_separator, CombineSeparator::BlankLine);
         assert!(!s.combine_prefix_enabled && !s.combine_suffix_enabled);
         s.set_combine_field("combine_separator", "space").unwrap();

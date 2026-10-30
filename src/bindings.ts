@@ -1485,6 +1485,36 @@ export const commands = {
       else return { status: "error", error: e as any };
     }
   },
+  async getLocalSpeakersStatus(): Promise<LocalSpeakersStatus> {
+    return await TAURI_INVOKE("get_local_speakers_status");
+  },
+  async downloadLocalSpeakersModel(): Promise<Result<null, string>> {
+    try {
+      return { status: "ok", data: await TAURI_INVOKE("download_local_speakers_model") };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  async cancelLocalSpeakersDownload(): Promise<void> {
+    await TAURI_INVOKE("cancel_local_speakers_download");
+  },
+  async deleteLocalSpeakersModel(): Promise<Result<null, string>> {
+    try {
+      return { status: "ok", data: await TAURI_INVOKE("delete_local_speakers_model") };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  async changeSpeakersSetting(field: string, value: string): Promise<Result<null, string>> {
+    try {
+      return { status: "ok", data: await TAURI_INVOKE("change_speakers_setting", { field, value }) };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
   async changeCombineSetting(field: string, value: string): Promise<Result<null, string>> {
     try {
       return { status: "ok", data: await TAURI_INVOKE("change_combine_setting", { field, value }) };
@@ -3503,6 +3533,8 @@ export type AppSettings = {
   openrouter_transcription_key?: string;
   openrouter_transcription_language?: string;
   openrouter_transcription_translate_to_english?: boolean;
+  speakers_source?: SpeakersSource;
+  local_speakers_after_take?: boolean;
   combine_keep_take_affixes?: boolean;
   combine_separator?: CombineSeparator;
   combine_prefix_enabled?: boolean;
@@ -4176,6 +4208,14 @@ export type CombineSeparator = "blank_line" | "new_line" | "space";
  * What "Transcribe again with speakers" did.
  */
 export type SpeakersResult = { text: string; speakers: boolean };
+export type SpeakersSource = "auto" | "local" | "stt_server";
+export type LocalSpeakersStatus = {
+  downloaded: boolean;
+  downloading: boolean;
+  downloaded_bytes: number;
+  size_bytes: number;
+  license_url: string;
+};
 /**
  * One model the server offers (`GET {base}/models`).
  */

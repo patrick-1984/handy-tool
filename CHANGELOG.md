@@ -4,6 +4,13 @@
 
 ### Added
 
+- **Speakers on this PC.** Advanced settings › Speakers offers NVIDIA's Streaming Sortformer v2.1
+  (the model the STT server uses) as an optional 141 MB download, pinned to a revision and checked
+  by SHA-256, run on the CPU (NVIDIA Open Model License). It finds who speaks when; each speaker's
+  turn is then transcribed with the dictation model, so it works with every engine and gives the
+  same `A: …` paragraphs as the STT server. History's "Transcribe again with speakers" uses it
+  (Automatic / This PC / STT server), and "Find the speakers after each take" adds the text with
+  speakers to History in the background after the paste (models on this PC only).
 - **Show me how: History.** A short guided tour (Setups, or "Show me how" on the History page)
   of everything below, ending on the real Combine settings.
 - **Transcribe again with speakers.** A recording's ⋯ menu sends the whole recording to the STT

@@ -86,7 +86,8 @@
     "advancedSettings": "Advanced settings",
     "moreTools": "More Tools",
     "sttServer": "STT server",
-    "combine": "Combine recordings"
+    "combine": "Combine recordings",
+    "speakers": "Speakers"
   },
   "helpMode": {
     "button": "Help mode: point at a setting to see what it does",
@@ -526,7 +527,7 @@
           },
           "speakers": {
             "title": "Transcribe again with speakers",
-            "text": "Sends the whole recording to your STT server, which tells the speakers apart. If something is missing, it says what and opens the STT server settings."
+            "text": "Tells the speakers apart, on this PC (Advanced settings › Speakers) or on your STT server. If something is missing, it says what and opens the right settings."
           },
           "delete": {
             "title": "Delete",
@@ -2004,7 +2005,7 @@
         },
         "speakers": {
           "label": "Transcribe again with speakers",
-          "hint": "Sends the whole recording to your STT server to tell the speakers apart."
+          "hint": "Tells the speakers apart (on this PC or your STT server) and transcribes the recording again."
         },
         "name": {
           "label": "Name…",
@@ -2026,8 +2027,11 @@
           "notSet": "Telling speakers apart needs an STT server. Set its address in Advanced settings › STT server.",
           "modelNotSet": "No model with speakers is chosen. Pick one in Advanced settings › STT server.",
           "unreachable": "The STT server did not answer: {{error}}. Check its address in Advanced settings › STT server.",
-          "modelMissing": "The STT server has no model \"{{model}}\" (it has: {{available}}). Pick its model with speakers in Advanced settings › STT server."
-        }
+          "modelMissing": "The STT server has no model \"{{model}}\" (it has: {{available}}). Pick its model with speakers in Advanced settings › STT server.",
+          "speakersNotSet": "Telling speakers apart needs the speakers model on this PC or an STT server. Download the model in Advanced settings › Speakers.",
+          "localNotDownloaded": "The speakers model is not on this PC yet. Download it in Advanced settings › Speakers."
+        },
+        "openSpeakers": "Speakers settings"
       },
       "name": {
         "placeholder": "Name this recording",
@@ -2266,6 +2270,35 @@
       "affixes": {
         "title": "Around the combined text",
         "description": "Your own beginning and end for the combined text, e.g. \"Meeting notes:\"."
+      }
+    },
+    "speakers": {
+      "title": "Speakers",
+      "description": "Tell who said what in a recording: on this PC with a speakers model you download once, or on your STT server.",
+      "model": {
+        "name": "Speakers model (NVIDIA Sortformer v2.1)",
+        "description": "The model the STT server uses, run on this PC's processor: up to four speakers, nothing leaves the PC. A one-time {{size}} MB download.",
+        "license": "NVIDIA Open Model License",
+        "download": "Download ({{size}} MB)",
+        "cancel": "Cancel",
+        "downloaded": "Downloaded",
+        "delete": "Delete",
+        "deleteConfirm": "Delete the speakers model from this PC? You can download it again any time.",
+        "downloadFailed": "Could not download the speakers model: {{error}}",
+        "ready": "The speakers model is ready."
+      },
+      "afterTake": {
+        "label": "Find the speakers after each take",
+        "description": "**After the text is pasted**, the take is read again on this PC to tell the speakers apart, and the text with speakers is added to it in History. The paste never waits for it. Works with models on this PC (not online ones)."
+      },
+      "source": {
+        "title": "\"Transcribe again with speakers\" uses",
+        "description": "Where History tells the speakers apart. Automatic: this PC once its speakers model is downloaded, otherwise the STT server.",
+        "options": {
+          "auto": "Automatic",
+          "local": "This PC",
+          "stt_server": "STT server"
+        }
       }
     }
   },
@@ -2620,6 +2653,10 @@
       "historyTour": {
         "title": "Show me how: History",
         "description": "A short guided tour of everything new in History below. Find it in Setups, or under \"Show me how\" on the History page."
+      },
+      "localSpeakers": {
+        "title": "Speakers on this PC",
+        "description": "Download NVIDIA's speakers model (the one the STT server uses) in Advanced settings › Speakers, and tell who said what without a server: in History, or after each take."
       }
     },
     "installed": "Installed"

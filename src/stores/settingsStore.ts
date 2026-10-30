@@ -353,6 +353,10 @@ const settingUpdaters: {
     ),
   combine_keep_take_affixes: (value) =>
     commands.changeCombineSetting("combine_keep_take_affixes", String(value)),
+  speakers_source: (value) =>
+    commands.changeSpeakersSetting("speakers_source", String(value)),
+  local_speakers_after_take: (value) =>
+    commands.changeSpeakersSetting("local_speakers_after_take", String(value)),
   combine_separator: (value) =>
     commands.changeCombineSetting("combine_separator", String(value)),
   combine_prefix_enabled: (value) =>

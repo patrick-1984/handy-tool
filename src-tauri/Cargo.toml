@@ -66,6 +66,9 @@ rodio = { git = "https://github.com/cjpais/rodio.git" }
 reqwest = { version = "0.12", features = ["json", "stream"] }
 futures-util = "0.3"
 rustfft = "6.4.0"
+# Speakers on this PC (Sortformer ONNX): the same ort/ndarray as transcribe-rs.
+ort = "=2.0.0-rc.10"
+ndarray = "0.16.1"
 strsim = "0.11.0"
 natural = "0.5.0"
 regex = "1"

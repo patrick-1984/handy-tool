@@ -40,6 +40,11 @@ const RELEASES: { version: string; items: Item[] }[] = [
     version: "2.5.0",
     items: [
       {
+        key: "localSpeakers",
+        section: "speakers",
+        titleKeys: ["settings.speakers.afterTake.label"],
+      },
+      {
         key: "historyTour",
         section: "setups",
         titleKeys: ["setup.catalog.history.title"],
