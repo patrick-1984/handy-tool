@@ -309,6 +309,25 @@ impl ChunkedSession {
         full
     }
 
+    /// The take's text and how many pieces it lacks (failed, or no result yet),
+    /// from ONE snapshot: a piece finishing in between cannot be left out of
+    /// the text and the count both.
+    fn assemble_with_missing(&self) -> (String, usize) {
+        let map = self.transcripts.lock().unwrap_or_else(|p| p.into_inner());
+        let failed = self.failed.lock().unwrap_or_else(|p| p.into_inner());
+        let text = map
+            .values()
+            .filter_map(|o| o.as_deref())
+            .filter(|s| !s.is_empty())
+            .collect::<Vec<_>>()
+            .join(" ");
+        let missing = map
+            .iter()
+            .filter(|(i, t)| t.is_none() || failed.contains(i))
+            .count();
+        (text, missing)
+    }
+
     /// Join the per-chunk transcripts in chunk-index order, skipping chunks that
     /// produced no text (silent, failed, or timed out).
     fn assemble(&self) -> String {
@@ -2084,8 +2103,8 @@ impl ShortcutAction for TranscribeAction {
                                 }
                             }
                         }
-                        let still_failed = session.failed.lock().map(|f| f.len()).unwrap_or(0);
-                        raw_text = session.assemble();
+                        let (text, mut gap) = session.assemble_with_missing();
+                        raw_text = text;
                         let speakers_wanted = session.speakers && take_generation_current(take_gen);
                         // The whole take in one request (with failover) when the
                         // pieces left a gap, gave no text at all, or the paste is
@@ -2094,9 +2113,7 @@ impl ShortcutAction for TranscribeAction {
                         // Only a speakers take keeps every piece's PCM.
                         let whole_needed = session.speakers
                             && take_generation_current(take_gen)
-                            && (still_failed > 0
-                                || paste_waits_for_speakers
-                                || raw_text.trim().is_empty());
+                            && (gap > 0 || paste_waits_for_speakers || raw_text.trim().is_empty());
                         let mut whole_error: Option<String> = None;
                         if whole_needed {
                             let full = session.assemble_pcm();
@@ -2115,13 +2132,11 @@ impl ShortcutAction for TranscribeAction {
                                         progress.finish();
                                         // Complete pieces stay the text; a gap
                                         // is filled by the whole take's text.
-                                        if (still_failed > 0 || raw_text.trim().is_empty())
+                                        if (gap > 0 || raw_text.trim().is_empty())
                                             && !t.trim().is_empty()
                                         {
                                             raw_text = t;
-                                            if let Ok(mut f) = session.failed.lock() {
-                                                f.clear();
-                                            }
+                                            gap = 0;
                                         }
                                     }
                                     Err(e) => {
@@ -2138,15 +2153,10 @@ impl ShortcutAction for TranscribeAction {
                             // the History row, so the paste does not wait.
                             speakers_later = Some(session.assemble_pcm());
                         }
-                        // Missing: pieces that failed, and pieces still
-                        // without a result (in flight past the wait's backstop).
-                        let in_flight = session
-                            .transcripts
-                            .lock()
-                            .map(|t| t.values().filter(|v| v.is_none()).count())
-                            .unwrap_or(0);
-                        missing_pieces =
-                            session.failed.lock().map(|f| f.len()).unwrap_or(0) + in_flight;
+                        // Missing from the text delivered: pieces that failed
+                        // or had no result yet when it was assembled (unless
+                        // the whole take's text replaced it).
+                        missing_pieces = gap;
                         if missing_pieces == 0 && session.keep_pcm && whole_error.is_none() {
                             // Every piece has text now: earlier failures are
                             // recovered, not errors of the take.
@@ -2190,9 +2200,11 @@ impl ShortcutAction for TranscribeAction {
                 // surface it. Without this a broken engine (e.g. FLM whose ASR
                 // model failed to load) silently saves a textless recording,
                 // which reads as "recording works but produces no text".
-                let transcription_failed = transcription_error.is_some();
-                if raw_text.is_empty() {
-                    if let Some(reason) = transcription_error {
+                // A take with missing pieces is kept like a failed one (History
+                // can transcribe its recording again), however short.
+                let transcription_failed = transcription_error.is_some() || missing_pieces > 0;
+                if raw_text.is_empty() && transcription_error.is_some() {
+                    if let Some(reason) = transcription_error.clone() {
                         warn!("Transcription produced no text due to engine error: {reason}");
                         let _ = ah.emit("transcription-failed", reason);
                     }
@@ -3967,7 +3979,12 @@ mod chunk_handover_tests {
         }
         session.failed.lock().unwrap().insert(1);
         assert_eq!(session.assemble(), "one three");
-        assert_eq!(session.failed.lock().unwrap().len(), 1);
+        session.transcripts.lock().unwrap().insert(3, None);
+        // The failed piece and the one still without a result.
+        assert_eq!(
+            session.assemble_with_missing(),
+            ("one three".to_string(), 2)
+        );
     }
 
     #[test]
