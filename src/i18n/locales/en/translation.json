@@ -2029,7 +2029,8 @@
           "unreachable": "The STT server did not answer: {{error}}. Check its address in Advanced settings › STT server.",
           "modelMissing": "The STT server has no model \"{{model}}\" (it has: {{available}}). Pick its model with speakers in Advanced settings › STT server.",
           "speakersNotSet": "Telling speakers apart needs the speakers model on this PC or an STT server. Download the model in Advanced settings › Speakers.",
-          "localNotDownloaded": "The speakers model is not on this PC yet. Download it in Advanced settings › Speakers."
+          "localNotDownloaded": "The speakers model is not on this PC yet. Download it in Advanced settings › Speakers.",
+          "needsLocalModel": "On this PC, the speakers' words are transcribed with your dictation model, and it is an online one. Pick a model on this PC for dictation, or choose the STT server in Advanced settings › Speakers."
         },
         "openSpeakers": "Speakers settings"
       },

@@ -352,14 +352,15 @@ fn spawn_local_speakers_after_take(
     text: String,
     model: String,
 ) {
-    let local = app
+    let Some(info) = app
         .state::<Arc<crate::managers::model::ModelManager>>()
         .get_model_info(&model)
-        .is_some_and(|m| m.is_downloaded && !m.engine_type.is_external());
-    if !local {
-        debug!("Speakers after the take: {model} is not a local model; skipped");
+        .filter(|m| m.is_downloaded && !m.engine_type.is_online())
+    else {
+        debug!("Speakers after the take: {model} is not a model on this PC; skipped");
         return;
-    }
+    };
+    let external = info.engine_type.is_external();
     let Ok(dir) = crate::portable::resolve_app_data_dir(app) else {
         return;
     };
@@ -382,7 +383,9 @@ fn spawn_local_speakers_after_take(
                 return;
             }
         };
-        match crate::commands::files::local_speakers(&app, &samples, &model, false) {
+        let result = crate::commands::files::local_speakers(&app, &samples, &model, external);
+        crate::commands::files::release_model(&app, &model);
+        match result {
             Ok(result) => match result.diarized {
                 Some(speakers) => {
                     if let Err(e) = hm.set_diarized_for_file(&file_name, &text, &speakers) {
@@ -983,10 +986,11 @@ async fn save_history(
     model_used: Option<String>,
     // The take's speaker text (Custom STT server with speakers), if any.
     diarized_text: Option<String>,
-) {
+) -> Option<String> {
     let res = if crash_safe {
+        let file_name = format!("handy-{}.opus", ts);
         hm.save_transcription_with_file(
-            format!("handy-{}.opus", ts),
+            file_name.clone(),
             ts as i64,
             text,
             post_processed,
@@ -997,6 +1001,7 @@ async fn save_history(
             diarized_text,
         )
         .await
+        .map(|_| file_name)
     } else {
         hm.save_transcription(
             Some(ts as i64),
@@ -1011,8 +1016,12 @@ async fn save_history(
         )
         .await
     };
-    if let Err(e) = res {
-        error!("Failed to save transcription to history: {}", e);
+    match res {
+        Ok(file_name) => Some(file_name),
+        Err(e) => {
+            error!("Failed to save transcription to history: {}", e);
+            None
+        }
     }
 }
 
@@ -2898,7 +2907,7 @@ impl ShortcutAction for TranscribeAction {
                             // History is the recovery route when a delivery
                             // fails and the clipboard must not be touched, so
                             // the row must exist before delivery is attempted.
-                            save_history(
+                            let saved = save_history(
                                 &hm_clone,
                                 crash_safe,
                                 ts,
@@ -2912,6 +2921,22 @@ impl ShortcutAction for TranscribeAction {
                                 speaker_text.clone(),
                             )
                             .await;
+                            // Speakers › "after each take", on this PC.
+                            if let Some(file_name) = saved.filter(|_| {
+                                settings.local_speakers_after_take
+                                    && !(stt_take && settings.stt_server_speakers)
+                                    && !transcription.trim().is_empty()
+                                    && take_generation_current(take_gen)
+                                    && crate::diarize::is_downloaded(&ah)
+                            }) {
+                                spawn_local_speakers_after_take(
+                                    &ah,
+                                    &hm,
+                                    &file_name,
+                                    transcription.clone(),
+                                    settings.selected_model.clone(),
+                                );
+                            }
 
                             // Paste the final text (either processed or original).
                             // Off the event loop on Windows (long remote jump

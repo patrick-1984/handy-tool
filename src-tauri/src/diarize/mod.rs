@@ -125,7 +125,12 @@ pub async fn download(app: &AppHandle) -> Result<()> {
     if have > 0 {
         request = request.header(reqwest::header::RANGE, format!("bytes={have}-"));
     }
-    let response = request.send().await?.error_for_status()?;
+    let response = tokio::select! {
+        r = tokio::time::timeout(Duration::from_secs(30), request.send()) => r
+            .map_err(|_| anyhow!("the server did not answer for 30 s"))??
+            .error_for_status()?,
+        _ = cancelled() => return Err(anyhow!("cancelled")),
+    };
     let resumed = have > 0 && response.status() == reqwest::StatusCode::PARTIAL_CONTENT;
     let mut file = std::fs::OpenOptions::new()
         .create(true)
@@ -138,12 +143,11 @@ pub async fn download(app: &AppHandle) -> Result<()> {
     let mut stream = response.bytes_stream();
     let mut last_emit = Instant::now();
     loop {
-        if CANCEL.load(Ordering::SeqCst) {
-            return Err(anyhow!("cancelled"));
-        }
-        let next = tokio::time::timeout(Duration::from_secs(60), stream.next())
-            .await
-            .map_err(|_| anyhow!("the download stalled: no data for 60 s"))?;
+        let next = tokio::select! {
+            n = tokio::time::timeout(Duration::from_secs(60), stream.next()) => n
+                .map_err(|_| anyhow!("the download stalled: no data for 60 s"))?,
+            _ = cancelled() => return Err(anyhow!("cancelled")),
+        };
         let Some(chunk) = next else { break };
         let chunk = chunk?;
         file.write_all(&chunk)?;
@@ -166,9 +170,19 @@ pub async fn download(app: &AppHandle) -> Result<()> {
             "the speakers model does not match its checksum; try again"
         ));
     }
+    if CANCEL.load(Ordering::SeqCst) {
+        return Err(anyhow!("cancelled"));
+    }
     std::fs::rename(&part, &target)?;
     info!("Speakers model: downloaded and verified");
     Ok(())
+}
+
+/// Resolves once a cancel has been asked for.
+async fn cancelled() {
+    while !CANCEL.load(Ordering::SeqCst) {
+        tokio::time::sleep(Duration::from_millis(200)).await;
+    }
 }
 
 pub fn cancel_download() {
@@ -179,7 +193,16 @@ pub fn delete(app: &AppHandle) -> Result<()> {
     if DOWNLOADING.load(Ordering::SeqCst) {
         return Err(anyhow!("the speakers model is downloading"));
     }
-    let _job = JOB.lock().unwrap_or_else(|p| p.into_inner());
+    // Never wait for a running job (this is called from the UI).
+    let _job = match JOB.try_lock() {
+        Ok(guard) => guard,
+        Err(std::sync::TryLockError::Poisoned(p)) => p.into_inner(),
+        Err(std::sync::TryLockError::WouldBlock) => {
+            return Err(anyhow!(
+                "the speakers model is in use; try again when it is done"
+            ));
+        }
+    };
     let dir = model_dir(app)?;
     if dir.exists() {
         std::fs::remove_dir_all(&dir)?;

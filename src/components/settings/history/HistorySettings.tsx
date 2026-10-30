@@ -150,6 +150,11 @@ const speakersErrorMessage = (
         message: t("settings.history.speakers.errors.speakersNotSet"),
         toSettings: "speakers",
       };
+    case "LOCAL_SPEAKERS_NEEDS_LOCAL_MODEL":
+      return {
+        message: t("settings.history.speakers.errors.needsLocalModel"),
+        toSettings: "speakers",
+      };
     case "LOCAL_SPEAKERS_NOT_DOWNLOADED":
       return {
         message: t("settings.history.speakers.errors.localNotDownloaded"),

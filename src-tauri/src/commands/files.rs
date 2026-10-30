@@ -378,7 +378,7 @@ pub fn usable_for_folders(settings: &AppSettings, models: &ModelManager, model: 
 }
 
 /// A model loaded into the second slot only for a file doesn't stay in memory.
-fn release_model(app: &AppHandle, model: &str) {
+pub(crate) fn release_model(app: &AppHandle, model: &str) {
     let settings = get_settings(app);
     let models = app.state::<Arc<ModelManager>>();
     let watched_folders_use_it = settings.translator_enabled
@@ -822,14 +822,23 @@ pub async fn retranscribe_history_entry_speakers(
     let settings = get_settings(&app);
     let local_ready = crate::diarize::is_downloaded(&app);
     let server_set = !settings.stt_server_url.trim().is_empty();
+    // On this PC the turns are transcribed with the dictation model: an
+    // online one would send the recording out, so it must be a local one.
+    let online = app
+        .state::<Arc<ModelManager>>()
+        .get_model_info(&settings.selected_model)
+        .is_some_and(|m| m.engine_type.is_online());
     match settings.speakers_source {
         SpeakersSource::Local if !local_ready => Err("LOCAL_SPEAKERS_NOT_DOWNLOADED".into()),
+        SpeakersSource::Local if online => Err("LOCAL_SPEAKERS_NEEDS_LOCAL_MODEL".into()),
         SpeakersSource::Local => retranscribe_speakers_local(app, id).await,
-        SpeakersSource::Auto if local_ready => retranscribe_speakers_local(app, id).await,
-        SpeakersSource::Auto if !server_set => Err("SPEAKERS_NOT_SET".into()),
-        SpeakersSource::Auto | SpeakersSource::SttServer => {
-            retranscribe_speakers_server(app, id).await
+        SpeakersSource::Auto if local_ready && !online => {
+            retranscribe_speakers_local(app, id).await
         }
+        SpeakersSource::Auto if server_set => retranscribe_speakers_server(app, id).await,
+        SpeakersSource::Auto if local_ready => Err("LOCAL_SPEAKERS_NEEDS_LOCAL_MODEL".into()),
+        SpeakersSource::Auto => Err("SPEAKERS_NOT_SET".into()),
+        SpeakersSource::SttServer => retranscribe_speakers_server(app, id).await,
     }
 }
 

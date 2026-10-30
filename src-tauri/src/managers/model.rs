@@ -257,6 +257,15 @@ impl EngineType {
     /// a valid Windows path), API/OpenRouter are remote endpoints. For these
     /// the registry's `is_downloaded` is authoritative — a filesystem probe
     /// must never overwrite it.
+    /// Sends audio off this PC (API, OpenRouter, Custom STT server). FLM is
+    /// external (its own process) but local.
+    pub fn is_online(&self) -> bool {
+        matches!(
+            self,
+            EngineType::ApiWhisper | EngineType::OpenRouterWhisper | EngineType::SttServer
+        )
+    }
+
     pub fn is_external(&self) -> bool {
         match self {
             #[cfg(not(target_os = "macos"))]
