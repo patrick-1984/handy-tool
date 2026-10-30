@@ -1974,6 +1974,9 @@ impl ShortcutAction for TranscribeAction {
                 // whole take's audio for a speakers request made after delivery.
                 let mut missing_pieces = 0usize;
                 let mut speakers_later: Option<Vec<f32>> = None;
+                // The whole-take request was given up on: its speaker text, if
+                // it still arrives, belongs to no snapshot and is not used.
+                let mut whole_timed_out = false;
                 // "Show the text as it's transcribed": the box shows the chunks
                 // done so far at once, then each one as it lands, then the text.
                 let after_stop = crate::overlay::show_live_text_after_stop(&ah);
@@ -2176,10 +2179,13 @@ impl ShortcutAction for TranscribeAction {
                                 let outcome = match tokio::time::timeout(deadline, whole).await {
                                     Ok(Ok(result)) => result,
                                     Ok(Err(e)) => Err(anyhow::anyhow!("{e}")),
-                                    Err(_) => Err(anyhow::anyhow!(
-                                        "no answer within {}s",
-                                        deadline.as_secs()
-                                    )),
+                                    Err(_) => {
+                                        whole_timed_out = true;
+                                        Err(anyhow::anyhow!(
+                                            "no answer within {}s",
+                                            deadline.as_secs()
+                                        ))
+                                    }
                                 };
                                 match outcome {
                                     Ok(t) => {
@@ -2280,7 +2286,7 @@ impl ShortcutAction for TranscribeAction {
                 // A Custom STT server take: its speaker text (if any) for History,
                 // and pasted instead of the text when that is the choice.
                 let stt_take = settings.selected_model == "stt-server";
-                let speaker_text = if stt_take {
+                let speaker_text = if stt_take && !whole_timed_out {
                     crate::managers::stt_server::take_session_diarized(take_stop)
                 } else {
                     None
