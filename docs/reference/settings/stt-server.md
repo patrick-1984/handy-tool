@@ -1,6 +1,6 @@
 # STT server settings
 
-Open `Advanced settings › STT server`. The page connects a speech-to-text server of your own (OpenAI-compatible, on this PC or your network) as the Custom STT server model, with or without telling the speakers apart.
+Open `Advanced settings › STT server`. The page connects a speech-to-text server of your own (OpenAI-compatible, on this PC or your network) as the Custom STT server model, with or without telling the speakers apart. Telling speakers apart on this PC instead, and which of the two History uses, are on [Speakers](speakers.md).
 
 ## Your STT server
 

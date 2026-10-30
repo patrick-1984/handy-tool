@@ -1470,27 +1470,62 @@ a choice, on Escape or on a click outside it.
 <a id="transcribe-again-with-speakers"></a>
 **The situation.** You recorded a meeting or a call, and the transcript is one block of text with
 no way to tell whose words are whose.
-**What Handy does.** **Transcribe again with speakers** sends the whole recording to the speaker
-model of your STT server, which tells the speakers apart. Telling speakers apart needs that
-server — Handy does not do it on this PC. If the row already has text, it first asks "Replace
-this transcript with a new one, with the speakers told apart?". Before sending, Handy checks that
-a server address and a model with speakers are set and that the server has that model. If not,
-the message says what is missing and offers **STT server settings**, which opens the page where
-it is fixed:
+**What Handy does.** **Transcribe again with speakers** reads the whole recording again and tells
+the speakers apart, either on this PC with the speakers model (see
+[Who said what, worked out on this PC](#speakers-on-this-pc)) or with the speaker model of your
+STT server; the STT server is no longer required.
+`Advanced settings › Speakers › "Transcribe again with speakers" uses` chooses which:
+**Automatic** uses this PC when the speakers model is downloaded and your dictation model is not
+an online one, and the STT server otherwise; **This PC** and **STT server** always use that one.
+**This PC** refuses an online dictation model, because each speaker's words would be sent out to
+it. If the row already has text, it first asks "Replace this transcript with a new one, with the
+speakers told apart?". Before starting, Handy checks that what it needs is there. If not, the
+message says what is missing and offers **Speakers settings** or **STT server settings**, which
+opens the page where it is fixed:
 
-- no address: "Telling speakers apart needs an STT server. Set its address in Advanced settings › STT server."
+- neither is set up: "Telling speakers apart needs the speakers model on this PC or an STT server. Download the model in Advanced settings › Speakers."
+- this PC, but the model is not downloaded: "The speakers model is not on this PC yet. Download it in Advanced settings › Speakers."
+- this PC, but the dictation model is an online one: "On this PC, the speakers' words are transcribed with your dictation model, and it is an online one. Pick a model on this PC for dictation, or choose the STT server in Advanced settings › Speakers."
+- the STT server has no address: "Telling speakers apart needs an STT server. Set its address in Advanced settings › STT server."
 - no model with speakers: "No model with speakers is chosen. Pick one in Advanced settings › STT server."
 - the server does not answer: "The STT server did not answer: … Check its address in Advanced settings › STT server."
 - the model is not on the server: "The STT server has no model "…" (it has: …). Pick its model with speakers in Advanced settings › STT server."
 
 When it works, the row keeps both texts and its **Text** / **Speakers** switch shows and copies
-either one. If the server heard only one voice, the recording is transcribed again and a note
-says there is no text with speakers.
-**Where.** `History › Recordings › More actions › Transcribe again with speakers`; the server is
-set up in `Advanced settings › STT server`.
+either one. If only one voice is heard, the recording is transcribed again and a note says there
+is no text with speakers.
+**Where.** `History › Recordings › More actions › Transcribe again with speakers`; the choice
+between this PC and the server is `Advanced settings › Speakers`, and the server is set up in
+`Advanced settings › STT server`.
 **Since.** 2.5.0.
 
-<!-- prov: transcribe again with speakers | src: src/components/settings/history/HistorySettings.tsx; src-tauri/src/managers/stt_server.rs; src-tauri/src/commands/files.rs; src/i18n/locales/en/translation.json | claim: behavior -->
+<!-- prov: transcribe again with speakers | src: src/components/settings/history/HistorySettings.tsx; src-tauri/src/managers/stt_server.rs; src-tauri/src/commands/files.rs; src-tauri/src/diarize/mod.rs; src-tauri/src/settings.rs; src/i18n/locales/en/translation.json | claim: behavior -->
+
+### Who said what, worked out on this PC
+
+<a id="speakers-on-this-pc"></a>
+**The situation.** You want a meeting's text split by speaker, but you have no STT server, or the
+recording should not leave the PC.
+**What Handy does.** `Advanced settings › Speakers` offers NVIDIA's Streaming Sortformer v2.1 —
+the speaker model the STT server uses — as an optional one-time download of 141 MB (an int8
+export), pinned to a fixed revision on Hugging Face and checked by SHA-256 before it is used. It
+runs on this PC's processor, tells apart up to four speakers, and nothing leaves the PC. It first
+finds who speaks when; each speaker's turn is then transcribed with your dictation model, so it
+works with every model on this PC, FLM included, and gives the same `A: …` paragraphs as the STT
+server. The download can be cancelled, and the model deleted and downloaded again. The model's
+weights are under the NVIDIA Open Model License, linked on the model's card.
+
+History's **Transcribe again with speakers** uses it (see
+[Find out who said what in a recording](#transcribe-again-with-speakers)). With **Find the
+speakers after each take** on, each take is also read again in the background after its text is
+pasted — the paste never waits for it — and the text with speakers is added to its History row,
+as long as the row's text is still that take's. It runs only with dictation models on this PC,
+never with an online one (that would send the whole take out again unasked), and only once the
+speakers model is downloaded; when only one voice is heard, nothing is added.
+**Where.** `Advanced settings › Speakers`.
+**Since.** 2.5.0.
+
+<!-- prov: speakers on this PC | src: src/components/settings/speakers/SpeakersSection.tsx; src-tauri/src/diarize/mod.rs; src-tauri/src/actions.rs; src-tauri/src/commands/files.rs; src-tauri/src/settings.rs; src/i18n/locales/en/translation.json | claim: behavior -->
 
 ### Give a recording a name you will recognize
 

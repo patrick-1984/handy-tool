@@ -4,12 +4,20 @@
 
 ### Added
 
+- **Speakers on this PC.** Advanced settings › Speakers offers NVIDIA's Streaming Sortformer v2.1
+  (the model the STT server uses) as an optional 141 MB download, pinned to a revision and checked
+  by SHA-256, run on the CPU (NVIDIA Open Model License). It finds who speaks when; each speaker's
+  turn is then transcribed with the dictation model, so it works with every engine and gives the
+  same `A: …` paragraphs as the STT server. History's "Transcribe again with speakers" uses it
+  (Automatic / This PC / STT server), and "Find the speakers after each take" adds the text with
+  speakers to History in the background after the paste (models on this PC only).
 - **Show me how: History.** A short guided tour (Setups, or "Show me how" on the History page)
   of everything below, ending on the real Combine settings.
-- **Transcribe again with speakers.** A recording's ⋯ menu sends the whole recording to the STT
-  server's speaker model. Before sending, Handy checks that a server address and a speaker model
-  are set and that the server has that model; if not, the message says what is missing and opens
-  the STT server settings.
+- **Transcribe again with speakers.** A recording's ⋯ menu tells the speakers apart, on this PC
+  (below) or with the STT server's speaker model. Before starting, Handy checks what that needs
+  (the speakers model downloaded and a dictation model on this PC; or a server address, a speaker
+  model, and that the server has it); if something is missing, the message says what and opens
+  the right settings.
 - **Names for recordings.** A name next to the date and time (⋯ › Name…, ✓ to keep it); search
   finds it.
 - **Favorites tab** between Recordings and Statistics; favorites have a coloured edge in

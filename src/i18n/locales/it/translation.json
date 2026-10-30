@@ -72,7 +72,8 @@
     "advancedSettings": "Impostazioni avanzate",
     "moreTools": "Altri strumenti",
     "sttServer": "Server STT",
-    "combine": "Unisci registrazioni"
+    "combine": "Unisci registrazioni",
+    "speakers": "Parlanti"
   },
   "helpMode": {
     "button": "Modalità aiuto: punta un’impostazione per vedere cosa fa",
@@ -512,7 +513,7 @@
           },
           "speakers": {
             "title": "Trascrivi di nuovo con i parlanti",
-            "text": "Invia l'intera registrazione al tuo server STT, che distingue i parlanti. Se manca qualcosa, ti dice cosa e apre le impostazioni del server STT."
+            "text": "Distingue i parlanti, su questo PC (Impostazioni avanzate › Parlanti) o sul tuo server STT. Se manca qualcosa, ti dice cosa e apre le impostazioni giuste."
           },
           "delete": {
             "title": "Elimina",
@@ -1771,7 +1772,7 @@
         },
         "speakers": {
           "label": "Trascrivi di nuovo con i parlanti",
-          "hint": "Invia l'intera registrazione al tuo server STT per distinguere i parlanti."
+          "hint": "Distingue i parlanti (su questo PC o sul tuo server STT) e trascrive di nuovo la registrazione."
         },
         "name": {
           "label": "Assegna nome…",
@@ -1788,13 +1789,17 @@
       "speakers": {
         "confirm": "Sostituire questa trascrizione con una nuova, con i parlanti distinti?",
         "openSettings": "Impostazioni server STT",
-        "oneVoice": "Trascritta di nuovo: il server ha sentito una sola voce, quindi non c'è testo con i parlanti.",
+        "oneVoice": "Trascritto di nuovo: si sentiva una sola voce, quindi non c'è testo con i parlanti.",
         "errors": {
           "notSet": "Per distinguere i parlanti serve un server STT. Imposta il suo indirizzo in Impostazioni avanzate › Server STT.",
           "modelNotSet": "Nessun modello con parlanti scelto. Scegline uno in Impostazioni avanzate › Server STT.",
           "unreachable": "Il server STT non ha risposto: {{error}}. Controlla il suo indirizzo in Impostazioni avanzate › Server STT.",
-          "modelMissing": "Il server STT non ha il modello \"{{model}}\" (disponibili: {{available}}). Scegli il suo modello con parlanti in Impostazioni avanzate › Server STT."
-        }
+          "modelMissing": "Il server STT non ha il modello \"{{model}}\" (disponibili: {{available}}). Scegli il suo modello con parlanti in Impostazioni avanzate › Server STT.",
+          "speakersNotSet": "Per distinguere i parlanti serve il modello dei parlanti su questo PC o un server STT. Scarica il modello in Impostazioni avanzate › Parlanti.",
+          "localNotDownloaded": "Il modello dei parlanti non è ancora su questo PC. Scaricalo in Impostazioni avanzate › Parlanti.",
+          "needsLocalModel": "Su questo PC le parole dei parlanti vengono trascritte con il tuo modello di dettatura, che è un modello online. Scegli un modello su questo PC per la dettatura, oppure il server STT in Impostazioni avanzate › Parlanti."
+        },
+        "openSpeakers": "Impostazioni dei parlanti"
       },
       "name": {
         "placeholder": "Dai un nome a questa registrazione",
@@ -2253,6 +2258,35 @@
         "title": "Attorno al testo unito",
         "description": "Il tuo inizio e la tua fine per il testo unito, ad es. \"Note della riunione:\"."
       }
+    },
+    "speakers": {
+      "title": "Parlanti",
+      "description": "Riconosci chi ha detto cosa in una registrazione: su questo PC con un modello dei parlanti da scaricare una sola volta, o sul tuo server STT.",
+      "model": {
+        "name": "Modello dei parlanti (NVIDIA Sortformer v2.1)",
+        "description": "Il modello usato dal server STT, eseguito sul processore di questo PC: fino a quattro parlanti, nulla lascia il PC. Un download unico di {{size}} MB.",
+        "license": "NVIDIA Open Model License",
+        "download": "Scarica ({{size}} MB)",
+        "cancel": "Annulla",
+        "downloaded": "Scaricato",
+        "delete": "Elimina",
+        "deleteConfirm": "Eliminare il modello dei parlanti da questo PC? Puoi scaricarlo di nuovo in qualsiasi momento.",
+        "downloadFailed": "Impossibile scaricare il modello dei parlanti: {{error}}",
+        "ready": "Il modello dei parlanti è pronto."
+      },
+      "afterTake": {
+        "label": "Riconosci i parlanti dopo ogni ripresa",
+        "description": "**Dopo che il testo è stato incollato**, la ripresa viene riletta su questo PC per distinguere i parlanti, e il testo con i parlanti le viene aggiunto nella Cronologia. L'incollaggio non lo aspetta mai. Funziona con i modelli su questo PC (non con quelli online)."
+      },
+      "source": {
+        "title": "\"Trascrivi di nuovo con i parlanti\" usa",
+        "description": "Dove la Cronologia distingue i parlanti. Automatico: questo PC quando il suo modello dei parlanti è scaricato e detti con un modello su questo PC; altrimenti il server STT.",
+        "options": {
+          "auto": "Automatico",
+          "local": "Questo PC",
+          "stt_server": "Server STT"
+        }
+      }
     }
   },
   "common": {
@@ -2620,6 +2654,10 @@
       "historyTour": {
         "title": "Mostrami come: Cronologia",
         "description": "Un breve tour guidato di tutte le novità della Cronologia qui sotto. Lo trovi in Configurazioni o in «Mostrami come» nella pagina Cronologia."
+      },
+      "localSpeakers": {
+        "title": "Parlanti su questo PC",
+        "description": "Scarica il modello dei parlanti di NVIDIA (quello usato dal server STT) in Impostazioni avanzate › Parlanti e riconosci chi ha detto cosa senza server: nella Cronologia o dopo ogni ripresa."
       }
     },
     "installed": "Installata"

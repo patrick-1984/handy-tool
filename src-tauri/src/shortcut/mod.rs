@@ -2633,6 +2633,16 @@ pub fn change_combine_setting(app: AppHandle, field: String, value: String) -> R
     Ok(())
 }
 
+/// One Speakers setting (see `AppSettings::set_speakers_field`).
+#[tauri::command]
+#[specta::specta]
+pub fn change_speakers_setting(app: AppHandle, field: String, value: String) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    settings.set_speakers_field(&field, &value)?;
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
 /// One Custom STT server setting (see `AppSettings::set_stt_server_field`).
 #[tauri::command]
 #[specta::specta]

@@ -72,7 +72,8 @@
     "advancedSettings": "Paramètres avancés",
     "moreTools": "Plus d'outils",
     "sttServer": "Serveur STT",
-    "combine": "Combiner des enregistrements"
+    "combine": "Combiner des enregistrements",
+    "speakers": "Locuteurs"
   },
   "helpMode": {
     "button": "Mode aide : pointez un réglage pour voir ce qu’il fait",
@@ -512,7 +513,7 @@
           },
           "speakers": {
             "title": "Transcrire à nouveau avec les locuteurs",
-            "text": "Envoie tout l'enregistrement à votre serveur STT, qui distingue les locuteurs. S'il manque quelque chose, un message l'indique et les paramètres du serveur STT s'ouvrent."
+            "text": "Distingue les locuteurs, sur ce PC (Paramètres avancés › Locuteurs) ou sur votre serveur STT. S'il manque quelque chose, un message l'indique et les bons paramètres s'ouvrent."
           },
           "delete": {
             "title": "Supprimer",
@@ -1771,7 +1772,7 @@
         },
         "speakers": {
           "label": "Transcrire à nouveau avec les locuteurs",
-          "hint": "Envoie tout l'enregistrement à votre serveur STT pour distinguer les locuteurs."
+          "hint": "Distingue les locuteurs (sur ce PC ou sur votre serveur STT) et transcrit à nouveau l'enregistrement."
         },
         "name": {
           "label": "Nommer…",
@@ -1788,13 +1789,17 @@
       "speakers": {
         "confirm": "Remplacer cette transcription par une nouvelle, avec les locuteurs distingués ?",
         "openSettings": "Paramètres du serveur STT",
-        "oneVoice": "Transcrit à nouveau : le serveur n'a entendu qu'une seule voix, il n'y a donc pas de texte avec locuteurs.",
+        "oneVoice": "Transcrit à nouveau : une seule voix a été entendue, il n'y a donc pas de texte avec locuteurs.",
         "errors": {
           "notSet": "Distinguer les locuteurs nécessite un serveur STT. Indiquez son adresse dans Paramètres avancés › Serveur STT.",
           "modelNotSet": "Aucun modèle avec locuteurs n'est choisi. Choisissez-en un dans Paramètres avancés › Serveur STT.",
           "unreachable": "Le serveur STT n'a pas répondu : {{error}}. Vérifiez son adresse dans Paramètres avancés › Serveur STT.",
-          "modelMissing": "Le serveur STT n'a pas de modèle \"{{model}}\" (disponibles : {{available}}). Choisissez son modèle avec locuteurs dans Paramètres avancés › Serveur STT."
-        }
+          "modelMissing": "Le serveur STT n'a pas de modèle \"{{model}}\" (disponibles : {{available}}). Choisissez son modèle avec locuteurs dans Paramètres avancés › Serveur STT.",
+          "speakersNotSet": "Pour distinguer les locuteurs, il faut le modèle de locuteurs sur ce PC ou un serveur STT. Téléchargez le modèle dans Paramètres avancés › Locuteurs.",
+          "localNotDownloaded": "Le modèle de locuteurs n'est pas encore sur ce PC. Téléchargez-le dans Paramètres avancés › Locuteurs.",
+          "needsLocalModel": "Sur ce PC, les paroles des locuteurs sont transcrites avec votre modèle de dictée, qui est un modèle en ligne. Choisissez un modèle sur ce PC pour la dictée, ou le serveur STT dans Paramètres avancés › Locuteurs."
+        },
+        "openSpeakers": "Paramètres des locuteurs"
       },
       "name": {
         "placeholder": "Nommer cet enregistrement",
@@ -2253,6 +2258,35 @@
         "title": "Autour du texte combiné",
         "description": "Votre propre début et fin pour le texte combiné, par ex. \"Notes de réunion :\"."
       }
+    },
+    "speakers": {
+      "title": "Locuteurs",
+      "description": "Identifiez qui a dit quoi dans un enregistrement : sur ce PC avec un modèle de locuteurs téléchargé une seule fois, ou sur votre serveur STT.",
+      "model": {
+        "name": "Modèle de locuteurs (NVIDIA Sortformer v2.1)",
+        "description": "Le modèle qu'utilise le serveur STT, exécuté sur le processeur de ce PC : jusqu'à quatre locuteurs, rien ne quitte le PC. Un téléchargement unique de {{size}} MB.",
+        "license": "NVIDIA Open Model License",
+        "download": "Télécharger ({{size}} MB)",
+        "cancel": "Annuler",
+        "downloaded": "Téléchargé",
+        "delete": "Supprimer",
+        "deleteConfirm": "Supprimer le modèle de locuteurs de ce PC ? Vous pourrez le retélécharger à tout moment.",
+        "downloadFailed": "Impossible de télécharger le modèle de locuteurs : {{error}}",
+        "ready": "Le modèle de locuteurs est prêt."
+      },
+      "afterTake": {
+        "label": "Identifier les locuteurs après chaque prise",
+        "description": "**Une fois le texte collé**, la prise est relue sur ce PC pour distinguer les locuteurs, et le texte avec les locuteurs y est ajouté dans l'Historique. Le collage ne l'attend jamais. Fonctionne avec les modèles de ce PC (pas avec les modèles en ligne)."
+      },
+      "source": {
+        "title": "\"Transcrire à nouveau avec les locuteurs\" utilise",
+        "description": "Où l'Historique distingue les locuteurs. Automatique : ce PC une fois son modèle de locuteurs téléchargé et si vous dictez avec un modèle sur ce PC ; sinon le serveur STT.",
+        "options": {
+          "auto": "Automatique",
+          "local": "Ce PC",
+          "stt_server": "Serveur STT"
+        }
+      }
     }
   },
   "common": {
@@ -2620,6 +2654,10 @@
       "historyTour": {
         "title": "Montrez-moi comment : Historique",
         "description": "Une courte visite guidée de toutes les nouveautés de l'Historique ci-dessous. Elle se trouve dans Configurations, ou sous « Montrez-moi comment » sur la page Historique."
+      },
+      "localSpeakers": {
+        "title": "Locuteurs sur ce PC",
+        "description": "Téléchargez le modèle de locuteurs de NVIDIA (celui qu'utilise le serveur STT) dans Paramètres avancés › Locuteurs, et identifiez qui a dit quoi sans serveur : dans l'Historique ou après chaque prise."
       }
     },
     "installed": "Installée"

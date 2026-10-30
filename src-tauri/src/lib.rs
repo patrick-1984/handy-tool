@@ -9,6 +9,7 @@ pub mod cli;
 mod cli_client;
 mod clipboard;
 mod commands;
+mod diarize;
 mod helpers;
 mod input;
 mod keyboard_layouts;
@@ -534,6 +535,7 @@ pub fn run(cli_args: CliArgs) {
         shortcut::change_recording_text_file_setting,
         shortcut::change_stt_server_setting,
         shortcut::change_combine_setting,
+        shortcut::change_speakers_setting,
         shortcut::change_transcription_fallbacks_setting,
         shortcut::change_capture_source_setting,
         shortcut::change_system_audio_device_setting,
@@ -603,6 +605,10 @@ pub fn run(cli_args: CliArgs) {
         commands::models::get_available_models,
         commands::stt_hf::get_stt_server_info,
         commands::files::retranscribe_history_entry_speakers,
+        commands::speakers::get_local_speakers_status,
+        commands::speakers::download_local_speakers_model,
+        commands::speakers::cancel_local_speakers_download,
+        commands::speakers::delete_local_speakers_model,
         commands::history::rename_history_entry,
         commands::stt_hf::search_hf_parakeet_models,
         commands::stt_hf::check_hf_parakeet_model,

@@ -340,6 +340,67 @@ impl ChunkedSession {
     }
 }
 
+/// Speakers › "after each take", on this PC: the take's saved recording goes
+/// through the speakers model and the dictation model in the background,
+/// after delivery; the result fills its History row's speaker text (only if
+/// the row's text is still this take's). Local dictation models only: an
+/// online one would be sent the whole take again, unasked.
+fn spawn_local_speakers_after_take(
+    app: &AppHandle,
+    hm: &Arc<HistoryManager>,
+    file_name: &str,
+    text: String,
+    model: String,
+) {
+    let Some(info) = app
+        .state::<Arc<crate::managers::model::ModelManager>>()
+        .get_model_info(&model)
+        .filter(|m| m.is_downloaded && !m.engine_type.is_online())
+    else {
+        debug!("Speakers after the take: {model} is not a model on this PC; skipped");
+        return;
+    };
+    let external = info.engine_type.is_external();
+    let Ok(dir) = crate::portable::resolve_app_data_dir(app) else {
+        return;
+    };
+    let path = dir.join("recordings").join(file_name);
+    let (app, hm, file_name) = (app.clone(), Arc::clone(hm), file_name.to_string());
+    // Counted before the thread starts (the updater waits for it).
+    crate::commands::files::BACKGROUND_SPEAKERS.fetch_add(1, Ordering::SeqCst);
+    std::thread::spawn(move || {
+        struct Running;
+        impl Drop for Running {
+            fn drop(&mut self) {
+                crate::commands::files::BACKGROUND_SPEAKERS.fetch_sub(1, Ordering::SeqCst);
+            }
+        }
+        let _running = Running;
+        let samples = match crate::audio_toolkit::audio::decode_audio_file(&path) {
+            Ok(s) => s,
+            Err(e) => {
+                warn!("Speakers for {file_name}: could not read the recording ({e})");
+                return;
+            }
+        };
+        let result = crate::commands::files::local_speakers(&app, &samples, &model, external);
+        crate::commands::files::release_model(&app, &model);
+        match result {
+            Ok(result) => match result.diarized {
+                Some(speakers) => {
+                    if let Err(e) = hm.set_diarized_for_file(&file_name, &text, &speakers) {
+                        warn!("Speakers for {file_name}: not saved ({e})");
+                    } else {
+                        info!("Speakers for {file_name}: added to History");
+                    }
+                }
+                None => debug!("Speakers for {file_name}: one voice"),
+            },
+            Err(e) => warn!("Speakers for {file_name}: {e}"),
+        }
+    });
+}
+
 static CHUNKED_SESSION: Lazy<Mutex<Option<Arc<ChunkedSession>>>> = Lazy::new(|| Mutex::new(None));
 
 /// "Show the text as it's transcribed": put a stopped take's text so far in the
@@ -925,10 +986,11 @@ async fn save_history(
     model_used: Option<String>,
     // The take's speaker text (Custom STT server with speakers), if any.
     diarized_text: Option<String>,
-) {
+) -> Option<String> {
     let res = if crash_safe {
+        let file_name = format!("handy-{}.opus", ts);
         hm.save_transcription_with_file(
-            format!("handy-{}.opus", ts),
+            file_name.clone(),
             ts as i64,
             text,
             post_processed,
@@ -939,6 +1001,7 @@ async fn save_history(
             diarized_text,
         )
         .await
+        .map(|_| file_name)
     } else {
         hm.save_transcription(
             Some(ts as i64),
@@ -953,8 +1016,12 @@ async fn save_history(
         )
         .await
     };
-    if let Err(e) = res {
-        error!("Failed to save transcription to history: {}", e);
+    match res {
+        Ok(file_name) => Some(file_name),
+        Err(e) => {
+            error!("Failed to save transcription to history: {}", e);
+            None
+        }
     }
 }
 
@@ -2404,6 +2471,24 @@ impl ShortcutAction for TranscribeAction {
                     // about to be pasted): added to this take's row when they
                     // come. Off the delivery path, so a slow server never
                     // holds up the paste.
+                    // Speakers › "after each take", on this PC: the saved
+                    // recording is read back in the background.
+                    if settings.local_speakers_after_take
+                        && speakers_later.is_none()
+                        && opus_ok
+                        && !(stt_take && settings.stt_server_speakers)
+                        && !raw_text.trim().is_empty()
+                        && take_generation_current(take_gen)
+                        && crate::diarize::is_downloaded(&ah)
+                    {
+                        spawn_local_speakers_after_take(
+                            &ah,
+                            &hm,
+                            &format!("handy-{}.opus", ts),
+                            raw_text.clone(),
+                            settings.selected_model.clone(),
+                        );
+                    }
                     if let (Some(full), true) = (speakers_later.take(), opus_ok) {
                         let tm_bg = Arc::clone(&tm);
                         let hm_bg = Arc::clone(&hm);
@@ -2822,7 +2907,7 @@ impl ShortcutAction for TranscribeAction {
                             // History is the recovery route when a delivery
                             // fails and the clipboard must not be touched, so
                             // the row must exist before delivery is attempted.
-                            save_history(
+                            let saved = save_history(
                                 &hm_clone,
                                 crash_safe,
                                 ts,
@@ -2836,6 +2921,22 @@ impl ShortcutAction for TranscribeAction {
                                 speaker_text.clone(),
                             )
                             .await;
+                            // Speakers › "after each take", on this PC.
+                            if let Some(file_name) = saved.filter(|_| {
+                                settings.local_speakers_after_take
+                                    && !(stt_take && settings.stt_server_speakers)
+                                    && !transcription.trim().is_empty()
+                                    && take_generation_current(take_gen)
+                                    && crate::diarize::is_downloaded(&ah)
+                            }) {
+                                spawn_local_speakers_after_take(
+                                    &ah,
+                                    &hm,
+                                    &file_name,
+                                    transcription.clone(),
+                                    settings.selected_model.clone(),
+                                );
+                            }
 
                             // Paste the final text (either processed or original).
                             // Off the event loop on Windows (long remote jump

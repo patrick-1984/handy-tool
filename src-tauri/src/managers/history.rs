@@ -664,7 +664,7 @@ impl HistoryManager {
         duration_seconds: Option<f64>,
         model_used: Option<String>,
         diarized_text: Option<String>,
-    ) -> Result<()> {
+    ) -> Result<String> {
         // The first free second from there: never write over another take's WAV.
         let mut timestamp = timestamp.unwrap_or_else(|| Utc::now().timestamp());
         for _ in 0..1000 {
@@ -691,7 +691,7 @@ impl HistoryManager {
         save_wav_file(file_path, &audio_samples).await?;
 
         self.save_transcription_with_file(
-            file_name,
+            file_name.clone(),
             timestamp,
             transcription_text,
             post_processed_text,
@@ -702,6 +702,7 @@ impl HistoryManager {
             diarized_text,
         )
         .await
+        .map(|_| file_name)
     }
 
     /// Save a history row for an audio file that ALREADY exists on disk (e.g. the

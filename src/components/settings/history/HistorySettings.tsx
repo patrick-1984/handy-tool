@@ -138,29 +138,44 @@ const ICON_BUTTON =
 const HISTORY_PAGE = 20;
 
 /** "Transcribe again with speakers" refused before sending: the message and
- *  whether it is fixed in Advanced settings › STT server. */
+ *  the settings page that fixes it (Speakers, or STT server), if any. */
 const speakersErrorMessage = (
   error: string,
   t: (key: string, o?: Record<string, unknown>) => string,
-): { message: string; toSettings: boolean } => {
+): { message: string; toSettings: "speakers" | "sttServer" | null } => {
   const [code, detail = "", extra = ""] = error.split("|");
   switch (code) {
+    case "SPEAKERS_NOT_SET":
+      return {
+        message: t("settings.history.speakers.errors.speakersNotSet"),
+        toSettings: "speakers",
+      };
+    case "LOCAL_SPEAKERS_NEEDS_LOCAL_MODEL":
+      return {
+        message: t("settings.history.speakers.errors.needsLocalModel"),
+        toSettings: "speakers",
+      };
+    case "LOCAL_SPEAKERS_NOT_DOWNLOADED":
+      return {
+        message: t("settings.history.speakers.errors.localNotDownloaded"),
+        toSettings: "speakers",
+      };
     case "STT_SERVER_NOT_SET":
       return {
         message: t("settings.history.speakers.errors.notSet"),
-        toSettings: true,
+        toSettings: "sttServer",
       };
     case "STT_SPEAKERS_MODEL_NOT_SET":
       return {
         message: t("settings.history.speakers.errors.modelNotSet"),
-        toSettings: true,
+        toSettings: "sttServer",
       };
     case "STT_SERVER_UNREACHABLE":
       return {
         message: t("settings.history.speakers.errors.unreachable", {
           error: detail,
         }),
-        toSettings: true,
+        toSettings: "sttServer",
       };
     case "STT_SPEAKERS_MODEL_MISSING":
       return {
@@ -168,12 +183,12 @@ const speakersErrorMessage = (
           model: detail,
           available: extra || "—",
         }),
-        toSettings: true,
+        toSettings: "sttServer",
       };
     default:
       return {
         message: t("settings.history.transcribeAgainFailed", { error }),
-        toSettings: false,
+        toSettings: null,
       };
   }
 };
@@ -720,8 +735,12 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
           duration: 10000,
           action: toSettings
             ? {
-                label: t("settings.history.speakers.openSettings"),
-                onClick: () => navigateTo("sttServer"),
+                label: t(
+                  toSettings === "speakers"
+                    ? "settings.history.speakers.openSpeakers"
+                    : "settings.history.speakers.openSettings",
+                ),
+                onClick: () => navigateTo(toSettings),
               }
             : undefined,
         });

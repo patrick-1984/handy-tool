@@ -378,7 +378,7 @@ pub fn usable_for_folders(settings: &AppSettings, models: &ModelManager, model: 
 }
 
 /// A model loaded into the second slot only for a file doesn't stay in memory.
-fn release_model(app: &AppHandle, model: &str) {
+pub(crate) fn release_model(app: &AppHandle, model: &str) {
     let settings = get_settings(app);
     let models = app.state::<Arc<ModelManager>>();
     let watched_folders_use_it = settings.translator_enabled
@@ -807,15 +807,143 @@ fn speakers_preflight(
     Ok(())
 }
 
-/// History's "Transcribe again with speakers": the recording, whole, to the
-/// Custom STT server's speakers model (whatever the dictation model is). The
-/// row gets the plain text and the text with speakers.
+/// History's "Transcribe again with speakers": on this PC (the speakers
+/// model + the dictation model) or on the Custom STT server, as Speakers ›
+/// "Transcribe again with speakers uses" says. Errors are codes the app turns
+/// into a message with a way to fix it (see `speakers_preflight`, plus
+/// `LOCAL_SPEAKERS_NOT_DOWNLOADED` and `SPEAKERS_NOT_SET` = neither is set up).
 #[tauri::command]
 #[specta::specta]
 pub async fn retranscribe_history_entry_speakers(
     app: AppHandle,
     id: i64,
 ) -> Result<SpeakersResult, String> {
+    use crate::settings::SpeakersSource;
+    let settings = get_settings(&app);
+    let local_ready = crate::diarize::is_downloaded(&app);
+    let server_set = !settings.stt_server_url.trim().is_empty();
+    // On this PC the turns are transcribed with the dictation model: an
+    // online one would send the recording out, so it must be a local one.
+    // A dictation model on this PC, ready: the turns are transcribed with it.
+    let local_model = app
+        .state::<Arc<ModelManager>>()
+        .get_model_info(&settings.selected_model)
+        .is_some_and(|m| m.is_downloaded && !m.engine_type.is_online());
+    let online = !local_model;
+    match settings.speakers_source {
+        SpeakersSource::Local if !local_ready => Err("LOCAL_SPEAKERS_NOT_DOWNLOADED".into()),
+        SpeakersSource::Local if online => Err("LOCAL_SPEAKERS_NEEDS_LOCAL_MODEL".into()),
+        SpeakersSource::Local => retranscribe_speakers_local(app, id).await,
+        SpeakersSource::Auto if local_ready && !online => {
+            retranscribe_speakers_local(app, id).await
+        }
+        SpeakersSource::Auto if server_set => retranscribe_speakers_server(app, id).await,
+        SpeakersSource::Auto if local_ready => Err("LOCAL_SPEAKERS_NEEDS_LOCAL_MODEL".into()),
+        SpeakersSource::Auto => Err("SPEAKERS_NOT_SET".into()),
+        SpeakersSource::SttServer => retranscribe_speakers_server(app, id).await,
+    }
+}
+
+/// Who said what in `samples`, on this PC: the speakers model finds the
+/// turns, `model` (the dictation model) transcribes each one, piece by piece.
+/// Blocking.
+pub(crate) fn local_speakers(
+    app: &AppHandle,
+    samples: &[f32],
+    model: &str,
+    external: bool,
+) -> Result<crate::diarize::Speakers, String> {
+    // Enforced here, at the point of use: on this PC, nothing goes online
+    // (whatever was checked earlier, the model may have changed since).
+    let online = app
+        .state::<Arc<ModelManager>>()
+        .get_model_info(model)
+        .is_none_or(|m| m.engine_type.is_online());
+    if online {
+        return Err("LOCAL_SPEAKERS_NEEDS_LOCAL_MODEL".into());
+    }
+    let tm = app.state::<Arc<TranscriptionManager>>();
+    crate::diarize::speakers_for(app, samples, |turn| {
+        let mut parts = Vec::new();
+        for range in split_speech_segments(&turn) {
+            let text = transcribe_piece(app, &tm, model, external, turn[range].to_vec())?;
+            let text = text.trim();
+            if !text.is_empty() {
+                parts.push(text.to_string());
+            }
+        }
+        Ok(parts.join(" "))
+    })
+}
+
+async fn retranscribe_speakers_local(app: AppHandle, id: i64) -> Result<SpeakersResult, String> {
+    let history = Arc::clone(
+        app.state::<Arc<crate::managers::history::HistoryManager>>()
+            .inner(),
+    );
+    let entry = history
+        .get_entry_by_id(id)
+        .await
+        .map_err(|e| e.to_string())?
+        .ok_or("the history entry no longer exists")?;
+    let model = get_settings(&app).selected_model;
+    let model_info = app
+        .state::<Arc<ModelManager>>()
+        .get_model_info(&model)
+        .filter(|m| m.is_downloaded)
+        .ok_or("no speech model is ready - download one first")?;
+    let files = history
+        .recording_files_for(&entry.file_name)
+        .map_err(|e| e.to_string())?;
+    if RETRANSCRIBING.swap(true, Ordering::SeqCst) {
+        return Err("another recording is being transcribed".into());
+    }
+    let guard = RetranscribeGuard;
+    if crate::transcription_coordinator::update_pending() {
+        return Err("an update is being installed; try again after the restart".into());
+    }
+    let app_job = app.clone();
+    let model_job = model.clone();
+    let result = tauri::async_runtime::spawn_blocking(
+        move || -> Result<crate::diarize::Speakers, String> {
+            let mut samples = Vec::new();
+            for file in &files {
+                samples.extend(decode_audio_file(file).map_err(|e| e.to_string())?);
+            }
+            info!(
+                "History: transcribing entry {id} again with speakers on this PC ({:.0} s)",
+                samples.len() as f64 / SAMPLE_HZ
+            );
+            let external = model_info.engine_type.is_external();
+            let result = local_speakers(&app_job, &samples, &model_job, external);
+            release_model(&app_job, &model_job);
+            result
+        },
+    )
+    .await
+    .map_err(|e| e.to_string())??;
+    let label = app
+        .state::<Arc<ModelManager>>()
+        .get_model_info(&model)
+        .map(|m| format!("{} + speakers (this PC)", m.name));
+    history
+        .replace_transcription(id, &result.text, label, result.diarized.as_deref())
+        .map_err(|e| e.to_string())?;
+    drop(guard);
+    info!(
+        "History: entry {id} transcribed again with speakers on this PC ({} chars, speakers: {})",
+        result.text.len(),
+        result.diarized.is_some()
+    );
+    Ok(SpeakersResult {
+        speakers: result.diarized.is_some(),
+        text: result.text,
+    })
+}
+
+/// The STT server path of "Transcribe again with speakers": the recording,
+/// whole, to its speakers model.
+async fn retranscribe_speakers_server(app: AppHandle, id: i64) -> Result<SpeakersResult, String> {
     let settings = get_settings(&app);
     if settings.stt_server_url.trim().is_empty() {
         return Err("STT_SERVER_NOT_SET".into());

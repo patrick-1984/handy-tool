@@ -17,6 +17,7 @@ This shelf mirrors the Windows 2.0.2 sidebar, with its Advanced settings and Mor
 
 - [Transcription, Transcription providers, LLM providers, Post-processing, MCP & CLI](advanced.md) — how text is delivered, speech and LLM providers, and the local server.
 - [STT server](stt-server.md) — your own speech-to-text server, with or without speakers.
+- [Speakers](speakers.md) — the speakers model on this PC, and where History tells speakers apart.
 - [Combine recordings](combine.md) — how History joins several recordings copied as one text.
 - [Post-processing](post-processing.md) — provider, prompt, and generation controls under the Post-processing switch.
 - [Backup](backup.md) — export and selective restore.

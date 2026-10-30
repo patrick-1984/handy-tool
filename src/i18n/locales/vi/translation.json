@@ -72,7 +72,8 @@
     "advancedSettings": "Cài đặt nâng cao",
     "moreTools": "Công cụ khác",
     "sttServer": "Máy chủ STT",
-    "combine": "Ghép bản ghi"
+    "combine": "Ghép bản ghi",
+    "speakers": "Người nói"
   },
   "helpMode": {
     "button": "Chế độ trợ giúp: trỏ vào một cài đặt để xem nó làm gì",
@@ -512,7 +513,7 @@
           },
           "speakers": {
             "title": "Phiên âm lại theo người nói",
-            "text": "Gửi toàn bộ bản ghi đến máy chủ STT của bạn để phân biệt người nói. Nếu thiếu gì, nó cho biết thiếu gì và mở cài đặt máy chủ STT."
+            "text": "Phân biệt người nói, trên PC này (Cài đặt nâng cao › Người nói) hoặc trên máy chủ STT của bạn. Nếu thiếu gì, nó cho biết thiếu gì và mở đúng phần cài đặt."
           },
           "delete": {
             "title": "Xóa",
@@ -1771,7 +1772,7 @@
         },
         "speakers": {
           "label": "Phiên âm lại theo người nói",
-          "hint": "Gửi toàn bộ bản ghi đến máy chủ STT của bạn để phân biệt người nói."
+          "hint": "Phân biệt người nói (trên PC này hoặc máy chủ STT của bạn) và phiên âm lại bản ghi."
         },
         "name": {
           "label": "Đặt tên…",
@@ -1788,13 +1789,17 @@
       "speakers": {
         "confirm": "Thay bản phiên âm này bằng bản mới có phân biệt người nói?",
         "openSettings": "Cài đặt máy chủ STT",
-        "oneVoice": "Đã phiên âm lại: máy chủ chỉ nghe thấy một giọng nói nên không có văn bản theo người nói.",
+        "oneVoice": "Đã chép lời lại: chỉ nghe thấy một giọng, nên không có văn bản theo người nói.",
         "errors": {
           "notSet": "Phân biệt người nói cần một máy chủ STT. Đặt địa chỉ của nó trong Cài đặt nâng cao › Máy chủ STT.",
           "modelNotSet": "Chưa chọn mô hình hỗ trợ người nói. Hãy chọn một trong Cài đặt nâng cao › Máy chủ STT.",
           "unreachable": "Máy chủ STT không phản hồi: {{error}}. Kiểm tra địa chỉ của nó trong Cài đặt nâng cao › Máy chủ STT.",
-          "modelMissing": "Máy chủ STT không có mô hình \"{{model}}\" (hiện có: {{available}}). Chọn mô hình hỗ trợ người nói của nó trong Cài đặt nâng cao › Máy chủ STT."
-        }
+          "modelMissing": "Máy chủ STT không có mô hình \"{{model}}\" (hiện có: {{available}}). Chọn mô hình hỗ trợ người nói của nó trong Cài đặt nâng cao › Máy chủ STT.",
+          "speakersNotSet": "Để phân biệt người nói cần có mô hình người nói trên PC này hoặc máy chủ STT. Hãy tải mô hình xuống trong Cài đặt nâng cao › Người nói.",
+          "localNotDownloaded": "Mô hình người nói chưa có trên PC này. Hãy tải xuống trong Cài đặt nâng cao › Người nói.",
+          "needsLocalModel": "Trên máy này, lời của người nói được chép bằng mô hình đọc chính tả của bạn, và đó là mô hình trực tuyến. Hãy chọn một mô hình trên máy này để đọc chính tả, hoặc chọn máy chủ STT trong Cài đặt nâng cao › Người nói."
+        },
+        "openSpeakers": "Cài đặt người nói"
       },
       "name": {
         "placeholder": "Đặt tên cho bản ghi này",
@@ -2253,6 +2258,35 @@
         "title": "Quanh văn bản đã ghép",
         "description": "Phần mở đầu và kết thúc riêng của bạn cho văn bản đã ghép, ví dụ \"Ghi chú cuộc họp:\"."
       }
+    },
+    "speakers": {
+      "title": "Người nói",
+      "description": "Phân biệt ai đã nói gì trong bản ghi: trên PC này với mô hình người nói bạn tải xuống một lần, hoặc trên máy chủ STT của bạn.",
+      "model": {
+        "name": "Mô hình người nói (NVIDIA Sortformer v2.1)",
+        "description": "Mô hình mà máy chủ STT sử dụng, chạy trên bộ xử lý của PC này: tối đa bốn người nói, không gì rời khỏi PC. Tải xuống một lần {{size}} MB.",
+        "license": "NVIDIA Open Model License",
+        "download": "Tải xuống ({{size}} MB)",
+        "cancel": "Hủy",
+        "downloaded": "Đã tải xuống",
+        "delete": "Xóa",
+        "deleteConfirm": "Xóa mô hình người nói khỏi PC này? Bạn có thể tải lại bất cứ lúc nào.",
+        "downloadFailed": "Không thể tải xuống mô hình người nói: {{error}}",
+        "ready": "Mô hình người nói đã sẵn sàng."
+      },
+      "afterTake": {
+        "label": "Xác định người nói sau mỗi bản ghi",
+        "description": "**Sau khi văn bản được dán**, bản ghi được đọc lại trên PC này để phân biệt người nói, và văn bản kèm người nói được thêm vào bản ghi đó trong Lịch sử. Việc dán không bao giờ phải chờ. Hoạt động với các mô hình trên PC này (không phải mô hình trực tuyến)."
+      },
+      "source": {
+        "title": "\"Phiên âm lại theo người nói\" sử dụng",
+        "description": "Nơi Lịch sử phân biệt người nói. Tự động: máy này khi mô hình người nói đã được tải và bạn đọc chính tả bằng mô hình trên máy này; nếu không thì máy chủ STT.",
+        "options": {
+          "auto": "Tự động",
+          "local": "PC này",
+          "stt_server": "Máy chủ STT"
+        }
+      }
     }
   },
   "common": {
@@ -2620,6 +2654,10 @@
       "historyTour": {
         "title": "Chỉ cho tôi: Lịch sử",
         "description": "Một chuyến tham quan có hướng dẫn ngắn về mọi điểm mới trong Lịch sử bên dưới. Tìm nó trong Thiết lập, hoặc dưới \"Chỉ cho tôi\" trên trang Lịch sử."
+      },
+      "localSpeakers": {
+        "title": "Người nói trên PC này",
+        "description": "Tải mô hình người nói của NVIDIA (mô hình máy chủ STT sử dụng) trong Cài đặt nâng cao › Người nói, và phân biệt ai đã nói gì mà không cần máy chủ: trong Lịch sử hoặc sau mỗi bản ghi."
       }
     },
     "installed": "Đã cài"
