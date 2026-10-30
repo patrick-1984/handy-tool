@@ -824,10 +824,12 @@ pub async fn retranscribe_history_entry_speakers(
     let server_set = !settings.stt_server_url.trim().is_empty();
     // On this PC the turns are transcribed with the dictation model: an
     // online one would send the recording out, so it must be a local one.
-    let online = app
+    // A dictation model on this PC, ready: the turns are transcribed with it.
+    let local_model = app
         .state::<Arc<ModelManager>>()
         .get_model_info(&settings.selected_model)
-        .is_some_and(|m| m.engine_type.is_online());
+        .is_some_and(|m| m.is_downloaded && !m.engine_type.is_online());
+    let online = !local_model;
     match settings.speakers_source {
         SpeakersSource::Local if !local_ready => Err("LOCAL_SPEAKERS_NOT_DOWNLOADED".into()),
         SpeakersSource::Local if online => Err("LOCAL_SPEAKERS_NEEDS_LOCAL_MODEL".into()),
