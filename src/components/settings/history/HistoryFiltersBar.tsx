@@ -64,14 +64,14 @@ export const HistoryFiltersBar: React.FC<{
         className="w-36 [&>button]:w-full [&>button]:min-w-0"
       />
       {filter.date === "custom" && (
-        <span className="inline-flex items-center gap-1 text-xs text-text-secondary">
+        <span className="inline-flex flex-wrap items-center gap-1 text-xs text-text-secondary">
           <input
             type="date"
             value={filter.customFrom}
             onChange={(e) =>
               onChange({ ...filter, customFrom: e.target.value })
             }
-            className={`h-8 ${TEXT_FIELD}`}
+            className={`h-8 w-[8.5rem] ${TEXT_FIELD}`}
             aria-label={t("settings.history.filters.from")}
           />
           –
@@ -79,7 +79,7 @@ export const HistoryFiltersBar: React.FC<{
             type="date"
             value={filter.customTo}
             onChange={(e) => onChange({ ...filter, customTo: e.target.value })}
-            className={`h-8 ${TEXT_FIELD}`}
+            className={`h-8 w-[8.5rem] ${TEXT_FIELD}`}
             aria-label={t("settings.history.filters.to")}
           />
         </span>
@@ -99,7 +99,7 @@ export const HistoryFiltersBar: React.FC<{
           label: t(`settings.history.filters.sort.${value}`),
           disabled: value === "hits" && !searching,
         }))}
-        selectedValue={sort === "hits" && !searching ? "newest" : sort}
+        selectedValue={sort}
         onSelect={(v) => onSortChange(v as SortOrder)}
         className="w-32 [&>button]:w-full [&>button]:min-w-0"
       />

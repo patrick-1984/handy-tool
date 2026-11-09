@@ -16,6 +16,13 @@ export interface SearchMatcher {
 
 const META_CHARS = /[\\^$.|?*+()[\]{}]/;
 
+/** After an empty match: step past one whole character (an emoji is two
+ *  UTF-16 units; stepping one would land inside it and match again). */
+function stepPastEmpty(regex: RegExp, text: string): void {
+  const cp = text.codePointAt(regex.lastIndex);
+  regex.lastIndex += cp !== undefined && cp > 0xffff ? 2 : 1;
+}
+
 function escapeLiteral(text: string): string {
   return text.replace(/[\\^$.|?*+()[\]{}]/g, "\\$&");
 }
@@ -96,13 +103,13 @@ export function highlightSegments(
 ): HighlightSegment[] {
   const segments: HighlightSegment[] = [];
   let last = 0;
-  let guard = 0;
   let m: RegExpExecArray | null;
   matcher.regex.lastIndex = 0;
-  while ((m = matcher.regex.exec(text)) !== null && guard++ < 1000) {
+  // Every hit is marked (the whole text is shown); empty matches step on.
+  while ((m = matcher.regex.exec(text)) !== null) {
     if (m[0] === "") {
       // Zero-length match (e.g. "a*"): advance to avoid an infinite loop.
-      matcher.regex.lastIndex++;
+      stepPastEmpty(matcher.regex, text);
       continue;
     }
     if (m.index > last) {
@@ -124,12 +131,11 @@ export function countMatches(
 ): number {
   if (!text) return 0;
   let count = 0;
-  let guard = 0;
   let m: RegExpExecArray | null;
   matcher.regex.lastIndex = 0;
-  while ((m = matcher.regex.exec(text)) !== null && guard++ < 100_000) {
+  while ((m = matcher.regex.exec(text)) !== null) {
     if (m[0] === "") {
-      matcher.regex.lastIndex++;
+      stepPastEmpty(matcher.regex, text);
       continue;
     }
     count++;

@@ -288,6 +288,10 @@ export const HistorySettings: React.FC = () => {
     () => sortEntries(filteredEntries, sort, hits),
     [filteredEntries, sort, hits],
   );
+  // "Most hits" needs a search: clearing it goes back to newest first.
+  useEffect(() => {
+    if (!matcher && sort === "hits") setSort("newest");
+  }, [matcher, sort]);
 
   // A recording deleted meanwhile leaves the selection.
   useEffect(() => {
@@ -303,8 +307,16 @@ export const HistorySettings: React.FC = () => {
 
   // Drawing every entry at once (each with its own audio player) made the page
   // lag; draw a page at a time and add the next as the list nears its end.
-  const [shownCount, setShownCount] = useState(HISTORY_PAGE);
-  useEffect(() => setShownCount(HISTORY_PAGE), [matcher, filter, tab, sort]);
+  // A new search, filter, tab or order starts at the first page in the
+  // same render (an effect would first draw the old count of full texts).
+  const listKey = `${debouncedSearch}|${JSON.stringify(filter)}|${tab}|${sort}`;
+  const [paging, setPaging] = useState({ key: listKey, count: HISTORY_PAGE });
+  const shownCount = paging.key === listKey ? paging.count : HISTORY_PAGE;
+  const setShownCount = (next: (n: number) => number) =>
+    setPaging((p) => ({
+      key: listKey,
+      count: next(p.key === listKey ? p.count : HISTORY_PAGE),
+    }));
   const moreRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = moreRef.current;

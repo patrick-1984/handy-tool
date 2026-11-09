@@ -134,17 +134,12 @@ export const matchesFilter = (
 export type SortOrder = "newest" | "oldest" | "hits";
 export const SORT_ORDERS: SortOrder[] = ["newest", "oldest", "hits"];
 
-/** How many times a search is found in a recording: its name plus its text.
- *  The text with speakers and the cleaned-up text repeat the same words, so
- *  the text counts once, as the version where it is found most. */
+/** How many times a search is found in what a recording's row shows: its
+ *  name plus its text (the text with speakers when it has one, as the row
+ *  opens), so every hit counted is a hit marked. */
 export const entryHits = (entry: HistoryEntry, m: SearchMatcher): number =>
   countMatches(entry.name, m) +
-  Math.max(
-    countMatches(entry.transcription_text, m),
-    countMatches(entry.diarized_text, m),
-    countMatches(entry.post_processed_text, m),
-    countMatches(entry.title, m),
-  );
+  countMatches(entry.diarized_text?.trim() || entry.transcription_text, m);
 
 /** The entries in the chosen order; "hits" needs the hit counts (by id) and
  *  falls back to newest first between equal counts and without a search. */
