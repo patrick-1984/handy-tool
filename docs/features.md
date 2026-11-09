@@ -1374,10 +1374,16 @@ transcript, the post-processed text, the text with speakers, the title and the r
 (names and the text with speakers since 2.5.0). It works together with the filters next to it,
 described under [Narrow History to favorites, a time and a length](#narrow-history-by-favorites-date-and-length). A query containing regular-expression
 characters becomes a live regular expression, marked with a badge, falling back to a literal
-search if the pattern is invalid. Matches are highlighted, long transcripts show a snippet
-centered on the first hit, and a counter tells you where you are.
-**Where.** `History › Recordings › Search history (text or regex)...`.
-**Since.** 0.12.0.
+search if the pattern is invalid. Every recording found shows its whole text with every hit
+highlighted (since 2.6.0; before, only a snippet around the first hit). Next to the box, a counter
+shows how many recordings match and how many hits they hold in all; each recording shows its own
+hit count, and a search of several words also lists each word's hits on its own line. The order
+list sorts by **Newest first**, **Oldest first** or **Most hits** (with a search), and **Short
+previews** (off by default, remembered) shows only a few lines of each recording, around the first
+hit when searching.
+**Where.** `History › Recordings › Search history (text or regex)...`; the order list and
+`Short previews` are in the row under it.
+**Since.** 0.12.0 (hit counts, sorting and full text 2.6.0).
 
 ### How long it was, which engine ran it, what it cost
 
@@ -1550,7 +1556,7 @@ it and Escape to cancel. An empty name removes it. Search finds recordings by th
 <a id="narrow-history-by-favorites-date-and-length"></a>
 **The situation.** You remember roughly when you recorded something, or that it was the long
 one — but the search box only knows words.
-**What Handy does.** Three filters sit next to the search box and work together with it:
+**What Handy does.** Three filters sit under the search box and work together with it:
 **Favorites only** (recordings you starred), a time list (**Any time**, the last 3 hours,
 12 hours, 24 hours, 7 days or 30 days, or **Custom dates…** with a From and a To date) and a
 length list (**Any length**, under 10 s, 10–30 s, 30 s–1 min, 1–2 min, 2–5 min, 5–10 min, over

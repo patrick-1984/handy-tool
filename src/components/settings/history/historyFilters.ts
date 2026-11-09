@@ -1,5 +1,9 @@
 import type { HistoryEntry } from "@/bindings";
-import { fieldsMatch, type SearchMatcher } from "@/utils/historySearch";
+import {
+  countMatches,
+  fieldsMatch,
+  type SearchMatcher,
+} from "@/utils/historySearch";
 
 /** When a recording was made. */
 export type DateRange = "any" | "3h" | "12h" | "24h" | "7d" | "30d" | "custom";
@@ -124,4 +128,39 @@ export const matchesFilter = (
     ]);
   }
   return true;
+};
+
+/** The order of the list: by time, or by how often the search is found. */
+export type SortOrder = "newest" | "oldest" | "hits";
+export const SORT_ORDERS: SortOrder[] = ["newest", "oldest", "hits"];
+
+/** How many times a search is found in a recording: its name plus its text.
+ *  The text with speakers and the cleaned-up text repeat the same words, so
+ *  the text counts once, as the version where it is found most. */
+export const entryHits = (entry: HistoryEntry, m: SearchMatcher): number =>
+  countMatches(entry.name, m) +
+  Math.max(
+    countMatches(entry.transcription_text, m),
+    countMatches(entry.diarized_text, m),
+    countMatches(entry.post_processed_text, m),
+    countMatches(entry.title, m),
+  );
+
+/** The entries in the chosen order; "hits" needs the hit counts (by id) and
+ *  falls back to newest first between equal counts and without a search. */
+export const sortEntries = (
+  entries: HistoryEntry[],
+  order: SortOrder,
+  hits: Map<number, number> | null,
+): HistoryEntry[] => {
+  const newest = (a: HistoryEntry, b: HistoryEntry) =>
+    Number(b.timestamp) - Number(a.timestamp) || b.id - a.id;
+  const sorted = [...entries];
+  if (order === "oldest") return sorted.sort((a, b) => newest(b, a));
+  if (order === "hits" && hits) {
+    return sorted.sort(
+      (a, b) => (hits.get(b.id) ?? 0) - (hits.get(a.id) ?? 0) || newest(a, b),
+    );
+  }
+  return sorted.sort(newest);
 };

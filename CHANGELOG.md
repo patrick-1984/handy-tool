@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.6.0] - 2026-11-09
+
+### Added
+
+- **Hit counts in History search.** Next to the search box: how many recordings match and how many
+  hits they hold in all; each recording shows its own count; a search of several words also lists
+  each word's hits.
+- **Sort History by Most hits** (or Newest / Oldest first), in the row under the search box.
+- **Short previews** (off by default): a few lines of each recording, around the first hit when
+  searching.
+
+### Changed
+
+- **Searching History shows each recording's whole text** with every hit highlighted, instead of a
+  short snippet around the first hit.
+- The filters moved to their own row under the search box, so they fit the window.
+
 ## [2.5.2] - 2026-10-30
 
 ### Fixed

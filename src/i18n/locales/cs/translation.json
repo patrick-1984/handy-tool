@@ -1724,7 +1724,12 @@
         "matches": "{{matched}} z {{total}}",
         "regexBadge": ".*",
         "regexActive": "Dotaz je zpracován jako regulární výraz",
-        "noMatches": "Žádné záznamy neodpovídají vašemu vyhledávání."
+        "noMatches": "Žádné záznamy neodpovídají vašemu vyhledávání.",
+        "hits": "Výskyty: {{count}}",
+        "hitsTitle": "Kolikrát se hledaný text vyskytuje v zobrazených nahrávkách",
+        "words": "Každé slovo:",
+        "wordsTitle": "Kolikrát se každé slovo samostatně vyskytuje v zobrazených nahrávkách",
+        "wordHits": "{{word}}: {{count}}"
       },
       "transcribeAgain": "Transcribe this recording (again) with your dictation model",
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
@@ -1761,7 +1766,14 @@
           "2to5m": "2–5 min",
           "5to10m": "5–10 min",
           "over10m": "Nad 10 min"
-        }
+        },
+        "sort": {
+          "newest": "Nejnovější",
+          "oldest": "Nejstarší",
+          "hits": "Nejvíce výskytů"
+        },
+        "shortPreviews": "Krátké náhledy",
+        "shortPreviewsHint": "Zobrazit jen několik řádků každé nahrávky (při hledání kolem prvního výskytu) místo celého textu"
       },
       "menu": {
         "more": "Další akce",
@@ -2679,6 +2691,10 @@
       "localSpeakers": {
         "title": "Mluvčí na tomto PC",
         "description": "Stáhněte model mluvčích od NVIDIA (ten, který používá STT server) v Pokročilá nastavení › Mluvčí a rozpoznejte, kdo co řekl, bez serveru: v Historii nebo po každém záznamu."
+      },
+      "historySearch": {
+        "title": "Celý text a počet výskytů ve vyhledávání v historii",
+        "description": "Vyhledávání v historii opět zobrazuje celý text každé nahrávky se zvýrazněnými výskyty a jejich počet: celkem, v každé nahrávce a u více slov pro každé slovo. Seřaďte podle „Nejvíce výskytů“, abyste viděli nejlepší shody nahoře, nebo zaškrtněte Krátké náhledy pro několik řádků."
       }
     },
     "installed": "Nainstalovaná"

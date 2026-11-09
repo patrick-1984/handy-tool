@@ -116,3 +116,45 @@ export function highlightSegments(
   }
   return segments;
 }
+
+/** How many times the matcher is found in a text (non-empty matches only). */
+export function countMatches(
+  text: string | null | undefined,
+  matcher: SearchMatcher,
+): number {
+  if (!text) return 0;
+  let count = 0;
+  let guard = 0;
+  let m: RegExpExecArray | null;
+  matcher.regex.lastIndex = 0;
+  while ((m = matcher.regex.exec(text)) !== null && guard++ < 100_000) {
+    if (m[0] === "") {
+      matcher.regex.lastIndex++;
+      continue;
+    }
+    count++;
+  }
+  return count;
+}
+
+/** The separate words of a plain (not regex) search of two or more words,
+ *  each once, in the order typed; [] for one word or a regex. */
+export function queryWords(query: string): string[] {
+  const trimmed = query.trim();
+  if (!trimmed || buildMatcher(trimmed)?.isRegex) return [];
+  const words: string[] = [];
+  const seen = new Set<string>();
+  for (const word of trimmed.split(/\s+/u)) {
+    const key = word.toLocaleLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      words.push(word);
+    }
+  }
+  return words.length > 1 ? words : [];
+}
+
+/** A plain-text matcher for one word of a search (never a regex). */
+export function literalMatcher(word: string): SearchMatcher {
+  return { regex: new RegExp(escapeLiteral(word), "giu"), isRegex: false };
+}

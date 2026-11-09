@@ -1724,7 +1724,12 @@
         "matches": "{{matched}} von {{total}}",
         "regexBadge": ".*",
         "regexActive": "Die Anfrage wird als regulärer Ausdruck interpretiert",
-        "noMatches": "Keine Einträge entsprechen deiner Suche."
+        "noMatches": "Keine Einträge entsprechen deiner Suche.",
+        "hits": "Treffer: {{count}}",
+        "hitsTitle": "Wie oft die Suche in den angezeigten Aufnahmen vorkommt",
+        "words": "Jedes Wort:",
+        "wordsTitle": "Wie oft jedes Wort für sich in den angezeigten Aufnahmen vorkommt",
+        "wordHits": "{{word}}: {{count}}"
       },
       "transcribeAgain": "Transcribe this recording (again) with your dictation model",
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
@@ -1761,7 +1766,14 @@
           "2to5m": "2–5 min",
           "5to10m": "5–10 min",
           "over10m": "Über 10 min"
-        }
+        },
+        "sort": {
+          "newest": "Neueste zuerst",
+          "oldest": "Älteste zuerst",
+          "hits": "Meiste Treffer"
+        },
+        "shortPreviews": "Kurze Vorschau",
+        "shortPreviewsHint": "Nur einige Zeilen jeder Aufnahme zeigen (bei einer Suche rund um den ersten Treffer) statt des ganzen Texts"
       },
       "menu": {
         "more": "Weitere Aktionen",
@@ -2679,6 +2691,10 @@
       "localSpeakers": {
         "title": "Sprecher auf diesem PC",
         "description": "Lade das Sprechermodell von NVIDIA (dasselbe, das der STT-Server nutzt) unter Erweiterte Einstellungen › Sprecher herunter und erkenne ohne Server, wer was gesagt hat: im Verlauf oder nach jeder Aufnahme."
+      },
+      "historySearch": {
+        "title": "Ganzer Text und Trefferzahlen in der Verlaufssuche",
+        "description": "Die Suche im Verlauf zeigt wieder den ganzen Text jeder Aufnahme mit markierten Treffern und wie viele es sind: insgesamt, pro Aufnahme und bei mehreren Wörtern pro Wort. Sortiere nach „Meiste Treffer“ für die besten Treffer zuerst, oder wähle Kurze Vorschau für nur einige Zeilen."
       }
     },
     "installed": "Installiert"

@@ -1724,7 +1724,12 @@
         "matches": "{{total}} içinde {{matched}}",
         "regexBadge": ".*",
         "regexActive": "Sorgu düzenli ifade olarak değerlendiriliyor",
-        "noMatches": "Aramanızla eşleşen kayıt yok."
+        "noMatches": "Aramanızla eşleşen kayıt yok.",
+        "hits": "Eşleşme: {{count}}",
+        "hitsTitle": "Aramanın gösterilen kayıtlarda kaç kez bulunduğu",
+        "words": "Her kelime:",
+        "wordsTitle": "Her kelimenin gösterilen kayıtlarda tek başına kaç kez bulunduğu",
+        "wordHits": "{{word}}: {{count}}"
       },
       "transcribeAgain": "Transcribe this recording (again) with your dictation model",
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
@@ -1761,7 +1766,14 @@
           "2to5m": "2–5 dk",
           "5to10m": "5–10 dk",
           "over10m": "10 dk üstü"
-        }
+        },
+        "sort": {
+          "newest": "En yeni",
+          "oldest": "En eski",
+          "hits": "En çok eşleşme"
+        },
+        "shortPreviews": "Kısa önizlemeler",
+        "shortPreviewsHint": "Tüm metin yerine her kaydın birkaç satırını göster (aramada ilk eşleşmenin çevresi)"
       },
       "menu": {
         "more": "Diğer işlemler",
@@ -2679,6 +2691,10 @@
       "localSpeakers": {
         "title": "Bu bilgisayarda konuşmacılar",
         "description": "NVIDIA'nın konuşmacı modelini (STT sunucusunun kullandığı model) Gelişmiş ayarlar › Konuşmacılar bölümünden indirin ve kimin ne söylediğini sunucu olmadan ayırt edin: Geçmiş'te veya her kayıttan sonra."
+      },
+      "historySearch": {
+        "title": "Geçmiş aramasında tam metin ve eşleşme sayıları",
+        "description": "Geçmiş araması her kaydın tam metnini yeniden, tüm eşleşmeler işaretli olarak gösterir ve kaç eşleşme olduğunu belirtir: toplamda, her kayıtta ve birden çok kelimede her kelime için. En iyi eşleşmeleri üstte görmek için \"En çok eşleşme\"ye göre sıralayın ya da yalnızca birkaç satır için Kısa önizlemeler'i işaretleyin."
       }
     },
     "installed": "Yüklü"

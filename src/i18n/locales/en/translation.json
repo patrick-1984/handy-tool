@@ -1951,7 +1951,12 @@
         "matches": "{{matched}} of {{total}}",
         "regexBadge": ".*",
         "regexActive": "Query is being treated as a regular expression",
-        "noMatches": "No entries match your search."
+        "noMatches": "No entries match your search.",
+        "hits": "Hits: {{count}}",
+        "hitsTitle": "How many times the search is found in the listed recordings",
+        "words": "Each word:",
+        "wordsTitle": "How many times each word is found on its own in the listed recordings",
+        "wordHits": "{{word}}: {{count}}"
       },
       "loading": "Loading history...",
       "empty": "No transcriptions yet. Start recording to build your history!",
@@ -1995,7 +2000,14 @@
           "2to5m": "2–5 min",
           "5to10m": "5–10 min",
           "over10m": "Over 10 min"
-        }
+        },
+        "sort": {
+          "newest": "Newest first",
+          "oldest": "Oldest first",
+          "hits": "Most hits"
+        },
+        "shortPreviews": "Short previews",
+        "shortPreviewsHint": "Show a few lines of each recording (around the first hit when searching) instead of the whole text"
       },
       "menu": {
         "more": "More actions",
@@ -2679,6 +2691,10 @@
       "localSpeakers": {
         "title": "Speakers on this PC",
         "description": "Download NVIDIA's speakers model (the one the STT server uses) in Advanced settings › Speakers, and tell who said what without a server: in History, or after each take."
+      },
+      "historySearch": {
+        "title": "Whole text and hit counts in History search",
+        "description": "Searching History shows each recording's whole text again, with every hit marked, and how many hits there are: in all, in each recording and, for several words, for each word. Sort by Most hits to see the best matches first, or tick Short previews for a few lines per recording."
       }
     },
     "installed": "Installed"

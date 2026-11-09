@@ -1724,7 +1724,12 @@
         "matches": "{{matched}} de {{total}}",
         "regexBadge": ".*",
         "regexActive": "A consulta está sendo tratada como uma expressão regular",
-        "noMatches": "Nenhuma entrada corresponde à sua busca."
+        "noMatches": "Nenhuma entrada corresponde à sua busca.",
+        "hits": "Ocorrências: {{count}}",
+        "hitsTitle": "Quantas vezes a pesquisa aparece nas gravações mostradas",
+        "words": "Cada palavra:",
+        "wordsTitle": "Quantas vezes cada palavra aparece sozinha nas gravações mostradas",
+        "wordHits": "{{word}}: {{count}}"
       },
       "transcribeAgain": "Transcribe this recording (again) with your dictation model",
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
@@ -1761,7 +1766,14 @@
           "2to5m": "2–5 min",
           "5to10m": "5–10 min",
           "over10m": "Mais de 10 min"
-        }
+        },
+        "sort": {
+          "newest": "Mais recentes",
+          "oldest": "Mais antigas",
+          "hits": "Mais ocorrências"
+        },
+        "shortPreviews": "Pré-visualizações curtas",
+        "shortPreviewsHint": "Mostrar algumas linhas de cada gravação (à volta da primeira ocorrência ao pesquisar) em vez do texto completo"
       },
       "menu": {
         "more": "Mais ações",
@@ -2679,6 +2691,10 @@
       "localSpeakers": {
         "title": "Falantes neste PC",
         "description": "Baixe o modelo de falantes da NVIDIA (o mesmo que o servidor STT usa) em Configurações avançadas › Falantes e saiba quem disse o quê sem servidor: no Histórico ou após cada gravação."
+      },
+      "historySearch": {
+        "title": "Texto completo e número de ocorrências na pesquisa do histórico",
+        "description": "A pesquisa no histórico volta a mostrar o texto completo de cada gravação, com cada ocorrência realçada, e quantas há: no total, em cada gravação e, com várias palavras, por palavra. Ordene por \"Mais ocorrências\" para ver primeiro os melhores resultados, ou marque Pré-visualizações curtas para ver só algumas linhas."
       }
     },
     "installed": "Instalada"

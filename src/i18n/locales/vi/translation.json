@@ -1724,7 +1724,12 @@
         "matches": "{{matched}} trong {{total}}",
         "regexBadge": ".*",
         "regexActive": "Truy vấn đang được xử lý như một biểu thức chính quy",
-        "noMatches": "Không có mục nào khớp với tìm kiếm của bạn."
+        "noMatches": "Không có mục nào khớp với tìm kiếm của bạn.",
+        "hits": "Số lần khớp: {{count}}",
+        "hitsTitle": "Số lần tìm thấy nội dung tìm kiếm trong các bản ghi đang hiển thị",
+        "words": "Từng từ:",
+        "wordsTitle": "Số lần tìm thấy riêng từng từ trong các bản ghi đang hiển thị",
+        "wordHits": "{{word}}: {{count}}"
       },
       "transcribeAgain": "Transcribe this recording (again) with your dictation model",
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
@@ -1761,7 +1766,14 @@
           "2to5m": "2–5 phút",
           "5to10m": "5–10 phút",
           "over10m": "Trên 10 phút"
-        }
+        },
+        "sort": {
+          "newest": "Mới nhất",
+          "oldest": "Cũ nhất",
+          "hits": "Khớp nhiều nhất"
+        },
+        "shortPreviews": "Xem trước ngắn",
+        "shortPreviewsHint": "Chỉ hiện vài dòng của mỗi bản ghi (khi tìm kiếm thì quanh lần khớp đầu tiên) thay vì toàn bộ văn bản"
       },
       "menu": {
         "more": "Thao tác khác",
@@ -2679,6 +2691,10 @@
       "localSpeakers": {
         "title": "Người nói trên PC này",
         "description": "Tải mô hình người nói của NVIDIA (mô hình máy chủ STT sử dụng) trong Cài đặt nâng cao › Người nói, và phân biệt ai đã nói gì mà không cần máy chủ: trong Lịch sử hoặc sau mỗi bản ghi."
+      },
+      "historySearch": {
+        "title": "Toàn bộ văn bản và số lần khớp khi tìm trong Lịch sử",
+        "description": "Tìm kiếm trong Lịch sử lại hiện toàn bộ văn bản của mỗi bản ghi, đánh dấu mọi chỗ khớp, và cho biết số lần khớp: tổng cộng, trong từng bản ghi và, với nhiều từ, cho từng từ. Sắp xếp theo \"Khớp nhiều nhất\" để thấy kết quả tốt nhất trước, hoặc chọn Xem trước ngắn để chỉ xem vài dòng."
       }
     },
     "installed": "Đã cài"

@@ -1724,7 +1724,12 @@
         "matches": "{{matched}} / {{total}}",
         "regexBadge": ".*",
         "regexActive": "查询将被当作正则表达式处理",
-        "noMatches": "没有条目符合您的搜索条件。"
+        "noMatches": "没有条目符合您的搜索条件。",
+        "hits": "命中：{{count}}",
+        "hitsTitle": "搜索内容在所列录音中出现的次数",
+        "words": "每个词：",
+        "wordsTitle": "每个词单独在所列录音中出现的次数",
+        "wordHits": "{{word}}：{{count}}"
       },
       "transcribeAgain": "Transcribe this recording (again) with your dictation model",
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
@@ -1761,7 +1766,14 @@
           "2to5m": "2–5 分钟",
           "5to10m": "5–10 分钟",
           "over10m": "超过 10 分钟"
-        }
+        },
+        "sort": {
+          "newest": "最新优先",
+          "oldest": "最早优先",
+          "hits": "命中最多"
+        },
+        "shortPreviews": "简短预览",
+        "shortPreviewsHint": "只显示每条录音的几行（搜索时显示第一个命中附近）而不是全文"
       },
       "menu": {
         "more": "更多操作",
@@ -2679,6 +2691,10 @@
       "localSpeakers": {
         "title": "在这台电脑上区分说话人",
         "description": "在 高级设置 › 说话人 中下载 NVIDIA 的说话人模型（即 STT 服务器使用的模型），无需服务器即可区分谁说了什么：在历史记录中，或在每次录音后。"
+      },
+      "historySearch": {
+        "title": "历史记录搜索显示全文和命中次数",
+        "description": "在历史记录中搜索时，会重新显示每条录音的全文并标出所有命中，同时显示命中次数：总数、每条录音的次数，以及多个词时每个词的次数。按“命中最多”排序可让最匹配的录音排在最前；勾选“简短预览”则只显示几行。"
       }
     },
     "installed": "已安装"

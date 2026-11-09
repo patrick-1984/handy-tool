@@ -1724,7 +1724,12 @@
         "matches": "{{matched}} de {{total}}",
         "regexBadge": ".*",
         "regexActive": "La consulta se está tratando como una expresión regular",
-        "noMatches": "Ninguna entrada coincide con tu búsqueda."
+        "noMatches": "Ninguna entrada coincide con tu búsqueda.",
+        "hits": "Coincidencias: {{count}}",
+        "hitsTitle": "Cuántas veces aparece la búsqueda en las grabaciones mostradas",
+        "words": "Cada palabra:",
+        "wordsTitle": "Cuántas veces aparece cada palabra por separado en las grabaciones mostradas",
+        "wordHits": "{{word}}: {{count}}"
       },
       "transcribeAgain": "Transcribe this recording (again) with your dictation model",
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
@@ -1761,7 +1766,14 @@
           "2to5m": "2–5 min",
           "5to10m": "5–10 min",
           "over10m": "Más de 10 min"
-        }
+        },
+        "sort": {
+          "newest": "Más recientes",
+          "oldest": "Más antiguas",
+          "hits": "Más coincidencias"
+        },
+        "shortPreviews": "Vistas previas cortas",
+        "shortPreviewsHint": "Mostrar unas pocas líneas de cada grabación (alrededor de la primera coincidencia al buscar) en lugar del texto completo"
       },
       "menu": {
         "more": "Más acciones",
@@ -2679,6 +2691,10 @@
       "localSpeakers": {
         "title": "Hablantes en este PC",
         "description": "Descarga el modelo de hablantes de NVIDIA (el que usa el servidor STT) en Ajustes avanzados › Hablantes y distingue quién dijo qué sin servidor: en el Historial o después de cada toma."
+      },
+      "historySearch": {
+        "title": "Texto completo y número de coincidencias en la búsqueda del historial",
+        "description": "La búsqueda del historial vuelve a mostrar el texto completo de cada grabación, con cada coincidencia resaltada, y cuántas hay: en total, en cada grabación y, con varias palabras, por palabra. Ordena por «Más coincidencias» para ver primero los mejores resultados, o marca Vistas previas cortas para ver solo unas líneas."
       }
     },
     "installed": "Instalada"
