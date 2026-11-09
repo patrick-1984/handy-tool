@@ -1,0 +1,238 @@
+<!doctype html>
+<!-- A made-up desktop for the README captures: an app to type into, and the
+     real recording pill (src/overlay) in its own frame, as on Windows. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Desktop</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        overflow: hidden;
+      }
+      body {
+        background:
+          radial-gradient(1200px 600px at 20% 10%, #2b6f86 0%, transparent 60%),
+          radial-gradient(900px 600px at 90% 90%, #3b3f7a 0%, transparent 60%),
+          #14202b;
+      }
+      .win {
+        position: absolute;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+        overflow: hidden;
+        transition:
+          box-shadow 200ms,
+          transform 250ms;
+      }
+      .win.front {
+        box-shadow:
+          0 0 0 2px #29a3c8,
+          0 18px 50px rgba(0, 0, 0, 0.45);
+      }
+      .bar {
+        height: 34px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 12px;
+        background: #f3f5f7;
+        border-bottom: 1px solid #e3e7eb;
+        font-size: 13px;
+        color: #445;
+      }
+      .dot {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: #d0d5da;
+      }
+      .app-icon {
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
+      }
+      .mail {
+        left: 200px;
+        top: 50px;
+        width: 560px;
+        height: 400px;
+      }
+      .field {
+        display: flex;
+        gap: 10px;
+        padding: 9px 16px;
+        border-bottom: 1px solid #eef1f4;
+        font-size: 14px;
+        color: #223;
+      }
+      .field b {
+        width: 58px;
+        color: #8a94a0;
+        font-weight: 500;
+      }
+      .body {
+        padding: 14px 16px;
+        font-size: 15px;
+        line-height: 1.55;
+        color: #1d2733;
+        white-space: pre-wrap;
+      }
+      .caret {
+        display: inline-block;
+        width: 2px;
+        height: 18px;
+        background: #1d2733;
+        vertical-align: -3px;
+        animation: blink 1s steps(1) infinite;
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+      .new {
+        background: rgba(41, 163, 200, 0.18);
+        border-radius: 3px;
+        transition: background 1.2s;
+      }
+      .chat {
+        left: 520px;
+        top: 150px;
+        width: 380px;
+        height: 330px;
+      }
+      .msgs {
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        font-size: 13.5px;
+      }
+      .msg {
+        max-width: 80%;
+        padding: 7px 11px;
+        border-radius: 12px;
+        background: #eef1f5;
+        color: #1d2733;
+      }
+      .msg.me {
+        align-self: flex-end;
+        background: #2b8fb0;
+        color: #fff;
+      }
+      .input {
+        position: absolute;
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        min-height: 36px;
+        border: 1px solid #d5dbe1;
+        border-radius: 18px;
+        padding: 8px 14px;
+        font-size: 13.5px;
+        color: #1d2733;
+        box-sizing: border-box;
+      }
+      .input.anchored {
+        border-color: #29a3c8;
+        box-shadow: 0 0 0 3px rgba(41, 163, 200, 0.25);
+      }
+      .badge {
+        position: absolute;
+        right: 14px;
+        bottom: 54px;
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 10px;
+        background: #29a3c8;
+        color: #fff;
+        opacity: 0;
+        transition: opacity 250ms;
+      }
+      .badge.on {
+        opacity: 1;
+      }
+      #pill {
+        position: absolute;
+        left: 50%;
+        bottom: 26px;
+        transform: translateX(-50%);
+        border: 0;
+        background: transparent;
+      }
+      .keys {
+        position: absolute;
+        left: 50%;
+        bottom: 110px;
+        transform: translateX(-50%) scale(0.9);
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        opacity: 0;
+        transition:
+          opacity 180ms,
+          transform 180ms;
+        color: #fff;
+        font-size: 18px;
+        padding: 10px 14px;
+        border-radius: 14px;
+        background: rgba(15, 24, 33, 0.88);
+        z-index: 10;
+      }
+      .keys.on {
+        opacity: 1;
+        transform: translateX(-50%) scale(1);
+      }
+      .key {
+        min-width: 34px;
+        padding: 6px 12px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.95);
+        color: #14202b;
+        font-weight: 600;
+        font-size: 16px;
+        text-align: center;
+        box-shadow: 0 3px 0 #9aa7b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="win mail front" id="mail">
+      <div class="bar">
+        <span class="dot"></span><span class="dot"></span
+        ><span class="dot"></span>
+        <span style="margin-left: 8px">New message — Mail</span>
+      </div>
+      <div class="field"><b>To</b><span>team@example.com</span></div>
+      <div class="field"><b>Subject</b><span>Design review</span></div>
+      <div class="body" id="mailBody">
+        Hi all,
+
+        <span id="mailText"></span><span class="caret" id="mailCaret"></span>
+      </div>
+    </div>
+    <div class="win chat" id="chat" style="display: none">
+      <div class="bar">
+        <span class="dot"></span><span class="dot"></span
+        ><span class="dot"></span>
+        <span style="margin-left: 8px">#launch — Chat</span>
+      </div>
+      <div class="msgs" id="msgs">
+        <div class="msg">Is the release note ready?</div>
+        <div class="msg">We need it before 5 pm.</div>
+      </div>
+      <div class="badge" id="badge">Anchor 1</div>
+      <div class="input" id="chatInput">
+        <span id="chatText"></span
+        ><span class="caret" id="chatCaret" style="display: none"></span>
+      </div>
+    </div>
+    <div class="keys" id="keys"></div>
+    <iframe id="pill" title="pill"></iframe>
+  </body>
+</html>
