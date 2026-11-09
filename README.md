@@ -22,6 +22,50 @@ the release notes and every file.
 [la-deb]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-linux-arm64.deb
 [la-ai]: https://github.com/patrick-1984/handy-tool/releases/latest/download/Handy-Tool-linux-arm64.AppImage
 
+## See it in action
+
+Five everyday stories, step by step. The pages are the app's own; the texts and models are made up.
+
+### Dictate into any app
+
+Press **Ctrl+Space**, speak, press it again: the pill shows your voice, then how far the
+transcription is, and the text lands where you were typing.
+[More](docs/features.md#press-one-key-and-speak)
+
+![Dictating into a mail: the shortcut, the recording pill with its sound bars, the transcription progress, and the pasted text](docs/media/dictate.gif)
+
+### Find it again in History
+
+Search shows each recording's whole text with every hit marked, how many hits there are, and sorts by
+the most hits; copy a take, or paste it again anywhere.
+[More](docs/features.md#what-did-i-dictate-last-tuesday)
+
+![History: searching for a word, the hit counts, sorting by Most hits and copying a recording](docs/media/history.gif)
+
+### Choose the model: on this PC or online
+
+Download a local model once (Whisper, Parakeet, Moonshine, SenseVoice), or use an online one:
+OpenRouter, any OpenAI-compatible API, or your own STT server.
+[More](docs/features.md#pick-the-engine-that-fits-the-machine)
+
+![Models: downloading Whisper Large V3, which becomes the dictation model, then switching to OpenRouter Transcription](docs/media/models.gif)
+
+### Send it to the right field with the Jumper
+
+Anchor a chat box once; dictate from any window with **Transcribe & Submit**, and Handy Tool jumps
+back to the anchor, pastes and sends.
+[More](docs/features.md#a-guided-setup-for-the-jumper)
+
+![Jumper: anchoring a chat box, dictating from a mail window, and the message arriving in the chat](docs/media/jumper.gif)
+
+### Compare AI models on your own prompt
+
+More Tools › Model Testing sends one prompt to every model you tick, online or local, and lays the
+answers out side by side with tokens, cost and time.
+[More](docs/features.md#section-model-testing)
+
+![Model Testing: a prompt, four models selected, and their answers with tokens, cost and time](docs/media/compare.gif)
+
 ## Features
 
 The pages you use most sit in the sidebar. The tools have an entry of their own, **More Tools**, and

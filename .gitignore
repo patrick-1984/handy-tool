@@ -94,3 +94,6 @@ credentials.json
 # Build and test output that accumulates in the working tree
 *.log
 sac-loop.*
+
+# README capture data, generated from src/bindings.ts
+scripts/readme-media/defaults.json
