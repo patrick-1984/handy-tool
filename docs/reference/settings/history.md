@@ -14,7 +14,7 @@ Catalog: [Open the folder the audio actually lives in](../../features.md#open-th
 
 `History › Recordings › Search history (text or regex)...`
 
-Filters the visible entries using text or a regular expression. **Default:** empty query.
+Filters the visible entries using text or a regular expression. Each recording found shows its whole text with every hit highlighted and its own `Hits: N`; next to the box, `N of M` and the total `Hits: N`; a search of several words adds `Each word:` with each word's hits. **Default:** empty query.
 
 Catalog: [What did I dictate last Tuesday?](../../features.md#what-did-i-dictate-last-tuesday).
 
@@ -28,7 +28,7 @@ Catalog: [Narrow History to favorites, a time and a length](../../features.md#na
 
 ### Time filter
 
-`History › Recordings` — the first list next to the search box, without a label.
+`History › Recordings` — the first list under the search box, without a label.
 
 `Any time`, `Last 3 hours`, `Last 12 hours`, `Last 24 hours`, `Last 7 days`, `Last 30 days` or `Custom dates…`, which adds a From and a To date. **Default:** `Any time`.
 
@@ -36,11 +36,27 @@ Catalog: [Narrow History to favorites, a time and a length](../../features.md#na
 
 ### Length filter
 
-`History › Recordings` — the second list next to the search box, without a label.
+`History › Recordings` — the second list under the search box, without a label.
 
 `Any length`, `Under 10 s`, `10–30 s`, `30 s–1 min`, `1–2 min`, `2–5 min`, `5–10 min` or `Over 10 min`. **Default:** `Any length`.
 
 Catalog: [Narrow History to favorites, a time and a length](../../features.md#narrow-history-by-favorites-date-and-length).
+
+### Order
+
+`History › Recordings` — the third list under the search box, without a label.
+
+`Newest first`, `Oldest first` or `Most hits` (only with a search; equal counts newest first). **Default:** `Newest first`.
+
+Catalog: [What did I dictate last Tuesday?](../../features.md#what-did-i-dictate-last-tuesday).
+
+### Short previews
+
+`History › Recordings › Short previews`
+
+Shows only a few lines of each recording instead of its whole text; with a search, the part around the first hit. Remembered on this PC. **Default:** Off.
+
+Catalog: [What did I dictate last Tuesday?](../../features.md#what-did-i-dictate-last-tuesday).
 
 ### Select to combine
 

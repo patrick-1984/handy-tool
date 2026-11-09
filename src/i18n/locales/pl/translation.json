@@ -1723,7 +1723,18 @@
         "matches": "{{matched}} z {{total}}",
         "regexBadge": ".*",
         "regexActive": "Zapytanie jest traktowane jako wyrażenie regularne",
-        "noMatches": "Brak wpisów pasujących do wyszukiwania."
+        "noMatches": "Brak wpisów pasujących do wyszukiwania.",
+        "hits": "Trafienia: {{count}}",
+        "hitsTitle": "Ile razy wyszukiwana fraza występuje w wyświetlonych nagraniach",
+        "words": "Każde słowo:",
+        "wordsTitle": "Ile razy każde słowo osobno występuje w wyświetlonych nagraniach",
+        "wordHits": "{{word}}: {{count}}",
+        "foundIn": {
+          "plain": "Znaleziono w tekście bez mówców:",
+          "speakers": "Znaleziono w tekście z mówcami:",
+          "postProcessed": "Znaleziono w tekście po przetworzeniu:",
+          "title": "Znaleziono w tytule:"
+        }
       },
       "loadError": "Nie udało się wczytać historii: {{error}}",
       "transcribeAgain": "Przetranskrybuj to nagranie (ponownie) modelem dyktowania",
@@ -1761,7 +1772,14 @@
           "2to5m": "2–5 min",
           "5to10m": "5–10 min",
           "over10m": "Powyżej 10 min"
-        }
+        },
+        "sort": {
+          "newest": "Najnowsze",
+          "oldest": "Najstarsze",
+          "hits": "Najwięcej trafień"
+        },
+        "shortPreviews": "Krótkie podglądy",
+        "shortPreviewsHint": "Pokaż kilka linii każdego nagrania (wokół pierwszego trafienia podczas wyszukiwania) zamiast całego tekstu"
       },
       "menu": {
         "more": "Więcej akcji",
@@ -2679,6 +2697,10 @@
       "localSpeakers": {
         "title": "Mówcy na tym komputerze",
         "description": "Pobierz model mówców od NVIDIA (ten, którego używa serwer STT) w Ustawienia zaawansowane › Mówcy i rozpoznawaj, kto co powiedział, bez serwera: w Historii albo po każdym nagraniu."
+      },
+      "historySearch": {
+        "title": "Cały tekst i liczba trafień w wyszukiwaniu Historii",
+        "description": "Wyszukiwanie w Historii znów pokazuje cały tekst każdego nagrania z zaznaczonymi trafieniami oraz ich liczbę: łącznie, w każdym nagraniu i – przy kilku słowach – dla każdego słowa. Sortuj według „Najwięcej trafień”, aby zobaczyć najlepsze dopasowania na górze, albo zaznacz Krótkie podglądy, aby widzieć tylko kilka linii."
       }
     },
     "installed": "Zainstalowana"

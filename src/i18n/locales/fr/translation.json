@@ -1724,7 +1724,18 @@
         "matches": "{{matched}} sur {{total}}",
         "regexBadge": ".*",
         "regexActive": "La requête est traitée comme une expression régulière",
-        "noMatches": "Aucune entrée ne correspond à votre recherche."
+        "noMatches": "Aucune entrée ne correspond à votre recherche.",
+        "hits": "Occurrences : {{count}}",
+        "hitsTitle": "Nombre de fois où la recherche apparaît dans les enregistrements affichés",
+        "words": "Chaque mot :",
+        "wordsTitle": "Nombre de fois où chaque mot apparaît seul dans les enregistrements affichés",
+        "wordHits": "{{word}}: {{count}}",
+        "foundIn": {
+          "plain": "Trouvé dans le texte sans intervenants :",
+          "speakers": "Trouvé dans le texte avec intervenants :",
+          "postProcessed": "Trouvé dans le texte post-traité :",
+          "title": "Trouvé dans le titre :"
+        }
       },
       "transcribeAgain": "Transcribe this recording (again) with your dictation model",
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
@@ -1761,7 +1772,14 @@
           "2to5m": "2–5 min",
           "5to10m": "5–10 min",
           "over10m": "Plus de 10 min"
-        }
+        },
+        "sort": {
+          "newest": "Plus récents",
+          "oldest": "Plus anciens",
+          "hits": "Plus d'occurrences"
+        },
+        "shortPreviews": "Aperçus courts",
+        "shortPreviewsHint": "Afficher quelques lignes de chaque enregistrement (autour de la première occurrence lors d'une recherche) au lieu du texte entier"
       },
       "menu": {
         "more": "Plus d'actions",
@@ -2679,6 +2697,10 @@
       "localSpeakers": {
         "title": "Locuteurs sur ce PC",
         "description": "Téléchargez le modèle de locuteurs de NVIDIA (celui qu'utilise le serveur STT) dans Paramètres avancés › Locuteurs, et identifiez qui a dit quoi sans serveur : dans l'Historique ou après chaque prise."
+      },
+      "historySearch": {
+        "title": "Texte entier et nombre d'occurrences dans la recherche de l'historique",
+        "description": "La recherche dans l'historique affiche de nouveau le texte entier de chaque enregistrement, chaque occurrence surlignée, et leur nombre : au total, par enregistrement et, pour plusieurs mots, par mot. Triez par « Plus d'occurrences » pour voir les meilleurs résultats en premier, ou cochez Aperçus courts pour quelques lignes seulement."
       }
     },
     "installed": "Installée"

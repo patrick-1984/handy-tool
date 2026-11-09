@@ -1724,7 +1724,18 @@
         "matches": "{{total}} 중 {{matched}}",
         "regexBadge": ".*",
         "regexActive": "쿼리가 정규식으로 처리되고 있습니다",
-        "noMatches": "검색과 일치하는 항목이 없습니다."
+        "noMatches": "검색과 일치하는 항목이 없습니다.",
+        "hits": "일치: {{count}}",
+        "hitsTitle": "표시된 녹음에서 검색어가 발견된 횟수",
+        "words": "각 단어:",
+        "wordsTitle": "표시된 녹음에서 각 단어가 따로 발견된 횟수",
+        "wordHits": "{{word}}: {{count}}",
+        "foundIn": {
+          "plain": "화자 없는 텍스트에서 찾음:",
+          "speakers": "화자가 있는 텍스트에서 찾음:",
+          "postProcessed": "후처리된 텍스트에서 찾음:",
+          "title": "제목에서 찾음:"
+        }
       },
       "transcribeAgain": "Transcribe this recording (again) with your dictation model",
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
@@ -1761,7 +1772,14 @@
           "2to5m": "2–5분",
           "5to10m": "5–10분",
           "over10m": "10분 초과"
-        }
+        },
+        "sort": {
+          "newest": "최신순",
+          "oldest": "오래된순",
+          "hits": "일치 많은 순"
+        },
+        "shortPreviews": "짧은 미리보기",
+        "shortPreviewsHint": "전체 텍스트 대신 각 녹음의 몇 줄만 표시합니다(검색 중에는 첫 일치 주변)"
       },
       "menu": {
         "more": "추가 작업",
@@ -2679,6 +2697,10 @@
       "localSpeakers": {
         "title": "이 PC에서 화자 구분",
         "description": "고급 설정 › 화자에서 NVIDIA의 화자 모델(STT 서버가 사용하는 모델)을 다운로드하면 서버 없이 누가 무엇을 말했는지 구분할 수 있습니다. 히스토리에서, 또는 녹음할 때마다."
+      },
+      "historySearch": {
+        "title": "기록 검색에서 전체 텍스트와 일치 횟수 표시",
+        "description": "기록 검색에서 각 녹음의 전체 텍스트가 다시 표시되고 모든 일치 부분이 강조됩니다. 일치 횟수도 전체, 녹음별, (여러 단어인 경우) 단어별로 표시됩니다. '일치 많은 순'으로 정렬하면 가장 잘 맞는 녹음이 위에 오고, 몇 줄만 보려면 '짧은 미리보기'를 켜세요."
       }
     },
     "installed": "설치됨"

@@ -37,6 +37,12 @@ interface Item {
  */
 const RELEASES: { version: string; items: Item[] }[] = [
   {
+    version: "2.6.0",
+    items: [
+      { key: "historySearch", section: "history", historyTab: "recordings" },
+    ],
+  },
+  {
     version: "2.5.2",
     items: [
       {

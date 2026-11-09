@@ -1724,7 +1724,18 @@
         "matches": "{{matched}} / {{total}}",
         "regexBadge": ".*",
         "regexActive": "查詢字串將視為正規表達式處理",
-        "noMatches": "沒有符合搜尋條件的項目"
+        "noMatches": "沒有符合搜尋條件的項目",
+        "hits": "命中：{{count}}",
+        "hitsTitle": "搜尋內容在所列錄音中出現的次數",
+        "words": "每個詞：",
+        "wordsTitle": "每個詞單獨在所列錄音中出現的次數",
+        "wordHits": "{{word}}：{{count}}",
+        "foundIn": {
+          "plain": "在不含說話者的文字中找到：",
+          "speakers": "在含說話者的文字中找到：",
+          "postProcessed": "在後處理文字中找到：",
+          "title": "在標題中找到："
+        }
       },
       "transcribeAgain": "Transcribe this recording (again) with your dictation model",
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
@@ -1761,7 +1772,14 @@
           "2to5m": "2–5 分鐘",
           "5to10m": "5–10 分鐘",
           "over10m": "超過 10 分鐘"
-        }
+        },
+        "sort": {
+          "newest": "最新優先",
+          "oldest": "最舊優先",
+          "hits": "命中最多"
+        },
+        "shortPreviews": "簡短預覽",
+        "shortPreviewsHint": "只顯示每段錄音的幾行（搜尋時顯示第一個命中附近）而非全文"
       },
       "menu": {
         "more": "更多動作",
@@ -2679,6 +2697,10 @@
       "localSpeakers": {
         "title": "在這台電腦上區分說話者",
         "description": "在 進階設定 › 說話者 中下載 NVIDIA 的說話者模型（即 STT 伺服器使用的模型），無需伺服器即可區分誰說了什麼：在歷史紀錄中，或在每次錄音後。"
+      },
+      "historySearch": {
+        "title": "歷史記錄搜尋顯示全文與命中次數",
+        "description": "在歷史記錄中搜尋時，會重新顯示每段錄音的全文並標出所有命中，同時顯示命中次數：總數、每段錄音的次數，以及多個詞時每個詞的次數。依「命中最多」排序可讓最相符的錄音排在最前；勾選「簡短預覽」則只顯示幾行。"
       }
     },
     "installed": "已安裝"

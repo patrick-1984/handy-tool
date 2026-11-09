@@ -46,9 +46,14 @@ import { HistoryFiltersBar } from "./HistoryFiltersBar";
 import { CombineDialog } from "./CombineDialog";
 import {
   NO_FILTER,
+  entryHits,
   isNarrowed,
+  otherHitText,
+  rowHits,
   matchesFilter,
+  sortEntries,
   type HistoryFilter,
+  type SortOrder,
 } from "./historyFilters";
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
@@ -105,6 +110,8 @@ const detailParts = (e: HistoryEntry): string[] => {
 import {
   buildMatcher,
   highlightSegments,
+  literalMatcher,
+  queryWords,
   snippetAroundFirstMatch,
   type SearchMatcher,
 } from "@/utils/historySearch";
@@ -133,6 +140,16 @@ const OpenRecordingsButton: React.FC<OpenRecordingsButtonProps> = ({
 /** Copy, star and "⋯" on a recording: icon buttons without a frame. */
 const ICON_BUTTON =
   "inline-flex items-center justify-center h-7 w-7 rounded-md text-text-secondary hover:bg-hover hover:text-text transition-colors cursor-pointer";
+
+/** "Short previews" is remembered on this PC (off by default: full text). */
+const SHORT_PREVIEWS_KEY = "handy.history.shortPreviews";
+const readShortPreviews = (): boolean => {
+  try {
+    return window.localStorage.getItem(SHORT_PREVIEWS_KEY) === "1";
+  } catch {
+    return false;
+  }
+};
 
 /** Entries drawn at a time on the Recordings tab. */
 const HISTORY_PAGE = 20;
@@ -204,6 +221,16 @@ export const HistorySettings: React.FC = () => {
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filter, setFilter] = useState<HistoryFilter>(NO_FILTER);
+  const [sort, setSort] = useState<SortOrder>("newest");
+  const [shortPreviews, setShortPreviewsState] = useState(readShortPreviews);
+  const setShortPreviews = (next: boolean) => {
+    setShortPreviewsState(next);
+    try {
+      window.localStorage.setItem(SHORT_PREVIEWS_KEY, next ? "1" : "0");
+    } catch {
+      // Not remembered; it still applies now.
+    }
+  };
   // Recordings picked for Combine, in the order they were clicked.
   const [selected, setSelected] = useState<number[]>([]);
   const [combineOpen, setCombineOpen] = useState(false);
@@ -234,6 +261,40 @@ export const HistorySettings: React.FC = () => {
     return historyEntries.filter((entry) => matchesFilter(entry, f, now));
   }, [historyEntries, matcher, filter, tab]);
 
+  // How often the search is found in each listed recording, in all of them,
+  // and (for a search of several words) each word on its own.
+  const hits = useMemo(() => {
+    if (!matcher) return null;
+    const byId = new Map<number, number>();
+    for (const entry of filteredEntries) {
+      byId.set(entry.id, entryHits(entry, matcher));
+    }
+    return byId;
+  }, [filteredEntries, matcher]);
+  const totalHits = useMemo(
+    () => (hits ? [...hits.values()].reduce((a, b) => a + b, 0) : 0),
+    [hits],
+  );
+  const wordHits = useMemo(
+    () =>
+      queryWords(debouncedSearch).map((word) => {
+        const m = literalMatcher(word);
+        return {
+          word,
+          count: filteredEntries.reduce((n, e) => n + entryHits(e, m), 0),
+        };
+      }),
+    [debouncedSearch, filteredEntries],
+  );
+  const sortedEntries = useMemo(
+    () => sortEntries(filteredEntries, sort, hits),
+    [filteredEntries, sort, hits],
+  );
+  // "Most hits" needs a search: clearing it goes back to newest first.
+  useEffect(() => {
+    if (!matcher && sort === "hits") setSort("newest");
+  }, [matcher, sort]);
+
   // A recording deleted meanwhile leaves the selection.
   useEffect(() => {
     setSelected((ids) =>
@@ -248,8 +309,16 @@ export const HistorySettings: React.FC = () => {
 
   // Drawing every entry at once (each with its own audio player) made the page
   // lag; draw a page at a time and add the next as the list nears its end.
-  const [shownCount, setShownCount] = useState(HISTORY_PAGE);
-  useEffect(() => setShownCount(HISTORY_PAGE), [matcher, filter, tab]);
+  // A new search, filter, tab or order starts at the first page in the
+  // same render (an effect would first draw the old count of full texts).
+  const listKey = `${debouncedSearch}|${JSON.stringify(filter)}|${tab}|${sort}`;
+  const [paging, setPaging] = useState({ key: listKey, count: HISTORY_PAGE });
+  const shownCount = paging.key === listKey ? paging.count : HISTORY_PAGE;
+  const setShownCount = (next: (n: number) => number) =>
+    setPaging((p) => ({
+      key: listKey,
+      count: next(p.key === listKey ? p.count : HISTORY_PAGE),
+    }));
   const moreRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = moreRef.current;
@@ -264,7 +333,7 @@ export const HistorySettings: React.FC = () => {
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [filteredEntries, shownCount, tab]);
+  }, [sortedEntries, shownCount, tab]);
 
   const loadHistoryEntries = useCallback(async () => {
     try {
@@ -393,11 +462,12 @@ export const HistorySettings: React.FC = () => {
   } else {
     body = (
       <div className="flex flex-col gap-3">
-        {filteredEntries.slice(0, shownCount).map((entry) => (
+        {sortedEntries.slice(0, shownCount).map((entry) => (
           <HistoryEntryComponent
             key={entry.id}
             entry={entry}
             matcher={matcher}
+            shortPreview={shortPreviews}
             selectedIndex={selected.indexOf(entry.id)}
             onToggleSelect={() => toggleSelect(entry.id)}
             onToggleSaved={() => toggleSaved(entry.id)}
@@ -406,7 +476,7 @@ export const HistorySettings: React.FC = () => {
             deleteAudio={deleteAudioEntry}
           />
         ))}
-        {shownCount < filteredEntries.length && (
+        {shownCount < sortedEntries.length && (
           <div ref={moreRef} className="h-px" aria-hidden />
         )}
       </div>
@@ -456,47 +526,80 @@ export const HistorySettings: React.FC = () => {
             />
           </div>
           {showSearchBar && (
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="relative flex-1 min-w-[220px] max-w-md">
-                <Search className="absolute start-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-secondary pointer-events-none" />
-                <input
-                  type="text"
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  placeholder={t("settings.history.search.placeholder")}
-                  className="w-full h-8 rounded-md border border-control-border border-b-control-bottom bg-control ps-8 pe-8 text-sm placeholder:text-text-secondary hover:bg-control-hover focus:outline-none focus:bg-control focus:shadow-[inset_0_-2px_0_var(--color-accent)]"
-                />
-                {searchInput && (
-                  <button
-                    onClick={() => setSearchInput("")}
-                    className="absolute end-2 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text cursor-pointer"
-                    title={t("settings.history.search.clear")}
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1 min-w-0">
+                  <Search className="absolute start-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-secondary pointer-events-none" />
+                  <input
+                    type="text"
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    placeholder={t("settings.history.search.placeholder")}
+                    className="w-full h-8 rounded-md border border-control-border border-b-control-bottom bg-control ps-8 pe-8 text-sm placeholder:text-text-secondary hover:bg-control-hover focus:outline-none focus:bg-control focus:shadow-[inset_0_-2px_0_var(--color-accent)]"
+                  />
+                  {searchInput && (
+                    <button
+                      onClick={() => setSearchInput("")}
+                      className="absolute end-2 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text cursor-pointer"
+                      title={t("settings.history.search.clear")}
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+                {narrowed && (
+                  <span className="shrink-0 inline-flex items-center gap-1.5 text-xs text-text-secondary whitespace-nowrap tabular-nums">
+                    {t("settings.history.search.matches", {
+                      matched: filteredEntries.length,
+                      total: historyEntries.length,
+                    })}
+                    {matcher && (
+                      <span
+                        className="px-1.5 py-0.5 rounded-sm bg-accent-soft text-accent-text font-medium"
+                        title={t("settings.history.search.hitsTitle")}
+                      >
+                        {t("settings.history.search.hits", {
+                          count: totalHits,
+                        })}
+                      </span>
+                    )}
+                    {matcher?.isRegex && (
+                      <span
+                        className="px-1 py-0.5 rounded-sm bg-accent-soft text-accent-text font-mono"
+                        title={t("settings.history.search.regexActive")}
+                      >
+                        {t("settings.history.search.regexBadge")}
+                      </span>
+                    )}
+                  </span>
                 )}
               </div>
+              {matcher && wordHits.length > 0 && (
+                <div
+                  className="flex flex-wrap items-center gap-1.5 text-xs text-text-secondary"
+                  title={t("settings.history.search.wordsTitle")}
+                >
+                  <span>{t("settings.history.search.words")}</span>
+                  {wordHits.map(({ word, count }) => (
+                    <span
+                      key={word}
+                      className="px-1.5 py-0.5 rounded-sm border border-border tabular-nums"
+                    >
+                      {t("settings.history.search.wordHits", { word, count })}
+                    </span>
+                  ))}
+                </div>
+              )}
               <HistoryFiltersBar
                 filter={filter}
                 onChange={setFilter}
                 showFavorites={tab === "recordings"}
+                sort={sort}
+                onSortChange={setSort}
+                searching={matcher !== null}
+                shortPreviews={shortPreviews}
+                onShortPreviewsChange={setShortPreviews}
               />
-              {narrowed && (
-                <span className="text-xs text-text-secondary whitespace-nowrap">
-                  {t("settings.history.search.matches", {
-                    matched: filteredEntries.length,
-                    total: historyEntries.length,
-                  })}
-                  {matcher?.isRegex && (
-                    <span
-                      className="ms-1.5 px-1 py-0.5 rounded-sm bg-accent-soft text-accent-text font-mono"
-                      title={t("settings.history.search.regexActive")}
-                    >
-                      {t("settings.history.search.regexBadge")}
-                    </span>
-                  )}
-                </span>
-              )}
             </div>
           )}
           {selected.length > 0 && (
@@ -561,6 +664,8 @@ export const HistorySettings: React.FC = () => {
 interface HistoryEntryProps {
   entry: HistoryEntry;
   matcher: SearchMatcher | null;
+  /** A few lines (around the first hit) instead of the whole text. */
+  shortPreview: boolean;
   /** Place in the Combine queue (0-based), or -1 when not selected. */
   selectedIndex: number;
   onToggleSelect: () => void;
@@ -574,9 +679,13 @@ interface HistoryEntryProps {
 const HighlightedText: React.FC<{
   text: string;
   matcher: SearchMatcher | null;
-}> = ({ text, matcher }) => {
+  /** Only the part around the first hit, not the whole text. */
+  cut?: boolean;
+}> = ({ text, matcher, cut = false }) => {
   if (!matcher) return <>{text}</>;
-  const snippet = snippetAroundFirstMatch(text, matcher);
+  const snippet = cut
+    ? snippetAroundFirstMatch(text, matcher)
+    : { text, leadingEllipsis: false, trailingEllipsis: false };
   const segments = highlightSegments(snippet.text, matcher);
   return (
     <>
@@ -676,6 +785,7 @@ const NameField: React.FC<{
 const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
   entry,
   matcher,
+  shortPreview,
   selectedIndex,
   onToggleSelect,
   onToggleSaved,
@@ -697,6 +807,10 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
   const shownSpeakers = speakerText !== null && showSpeakers;
   const shownText = shownSpeakers ? speakerText : entry.transcription_text;
   const noText = entry.transcription_text.trim() === "";
+  // With a search: the hits in what this row shows (follows Text/Speakers),
+  // and the other text it was found in when the shown one has none.
+  const hits = matcher ? rowHits(entry, matcher, shownText) : null;
+  const otherHit = matcher ? otherHitText(entry, matcher, shownText) : null;
   // The audio is still there (History's clean-up can delete it, keeping the text).
   const hasAudio = entry.audio_purged_at == null;
   const selected = selectedIndex >= 0;
@@ -865,6 +979,11 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
             setEditing={setNaming}
             matcher={matcher}
           />
+          {hits !== null && (
+            <span className="px-1.5 py-0.5 rounded-sm bg-accent-soft text-accent-text text-[11px] font-medium tabular-nums">
+              {t("settings.history.search.hits", { count: hits })}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-1 shrink-0">
           {transcribing !== null && (
@@ -938,11 +1057,29 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
             </div>
           )}
           <p
-            className={`text-sm select-text cursor-text ${shownSpeakers ? "whitespace-pre-line" : ""}`}
+            className={`text-sm select-text cursor-text ${shownSpeakers ? "whitespace-pre-line" : ""} ${shortPreview && !matcher ? "line-clamp-3" : ""}`}
           >
-            <HighlightedText text={shownText} matcher={matcher} />
+            <HighlightedText
+              text={shownText}
+              matcher={matcher}
+              cut={shortPreview}
+            />
           </p>
         </>
+      )}
+      {otherHit && (
+        <div className="rounded-md border border-border px-2.5 py-1.5">
+          <p className="text-xs text-text-secondary">
+            {t(`settings.history.search.foundIn.${otherHit.field}`)}
+          </p>
+          <p className="text-sm select-text cursor-text whitespace-pre-line">
+            <HighlightedText
+              text={otherHit.text}
+              matcher={matcher}
+              cut={shortPreview}
+            />
+          </p>
+        </div>
       )}
       {transcribeError && (
         <p className="text-xs text-err-text">

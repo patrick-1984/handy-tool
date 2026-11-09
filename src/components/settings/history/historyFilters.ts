@@ -1,5 +1,9 @@
 import type { HistoryEntry } from "@/bindings";
-import { fieldsMatch, type SearchMatcher } from "@/utils/historySearch";
+import {
+  countMatches,
+  fieldsMatch,
+  type SearchMatcher,
+} from "@/utils/historySearch";
 
 /** When a recording was made. */
 export type DateRange = "any" | "3h" | "12h" | "24h" | "7d" | "30d" | "custom";
@@ -124,4 +128,72 @@ export const matchesFilter = (
     ]);
   }
   return true;
+};
+
+/** The order of the list: by time, or by how often the search is found. */
+export type SortOrder = "newest" | "oldest" | "hits";
+export const SORT_ORDERS: SortOrder[] = ["newest", "oldest", "hits"];
+
+export type HitField = "plain" | "speakers" | "postProcessed" | "title";
+
+/** A recording found only by a text its row does not show right now (the
+ *  other of Text/Speakers, the post-processed text or the title): the first
+ *  such text, so the row can show it. */
+export const otherHitText = (
+  entry: HistoryEntry,
+  m: SearchMatcher,
+  shown: string,
+): { field: HitField; text: string } | null => {
+  if (countMatches(shown, m) > 0) return null;
+  const candidates: [HitField, string | null | undefined][] = [
+    ["plain", entry.transcription_text],
+    ["speakers", entry.diarized_text?.trim()],
+    ["postProcessed", entry.post_processed_text],
+    ["title", entry.title],
+  ];
+  for (const [field, text] of candidates) {
+    if (text && text !== shown && countMatches(text, m) > 0) {
+      return { field, text };
+    }
+  }
+  return null;
+};
+
+/** How many times a search is found in what a row shows: its name, the text
+ *  in view and, when that has none, the other text it was found in. Every
+ *  hit counted is a hit marked. */
+export const rowHits = (
+  entry: HistoryEntry,
+  m: SearchMatcher,
+  shown: string,
+): number => {
+  const other = otherHitText(entry, m, shown);
+  return (
+    countMatches(entry.name, m) +
+    countMatches(shown, m) +
+    (other ? countMatches(other.text, m) : 0)
+  );
+};
+
+/** The hits of a row as it opens (with speakers when it has them). */
+export const entryHits = (entry: HistoryEntry, m: SearchMatcher): number =>
+  rowHits(entry, m, entry.diarized_text?.trim() || entry.transcription_text);
+
+/** The entries in the chosen order; "hits" needs the hit counts (by id) and
+ *  falls back to newest first between equal counts and without a search. */
+export const sortEntries = (
+  entries: HistoryEntry[],
+  order: SortOrder,
+  hits: Map<number, number> | null,
+): HistoryEntry[] => {
+  const newest = (a: HistoryEntry, b: HistoryEntry) =>
+    Number(b.timestamp) - Number(a.timestamp) || b.id - a.id;
+  const sorted = [...entries];
+  if (order === "oldest") return sorted.sort((a, b) => newest(b, a));
+  if (order === "hits" && hits) {
+    return sorted.sort(
+      (a, b) => (hits.get(b.id) ?? 0) - (hits.get(a.id) ?? 0) || newest(a, b),
+    );
+  }
+  return sorted.sort(newest);
 };

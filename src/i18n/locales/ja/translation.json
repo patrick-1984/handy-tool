@@ -1724,7 +1724,18 @@
         "matches": "{{total}}件中{{matched}}件",
         "regexBadge": ".*",
         "regexActive": "クエリは正規表現として処理されています",
-        "noMatches": "検索に一致するエントリーがありません。"
+        "noMatches": "検索に一致するエントリーがありません。",
+        "hits": "ヒット: {{count}}",
+        "hitsTitle": "表示中の録音で検索語が見つかった回数",
+        "words": "各単語:",
+        "wordsTitle": "表示中の録音で各単語が単独で見つかった回数",
+        "wordHits": "{{word}}：{{count}}",
+        "foundIn": {
+          "plain": "話者なしのテキストで見つかりました:",
+          "speakers": "話者付きのテキストで見つかりました:",
+          "postProcessed": "後処理したテキストで見つかりました:",
+          "title": "タイトルで見つかりました:"
+        }
       },
       "transcribeAgain": "Transcribe this recording (again) with your dictation model",
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
@@ -1761,7 +1772,14 @@
           "2to5m": "2～5 分",
           "5to10m": "5～10 分",
           "over10m": "10 分超"
-        }
+        },
+        "sort": {
+          "newest": "新しい順",
+          "oldest": "古い順",
+          "hits": "ヒットの多い順"
+        },
+        "shortPreviews": "短いプレビュー",
+        "shortPreviewsHint": "全文の代わりに各録音の数行だけを表示します（検索中は最初のヒットの周辺）"
       },
       "menu": {
         "more": "その他の操作",
@@ -2679,6 +2697,10 @@
       "localSpeakers": {
         "title": "この PC で話者を区別",
         "description": "NVIDIA の話者モデル（STT サーバーと同じもの）を 詳細設定 › 話者 でダウンロードすると、サーバーなしで誰が何を話したかを区別できます。履歴から、または録音ごとに。"
+      },
+      "historySearch": {
+        "title": "履歴の検索で全文とヒット数を表示",
+        "description": "履歴の検索で各録音の全文が再び表示され、ヒット箇所がすべて強調されます。ヒット数も合計・録音ごと・（複数の単語なら）単語ごとに表示されます。「ヒットの多い順」で並べ替えると最も一致する録音が先頭に来ます。数行だけ見たいときは「短いプレビュー」をオンにします。"
       }
     },
     "installed": "インストール済み"

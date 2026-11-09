@@ -1724,7 +1724,18 @@
         "matches": "{{matched}} di {{total}}",
         "regexBadge": ".*",
         "regexActive": "La query viene trattata come espressione regolare",
-        "noMatches": "Nessuna voce corrisponde alla tua ricerca."
+        "noMatches": "Nessuna voce corrisponde alla tua ricerca.",
+        "hits": "Occorrenze: {{count}}",
+        "hitsTitle": "Quante volte la ricerca compare nelle registrazioni mostrate",
+        "words": "Ogni parola:",
+        "wordsTitle": "Quante volte ogni parola compare da sola nelle registrazioni mostrate",
+        "wordHits": "{{word}}: {{count}}",
+        "foundIn": {
+          "plain": "Trovato nel testo senza parlanti:",
+          "speakers": "Trovato nel testo con parlanti:",
+          "postProcessed": "Trovato nel testo post-elaborato:",
+          "title": "Trovato nel titolo:"
+        }
       },
       "transcribeAgain": "Transcribe this recording (again) with your dictation model",
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
@@ -1761,7 +1772,14 @@
           "2to5m": "2–5 min",
           "5to10m": "5–10 min",
           "over10m": "Oltre 10 min"
-        }
+        },
+        "sort": {
+          "newest": "Più recenti",
+          "oldest": "Meno recenti",
+          "hits": "Più occorrenze"
+        },
+        "shortPreviews": "Anteprime brevi",
+        "shortPreviewsHint": "Mostra poche righe di ogni registrazione (intorno alla prima occorrenza durante la ricerca) invece del testo intero"
       },
       "menu": {
         "more": "Altre azioni",
@@ -2679,6 +2697,10 @@
       "localSpeakers": {
         "title": "Parlanti su questo PC",
         "description": "Scarica il modello dei parlanti di NVIDIA (quello usato dal server STT) in Impostazioni avanzate › Parlanti e riconosci chi ha detto cosa senza server: nella Cronologia o dopo ogni ripresa."
+      },
+      "historySearch": {
+        "title": "Testo intero e numero di occorrenze nella ricerca della cronologia",
+        "description": "La ricerca nella cronologia mostra di nuovo il testo intero di ogni registrazione, con ogni occorrenza evidenziata, e quante sono: in totale, per registrazione e, con più parole, per parola. Ordina per «Più occorrenze» per vedere prima i risultati migliori, oppure spunta Anteprime brevi per poche righe."
       }
     },
     "installed": "Installata"
