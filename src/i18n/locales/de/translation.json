@@ -1729,7 +1729,11 @@
         "hitsTitle": "Wie oft die Suche in den angezeigten Aufnahmen vorkommt",
         "words": "Jedes Wort:",
         "wordsTitle": "Wie oft jedes Wort für sich in den angezeigten Aufnahmen vorkommt",
-        "wordHits": "{{word}}: {{count}}"
+        "wordHits": "{{word}}: {{count}}",
+        "foundIn": {
+          "postProcessed": "Gefunden im nachbearbeiteten Text:",
+          "title": "Gefunden im Titel:"
+        }
       },
       "transcribeAgain": "Transcribe this recording (again) with your dictation model",
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",

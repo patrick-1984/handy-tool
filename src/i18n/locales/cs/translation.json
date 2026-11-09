@@ -1729,7 +1729,11 @@
         "hitsTitle": "Kolikrát se hledaný text vyskytuje v zobrazených nahrávkách",
         "words": "Každé slovo:",
         "wordsTitle": "Kolikrát se každé slovo samostatně vyskytuje v zobrazených nahrávkách",
-        "wordHits": "{{word}}: {{count}}"
+        "wordHits": "{{word}}: {{count}}",
+        "foundIn": {
+          "postProcessed": "Nalezeno v upraveném textu:",
+          "title": "Nalezeno v názvu:"
+        }
       },
       "transcribeAgain": "Transcribe this recording (again) with your dictation model",
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",

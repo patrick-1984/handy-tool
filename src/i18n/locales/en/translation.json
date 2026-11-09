@@ -1956,7 +1956,11 @@
         "hitsTitle": "How many times the search is found in the listed recordings",
         "words": "Each word:",
         "wordsTitle": "How many times each word is found on its own in the listed recordings",
-        "wordHits": "{{word}}: {{count}}"
+        "wordHits": "{{word}}: {{count}}",
+        "foundIn": {
+          "postProcessed": "Found in the post-processed text:",
+          "title": "Found in the title:"
+        }
       },
       "loading": "Loading history...",
       "empty": "No transcriptions yet. Start recording to build your history!",

@@ -1728,7 +1728,11 @@
         "hitsTitle": "Ile razy wyszukiwana fraza występuje w wyświetlonych nagraniach",
         "words": "Każde słowo:",
         "wordsTitle": "Ile razy każde słowo osobno występuje w wyświetlonych nagraniach",
-        "wordHits": "{{word}}: {{count}}"
+        "wordHits": "{{word}}: {{count}}",
+        "foundIn": {
+          "postProcessed": "Znaleziono w tekście po przetworzeniu:",
+          "title": "Znaleziono w tytule:"
+        }
       },
       "loadError": "Nie udało się wczytać historii: {{error}}",
       "transcribeAgain": "Przetranskrybuj to nagranie (ponownie) modelem dyktowania",

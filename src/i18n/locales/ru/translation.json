@@ -1729,7 +1729,11 @@
         "hitsTitle": "Сколько раз запрос найден в показанных записях",
         "words": "Каждое слово:",
         "wordsTitle": "Сколько раз каждое слово отдельно найдено в показанных записях",
-        "wordHits": "{{word}}: {{count}}"
+        "wordHits": "{{word}}: {{count}}",
+        "foundIn": {
+          "postProcessed": "Найдено в обработанном тексте:",
+          "title": "Найдено в заголовке:"
+        }
       },
       "transcribeAgain": "Transcribe this recording (again) with your dictation model",
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",

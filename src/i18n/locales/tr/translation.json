@@ -1729,7 +1729,11 @@
         "hitsTitle": "Aramanın gösterilen kayıtlarda kaç kez bulunduğu",
         "words": "Her kelime:",
         "wordsTitle": "Her kelimenin gösterilen kayıtlarda tek başına kaç kez bulunduğu",
-        "wordHits": "{{word}}: {{count}}"
+        "wordHits": "{{word}}: {{count}}",
+        "foundIn": {
+          "postProcessed": "İşlenmiş metinde bulundu:",
+          "title": "Başlıkta bulundu:"
+        }
       },
       "transcribeAgain": "Transcribe this recording (again) with your dictation model",
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",

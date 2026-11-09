@@ -1729,7 +1729,11 @@
         "hitsTitle": "表示中の録音で検索語が見つかった回数",
         "words": "各単語:",
         "wordsTitle": "表示中の録音で各単語が単独で見つかった回数",
-        "wordHits": "{{word}}：{{count}}"
+        "wordHits": "{{word}}：{{count}}",
+        "foundIn": {
+          "postProcessed": "後処理したテキストで見つかりました:",
+          "title": "タイトルで見つかりました:"
+        }
       },
       "transcribeAgain": "Transcribe this recording (again) with your dictation model",
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",

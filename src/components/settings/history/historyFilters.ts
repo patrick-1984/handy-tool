@@ -134,12 +134,40 @@ export const matchesFilter = (
 export type SortOrder = "newest" | "oldest" | "hits";
 export const SORT_ORDERS: SortOrder[] = ["newest", "oldest", "hits"];
 
-/** How many times a search is found in what a recording's row shows: its
- *  name plus its text (the text with speakers when it has one, as the row
- *  opens), so every hit counted is a hit marked. */
+/** A recording found only by a text its row does not show by itself (the
+ *  post-processed text or the title): that text, so the row can show it. */
+export const otherHitText = (
+  entry: HistoryEntry,
+  m: SearchMatcher,
+  shown: string,
+): { field: "postProcessed" | "title"; text: string } | null => {
+  if (countMatches(shown, m) > 0) return null;
+  if (entry.post_processed_text && countMatches(entry.post_processed_text, m))
+    return { field: "postProcessed", text: entry.post_processed_text };
+  if (entry.title && countMatches(entry.title, m))
+    return { field: "title", text: entry.title };
+  return null;
+};
+
+/** How many times a search is found in what a row shows: its name, the text
+ *  in view and, when that has none, the other text it was found in. Every
+ *  hit counted is a hit marked. */
+export const rowHits = (
+  entry: HistoryEntry,
+  m: SearchMatcher,
+  shown: string,
+): number => {
+  const other = otherHitText(entry, m, shown);
+  return (
+    countMatches(entry.name, m) +
+    countMatches(shown, m) +
+    (other ? countMatches(other.text, m) : 0)
+  );
+};
+
+/** The hits of a row as it opens (with speakers when it has them). */
 export const entryHits = (entry: HistoryEntry, m: SearchMatcher): number =>
-  countMatches(entry.name, m) +
-  countMatches(entry.diarized_text?.trim() || entry.transcription_text, m);
+  rowHits(entry, m, entry.diarized_text?.trim() || entry.transcription_text);
 
 /** The entries in the chosen order; "hits" needs the hit counts (by id) and
  *  falls back to newest first between equal counts and without a search. */

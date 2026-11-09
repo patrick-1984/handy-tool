@@ -48,6 +48,8 @@ import {
   NO_FILTER,
   entryHits,
   isNarrowed,
+  otherHitText,
+  rowHits,
   matchesFilter,
   sortEntries,
   type HistoryFilter,
@@ -465,7 +467,6 @@ export const HistorySettings: React.FC = () => {
             key={entry.id}
             entry={entry}
             matcher={matcher}
-            hits={hits?.get(entry.id) ?? null}
             shortPreview={shortPreviews}
             selectedIndex={selected.indexOf(entry.id)}
             onToggleSelect={() => toggleSelect(entry.id)}
@@ -663,8 +664,6 @@ export const HistorySettings: React.FC = () => {
 interface HistoryEntryProps {
   entry: HistoryEntry;
   matcher: SearchMatcher | null;
-  /** How often the search is found in it; null without a search. */
-  hits: number | null;
   /** A few lines (around the first hit) instead of the whole text. */
   shortPreview: boolean;
   /** Place in the Combine queue (0-based), or -1 when not selected. */
@@ -786,7 +785,6 @@ const NameField: React.FC<{
 const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
   entry,
   matcher,
-  hits,
   shortPreview,
   selectedIndex,
   onToggleSelect,
@@ -809,6 +807,10 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
   const shownSpeakers = speakerText !== null && showSpeakers;
   const shownText = shownSpeakers ? speakerText : entry.transcription_text;
   const noText = entry.transcription_text.trim() === "";
+  // With a search: the hits in what this row shows (follows Text/Speakers),
+  // and the other text it was found in when the shown one has none.
+  const hits = matcher ? rowHits(entry, matcher, shownText) : null;
+  const otherHit = matcher ? otherHitText(entry, matcher, shownText) : null;
   // The audio is still there (History's clean-up can delete it, keeping the text).
   const hasAudio = entry.audio_purged_at == null;
   const selected = selectedIndex >= 0;
@@ -1064,6 +1066,20 @@ const HistoryEntryComponent: React.FC<HistoryEntryProps> = ({
             />
           </p>
         </>
+      )}
+      {otherHit && (
+        <div className="rounded-md border border-border px-2.5 py-1.5">
+          <p className="text-xs text-text-secondary">
+            {t(`settings.history.search.foundIn.${otherHit.field}`)}
+          </p>
+          <p className="text-sm select-text cursor-text whitespace-pre-line">
+            <HighlightedText
+              text={otherHit.text}
+              matcher={matcher}
+              cut={shortPreview}
+            />
+          </p>
+        </div>
       )}
       {transcribeError && (
         <p className="text-xs text-err-text">

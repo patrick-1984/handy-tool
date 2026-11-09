@@ -1729,7 +1729,11 @@
         "hitsTitle": "搜尋內容在所列錄音中出現的次數",
         "words": "每個詞：",
         "wordsTitle": "每個詞單獨在所列錄音中出現的次數",
-        "wordHits": "{{word}}：{{count}}"
+        "wordHits": "{{word}}：{{count}}",
+        "foundIn": {
+          "postProcessed": "在後處理文字中找到：",
+          "title": "在標題中找到："
+        }
       },
       "transcribeAgain": "Transcribe this recording (again) with your dictation model",
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",

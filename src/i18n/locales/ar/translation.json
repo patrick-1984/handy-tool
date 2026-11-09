@@ -1651,7 +1651,11 @@
         "hitsTitle": "عدد مرات العثور على البحث في التسجيلات المعروضة",
         "words": "كل كلمة:",
         "wordsTitle": "عدد مرات العثور على كل كلمة وحدها في التسجيلات المعروضة",
-        "wordHits": "{{word}}: {{count}}"
+        "wordHits": "{{word}}: {{count}}",
+        "foundIn": {
+          "postProcessed": "وُجد في النص بعد المعالجة:",
+          "title": "وُجد في العنوان:"
+        }
       },
       "transcribeAgain": "Transcribe this recording (again) with your dictation model",
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",

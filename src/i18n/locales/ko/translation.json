@@ -1729,7 +1729,11 @@
         "hitsTitle": "표시된 녹음에서 검색어가 발견된 횟수",
         "words": "각 단어:",
         "wordsTitle": "표시된 녹음에서 각 단어가 따로 발견된 횟수",
-        "wordHits": "{{word}}: {{count}}"
+        "wordHits": "{{word}}: {{count}}",
+        "foundIn": {
+          "postProcessed": "후처리된 텍스트에서 찾음:",
+          "title": "제목에서 찾음:"
+        }
       },
       "transcribeAgain": "Transcribe this recording (again) with your dictation model",
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",

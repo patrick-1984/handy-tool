@@ -1729,7 +1729,11 @@
         "hitsTitle": "Quante volte la ricerca compare nelle registrazioni mostrate",
         "words": "Ogni parola:",
         "wordsTitle": "Quante volte ogni parola compare da sola nelle registrazioni mostrate",
-        "wordHits": "{{word}}: {{count}}"
+        "wordHits": "{{word}}: {{count}}",
+        "foundIn": {
+          "postProcessed": "Trovato nel testo post-elaborato:",
+          "title": "Trovato nel titolo:"
+        }
       },
       "transcribeAgain": "Transcribe this recording (again) with your dictation model",
       "transcribeAgainConfirm": "Replace this transcript with a new transcription of the recording?",
