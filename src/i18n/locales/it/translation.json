@@ -1732,6 +1732,7 @@
         "wordHits": "{{word}}: {{count}}",
         "foundIn": {
           "plain": "Trovato nel testo senza parlanti:",
+          "speakers": "Trovato nel testo con parlanti:",
           "postProcessed": "Trovato nel testo post-elaborato:",
           "title": "Trovato nel titolo:"
         }

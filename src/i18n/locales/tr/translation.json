@@ -1732,6 +1732,7 @@
         "wordHits": "{{word}}: {{count}}",
         "foundIn": {
           "plain": "Konuşmacısız metinde bulundu:",
+          "speakers": "Konuşmacılı metinde bulundu:",
           "postProcessed": "İşlenmiş metinde bulundu:",
           "title": "Başlıkta bulundu:"
         }

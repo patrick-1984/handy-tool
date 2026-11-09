@@ -1732,6 +1732,7 @@
         "wordHits": "{{word}}: {{count}}",
         "foundIn": {
           "plain": "Nalezeno v textu bez mluvčích:",
+          "speakers": "Nalezeno v textu s mluvčími:",
           "postProcessed": "Nalezeno v upraveném textu:",
           "title": "Nalezeno v názvu:"
         }

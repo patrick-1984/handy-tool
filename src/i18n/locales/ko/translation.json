@@ -1732,6 +1732,7 @@
         "wordHits": "{{word}}: {{count}}",
         "foundIn": {
           "plain": "화자 없는 텍스트에서 찾음:",
+          "speakers": "화자가 있는 텍스트에서 찾음:",
           "postProcessed": "후처리된 텍스트에서 찾음:",
           "title": "제목에서 찾음:"
         }

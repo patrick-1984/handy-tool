@@ -1732,6 +1732,7 @@
         "wordHits": "{{word}}: {{count}}",
         "foundIn": {
           "plain": "Tìm thấy trong văn bản không có người nói:",
+          "speakers": "Tìm thấy trong văn bản có người nói:",
           "postProcessed": "Tìm thấy trong văn bản đã xử lý:",
           "title": "Tìm thấy trong tiêu đề:"
         }

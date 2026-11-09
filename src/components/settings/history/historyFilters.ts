@@ -134,24 +134,28 @@ export const matchesFilter = (
 export type SortOrder = "newest" | "oldest" | "hits";
 export const SORT_ORDERS: SortOrder[] = ["newest", "oldest", "hits"];
 
+export type HitField = "plain" | "speakers" | "postProcessed" | "title";
+
 /** A recording found only by a text its row does not show right now (the
- *  text without speakers while the speakers are shown, the post-processed
- *  text or the title): that text, so the row can show it. */
+ *  other of Text/Speakers, the post-processed text or the title): the first
+ *  such text, so the row can show it. */
 export const otherHitText = (
   entry: HistoryEntry,
   m: SearchMatcher,
   shown: string,
-): { field: "plain" | "postProcessed" | "title"; text: string } | null => {
+): { field: HitField; text: string } | null => {
   if (countMatches(shown, m) > 0) return null;
-  if (
-    entry.transcription_text !== shown &&
-    countMatches(entry.transcription_text, m)
-  )
-    return { field: "plain", text: entry.transcription_text };
-  if (entry.post_processed_text && countMatches(entry.post_processed_text, m))
-    return { field: "postProcessed", text: entry.post_processed_text };
-  if (entry.title && countMatches(entry.title, m))
-    return { field: "title", text: entry.title };
+  const candidates: [HitField, string | null | undefined][] = [
+    ["plain", entry.transcription_text],
+    ["speakers", entry.diarized_text?.trim()],
+    ["postProcessed", entry.post_processed_text],
+    ["title", entry.title],
+  ];
+  for (const [field, text] of candidates) {
+    if (text && text !== shown && countMatches(text, m) > 0) {
+      return { field, text };
+    }
+  }
   return null;
 };
 

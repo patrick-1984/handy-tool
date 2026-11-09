@@ -70,8 +70,12 @@ export function snippetAroundFirstMatch(
   if (text.length <= maxLength) {
     return { text, leadingEllipsis: false, trailingEllipsis: false };
   }
+  // The first real hit (empty matches, e.g. of "a*", are not hits).
   matcher.regex.lastIndex = 0;
-  const first = matcher.regex.exec(text);
+  let first: RegExpExecArray | null;
+  while ((first = matcher.regex.exec(text)) !== null && first[0] === "") {
+    stepPastEmpty(matcher.regex, text);
+  }
   if (!first || first.index < maxLength / 2) {
     return {
       text: text.slice(0, maxLength),

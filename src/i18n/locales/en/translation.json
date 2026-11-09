@@ -1959,6 +1959,7 @@
         "wordHits": "{{word}}: {{count}}",
         "foundIn": {
           "plain": "Found in the text without speakers:",
+          "speakers": "Found in the text with speakers:",
           "postProcessed": "Found in the post-processed text:",
           "title": "Found in the title:"
         }
