@@ -1731,6 +1731,7 @@
         "wordsTitle": "Her kelimenin gösterilen kayıtlarda tek başına kaç kez bulunduğu",
         "wordHits": "{{word}}: {{count}}",
         "foundIn": {
+          "plain": "Konuşmacısız metinde bulundu:",
           "postProcessed": "İşlenmiş metinde bulundu:",
           "title": "Başlıkta bulundu:"
         }

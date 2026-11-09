@@ -1731,6 +1731,7 @@
         "wordsTitle": "Kolikrát se každé slovo samostatně vyskytuje v zobrazených nahrávkách",
         "wordHits": "{{word}}: {{count}}",
         "foundIn": {
+          "plain": "Nalezeno v textu bez mluvčích:",
           "postProcessed": "Nalezeno v upraveném textu:",
           "title": "Nalezeno v názvu:"
         }

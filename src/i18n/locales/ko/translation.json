@@ -1731,6 +1731,7 @@
         "wordsTitle": "표시된 녹음에서 각 단어가 따로 발견된 횟수",
         "wordHits": "{{word}}: {{count}}",
         "foundIn": {
+          "plain": "화자 없는 텍스트에서 찾음:",
           "postProcessed": "후처리된 텍스트에서 찾음:",
           "title": "제목에서 찾음:"
         }

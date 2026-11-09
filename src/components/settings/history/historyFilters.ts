@@ -134,14 +134,20 @@ export const matchesFilter = (
 export type SortOrder = "newest" | "oldest" | "hits";
 export const SORT_ORDERS: SortOrder[] = ["newest", "oldest", "hits"];
 
-/** A recording found only by a text its row does not show by itself (the
- *  post-processed text or the title): that text, so the row can show it. */
+/** A recording found only by a text its row does not show right now (the
+ *  text without speakers while the speakers are shown, the post-processed
+ *  text or the title): that text, so the row can show it. */
 export const otherHitText = (
   entry: HistoryEntry,
   m: SearchMatcher,
   shown: string,
-): { field: "postProcessed" | "title"; text: string } | null => {
+): { field: "plain" | "postProcessed" | "title"; text: string } | null => {
   if (countMatches(shown, m) > 0) return null;
+  if (
+    entry.transcription_text !== shown &&
+    countMatches(entry.transcription_text, m)
+  )
+    return { field: "plain", text: entry.transcription_text };
   if (entry.post_processed_text && countMatches(entry.post_processed_text, m))
     return { field: "postProcessed", text: entry.post_processed_text };
   if (entry.title && countMatches(entry.title, m))

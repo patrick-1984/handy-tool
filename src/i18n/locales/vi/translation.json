@@ -1731,6 +1731,7 @@
         "wordsTitle": "Số lần tìm thấy riêng từng từ trong các bản ghi đang hiển thị",
         "wordHits": "{{word}}: {{count}}",
         "foundIn": {
+          "plain": "Tìm thấy trong văn bản không có người nói:",
           "postProcessed": "Tìm thấy trong văn bản đã xử lý:",
           "title": "Tìm thấy trong tiêu đề:"
         }

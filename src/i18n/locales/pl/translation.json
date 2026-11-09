@@ -1730,6 +1730,7 @@
         "wordsTitle": "Ile razy każde słowo osobno występuje w wyświetlonych nagraniach",
         "wordHits": "{{word}}: {{count}}",
         "foundIn": {
+          "plain": "Znaleziono w tekście bez mówców:",
           "postProcessed": "Znaleziono w tekście po przetworzeniu:",
           "title": "Znaleziono w tytule:"
         }

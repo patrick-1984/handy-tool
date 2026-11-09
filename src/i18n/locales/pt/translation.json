@@ -1731,6 +1731,7 @@
         "wordsTitle": "Quantas vezes cada palavra aparece sozinha nas gravações mostradas",
         "wordHits": "{{word}}: {{count}}",
         "foundIn": {
+          "plain": "Encontrado no texto sem oradores:",
           "postProcessed": "Encontrado no texto pós-processado:",
           "title": "Encontrado no título:"
         }

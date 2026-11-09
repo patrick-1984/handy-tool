@@ -1731,6 +1731,7 @@
         "wordsTitle": "每個詞單獨在所列錄音中出現的次數",
         "wordHits": "{{word}}：{{count}}",
         "foundIn": {
+          "plain": "在不含說話者的文字中找到：",
           "postProcessed": "在後處理文字中找到：",
           "title": "在標題中找到："
         }

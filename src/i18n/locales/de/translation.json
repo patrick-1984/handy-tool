@@ -1731,6 +1731,7 @@
         "wordsTitle": "Wie oft jedes Wort für sich in den angezeigten Aufnahmen vorkommt",
         "wordHits": "{{word}}: {{count}}",
         "foundIn": {
+          "plain": "Gefunden im Text ohne Sprecher:",
           "postProcessed": "Gefunden im nachbearbeiteten Text:",
           "title": "Gefunden im Titel:"
         }

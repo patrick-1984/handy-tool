@@ -1731,6 +1731,7 @@
         "wordsTitle": "Nombre de fois où chaque mot apparaît seul dans les enregistrements affichés",
         "wordHits": "{{word}}: {{count}}",
         "foundIn": {
+          "plain": "Trouvé dans le texte sans intervenants :",
           "postProcessed": "Trouvé dans le texte post-traité :",
           "title": "Trouvé dans le titre :"
         }

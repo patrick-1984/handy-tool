@@ -1958,6 +1958,7 @@
         "wordsTitle": "How many times each word is found on its own in the listed recordings",
         "wordHits": "{{word}}: {{count}}",
         "foundIn": {
+          "plain": "Found in the text without speakers:",
           "postProcessed": "Found in the post-processed text:",
           "title": "Found in the title:"
         }

@@ -41,16 +41,13 @@ export function buildMatcher(query: string): SearchMatcher | null {
   return { regex: new RegExp(escapeLiteral(trimmed), "giu"), isRegex: false };
 }
 
-/** Test whether any of the given fields matches. Resets regex state. */
+/** Test whether any of the given fields holds a hit (a non-empty match, as
+ *  counted and marked: a pattern like `^` alone finds nothing). */
 export function fieldsMatch(
   matcher: SearchMatcher,
   fields: (string | null | undefined)[],
 ): boolean {
-  return fields.some((field) => {
-    if (!field) return false;
-    matcher.regex.lastIndex = 0;
-    return matcher.regex.test(field);
-  });
+  return fields.some((field) => countMatches(field, matcher) > 0);
 }
 
 export interface SnippetResult {

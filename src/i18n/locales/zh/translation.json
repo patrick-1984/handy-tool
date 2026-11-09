@@ -1731,6 +1731,7 @@
         "wordsTitle": "每个词单独在所列录音中出现的次数",
         "wordHits": "{{word}}：{{count}}",
         "foundIn": {
+          "plain": "在不含说话人的文本中找到：",
           "postProcessed": "在后处理文本中找到：",
           "title": "在标题中找到："
         }
