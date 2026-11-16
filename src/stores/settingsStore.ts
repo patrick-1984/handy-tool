@@ -309,7 +309,18 @@ const settingUpdaters: {
         // way, so a refresh never replaces an edit about to be written.
         if (layoutPending === 0 && layoutFailed) {
           layoutFailed = false;
-          void useSettingsStore.getState().refreshSettings();
+          void commands.getAppSettings().then((saved) => {
+            // An edit made while this read was out wins: it is on its way.
+            if (saved.status !== "ok" || layoutPending > 0) return;
+            useSettingsStore.setState((state) => ({
+              settings: state.settings
+                ? {
+                    ...state.settings,
+                    sidebar_layout: saved.data.sidebar_layout,
+                  }
+                : state.settings,
+            }));
+          });
         }
       });
     return layoutWrites;
