@@ -1,5 +1,38 @@
 # Changelog
 
+## [2.7.0] - 2026-11-16
+
+### Added
+
+- **Pin any page to the sidebar.** A pin next to the ? in every page's title (every sidebar page,
+  every Advanced settings and More Tools tab, each History tab) adds it to a **Pinned** section at
+  the top of the sidebar; one click opens it. Click the pin again to unpin. A pinned page shows its
+  own icon with a small arrow, so it reads as a jump rather than a section.
+- **Back and Forward.** The mouse's back/forward side buttons and Alt+← / Alt+→ (Cmd+[ / Cmd+] on a
+  Mac) move through the pages and History tabs opened in this session, like a browser. Not while a
+  dialog is open or a text field has the keys.
+- **Advanced settings › Appearance.** The theme, and the sidebar: order its entries, move the ones
+  you rarely use under a collapsed **Show more**, and manage pinned pages (rename, pick one of 20
+  icons, reorder, remove, show at the top or under Show more). Kept in the settings, so it survives
+  restarts, updates and backups.
+- **The pill's sound bars have a menu.** Right-click them while recording: **Microphone** lists the
+  microphones to switch to (every system); **Sound source** (Windows) switches between microphone,
+  microphone + system audio and system audio, also during a take (from Adam's capture-switch work,
+  with a Cycle Sound Source shortcut).
+- **Several files at once on Files.** Pick or drop several recordings; an **Order files** window
+  lists each one's name, date and length (oldest first), lets you drag or move them, play one to
+  check it, or remove it, and sets the combined text's options: what goes between files (nothing,
+  an empty line, a divider line), numbers, the file name before each part (remembered). The files
+  are transcribed one after another ("File 2 of 5"); a file that fails is marked and the rest go on.
+  The result: one combined text with **Copy all**, and each file's text with its own Copy. The save
+  setting applies once, to the combined text ("<first file> (combined).txt").
+
+### Fixed
+
+- **Changing the microphone during a recording lost the recording.** The new microphone is now
+  opened first and switched into the same recording (what the old one still held is kept); if it
+  cannot start, the recording keeps the old one and the new one is used from the next recording.
+
 ## [2.6.0] - 2026-11-09
 
 ### Added

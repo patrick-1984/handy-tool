@@ -2789,6 +2789,26 @@
       "historySearch": {
         "title": "Whole text and hit counts in History search",
         "description": "Searching History shows each recording's whole text again, with every hit marked, and how many hits there are: in all, in each recording and, for several words, for each word. Sort by Most hits to see the best matches first, or tick Short previews for a few lines per recording."
+      },
+      "pinPages": {
+        "title": "Pin any page to the sidebar",
+        "description": "A pin next to ? in every page's title puts that page (or History tab) in a Pinned section at the top of the sidebar: one click to get there. Click it again to unpin."
+      },
+      "backForward": {
+        "title": "Back and Forward",
+        "description": "The mouse's back and forward side buttons, and Alt+← / Alt+→ (Cmd+[ / Cmd+] on a Mac), move through the pages you opened, like in a browser."
+      },
+      "appearancePage": {
+        "title": "Arrange the sidebar",
+        "description": "Advanced settings › Appearance: order the sidebar, move entries you rarely use under Show more, and rename pinned pages, give them one of 20 icons and choose where they show."
+      },
+      "pillMicrophone": {
+        "title": "Change the microphone from the pill, even while recording",
+        "description": "Right-click the pill's sound bars to pick another microphone (and, on Windows, the sound source). A change during a recording now applies to that recording at once; before, changing the microphone mid-recording lost it."
+      },
+      "filesBatch": {
+        "title": "Several files at once",
+        "description": "Pick or drop several recordings on Files. Put them in order (by date first, drag or arrows, play one to check it), choose a separator, numbers and file names, and get one combined text to copy, plus each file's own text."
       }
     },
     "installed": "Installed"
