@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { beginShortcutCapture } from "@/lib/shortcutCapture";
 import { useTranslation } from "react-i18next";
 import {
   getKeyName,
@@ -65,6 +66,12 @@ export const GlobalShortcutInput: React.FC<GlobalShortcutInputProps> = ({
   };
 
   // Leaving the page mid-recording must not leave every shortcut switched off.
+  // Alt+←/→ go Back/Forward elsewhere; not while keys are being recorded.
+  useEffect(() => {
+    if (editingShortcutId === null) return;
+    return beginShortcutCapture();
+  }, [editingShortcutId]);
+
   useEffect(
     () => () => {
       if (suspendedRef.current) {

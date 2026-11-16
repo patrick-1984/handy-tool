@@ -28,6 +28,7 @@ import { getLanguageDirection, initializeRTL } from "@/lib/utils/rtl";
 import { isFlmBlockedByWindowsApplicationControl } from "@/lib/flm";
 import { highlightSetting } from "@/lib/settingsSearch";
 import { PageTitle } from "./components/ui/PageTitle";
+import { useBackForward } from "./hooks/useBackForward";
 
 type OnboardingStep = "accessibility" | "model" | "done";
 
@@ -63,6 +64,7 @@ function App() {
   const currentSection = useNavStore((state) => state.currentSection);
   const setCurrentSection = useNavStore((state) => state.setCurrentSection);
   const { settings, updateSetting } = useSettings();
+  useBackForward(settings);
   const direction = getLanguageDirection(i18n.language);
   // Resolved (never "system") light/dark value driving this window's
   // data-theme attribute AND the Sonner toaster — a single source of truth
