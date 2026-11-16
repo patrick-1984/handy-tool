@@ -830,13 +830,79 @@ impl AudioRecordingManager {
         }
     }
 
-    pub fn update_selected_device(&self) -> Result<(), anyhow::Error> {
-        // If currently open, restart the microphone stream to use the new device
-        if *self.is_open.lock().unwrap() {
-            self.stop_microphone_stream();
-            self.start_microphone_stream()?;
+    /// The microphone setting changed. With no take running an open stream is
+    /// reopened on the new device. During a take the new microphone is opened
+    /// first and then switched in, so the same take carries on with it (2.7.0;
+    /// before, the take was lost). If it cannot be, the take keeps its
+    /// microphone and the new one is used from the next take.
+    pub fn update_selected_device(&self) -> Result<SourceSwitch, anyhow::Error> {
+        let take = {
+            let state = self.state.lock().unwrap();
+            if matches!(*state, RecordingState::Idle) {
+                if *self.is_open.lock().unwrap() {
+                    self.stop_microphone_stream();
+                    self.start_microphone_stream()?;
+                }
+                return Ok(SourceSwitch::Now);
+            }
+            self.take_seq.load(AtomicOrdering::SeqCst)
+        };
+        match self.switch_take_microphone(take) {
+            Ok(switch) => Ok(switch),
+            Err(e) => {
+                warn!(
+                    "Could not switch the take in progress to the new microphone: {e}; it applies to the next take"
+                );
+                self.streams_stale.store(true, AtomicOrdering::SeqCst);
+                Ok(SourceSwitch::NextTake)
+            }
         }
-        Ok(())
+    }
+
+    /// Opens the selected microphone and, if take `take` is still the one
+    /// running on a microphone, records the rest of it from there.
+    fn switch_take_microphone(&self, take: u64) -> Result<SourceSwitch, anyhow::Error> {
+        // A take recording system audio alone has no microphone to switch.
+        let master_is_mic = matches!(
+            *self.legs.lock().unwrap(),
+            Some(Legs {
+                master: EndpointRole::Capture,
+                ..
+            })
+        );
+        if !master_is_mic {
+            self.streams_stale.store(true, AtomicOrdering::SeqCst);
+            return Ok(SourceSwitch::NextTake);
+        }
+        let settings = get_settings(&self.app_handle);
+        let device = self
+            .get_effective_microphone_device(&settings)
+            .or_else(|| {
+                use cpal::traits::HostTrait;
+                crate::audio_toolkit::get_cpal_host().default_input_device()
+            })
+            .ok_or_else(|| anyhow::anyhow!("no microphone found"))?;
+        // Opened without any lock held: a slow device must not hold up Stop.
+        let candidate = AudioRecorder::open_master_candidate(device, EndpointRole::Capture)
+            .map_err(|e| anyhow::anyhow!("{e}"))?;
+        // Committed under the state lock, and only into the take it was opened for.
+        let state = self.state.lock().unwrap();
+        if matches!(*state, RecordingState::Idle)
+            || self.take_seq.load(AtomicOrdering::SeqCst) != take
+        {
+            // That take ended meanwhile: the next one opens the new device anyway.
+            self.streams_stale.store(true, AtomicOrdering::SeqCst);
+            return Ok(SourceSwitch::Now);
+        }
+        let mut rec = self.recorder.lock().unwrap();
+        let rec = rec
+            .as_mut()
+            .ok_or_else(|| anyhow::anyhow!("recorder not available"))?;
+        rec.commit_master(candidate)
+            .map_err(|e| anyhow::anyhow!("{e}"))?;
+        drop(state);
+        info!("Take switched to the newly selected microphone");
+        Ok(SourceSwitch::Now)
     }
 
     pub fn stop_recording(&self, binding_id: &str) -> Option<Vec<f32>> {

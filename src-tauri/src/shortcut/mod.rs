@@ -2568,7 +2568,7 @@ pub fn cycle_capture_source(app: &AppHandle) -> Result<(), String> {
 }
 
 /// One sound source change at a time (shortcut, pill menu, Settings).
-static CAPTURE_SOURCE_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+pub(crate) static CAPTURE_SOURCE_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
 /// Save a sound source and apply it: at once, also to a take in progress whose
 /// microphone can carry it, else from the next take (see

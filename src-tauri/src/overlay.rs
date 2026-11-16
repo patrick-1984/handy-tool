@@ -546,6 +546,29 @@ struct CaptureSourceNotice {
     next_take: bool,
 }
 
+/// What the pill says after the microphone was changed during a take.
+#[derive(Clone, serde::Serialize)]
+struct MicrophoneNotice {
+    /// The microphone now chosen ("" = the system default).
+    name: String,
+    /// The take in progress keeps its microphone; the new one starts with the next take.
+    next_take: bool,
+}
+
+/// Tells the pill of a take in progress which microphone it records from now
+/// (2.7.0). Nothing is shown when no take is on the pill.
+pub fn show_microphone_notice(app_handle: &AppHandle, next_take: bool) {
+    let settings = settings::get_settings(app_handle);
+    if settings.overlay_position == OverlayPosition::None || !TAKE_ON_PILL.load(Ordering::SeqCst) {
+        return;
+    }
+    let notice = MicrophoneNotice {
+        name: settings.selected_microphone.unwrap_or_default(),
+        next_take,
+    };
+    let _ = app_handle.emit_to("recording_overlay", "microphone-notice", notice);
+}
+
 /// How long the pill shows a sound source change.
 const CAPTURE_NOTICE_MS: u64 = 1_600;
 

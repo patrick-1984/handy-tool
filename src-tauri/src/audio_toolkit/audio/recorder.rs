@@ -162,7 +162,88 @@ enum Cmd {
     SystemLeg(Option<Arc<Mutex<SlaveRing>>>),
     /// Mid-take sound source change: keep (`true`) or silence the microphone leg.
     MicLeg(bool),
+    /// Mid-take microphone change: record from this stream from now on (2.7.0).
+    SwapMaster(MasterSwap),
     Shutdown,
+}
+
+/// How long a microphone switched in mid-take may take to deliver its first audio.
+const CANDIDATE_READY_TIMEOUT: Duration = Duration::from_secs(3);
+
+/// Asks a stream that lives on its own thread to pause or play again.
+enum ProducerCmd {
+    Pause(mpsc::Sender<Result<(), String>>),
+    Play(mpsc::Sender<Result<(), String>>),
+}
+
+/// A capture stream owned by its own thread (`cpal::Stream` cannot change
+/// threads). Dropping this closes the stream and waits for its thread.
+pub struct StreamProducer {
+    ctl_tx: Option<mpsc::Sender<ProducerCmd>>,
+    handle: Option<std::thread::JoinHandle<()>>,
+}
+
+impl StreamProducer {
+    fn ask(&self, make: fn(mpsc::Sender<Result<(), String>>) -> ProducerCmd) -> Result<(), String> {
+        let (tx, rx) = mpsc::channel();
+        self.ctl_tx
+            .as_ref()
+            .ok_or("stream closed")?
+            .send(make(tx))
+            .map_err(|_| "stream closed".to_string())?;
+        rx.recv_timeout(Duration::from_secs(2))
+            .map_err(|_| "the stream did not answer".to_string())?
+    }
+}
+
+impl Drop for StreamProducer {
+    fn drop(&mut self) {
+        // The thread waits on this channel; closing it ends the thread and the stream.
+        self.ctl_tx.take();
+        if let Some(h) = self.handle.take() {
+            let _ = h.join();
+        }
+    }
+}
+
+/// The stream a take records from: the one opened with the recorder, or one
+/// switched in during a take.
+enum CaptureStream {
+    Local(cpal::Stream),
+    Producer(StreamProducer),
+}
+
+impl CaptureStream {
+    fn pause(&self) -> Result<(), String> {
+        match self {
+            CaptureStream::Local(s) => s.pause().map_err(|e| e.to_string()),
+            CaptureStream::Producer(p) => p.ask(ProducerCmd::Pause),
+        }
+    }
+
+    fn play(&self) -> Result<(), String> {
+        match self {
+            CaptureStream::Local(s) => s.play().map_err(|e| e.to_string()),
+            CaptureStream::Producer(p) => p.ask(ProducerCmd::Play),
+        }
+    }
+}
+
+/// A microphone opened for a mid-take switch and already delivering audio; the
+/// take is unchanged until it is committed with [`AudioRecorder::commit_master`].
+pub struct MasterCandidate {
+    producer: StreamProducer,
+    rx: mpsc::Receiver<Vec<f32>>,
+    rate: u32,
+    device: Device,
+    errored: Arc<AtomicBool>,
+}
+
+struct MasterSwap {
+    producer: StreamProducer,
+    rx: mpsc::Receiver<Vec<f32>>,
+    rate: u32,
+    reply: mpsc::Sender<()>,
 }
 
 /// Which side of the audio graph a capture device sits on: an ordinary input
@@ -479,6 +560,128 @@ impl AudioRecorder {
         self.send(Cmd::MicLeg(on))
     }
 
+    /// Opens `device` on its own thread for a mid-take switch and waits until it
+    /// delivers audio. Nothing about the take changes yet; dropping the result
+    /// closes it again.
+    pub fn open_master_candidate(
+        device: Device,
+        role: EndpointRole,
+    ) -> Result<MasterCandidate, String> {
+        let (sample_tx, rx) = mpsc::channel::<Vec<f32>>();
+        let (ready_tx, ready_rx) = mpsc::channel::<Result<u32, String>>();
+        let (ctl_tx, ctl_rx) = mpsc::channel::<ProducerCmd>();
+        let errored = Arc::new(AtomicBool::new(false));
+        let errored_cb = Arc::clone(&errored);
+        let thread_device = device.clone();
+        let handle = std::thread::Builder::new()
+            .name("capture-switch".into())
+            .spawn(move || {
+                let config = match AudioRecorder::get_preferred_config_for(&thread_device, role) {
+                    Ok(c) => c,
+                    Err(e) => {
+                        let _ = ready_tx.send(Err(e.to_string()));
+                        return;
+                    }
+                };
+                let rate = config.sample_rate().0;
+                let channels = config.channels() as usize;
+                let seen = Arc::new(AtomicBool::new(false));
+                let stream = match AudioRecorder::build_any_stream(
+                    &thread_device,
+                    &config,
+                    sample_tx,
+                    channels,
+                    Instant::now(),
+                    Arc::clone(&seen),
+                    Arc::new(AtomicU64::new(0)),
+                    errored_cb,
+                    role,
+                ) {
+                    Ok(s) => s,
+                    Err(e) => {
+                        let _ = ready_tx.send(Err(e));
+                        return;
+                    }
+                };
+                if let Err(e) = stream.play() {
+                    let _ = ready_tx.send(Err(e.to_string()));
+                    return;
+                }
+                // Ready only once audio flows: a device that opens but stays silent
+                // must not replace one that works.
+                let deadline = Instant::now() + CANDIDATE_READY_TIMEOUT;
+                while !seen.load(Ordering::Acquire) {
+                    if Instant::now() >= deadline {
+                        let _ = ready_tx.send(Err("no audio from it within 3 s".into()));
+                        return;
+                    }
+                    std::thread::sleep(Duration::from_millis(10));
+                }
+                let _ = ready_tx.send(Ok(rate));
+                while let Ok(cmd) = ctl_rx.recv() {
+                    match cmd {
+                        ProducerCmd::Pause(reply) => {
+                            let _ = reply.send(stream.pause().map_err(|e| e.to_string()));
+                        }
+                        ProducerCmd::Play(reply) => {
+                            let _ = reply.send(stream.play().map_err(|e| e.to_string()));
+                        }
+                    }
+                }
+                // The owner let go: the stream closes here, on its own thread.
+            })
+            .map_err(|e| e.to_string())?;
+        let mut producer = StreamProducer {
+            ctl_tx: Some(ctl_tx),
+            handle: Some(handle),
+        };
+        match ready_rx.recv_timeout(CANDIDATE_READY_TIMEOUT + Duration::from_secs(2)) {
+            Ok(Ok(rate)) => Ok(MasterCandidate {
+                producer,
+                rx,
+                rate,
+                device,
+                errored,
+            }),
+            Ok(Err(e)) => Err(e),
+            Err(_) => {
+                // Still negotiating with the device: let the thread finish on its
+                // own (it ends as soon as it sees the closed control channel).
+                producer.ctl_tx.take();
+                producer.handle.take();
+                Err("the microphone did not start".into())
+            }
+        }
+    }
+
+    /// Records from `candidate` from now on, in the same take: what the previous
+    /// microphone still had queued is kept, nothing else of the take changes.
+    pub fn commit_master(&mut self, candidate: MasterCandidate) -> Result<(), String> {
+        let tx = self.cmd_tx.as_ref().ok_or("the recorder is not open")?;
+        let (reply_tx, reply_rx) = mpsc::channel();
+        let MasterCandidate {
+            producer,
+            rx,
+            rate,
+            device,
+            errored,
+        } = candidate;
+        tx.send(Cmd::SwapMaster(MasterSwap {
+            producer,
+            rx,
+            rate,
+            reply: reply_tx,
+        }))
+        .map_err(|_| "the recorder has stopped".to_string())?;
+        reply_rx
+            .recv_timeout(Duration::from_secs(5))
+            .map_err(|_| "the recorder did not take the new microphone".to_string())?;
+        self.device = Some(device);
+        // Faults of the retired stream must not count against the new one.
+        self.stream_errored = errored;
+        Ok(())
+    }
+
     /// Open a capture stream. `role` says whether `device` is an ordinary input
     /// (microphone) or an output endpoint to be captured via loopback (system audio);
     /// the two negotiate their config completely differently.
@@ -598,78 +801,22 @@ impl AudioRecorder {
             // the device ready" vs "device ready but CPAL hasn't delivered
             // audio yet".
             let stream_start = Instant::now();
-            let stream = match config.sample_format() {
-                cpal::SampleFormat::U8 => AudioRecorder::build_stream::<u8>(
-                    &thread_device,
-                    &config,
-                    sample_tx,
-                    channels,
-                    stream_start,
-                    Arc::clone(&first_buffer_seen_cb),
-                    Arc::clone(&first_buffer_nanos_cb),
-                    Arc::clone(&stream_errored_cb),
-                    role,
-                ),
-                cpal::SampleFormat::I8 => AudioRecorder::build_stream::<i8>(
-                    &thread_device,
-                    &config,
-                    sample_tx,
-                    channels,
-                    stream_start,
-                    Arc::clone(&first_buffer_seen_cb),
-                    Arc::clone(&first_buffer_nanos_cb),
-                    Arc::clone(&stream_errored_cb),
-                    role,
-                ),
-                cpal::SampleFormat::I16 => AudioRecorder::build_stream::<i16>(
-                    &thread_device,
-                    &config,
-                    sample_tx,
-                    channels,
-                    stream_start,
-                    Arc::clone(&first_buffer_seen_cb),
-                    Arc::clone(&first_buffer_nanos_cb),
-                    Arc::clone(&stream_errored_cb),
-                    role,
-                ),
-                cpal::SampleFormat::I32 => AudioRecorder::build_stream::<i32>(
-                    &thread_device,
-                    &config,
-                    sample_tx,
-                    channels,
-                    stream_start,
-                    Arc::clone(&first_buffer_seen_cb),
-                    Arc::clone(&first_buffer_nanos_cb),
-                    Arc::clone(&stream_errored_cb),
-                    role,
-                ),
-                cpal::SampleFormat::F32 => AudioRecorder::build_stream::<f32>(
-                    &thread_device,
-                    &config,
-                    sample_tx,
-                    channels,
-                    stream_start,
-                    Arc::clone(&first_buffer_seen_cb),
-                    Arc::clone(&first_buffer_nanos_cb),
-                    Arc::clone(&stream_errored_cb),
-                    role,
-                ),
-                other => {
-                    // panic = "abort" (Cargo.toml:143) makes any panic here a silent
-                    // whole-process death, and a loopback MASTER reaches this path in
-                    // system-audio-only mode.
-                    log::error!("Unsupported capture sample format: {other:?}");
-                    arm_errored_worker.store(true, Ordering::Release);
-                    let _ = ready_tx.send(Err(format!("unsupported sample format {other:?}")));
-                    return;
-                }
-            };
-            let stream = match stream {
+            let stream = match AudioRecorder::build_any_stream(
+                &thread_device,
+                &config,
+                sample_tx,
+                channels,
+                stream_start,
+                Arc::clone(&first_buffer_seen_cb),
+                Arc::clone(&first_buffer_nanos_cb),
+                Arc::clone(&stream_errored_cb),
+                role,
+            ) {
                 Ok(s) => s,
                 Err(e) => {
                     log::error!("Capture stream construction failed: {e}");
                     arm_errored_worker.store(true, Ordering::Release);
-                    let _ = ready_tx.send(Err(e.to_string()));
+                    let _ = ready_tx.send(Err(e));
                     return;
                 }
             };
@@ -689,7 +836,7 @@ impl AudioRecorder {
 
             // keep the stream alive while we process samples
             run_consumer(
-                &stream,
+                CaptureStream::Local(stream),
                 sample_rate,
                 vad,
                 sample_rx,
@@ -842,6 +989,48 @@ impl AudioRecorder {
         }
         self.device = None;
         Ok(())
+    }
+
+    /// Builds the input stream for whatever sample format `config` has.
+    #[allow(clippy::too_many_arguments)]
+    fn build_any_stream(
+        device: &cpal::Device,
+        config: &cpal::SupportedStreamConfig,
+        sample_tx: mpsc::Sender<Vec<f32>>,
+        channels: usize,
+        stream_start: Instant,
+        first_buffer_seen: Arc<AtomicBool>,
+        first_buffer_nanos: Arc<AtomicU64>,
+        stream_errored: Arc<AtomicBool>,
+        role: EndpointRole,
+    ) -> Result<cpal::Stream, String> {
+        macro_rules! build {
+            ($t:ty) => {
+                AudioRecorder::build_stream::<$t>(
+                    device,
+                    config,
+                    sample_tx,
+                    channels,
+                    stream_start,
+                    first_buffer_seen,
+                    first_buffer_nanos,
+                    stream_errored,
+                    role,
+                )
+                .map_err(|e| e.to_string())
+            };
+        }
+        match config.sample_format() {
+            cpal::SampleFormat::U8 => build!(u8),
+            cpal::SampleFormat::I8 => build!(i8),
+            cpal::SampleFormat::I16 => build!(i16),
+            cpal::SampleFormat::I32 => build!(i32),
+            cpal::SampleFormat::F32 => build!(f32),
+            // panic = "abort" (Cargo.toml) makes any panic here a silent
+            // whole-process death, and a loopback MASTER reaches this path in
+            // system-audio-only mode.
+            other => Err(format!("unsupported sample format {other:?}")),
+        }
     }
 
     fn build_stream<T>(
@@ -1677,11 +1866,12 @@ fn stream_error_kind(message: &str) -> std::io::ErrorKind {
 
 #[allow(clippy::too_many_arguments)]
 fn run_consumer(
-    // Only for a long pause: stopped to release the device, started on resume.
-    stream: &cpal::Stream,
+    // Paused for a long pause (releases the device), replaced by a mid-take
+    // microphone switch.
+    mut stream: CaptureStream,
     in_sample_rate: u32,
     vad: Option<Arc<Mutex<Box<dyn vad::VoiceActivityDetector>>>>,
-    sample_rx: mpsc::Receiver<Vec<f32>>,
+    mut sample_rx: mpsc::Receiver<Vec<f32>>,
     cmd_rx: mpsc::Receiver<Cmd>,
     level_cb: Option<LevelCb>,
     warmup_cb: Option<WarmupReport>,
@@ -1732,18 +1922,21 @@ fn run_consumer(
     // The pill's sound bars, low to high pitch (16 in the middle of the pill).
     const BUCKETS: usize = 16;
     const WINDOW_SIZE: usize = 512;
-    let mut visualizer = AudioVisualiser::new(
-        in_sample_rate,
-        WINDOW_SIZE,
-        BUCKETS,
-        400.0,  // vocal_min_hz
-        4000.0, // vocal_max_hz
-    )
-    // A voice has most of its energy low: measured over 12 of this PC's takes,
-    // the right half of the bars averaged 0.01-0.03 against 0.23-0.28 on the left.
-    // +8 dB per octave above 500 Hz evens that out (0.12-0.29 everywhere), and
-    // the quiet moments between words still show nothing.
-    .with_tilt(8.0, 500.0);
+    let mic_visualizer = |rate: u32| {
+        AudioVisualiser::new(
+            rate,
+            WINDOW_SIZE,
+            BUCKETS,
+            400.0,  // vocal_min_hz
+            4000.0, // vocal_max_hz
+        )
+        // A voice has most of its energy low: measured over 12 of this PC's takes,
+        // the right half of the bars averaged 0.01-0.03 against 0.23-0.28 on the left.
+        // +8 dB per octave above 500 Hz evens that out (0.12-0.29 everywhere), and
+        // the quiet moments between words still show nothing.
+        .with_tilt(8.0, 500.0)
+    };
+    let mut visualizer = mic_visualizer(in_sample_rate);
     // While the microphone leg is left out (System audio chosen mid-take) the bars
     // show what is recorded instead: the mixed 16 kHz frames, not the microphone.
     let mut mixed_visualizer = AudioVisualiser::new(
@@ -2220,6 +2413,64 @@ fn run_consumer(
                         if ring.is_some() { "added" } else { "removed" }
                     );
                     live_mix.set_system(ring);
+                }
+                Cmd::SwapMaster(swap) => {
+                    let MasterSwap {
+                        producer,
+                        rx,
+                        rate,
+                        reply,
+                    } = swap;
+                    // 1. The old microphone stops: nothing more reaches its channel.
+                    drop(std::mem::replace(
+                        &mut stream,
+                        CaptureStream::Producer(producer),
+                    ));
+                    // 2. What it still had queued belongs to the take, through its own
+                    //    resampler (it knows the old rate), down to the last partial frame.
+                    let keep = recording && !paused;
+                    let mut feed = |frame: &[f32]| {
+                        mix_buf.clear();
+                        mix_buf.extend_from_slice(frame);
+                        live_mix.apply(&mut mix_buf, &mut mix_scratch);
+                        process_frame(
+                            &mix_buf,
+                            keep,
+                            &vad,
+                            &mut chunk_state,
+                            &mut processed_samples,
+                            &mut segment_start_idx,
+                            &segment_cb,
+                            &closed_chunk_cb,
+                            &mut stop_tail,
+                        )
+                    };
+                    while let Ok(remaining) = sample_rx.try_recv() {
+                        frame_resampler.push(&remaining, &mut feed);
+                    }
+                    frame_resampler.finish(&mut feed);
+                    // 3. The new microphone from now on. What it captured while it was
+                    //    being opened came before this point and is left out.
+                    sample_rx = rx;
+                    while sample_rx.try_recv().is_ok() {}
+                    frame_resampler = FrameResampler::new(
+                        rate as usize,
+                        constants::WHISPER_SAMPLE_RATE as usize,
+                        Duration::from_millis(30),
+                    );
+                    visualizer = mic_visualizer(rate);
+                    // Already delivering audio: no "Starting mic" wait, and its
+                    // warm-up is not measured (that is for a cold open).
+                    cold_start = Some(false);
+                    if mic_released {
+                        if let Err(e) = stream.pause() {
+                            log::warn!(
+                                "Could not keep the new microphone released during the pause: {e}"
+                            );
+                        }
+                    }
+                    log::info!("Microphone switched during the take ({rate} Hz)");
+                    let _ = reply.send(());
                 }
                 Cmd::MicLeg(on) => {
                     log::info!(
@@ -2705,5 +2956,126 @@ mod live_mix_tests {
         mix.set_system(None);
         assert!(mix.draining.is_empty());
         assert_eq!(frame(&mut mix, 0.2), vec![0.2; 480]);
+    }
+}
+
+#[cfg(test)]
+mod swap_tests {
+    use super::*;
+
+    /// A stream "owned" by a thread that only answers pause/play.
+    fn fake_producer() -> StreamProducer {
+        let (ctl_tx, ctl_rx) = mpsc::channel::<ProducerCmd>();
+        let handle = std::thread::spawn(move || {
+            while let Ok(cmd) = ctl_rx.recv() {
+                match cmd {
+                    ProducerCmd::Pause(reply) | ProducerCmd::Play(reply) => {
+                        let _ = reply.send(Ok(()));
+                    }
+                }
+            }
+        });
+        StreamProducer {
+            ctl_tx: Some(ctl_tx),
+            handle: Some(handle),
+        }
+    }
+
+    fn spawn_consumer(
+        rate: u32,
+        rx: mpsc::Receiver<Vec<f32>>,
+    ) -> (mpsc::Sender<Cmd>, std::thread::JoinHandle<()>) {
+        let (cmd_tx, cmd_rx) = mpsc::channel();
+        let handle = std::thread::spawn(move || {
+            run_consumer(
+                CaptureStream::Producer(fake_producer()),
+                rate,
+                None,
+                rx,
+                cmd_rx,
+                None,
+                None,
+                Arc::new(AtomicU32::new(0)),
+                Arc::new(AtomicBool::new(false)),
+                Arc::new(Mutex::new(None)),
+                Arc::new(Mutex::new(None)),
+                Arc::new(AtomicBool::new(true)),
+                Arc::new(AtomicU64::new(0)),
+                Duration::ZERO,
+                Duration::ZERO,
+                None,
+                1.0,
+            );
+        });
+        (cmd_tx, handle)
+    }
+
+    #[test]
+    fn a_microphone_switched_mid_take_keeps_both_parts_of_the_take() {
+        let (tx1, rx1) = mpsc::channel();
+        let (cmd, consumer) = spawn_consumer(16_000, rx1);
+        cmd.send(Cmd::Start(None)).unwrap();
+        std::thread::sleep(Duration::from_millis(250));
+        // 1 s from the first microphone (16 kHz), not yet consumed at the switch.
+        tx1.send(vec![0.5; 16_000]).unwrap();
+
+        // The new microphone runs at 48 kHz; what it captured while it was being
+        // opened is from before the switch and must be left out.
+        let (tx2, rx2) = mpsc::channel();
+        tx2.send(vec![0.9; 4_800]).unwrap();
+        let (reply_tx, reply_rx) = mpsc::channel();
+        cmd.send(Cmd::SwapMaster(MasterSwap {
+            producer: fake_producer(),
+            rx: rx2,
+            rate: 48_000,
+            reply: reply_tx,
+        }))
+        .unwrap();
+        reply_rx.recv_timeout(Duration::from_secs(2)).unwrap();
+        // The old channel is gone: the retired stream can add nothing more.
+        assert!(tx1.send(vec![0.5; 160]).is_err());
+        // 1 s from the new microphone.
+        tx2.send(vec![0.25; 48_000]).unwrap();
+        std::thread::sleep(Duration::from_millis(400));
+
+        let (stop_tx, stop_rx) = mpsc::channel();
+        cmd.send(Cmd::Stop(stop_tx)).unwrap();
+        let kept = stop_rx.recv_timeout(Duration::from_secs(3)).unwrap();
+        cmd.send(Cmd::Shutdown).unwrap();
+        consumer.join().unwrap();
+
+        // Both seconds are in the take, at 16 kHz (resampler edges aside).
+        assert!(
+            (31_000..=34_000).contains(&kept.len()),
+            "kept {} samples",
+            kept.len()
+        );
+        let first = kept
+            .iter()
+            .take(15_000)
+            .filter(|s| (**s - 0.5).abs() < 0.05);
+        assert!(
+            first.count() > 14_000,
+            "the first microphone's second is kept"
+        );
+        let second = kept
+            .iter()
+            .rev()
+            .take(14_000)
+            .filter(|s| (**s - 0.25).abs() < 0.05);
+        assert!(
+            second.count() > 13_000,
+            "the new microphone's second is kept"
+        );
+        // Nothing of the 0.9 audio captured before the switch.
+        assert!(kept.iter().all(|s| *s < 0.8));
+    }
+
+    #[test]
+    fn a_retired_stream_closes_with_its_owner() {
+        let producer = fake_producer();
+        assert_eq!(producer.ask(ProducerCmd::Pause), Ok(()));
+        // Dropping it ends the thread (joins), so a switch never leaks a stream.
+        drop(producer);
     }
 }
