@@ -31,9 +31,14 @@ import {
   ToolCase,
   Type,
   Cpu,
+  ChevronDown,
+  ChevronUp,
+  CornerUpRight,
+  Palette,
 } from "lucide-react";
 import AppIcon from "./icons/AppIcon";
 import { SetupsPage } from "./settings/setups/SetupsPage";
+import { AppearancePage } from "./settings/appearance/AppearancePage";
 import {
   WhatsNewPage,
   WHATS_NEW_SEEN_EVENT,
@@ -46,6 +51,10 @@ import { useUpdaterStatus } from "../hooks/useUpdaterStatus";
 import { SidebarSearch } from "./SidebarSearch";
 import { useSettings } from "../hooks/useSettings";
 import { useNavStore } from "../stores/navStore";
+import { resolveSidebar, samePinTarget } from "../lib/sidebarLayout";
+import { pinIcon } from "./sidebar/pinIcons";
+import { usePinLabel } from "./sidebar/useSidebarLayout";
+import type { SidebarShortcut } from "@/bindings";
 import {
   GeneralSettings,
   ShortcutsSettings,
@@ -230,6 +239,14 @@ export const SECTIONS_CONFIG = {
     placement: "more-settings",
     enabled: () => osType() === "windows",
   },
+  // How the app itself looks: theme and the sidebar (2.7.0).
+  appearance: {
+    labelKey: "sidebar.appearance",
+    icon: Palette,
+    component: AppearancePage,
+    placement: "more-settings",
+    enabled: () => true,
+  },
   backup: {
     labelKey: "sidebar.backup",
     icon: Archive,
@@ -315,6 +332,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const { settings } = useSettings();
   const lastMoreSection = useNavStore((state) => state.lastMoreSection);
   const lastToolsSection = useNavStore((state) => state.lastToolsSection);
+  const historyTab = useNavStore((state) => state.historyTab);
+  const navigateTo = useNavStore((state) => state.navigateTo);
+  const pinLabel = usePinLabel();
+  // "Show more" opened (this session only).
+  const [moreOpen, setMoreOpen] = useState(false);
   const [width, setWidth] = useState<number>(loadSidebarWidth);
   const [searchQuery, setSearchQuery] = useState("");
   // What's new carries a dot until this version's news were opened.
@@ -480,6 +502,68 @@ export const Sidebar: React.FC<SidebarProps> = ({
     );
   };
 
+  // The sidebar's entries: pages placed in it, More Tools after Jumper and
+  // Advanced settings last - then arranged as the user chose (Appearance).
+  const defaultEntries = Object.entries(SECTIONS_CONFIG)
+    .filter(([_, config]) => config.placement === "sidebar")
+    .map(([id]) => id);
+  defaultEntries.splice(defaultEntries.indexOf("jumper") + 1, 0, "more-tools");
+  defaultEntries.push("more-settings");
+  const isGroup = (id: string): id is MoreGroup => id in MORE_GROUPS;
+  const entryShown = (id: string) =>
+    isGroup(id)
+      ? availableSections.some((s) => s.placement === id)
+      : availableSections.some((s) => s.id === id);
+  const layout = resolveSidebar(
+    settings?.sidebar_layout,
+    defaultEntries,
+    entryShown,
+    (id) => id in SECTIONS_CONFIG,
+  );
+  const renderEntry = (id: string) => {
+    if (isGroup(id)) return renderGroup(id);
+    const config = SECTIONS_CONFIG[id as SidebarSection];
+    return renderItem(
+      id,
+      config.icon,
+      t(config.labelKey),
+      activeSection === id,
+      () => onSectionChange(id as SidebarSection),
+      id === "whatsNew" && newsUnseen,
+    );
+  };
+  // A pinned page: its own icon with a small arrow on it - a jump, not a section.
+  const renderPin = (pin: SidebarShortcut) => {
+    const Icon = pinIcon(pin.icon);
+    const active = samePinTarget(
+      pin,
+      activeSection,
+      activeSection === "history" && pin.history_tab ? historyTab : null,
+    );
+    const PinIcon = (props: IconProps) => (
+      <span className="relative inline-flex shrink-0">
+        <Icon width={props.width} height={props.height} />
+        <CornerUpRight
+          aria-hidden
+          className="absolute -bottom-1 -end-1.5 w-2.5 h-2.5 rounded-sm bg-sidebar text-accent-text rtl:-scale-x-100"
+        />
+      </span>
+    );
+    return renderItem(`pin-${pin.id}`, PinIcon, pinLabel(pin), active, () =>
+      navigateTo(
+        pin.section as SidebarSection,
+        (pin.history_tab ?? undefined) as Parameters<typeof navigateTo>[1],
+      ),
+    );
+  };
+  const activeEntry =
+    SECTIONS_CONFIG[activeSection].placement === "sidebar"
+      ? activeSection
+      : SECTIONS_CONFIG[activeSection].placement;
+  const hasMore = layout.more.length + layout.pinsMore.length > 0;
+  // The page open is under Show more: show it, so the sidebar says where you are.
+  const showMore = moreOpen || layout.more.includes(activeEntry);
+
   return (
     <div
       className="relative flex flex-col h-full shrink-0 bg-sidebar border-e border-border items-center px-2 overflow-y-auto overflow-x-hidden"
@@ -506,24 +590,51 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div
           className={`${searchQuery.trim() ? "hidden" : "flex"} flex-col w-full gap-1`}
         >
-          {sidebarSections.map((section) => (
-            <React.Fragment key={section.id}>
-              {renderItem(
-                section.id,
-                section.icon,
-                t(section.labelKey),
-                activeSection === section.id,
-                () => onSectionChange(section.id),
-                section.id === "whatsNew" && newsUnseen,
-              )}
-              {section.id === "history" && (
+          {layout.pinsTop.length > 0 && (
+            <>
+              <p className="px-2.5 pt-0.5 text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
+                {t("sidebar.pinned.title")}
+              </p>
+              {layout.pinsTop.map(renderPin)}
+              <div className="mx-2 my-1 border-t border-border" />
+            </>
+          )}
+          {layout.shown.map((id) => (
+            <React.Fragment key={id}>
+              {layout.isDefault && id === "more-settings" && (
                 <div className="mx-2 my-1 border-t border-border" />
               )}
-              {section.id === "jumper" && renderGroup("more-tools")}
+              {renderEntry(id)}
+              {layout.isDefault && id === "history" && (
+                <div className="mx-2 my-1 border-t border-border" />
+              )}
             </React.Fragment>
           ))}
-          <div className="mx-2 my-1 border-t border-border" />
-          {renderGroup("more-settings")}
+          {hasMore && (
+            <>
+              <button
+                type="button"
+                onClick={() => setMoreOpen((open) => !open)}
+                aria-expanded={showMore}
+                className="flex gap-3 items-center h-8 px-2.5 w-full rounded-md text-sm text-text-secondary hover:bg-hover hover:text-text cursor-pointer transition-colors"
+              >
+                {showMore ? (
+                  <ChevronUp width={16} height={16} className="shrink-0" />
+                ) : (
+                  <ChevronDown width={16} height={16} className="shrink-0" />
+                )}
+                {showMore
+                  ? t("sidebar.pinned.showLess")
+                  : t("sidebar.pinned.showMore")}
+              </button>
+              {showMore && (
+                <>
+                  {layout.more.map((id) => renderEntry(id))}
+                  {layout.pinsMore.map(renderPin)}
+                </>
+              )}
+            </>
+          )}
           <UpdateBanner suppressStatus={updatePanelOpen} />
         </div>
       </div>

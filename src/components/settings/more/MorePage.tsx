@@ -37,7 +37,8 @@ export const MorePage: React.FC<{ section: SidebarSection }> = ({
   return (
     <div className="w-full space-y-6">
       <div className={`-mt-6 pt-6 flex flex-col gap-3 ${STICKY_TABS}`}>
-        <PageTitle icon={icon} label={t(labelKey)} />
+        {/* The pin pins the open tab, not the whole group. */}
+        <PageTitle icon={icon} label={t(labelKey)} pin={{ section }} />
         <TabBar
           tabs={Object.entries(SECTIONS_CONFIG)
             .filter(

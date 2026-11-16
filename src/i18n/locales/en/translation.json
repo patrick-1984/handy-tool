@@ -88,7 +88,16 @@
     "moreTools": "More Tools",
     "sttServer": "STT server",
     "combine": "Combine recordings",
-    "speakers": "Speakers"
+    "speakers": "Speakers",
+    "appearance": "Appearance",
+    "pinned": {
+      "title": "Pinned",
+      "pin": "Pin to sidebar",
+      "unpin": "Unpin",
+      "limit": "Up to 50 pages can be pinned. Unpin one first.",
+      "showMore": "Show more",
+      "showLess": "Show less"
+    }
   },
   "helpMode": {
     "button": "Help mode: point at a setting to see what it does",
@@ -2371,6 +2380,27 @@
           "stt_server": "STT server"
         }
       }
+    },
+    "appearance": {
+      "pins": {
+        "title": "Pinned pages",
+        "description": "Pin a page with the pin next to ? in its title. Here you can rename them, pick an icon, order them and choose where they show.",
+        "empty": "Nothing pinned yet.",
+        "icon": "Choose an icon",
+        "name": "Name",
+        "unavailable": "Not available now"
+      },
+      "sidebar": {
+        "title": "Sidebar",
+        "description": "Order the sidebar and choose which entries sit under Show more. Built-in entries keep their names.",
+        "reset": "Reset the sidebar"
+      },
+      "place": {
+        "top": "In the sidebar",
+        "more": "Under Show more"
+      },
+      "moveUp": "Move up",
+      "moveDown": "Move down"
     }
   },
   "common": {

@@ -21,8 +21,15 @@ const isEditable = (target: EventTarget | null): boolean => {
  * buttons and Alt+←/Alt+→. The WebView's own history is never used (the app
  * has none), so its default action is always blocked.
  */
-export const useBackForward = (settings: AppSettings | null | undefined) => {
+export const useBackForward = (
+  settings: AppSettings | null | undefined,
+  enabled: boolean,
+) => {
   useEffect(() => {
+    if (!enabled) return;
+    // A dialog is open: going to another page would pull the page from under it.
+    const dialogOpen = () =>
+      document.querySelector('[aria-modal="true"]') !== null;
     const canShow = (target: NavTarget) => {
       const config = SECTIONS_CONFIG[target.section as SidebarSection];
       return !!config && (!settings || config.enabled(settings));
@@ -41,16 +48,30 @@ export const useBackForward = (settings: AppSettings | null | undefined) => {
     const onMouseUp = (e: MouseEvent) => {
       if (!isSideButton(e)) return;
       e.preventDefault();
+      if (dialogOpen()) return;
       go(e.button === BACK_BUTTON ? "back" : "forward");
     };
     const onKeyDown = (e: KeyboardEvent) => {
-      if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
-      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      // Alt+←/→, and on macOS also Cmd+[ / Cmd+] as in its browsers.
+      const alt =
+        e.altKey &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        !e.shiftKey &&
+        (e.key === "ArrowLeft" || e.key === "ArrowRight");
+      const cmd =
+        e.metaKey &&
+        !e.ctrlKey &&
+        !e.altKey &&
+        !e.shiftKey &&
+        (e.key === "[" || e.key === "]");
+      if (!alt && !cmd) return;
       // Option+←/→ moves by word in a text field (macOS), and a shortcut
       // field may be recording this very chord.
-      if (isEditable(e.target) || isShortcutCaptureActive()) return;
+      if (isEditable(e.target) || isShortcutCaptureActive() || dialogOpen())
+        return;
       e.preventDefault();
-      go(e.key === "ArrowLeft" ? "back" : "forward");
+      go(e.key === "ArrowLeft" || e.key === "[" ? "back" : "forward");
     };
 
     window.addEventListener("mousedown", block, true);
@@ -63,5 +84,5 @@ export const useBackForward = (settings: AppSettings | null | undefined) => {
       window.removeEventListener("mouseup", onMouseUp, true);
       window.removeEventListener("keydown", onKeyDown, true);
     };
-  }, [settings]);
+  }, [settings, enabled]);
 };

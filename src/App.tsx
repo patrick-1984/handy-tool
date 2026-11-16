@@ -20,6 +20,7 @@ import {
 import { MorePage } from "./components/settings/more/MorePage";
 import { useSettings } from "./hooks/useSettings";
 import { lastPage, useNavStore } from "./stores/navStore";
+import { EMPTY_HISTORY } from "./lib/navHistory";
 import { useSettingsStore } from "./stores/settingsStore";
 import { useModelStore } from "./stores/modelStore";
 import { RUN_SETUP_EVENT } from "./lib/runSetup";
@@ -35,8 +36,19 @@ type OnboardingStep = "accessibility" | "model" | "done";
 /** A sidebar page's title, with its sidebar icon. */
 function PageHeader({ section }: { section: SidebarSection }) {
   const { t } = useTranslation();
+  const historyTab = useNavStore((state) => state.historyTab);
   const { icon, labelKey } = SECTIONS_CONFIG[section];
-  return <PageTitle icon={icon} label={t(labelKey)} />;
+  // History pins the tab that is open; other pages pin themselves.
+  return (
+    <PageTitle
+      icon={icon}
+      label={t(labelKey)}
+      pin={{
+        section,
+        historyTab: section === "history" ? historyTab : null,
+      }}
+    />
+  );
 }
 
 const renderSettingsContent = (section: SidebarSection) => {
@@ -64,7 +76,7 @@ function App() {
   const currentSection = useNavStore((state) => state.currentSection);
   const setCurrentSection = useNavStore((state) => state.setCurrentSection);
   const { settings, updateSetting } = useSettings();
-  useBackForward(settings);
+  useBackForward(settings, onboardingStep === "done");
   const direction = getLanguageDirection(i18n.language);
   // Resolved (never "system") light/dark value driving this window's
   // data-theme attribute AND the Sonner toaster — a single source of truth
@@ -228,6 +240,8 @@ function App() {
       SECTIONS_CONFIG[page as SidebarSection].enabled(settings)
     ) {
       navigateTo(page as SidebarSection);
+      // Back starts from here: the moment on General before is no visit.
+      useNavStore.setState({ navHistory: EMPTY_HISTORY });
     }
   }, [settings, navigateTo]);
   useEffect(() => {
