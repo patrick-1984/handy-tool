@@ -933,7 +933,7 @@ export const commands = {
     path: string,
     modelId: string,
     save: FileTextSave,
-  ): Promise<Result<null, string>> {
+  ): Promise<Result<number, string>> {
     try {
       return {
         status: "ok",
@@ -970,8 +970,19 @@ export const commands = {
   /**
    * Stops the file being transcribed after the piece in progress.
    */
-  async cancelFileJob(): Promise<void> {
-    await TAURI_INVOKE("cancel_file_job");
+  async cancelFileJob(jobId: number | null): Promise<void> {
+    await TAURI_INVOKE("cancel_file_job", { jobId });
+  },
+  async beginFileBatch(): Promise<Result<null, string>> {
+    try {
+      return { status: "ok", data: await TAURI_INVOKE("begin_file_batch") };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  async endFileBatch(modelId: string | null): Promise<void> {
+    await TAURI_INVOKE("end_file_batch", { modelId });
   },
   /**
    * Transcribed files, newest first.
@@ -3989,16 +4000,39 @@ export type FileTranscription = {
  * The file being transcribed, or how the last one ended.
  */
 export type FileJob =
-  | { state: "decoding"; file_name: string }
+  | {
+      state: "decoding";
+      job_id: number;
+      source_path: string;
+      file_name: string;
+    }
   | {
       state: "transcribing";
+      job_id: number;
+      source_path: string;
       file_name: string;
       done_secs: number;
       total_secs: number;
     }
-  | { state: "done"; entry: FileTranscription }
-  | { state: "failed"; file_name: string; error: string }
-  | { state: "cancelled"; file_name: string };
+  | {
+      state: "done";
+      job_id: number;
+      source_path: string;
+      entry: FileTranscription;
+    }
+  | {
+      state: "failed";
+      job_id: number;
+      source_path: string;
+      file_name: string;
+      error: string;
+    }
+  | {
+      state: "cancelled";
+      job_id: number;
+      source_path: string;
+      file_name: string;
+    };
 export type TranslatorStatus = {
   enabled: boolean;
   queue: string[];

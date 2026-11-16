@@ -502,6 +502,8 @@ pub fn run(cli_args: CliArgs) {
         commands::files::retranscribe_history_entry,
         commands::files::get_file_job,
         commands::files::cancel_file_job,
+        commands::files::begin_file_batch,
+        commands::files::end_file_batch,
         commands::files::get_file_transcriptions,
         commands::files::delete_file_transcription,
         commands::files::get_files_folder,

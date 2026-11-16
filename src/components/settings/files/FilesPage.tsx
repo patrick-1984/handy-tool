@@ -510,7 +510,7 @@ const TranscribeFile: React.FC<{ onFinished: () => void }> = ({
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => void commands.cancelFileJob()}
+                onClick={() => void commands.cancelFileJob(null)}
               >
                 {t("settings.files.transcribe.cancel")}
               </Button>
