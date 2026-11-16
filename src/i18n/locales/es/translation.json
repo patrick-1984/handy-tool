@@ -73,7 +73,16 @@
     "moreTools": "Más herramientas",
     "sttServer": "Servidor STT",
     "combine": "Combinar grabaciones",
-    "speakers": "Hablantes"
+    "speakers": "Hablantes",
+    "appearance": "Apariencia",
+    "pinned": {
+      "title": "Fijadas",
+      "pin": "Fijar en la barra lateral",
+      "unpin": "Desfijar",
+      "limit": "Se pueden fijar hasta 50 páginas. Desfija una primero.",
+      "showMore": "Mostrar más",
+      "showLess": "Mostrar menos"
+    }
   },
   "helpMode": {
     "button": "Modo ayuda: señala un ajuste para ver qué hace",
@@ -2159,6 +2168,49 @@
         "showLess": "Mostrar menos",
         "reveal": "Mostrar en la carpeta",
         "delete": "Quitar de la lista"
+      },
+      "batch": {
+        "skipped": "Omitidos (no son archivos de audio que Handy pueda leer): {{names}}",
+        "progress": "Archivo {{current}} de {{total}}: {{name}}",
+        "order": {
+          "title": "Ordenar archivos ({{count}})",
+          "description": "Los textos se unen en este orden. Arrastra una fila por su asa o usa las flechas; reproduce un archivo para comprobar qué es.",
+          "drag": "Arrastra para reordenar",
+          "play": "Reproducir",
+          "stop": "Detener",
+          "moveUp": "Subir",
+          "moveDown": "Bajar",
+          "remove": "Quitar de la lista",
+          "noDate": "Sin fecha",
+          "noLength": "Duración desconocida",
+          "empty": "No quedan archivos en la lista.",
+          "playFailed": "{{name}} no se puede reproducir aquí (aun así se puede transcribir).",
+          "modelNotReady": "Descarga primero el modelo.",
+          "transcribe": "Transcribir {{count}} archivos"
+        },
+        "options": {
+          "title": "Texto combinado",
+          "separator": {
+            "label": "Entre archivos",
+            "none": "Nada (línea siguiente)",
+            "blank_line": "Una línea vacía",
+            "divider": "Una línea divisoria"
+          },
+          "numbered": "Numerar las partes (1., 2., 3. …)",
+          "names": "Nombre del archivo antes de cada parte"
+        },
+        "result": {
+          "title": "{{done}} de {{total}} archivos transcritos",
+          "copyAll": "Copiar todo",
+          "clear": "Borrar",
+          "perFile": "Cada archivo",
+          "failed": "Error: {{error}}",
+          "notTranscribed": "No transcrito.",
+          "showAll": "Mostrar todo",
+          "showLess": "Mostrar menos",
+          "stopped": "El lote se detuvo: {{error}}",
+          "cancelled": "Cancelado. Las partes terminadas están abajo; el texto combinado no se guardó."
+        }
       }
     },
     "currentAudio": {
@@ -2313,6 +2365,27 @@
           "stt_server": "Servidor STT"
         }
       }
+    },
+    "appearance": {
+      "pins": {
+        "title": "Páginas fijadas",
+        "description": "Fija una página con la chincheta junto al ? de su título. Aquí puedes renombrarlas, elegir un icono, ordenarlas y decidir dónde aparecen.",
+        "empty": "Todavía no hay nada fijado.",
+        "icon": "Elegir un icono",
+        "name": "Nombre",
+        "unavailable": "No disponible ahora"
+      },
+      "sidebar": {
+        "title": "Barra lateral",
+        "description": "Ordena la barra lateral y elige qué entradas quedan bajo Mostrar más. Las entradas integradas conservan sus nombres.",
+        "reset": "Restablecer la barra lateral"
+      },
+      "place": {
+        "top": "En la barra lateral",
+        "more": "Bajo Mostrar más"
+      },
+      "moveUp": "Subir",
+      "moveDown": "Bajar"
     }
   },
   "common": {
@@ -2373,7 +2446,10 @@
       "changeShortcut": "Cambiar atajo…",
       "liveTextSettings": "Ajustes del cuadro de texto en vivo…",
       "hidePause": "Ocultar el botón de pausa",
-      "soundSourceSettings": "Ajustes de la fuente de sonido…"
+      "soundSourceSettings": "Ajustes de la fuente de sonido…",
+      "microphone": "Micrófono",
+      "defaultMicrophone": "Micrófono predeterminado",
+      "soundSettings": "Configuración de sonido…"
     },
     "tooQuiet": "Muy bajo: habla alto",
     "captureSource": {
@@ -2713,6 +2789,26 @@
       "historySearch": {
         "title": "Texto completo y número de coincidencias en la búsqueda del historial",
         "description": "La búsqueda del historial vuelve a mostrar el texto completo de cada grabación, con cada coincidencia resaltada, y cuántas hay: en total, en cada grabación y, con varias palabras, por palabra. Ordena por «Más coincidencias» para ver primero los mejores resultados, o marca Vistas previas cortas para ver solo unas líneas."
+      },
+      "pinPages": {
+        "title": "Fija cualquier página en la barra lateral",
+        "description": "Una chincheta junto al ? en el título de cada página coloca esa página (o pestaña del Historial) en una sección Fijadas arriba de la barra lateral: un clic para llegar. Haz clic de nuevo para desfijarla."
+      },
+      "backForward": {
+        "title": "Atrás y Adelante",
+        "description": "Los botones laterales Atrás y Adelante del ratón, y Alt+← / Alt+→ (Cmd+[ / Cmd+] en un Mac), recorren las páginas que abriste, como en un navegador."
+      },
+      "appearancePage": {
+        "title": "Organiza la barra lateral",
+        "description": "Ajustes avanzados › Apariencia: ordena la barra lateral, mueve las entradas que usas poco bajo Mostrar más, y renombra las páginas fijadas, dales uno de 20 iconos y elige dónde aparecen."
+      },
+      "pillMicrophone": {
+        "title": "Cambia el micrófono desde la píldora, incluso mientras grabas",
+        "description": "Haz clic derecho en las barras de sonido de la píldora para elegir otro micrófono (y, en Windows, la fuente de sonido). Un cambio durante una grabación ahora se aplica a esa grabación al instante; antes, cambiar el micrófono a mitad de grabación la perdía."
+      },
+      "filesBatch": {
+        "title": "Varios archivos a la vez",
+        "description": "Elige o suelta varias grabaciones en Archivos. Ordénalas (primero por fecha, arrastrando o con flechas, reproduce una para comprobarla), elige un separador, números y nombres de archivo, y obtén un único texto combinado para copiar, además del texto propio de cada archivo."
       }
     },
     "installed": "Instalada"

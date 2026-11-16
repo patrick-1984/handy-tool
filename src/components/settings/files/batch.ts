@@ -21,7 +21,7 @@ export const AUDIO_EXTENSIONS = [
 ];
 
 export const fileNameOf = (path: string): string =>
-  path.split(/[\/]/).pop() ?? path;
+  path.split(/[\\/]/).pop() ?? path;
 
 export const isAudioPath = (path: string): boolean =>
   AUDIO_EXTENSIONS.includes(path.split(".").pop()?.toLowerCase() ?? "");

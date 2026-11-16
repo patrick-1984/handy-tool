@@ -18,7 +18,7 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_opener::OpenerExt;
@@ -91,7 +91,31 @@ static NEXT_JOB_ID: AtomicU32 = AtomicU32::new(1);
 /// Several files are being transcribed one after another (Files page): between
 /// two of them no file is running, but the updater must still wait and the
 /// model stays loaded until the last one.
-static BATCH_HOLD: AtomicBool = AtomicBool::new(false);
+/// Its owner is the token begin_file_batch handed out (0 = none); only that
+/// owner ends it. It also lapses 60 s after the batch last showed a sign of
+/// life (a file started or progressed), so a batch whose window was reloaded
+/// can never hold the updater back for good.
+static BATCH_OWNER: AtomicU32 = AtomicU32::new(0);
+static BATCH_UNTIL_MS: AtomicU64 = AtomicU64::new(0);
+const BATCH_HOLD_GRACE_MS: u64 = 60_000;
+
+fn now_ms() -> u64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or(0)
+}
+
+fn batch_held() -> bool {
+    BATCH_OWNER.load(Ordering::SeqCst) != 0 && now_ms() < BATCH_UNTIL_MS.load(Ordering::SeqCst)
+}
+
+/// A sign of life from the batch: its hold lasts another 60 s.
+fn touch_batch() {
+    if BATCH_OWNER.load(Ordering::SeqCst) != 0 {
+        BATCH_UNTIL_MS.store(now_ms() + BATCH_HOLD_GRACE_MS, Ordering::SeqCst);
+    }
+}
 
 fn cancelled(job_id: u32) -> bool {
     CANCEL.load(Ordering::SeqCst) == job_id
@@ -104,7 +128,7 @@ static LOG_LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
 /// History's "Transcribe again" counts too (its text is not saved yet either).
 pub fn file_job_running() -> bool {
     RETRANSCRIBING.load(Ordering::SeqCst)
-        || BATCH_HOLD.load(Ordering::SeqCst)
+        || batch_held()
         || BACKGROUND_SPEAKERS.load(Ordering::SeqCst) > 0
         || matches!(
             *JOB.lock().unwrap_or_else(|p| p.into_inner()),
@@ -113,6 +137,7 @@ pub fn file_job_running() -> bool {
 }
 
 fn publish(app: &AppHandle, job: FileJob) {
+    touch_batch();
     *JOB.lock().unwrap_or_else(|p| p.into_inner()) = Some(job.clone());
     let _ = app.emit("file-job", job);
 }
@@ -405,7 +430,7 @@ pub fn usable_for_folders(settings: &AppSettings, models: &ModelManager, model: 
 /// A model loaded into the second slot only for a file doesn't stay in memory.
 pub(crate) fn release_model(app: &AppHandle, model: &str) {
     // Several files in a row: unloaded once, after the last (end_file_batch).
-    if BATCH_HOLD.load(Ordering::SeqCst) {
+    if batch_held() {
         return;
     }
     let settings = get_settings(app);
@@ -546,6 +571,7 @@ pub fn transcribe_file(
     let file_name = file_name_of(&path);
     let source_path = path.display().to_string();
     let job_id = NEXT_JOB_ID.fetch_add(1, Ordering::SeqCst);
+    touch_batch();
     {
         let mut job = JOB.lock().unwrap_or_else(|p| p.into_inner());
         if matches!(
@@ -780,21 +806,50 @@ pub fn cancel_file_job(job_id: Option<u32>) {
 /// waits and the model stays loaded until `end_file_batch`.
 #[tauri::command]
 #[specta::specta]
-pub fn begin_file_batch() -> Result<(), String> {
+pub fn begin_file_batch() -> Result<u32, String> {
     if crate::transcription_coordinator::update_pending() {
         return Err("an update is being installed; try again after the restart".into());
     }
-    BATCH_HOLD.store(true, Ordering::SeqCst);
-    Ok(())
+    take_batch_hold()
 }
 
-/// The batch is over (finished, cancelled, or left behind by a reloaded
-/// window): unload `model` if nothing else uses it.
+/// Takes the batch hold and returns its token; a hold another batch still
+/// keeps alive refuses, a lapsed one is taken over.
+fn take_batch_hold() -> Result<u32, String> {
+    let token = NEXT_JOB_ID.fetch_add(1, Ordering::SeqCst);
+    let current = BATCH_OWNER.load(Ordering::SeqCst);
+    if current != 0 && batch_held() {
+        return Err("a file is already being transcribed".into());
+    }
+    BATCH_OWNER
+        .compare_exchange(current, token, Ordering::SeqCst, Ordering::SeqCst)
+        .map_err(|_| "a file is already being transcribed".to_string())?;
+    BATCH_UNTIL_MS.store(now_ms() + BATCH_HOLD_GRACE_MS, Ordering::SeqCst);
+    Ok(token)
+}
+
+/// Gives the hold back if `token` owns it.
+fn release_batch_hold(token: u32) -> bool {
+    token != 0
+        && BATCH_OWNER
+            .compare_exchange(token, 0, Ordering::SeqCst, Ordering::SeqCst)
+            .is_ok()
+}
+
+/// The batch is over (finished, cancelled, or stopped): unload `model` if
+/// nothing else uses it. Only the batch that took the hold can end it.
 #[tauri::command]
 #[specta::specta]
-pub fn end_file_batch(app: AppHandle, model_id: Option<String>) {
-    let was_held = BATCH_HOLD.swap(false, Ordering::SeqCst);
-    if let (true, Some(model)) = (was_held, model_id) {
+pub fn end_file_batch(app: AppHandle, token: u32, model_id: Option<String>) {
+    if !release_batch_hold(token) {
+        return; // Not (or no longer) this batch's hold.
+    }
+    // A file still running releases the model itself when it ends.
+    let job_running = matches!(
+        *JOB.lock().unwrap_or_else(|p| p.into_inner()),
+        Some(FileJob::Decoding { .. } | FileJob::Transcribing { .. })
+    );
+    if let (false, Some(model)) = (job_running, model_id) {
         release_model(&app, &model);
     }
 }
@@ -1319,6 +1374,28 @@ mod tests {
             audio_copy_path(dir.path(), "notes", Path::new("C:/x/notes")),
             dir.path().join("notes")
         );
+    }
+
+    #[test]
+    fn the_batch_hold_has_one_owner_and_lapses() {
+        let a = take_batch_hold().unwrap();
+        assert!(file_job_running());
+        // A second batch is refused while the first is alive.
+        assert!(take_batch_hold().is_err());
+        // Only the owner ends it.
+        assert!(!release_batch_hold(a + 1000));
+        assert!(!release_batch_hold(0));
+        assert!(file_job_running());
+        assert!(release_batch_hold(a));
+        assert!(!file_job_running());
+        // A hold its window left behind lapses and is taken over.
+        let b = take_batch_hold().unwrap();
+        BATCH_UNTIL_MS.store(0, Ordering::SeqCst);
+        assert!(!file_job_running());
+        let c = take_batch_hold().unwrap();
+        assert_ne!(b, c);
+        assert!(!release_batch_hold(b));
+        assert!(release_batch_hold(c));
     }
 
     #[test]

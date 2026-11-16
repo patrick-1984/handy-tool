@@ -69,6 +69,10 @@ interface FileBatchState {
   dismiss: () => void;
 }
 
+/** Bumped when the Order files window closes or a batch starts: a file-info
+ *  answer that arrives later must not reopen or change it. */
+let orderGeneration = 0;
+
 /** Terminal file-job states by job id, and who waits for which. */
 const finished = new Map<number, FileJob>();
 const waiters = new Map<number, (job: FileJob) => void>();
@@ -139,36 +143,42 @@ export const useFileBatchStore = create<FileBatchState>()((set, get) => {
     stopError: null,
 
     openOrder: async (paths) => {
+      const gen = ++orderGeneration;
       const infos = await infosFor(paths);
+      // Closed, reopened or started meanwhile: this answer is stale.
+      if (gen !== orderGeneration || get().phase === "running") return;
       set({
         phase: "ordering",
         items: defaultOrder(infos.filter((i) => i.supported)),
       });
     },
     addPaths: async (paths) => {
-      const known = new Set(get().items.map((i) => i.path.toLowerCase()));
-      const fresh = paths.filter((p) => !known.has(p.toLowerCase()));
-      if (fresh.length === 0) return;
-      const infos = await infosFor(fresh);
-      set((s) => ({
-        items: [...s.items, ...infos.filter((i) => i.supported)],
-      }));
+      const gen = orderGeneration;
+      const infos = await infosFor(paths);
+      if (gen !== orderGeneration || get().phase !== "ordering") return;
+      set((s) => {
+        const known = new Set(s.items.map((i) => i.path.toLowerCase()));
+        const fresh = infos.filter(
+          (i) => i.supported && !known.has(i.path.toLowerCase()),
+        );
+        return { items: [...s.items, ...fresh] };
+      });
     },
     setItems: (items) => set({ items }),
     remove: (path) =>
       set((s) => ({ items: s.items.filter((i) => i.path !== path) })),
-    closeOrder: () => set({ phase: "idle", items: [] }),
+    closeOrder: () => {
+      orderGeneration++;
+      set({ phase: "idle", items: [] });
+    },
 
     start: async (modelId, save, options) => {
       const items = get().items;
       if (items.length === 0 || get().phase === "running") return;
-      const hold = await commands.beginFileBatch();
-      if (hold.status === "error") {
-        set({ stopError: hold.error });
-        return;
-      }
+      orderGeneration++;
       finished.clear();
       waiters.clear();
+      // Claimed at once, so a second click cannot start a second batch.
       set({
         phase: "running",
         parts: items.map((i) => ({
@@ -186,21 +196,26 @@ export const useFileBatchStore = create<FileBatchState>()((set, get) => {
         saveError: null,
         stopError: null,
       });
-      const unlisten = await listen<FileJob>("file-job", (e) => {
-        const job = e.payload;
-        if (job.job_id === get().jobId && job.state === "transcribing") {
-          set({ progress: { done: job.done_secs, total: job.total_secs } });
-        }
-        if (!isTerminal(job)) return;
-        const waiter = waiters.get(job.job_id);
-        if (waiter) {
-          waiters.delete(job.job_id);
-          waiter(job);
-        } else {
-          finished.set(job.job_id, job);
-        }
-      });
+      let token: number | null = null;
+      let unlisten: (() => void) | null = null;
       try {
+        const hold = await commands.beginFileBatch();
+        if (hold.status === "error") throw new Error(hold.error);
+        token = hold.data;
+        unlisten = await listen<FileJob>("file-job", (e) => {
+          const job = e.payload;
+          if (job.job_id === get().jobId && job.state === "transcribing") {
+            set({ progress: { done: job.done_secs, total: job.total_secs } });
+          }
+          if (!isTerminal(job)) return;
+          const waiter = waiters.get(job.job_id);
+          if (waiter) {
+            waiters.delete(job.job_id);
+            waiter(job);
+          } else {
+            finished.set(job.job_id, job);
+          }
+        });
         for (let i = 0; i < items.length; i++) {
           if (get().cancelRequested) break;
           set({ current: i, progress: null, jobId: null });
@@ -237,28 +252,46 @@ export const useFileBatchStore = create<FileBatchState>()((set, get) => {
             break;
           }
         }
-      } finally {
-        unlisten();
-        await commands.endFileBatch(modelId).catch(() => undefined);
-      }
 
-      const parts = get().parts.map((p) =>
-        p.status === "pending" || p.status === "running"
-          ? { ...p, status: "cancelled" as const }
-          : p,
-      );
-      const combined = combineBatch(parts, options);
-      set({ parts, combined, phase: "done", jobId: null, progress: null });
-      // Saved once, only when every file was tried and some text came out.
-      const complete = !get().cancelRequested && !get().stopError;
-      if (complete && combined && save !== "dont_save" && save !== "ask") {
-        const saved = await commands.saveBatchText(
-          combined,
-          items[0].path,
-          save,
+        const parts = get().parts.map((p) =>
+          p.status === "pending" || p.status === "running"
+            ? { ...p, status: "cancelled" as const }
+            : p,
         );
-        if (saved.status === "ok") set({ savedPath: saved.data });
-        else set({ saveError: saved.error });
+        const combined = combineBatch(parts, options);
+        set({ parts, combined });
+        // Saved once - while the hold still keeps an update from starting -
+        // and only when every file was tried and some text came out.
+        const complete = !get().cancelRequested && !get().stopError;
+        if (complete && combined && save !== "dont_save" && save !== "ask") {
+          const saved = await commands.saveBatchText(
+            combined,
+            items[0].path,
+            save,
+          );
+          if (saved.status === "ok") set({ savedPath: saved.data });
+          else set({ saveError: saved.error });
+        }
+      } catch (error) {
+        set({
+          stopError: error instanceof Error ? error.message : String(error),
+        });
+      } finally {
+        unlisten?.();
+        if (token !== null) {
+          await commands.endFileBatch(token, modelId).catch(() => undefined);
+        }
+        // Whatever happened, the batch ends: no spinner left behind.
+        set((s) => ({
+          phase: "done",
+          jobId: null,
+          progress: null,
+          parts: s.parts.map((p) =>
+            p.status === "pending" || p.status === "running"
+              ? { ...p, status: "cancelled" as const }
+              : p,
+          ),
+        }));
       }
     },
 

@@ -562,7 +562,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
       : SECTIONS_CONFIG[activeSection].placement;
   const hasMore = layout.more.length + layout.pinsMore.length > 0;
   // The page open is under Show more: show it, so the sidebar says where you are.
-  const showMore = moreOpen || layout.more.includes(activeEntry);
+  const showMore =
+    moreOpen ||
+    layout.more.includes(activeEntry) ||
+    layout.pinsMore.some((pin) =>
+      samePinTarget(
+        pin,
+        activeSection,
+        activeSection === "history" && pin.history_tab ? historyTab : null,
+      ),
+    );
 
   return (
     <div

@@ -3,6 +3,8 @@ import {
   combineBatch,
   dedupePaths,
   defaultOrder,
+  fileNameOf,
+  isAudioPath,
   resolveBatchOptions,
 } from "./batch";
 import type { AudioFileInfo } from "@/bindings";
@@ -16,10 +18,17 @@ const info = (name: string, created: number | null): AudioFileInfo => ({
 });
 
 describe("several files", () => {
+  test("file names from Windows and Unix paths", () => {
+    expect(fileNameOf("C:\\rec\\one.m4a")).toBe("one.m4a");
+    expect(fileNameOf("/home/a/two.wav")).toBe("two.wav");
+    expect(isAudioPath("C:\\x\\NOTE.TXT")).toBe(false);
+    expect(isAudioPath("C:\\x\\Talk.M4A")).toBe(true);
+  });
+
   test("the same file twice counts once, case-insensitively on Windows", () => {
-    expect(dedupePaths(["C:\a.wav", "c:\A.WAV", "C:\b.wav"], true)).toEqual([
-      "C:\a.wav",
-      "C:\b.wav",
+    expect(dedupePaths(["C:\\a.wav", "c:\\A.WAV", "C:\\b.wav"], true)).toEqual([
+      "C:\\a.wav",
+      "C:\\b.wav",
     ]);
     expect(dedupePaths(["/a.wav", "/A.wav"], false)).toEqual([
       "/a.wav",

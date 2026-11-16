@@ -973,7 +973,7 @@ export const commands = {
   async cancelFileJob(jobId: number | null): Promise<void> {
     await TAURI_INVOKE("cancel_file_job", { jobId });
   },
-  async beginFileBatch(): Promise<Result<null, string>> {
+  async beginFileBatch(): Promise<Result<number, string>> {
     try {
       return { status: "ok", data: await TAURI_INVOKE("begin_file_batch") };
     } catch (e) {
@@ -981,8 +981,8 @@ export const commands = {
       else return { status: "error", error: e as any };
     }
   },
-  async endFileBatch(modelId: string | null): Promise<void> {
-    await TAURI_INVOKE("end_file_batch", { modelId });
+  async endFileBatch(token: number, modelId: string | null): Promise<void> {
+    await TAURI_INVOKE("end_file_batch", { token, modelId });
   },
   /**
    * Transcribed files, newest first.

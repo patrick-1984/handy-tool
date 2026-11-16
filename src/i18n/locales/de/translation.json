@@ -73,7 +73,16 @@
     "moreTools": "Weitere Werkzeuge",
     "sttServer": "STT-Server",
     "combine": "Aufnahmen kombinieren",
-    "speakers": "Sprecher"
+    "speakers": "Sprecher",
+    "appearance": "Erscheinungsbild",
+    "pinned": {
+      "title": "Angeheftet",
+      "pin": "An die Seitenleiste anheften",
+      "unpin": "Lösen",
+      "limit": "Es können bis zu 50 Seiten angeheftet werden. Löse zuerst eine.",
+      "showMore": "Mehr anzeigen",
+      "showLess": "Weniger anzeigen"
+    }
   },
   "helpMode": {
     "button": "Hilfemodus: auf eine Einstellung zeigen, um zu sehen, was sie tut",
@@ -2159,6 +2168,49 @@
         "showLess": "Weniger zeigen",
         "reveal": "Im Ordner zeigen",
         "delete": "Aus der Liste entfernen"
+      },
+      "batch": {
+        "skipped": "Übersprungen (keine Audiodatei, die Handy lesen kann): {{names}}",
+        "progress": "Datei {{current}} von {{total}}: {{name}}",
+        "order": {
+          "title": "Dateien ordnen ({{count}})",
+          "description": "Die Texte werden in dieser Reihenfolge zusammengefügt. Ziehe eine Zeile am Griff oder nutze die Pfeile; spiele eine Datei ab, um zu prüfen, was sie enthält.",
+          "drag": "Zum Umordnen ziehen",
+          "play": "Abspielen",
+          "stop": "Stopp",
+          "moveUp": "Nach oben",
+          "moveDown": "Nach unten",
+          "remove": "Aus der Liste entfernen",
+          "noDate": "Kein Datum",
+          "noLength": "Länge unbekannt",
+          "empty": "Keine Dateien mehr in der Liste.",
+          "playFailed": "{{name}} kann hier nicht abgespielt werden (transkribieren lässt sie sich trotzdem).",
+          "modelNotReady": "Lade zuerst das Modell herunter.",
+          "transcribe": "{{count}} Dateien transkribieren"
+        },
+        "options": {
+          "title": "Kombinierter Text",
+          "separator": {
+            "label": "Zwischen den Dateien",
+            "none": "Nichts (nächste Zeile)",
+            "blank_line": "Eine Leerzeile",
+            "divider": "Eine Trennlinie"
+          },
+          "numbered": "Teile nummerieren (1., 2., 3. …)",
+          "names": "Dateiname vor jedem Teil"
+        },
+        "result": {
+          "title": "{{done}} von {{total}} Dateien transkribiert",
+          "copyAll": "Alles kopieren",
+          "clear": "Leeren",
+          "perFile": "Jede Datei",
+          "failed": "Fehlgeschlagen: {{error}}",
+          "notTranscribed": "Nicht transkribiert.",
+          "showAll": "Alle anzeigen",
+          "showLess": "Weniger anzeigen",
+          "stopped": "Der Stapel wurde angehalten: {{error}}",
+          "cancelled": "Abgebrochen. Die fertigen Teile stehen unten; der kombinierte Text wurde nicht gespeichert."
+        }
       }
     },
     "currentAudio": {
@@ -2313,6 +2365,27 @@
           "stt_server": "STT-Server"
         }
       }
+    },
+    "appearance": {
+      "pins": {
+        "title": "Angeheftete Seiten",
+        "description": "Hefte eine Seite mit dem Pin neben dem ? in ihrem Titel an. Hier kannst du sie umbenennen, ein Symbol wählen, sie ordnen und festlegen, wo sie erscheinen.",
+        "empty": "Noch nichts angeheftet.",
+        "icon": "Symbol wählen",
+        "name": "Name",
+        "unavailable": "Derzeit nicht verfügbar"
+      },
+      "sidebar": {
+        "title": "Seitenleiste",
+        "description": "Ordne die Seitenleiste und lege fest, welche Einträge unter Mehr anzeigen liegen. Eingebaute Einträge behalten ihre Namen.",
+        "reset": "Seitenleiste zurücksetzen"
+      },
+      "place": {
+        "top": "In der Seitenleiste",
+        "more": "Unter Mehr anzeigen"
+      },
+      "moveUp": "Nach oben",
+      "moveDown": "Nach unten"
     }
   },
   "common": {
@@ -2373,7 +2446,10 @@
       "changeShortcut": "Tastenkürzel ändern…",
       "liveTextSettings": "Einstellungen des Live-Textfelds…",
       "hidePause": "Pause-Taste ausblenden",
-      "soundSourceSettings": "Einstellungen der Tonquelle…"
+      "soundSourceSettings": "Einstellungen der Tonquelle…",
+      "microphone": "Mikrofon",
+      "defaultMicrophone": "Standardmikrofon",
+      "soundSettings": "Toneinstellungen…"
     },
     "tooQuiet": "Zu leise – lauter bitte",
     "captureSource": {
@@ -2713,6 +2789,26 @@
       "historySearch": {
         "title": "Ganzer Text und Trefferzahlen in der Verlaufssuche",
         "description": "Die Suche im Verlauf zeigt wieder den ganzen Text jeder Aufnahme mit markierten Treffern und wie viele es sind: insgesamt, pro Aufnahme und bei mehreren Wörtern pro Wort. Sortiere nach „Meiste Treffer“ für die besten Treffer zuerst, oder wähle Kurze Vorschau für nur einige Zeilen."
+      },
+      "pinPages": {
+        "title": "Jede Seite an die Seitenleiste anheften",
+        "description": "Ein Pin neben dem ? im Titel jeder Seite legt diese Seite (oder einen Verlauf-Tab) in einen Bereich Angeheftet oben in der Seitenleiste: ein Klick, und du bist dort. Klicke erneut, um sie zu lösen."
+      },
+      "backForward": {
+        "title": "Zurück und Vorwärts",
+        "description": "Die Seitentasten Zurück und Vorwärts der Maus sowie Alt+← / Alt+→ (Cmd+[ / Cmd+] auf dem Mac) bewegen dich wie in einem Browser durch die geöffneten Seiten."
+      },
+      "appearancePage": {
+        "title": "Seitenleiste anordnen",
+        "description": "Erweiterte Einstellungen › Erscheinungsbild: Ordne die Seitenleiste, verschiebe selten genutzte Einträge unter Mehr anzeigen und benenne angeheftete Seiten um, gib ihnen eines von 20 Symbolen und lege fest, wo sie erscheinen."
+      },
+      "pillMicrophone": {
+        "title": "Mikrofon über die Pille wechseln, auch während der Aufnahme",
+        "description": "Klicke mit der rechten Maustaste auf die Pegelbalken der Pille, um ein anderes Mikrofon (und unter Windows die Tonquelle) zu wählen. Ein Wechsel während einer Aufnahme gilt jetzt sofort für diese Aufnahme; bisher ging sie beim Wechsel des Mikrofons verloren."
+      },
+      "filesBatch": {
+        "title": "Mehrere Dateien auf einmal",
+        "description": "Wähle oder ziehe mehrere Aufnahmen auf Dateien. Bring sie in Reihenfolge (zuerst nach Datum, per Ziehen oder Pfeilen, spiele eine zur Kontrolle ab), wähle Trenner, Nummern und Dateinamen und erhalte einen kombinierten Text zum Kopieren sowie den eigenen Text jeder Datei."
       }
     },
     "installed": "Installiert"

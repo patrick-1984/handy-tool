@@ -302,13 +302,6 @@ const TranscribeFile: React.FC<{ onFinished: () => void }> = ({
     job?.state === "transcribing" ||
     batchPhase === "running";
 
-  // A hold left by a batch this window no longer knows of (reloaded window).
-  useEffect(() => {
-    if (useFileBatchStore.getState().phase !== "running") {
-      void commands.endFileBatch(null);
-    }
-  }, []);
-
   /**
    * Picked or dropped files: the same one twice counts once, the ones Handy
    * can't read are named and left out. One file goes as before; several open
@@ -355,6 +348,10 @@ const TranscribeFile: React.FC<{ onFinished: () => void }> = ({
     updateSetting("file_batch", options);
 
   const takeFile = (path: string) => {
+    // A finished batch's result gives way to the new file's progress.
+    if (useFileBatchStore.getState().phase === "done") {
+      useFileBatchStore.getState().dismiss();
+    }
     if (saveMode === "ask") setPendingFile(path);
     else void start(path, saveMode);
   };
@@ -383,10 +380,14 @@ const TranscribeFile: React.FC<{ onFinished: () => void }> = ({
   onDropRef.current = (paths: string[]) => {
     // Dropped while the Order files window is open: they join its list.
     if (useFileBatchStore.getState().phase === "ordering") {
-      const supported = dedupePaths(paths, osType === "windows").filter(
-        isAudioPath,
-      );
-      void useFileBatchStore.getState().addPaths(supported);
+      const distinct = dedupePaths(paths, osType === "windows");
+      const skipped = distinct.filter((p) => !isAudioPath(p)).map(fileNameOf);
+      if (skipped.length > 0) {
+        toast.error(
+          t("settings.files.batch.skipped", { names: skipped.join(", ") }),
+        );
+      }
+      void useFileBatchStore.getState().addPaths(distinct.filter(isAudioPath));
       return;
     }
     if (running || !model?.is_downloaded) {
@@ -412,7 +413,12 @@ const TranscribeFile: React.FC<{ onFinished: () => void }> = ({
         setDragOver(inside(e.position));
       } else if (e.type === "drop") {
         setDragOver(false);
-        if (inside(e.position)) onDropRef.current(e.paths);
+        // While the Order files window is open, a drop anywhere adds to it.
+        if (
+          inside(e.position) ||
+          useFileBatchStore.getState().phase === "ordering"
+        )
+          onDropRef.current(e.paths);
       }
     });
     return () => {

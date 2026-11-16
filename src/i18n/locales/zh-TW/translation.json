@@ -73,7 +73,16 @@
     "moreTools": "更多工具",
     "sttServer": "STT 伺服器",
     "combine": "合併錄音",
-    "speakers": "說話者"
+    "speakers": "說話者",
+    "appearance": "外觀",
+    "pinned": {
+      "title": "已釘選",
+      "pin": "釘選到側邊欄",
+      "unpin": "取消釘選",
+      "limit": "最多可釘選 50 個頁面。請先取消釘選一個。",
+      "showMore": "顯示更多",
+      "showLess": "收合"
+    }
   },
   "helpMode": {
     "button": "說明模式：將滑鼠指向設定即可查看其作用",
@@ -2159,6 +2168,49 @@
         "showLess": "收合",
         "reveal": "在資料夾中顯示",
         "delete": "從清單中移除"
+      },
+      "batch": {
+        "skipped": "已略過（不是 Handy 可讀取的音訊檔案）：{{names}}",
+        "progress": "第 {{current}} / {{total}} 個檔案：{{name}}",
+        "order": {
+          "title": "排列檔案（{{count}}）",
+          "description": "文字會依此順序串接。拖曳列的握把或使用箭頭；播放檔案以確認內容。",
+          "drag": "拖曳以重新排序",
+          "play": "播放",
+          "stop": "停止",
+          "moveUp": "上移",
+          "moveDown": "下移",
+          "remove": "從清單中移除",
+          "noDate": "無日期",
+          "noLength": "長度未知",
+          "empty": "清單中已沒有檔案。",
+          "playFailed": "{{name}} 無法在此播放（仍可轉錄）。",
+          "modelNotReady": "請先下載模型。",
+          "transcribe": "轉錄 {{count}} 個檔案"
+        },
+        "options": {
+          "title": "合併文字",
+          "separator": {
+            "label": "檔案之間",
+            "none": "無（換行）",
+            "blank_line": "一個空行",
+            "divider": "一條分隔線"
+          },
+          "numbered": "為各部分編號（1., 2., 3. …）",
+          "names": "每部分前加上檔名"
+        },
+        "result": {
+          "title": "已轉錄 {{done}} / {{total}} 個檔案",
+          "copyAll": "全部複製",
+          "clear": "清除",
+          "perFile": "各個檔案",
+          "failed": "失敗：{{error}}",
+          "notTranscribed": "未轉錄。",
+          "showAll": "全部顯示",
+          "showLess": "收合",
+          "stopped": "批次處理已停止：{{error}}",
+          "cancelled": "已取消。已完成的部分在下方；合併文字未儲存。"
+        }
       }
     },
     "currentAudio": {
@@ -2313,6 +2365,27 @@
           "stt_server": "STT 伺服器"
         }
       }
+    },
+    "appearance": {
+      "pins": {
+        "title": "已釘選的頁面",
+        "description": "點選頁面標題中 ? 旁的圖釘即可釘選該頁面。在這裡可以重新命名、選擇圖示、排序並選擇顯示位置。",
+        "empty": "尚未釘選任何頁面。",
+        "icon": "選擇圖示",
+        "name": "名稱",
+        "unavailable": "目前無法使用"
+      },
+      "sidebar": {
+        "title": "側邊欄",
+        "description": "調整側邊欄順序，並選擇哪些項目放在「顯示更多」下。內建項目保留其名稱。",
+        "reset": "重設側邊欄"
+      },
+      "place": {
+        "top": "在側邊欄中",
+        "more": "在「顯示更多」下"
+      },
+      "moveUp": "上移",
+      "moveDown": "下移"
     }
   },
   "common": {
@@ -2373,7 +2446,10 @@
       "changeShortcut": "變更快捷鍵…",
       "liveTextSettings": "即時文字框設定…",
       "hidePause": "隱藏暫停按鈕",
-      "soundSourceSettings": "聲音來源設定…"
+      "soundSourceSettings": "聲音來源設定…",
+      "microphone": "麥克風",
+      "defaultMicrophone": "預設麥克風",
+      "soundSettings": "聲音設定…"
     },
     "tooQuiet": "聲音太小，請大聲一點",
     "captureSource": {
@@ -2713,6 +2789,26 @@
       "historySearch": {
         "title": "歷史記錄搜尋顯示全文與命中次數",
         "description": "在歷史記錄中搜尋時，會重新顯示每段錄音的全文並標出所有命中，同時顯示命中次數：總數、每段錄音的次數，以及多個詞時每個詞的次數。依「命中最多」排序可讓最相符的錄音排在最前；勾選「簡短預覽」則只顯示幾行。"
+      },
+      "pinPages": {
+        "title": "將任何頁面釘選到側邊欄",
+        "description": "每個頁面標題中 ? 旁的圖釘可將該頁面（或歷史紀錄分頁）放入側邊欄頂端的「已釘選」區塊：一鍵即達。再點一次即可取消釘選。"
+      },
+      "backForward": {
+        "title": "上一頁與下一頁",
+        "description": "滑鼠側邊的上一頁和下一頁按鈕，以及 Alt+← / Alt+→（Mac 上為 Cmd+[ / Cmd+]），可像瀏覽器一樣在開啟過的頁面間切換。"
+      },
+      "appearancePage": {
+        "title": "整理側邊欄",
+        "description": "進階設定 › 外觀：調整側邊欄順序，把不常用的項目移到「顯示更多」下，並為已釘選的頁面重新命名、從 20 個圖示中選一個，以及選擇顯示位置。"
+      },
+      "pillMicrophone": {
+        "title": "從膠囊切換麥克風，錄音時也可以",
+        "description": "在膠囊的聲音條上按右鍵即可選擇其他麥克風（在 Windows 上還可選擇聲音來源）。錄音中的切換現在會立即套用到該錄音；以前在錄音途中切換麥克風會遺失錄音。"
+      },
+      "filesBatch": {
+        "title": "一次處理多個檔案",
+        "description": "在「檔案」中選擇或拖入多個錄音。排好順序（先依日期，再拖曳或用箭頭調整，可播放檢查），選擇分隔方式、編號和檔名，即可得到一份可複製的合併文字，以及每個檔案各自的文字。"
       }
     },
     "installed": "已安裝"

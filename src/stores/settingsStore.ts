@@ -287,10 +287,18 @@ const settingUpdaters: {
   files_folder: (value) => commands.changeFilesFolderSetting(value as string),
   file_batch: (value) =>
     commands.changeFileBatchOptionsSetting(value as FileBatchOptions),
+  // A failed write does not throw (updateSetting would roll back to an older
+  // whole layout, wiping later edits): the saved layout is read back instead.
   sidebar_layout: (value) => {
     layoutWrites = layoutWrites
-      .catch(() => undefined)
-      .then(() => commands.changeSidebarLayoutSetting(value as SidebarLayout));
+      .then(() => commands.changeSidebarLayoutSetting(value as SidebarLayout))
+      .then((result) => {
+        if (result.status === "error") throw new Error(result.error);
+      })
+      .catch((error) => {
+        console.error("Failed to save the sidebar layout:", error);
+        void useSettingsStore.getState().refreshSettings();
+      });
     return layoutWrites;
   },
   proxy_mode: (value) => commands.changeProxyModeSetting(value as string),
