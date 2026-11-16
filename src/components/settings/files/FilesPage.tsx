@@ -31,6 +31,19 @@ import { useModelStore } from "../../../stores/modelStore";
 import { getTranslatedModelName } from "../../../lib/utils/modelTranslation";
 import { formatModelSize } from "../../../lib/utils/format";
 import { TranslatorSettings } from "../translator/TranslatorSettings";
+import { CopyButton, ICON_BUTTON, SavedTo, clock } from "./filesUi";
+import { OrderFilesDialog } from "./OrderFilesDialog";
+import { BatchResult } from "./BatchResult";
+import {
+  AUDIO_EXTENSIONS,
+  dedupePaths,
+  fileNameOf,
+  isAudioPath,
+  resolveBatchOptions,
+  type ResolvedBatchOptions,
+} from "./batch";
+import { useFileBatchStore } from "../../../stores/fileBatchStore";
+import { useOsType } from "../../../hooks/useOsType";
 import {
   commands,
   type FileJob,
@@ -39,18 +52,6 @@ import {
   type ModelInfo,
 } from "@/bindings";
 
-/** The file types the backend reads (see decode.rs SUPPORTED_EXTENSIONS). */
-const AUDIO_EXTENSIONS = [
-  "wav",
-  "mp3",
-  "m4a",
-  "mp4",
-  "aac",
-  "flac",
-  "ogg",
-  "opus",
-];
-
 const SAVE_MODES: FileTextSave[] = [
   "ask",
   "handy_folder",
@@ -58,85 +59,12 @@ const SAVE_MODES: FileTextSave[] = [
   "dont_save",
 ];
 
-/** Icon buttons without a frame: 32 px targets, named by their tooltip. */
-const ICON_BUTTON =
-  "inline-flex items-center justify-center h-8 w-8 rounded-md text-text-secondary hover:bg-hover hover:text-text transition-colors cursor-pointer";
-
-/** 75.4 → "1:15", 3725 → "1:02:05". */
-const clock = (secs: number): string => {
-  const s = Math.max(0, Math.round(secs));
-  const pad2 = (n: number) => String(n).padStart(2, "0");
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  return h > 0 ? `${h}:${pad2(m)}:${pad2(s % 60)}` : `${m}:${pad2(s % 60)}`;
-};
-
-/**
- * A copy button that shows a tick for a moment after copying: an icon, or with
- * `labelled` a button with its label.
- */
-const CopyButton: React.FC<{
-  text: string;
-  label: string;
-  labelled?: boolean;
-}> = ({ text, label, labelled = false }) => {
-  const [copied, setCopied] = useState(false);
-  const copy = async () => {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  };
-  if (labelled) {
-    return (
-      <Button variant="secondary" size="sm" onClick={copy}>
-        {copied ? (
-          <Check className="w-3.5 h-3.5" />
-        ) : (
-          <Copy className="w-3.5 h-3.5" />
-        )}
-        {label}
-      </Button>
-    );
-  }
-  return (
-    <button
-      type="button"
-      className={ICON_BUTTON}
-      title={label}
-      aria-label={label}
-      onClick={copy}
-    >
-      {copied ? (
-        <Check width={16} height={16} />
-      ) : (
-        <Copy width={16} height={16} />
-      )}
-    </button>
-  );
-};
-
 /**
  * A path on one line in the dialog: shortened in the middle when long, so its
  * start (the drive) and end (the folder) stay readable.
  */
 const shortPath = (path: string, max = 42): string =>
   path.length <= max ? path : `${path.slice(0, 3)}…${path.slice(3 - max)}`;
-
-/** "Text saved to <path>", the path in monospace. */
-const SavedTo: React.FC<{ path: string }> = ({ path }) => {
-  const { t } = useTranslation();
-  const MARK = "⁣";
-  const [before, after = ""] = t("settings.files.transcribe.savedTo", {
-    path: MARK,
-  }).split(MARK);
-  return (
-    <p className="text-xs text-text-secondary break-all">
-      {before}
-      <span className="font-mono">{path}</span>
-      {after}
-    </p>
-  );
-};
 
 /**
  * Where should the text be saved? Asked when a file is picked (so a long file
@@ -281,6 +209,13 @@ const TranscribeFile: React.FC<{ onFinished: () => void }> = ({
   const [job, setJob] = useState<FileJob | null>(null);
   const [folder, setFolder] = useState("");
   const [pendingFile, setPendingFile] = useState<string | null>(null);
+  // Several files: asking where the combined text goes (once per batch).
+  const [askingBatch, setAskingBatch] = useState(false);
+  const batchPhase = useFileBatchStore((st) => st.phase);
+  const batchItems = useFileBatchStore((st) => st.items);
+  const batchJobIds = useFileBatchStore((st) => st.jobIds);
+  const batchOptions = resolveBatchOptions(getSetting("file_batch"));
+  const osType = useOsType();
   const saveMode = (getSetting("file_text_save") ?? "ask") as FileTextSave;
   const keepAudio = getSetting("file_keep_audio") ?? false;
   const chosenFolder = (getSetting("files_folder") as string) ?? "";
@@ -362,7 +297,62 @@ const TranscribeFile: React.FC<{ onFinished: () => void }> = ({
     });
   }, [chosenFolder]);
 
-  const running = job?.state === "decoding" || job?.state === "transcribing";
+  const running =
+    job?.state === "decoding" ||
+    job?.state === "transcribing" ||
+    batchPhase === "running";
+
+  // A hold left by a batch this window no longer knows of (reloaded window).
+  useEffect(() => {
+    if (useFileBatchStore.getState().phase !== "running") {
+      void commands.endFileBatch(null);
+    }
+  }, []);
+
+  /**
+   * Picked or dropped files: the same one twice counts once, the ones Handy
+   * can't read are named and left out. One file goes as before; several open
+   * the Order files window.
+   */
+  const takeFiles = (paths: string[]) => {
+    const distinct = dedupePaths(paths, osType === "windows");
+    const supported = distinct.filter(isAudioPath);
+    const skipped = distinct.filter((p) => !isAudioPath(p)).map(fileNameOf);
+    if (skipped.length > 0) {
+      toast.error(
+        t("settings.files.batch.skipped", { names: skipped.join(", ") }),
+      );
+    }
+    if (supported.length === 1) takeFile(supported[0]);
+    else if (supported.length > 1)
+      void useFileBatchStore.getState().openOrder(supported);
+  };
+
+  const startBatch = (save: FileTextSave) => {
+    void useFileBatchStore
+      .getState()
+      .start(modelId, save, batchOptions)
+      .then(() => {
+        const stop = useFileBatchStore.getState().stopError;
+        if (stop) {
+          toast.error(
+            t("settings.files.transcribe.startFailed", { reason: stop }),
+          );
+        }
+      });
+  };
+  const onTranscribeBatch = () => {
+    if (saveMode === "ask") setAskingBatch(true);
+    else startBatch(saveMode);
+  };
+  const onBatchChoice = (save: FileTextSave, remember: boolean) => {
+    setAskingBatch(false);
+    if (remember) updateSetting("file_text_save", save);
+    startBatch(save);
+  };
+  const closeBatchAsk = React.useCallback(() => setAskingBatch(false), []);
+  const onBatchOptions = (options: ResolvedBatchOptions) =>
+    updateSetting("file_batch", options);
 
   const takeFile = (path: string) => {
     if (saveMode === "ask") setPendingFile(path);
@@ -371,7 +361,7 @@ const TranscribeFile: React.FC<{ onFinished: () => void }> = ({
 
   const chooseFile = async () => {
     const picked = await open({
-      multiple: false,
+      multiple: true,
       filters: [
         {
           name: t("settings.files.transcribe.audioFiles"),
@@ -379,8 +369,8 @@ const TranscribeFile: React.FC<{ onFinished: () => void }> = ({
         },
       ],
     });
-    if (typeof picked !== "string" || !picked) return;
-    takeFile(picked);
+    if (!picked) return;
+    takeFiles(Array.isArray(picked) ? picked : [picked]);
   };
 
   // A file dropped on the "Choose an audio file" box starts like a picked one.
@@ -391,22 +381,19 @@ const TranscribeFile: React.FC<{ onFinished: () => void }> = ({
   const [dragOver, setDragOver] = useState(false);
   const onDropRef = useRef<(paths: string[]) => void>(() => {});
   onDropRef.current = (paths: string[]) => {
+    // Dropped while the Order files window is open: they join its list.
+    if (useFileBatchStore.getState().phase === "ordering") {
+      const supported = dedupePaths(paths, osType === "windows").filter(
+        isAudioPath,
+      );
+      void useFileBatchStore.getState().addPaths(supported);
+      return;
+    }
     if (running || !model?.is_downloaded) {
       toast.error(t("settings.files.transcribe.drop.notReady"));
       return;
     }
-    if (paths.length !== 1) {
-      toast.error(t("settings.files.transcribe.drop.oneFile"));
-      return;
-    }
-    const path = paths[0];
-    const ext = path.split(".").pop()?.toLowerCase() ?? "";
-    if (!AUDIO_EXTENSIONS.includes(ext)) {
-      const name = path.split(/[\\/]/).pop() ?? path;
-      toast.error(t("settings.files.transcribe.drop.unsupported", { name }));
-      return;
-    }
-    takeFile(path);
+    takeFiles(paths);
   };
   useEffect(() => {
     const inside = (p: { x: number; y: number }) => {
@@ -487,7 +474,10 @@ const TranscribeFile: React.FC<{ onFinished: () => void }> = ({
   };
 
   const status = () => {
-    if (!job) return null;
+    if (batchPhase === "running" || batchPhase === "done")
+      return <BatchResult />;
+    // A batch's own files are shown in its result, not here.
+    if (!job || batchJobIds.includes(job.job_id)) return null;
     switch (job.state) {
       case "decoding":
       case "transcribing": {
@@ -700,6 +690,26 @@ const TranscribeFile: React.FC<{ onFinished: () => void }> = ({
           folder={folder}
           onChoose={onDialogChoice}
           onCancel={closeDialog}
+        />
+      )}
+      {batchPhase === "ordering" && !askingBatch && (
+        <OrderFilesDialog
+          options={batchOptions}
+          onOptions={onBatchOptions}
+          blocked={
+            model?.is_downloaded
+              ? null
+              : t("settings.files.batch.order.modelNotReady")
+          }
+          onTranscribe={onTranscribeBatch}
+        />
+      )}
+      {askingBatch && batchItems.length > 0 && (
+        <SaveTextDialog
+          file={batchItems[0].path}
+          folder={folder}
+          onChoose={onBatchChoice}
+          onCancel={closeBatchAsk}
         />
       )}
     </>

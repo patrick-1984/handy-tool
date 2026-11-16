@@ -894,14 +894,28 @@ impl AudioRecordingManager {
         // Opened without any lock held: a slow device must not hold up Stop.
         let candidate = AudioRecorder::open_master_candidate(device, EndpointRole::Capture)
             .map_err(|e| anyhow::anyhow!("{e}"))?;
-        // Committed under the state lock, and only into the take it was opened for.
+        // Committed under the state lock into whatever take runs NOW: the one it
+        // was opened for or, if that ended and another started meanwhile (on the
+        // old microphone), that one - it was started after the choice was made.
         let state = self.state.lock().unwrap();
-        if matches!(*state, RecordingState::Idle)
-            || self.take_seq.load(AtomicOrdering::SeqCst) != take
-        {
-            // That take ended meanwhile: the next one opens the new device anyway.
+        if matches!(*state, RecordingState::Idle) {
+            // No take any more: the next one opens the new device.
             self.streams_stale.store(true, AtomicOrdering::SeqCst);
             return Ok(SourceSwitch::Now);
+        }
+        if self.take_seq.load(AtomicOrdering::SeqCst) != take {
+            info!("Another take started while the new microphone opened; switching that one");
+        }
+        let still_mic = matches!(
+            *self.legs.lock().unwrap(),
+            Some(Legs {
+                master: EndpointRole::Capture,
+                ..
+            })
+        );
+        if !still_mic {
+            self.streams_stale.store(true, AtomicOrdering::SeqCst);
+            return Ok(SourceSwitch::NextTake);
         }
         let mut rec = self.recorder.lock().unwrap();
         let rec = rec

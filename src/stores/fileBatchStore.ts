@@ -44,6 +44,8 @@ interface FileBatchState {
   /** Its progress, from the backend's file-job events. */
   progress: { done: number; total: number } | null;
   jobId: number | null;
+  /** Every job this batch started (their single-file view stays hidden). */
+  jobIds: number[];
   cancelRequested: boolean;
   combined: string;
   savedPath: string | null;
@@ -129,6 +131,7 @@ export const useFileBatchStore = create<FileBatchState>()((set, get) => {
     current: 0,
     progress: null,
     jobId: null,
+    jobIds: [],
     cancelRequested: false,
     combined: "",
     savedPath: null,
@@ -176,6 +179,7 @@ export const useFileBatchStore = create<FileBatchState>()((set, get) => {
         current: 0,
         progress: null,
         jobId: null,
+        jobIds: [],
         cancelRequested: false,
         combined: "",
         savedPath: null,
@@ -215,7 +219,10 @@ export const useFileBatchStore = create<FileBatchState>()((set, get) => {
             }
             continue;
           }
-          set({ jobId: started.data });
+          set((s) => ({
+            jobId: started.data,
+            jobIds: [...s.jobIds, started.data],
+          }));
           // Cancel pressed while it was starting.
           if (get().cancelRequested) {
             void commands.cancelFileJob(started.data);
