@@ -88,7 +88,16 @@
     "moreTools": "More Tools",
     "sttServer": "STT server",
     "combine": "Combine recordings",
-    "speakers": "Speakers"
+    "speakers": "Speakers",
+    "appearance": "Appearance",
+    "pinned": {
+      "title": "Pinned",
+      "pin": "Pin to sidebar",
+      "unpin": "Unpin",
+      "limit": "Up to 50 pages can be pinned. Unpin one first.",
+      "showMore": "Show more",
+      "showLess": "Show less"
+    }
   },
   "helpMode": {
     "button": "Help mode: point at a setting to see what it does",
@@ -724,6 +733,10 @@
             "name": "Live Text Box On/Off",
             "description": "Switches the live text box on or off, like the T button on the recording overlay. Default: None."
           },
+          "cycle_capture_source": {
+            "name": "Cycle Sound Source",
+            "description": "Switches what recordings capture, in turn: Microphone, System audio, Microphone + system audio. The recording overlay shows the new source for a moment. During a recording it switches that recording from that moment on, unless the recording started with System audio alone; then the new source applies to the next one. Windows only. Default: None."
+          },
           "transcribe_ptt": {
             "name": "Push-to-Talk Shortcut",
             "description": "**Hold this shortcut to record, release it to stop.** The microphone goes cold on release, so anything you say afterwards cannot leak into the text.\n\n**Default:** Ctrl+Shift+Space.\n\nIt has its own Transcription Mode (PTT) and its own Paste Method (PTT), so push-to-talk can behave differently from Record/Transcribe Shortcut."
@@ -1328,6 +1341,49 @@
         "showLess": "Show less",
         "reveal": "Show in folder",
         "delete": "Remove from the list"
+      },
+      "batch": {
+        "skipped": "Skipped (not an audio file Handy can read): {{names}}",
+        "progress": "File {{current}} of {{total}}: {{name}}",
+        "order": {
+          "title": "Order files ({{count}})",
+          "description": "The texts are joined in this order. Drag a row by its grip or use the arrows; play a file to check what it is.",
+          "drag": "Drag to reorder",
+          "play": "Play",
+          "stop": "Stop",
+          "moveUp": "Move up",
+          "moveDown": "Move down",
+          "remove": "Remove from the list",
+          "noDate": "No date",
+          "noLength": "Length unknown",
+          "empty": "No files left in the list.",
+          "playFailed": "{{name}} can't be played here (it can still be transcribed).",
+          "modelNotReady": "Download the model first.",
+          "transcribe": "Transcribe {{count}} files"
+        },
+        "options": {
+          "title": "Combined text",
+          "separator": {
+            "label": "Between files",
+            "none": "Nothing (next line)",
+            "blank_line": "One empty line",
+            "divider": "A divider line"
+          },
+          "numbered": "Number the parts (1., 2., 3. …)",
+          "names": "File name before each part"
+        },
+        "result": {
+          "title": "{{done}} of {{total}} files transcribed",
+          "copyAll": "Copy all",
+          "clear": "Clear",
+          "perFile": "Each file",
+          "failed": "Failed: {{error}}",
+          "notTranscribed": "Not transcribed.",
+          "showAll": "Show all",
+          "showLess": "Show less",
+          "stopped": "The batch stopped: {{error}}",
+          "cancelled": "Cancelled. The finished parts are below; the combined text was not saved."
+        }
       }
     },
     "sound": {
@@ -2324,6 +2380,27 @@
           "stt_server": "STT server"
         }
       }
+    },
+    "appearance": {
+      "pins": {
+        "title": "Pinned pages",
+        "description": "Pin a page with the pin next to ? in its title. Here you can rename them, pick an icon, order them and choose where they show.",
+        "empty": "Nothing pinned yet.",
+        "icon": "Choose an icon",
+        "name": "Name",
+        "unavailable": "Not available now"
+      },
+      "sidebar": {
+        "title": "Sidebar",
+        "description": "Order the sidebar and choose which entries sit under Show more. Built-in entries keep their names.",
+        "reset": "Reset the sidebar"
+      },
+      "place": {
+        "top": "In the sidebar",
+        "more": "Under Show more"
+      },
+      "moveUp": "Move up",
+      "moveDown": "Move down"
     }
   },
   "common": {
@@ -2383,9 +2460,20 @@
     "menu": {
       "changeShortcut": "Change shortcut…",
       "liveTextSettings": "Live text box settings…",
-      "hidePause": "Hide the pause button"
+      "hidePause": "Hide the pause button",
+      "soundSourceSettings": "Sound source settings…",
+      "microphone": "Microphone",
+      "defaultMicrophone": "Default microphone",
+      "soundSettings": "Sound settings…"
     },
-    "tooQuiet": "Too quiet — speak up"
+    "tooQuiet": "Too quiet — speak up",
+    "captureSource": {
+      "now": "Sound source",
+      "nextTake": "From the next recording",
+      "microphone": "Microphone",
+      "systemAudio": "System audio",
+      "both": "Mic + system audio"
+    }
   },
   "flm": {
     "windowsApplicationControlBlocked": "Windows Application Control blocked flm.exe because it is not signed. The NPU engine is unavailable. Choose a different transcription model.",
@@ -2701,6 +2789,26 @@
       "historySearch": {
         "title": "Whole text and hit counts in History search",
         "description": "Searching History shows each recording's whole text again, with every hit marked, and how many hits there are: in all, in each recording and, for several words, for each word. Sort by Most hits to see the best matches first, or tick Short previews for a few lines per recording."
+      },
+      "pinPages": {
+        "title": "Pin any page to the sidebar",
+        "description": "A pin next to ? in every page's title puts that page (or History tab) in a Pinned section at the top of the sidebar: one click to get there. Click it again to unpin."
+      },
+      "backForward": {
+        "title": "Back and Forward",
+        "description": "The mouse's back and forward side buttons, and Alt+← / Alt+→ (Cmd+[ / Cmd+] on a Mac), move through the pages you opened, like in a browser."
+      },
+      "appearancePage": {
+        "title": "Arrange the sidebar",
+        "description": "Advanced settings › Appearance: order the sidebar, move entries you rarely use under Show more, and rename pinned pages, give them one of 20 icons and choose where they show."
+      },
+      "pillMicrophone": {
+        "title": "Change the microphone from the pill, even while recording",
+        "description": "Right-click the pill's sound bars to pick another microphone (and, on Windows, the sound source). A change during a recording now applies to that recording at once; before, changing the microphone mid-recording lost it."
+      },
+      "filesBatch": {
+        "title": "Several files at once",
+        "description": "Pick or drop several recordings on Files. Put them in order (by date first, drag or arrows, play one to check it), choose a separator, numbers and file names, and get one combined text to copy, plus each file's own text."
       }
     },
     "installed": "Installed"

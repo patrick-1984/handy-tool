@@ -73,7 +73,16 @@
     "moreTools": "Plus d'outils",
     "sttServer": "Serveur STT",
     "combine": "Combiner des enregistrements",
-    "speakers": "Locuteurs"
+    "speakers": "Locuteurs",
+    "appearance": "Apparence",
+    "pinned": {
+      "title": "Épinglées",
+      "pin": "Épingler dans la barre latérale",
+      "unpin": "Désépingler",
+      "limit": "Vous pouvez épingler jusqu'à 50 pages. Désépinglez-en une d'abord.",
+      "showMore": "Afficher plus",
+      "showLess": "Afficher moins"
+    }
   },
   "helpMode": {
     "button": "Mode aide : pointez un réglage pour voir ce qu’il fait",
@@ -778,6 +787,10 @@
           "toggle_live_text_box": {
             "name": "Texte en direct activé/désactivé",
             "description": "Active ou désactive le cadre de texte en direct, comme le bouton T de la barre d'enregistrement. Par défaut : aucun."
+          },
+          "cycle_capture_source": {
+            "name": "Changer de source sonore",
+            "description": "Change tour à tour ce que les enregistrements captent : Microphone, Son système, Microphone + son système. La barre d'enregistrement affiche un instant la nouvelle source. Pendant un enregistrement, elle bascule cet enregistrement dès ce moment, sauf s'il a commencé avec le son système seul ; la nouvelle source s'applique alors au suivant. Windows uniquement. Par défaut : aucun."
           },
           "transcribe_with_post_process": {
             "name": "Raccourci de post-traitement",
@@ -2155,6 +2168,49 @@
         "showLess": "Afficher moins",
         "reveal": "Afficher dans le dossier",
         "delete": "Retirer de la liste"
+      },
+      "batch": {
+        "skipped": "Ignorés (pas un fichier audio que Handy peut lire) : {{names}}",
+        "progress": "Fichier {{current}} sur {{total}} : {{name}}",
+        "order": {
+          "title": "Ordonner les fichiers ({{count}})",
+          "description": "Les textes sont assemblés dans cet ordre. Faites glisser une ligne par sa poignée ou utilisez les flèches ; lisez un fichier pour vérifier ce que c'est.",
+          "drag": "Faire glisser pour réordonner",
+          "play": "Lire",
+          "stop": "Arrêter",
+          "moveUp": "Monter",
+          "moveDown": "Descendre",
+          "remove": "Retirer de la liste",
+          "noDate": "Pas de date",
+          "noLength": "Durée inconnue",
+          "empty": "Il ne reste aucun fichier dans la liste.",
+          "playFailed": "{{name}} ne peut pas être lu ici (il peut quand même être transcrit).",
+          "modelNotReady": "Téléchargez d'abord le modèle.",
+          "transcribe": "Transcrire {{count}} fichiers"
+        },
+        "options": {
+          "title": "Texte combiné",
+          "separator": {
+            "label": "Entre les fichiers",
+            "none": "Rien (ligne suivante)",
+            "blank_line": "Une ligne vide",
+            "divider": "Une ligne de séparation"
+          },
+          "numbered": "Numéroter les parties (1., 2., 3. …)",
+          "names": "Nom du fichier avant chaque partie"
+        },
+        "result": {
+          "title": "{{done}} fichiers sur {{total}} transcrits",
+          "copyAll": "Tout copier",
+          "clear": "Effacer",
+          "perFile": "Chaque fichier",
+          "failed": "Échec : {{error}}",
+          "notTranscribed": "Non transcrit.",
+          "showAll": "Tout afficher",
+          "showLess": "Afficher moins",
+          "stopped": "Le lot s'est arrêté : {{error}}",
+          "cancelled": "Annulé. Les parties terminées sont ci-dessous ; le texte combiné n'a pas été enregistré."
+        }
       }
     },
     "currentAudio": {
@@ -2309,6 +2365,27 @@
           "stt_server": "Serveur STT"
         }
       }
+    },
+    "appearance": {
+      "pins": {
+        "title": "Pages épinglées",
+        "description": "Épinglez une page avec l'épingle à côté du ? de son titre. Ici, vous pouvez les renommer, choisir une icône, les ordonner et choisir où elles s'affichent.",
+        "empty": "Rien d'épinglé pour l'instant.",
+        "icon": "Choisir une icône",
+        "name": "Nom",
+        "unavailable": "Indisponible pour le moment"
+      },
+      "sidebar": {
+        "title": "Barre latérale",
+        "description": "Ordonnez la barre latérale et choisissez quelles entrées se trouvent sous Afficher plus. Les entrées intégrées gardent leur nom.",
+        "reset": "Réinitialiser la barre latérale"
+      },
+      "place": {
+        "top": "Dans la barre latérale",
+        "more": "Sous Afficher plus"
+      },
+      "moveUp": "Monter",
+      "moveDown": "Descendre"
     }
   },
   "common": {
@@ -2368,9 +2445,20 @@
     "menu": {
       "changeShortcut": "Modifier le raccourci…",
       "liveTextSettings": "Réglages de la zone de texte en direct…",
-      "hidePause": "Masquer le bouton pause"
+      "hidePause": "Masquer le bouton pause",
+      "soundSourceSettings": "Réglages de la source sonore…",
+      "microphone": "Microphone",
+      "defaultMicrophone": "Microphone par défaut",
+      "soundSettings": "Paramètres du son…"
     },
-    "tooQuiet": "Trop bas — plus fort"
+    "tooQuiet": "Trop bas — plus fort",
+    "captureSource": {
+      "now": "Source sonore",
+      "nextTake": "Au prochain enregistrement",
+      "microphone": "Microphone",
+      "systemAudio": "Son système",
+      "both": "Micro + son système"
+    }
   },
   "floating": {
     "waiting": "En attente de la transcription…",
@@ -2701,6 +2789,26 @@
       "historySearch": {
         "title": "Texte entier et nombre d'occurrences dans la recherche de l'historique",
         "description": "La recherche dans l'historique affiche de nouveau le texte entier de chaque enregistrement, chaque occurrence surlignée, et leur nombre : au total, par enregistrement et, pour plusieurs mots, par mot. Triez par « Plus d'occurrences » pour voir les meilleurs résultats en premier, ou cochez Aperçus courts pour quelques lignes seulement."
+      },
+      "pinPages": {
+        "title": "Épinglez n'importe quelle page dans la barre latérale",
+        "description": "Une épingle à côté du ? dans le titre de chaque page place cette page (ou un onglet de l'Historique) dans une section Épinglées en haut de la barre latérale : un clic pour y aller. Cliquez de nouveau pour la désépingler."
+      },
+      "backForward": {
+        "title": "Précédent et Suivant",
+        "description": "Les boutons latéraux Précédent et Suivant de la souris, ainsi que Alt+← / Alt+→ (Cmd+[ / Cmd+] sur Mac), parcourent les pages que vous avez ouvertes, comme dans un navigateur."
+      },
+      "appearancePage": {
+        "title": "Organisez la barre latérale",
+        "description": "Paramètres avancés › Apparence : ordonnez la barre latérale, déplacez les entrées peu utilisées sous Afficher plus, et renommez les pages épinglées, donnez-leur l'une des 20 icônes et choisissez où elles s'affichent."
+      },
+      "pillMicrophone": {
+        "title": "Changez de microphone depuis la pilule, même pendant l'enregistrement",
+        "description": "Faites un clic droit sur les barres sonores de la pilule pour choisir un autre microphone (et, sous Windows, la source sonore). Un changement pendant un enregistrement s'applique désormais immédiatement à cet enregistrement ; auparavant, changer de microphone en cours d'enregistrement le perdait."
+      },
+      "filesBatch": {
+        "title": "Plusieurs fichiers à la fois",
+        "description": "Choisissez ou déposez plusieurs enregistrements dans Fichiers. Mettez-les en ordre (d'abord par date, par glisser ou avec les flèches, écoutez-en un pour vérifier), choisissez un séparateur, des numéros et les noms de fichiers, et obtenez un seul texte combiné à copier, ainsi que le texte de chaque fichier."
       }
     },
     "installed": "Installée"

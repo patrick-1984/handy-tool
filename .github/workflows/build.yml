@@ -107,9 +107,15 @@ jobs:
         with:
           bun-download-url: "https://github.com/oven-sh/bun/releases/latest/download/bun-windows-x64-baseline.zip"
 
-      - name: install Rust stable
-        uses: dtolnay/rust-toolchain@stable
+      - name: install Rust 1.99.1
+        # Pinned: Rust 1.100 (2026-11-09) changed cargo's build-dir layout, and
+        # ort-sys 2.0.0-rc.10's build script then looks for the output folder one
+        # level too high - on Windows (no symlinks, so it copies the DLL) the copy
+        # fails with "path not found" and the build stops. 1.99.1 built 2.6.0.
+        # Move on once ort is updated past rc.10.
+        uses: dtolnay/rust-toolchain@master
         with:
+          toolchain: 1.99.1
           # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
           targets: ${{ contains(inputs.platform, 'macos') && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 

@@ -48,6 +48,7 @@ changelog; their entries say "the 0.3x series" rather than invent a number.
 | [Backup and portability](#section-backup)                | Moving, restoring and running without installing.                      |
 | [Audio and feedback](#section-audio)                     | The microphone, the cues and the overlay.                              |
 | [Platform and privacy](#section-platform)                | What ships, what leaves the machine, what is written down.             |
+| [The window and the sidebar](#section-sidebar)           | Pinned pages, Back and Forward, arranging the sidebar.                 |
 
 Elsewhere in the documentation: [the documentation hub](README.md) routes you to a task,
 [the settings reference](reference/settings/index.md) lists every control with its shipped
@@ -370,6 +371,8 @@ no default. Each overlay button also has a right-click menu: **T** switches the 
 between last words and whole text and opens its settings, **Pause** can hide itself, and
 **Cancel** chooses whether cancelling discards the take or keeps it in History only; each menu
 can open the button's shortcut in Settings.
+The sound bars have a right-click menu too, on Windows: see
+[Switch between your voice and the system audio without opening Settings](#switch-sound-source-without-settings).
 **Where.** `General › Pause button = On`; the shortcut is
 `Shortcuts › Dictation › Pause / Resume`.
 **Since.** 1.10.0. The right-click menus since 2.0.0.
@@ -608,6 +611,48 @@ _{Windows only}_, with `General › Sound › Playback device to capture` naming
 different audio backend, so the control is hidden rather than offered and silently recording
 nothing.
 **Since.** 1.6.0.
+
+<!-- prov: sound source shortcut and pill menu | src: src-tauri/src/managers/audio.rs; src-tauri/src/audio_toolkit/audio/recorder.rs; src-tauri/src/shortcut/mod.rs; src-tauri/src/overlay.rs; src/overlay/RecordingOverlay.tsx; src-tauri/src/settings.rs -->
+
+### Switch between your voice and the system audio without opening Settings
+
+<a id="switch-sound-source-without-settings"></a>
+**The situation.** Most of the time you record your own voice, but now and then you want the
+call or the video you are watching, or both — and changing Sound source meant a trip to Settings,
+often after the recording had already started.
+**What Handy does.** The Cycle Sound Source shortcut steps through Microphone, System audio and
+Microphone + system audio, and the recording overlay names the new source for about a second
+and a half — on its own when nothing is recording. Right-clicking the overlay's sound bars during
+a take opens a menu with the three sources, the current one ticked, plus the sound source settings
+and the shortcut. Both change the same setting the Settings page shows. During a take the change
+applies from that moment on: start on the microphone, switch to system audio without saying a
+word, and what plays from then on is recorded; switch back and your voice is heard again. What
+was already recorded stays, and nothing is lost or doubled at the switch: the take keeps the
+microphone as its clock and only leaves its sound out while System audio is chosen. A take that
+started with System audio alone cannot take the microphone in mid-way, so the overlay says the
+change applies from the next recording. While system audio is recorded, Mute While Recording does
+not mute your speakers. Clicking the overlay or using one of its menus hands the foreground back
+to the window you were dictating into, so the paste at stop still lands there. With
+Overlay Position set to None nothing is shown.
+**Where.** `Shortcuts › Dictation › Cycle Sound Source` _{Windows only}_ — no default key —
+with the choice itself at `General › Sound › Sound source`.
+**Applies to.** Windows only, like system audio itself.
+**Since.** 2.7.0.
+
+### Change the microphone during a recording without losing it
+
+<a id="change-microphone-mid-recording"></a>
+**The situation.** You start dictating and realise the laptop's microphone is recording instead
+of your headset — or the headset battery dies mid-sentence.
+**What Handy does.** Right-click the overlay's sound bars while recording: the **Microphone**
+submenu lists your microphones with the current one ticked; pick another (the same works from
+`General › Sound › Microphone`). Handy opens the new microphone first and only once it delivers
+sound switches the recording over to it: what the old microphone had captured stays in the take,
+and the overlay names the microphone now in use. If the new one cannot start, the recording keeps
+the old microphone and the overlay says the new one applies from the next recording. Before 2.7.0
+changing the microphone mid-recording lost that recording.
+**Where.** Right-click the overlay's sound bars, or `General › Sound › Microphone`.
+**Since.** 2.7.0.
 
 ### Your shortcuts don't eat the accented letters you type
 
@@ -2347,6 +2392,25 @@ only ever read.
 **Where.** `Files › Transcribe a file › Choose an audio file`.
 **Since.** 2.0.0.
 
+### Several recordings, one text in the order you choose
+
+<a id="several-files-one-text"></a>
+**The situation.** A conversation came in as several voice notes, and you want one text in the
+right order that you can copy in one go.
+**What Handy does.** Choose several files at once, or drop several on the box. Files Handy cannot
+read are named and left out; the same file twice counts once. An **Order files** window lists each
+file's name, date and length, oldest first (the date is the earlier of when the file was created
+and last changed, because copying a recording resets its creation date). Drag a row by its grip or
+use the arrows, play a file to check what it is, remove one, and choose how the combined text is
+put together: what goes between files (nothing, an empty line, a divider line), numbers before the
+parts, and each file's name above its part — remembered for next time. The files are then
+transcribed one after another ("File 2 of 5"); one that fails is marked and the others go on, and
+leaving the page does not stop them. The result is the combined text with **Copy all**, and each
+file's text in its own card with its own Copy. The save setting applies once, to the combined text,
+saved as "first file (combined).txt"; a cancelled batch is not saved. A single file works as before.
+**Where.** `Files › Transcribe a file › Choose an audio file`.
+**Since.** 2.7.0.
+
 ### A folder of recordings, transcribed while you sleep
 
 <a id="a-folder-of-recordings-transcribed-while-you-sleep"></a>
@@ -2971,6 +3035,46 @@ nothing.
 **Since.** 0.1.6; the empty-install fix in 0.43.0; the setup guide in 2.0.0.
 
 ---
+
+<a id="section-sidebar"></a>
+
+## The window and the sidebar
+
+### Pin the pages you use most
+
+<a id="pin-pages-to-the-sidebar"></a>
+**The situation.** The setting you change every day sits two clicks deep, on a tab of a tab.
+**What Handy does.** Every page's title has a pin next to its ?: click it and the page — or the
+History tab, or the Advanced settings or More Tools tab you are on — appears in a **Pinned**
+section at the top of the sidebar, one click away. Click the pin again to unpin. A pinned page
+shows its own icon with a small arrow on it, so it reads as a jump, not a section. Up to 50.
+**Where.** The pin next to ? in any page's title.
+**Since.** 2.7.0.
+
+### Back and Forward between pages
+
+<a id="back-and-forward"></a>
+**The situation.** You opened a setting from a search, looked at History, and want to go back to
+where you were.
+**What Handy does.** The mouse's back and forward side buttons and Alt+← / Alt+→ (Cmd+[ / Cmd+] on
+a Mac) move through the pages and History tabs visited since Handy started, as in a browser. They
+do nothing while a dialog is open, and the keys are left alone in a text field or while a shortcut
+is being recorded.
+**Applies to.** Mouse side buttons tested on Windows; on macOS and Linux they work where the system
+passes them to the app.
+**Since.** 2.7.0.
+
+### Arrange the sidebar
+
+<a id="arrange-the-sidebar"></a>
+**The situation.** Some sidebar entries you never use, and the ones you do are not where you want
+them.
+**What Handy does.** Advanced settings › Appearance orders the sidebar's entries and moves any of
+them under a collapsed **Show more** at its end (it opens by itself when the page you are on is in
+there). Pinned pages can be renamed (empty = the page's own name), given one of 20 icons,
+reordered, removed, and shown at the top or under Show more. Built-in entries keep their names.
+**Where.** `Advanced settings › Appearance`.
+**Since.** 2.7.0.
 
 ## Conventions used in this file
 

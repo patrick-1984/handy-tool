@@ -262,3 +262,16 @@ pub fn initialize_shortcuts(app: AppHandle) -> Result<(), String> {
     log::info!("Shortcuts initialized successfully");
     Ok(())
 }
+
+/// Advanced › Appearance and the pin buttons: the whole sidebar arrangement,
+/// written at once (one writer shape for every caller).
+#[tauri::command]
+#[specta::specta]
+pub fn change_sidebar_layout_setting(
+    app: AppHandle,
+    layout: crate::settings::SidebarLayout,
+) -> Result<(), String> {
+    let layout = layout.sanitized();
+    crate::settings::update_settings(&app, |s| s.sidebar_layout = layout);
+    Ok(())
+}

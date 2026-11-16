@@ -37,6 +37,20 @@ interface Item {
  */
 const RELEASES: { version: string; items: Item[] }[] = [
   {
+    version: "2.7.0",
+    items: [
+      { key: "pinPages", section: "appearance" },
+      { key: "backForward" },
+      { key: "appearancePage", section: "appearance" },
+      {
+        key: "pillMicrophone",
+        section: "general",
+        titleKeys: ["settings.sound.microphone.title"],
+      },
+      { key: "filesBatch", section: "files" },
+    ],
+  },
+  {
     version: "2.6.0",
     items: [
       { key: "historySearch", section: "history", historyTab: "recordings" },

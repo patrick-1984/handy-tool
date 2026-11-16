@@ -203,6 +203,120 @@ pub enum FileTextSave {
     DontSave,
 }
 
+/// Files › several files: what goes between the parts of the combined text.
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum BatchSeparator {
+    /// The parts follow each other on the next line.
+    None,
+    /// One empty line between parts.
+    #[default]
+    BlankLine,
+    /// A divider line ("---") between parts, with empty lines around it.
+    Divider,
+}
+
+/// Files › several files: how the combined text is put together.
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Type, Default)]
+pub struct FileBatchOptions {
+    #[serde(default)]
+    pub separator: BatchSeparator,
+    /// "1. ", "2. "... before each part.
+    #[serde(default)]
+    pub numbered: bool,
+    /// The file's name on its own line above its part.
+    #[serde(default)]
+    pub names: bool,
+}
+
+/// A page pinned to the sidebar (2.7.0).
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Type)]
+pub struct SidebarShortcut {
+    pub id: String,
+    /// The page (a sidebar section id).
+    pub section: String,
+    /// The History tab, for a pinned History tab.
+    #[serde(default)]
+    pub history_tab: Option<String>,
+    /// The user's name for it; None shows the page's own (translated) name.
+    #[serde(default)]
+    pub name: Option<String>,
+    /// One of the Appearance page's icons, by key.
+    #[serde(default = "default_shortcut_icon")]
+    pub icon: String,
+    /// Shown under More instead of in the Shortcuts section.
+    #[serde(default)]
+    pub in_more: bool,
+}
+
+fn default_shortcut_icon() -> String {
+    "pin".to_string()
+}
+
+/// How the sidebar is arranged (Advanced › Appearance). Empty = the default
+/// sidebar; ids the app does not know (yet or any more) are ignored.
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Type, Default)]
+pub struct SidebarLayout {
+    /// Sidebar entries in the order shown (missing ones keep their default place).
+    #[serde(default)]
+    pub order: Vec<String>,
+    /// Entries shown under the collapsed More button.
+    #[serde(default)]
+    pub in_more: Vec<String>,
+    /// Pinned pages, in the order shown.
+    #[serde(default)]
+    pub shortcuts: Vec<SidebarShortcut>,
+}
+
+/// Most shortcuts kept, and the longest name.
+pub const MAX_SIDEBAR_SHORTCUTS: usize = 50;
+pub const MAX_SHORTCUT_NAME_CHARS: usize = 60;
+
+impl SidebarLayout {
+    /// A layout safe to store: names trimmed and capped (empty = the page's
+    /// own name), duplicate ids and entries dropped, at most 50 shortcuts.
+    pub fn sanitized(self) -> SidebarLayout {
+        let mut seen = std::collections::HashSet::new();
+        let dedup = |list: Vec<String>, seen: &mut std::collections::HashSet<String>| {
+            list.into_iter()
+                .map(|id| id.trim().to_string())
+                .filter(|id| !id.is_empty() && seen.insert(id.clone()))
+                .collect::<Vec<_>>()
+        };
+        let order = dedup(self.order, &mut seen);
+        let mut seen_more = std::collections::HashSet::new();
+        let in_more = dedup(self.in_more, &mut seen_more);
+        let mut ids = std::collections::HashSet::new();
+        let mut targets = std::collections::HashSet::new();
+        let shortcuts = self
+            .shortcuts
+            .into_iter()
+            .filter(|s| !s.id.trim().is_empty() && !s.section.trim().is_empty())
+            .filter(|s| ids.insert(s.id.clone()))
+            // One shortcut per page: pinning is a toggle.
+            .filter(|s| targets.insert((s.section.clone(), s.history_tab.clone())))
+            .take(MAX_SIDEBAR_SHORTCUTS)
+            .map(|mut s| {
+                s.name = s
+                    .name
+                    .map(|n| {
+                        n.trim()
+                            .chars()
+                            .take(MAX_SHORTCUT_NAME_CHARS)
+                            .collect::<String>()
+                    })
+                    .filter(|n| !n.is_empty());
+                s
+            })
+            .collect();
+        SidebarLayout {
+            order,
+            in_more,
+            shortcuts,
+        }
+    }
+}
+
 fn default_true() -> bool {
     true
 }
@@ -1676,6 +1790,12 @@ pub struct AppSettings {
     /// Where those go. Empty = `{app_data}/files`.
     #[serde(default)]
     pub files_folder: String,
+    /// Files › several files: separator, numbering, names (2.7.0).
+    #[serde(default)]
+    pub file_batch: FileBatchOptions,
+    /// Advanced › Appearance: sidebar order, More, shortcuts (2.7.0).
+    #[serde(default)]
+    pub sidebar_layout: SidebarLayout,
     /// Advanced > Proxy (Windows; see net/mod.rs).
     #[serde(default)]
     pub proxy_mode: ProxyMode,
@@ -2755,6 +2875,18 @@ pub enum CaptureSource {
     MicrophoneAndSystemAudio,
 }
 
+impl CaptureSource {
+    /// The source the Cycle Sound Source shortcut moves to: Microphone, System
+    /// audio, Microphone + system audio, then Microphone again.
+    pub fn next(self) -> Self {
+        match self {
+            CaptureSource::Microphone => CaptureSource::SystemAudio,
+            CaptureSource::SystemAudio => CaptureSource::MicrophoneAndSystemAudio,
+            CaptureSource::MicrophoneAndSystemAudio => CaptureSource::Microphone,
+        }
+    }
+}
+
 pub const SETTINGS_STORE_PATH: &str = "settings_store.json";
 
 pub fn get_default_settings() -> AppSettings {
@@ -2844,6 +2976,21 @@ pub fn get_default_settings() -> AppSettings {
             description:
                 "Switches the live text box on or off, like the T button on the recording overlay."
                     .to_string(),
+            default_binding: String::new(),
+            current_binding: String::new(),
+        },
+    );
+
+    // Windows-only (see shortcut::is_windows_only_binding): the other sources need
+    // WASAPI loopback. No default chord - a global key for an occasional switch
+    // would take keys from every other app; the pill's right-click menu needs none.
+    bindings.insert(
+        "cycle_capture_source".to_string(),
+        ShortcutBinding {
+            id: "cycle_capture_source".to_string(),
+            name: "Cycle Sound Source".to_string(),
+            description: "Switches what takes record: microphone, system audio, or both."
+                .to_string(),
             default_binding: String::new(),
             current_binding: String::new(),
         },
@@ -3181,6 +3328,8 @@ pub fn get_default_settings() -> AppSettings {
         file_model: String::new(),
         file_keep_audio: false,
         files_folder: String::new(),
+        file_batch: FileBatchOptions::default(),
+        sidebar_layout: SidebarLayout::default(),
         proxy_mode: ProxyMode::default(),
         proxy_host: String::new(),
         proxy_port: default_proxy_port(),
@@ -3490,6 +3639,75 @@ pub fn get_recording_retention_period(app: &AppHandle) -> RecordingRetentionPeri
 mod tests {
     use super::*;
 
+    fn shortcut(id: &str, section: &str, tab: Option<&str>, name: Option<&str>) -> SidebarShortcut {
+        SidebarShortcut {
+            id: id.into(),
+            section: section.into(),
+            history_tab: tab.map(Into::into),
+            name: name.map(Into::into),
+            icon: "pin".into(),
+            in_more: false,
+        }
+    }
+
+    #[test]
+    fn sidebar_layout_is_cleaned_before_it_is_stored() {
+        let long = "x".repeat(80);
+        let layout = SidebarLayout {
+            order: vec![
+                "files".into(),
+                " files ".into(),
+                "".into(),
+                "history".into(),
+            ],
+            in_more: vec!["about".into(), "about".into()],
+            shortcuts: vec![
+                shortcut("a", "mcp", None, Some("  My MCP  ")),
+                shortcut("a", "proxy", None, None),
+                shortcut("b", "mcp", None, None),
+                shortcut("c", "history", Some("favorites"), Some("   ")),
+                shortcut("d", "history", Some("statistics"), Some(&long)),
+                shortcut("", "files", None, None),
+            ],
+        }
+        .sanitized();
+        assert_eq!(layout.order, vec!["files", "history"]);
+        assert_eq!(layout.in_more, vec!["about"]);
+        let ids: Vec<_> = layout.shortcuts.iter().map(|s| s.id.as_str()).collect();
+        // Duplicate id, second pin of the same page and an empty id are dropped;
+        // two History tabs are two pages.
+        assert_eq!(ids, vec!["a", "c", "d"]);
+        assert_eq!(layout.shortcuts[0].name.as_deref(), Some("My MCP"));
+        assert_eq!(layout.shortcuts[1].name, None);
+        assert_eq!(
+            layout.shortcuts[2].name.as_ref().unwrap().chars().count(),
+            60
+        );
+    }
+
+    #[test]
+    fn sidebar_layout_caps_shortcuts_and_reads_old_settings() {
+        let many = SidebarLayout {
+            shortcuts: (0..70)
+                .map(|i| shortcut(&format!("s{i}"), &format!("page{i}"), None, None))
+                .collect(),
+            ..Default::default()
+        }
+        .sanitized();
+        assert_eq!(many.shortcuts.len(), MAX_SIDEBAR_SHORTCUTS);
+        // Settings written before 2.7.0 have neither field.
+        let defaults = serde_json::to_value(get_default_settings()).unwrap();
+        let mut old = defaults.as_object().unwrap().clone();
+        old.remove("sidebar_layout");
+        old.remove("file_batch");
+        let read: AppSettings = serde_json::from_value(serde_json::Value::Object(old)).unwrap();
+        assert_eq!(read.sidebar_layout, SidebarLayout::default());
+        assert_eq!(read.file_batch.separator, BatchSeparator::BlankLine);
+        // A shortcut saved without an icon gets the default one.
+        let s: SidebarShortcut = serde_json::from_str(r#"{"id":"x","section":"files"}"#).unwrap();
+        assert_eq!(s.icon, "pin");
+    }
+
     fn with_warmups(device: &str, measured: &[u32]) -> AppSettings {
         let mut s = get_default_settings();
         s.mic_warmup_by_device
@@ -3776,6 +3994,37 @@ mod tests {
                 "source={source:?}"
             );
         }
+    }
+
+    #[test]
+    fn the_sound_source_shortcut_cycles_through_all_three_in_order() {
+        let mut s = CaptureSource::Microphone;
+        let mut seen = Vec::new();
+        for _ in 0..4 {
+            s = s.next();
+            seen.push(s);
+        }
+        assert_eq!(
+            seen,
+            vec![
+                CaptureSource::SystemAudio,
+                CaptureSource::MicrophoneAndSystemAudio,
+                CaptureSource::Microphone,
+                CaptureSource::SystemAudio,
+            ]
+        );
+    }
+
+    #[test]
+    fn the_cycle_sound_source_shortcut_ships_unbound_and_is_backfilled() {
+        let defaults = get_default_settings();
+        let b = &defaults.bindings["cycle_capture_source"];
+        assert!(b.default_binding.is_empty() && b.current_binding.is_empty());
+        // A store from before this binding existed gets it, unbound.
+        let mut old = get_default_settings();
+        old.bindings.remove("cycle_capture_source");
+        assert!(ensure_default_bindings(&mut old));
+        assert_eq!(old.bindings["cycle_capture_source"].current_binding, "");
     }
 
     #[test]

@@ -140,6 +140,22 @@ pub fn change_live_text_box_setting(app: AppHandle, enabled: bool) -> Result<boo
     Ok(enabled)
 }
 
+/// The pointer came onto the recording pill, or pressed it: note the window the
+/// user dictates into (see `overlay::note_focus_before_pill`). Windows only.
+#[tauri::command]
+#[specta::specta]
+pub fn overlay_note_focus() {
+    crate::overlay::note_focus_before_pill();
+}
+
+/// A click or a right-click menu on the recording pill is done: hand the
+/// foreground back if the pill took it. Windows only.
+#[tauri::command]
+#[specta::specta]
+pub fn overlay_restore_focus() {
+    crate::overlay::restore_focus_after_pill();
+}
+
 /// Flip the live text box (the overlay's T button). Returns the new state.
 #[tauri::command]
 #[specta::specta]
@@ -347,21 +363,40 @@ pub fn get_available_microphones() -> Result<Vec<AudioDevice>, String> {
 
 #[tauri::command]
 #[specta::specta]
-pub fn set_selected_microphone(app: AppHandle, device_name: String) -> Result<(), String> {
-    let mut settings = get_settings(&app);
-    settings.selected_microphone = if device_name == "default" {
-        None
-    } else {
-        Some(device_name)
-    };
-    write_settings(&app, settings);
+pub async fn set_selected_microphone(app: AppHandle, device_name: String) -> Result<(), String> {
+    // Off the main thread: during a take the new microphone is opened and
+    // switched in, which can take a few seconds with a slow device.
+    tauri::async_runtime::spawn_blocking(move || {
+        // One microphone or sound source change at a time (Settings, pill menu, shortcut).
+        let _serial = crate::shortcut::CAPTURE_SOURCE_LOCK
+            .lock()
+            .unwrap_or_else(|e| e.into_inner());
+        let selected = if device_name == "default" {
+            None
+        } else {
+            Some(device_name)
+        };
+        crate::settings::update_settings(&app, |s| s.selected_microphone = selected);
 
-    // Update the audio manager to use the new device
-    let rm = app.state::<Arc<AudioRecordingManager>>();
-    rm.update_selected_device()
-        .map_err(|e| format!("Failed to update selected device: {}", e))?;
-
-    Ok(())
+        let rm = app.state::<Arc<AudioRecordingManager>>();
+        let switch = rm
+            .update_selected_device()
+            .map_err(|e| format!("Failed to update selected device: {}", e))?;
+        if rm.is_recording() {
+            // The take keeps its microphone until the next one: name the new
+            // choice. Switched now: name what the take really records from.
+            let next_take = switch == crate::managers::audio::SourceSwitch::NextTake;
+            let name = if next_take {
+                crate::settings::get_settings(&app).selected_microphone
+            } else {
+                rm.active_microphone_name()
+            };
+            crate::overlay::show_microphone_notice(&app, name, next_take);
+        }
+        Ok(())
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]

@@ -6,7 +6,9 @@
 //! one) or next to the recording, and a copy of the audio kept in that folder;
 //! every result goes into a log shown on the page.
 
-use crate::audio_toolkit::audio::{SUPPORTED_EXTENSIONS, decode_audio_file};
+use crate::audio_toolkit::audio::{
+    SUPPORTED_EXTENSIONS, audio_duration_seconds, decode_audio_file,
+};
 use crate::managers::model::ModelManager;
 use crate::managers::transcription::TranscriptionManager;
 use crate::managers::translator::split_speech_segments;
@@ -16,7 +18,7 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_opener::OpenerExt;
@@ -47,21 +49,32 @@ pub struct FileTranscription {
 #[serde(tag = "state", rename_all = "snake_case")]
 pub enum FileJob {
     Decoding {
+        /// Which start this is (several files are done one job after another).
+        job_id: u32,
+        source_path: String,
         file_name: String,
     },
     Transcribing {
+        job_id: u32,
+        source_path: String,
         file_name: String,
         done_secs: f64,
         total_secs: f64,
     },
     Done {
+        job_id: u32,
+        source_path: String,
         entry: FileTranscription,
     },
     Failed {
+        job_id: u32,
+        source_path: String,
         file_name: String,
         error: String,
     },
     Cancelled {
+        job_id: u32,
+        source_path: String,
         file_name: String,
     },
 }
@@ -71,7 +84,55 @@ static JOB: Lazy<Mutex<Option<FileJob>>> = Lazy::new(|| Mutex::new(None));
 /// exists only in that thread until it lands in History): the updater waits.
 pub static BACKGROUND_SPEAKERS: std::sync::atomic::AtomicUsize =
     std::sync::atomic::AtomicUsize::new(0);
-static CANCEL: AtomicBool = AtomicBool::new(false);
+/// The job asked to stop (0 = none): a late Cancel never stops a later file.
+static CANCEL: AtomicU32 = AtomicU32::new(0);
+/// The id the next job gets.
+static NEXT_JOB_ID: AtomicU32 = AtomicU32::new(1);
+/// Several files are being transcribed one after another (Files page): between
+/// two of them no file is running, but the updater must still wait and the
+/// model stays loaded until the last one.
+/// Its owner is the token begin_file_batch handed out (0 = none); only that
+/// owner ends it. It also lapses 60 s after the batch last showed a sign of
+/// life (a file started or progressed), so a batch whose window was reloaded
+/// can never hold the updater back for good.
+/// Owner and deadline change together, under one lock.
+struct BatchHold {
+    owner: u32,
+    until_ms: u64,
+}
+static BATCH_HOLD: Mutex<BatchHold> = Mutex::new(BatchHold {
+    owner: 0,
+    until_ms: 0,
+});
+const BATCH_HOLD_GRACE_MS: u64 = 60_000;
+
+fn now_ms() -> u64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or(0)
+}
+
+fn batch_hold() -> std::sync::MutexGuard<'static, BatchHold> {
+    BATCH_HOLD.lock().unwrap_or_else(|p| p.into_inner())
+}
+
+fn batch_held() -> bool {
+    let hold = batch_hold();
+    hold.owner != 0 && now_ms() < hold.until_ms
+}
+
+/// A sign of life from the batch: its hold lasts another 60 s.
+fn touch_batch() {
+    let mut hold = batch_hold();
+    if hold.owner != 0 {
+        hold.until_ms = now_ms() + BATCH_HOLD_GRACE_MS;
+    }
+}
+
+fn cancelled(job_id: u32) -> bool {
+    CANCEL.load(Ordering::SeqCst) == job_id
+}
 /// Serializes read-modify-write of the log file.
 static LOG_LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
 
@@ -80,6 +141,7 @@ static LOG_LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
 /// History's "Transcribe again" counts too (its text is not saved yet either).
 pub fn file_job_running() -> bool {
     RETRANSCRIBING.load(Ordering::SeqCst)
+        || batch_held()
         || BACKGROUND_SPEAKERS.load(Ordering::SeqCst) > 0
         || matches!(
             *JOB.lock().unwrap_or_else(|p| p.into_inner()),
@@ -88,6 +150,7 @@ pub fn file_job_running() -> bool {
 }
 
 fn publish(app: &AppHandle, job: FileJob) {
+    touch_batch();
     *JOB.lock().unwrap_or_else(|p| p.into_inner()) = Some(job.clone());
     let _ = app.emit("file-job", job);
 }
@@ -379,6 +442,10 @@ pub fn usable_for_folders(settings: &AppSettings, models: &ModelManager, model: 
 
 /// A model loaded into the second slot only for a file doesn't stay in memory.
 pub(crate) fn release_model(app: &AppHandle, model: &str) {
+    // Several files in a row: unloaded once, after the last (end_file_batch).
+    if batch_held() {
+        return;
+    }
     let settings = get_settings(app);
     let models = app.state::<Arc<ModelManager>>();
     let watched_folders_use_it = settings.translator_enabled
@@ -392,6 +459,7 @@ pub(crate) fn release_model(app: &AppHandle, model: &str) {
 /// Decodes, transcribes piece by piece and saves. `Ok(None)` = cancelled.
 fn transcribe_whole(
     app: &AppHandle,
+    job_id: u32,
     path: &Path,
     file_name: &str,
     model: &str,
@@ -414,6 +482,8 @@ fn transcribe_whole(
     publish(
         app,
         FileJob::Transcribing {
+            job_id,
+            source_path: path.display().to_string(),
             file_name: file_name.to_string(),
             done_secs: 0.0,
             total_secs,
@@ -423,7 +493,7 @@ fn transcribe_whole(
     let tm = app.state::<Arc<TranscriptionManager>>();
     let mut parts: Vec<String> = Vec::new();
     for range in segments {
-        if CANCEL.load(Ordering::SeqCst) {
+        if cancelled(job_id) {
             return Ok(None);
         }
         let piece = samples[range.clone()].to_vec();
@@ -435,13 +505,15 @@ fn transcribe_whole(
         publish(
             app,
             FileJob::Transcribing {
+                job_id,
+                source_path: path.display().to_string(),
                 file_name: file_name.to_string(),
                 done_secs: range.end as f64 / SAMPLE_HZ,
                 total_secs,
             },
         );
     }
-    if CANCEL.load(Ordering::SeqCst) {
+    if cancelled(job_id) {
         return Ok(None);
     }
 
@@ -487,7 +559,7 @@ pub fn transcribe_file(
     path: String,
     model_id: String,
     save: FileTextSave,
-) -> Result<(), String> {
+) -> Result<u32, String> {
     if save == FileTextSave::Ask {
         return Err("where to save the text was not chosen".into());
     }
@@ -510,6 +582,9 @@ pub fn transcribe_file(
         return Err(format!("this file type (.{ext}) can't be read"));
     }
     let file_name = file_name_of(&path);
+    let source_path = path.display().to_string();
+    let job_id = NEXT_JOB_ID.fetch_add(1, Ordering::SeqCst);
+    touch_batch();
     {
         let mut job = JOB.lock().unwrap_or_else(|p| p.into_inner());
         if matches!(
@@ -525,29 +600,46 @@ pub fn transcribe_file(
             return Err("an update is being installed; try again after the restart".into());
         }
         *job = Some(FileJob::Decoding {
+            job_id,
+            source_path: source_path.clone(),
             file_name: file_name.clone(),
         });
     }
-    CANCEL.store(false, Ordering::SeqCst);
     let _ = app.emit(
         "file-job",
         FileJob::Decoding {
+            job_id,
+            source_path: source_path.clone(),
             file_name: file_name.clone(),
         },
     );
     // Kept for the spawn-failure path below: the closure takes the originals.
-    let (app_on_error, name_on_error) = (app.clone(), file_name.clone());
+    let (app_on_error, name_on_error, path_on_error) =
+        (app.clone(), file_name.clone(), source_path.clone());
     let spawned = std::thread::Builder::new()
         .name("file-transcribe".into())
         .spawn(move || {
-            let result = transcribe_whole(&app, &path, &file_name, &model_id, save);
+            let result = transcribe_whole(&app, job_id, &path, &file_name, &model_id, save);
             release_model(&app, &model_id);
             let job = match result {
-                Ok(Some(entry)) => FileJob::Done { entry },
-                Ok(None) => FileJob::Cancelled { file_name },
+                Ok(Some(entry)) => FileJob::Done {
+                    job_id,
+                    source_path,
+                    entry,
+                },
+                Ok(None) => FileJob::Cancelled {
+                    job_id,
+                    source_path,
+                    file_name,
+                },
                 Err(error) => {
                     warn!("Files: {} failed: {error}", path.display());
-                    FileJob::Failed { file_name, error }
+                    FileJob::Failed {
+                        job_id,
+                        source_path,
+                        file_name,
+                        error,
+                    }
                 }
             };
             publish(&app, job);
@@ -559,13 +651,148 @@ pub fn transcribe_file(
         publish(
             &app_on_error,
             FileJob::Failed {
+                job_id,
+                source_path: path_on_error,
                 file_name: name_on_error,
                 error: error.clone(),
             },
         );
         return Err(error);
     }
-    Ok(())
+    Ok(job_id)
+}
+
+/// What the Order files window shows for a picked or dropped file.
+#[derive(Clone, Serialize, Type)]
+pub struct AudioFileInfo {
+    pub path: String,
+    pub file_name: String,
+    /// Whether Handy can read this file type.
+    pub supported: bool,
+    /// When the file was recorded as far as the system knows: the earlier of
+    /// its created and modified times, in milliseconds since 1970.
+    pub created_ms: Option<f64>,
+    /// Its length, when the file's headers say.
+    pub duration_secs: Option<f64>,
+}
+
+fn is_supported_audio(path: &Path) -> bool {
+    path.extension()
+        .map(|e| e.to_string_lossy().to_ascii_lowercase())
+        .is_some_and(|ext| SUPPORTED_EXTENSIONS.contains(&ext.as_str()))
+}
+
+fn system_time_ms(time: std::io::Result<std::time::SystemTime>) -> Option<f64> {
+    time.ok()?
+        .duration_since(std::time::UNIX_EPOCH)
+        .ok()
+        .map(|d| d.as_millis() as f64)
+}
+
+fn audio_file_info(path: &str) -> AudioFileInfo {
+    let path_buf = PathBuf::from(path.trim());
+    let meta = std::fs::metadata(&path_buf).ok().filter(|m| m.is_file());
+    let supported = meta.is_some() && is_supported_audio(&path_buf);
+    // The earlier of created and modified: copying a recording on Windows gives
+    // the copy a new "created" time but keeps "modified" (when it was recorded).
+    let created_ms = meta.as_ref().and_then(|m| {
+        match (system_time_ms(m.created()), system_time_ms(m.modified())) {
+            (Some(c), Some(w)) => Some(c.min(w)),
+            (c, w) => c.or(w),
+        }
+    });
+    AudioFileInfo {
+        file_name: file_name_of(&path_buf),
+        path: path_buf.display().to_string(),
+        supported,
+        created_ms,
+        duration_secs: if supported {
+            audio_duration_seconds(&path_buf)
+        } else {
+            None
+        },
+    }
+}
+
+/// Name, creation time and length of each file, in the order given. Only the
+/// headers are read, so this is quick even for long recordings.
+#[tauri::command]
+#[specta::specta]
+pub async fn audio_files_info(paths: Vec<String>) -> Vec<AudioFileInfo> {
+    tauri::async_runtime::spawn_blocking(move || {
+        paths.iter().map(|p| audio_file_info(p)).collect::<Vec<_>>()
+    })
+    .await
+    .unwrap_or_default()
+}
+
+/// Where the combined text of several files goes: as one file's text would,
+/// named after the first file ("talk (combined).txt"). Never overwrites.
+fn batch_text_path(
+    app: &AppHandle,
+    settings: &AppSettings,
+    first_source: &Path,
+    save: FileTextSave,
+) -> Result<Option<PathBuf>, String> {
+    let folder = match save {
+        FileTextSave::HandyFolder => {
+            let folder = files_folder(app, settings)?;
+            std::fs::create_dir_all(&folder).map_err(|e| e.to_string())?;
+            folder
+        }
+        FileTextSave::NextToFile => first_source
+            .parent()
+            .map(Path::to_path_buf)
+            .ok_or_else(|| format!("no folder for {}", first_source.display()))?,
+        FileTextSave::Ask | FileTextSave::DontSave => return Ok(None),
+    };
+    Ok(Some(batch_text_file(&folder, first_source)))
+}
+
+/// "talk (combined).txt" in `folder`, or "talk (combined) (2).txt"... if taken.
+fn batch_text_file(folder: &Path, first_source: &Path) -> PathBuf {
+    let base = first_source
+        .file_stem()
+        .map(|s| s.to_string_lossy().to_string())
+        .unwrap_or_else(|| "audio".into());
+    // unique_stem() takes the stem from a path: give it one whose stem is the
+    // whole name, so a dot inside it ("meeting.2026") survives.
+    let named = PathBuf::from(format!("{base} (combined).txt"));
+    let stem = unique_stem(folder, &named, false);
+    folder.join(format!("{stem}.txt"))
+}
+
+/// Saves the combined text of a batch once, where `save` says. Returns where
+/// it went (None for "don't save").
+#[tauri::command]
+#[specta::specta]
+pub fn save_batch_text(
+    app: AppHandle,
+    text: String,
+    first_path: String,
+    save: FileTextSave,
+) -> Result<Option<String>, String> {
+    if save == FileTextSave::Ask {
+        return Err("where to save the text was not chosen".into());
+    }
+    // Still the batch: its hold keeps an update from starting while it saves.
+    touch_batch();
+    let settings = get_settings(&app);
+    let first = PathBuf::from(first_path.trim());
+    let Some(out) = batch_text_path(&app, &settings, &first, save)? else {
+        return Ok(None);
+    };
+    // create_new: a file that appeared since the name was checked is left alone.
+    use std::io::Write;
+    let mut file = std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&out)
+        .map_err(|e| format!("{}: {e}", out.display()))?;
+    file.write_all(text.as_bytes())
+        .map_err(|e| format!("{}: {e}", out.display()))?;
+    info!("Files: combined text saved to {}", out.display());
+    Ok(Some(out.display().to_string()))
 }
 
 /// The file being transcribed, or how the last one ended (None before the first).
@@ -578,8 +805,68 @@ pub fn get_file_job() -> Option<FileJob> {
 /// Stops the file being transcribed after the piece in progress.
 #[tauri::command]
 #[specta::specta]
-pub fn cancel_file_job() {
-    CANCEL.store(true, Ordering::SeqCst);
+pub fn cancel_file_job(job_id: Option<u32>) {
+    let id = job_id.or_else(|| match &*JOB.lock().unwrap_or_else(|p| p.into_inner()) {
+        Some(FileJob::Decoding { job_id, .. } | FileJob::Transcribing { job_id, .. }) => {
+            Some(*job_id)
+        }
+        _ => None,
+    });
+    if let Some(id) = id {
+        CANCEL.store(id, Ordering::SeqCst);
+    }
+}
+
+/// Several files are about to be transcribed one after another: the updater
+/// waits and the model stays loaded until `end_file_batch`.
+#[tauri::command]
+#[specta::specta]
+pub fn begin_file_batch() -> Result<u32, String> {
+    if crate::transcription_coordinator::update_pending() {
+        return Err("an update is being installed; try again after the restart".into());
+    }
+    take_batch_hold()
+}
+
+/// Takes the batch hold and returns its token; a hold another batch still
+/// keeps alive refuses, a lapsed one is taken over.
+fn take_batch_hold() -> Result<u32, String> {
+    let mut hold = batch_hold();
+    if hold.owner != 0 && now_ms() < hold.until_ms {
+        return Err("a file is already being transcribed".into());
+    }
+    let token = NEXT_JOB_ID.fetch_add(1, Ordering::SeqCst);
+    hold.owner = token;
+    hold.until_ms = now_ms() + BATCH_HOLD_GRACE_MS;
+    Ok(token)
+}
+
+/// Gives the hold back if `token` owns it.
+fn release_batch_hold(token: u32) -> bool {
+    let mut hold = batch_hold();
+    if token == 0 || hold.owner != token {
+        return false;
+    }
+    hold.owner = 0;
+    true
+}
+
+/// The batch is over (finished, cancelled, or stopped): unload `model` if
+/// nothing else uses it. Only the batch that took the hold can end it.
+#[tauri::command]
+#[specta::specta]
+pub fn end_file_batch(app: AppHandle, token: u32, model_id: Option<String>) {
+    if !release_batch_hold(token) {
+        return; // Not (or no longer) this batch's hold.
+    }
+    // A file still running releases the model itself when it ends.
+    let job_running = matches!(
+        *JOB.lock().unwrap_or_else(|p| p.into_inner()),
+        Some(FileJob::Decoding { .. } | FileJob::Transcribing { .. })
+    );
+    if let (false, Some(model)) = (job_running, model_id) {
+        release_model(&app, &model);
+    }
 }
 
 /// Transcribed files, newest first.
@@ -649,6 +936,17 @@ pub fn change_file_keep_audio_setting(app: AppHandle, enabled: bool) -> Result<(
     let mut settings = get_settings(&app);
     settings.file_keep_audio = enabled;
     write_settings(&app, settings);
+    Ok(())
+}
+
+/// Files › several files: the combined text's options (kept for next time).
+#[tauri::command]
+#[specta::specta]
+pub fn change_file_batch_options_setting(
+    app: AppHandle,
+    options: crate::settings::FileBatchOptions,
+) -> Result<(), String> {
+    crate::settings::update_settings(&app, |s| s.file_batch = options);
     Ok(())
 }
 
@@ -1091,5 +1389,72 @@ mod tests {
             audio_copy_path(dir.path(), "notes", Path::new("C:/x/notes")),
             dir.path().join("notes")
         );
+    }
+
+    #[test]
+    fn the_batch_hold_has_one_owner_and_lapses() {
+        let a = take_batch_hold().unwrap();
+        assert!(file_job_running());
+        // A second batch is refused while the first is alive.
+        assert!(take_batch_hold().is_err());
+        // Only the owner ends it.
+        assert!(!release_batch_hold(a + 1000));
+        assert!(!release_batch_hold(0));
+        assert!(file_job_running());
+        assert!(release_batch_hold(a));
+        assert!(!file_job_running());
+        // A hold its window left behind lapses and is taken over.
+        let b = take_batch_hold().unwrap();
+        batch_hold().until_ms = 0;
+        assert!(!file_job_running());
+        let c = take_batch_hold().unwrap();
+        assert_ne!(b, c);
+        assert!(!release_batch_hold(b));
+        assert!(release_batch_hold(c));
+    }
+
+    #[test]
+    fn combined_text_is_named_after_the_first_file_and_never_overwrites() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let first = Path::new("C:/phone/meeting.2026.m4a");
+        let out = batch_text_file(dir.path(), first);
+        assert_eq!(out, dir.path().join("meeting.2026 (combined).txt"));
+        std::fs::write(&out, "x").unwrap();
+        assert_eq!(
+            batch_text_file(dir.path(), first),
+            dir.path().join("meeting.2026 (combined) (2).txt")
+        );
+    }
+
+    #[test]
+    fn file_info_reads_wav_length_and_flags_unsupported_files() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let wav = dir.path().join("one.wav");
+        let spec = hound::WavSpec {
+            channels: 1,
+            sample_rate: 16_000,
+            bits_per_sample: 16,
+            sample_format: hound::SampleFormat::Int,
+        };
+        let mut writer = hound::WavWriter::create(&wav, spec).unwrap();
+        for _ in 0..32_000 {
+            writer.write_sample(0i16).unwrap();
+        }
+        writer.finalize().unwrap();
+        let info = audio_file_info(&wav.display().to_string());
+        assert!(info.supported);
+        assert_eq!(info.file_name, "one.wav");
+        assert_eq!(info.duration_secs, Some(2.0));
+        assert!(info.created_ms.is_some());
+
+        let notes = dir.path().join("notes.txt");
+        std::fs::write(&notes, "x").unwrap();
+        let info = audio_file_info(&notes.display().to_string());
+        assert!(!info.supported);
+        assert_eq!(info.duration_secs, None);
+
+        let missing = audio_file_info(&dir.path().join("gone.mp3").display().to_string());
+        assert!(!missing.supported);
+        assert_eq!(missing.created_ms, None);
     }
 }

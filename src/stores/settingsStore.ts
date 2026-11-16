@@ -3,10 +3,12 @@ import { subscribeWithSelector } from "zustand/middleware";
 import type {
   AppSettings as Settings,
   AudioDevice,
+  FileBatchOptions,
   FileTextSave,
   LlmProvider,
   ModelTestLibrary,
   ProgressStyle,
+  SidebarLayout,
 } from "@/bindings";
 import { commands } from "@/bindings";
 
@@ -55,6 +57,15 @@ const DEFAULT_AUDIO_DEVICE: AudioDevice = {
   name: "Default",
   is_default: true,
 };
+
+/**
+ * Sidebar layout writes, one after another: each is the whole layout, so an
+ * older one must never land after a newer one.
+ */
+let layoutWrites: Promise<unknown> = Promise.resolve();
+/** Writes queued and not done yet; a failed one re-reads only after the last. */
+let layoutPending = 0;
+let layoutFailed = false;
 
 const settingUpdaters: {
   [K in keyof Settings]?: (value: Settings[K]) => Promise<unknown>;
@@ -277,6 +288,43 @@ const settingUpdaters: {
   file_keep_audio: (value) =>
     commands.changeFileKeepAudioSetting(value as boolean),
   files_folder: (value) => commands.changeFilesFolderSetting(value as string),
+  file_batch: (value) =>
+    commands.changeFileBatchOptionsSetting(value as FileBatchOptions),
+  // A failed write does not throw (updateSetting would roll back to an older
+  // whole layout, wiping later edits): the saved layout is read back instead.
+  sidebar_layout: (value) => {
+    layoutPending += 1;
+    layoutWrites = layoutWrites
+      .then(() => commands.changeSidebarLayoutSetting(value as SidebarLayout))
+      .then((result) => {
+        if (result.status === "error") throw new Error(result.error);
+      })
+      .catch((error) => {
+        console.error("Failed to save the sidebar layout:", error);
+        layoutFailed = true;
+      })
+      .finally(() => {
+        layoutPending -= 1;
+        // Read back what was saved only once no later edit is still on its
+        // way, so a refresh never replaces an edit about to be written.
+        if (layoutPending === 0 && layoutFailed) {
+          layoutFailed = false;
+          void commands.getAppSettings().then((saved) => {
+            // An edit made while this read was out wins: it is on its way.
+            if (saved.status !== "ok" || layoutPending > 0) return;
+            useSettingsStore.setState((state) => ({
+              settings: state.settings
+                ? {
+                    ...state.settings,
+                    sidebar_layout: saved.data.sidebar_layout,
+                  }
+                : state.settings,
+            }));
+          });
+        }
+      });
+    return layoutWrites;
+  },
   proxy_mode: (value) => commands.changeProxyModeSetting(value as string),
   proxy_host: (value) => commands.changeProxyHostSetting(value as string),
   proxy_port: (value) => commands.changeProxyPortSetting(value as number),

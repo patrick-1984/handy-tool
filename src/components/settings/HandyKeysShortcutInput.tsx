@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
+import { beginShortcutCapture } from "@/lib/shortcutCapture";
 import { useTranslation } from "react-i18next";
 import { listen } from "@tauri-apps/api/event";
 import { X } from "lucide-react";
@@ -62,6 +63,12 @@ export const HandyKeysShortcutInput: React.FC<HandyKeysShortcutInputProps> = ({
   }, []);
 
   // Leaving the page mid-recording must not leave every shortcut switched off.
+  // Alt+←/→ go Back/Forward elsewhere; not while keys are being recorded.
+  useEffect(() => {
+    if (!isRecording) return;
+    return beginShortcutCapture();
+  }, [isRecording]);
+
   useEffect(
     () => () => {
       if (suspendedRef.current) {

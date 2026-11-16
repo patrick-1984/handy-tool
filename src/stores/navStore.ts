@@ -1,5 +1,12 @@
 import { create } from "zustand";
 import type { SidebarSection } from "@/components/Sidebar";
+import {
+  EMPTY_HISTORY,
+  recordVisit,
+  step,
+  type NavHistory,
+  type NavTarget,
+} from "@/lib/navHistory";
 
 export type HistoryTab = "recordings" | "favorites" | "statistics" | "settings";
 /** The feature setups that run on the Setups page. */
@@ -29,6 +36,11 @@ interface NavStore {
   /** Open Setups and start that setup there. */
   startSetup: (setup: FeatureSetup) => void;
   clearPendingSetup: () => void;
+  /** Pages and History tabs visited this session (Back/Forward). */
+  navHistory: NavHistory;
+  /** Back / Forward one step; `canShow` skips pages switched off since. */
+  goBack: (canShow: (target: NavTarget) => boolean) => void;
+  goForward: (canShow: (target: NavTarget) => boolean) => void;
 }
 
 /** Where the page open last is kept (Reopen Last Page). */
@@ -51,30 +63,76 @@ export const lastPage = (): string | null => {
   }
 };
 
-export const useNavStore = create<NavStore>()((set) => ({
-  currentSection: "general",
-  lastMoreSection: "providers",
-  lastToolsSection: "keyboardTyper",
-  historyTab: "recordings",
-  setCurrentSection: (currentSection) => {
-    rememberPage(currentSection);
-    set(
-      currentSection === "history"
-        ? { currentSection, historyTab: "recordings" }
-        : { currentSection },
-    );
-  },
-  setLastMoreSection: (lastMoreSection) => set({ lastMoreSection }),
-  setLastToolsSection: (lastToolsSection) => set({ lastToolsSection }),
-  setHistoryTab: (historyTab) => set({ historyTab }),
-  navigateTo: (currentSection, historyTab) => {
-    rememberPage(currentSection);
-    set(historyTab ? { currentSection, historyTab } : { currentSection });
-  },
-  pendingSetup: null,
-  startSetup: (pendingSetup) => {
-    rememberPage("setups");
-    set({ currentSection: "setups", pendingSetup });
-  },
-  clearPendingSetup: () => set({ pendingSetup: null }),
-}));
+/** Where the app is now, as Back/Forward sees it. */
+const targetOf = (state: {
+  currentSection: SidebarSection;
+  historyTab: HistoryTab;
+}): NavTarget =>
+  state.currentSection === "history"
+    ? { section: "history", historyTab: state.historyTab }
+    : { section: state.currentSection };
+
+export const useNavStore = create<NavStore>()((set, get) => {
+  /** Go to `section` (and History tab), recording the visit for Back. */
+  const go = (
+    section: SidebarSection,
+    historyTab: HistoryTab | undefined,
+    extra: Partial<NavStore> = {},
+  ) => {
+    rememberPage(section);
+    const state = get();
+    const next = {
+      currentSection: section,
+      historyTab: historyTab ?? state.historyTab,
+    };
+    set({
+      ...next,
+      ...extra,
+      navHistory: recordVisit(
+        state.navHistory,
+        targetOf(state),
+        targetOf(next),
+      ),
+    });
+  };
+
+  const travel =
+    (direction: "back" | "forward") =>
+    (canShow: (target: NavTarget) => boolean) => {
+      const state = get();
+      const moved = step(state.navHistory, targetOf(state), direction, canShow);
+      if (!moved) return;
+      const section = moved.target.section as SidebarSection;
+      rememberPage(section);
+      set({
+        currentSection: section,
+        ...(moved.target.historyTab
+          ? { historyTab: moved.target.historyTab as HistoryTab }
+          : {}),
+        navHistory: moved.history,
+      });
+    };
+
+  return {
+    currentSection: "general",
+    lastMoreSection: "providers",
+    lastToolsSection: "keyboardTyper",
+    historyTab: "recordings",
+    navHistory: EMPTY_HISTORY,
+    // Opening History from the sidebar shows Recordings.
+    setCurrentSection: (currentSection) =>
+      go(
+        currentSection,
+        currentSection === "history" ? "recordings" : undefined,
+      ),
+    setLastMoreSection: (lastMoreSection) => set({ lastMoreSection }),
+    setLastToolsSection: (lastToolsSection) => set({ lastToolsSection }),
+    setHistoryTab: (historyTab) => go(get().currentSection, historyTab),
+    navigateTo: (currentSection, historyTab) => go(currentSection, historyTab),
+    pendingSetup: null,
+    startSetup: (pendingSetup) => go("setups", undefined, { pendingSetup }),
+    clearPendingSetup: () => set({ pendingSetup: null }),
+    goBack: travel("back"),
+    goForward: travel("forward"),
+  };
+});

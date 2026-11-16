@@ -73,7 +73,16 @@
     "moreTools": "Diğer araçlar",
     "sttServer": "STT sunucusu",
     "combine": "Kayıtları birleştir",
-    "speakers": "Konuşmacılar"
+    "speakers": "Konuşmacılar",
+    "appearance": "Görünüm",
+    "pinned": {
+      "title": "Sabitlenenler",
+      "pin": "Kenar çubuğuna sabitle",
+      "unpin": "Sabitlemeyi kaldır",
+      "limit": "En fazla 50 sayfa sabitlenebilir. Önce birinin sabitlemesini kaldırın.",
+      "showMore": "Daha fazla göster",
+      "showLess": "Daha az göster"
+    }
   },
   "helpMode": {
     "button": "Yardım modu: ne yaptığını görmek için bir ayarın üzerine gelin",
@@ -778,6 +787,10 @@
           "toggle_live_text_box": {
             "name": "Canlı metin kutusu aç/kapat",
             "description": "Kayıt çubuğundaki T düğmesi gibi canlı metin kutusunu açar veya kapatır. Varsayılan: Yok."
+          },
+          "cycle_capture_source": {
+            "name": "Ses kaynağını değiştir",
+            "description": "Kayıtların neyi yakaladığını sırayla değiştirir: Mikrofon, Sistem sesi, Mikrofon + sistem sesi. Kayıt çubuğu yeni kaynağı kısa bir süre gösterir. Kayıt sırasında o kaydı o andan itibaren değiştirir; kayıt yalnızca sistem sesiyle başladıysa yeni kaynak bir sonraki kayıtta geçerli olur. Yalnızca Windows. Varsayılan: Yok."
           },
           "transcribe_with_post_process": {
             "name": "Son İşlem Kısayolu",
@@ -2155,6 +2168,49 @@
         "showLess": "Daha az göster",
         "reveal": "Klasörde göster",
         "delete": "Listeden kaldır"
+      },
+      "batch": {
+        "skipped": "Atlandı (Handy'nin okuyabildiği bir ses dosyası değil): {{names}}",
+        "progress": "Dosya {{current}} / {{total}}: {{name}}",
+        "order": {
+          "title": "Dosyaları sırala ({{count}})",
+          "description": "Metinler bu sırayla birleştirilir. Bir satırı tutamacından sürükleyin ya da okları kullanın; ne olduğunu kontrol etmek için bir dosyayı oynatın.",
+          "drag": "Yeniden sıralamak için sürükleyin",
+          "play": "Oynat",
+          "stop": "Durdur",
+          "moveUp": "Yukarı taşı",
+          "moveDown": "Aşağı taşı",
+          "remove": "Listeden kaldır",
+          "noDate": "Tarih yok",
+          "noLength": "Süre bilinmiyor",
+          "empty": "Listede dosya kalmadı.",
+          "playFailed": "{{name}} burada oynatılamıyor (yine de yazıya dökülebilir).",
+          "modelNotReady": "Önce modeli indirin.",
+          "transcribe": "{{count}} dosyayı yazıya dök"
+        },
+        "options": {
+          "title": "Birleşik metin",
+          "separator": {
+            "label": "Dosyalar arasında",
+            "none": "Hiçbir şey (sonraki satır)",
+            "blank_line": "Bir boş satır",
+            "divider": "Bir ayırıcı çizgi"
+          },
+          "numbered": "Bölümleri numaralandır (1., 2., 3. …)",
+          "names": "Her bölümden önce dosya adı"
+        },
+        "result": {
+          "title": "{{total}} dosyadan {{done}} tanesi yazıya döküldü",
+          "copyAll": "Tümünü kopyala",
+          "clear": "Temizle",
+          "perFile": "Her dosya",
+          "failed": "Başarısız: {{error}}",
+          "notTranscribed": "Yazıya dökülmedi.",
+          "showAll": "Tümünü göster",
+          "showLess": "Daha az göster",
+          "stopped": "Toplu işlem durdu: {{error}}",
+          "cancelled": "İptal edildi. Tamamlanan bölümler aşağıda; birleşik metin kaydedilmedi."
+        }
       }
     },
     "currentAudio": {
@@ -2309,6 +2365,27 @@
           "stt_server": "STT sunucusu"
         }
       }
+    },
+    "appearance": {
+      "pins": {
+        "title": "Sabitlenen sayfalar",
+        "description": "Bir sayfayı başlığındaki ? işaretinin yanındaki raptiye ile sabitleyin. Burada onları yeniden adlandırabilir, simge seçebilir, sıralayabilir ve nerede görüneceklerini seçebilirsiniz.",
+        "empty": "Henüz sabitlenen bir şey yok.",
+        "icon": "Simge seç",
+        "name": "Ad",
+        "unavailable": "Şu anda kullanılamıyor"
+      },
+      "sidebar": {
+        "title": "Kenar çubuğu",
+        "description": "Kenar çubuğunu sıralayın ve hangi girişlerin Daha fazla göster altında duracağını seçin. Yerleşik girişler adlarını korur.",
+        "reset": "Kenar çubuğunu sıfırla"
+      },
+      "place": {
+        "top": "Kenar çubuğunda",
+        "more": "Daha fazla göster altında"
+      },
+      "moveUp": "Yukarı taşı",
+      "moveDown": "Aşağı taşı"
     }
   },
   "common": {
@@ -2368,9 +2445,20 @@
     "menu": {
       "changeShortcut": "Kısayolu değiştir…",
       "liveTextSettings": "Canlı metin kutusu ayarları…",
-      "hidePause": "Duraklatma düğmesini gizle"
+      "hidePause": "Duraklatma düğmesini gizle",
+      "soundSourceSettings": "Ses kaynağı ayarları…",
+      "microphone": "Mikrofon",
+      "defaultMicrophone": "Varsayılan mikrofon",
+      "soundSettings": "Ses ayarları…"
     },
-    "tooQuiet": "Çok sessiz — sesli konuş"
+    "tooQuiet": "Çok sessiz — sesli konuş",
+    "captureSource": {
+      "now": "Ses kaynağı",
+      "nextTake": "Bir sonraki kayıttan itibaren",
+      "microphone": "Mikrofon",
+      "systemAudio": "Sistem sesi",
+      "both": "Mikrofon + sistem"
+    }
   },
   "brand": {
     "name": "Handy",
@@ -2701,6 +2789,26 @@
       "historySearch": {
         "title": "Geçmiş aramasında tam metin ve eşleşme sayıları",
         "description": "Geçmiş araması her kaydın tam metnini yeniden, tüm eşleşmeler işaretli olarak gösterir ve kaç eşleşme olduğunu belirtir: toplamda, her kayıtta ve birden çok kelimede her kelime için. En iyi eşleşmeleri üstte görmek için \"En çok eşleşme\"ye göre sıralayın ya da yalnızca birkaç satır için Kısa önizlemeler'i işaretleyin."
+      },
+      "pinPages": {
+        "title": "Herhangi bir sayfayı kenar çubuğuna sabitleyin",
+        "description": "Her sayfanın başlığındaki ? işaretinin yanındaki raptiye, o sayfayı (veya Geçmiş sekmesini) kenar çubuğunun üstündeki Sabitlenenler bölümüne koyar: oraya tek tıkla ulaşırsınız. Sabitlemeyi kaldırmak için tekrar tıklayın."
+      },
+      "backForward": {
+        "title": "Geri ve İleri",
+        "description": "Farenin yan Geri ve İleri düğmeleri ile Alt+← / Alt+→ (Mac'te Cmd+[ / Cmd+]), açtığınız sayfalar arasında bir tarayıcıdaki gibi gezinir."
+      },
+      "appearancePage": {
+        "title": "Kenar çubuğunu düzenleyin",
+        "description": "Gelişmiş ayarlar › Görünüm: kenar çubuğunu sıralayın, nadiren kullandığınız girişleri Daha fazla göster altına taşıyın, sabitlenen sayfaları yeniden adlandırın, onlara 20 simgeden birini verin ve nerede görüneceklerini seçin."
+      },
+      "pillMicrophone": {
+        "title": "Mikrofonu haptan değiştirin, kayıt sırasında bile",
+        "description": "Başka bir mikrofon (ve Windows'ta ses kaynağı) seçmek için hapın ses çubuklarına sağ tıklayın. Kayıt sırasında yapılan bir değişiklik artık o kayda hemen uygulanır; önceden kayıt ortasında mikrofonu değiştirmek kaydı kaybettiriyordu."
+      },
+      "filesBatch": {
+        "title": "Aynı anda birden fazla dosya",
+        "description": "Dosyalar'da birkaç kaydı seçin veya bırakın. Onları sıraya koyun (önce tarihe göre, sürükleyerek veya oklarla, kontrol etmek için birini oynatın), ayırıcı, numaralar ve dosya adlarını seçin; kopyalamak için tek bir birleşik metin ve her dosyanın kendi metnini alın."
       }
     },
     "installed": "Yüklü"

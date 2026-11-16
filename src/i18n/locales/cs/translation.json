@@ -73,7 +73,16 @@
     "moreTools": "Další nástroje",
     "sttServer": "Server STT",
     "combine": "Spojení nahrávek",
-    "speakers": "Mluvčí"
+    "speakers": "Mluvčí",
+    "appearance": "Vzhled",
+    "pinned": {
+      "title": "Připnuté",
+      "pin": "Připnout na postranní panel",
+      "unpin": "Odepnout",
+      "limit": "Připnout lze až 50 stránek. Nejprve jednu odepněte.",
+      "showMore": "Zobrazit více",
+      "showLess": "Zobrazit méně"
+    }
   },
   "helpMode": {
     "button": "Režim nápovědy: najeďte na nastavení a uvidíte, co dělá",
@@ -778,6 +787,10 @@
           "toggle_live_text_box": {
             "name": "Okénko živého textu zap./vyp.",
             "description": "Zapne nebo vypne okénko živého textu, stejně jako tlačítko T na nahrávacím panelu. Výchozí: Žádná."
+          },
+          "cycle_capture_source": {
+            "name": "Přepnout zdroj zvuku",
+            "description": "Přepíná postupně, co nahrávky zachytávají: Mikrofon, Systémový zvuk, Mikrofon + systémový zvuk. Lišta nahrávání chvíli ukazuje nový zdroj. Během nahrávání přepne tuto nahrávku od té chvíle, pokud nezačala jen se systémovým zvukem; pak nový zdroj platí od další. Pouze Windows. Výchozí: žádná."
           },
           "transcribe_with_post_process": {
             "name": "Klávesa pro následné zpracování",
@@ -2155,6 +2168,49 @@
         "showLess": "Zobrazit méně",
         "reveal": "Zobrazit ve složce",
         "delete": "Odebrat ze seznamu"
+      },
+      "batch": {
+        "skipped": "Přeskočeno (není to zvukový soubor, který Handy umí přečíst): {{names}}",
+        "progress": "Soubor {{current}} z {{total}}: {{name}}",
+        "order": {
+          "title": "Seřadit soubory ({{count}})",
+          "description": "Texty se spojí v tomto pořadí. Přetáhněte řádek za úchyt nebo použijte šipky; přehrajte soubor, abyste ověřili, co obsahuje.",
+          "drag": "Přetažením změníte pořadí",
+          "play": "Přehrát",
+          "stop": "Zastavit",
+          "moveUp": "Posunout nahoru",
+          "moveDown": "Posunout dolů",
+          "remove": "Odebrat ze seznamu",
+          "noDate": "Bez data",
+          "noLength": "Délka neznámá",
+          "empty": "V seznamu nezbyly žádné soubory.",
+          "playFailed": "{{name}} zde nelze přehrát (přepsat ho lze i tak).",
+          "modelNotReady": "Nejprve stáhněte model.",
+          "transcribe": "Přepsat {{count}} souborů"
+        },
+        "options": {
+          "title": "Spojený text",
+          "separator": {
+            "label": "Mezi soubory",
+            "none": "Nic (další řádek)",
+            "blank_line": "Jeden prázdný řádek",
+            "divider": "Oddělovací čára"
+          },
+          "numbered": "Očíslovat části (1., 2., 3. …)",
+          "names": "Název souboru před každou částí"
+        },
+        "result": {
+          "title": "Přepsáno {{done}} z {{total}} souborů",
+          "copyAll": "Kopírovat vše",
+          "clear": "Vymazat",
+          "perFile": "Každý soubor",
+          "failed": "Selhalo: {{error}}",
+          "notTranscribed": "Nepřepsáno.",
+          "showAll": "Zobrazit vše",
+          "showLess": "Zobrazit méně",
+          "stopped": "Dávka se zastavila: {{error}}",
+          "cancelled": "Zrušeno. Hotové části jsou níže; spojený text nebyl uložen."
+        }
       }
     },
     "currentAudio": {
@@ -2309,6 +2365,27 @@
           "stt_server": "Server STT"
         }
       }
+    },
+    "appearance": {
+      "pins": {
+        "title": "Připnuté stránky",
+        "description": "Stránku připnete špendlíkem vedle ? v jejím nadpisu. Zde je můžete přejmenovat, vybrat ikonu, seřadit je a zvolit, kde se zobrazí.",
+        "empty": "Zatím nic připnuto.",
+        "icon": "Vybrat ikonu",
+        "name": "Název",
+        "unavailable": "Momentálně nedostupné"
+      },
+      "sidebar": {
+        "title": "Postranní panel",
+        "description": "Seřaďte postranní panel a zvolte, které položky budou pod Zobrazit více. Vestavěné položky si ponechají své názvy.",
+        "reset": "Obnovit postranní panel"
+      },
+      "place": {
+        "top": "V postranním panelu",
+        "more": "Pod Zobrazit více"
+      },
+      "moveUp": "Posunout nahoru",
+      "moveDown": "Posunout dolů"
     }
   },
   "common": {
@@ -2368,9 +2445,20 @@
     "menu": {
       "changeShortcut": "Změnit zkratku…",
       "liveTextSettings": "Nastavení živého textu…",
-      "hidePause": "Skrýt tlačítko pozastavení"
+      "hidePause": "Skrýt tlačítko pozastavení",
+      "soundSourceSettings": "Nastavení zdroje zvuku…",
+      "microphone": "Mikrofon",
+      "defaultMicrophone": "Výchozí mikrofon",
+      "soundSettings": "Nastavení zvuku…"
     },
-    "tooQuiet": "Moc potichu – hlasitěji"
+    "tooQuiet": "Moc potichu – hlasitěji",
+    "captureSource": {
+      "now": "Zdroj zvuku",
+      "nextTake": "Od další nahrávky",
+      "microphone": "Mikrofon",
+      "systemAudio": "Systémový zvuk",
+      "both": "Mikrofon + systém"
+    }
   },
   "brand": {
     "name": "Handy",
@@ -2701,6 +2789,26 @@
       "historySearch": {
         "title": "Celý text a počet výskytů ve vyhledávání v historii",
         "description": "Vyhledávání v historii opět zobrazuje celý text každé nahrávky se zvýrazněnými výskyty a jejich počet: celkem, v každé nahrávce a u více slov pro každé slovo. Seřaďte podle „Nejvíce výskytů“, abyste viděli nejlepší shody nahoře, nebo zaškrtněte Krátké náhledy pro několik řádků."
+      },
+      "pinPages": {
+        "title": "Připněte libovolnou stránku na postranní panel",
+        "description": "Špendlík vedle ? v nadpisu každé stránky umístí tuto stránku (nebo kartu Historie) do sekce Připnuté nahoře v postranním panelu: jedno kliknutí a jste tam. Dalším kliknutím ji odepnete."
+      },
+      "backForward": {
+        "title": "Zpět a Vpřed",
+        "description": "Boční tlačítka myši Zpět a Vpřed a Alt+← / Alt+→ (Cmd+[ / Cmd+] na Macu) procházejí otevřené stránky jako v prohlížeči."
+      },
+      "appearancePage": {
+        "title": "Uspořádejte postranní panel",
+        "description": "Pokročilá nastavení › Vzhled: seřaďte postranní panel, přesuňte málo používané položky pod Zobrazit více a přejmenujte připnuté stránky, dejte jim jednu z 20 ikon a zvolte, kde se zobrazí."
+      },
+      "pillMicrophone": {
+        "title": "Změňte mikrofon z pilulky, i během nahrávání",
+        "description": "Klikněte pravým tlačítkem na zvukové pruhy pilulky a vyberte jiný mikrofon (a ve Windows zdroj zvuku). Změna během nahrávání nyní platí pro tuto nahrávku okamžitě; dříve se při změně mikrofonu uprostřed nahrávání nahrávka ztratila."
+      },
+      "filesBatch": {
+        "title": "Více souborů najednou",
+        "description": "Vyberte nebo přetáhněte několik nahrávek na Soubory. Seřaďte je (nejprve podle data, přetažením nebo šipkami, jednu si přehrajte pro kontrolu), zvolte oddělovač, čísla a názvy souborů a získejte jeden spojený text ke zkopírování a k tomu vlastní text každého souboru."
       }
     },
     "installed": "Nainstalovaná"

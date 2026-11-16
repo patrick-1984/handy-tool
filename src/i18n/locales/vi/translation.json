@@ -73,7 +73,16 @@
     "moreTools": "Công cụ khác",
     "sttServer": "Máy chủ STT",
     "combine": "Ghép bản ghi",
-    "speakers": "Người nói"
+    "speakers": "Người nói",
+    "appearance": "Giao diện",
+    "pinned": {
+      "title": "Đã ghim",
+      "pin": "Ghim vào thanh bên",
+      "unpin": "Bỏ ghim",
+      "limit": "Có thể ghim tối đa 50 trang. Hãy bỏ ghim một trang trước.",
+      "showMore": "Hiện thêm",
+      "showLess": "Thu gọn"
+    }
   },
   "helpMode": {
     "button": "Chế độ trợ giúp: trỏ vào một cài đặt để xem nó làm gì",
@@ -778,6 +787,10 @@
           "toggle_live_text_box": {
             "name": "Bật/tắt ô văn bản trực tiếp",
             "description": "Bật hoặc tắt ô văn bản trực tiếp, giống nút T trên thanh ghi âm. Mặc định: Không có."
+          },
+          "cycle_capture_source": {
+            "name": "Đổi nguồn âm thanh",
+            "description": "Lần lượt đổi thứ bản ghi thu lại: Micrô, Âm thanh hệ thống, Micrô + âm thanh hệ thống. Thanh ghi âm hiện nguồn mới trong giây lát. Trong lúc ghi, nó đổi bản ghi đó từ thời điểm ấy, trừ khi bản ghi bắt đầu chỉ với âm thanh hệ thống; khi đó nguồn mới áp dụng từ bản ghi sau. Chỉ Windows. Mặc định: Không có."
           },
           "transcribe_with_post_process": {
             "name": "Phím tắt xử lý sau",
@@ -2155,6 +2168,49 @@
         "showLess": "Thu gọn",
         "reveal": "Hiện trong thư mục",
         "delete": "Xóa khỏi danh sách"
+      },
+      "batch": {
+        "skipped": "Đã bỏ qua (không phải file âm thanh mà Handy đọc được): {{names}}",
+        "progress": "File {{current}} / {{total}}: {{name}}",
+        "order": {
+          "title": "Sắp xếp file ({{count}})",
+          "description": "Các văn bản được ghép theo thứ tự này. Kéo một hàng bằng tay nắm hoặc dùng các mũi tên; phát một file để kiểm tra nội dung.",
+          "drag": "Kéo để sắp xếp lại",
+          "play": "Phát",
+          "stop": "Dừng",
+          "moveUp": "Lên trên",
+          "moveDown": "Xuống dưới",
+          "remove": "Xóa khỏi danh sách",
+          "noDate": "Không có ngày",
+          "noLength": "Không rõ độ dài",
+          "empty": "Không còn file nào trong danh sách.",
+          "playFailed": "Không thể phát {{name}} ở đây (vẫn có thể chép lời).",
+          "modelNotReady": "Hãy tải mô hình trước.",
+          "transcribe": "Chép lời {{count}} file"
+        },
+        "options": {
+          "title": "Văn bản gộp",
+          "separator": {
+            "label": "Giữa các file",
+            "none": "Không có gì (dòng tiếp theo)",
+            "blank_line": "Một dòng trống",
+            "divider": "Một đường phân cách"
+          },
+          "numbered": "Đánh số các phần (1., 2., 3. …)",
+          "names": "Tên file trước mỗi phần"
+        },
+        "result": {
+          "title": "Đã chép lời {{done}} / {{total}} file",
+          "copyAll": "Sao chép tất cả",
+          "clear": "Xóa",
+          "perFile": "Từng file",
+          "failed": "Thất bại: {{error}}",
+          "notTranscribed": "Chưa chép lời.",
+          "showAll": "Hiện tất cả",
+          "showLess": "Thu gọn",
+          "stopped": "Lô đã dừng: {{error}}",
+          "cancelled": "Đã hủy. Các phần đã xong ở bên dưới; văn bản gộp chưa được lưu."
+        }
       }
     },
     "currentAudio": {
@@ -2309,6 +2365,27 @@
           "stt_server": "Máy chủ STT"
         }
       }
+    },
+    "appearance": {
+      "pins": {
+        "title": "Trang đã ghim",
+        "description": "Ghim một trang bằng nút ghim cạnh dấu ? trong tiêu đề của trang. Tại đây bạn có thể đổi tên, chọn biểu tượng, sắp xếp và chọn nơi chúng hiển thị.",
+        "empty": "Chưa ghim gì.",
+        "icon": "Chọn biểu tượng",
+        "name": "Tên",
+        "unavailable": "Hiện không khả dụng"
+      },
+      "sidebar": {
+        "title": "Thanh bên",
+        "description": "Sắp xếp thanh bên và chọn mục nào nằm trong Hiện thêm. Các mục tích hợp giữ nguyên tên.",
+        "reset": "Đặt lại thanh bên"
+      },
+      "place": {
+        "top": "Trên thanh bên",
+        "more": "Trong Hiện thêm"
+      },
+      "moveUp": "Lên trên",
+      "moveDown": "Xuống dưới"
     }
   },
   "common": {
@@ -2368,9 +2445,20 @@
     "menu": {
       "changeShortcut": "Đổi phím tắt…",
       "liveTextSettings": "Cài đặt hộp văn bản trực tiếp…",
-      "hidePause": "Ẩn nút tạm dừng"
+      "hidePause": "Ẩn nút tạm dừng",
+      "soundSourceSettings": "Cài đặt nguồn âm thanh…",
+      "microphone": "Micrô",
+      "defaultMicrophone": "Micrô mặc định",
+      "soundSettings": "Cài đặt âm thanh…"
     },
-    "tooQuiet": "Quá nhỏ — nói to hơn"
+    "tooQuiet": "Quá nhỏ — nói to hơn",
+    "captureSource": {
+      "now": "Nguồn âm thanh",
+      "nextTake": "Từ bản ghi tiếp theo",
+      "microphone": "Micrô",
+      "systemAudio": "Âm thanh hệ thống",
+      "both": "Micrô + hệ thống"
+    }
   },
   "floating": {
     "waiting": "Đang chờ phiên âm…",
@@ -2701,6 +2789,26 @@
       "historySearch": {
         "title": "Toàn bộ văn bản và số lần khớp khi tìm trong Lịch sử",
         "description": "Tìm kiếm trong Lịch sử lại hiện toàn bộ văn bản của mỗi bản ghi, đánh dấu mọi chỗ khớp, và cho biết số lần khớp: tổng cộng, trong từng bản ghi và, với nhiều từ, cho từng từ. Sắp xếp theo \"Khớp nhiều nhất\" để thấy kết quả tốt nhất trước, hoặc chọn Xem trước ngắn để chỉ xem vài dòng."
+      },
+      "pinPages": {
+        "title": "Ghim bất kỳ trang nào vào thanh bên",
+        "description": "Nút ghim cạnh dấu ? trong tiêu đề mỗi trang đặt trang đó (hoặc tab Lịch sử) vào mục Đã ghim ở đầu thanh bên: một cú nhấp là tới. Nhấp lần nữa để bỏ ghim."
+      },
+      "backForward": {
+        "title": "Quay lại và Tiến tới",
+        "description": "Các nút bên Quay lại và Tiến tới của chuột, cùng Alt+← / Alt+→ (Cmd+[ / Cmd+] trên Mac), di chuyển qua các trang bạn đã mở, như trong trình duyệt."
+      },
+      "appearancePage": {
+        "title": "Sắp xếp thanh bên",
+        "description": "Cài đặt nâng cao › Giao diện: sắp xếp thanh bên, chuyển các mục ít dùng vào Hiện thêm, đổi tên các trang đã ghim, gán cho chúng một trong 20 biểu tượng và chọn nơi chúng hiển thị."
+      },
+      "pillMicrophone": {
+        "title": "Đổi micrô từ thanh ghi âm, kể cả khi đang ghi",
+        "description": "Nhấp chuột phải vào các thanh âm thanh của thanh ghi âm để chọn micrô khác (và, trên Windows, nguồn âm thanh). Thay đổi trong lúc ghi giờ áp dụng ngay cho bản ghi đó; trước đây, đổi micrô giữa chừng làm mất bản ghi."
+      },
+      "filesBatch": {
+        "title": "Nhiều file cùng lúc",
+        "description": "Chọn hoặc thả nhiều bản ghi vào File. Sắp xếp chúng (trước tiên theo ngày, kéo hoặc dùng mũi tên, phát thử một file để kiểm tra), chọn dấu phân cách, số thứ tự và tên file, rồi nhận một văn bản gộp để sao chép, cùng văn bản riêng của từng file."
       }
     },
     "installed": "Đã cài"

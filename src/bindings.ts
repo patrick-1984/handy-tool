@@ -883,11 +883,57 @@ export const commands = {
    * going where `save` says; progress and the result arrive as `file-job`
    * events.
    */
+  async audioFilesInfo(paths: string[]): Promise<AudioFileInfo[]> {
+    return await TAURI_INVOKE("audio_files_info", { paths });
+  },
+  async saveBatchText(
+    text: string,
+    firstPath: string,
+    save: FileTextSave,
+  ): Promise<Result<string | null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("save_batch_text", { text, firstPath, save }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  async changeFileBatchOptionsSetting(
+    options: FileBatchOptions,
+  ): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_file_batch_options_setting", {
+          options,
+        }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  async changeSidebarLayoutSetting(
+    layout: SidebarLayout,
+  ): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_sidebar_layout_setting", { layout }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
   async transcribeFile(
     path: string,
     modelId: string,
     save: FileTextSave,
-  ): Promise<Result<null, string>> {
+  ): Promise<Result<number, string>> {
     try {
       return {
         status: "ok",
@@ -924,8 +970,19 @@ export const commands = {
   /**
    * Stops the file being transcribed after the piece in progress.
    */
-  async cancelFileJob(): Promise<void> {
-    await TAURI_INVOKE("cancel_file_job");
+  async cancelFileJob(jobId: number | null): Promise<void> {
+    await TAURI_INVOKE("cancel_file_job", { jobId });
+  },
+  async beginFileBatch(): Promise<Result<number, string>> {
+    try {
+      return { status: "ok", data: await TAURI_INVOKE("begin_file_batch") };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  async endFileBatch(token: number, modelId: string | null): Promise<void> {
+    await TAURI_INVOKE("end_file_batch", { token, modelId });
   },
   /**
    * Transcribed files, newest first.
@@ -1717,6 +1774,23 @@ export const commands = {
       return {
         status: "ok",
         data: await TAURI_INVOKE("change_capture_source_setting", { source }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  /**
+   * The recording pill's right-click menu picked a sound source: like the setting,
+   * and the pill says what takes record now.
+   */
+  async chooseCaptureSource(
+    source: CaptureSource,
+  ): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("choose_capture_source", { source }),
       };
     } catch (e) {
       if (e instanceof Error) throw e;
@@ -2687,6 +2761,20 @@ export const commands = {
     }
   },
   /**
+   * The pointer came onto the recording pill, or pressed it: note the window the
+   * user dictates into (see `overlay::note_focus_before_pill`). Windows only.
+   */
+  async overlayNoteFocus(): Promise<void> {
+    await TAURI_INVOKE("overlay_note_focus");
+  },
+  /**
+   * A click or a right-click menu on the recording pill is done: hand the
+   * foreground back if the pill took it. Windows only.
+   */
+  async overlayRestoreFocus(): Promise<void> {
+    await TAURI_INVOKE("overlay_restore_focus");
+  },
+  /**
    * What the live text box shows: the last words, or the whole text so far.
    */
   async changeLiveTextModeSetting(mode: LiveTextMode): Promise<Result<null, string>> {
@@ -3653,6 +3741,14 @@ export type AppSettings = {
    */
   files_folder?: string;
   /**
+   * Files › several files: separator, numbering, names (2.7.0).
+   */
+  file_batch?: FileBatchOptions;
+  /**
+   * Advanced › Appearance: sidebar order, More, shortcuts (2.7.0).
+   */
+  sidebar_layout?: SidebarLayout;
+  /**
    * Advanced > Proxy (Windows; see net/mod.rs).
    */
   proxy_mode?: ProxyMode;
@@ -3816,6 +3912,47 @@ export type TranslatorFolder = { path: string; enabled: boolean };
 /**
  * Transcribe a file: where the text goes.
  */
+/**
+ * What the Order files window shows for a picked or dropped file.
+ */
+export type AudioFileInfo = {
+  path: string;
+  file_name: string;
+  supported: boolean;
+  created_ms: number | null;
+  duration_secs: number | null;
+};
+/**
+ * Files › several files: what goes between the parts of the combined text.
+ */
+export type BatchSeparator = "none" | "blank_line" | "divider";
+/**
+ * Files › several files: how the combined text is put together.
+ */
+export type FileBatchOptions = {
+  separator?: BatchSeparator;
+  numbered?: boolean;
+  names?: boolean;
+};
+/**
+ * A page pinned to the sidebar (2.7.0).
+ */
+export type SidebarShortcut = {
+  id: string;
+  section: string;
+  history_tab?: string | null;
+  name?: string | null;
+  icon?: string;
+  in_more?: boolean;
+};
+/**
+ * How the sidebar is arranged (Advanced › Appearance).
+ */
+export type SidebarLayout = {
+  order?: string[];
+  in_more?: string[];
+  shortcuts?: SidebarShortcut[];
+};
 export type FileTextSave =
   /**
    * A pop-up asks each time a file is picked.
@@ -3863,16 +4000,39 @@ export type FileTranscription = {
  * The file being transcribed, or how the last one ended.
  */
 export type FileJob =
-  | { state: "decoding"; file_name: string }
+  | {
+      state: "decoding";
+      job_id: number;
+      source_path: string;
+      file_name: string;
+    }
   | {
       state: "transcribing";
+      job_id: number;
+      source_path: string;
       file_name: string;
       done_secs: number;
       total_secs: number;
     }
-  | { state: "done"; entry: FileTranscription }
-  | { state: "failed"; file_name: string; error: string }
-  | { state: "cancelled"; file_name: string };
+  | {
+      state: "done";
+      job_id: number;
+      source_path: string;
+      entry: FileTranscription;
+    }
+  | {
+      state: "failed";
+      job_id: number;
+      source_path: string;
+      file_name: string;
+      error: string;
+    }
+  | {
+      state: "cancelled";
+      job_id: number;
+      source_path: string;
+      file_name: string;
+    };
 export type TranslatorStatus = {
   enabled: boolean;
   queue: string[];

@@ -9,7 +9,7 @@ mod resampler;
 mod utils;
 mod visualizer;
 
-pub use decode::{SUPPORTED_EXTENSIONS, decode_audio_file};
+pub use decode::{SUPPORTED_EXTENSIONS, audio_duration_seconds, decode_audio_file};
 pub use device::{
     CaptureSourceError, CpalDeviceInfo, list_input_devices, list_output_devices,
     resolve_system_audio_device,

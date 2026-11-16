@@ -73,7 +73,16 @@
     "moreTools": "Więcej narzędzi",
     "sttServer": "Serwer STT",
     "combine": "Łączenie nagrań",
-    "speakers": "Mówcy"
+    "speakers": "Mówcy",
+    "appearance": "Wygląd",
+    "pinned": {
+      "title": "Przypięte",
+      "pin": "Przypnij do paska bocznego",
+      "unpin": "Odepnij",
+      "limit": "Można przypiąć do 50 stron. Najpierw odepnij jedną.",
+      "showMore": "Pokaż więcej",
+      "showLess": "Pokaż mniej"
+    }
   },
   "helpMode": {
     "button": "Tryb pomocy: wskaż ustawienie, aby zobaczyć, co robi",
@@ -778,6 +787,10 @@
           "toggle_live_text_box": {
             "name": "Okienko tekstu na żywo wł./wył.",
             "description": "Włącza lub wyłącza okienko tekstu na żywo, tak jak przycisk T na pasku nagrywania. Domyślnie: brak."
+          },
+          "cycle_capture_source": {
+            "name": "Przełącz źródło dźwięku",
+            "description": "Przełącza po kolei, co nagrywa Handy: Mikrofon, Dźwięk systemowy, Mikrofon + dźwięk systemowy. Pasek nagrywania przez chwilę pokazuje nowe źródło. W trakcie nagrania przełącza to nagranie od tej chwili, chyba że zaczęło się od samego dźwięku systemowego — wtedy nowe źródło obowiązuje od następnego nagrania. Tylko Windows. Domyślnie: brak."
           },
           "transcribe_with_post_process": {
             "name": "Skrót postprocessingu",
@@ -2155,6 +2168,49 @@
         "showLess": "Pokaż mniej",
         "reveal": "Pokaż w folderze",
         "delete": "Usuń z listy"
+      },
+      "batch": {
+        "skipped": "Pominięte (to nie plik audio, który Handy potrafi odczytać): {{names}}",
+        "progress": "Plik {{current}} z {{total}}: {{name}}",
+        "order": {
+          "title": "Uporządkuj pliki ({{count}})",
+          "description": "Teksty są łączone w tej kolejności. Przeciągnij wiersz za uchwyt lub użyj strzałek; odtwórz plik, aby sprawdzić, co zawiera.",
+          "drag": "Przeciągnij, aby zmienić kolejność",
+          "play": "Odtwórz",
+          "stop": "Zatrzymaj",
+          "moveUp": "Przesuń w górę",
+          "moveDown": "Przesuń w dół",
+          "remove": "Usuń z listy",
+          "noDate": "Brak daty",
+          "noLength": "Długość nieznana",
+          "empty": "Na liście nie zostały żadne pliki.",
+          "playFailed": "Nie można tu odtworzyć {{name}} (nadal można go przetranskrybować).",
+          "modelNotReady": "Najpierw pobierz model.",
+          "transcribe": "Transkrybuj pliki: {{count}}"
+        },
+        "options": {
+          "title": "Połączony tekst",
+          "separator": {
+            "label": "Między plikami",
+            "none": "Nic (następny wiersz)",
+            "blank_line": "Jeden pusty wiersz",
+            "divider": "Linia oddzielająca"
+          },
+          "numbered": "Numeruj części (1., 2., 3. …)",
+          "names": "Nazwa pliku przed każdą częścią"
+        },
+        "result": {
+          "title": "Przetranskrybowano {{done}} z {{total}} plików",
+          "copyAll": "Kopiuj wszystko",
+          "clear": "Wyczyść",
+          "perFile": "Każdy plik",
+          "failed": "Niepowodzenie: {{error}}",
+          "notTranscribed": "Nie przetranskrybowano.",
+          "showAll": "Pokaż wszystko",
+          "showLess": "Pokaż mniej",
+          "stopped": "Partia została zatrzymana: {{error}}",
+          "cancelled": "Anulowano. Gotowe części są poniżej; połączony tekst nie został zapisany."
+        }
       }
     },
     "currentAudio": {
@@ -2309,6 +2365,27 @@
           "stt_server": "Serwer STT"
         }
       }
+    },
+    "appearance": {
+      "pins": {
+        "title": "Przypięte strony",
+        "description": "Przypnij stronę pinezką obok ? w jej tytule. Tutaj możesz zmieniać ich nazwy, wybierać ikonę, ustalać kolejność i miejsce, w którym się pojawiają.",
+        "empty": "Nic jeszcze nie przypięto.",
+        "icon": "Wybierz ikonę",
+        "name": "Nazwa",
+        "unavailable": "Obecnie niedostępne"
+      },
+      "sidebar": {
+        "title": "Pasek boczny",
+        "description": "Uporządkuj pasek boczny i wybierz, które pozycje trafiają pod Pokaż więcej. Wbudowane pozycje zachowują swoje nazwy.",
+        "reset": "Zresetuj pasek boczny"
+      },
+      "place": {
+        "top": "Na pasku bocznym",
+        "more": "Pod Pokaż więcej"
+      },
+      "moveUp": "Przesuń w górę",
+      "moveDown": "Przesuń w dół"
     }
   },
   "common": {
@@ -2368,9 +2445,20 @@
     "menu": {
       "changeShortcut": "Zmień skrót…",
       "liveTextSettings": "Ustawienia pola tekstu na żywo…",
-      "hidePause": "Ukryj przycisk pauzy"
+      "hidePause": "Ukryj przycisk pauzy",
+      "soundSourceSettings": "Ustawienia źródła dźwięku…",
+      "microphone": "Mikrofon",
+      "defaultMicrophone": "Mikrofon domyślny",
+      "soundSettings": "Ustawienia dźwięku…"
     },
-    "tooQuiet": "Za cicho – mów głośniej"
+    "tooQuiet": "Za cicho – mów głośniej",
+    "captureSource": {
+      "now": "Źródło dźwięku",
+      "nextTake": "Od następnego nagrania",
+      "microphone": "Mikrofon",
+      "systemAudio": "Dźwięk systemowy",
+      "both": "Mikrofon + system"
+    }
   },
   "tokenCount": {
     "configureProviders": "Skonfiguruj dostawców",
@@ -2701,6 +2789,26 @@
       "historySearch": {
         "title": "Cały tekst i liczba trafień w wyszukiwaniu Historii",
         "description": "Wyszukiwanie w Historii znów pokazuje cały tekst każdego nagrania z zaznaczonymi trafieniami oraz ich liczbę: łącznie, w każdym nagraniu i – przy kilku słowach – dla każdego słowa. Sortuj według „Najwięcej trafień”, aby zobaczyć najlepsze dopasowania na górze, albo zaznacz Krótkie podglądy, aby widzieć tylko kilka linii."
+      },
+      "pinPages": {
+        "title": "Przypnij dowolną stronę do paska bocznego",
+        "description": "Pinezka obok ? w tytule każdej strony umieszcza tę stronę (lub kartę Historii) w sekcji Przypięte na górze paska bocznego: jedno kliknięcie i jesteś na miejscu. Kliknij ponownie, aby odpiąć."
+      },
+      "backForward": {
+        "title": "Wstecz i Dalej",
+        "description": "Boczne przyciski myszy Wstecz i Dalej oraz Alt+← / Alt+→ (Cmd+[ / Cmd+] na Macu) przechodzą między otwartymi stronami, jak w przeglądarce."
+      },
+      "appearancePage": {
+        "title": "Uporządkuj pasek boczny",
+        "description": "Ustawienia zaawansowane › Wygląd: uporządkuj pasek boczny, przenieś rzadko używane pozycje pod Pokaż więcej, a przypiętym stronom zmień nazwy, nadaj jedną z 20 ikon i wybierz, gdzie się pojawiają."
+      },
+      "pillMicrophone": {
+        "title": "Zmieniaj mikrofon z pigułki, nawet podczas nagrywania",
+        "description": "Kliknij prawym przyciskiem paski dźwięku pigułki, aby wybrać inny mikrofon (a w Windows źródło dźwięku). Zmiana podczas nagrywania działa teraz od razu dla tego nagrania; wcześniej zmiana mikrofonu w trakcie nagrywania powodowała jego utratę."
+      },
+      "filesBatch": {
+        "title": "Kilka plików naraz",
+        "description": "Wybierz lub upuść kilka nagrań w Plikach. Ułóż je w kolejności (najpierw według daty, przeciąganiem lub strzałkami, odtwórz jedno, aby sprawdzić), wybierz separator, numery i nazwy plików, i otrzymaj jeden połączony tekst do skopiowania oraz osobny tekst każdego pliku."
       }
     },
     "installed": "Zainstalowana"

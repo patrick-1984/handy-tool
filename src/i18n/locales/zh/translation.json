@@ -73,7 +73,16 @@
     "moreTools": "更多工具",
     "sttServer": "STT 服务器",
     "combine": "合并录音",
-    "speakers": "说话人"
+    "speakers": "说话人",
+    "appearance": "外观",
+    "pinned": {
+      "title": "已固定",
+      "pin": "固定到侧边栏",
+      "unpin": "取消固定",
+      "limit": "最多可固定 50 个页面。请先取消固定一个。",
+      "showMore": "显示更多",
+      "showLess": "收起"
+    }
   },
   "helpMode": {
     "button": "帮助模式：将鼠标指向设置即可查看其作用",
@@ -778,6 +787,10 @@
           "toggle_live_text_box": {
             "name": "实时文字框开/关",
             "description": "像录音浮层上的 T 按钮一样开启或关闭实时文字框。默认：无。"
+          },
+          "cycle_capture_source": {
+            "name": "切换声音来源",
+            "description": "依次切换录音采集的内容：麦克风、系统音频、麦克风 + 系统音频。录音条会短暂显示新的来源。录音中会从那一刻起切换该录音，除非该录音仅以系统音频开始；此时新来源从下一次录音起生效。仅限 Windows。默认：无。"
           },
           "transcribe_with_post_process": {
             "name": "后处理快捷键",
@@ -2155,6 +2168,49 @@
         "showLess": "收起",
         "reveal": "在文件夹中显示",
         "delete": "从列表中移除"
+      },
+      "batch": {
+        "skipped": "已跳过（不是 Handy 可读取的音频文件）：{{names}}",
+        "progress": "第 {{current}} / {{total}} 个文件：{{name}}",
+        "order": {
+          "title": "排列文件（{{count}}）",
+          "description": "文本按此顺序拼接。拖动行的手柄或使用箭头；播放文件以确认内容。",
+          "drag": "拖动以重新排序",
+          "play": "播放",
+          "stop": "停止",
+          "moveUp": "上移",
+          "moveDown": "下移",
+          "remove": "从列表中移除",
+          "noDate": "无日期",
+          "noLength": "时长未知",
+          "empty": "列表中已没有文件。",
+          "playFailed": "{{name}} 无法在此播放（仍可转录）。",
+          "modelNotReady": "请先下载模型。",
+          "transcribe": "转录 {{count}} 个文件"
+        },
+        "options": {
+          "title": "合并文本",
+          "separator": {
+            "label": "文件之间",
+            "none": "无（换行）",
+            "blank_line": "一个空行",
+            "divider": "一条分隔线"
+          },
+          "numbered": "为各部分编号（1., 2., 3. …）",
+          "names": "每部分前加文件名"
+        },
+        "result": {
+          "title": "已转录 {{done}} / {{total}} 个文件",
+          "copyAll": "全部复制",
+          "clear": "清除",
+          "perFile": "各个文件",
+          "failed": "失败：{{error}}",
+          "notTranscribed": "未转录。",
+          "showAll": "全部显示",
+          "showLess": "收起",
+          "stopped": "批处理已停止：{{error}}",
+          "cancelled": "已取消。已完成的部分在下方；合并文本未保存。"
+        }
       }
     },
     "currentAudio": {
@@ -2309,6 +2365,27 @@
           "stt_server": "STT 服务器"
         }
       }
+    },
+    "appearance": {
+      "pins": {
+        "title": "已固定的页面",
+        "description": "点击页面标题中 ? 旁的图钉即可固定该页面。在这里可以重命名、选择图标、排序并选择显示位置。",
+        "empty": "尚未固定任何页面。",
+        "icon": "选择图标",
+        "name": "名称",
+        "unavailable": "当前不可用"
+      },
+      "sidebar": {
+        "title": "侧边栏",
+        "description": "调整侧边栏顺序，并选择哪些条目放在“显示更多”下。内置条目保留其名称。",
+        "reset": "重置侧边栏"
+      },
+      "place": {
+        "top": "在侧边栏中",
+        "more": "在“显示更多”下"
+      },
+      "moveUp": "上移",
+      "moveDown": "下移"
     }
   },
   "common": {
@@ -2368,9 +2445,20 @@
     "menu": {
       "changeShortcut": "更改快捷键…",
       "liveTextSettings": "实时文本框设置…",
-      "hidePause": "隐藏暂停按钮"
+      "hidePause": "隐藏暂停按钮",
+      "soundSourceSettings": "声音来源设置…",
+      "microphone": "麦克风",
+      "defaultMicrophone": "默认麦克风",
+      "soundSettings": "声音设置…"
     },
-    "tooQuiet": "声音太小，请大声点"
+    "tooQuiet": "声音太小，请大声点",
+    "captureSource": {
+      "now": "声音来源",
+      "nextTake": "从下一次录音起",
+      "microphone": "麦克风",
+      "systemAudio": "系统音频",
+      "both": "麦克风 + 系统"
+    }
   },
   "brand": {
     "name": "Handy",
@@ -2701,6 +2789,26 @@
       "historySearch": {
         "title": "历史记录搜索显示全文和命中次数",
         "description": "在历史记录中搜索时，会重新显示每条录音的全文并标出所有命中，同时显示命中次数：总数、每条录音的次数，以及多个词时每个词的次数。按“命中最多”排序可让最匹配的录音排在最前；勾选“简短预览”则只显示几行。"
+      },
+      "pinPages": {
+        "title": "将任意页面固定到侧边栏",
+        "description": "每个页面标题中 ? 旁的图钉可将该页面（或历史记录标签页）放入侧边栏顶部的“已固定”区域：一键即达。再次点击即可取消固定。"
+      },
+      "backForward": {
+        "title": "后退与前进",
+        "description": "鼠标侧边的后退和前进按钮，以及 Alt+← / Alt+→（Mac 上为 Cmd+[ / Cmd+]），可像浏览器一样在打开过的页面间切换。"
+      },
+      "appearancePage": {
+        "title": "整理侧边栏",
+        "description": "高级设置 › 外观：调整侧边栏顺序，把不常用的条目移到“显示更多”下，并为已固定的页面重命名、从 20 个图标中选一个，以及选择显示位置。"
+      },
+      "pillMicrophone": {
+        "title": "在浮层中切换麦克风，录音时也可以",
+        "description": "右键单击浮层的声音条即可选择其他麦克风（在 Windows 上还可选择声音来源）。录音中的切换现在会立即应用到该录音；以前在录音途中切换麦克风会丢失录音。"
+      },
+      "filesBatch": {
+        "title": "一次处理多个文件",
+        "description": "在“文件”中选择或拖入多个录音。排好顺序（先按日期，再拖动或用箭头调整，可播放检查），选择分隔方式、编号和文件名，即可得到一份可复制的合并文本，以及每个文件各自的文本。"
       }
     },
     "installed": "已安装"

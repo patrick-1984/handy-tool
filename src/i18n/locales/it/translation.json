@@ -73,7 +73,16 @@
     "moreTools": "Altri strumenti",
     "sttServer": "Server STT",
     "combine": "Unisci registrazioni",
-    "speakers": "Parlanti"
+    "speakers": "Parlanti",
+    "appearance": "Aspetto",
+    "pinned": {
+      "title": "Fissate",
+      "pin": "Fissa nella barra laterale",
+      "unpin": "Rimuovi",
+      "limit": "Si possono fissare fino a 50 pagine. Rimuovine prima una.",
+      "showMore": "Mostra altro",
+      "showLess": "Mostra meno"
+    }
   },
   "helpMode": {
     "button": "Modalità aiuto: punta un’impostazione per vedere cosa fa",
@@ -778,6 +787,10 @@
           "toggle_live_text_box": {
             "name": "Testo dal vivo on/off",
             "description": "Attiva o disattiva il riquadro del testo dal vivo, come il pulsante T della barra di registrazione. Predefinito: nessuna."
+          },
+          "cycle_capture_source": {
+            "name": "Cambia sorgente audio",
+            "description": "Cambia a turno cosa catturano le registrazioni: Microfono, Audio di sistema, Microfono + audio di sistema. La barra di registrazione mostra per un attimo la nuova sorgente. Durante una registrazione la cambia da quel momento, a meno che non sia iniziata con il solo audio di sistema; allora la nuova sorgente vale dalla successiva. Solo Windows. Predefinito: nessuno."
           },
           "transcribe_with_post_process": {
             "name": "Tasto di post-elaborazione",
@@ -2155,6 +2168,49 @@
         "showLess": "Mostra meno",
         "reveal": "Mostra nella cartella",
         "delete": "Rimuovi dall'elenco"
+      },
+      "batch": {
+        "skipped": "Saltati (non sono file audio che Handy può leggere): {{names}}",
+        "progress": "File {{current}} di {{total}}: {{name}}",
+        "order": {
+          "title": "Ordina i file ({{count}})",
+          "description": "I testi vengono uniti in quest'ordine. Trascina una riga dalla maniglia o usa le frecce; riproduci un file per verificare cos'è.",
+          "drag": "Trascina per riordinare",
+          "play": "Riproduci",
+          "stop": "Ferma",
+          "moveUp": "Sposta su",
+          "moveDown": "Sposta giù",
+          "remove": "Rimuovi dall'elenco",
+          "noDate": "Nessuna data",
+          "noLength": "Durata sconosciuta",
+          "empty": "Nessun file rimasto nell'elenco.",
+          "playFailed": "{{name}} non può essere riprodotto qui (può comunque essere trascritto).",
+          "modelNotReady": "Scarica prima il modello.",
+          "transcribe": "Trascrivi {{count}} file"
+        },
+        "options": {
+          "title": "Testo combinato",
+          "separator": {
+            "label": "Tra i file",
+            "none": "Niente (riga successiva)",
+            "blank_line": "Una riga vuota",
+            "divider": "Una linea divisoria"
+          },
+          "numbered": "Numera le parti (1., 2., 3. …)",
+          "names": "Nome del file prima di ogni parte"
+        },
+        "result": {
+          "title": "{{done}} file su {{total}} trascritti",
+          "copyAll": "Copia tutto",
+          "clear": "Cancella",
+          "perFile": "Ogni file",
+          "failed": "Non riuscito: {{error}}",
+          "notTranscribed": "Non trascritto.",
+          "showAll": "Mostra tutto",
+          "showLess": "Mostra meno",
+          "stopped": "Il lotto si è interrotto: {{error}}",
+          "cancelled": "Annullato. Le parti completate sono qui sotto; il testo combinato non è stato salvato."
+        }
       }
     },
     "currentAudio": {
@@ -2309,6 +2365,27 @@
           "stt_server": "Server STT"
         }
       }
+    },
+    "appearance": {
+      "pins": {
+        "title": "Pagine fissate",
+        "description": "Fissa una pagina con la puntina accanto al ? nel suo titolo. Qui puoi rinominarle, scegliere un'icona, ordinarle e decidere dove compaiono.",
+        "empty": "Ancora nulla di fissato.",
+        "icon": "Scegli un'icona",
+        "name": "Nome",
+        "unavailable": "Non disponibile ora"
+      },
+      "sidebar": {
+        "title": "Barra laterale",
+        "description": "Ordina la barra laterale e scegli quali voci stanno sotto Mostra altro. Le voci integrate mantengono i loro nomi.",
+        "reset": "Ripristina la barra laterale"
+      },
+      "place": {
+        "top": "Nella barra laterale",
+        "more": "Sotto Mostra altro"
+      },
+      "moveUp": "Sposta su",
+      "moveDown": "Sposta giù"
     }
   },
   "common": {
@@ -2368,9 +2445,20 @@
     "menu": {
       "changeShortcut": "Cambia scorciatoia…",
       "liveTextSettings": "Impostazioni del riquadro testo dal vivo…",
-      "hidePause": "Nascondi il pulsante di pausa"
+      "hidePause": "Nascondi il pulsante di pausa",
+      "soundSourceSettings": "Impostazioni della sorgente audio…",
+      "microphone": "Microfono",
+      "defaultMicrophone": "Microfono predefinito",
+      "soundSettings": "Impostazioni audio…"
     },
-    "tooQuiet": "Troppo piano — più forte"
+    "tooQuiet": "Troppo piano — più forte",
+    "captureSource": {
+      "now": "Sorgente audio",
+      "nextTake": "Dalla prossima registrazione",
+      "microphone": "Microfono",
+      "systemAudio": "Audio di sistema",
+      "both": "Micro + sistema"
+    }
   },
   "brand": {
     "name": "Handy",
@@ -2701,6 +2789,26 @@
       "historySearch": {
         "title": "Testo intero e numero di occorrenze nella ricerca della cronologia",
         "description": "La ricerca nella cronologia mostra di nuovo il testo intero di ogni registrazione, con ogni occorrenza evidenziata, e quante sono: in totale, per registrazione e, con più parole, per parola. Ordina per «Più occorrenze» per vedere prima i risultati migliori, oppure spunta Anteprime brevi per poche righe."
+      },
+      "pinPages": {
+        "title": "Fissa qualsiasi pagina nella barra laterale",
+        "description": "Una puntina accanto al ? nel titolo di ogni pagina mette quella pagina (o una scheda della Cronologia) in una sezione Fissate in cima alla barra laterale: un clic per arrivarci. Clicca di nuovo per rimuoverla."
+      },
+      "backForward": {
+        "title": "Indietro e Avanti",
+        "description": "I tasti laterali Indietro e Avanti del mouse, e Alt+← / Alt+→ (Cmd+[ / Cmd+] su Mac), scorrono le pagine che hai aperto, come in un browser."
+      },
+      "appearancePage": {
+        "title": "Organizza la barra laterale",
+        "description": "Impostazioni avanzate › Aspetto: ordina la barra laterale, sposta le voci che usi poco sotto Mostra altro, e rinomina le pagine fissate, assegna loro una di 20 icone e scegli dove compaiono."
+      },
+      "pillMicrophone": {
+        "title": "Cambia il microfono dalla pillola, anche durante la registrazione",
+        "description": "Fai clic destro sulle barre del suono della pillola per scegliere un altro microfono (e, su Windows, la sorgente audio). Un cambio durante una registrazione ora vale subito per quella registrazione; prima, cambiare microfono a metà registrazione la faceva perdere."
+      },
+      "filesBatch": {
+        "title": "Più file insieme",
+        "description": "Scegli o trascina più registrazioni su File. Mettile in ordine (prima per data, trascinando o con le frecce, riproducine una per controllarla), scegli un separatore, numeri e nomi dei file, e ottieni un unico testo combinato da copiare, più il testo di ciascun file."
       }
     },
     "installed": "Installata"
