@@ -6,7 +6,9 @@
 //! one) or next to the recording, and a copy of the audio kept in that folder;
 //! every result goes into a log shown on the page.
 
-use crate::audio_toolkit::audio::{SUPPORTED_EXTENSIONS, decode_audio_file};
+use crate::audio_toolkit::audio::{
+    SUPPORTED_EXTENSIONS, audio_duration_seconds, decode_audio_file,
+};
 use crate::managers::model::ModelManager;
 use crate::managers::transcription::TranscriptionManager;
 use crate::managers::translator::split_speech_segments;
@@ -568,6 +570,132 @@ pub fn transcribe_file(
     Ok(())
 }
 
+/// What the Order files window shows for a picked or dropped file.
+#[derive(Clone, Serialize, Type)]
+pub struct AudioFileInfo {
+    pub path: String,
+    pub file_name: String,
+    /// Whether Handy can read this file type.
+    pub supported: bool,
+    /// When the file was created (or, where the system does not keep that,
+    /// last changed), in milliseconds since 1970.
+    pub created_ms: Option<f64>,
+    /// Its length, when the file's headers say.
+    pub duration_secs: Option<f64>,
+}
+
+fn is_supported_audio(path: &Path) -> bool {
+    path.extension()
+        .map(|e| e.to_string_lossy().to_ascii_lowercase())
+        .is_some_and(|ext| SUPPORTED_EXTENSIONS.contains(&ext.as_str()))
+}
+
+fn system_time_ms(time: std::io::Result<std::time::SystemTime>) -> Option<f64> {
+    time.ok()?
+        .duration_since(std::time::UNIX_EPOCH)
+        .ok()
+        .map(|d| d.as_millis() as f64)
+}
+
+fn audio_file_info(path: &str) -> AudioFileInfo {
+    let path_buf = PathBuf::from(path.trim());
+    let meta = std::fs::metadata(&path_buf).ok().filter(|m| m.is_file());
+    let supported = meta.is_some() && is_supported_audio(&path_buf);
+    let created_ms = meta
+        .as_ref()
+        .and_then(|m| system_time_ms(m.created()).or_else(|| system_time_ms(m.modified())));
+    AudioFileInfo {
+        file_name: file_name_of(&path_buf),
+        path: path_buf.display().to_string(),
+        supported,
+        created_ms,
+        duration_secs: if supported {
+            audio_duration_seconds(&path_buf)
+        } else {
+            None
+        },
+    }
+}
+
+/// Name, creation time and length of each file, in the order given. Only the
+/// headers are read, so this is quick even for long recordings.
+#[tauri::command]
+#[specta::specta]
+pub async fn audio_files_info(paths: Vec<String>) -> Vec<AudioFileInfo> {
+    tauri::async_runtime::spawn_blocking(move || {
+        paths.iter().map(|p| audio_file_info(p)).collect::<Vec<_>>()
+    })
+    .await
+    .unwrap_or_default()
+}
+
+/// Where the combined text of several files goes: as one file's text would,
+/// named after the first file ("talk (combined).txt"). Never overwrites.
+fn batch_text_path(
+    app: &AppHandle,
+    settings: &AppSettings,
+    first_source: &Path,
+    save: FileTextSave,
+) -> Result<Option<PathBuf>, String> {
+    let folder = match save {
+        FileTextSave::HandyFolder => {
+            let folder = files_folder(app, settings)?;
+            std::fs::create_dir_all(&folder).map_err(|e| e.to_string())?;
+            folder
+        }
+        FileTextSave::NextToFile => first_source
+            .parent()
+            .map(Path::to_path_buf)
+            .ok_or_else(|| format!("no folder for {}", first_source.display()))?,
+        FileTextSave::Ask | FileTextSave::DontSave => return Ok(None),
+    };
+    Ok(Some(batch_text_file(&folder, first_source)))
+}
+
+/// "talk (combined).txt" in `folder`, or "talk (combined) (2).txt"... if taken.
+fn batch_text_file(folder: &Path, first_source: &Path) -> PathBuf {
+    let base = first_source
+        .file_stem()
+        .map(|s| s.to_string_lossy().to_string())
+        .unwrap_or_else(|| "audio".into());
+    // unique_stem() takes the stem from a path: give it one whose stem is the
+    // whole name, so a dot inside it ("meeting.2026") survives.
+    let named = PathBuf::from(format!("{base} (combined).txt"));
+    let stem = unique_stem(folder, &named, false);
+    folder.join(format!("{stem}.txt"))
+}
+
+/// Saves the combined text of a batch once, where `save` says. Returns where
+/// it went (None for "don't save").
+#[tauri::command]
+#[specta::specta]
+pub fn save_batch_text(
+    app: AppHandle,
+    text: String,
+    first_path: String,
+    save: FileTextSave,
+) -> Result<Option<String>, String> {
+    if save == FileTextSave::Ask {
+        return Err("where to save the text was not chosen".into());
+    }
+    let settings = get_settings(&app);
+    let first = PathBuf::from(first_path.trim());
+    let Some(out) = batch_text_path(&app, &settings, &first, save)? else {
+        return Ok(None);
+    };
+    // create_new: a file that appeared since the name was checked is left alone.
+    use std::io::Write;
+    let mut file = std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&out)
+        .map_err(|e| format!("{}: {e}", out.display()))?;
+    file.write_all(text.as_bytes())
+        .map_err(|e| format!("{}: {e}", out.display()))?;
+    info!("Files: combined text saved to {}", out.display());
+    Ok(Some(out.display().to_string()))
+}
+
 /// The file being transcribed, or how the last one ended (None before the first).
 #[tauri::command]
 #[specta::specta]
@@ -1091,5 +1219,50 @@ mod tests {
             audio_copy_path(dir.path(), "notes", Path::new("C:/x/notes")),
             dir.path().join("notes")
         );
+    }
+
+    #[test]
+    fn combined_text_is_named_after_the_first_file_and_never_overwrites() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let first = Path::new("C:/phone/meeting.2026.m4a");
+        let out = batch_text_file(dir.path(), first);
+        assert_eq!(out, dir.path().join("meeting.2026 (combined).txt"));
+        std::fs::write(&out, "x").unwrap();
+        assert_eq!(
+            batch_text_file(dir.path(), first),
+            dir.path().join("meeting.2026 (combined) (2).txt")
+        );
+    }
+
+    #[test]
+    fn file_info_reads_wav_length_and_flags_unsupported_files() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let wav = dir.path().join("one.wav");
+        let spec = hound::WavSpec {
+            channels: 1,
+            sample_rate: 16_000,
+            bits_per_sample: 16,
+            sample_format: hound::SampleFormat::Int,
+        };
+        let mut writer = hound::WavWriter::create(&wav, spec).unwrap();
+        for _ in 0..32_000 {
+            writer.write_sample(0i16).unwrap();
+        }
+        writer.finalize().unwrap();
+        let info = audio_file_info(&wav.display().to_string());
+        assert!(info.supported);
+        assert_eq!(info.file_name, "one.wav");
+        assert_eq!(info.duration_secs, Some(2.0));
+        assert!(info.created_ms.is_some());
+
+        let notes = dir.path().join("notes.txt");
+        std::fs::write(&notes, "x").unwrap();
+        let info = audio_file_info(&notes.display().to_string());
+        assert!(!info.supported);
+        assert_eq!(info.duration_secs, None);
+
+        let missing = audio_file_info(&dir.path().join("gone.mp3").display().to_string());
+        assert!(!missing.supported);
+        assert_eq!(missing.created_ms, None);
     }
 }

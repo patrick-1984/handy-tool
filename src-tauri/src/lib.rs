@@ -495,6 +495,8 @@ pub fn run(cli_args: CliArgs) {
         commands::proxy::get_system_proxy,
         commands::proxy::test_proxy_connection,
         commands::files::transcribe_file,
+        commands::files::audio_files_info,
+        commands::files::save_batch_text,
         commands::files::retranscribe_history_entry,
         commands::files::get_file_job,
         commands::files::cancel_file_job,

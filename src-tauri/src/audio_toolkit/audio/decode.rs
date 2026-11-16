@@ -47,6 +47,59 @@ pub fn decode_audio_file(path: &Path) -> Result<Vec<f32>> {
 pub const SUPPORTED_EXTENSIONS: [&str; 8] =
     ["wav", "ogg", "opus", "mp3", "m4a", "mp4", "aac", "flac"];
 
+/// The length of a supported audio file in seconds, read from its headers
+/// without decoding the audio. `None` when the file does not say.
+pub fn audio_duration_seconds(path: &Path) -> Option<f64> {
+    let ext = path
+        .extension()
+        .and_then(|e| e.to_str())
+        .map(|e| e.to_ascii_lowercase())
+        .unwrap_or_default();
+    match ext.as_str() {
+        "wav" => {
+            let reader = hound::WavReader::open(path).ok()?;
+            let rate = reader.spec().sample_rate;
+            (rate > 0).then(|| reader.duration() as f64 / rate as f64)
+        }
+        "ogg" | "opus" => super::opus_duration_seconds(path).ok(),
+        "mp3" | "m4a" | "mp4" | "aac" | "flac" => probe_duration_symphonia(path),
+        _ => None,
+    }
+}
+
+/// Frames / sample rate of the first audio track, from the container only.
+fn probe_duration_symphonia(path: &Path) -> Option<f64> {
+    use symphonia::core::codecs::CODEC_TYPE_NULL;
+    use symphonia::core::formats::FormatOptions;
+    use symphonia::core::io::MediaSourceStream;
+    use symphonia::core::meta::MetadataOptions;
+    use symphonia::core::probe::Hint;
+
+    let file = std::fs::File::open(path).ok()?;
+    let stream = MediaSourceStream::new(Box::new(file), Default::default());
+    let mut hint = Hint::new();
+    if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
+        hint.with_extension(ext);
+    }
+    let probed = symphonia::default::get_probe()
+        .format(
+            &hint,
+            stream,
+            &FormatOptions::default(),
+            &MetadataOptions::default(),
+        )
+        .ok()?;
+    let track = probed
+        .format
+        .tracks()
+        .iter()
+        .find(|t| t.codec_params.codec != CODEC_TYPE_NULL)?;
+    let params = &track.codec_params;
+    let frames = params.n_frames?;
+    let rate = params.sample_rate?;
+    (rate > 0).then(|| frames as f64 / rate as f64)
+}
+
 // ---------------------------------------------------------------------------
 // MP3, M4A (AAC), FLAC - via symphonia
 // ---------------------------------------------------------------------------
