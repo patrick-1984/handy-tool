@@ -63,6 +63,9 @@ const DEFAULT_AUDIO_DEVICE: AudioDevice = {
  * older one must never land after a newer one.
  */
 let layoutWrites: Promise<unknown> = Promise.resolve();
+/** Writes queued and not done yet; a failed one re-reads only after the last. */
+let layoutPending = 0;
+let layoutFailed = false;
 
 const settingUpdaters: {
   [K in keyof Settings]?: (value: Settings[K]) => Promise<unknown>;
@@ -290,6 +293,7 @@ const settingUpdaters: {
   // A failed write does not throw (updateSetting would roll back to an older
   // whole layout, wiping later edits): the saved layout is read back instead.
   sidebar_layout: (value) => {
+    layoutPending += 1;
     layoutWrites = layoutWrites
       .then(() => commands.changeSidebarLayoutSetting(value as SidebarLayout))
       .then((result) => {
@@ -297,7 +301,16 @@ const settingUpdaters: {
       })
       .catch((error) => {
         console.error("Failed to save the sidebar layout:", error);
-        void useSettingsStore.getState().refreshSettings();
+        layoutFailed = true;
+      })
+      .finally(() => {
+        layoutPending -= 1;
+        // Read back what was saved only once no later edit is still on its
+        // way, so a refresh never replaces an edit about to be written.
+        if (layoutPending === 0 && layoutFailed) {
+          layoutFailed = false;
+          void useSettingsStore.getState().refreshSettings();
+        }
       });
     return layoutWrites;
   },

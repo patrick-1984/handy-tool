@@ -52,6 +52,8 @@ interface FileBatchState {
   saveError: string | null;
   /** Why the batch stopped before the end (an update, another job). */
   stopError: string | null;
+  /** The combined text is being saved: too late to cancel. */
+  saving: boolean;
 
   /** Open the Order files window for these (supported, distinct) files. */
   openOrder: (paths: string[]) => Promise<void>;
@@ -141,6 +143,7 @@ export const useFileBatchStore = create<FileBatchState>()((set, get) => {
     savedPath: null,
     saveError: null,
     stopError: null,
+    saving: false,
 
     openOrder: async (paths) => {
       const gen = ++orderGeneration;
@@ -264,6 +267,7 @@ export const useFileBatchStore = create<FileBatchState>()((set, get) => {
         // and only when every file was tried and some text came out.
         const complete = !get().cancelRequested && !get().stopError;
         if (complete && combined && save !== "dont_save" && save !== "ask") {
+          set({ saving: true });
           const saved = await commands.saveBatchText(
             combined,
             items[0].path,
@@ -284,6 +288,7 @@ export const useFileBatchStore = create<FileBatchState>()((set, get) => {
         // Whatever happened, the batch ends: no spinner left behind.
         set((s) => ({
           phase: "done",
+          saving: false,
           jobId: null,
           progress: null,
           parts: s.parts.map((p) =>

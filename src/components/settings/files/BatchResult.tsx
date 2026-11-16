@@ -82,6 +82,7 @@ export const BatchResult: React.FC = () => {
   const saveError = useFileBatchStore((s) => s.saveError);
   const stopError = useFileBatchStore((s) => s.stopError);
   const cancelRequested = useFileBatchStore((s) => s.cancelRequested);
+  const saving = useFileBatchStore((s) => s.saving);
   const cancel = useFileBatchStore((s) => s.cancel);
   const dismiss = useFileBatchStore((s) => s.dismiss);
 
@@ -108,7 +109,7 @@ export const BatchResult: React.FC = () => {
             variant="secondary"
             size="sm"
             onClick={cancel}
-            disabled={cancelRequested}
+            disabled={cancelRequested || saving}
           >
             {t("settings.files.transcribe.cancel")}
           </Button>

@@ -18,7 +18,7 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_opener::OpenerExt;
@@ -95,8 +95,15 @@ static NEXT_JOB_ID: AtomicU32 = AtomicU32::new(1);
 /// owner ends it. It also lapses 60 s after the batch last showed a sign of
 /// life (a file started or progressed), so a batch whose window was reloaded
 /// can never hold the updater back for good.
-static BATCH_OWNER: AtomicU32 = AtomicU32::new(0);
-static BATCH_UNTIL_MS: AtomicU64 = AtomicU64::new(0);
+/// Owner and deadline change together, under one lock.
+struct BatchHold {
+    owner: u32,
+    until_ms: u64,
+}
+static BATCH_HOLD: Mutex<BatchHold> = Mutex::new(BatchHold {
+    owner: 0,
+    until_ms: 0,
+});
 const BATCH_HOLD_GRACE_MS: u64 = 60_000;
 
 fn now_ms() -> u64 {
@@ -106,14 +113,20 @@ fn now_ms() -> u64 {
         .unwrap_or(0)
 }
 
+fn batch_hold() -> std::sync::MutexGuard<'static, BatchHold> {
+    BATCH_HOLD.lock().unwrap_or_else(|p| p.into_inner())
+}
+
 fn batch_held() -> bool {
-    BATCH_OWNER.load(Ordering::SeqCst) != 0 && now_ms() < BATCH_UNTIL_MS.load(Ordering::SeqCst)
+    let hold = batch_hold();
+    hold.owner != 0 && now_ms() < hold.until_ms
 }
 
 /// A sign of life from the batch: its hold lasts another 60 s.
 fn touch_batch() {
-    if BATCH_OWNER.load(Ordering::SeqCst) != 0 {
-        BATCH_UNTIL_MS.store(now_ms() + BATCH_HOLD_GRACE_MS, Ordering::SeqCst);
+    let mut hold = batch_hold();
+    if hold.owner != 0 {
+        hold.until_ms = now_ms() + BATCH_HOLD_GRACE_MS;
     }
 }
 
@@ -762,6 +775,8 @@ pub fn save_batch_text(
     if save == FileTextSave::Ask {
         return Err("where to save the text was not chosen".into());
     }
+    // Still the batch: its hold keeps an update from starting while it saves.
+    touch_batch();
     let settings = get_settings(&app);
     let first = PathBuf::from(first_path.trim());
     let Some(out) = batch_text_path(&app, &settings, &first, save)? else {
@@ -816,24 +831,24 @@ pub fn begin_file_batch() -> Result<u32, String> {
 /// Takes the batch hold and returns its token; a hold another batch still
 /// keeps alive refuses, a lapsed one is taken over.
 fn take_batch_hold() -> Result<u32, String> {
-    let token = NEXT_JOB_ID.fetch_add(1, Ordering::SeqCst);
-    let current = BATCH_OWNER.load(Ordering::SeqCst);
-    if current != 0 && batch_held() {
+    let mut hold = batch_hold();
+    if hold.owner != 0 && now_ms() < hold.until_ms {
         return Err("a file is already being transcribed".into());
     }
-    BATCH_OWNER
-        .compare_exchange(current, token, Ordering::SeqCst, Ordering::SeqCst)
-        .map_err(|_| "a file is already being transcribed".to_string())?;
-    BATCH_UNTIL_MS.store(now_ms() + BATCH_HOLD_GRACE_MS, Ordering::SeqCst);
+    let token = NEXT_JOB_ID.fetch_add(1, Ordering::SeqCst);
+    hold.owner = token;
+    hold.until_ms = now_ms() + BATCH_HOLD_GRACE_MS;
     Ok(token)
 }
 
 /// Gives the hold back if `token` owns it.
 fn release_batch_hold(token: u32) -> bool {
-    token != 0
-        && BATCH_OWNER
-            .compare_exchange(token, 0, Ordering::SeqCst, Ordering::SeqCst)
-            .is_ok()
+    let mut hold = batch_hold();
+    if token == 0 || hold.owner != token {
+        return false;
+    }
+    hold.owner = 0;
+    true
 }
 
 /// The batch is over (finished, cancelled, or stopped): unload `model` if
@@ -1390,7 +1405,7 @@ mod tests {
         assert!(!file_job_running());
         // A hold its window left behind lapses and is taken over.
         let b = take_batch_hold().unwrap();
-        BATCH_UNTIL_MS.store(0, Ordering::SeqCst);
+        batch_hold().until_ms = 0;
         assert!(!file_job_running());
         let c = take_batch_hold().unwrap();
         assert_ne!(b, c);
