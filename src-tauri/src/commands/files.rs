@@ -780,6 +780,17 @@ pub fn change_file_keep_audio_setting(app: AppHandle, enabled: bool) -> Result<(
     Ok(())
 }
 
+/// Files › several files: the combined text's options (kept for next time).
+#[tauri::command]
+#[specta::specta]
+pub fn change_file_batch_options_setting(
+    app: AppHandle,
+    options: crate::settings::FileBatchOptions,
+) -> Result<(), String> {
+    crate::settings::update_settings(&app, |s| s.file_batch = options);
+    Ok(())
+}
+
 /// Empty = back to Handy's own folder.
 #[tauri::command]
 #[specta::specta]

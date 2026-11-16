@@ -497,6 +497,8 @@ pub fn run(cli_args: CliArgs) {
         commands::files::transcribe_file,
         commands::files::audio_files_info,
         commands::files::save_batch_text,
+        commands::files::change_file_batch_options_setting,
+        commands::change_sidebar_layout_setting,
         commands::files::retranscribe_history_entry,
         commands::files::get_file_job,
         commands::files::cancel_file_job,

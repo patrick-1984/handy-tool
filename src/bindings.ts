@@ -883,6 +883,52 @@ export const commands = {
    * going where `save` says; progress and the result arrive as `file-job`
    * events.
    */
+  async audioFilesInfo(paths: string[]): Promise<AudioFileInfo[]> {
+    return await TAURI_INVOKE("audio_files_info", { paths });
+  },
+  async saveBatchText(
+    text: string,
+    firstPath: string,
+    save: FileTextSave,
+  ): Promise<Result<string | null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("save_batch_text", { text, firstPath, save }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  async changeFileBatchOptionsSetting(
+    options: FileBatchOptions,
+  ): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_file_batch_options_setting", {
+          options,
+        }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  async changeSidebarLayoutSetting(
+    layout: SidebarLayout,
+  ): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_sidebar_layout_setting", { layout }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
   async transcribeFile(
     path: string,
     modelId: string,
@@ -3684,6 +3730,14 @@ export type AppSettings = {
    */
   files_folder?: string;
   /**
+   * Files › several files: separator, numbering, names (2.7.0).
+   */
+  file_batch?: FileBatchOptions;
+  /**
+   * Advanced › Appearance: sidebar order, More, shortcuts (2.7.0).
+   */
+  sidebar_layout?: SidebarLayout;
+  /**
    * Advanced > Proxy (Windows; see net/mod.rs).
    */
   proxy_mode?: ProxyMode;
@@ -3847,6 +3901,47 @@ export type TranslatorFolder = { path: string; enabled: boolean };
 /**
  * Transcribe a file: where the text goes.
  */
+/**
+ * What the Order files window shows for a picked or dropped file.
+ */
+export type AudioFileInfo = {
+  path: string;
+  file_name: string;
+  supported: boolean;
+  created_ms: number | null;
+  duration_secs: number | null;
+};
+/**
+ * Files › several files: what goes between the parts of the combined text.
+ */
+export type BatchSeparator = "none" | "blank_line" | "divider";
+/**
+ * Files › several files: how the combined text is put together.
+ */
+export type FileBatchOptions = {
+  separator?: BatchSeparator;
+  numbered?: boolean;
+  names?: boolean;
+};
+/**
+ * A page pinned to the sidebar (2.7.0).
+ */
+export type SidebarShortcut = {
+  id: string;
+  section: string;
+  history_tab?: string | null;
+  name?: string | null;
+  icon?: string;
+  in_more?: boolean;
+};
+/**
+ * How the sidebar is arranged (Advanced › Appearance).
+ */
+export type SidebarLayout = {
+  order?: string[];
+  in_more?: string[];
+  shortcuts?: SidebarShortcut[];
+};
 export type FileTextSave =
   /**
    * A pop-up asks each time a file is picked.
