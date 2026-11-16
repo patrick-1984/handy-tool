@@ -4,6 +4,7 @@ import {
   Menu,
   MenuItem,
   PredefinedMenuItem,
+  Submenu,
 } from "@tauri-apps/api/menu";
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -38,6 +39,14 @@ type OverlayState =
 interface CaptureSourceNotice {
   source: CaptureSource;
   /** The take in progress keeps its source; the next one uses the new one. */
+  next_take: boolean;
+  /** Set for a microphone change (2.7.0): its name ("" = the default). */
+  microphone?: string;
+}
+
+/** The backend's "microphone-notice" event. */
+interface MicrophoneNotice {
+  name: string;
   next_take: boolean;
 }
 const CAPTURE_NOTICE_MS = 1500;
@@ -191,17 +200,28 @@ const RecordingOverlay: React.FC = () => {
         (event) => setLiveTextBox(event.payload),
       );
 
+      const showNotice = (next: CaptureSourceNotice) => {
+        lastNoticeRef.current = next;
+        setNotice(next);
+        if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current);
+        noticeTimerRef.current = setTimeout(
+          () => setNotice(null),
+          CAPTURE_NOTICE_MS,
+        );
+      };
       const unlistenNotice = await listen<CaptureSourceNotice>(
         "capture-source-notice",
-        (event) => {
-          lastNoticeRef.current = event.payload;
-          setNotice(event.payload);
-          if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current);
-          noticeTimerRef.current = setTimeout(
-            () => setNotice(null),
-            CAPTURE_NOTICE_MS,
-          );
-        },
+        (event) => showNotice(event.payload),
+      );
+      // A microphone picked during the take (from this menu or Settings).
+      const unlistenMicNotice = await listen<MicrophoneNotice>(
+        "microphone-notice",
+        (event) =>
+          showNotice({
+            source: "microphone",
+            next_take: event.payload.next_take,
+            microphone: event.payload.name,
+          }),
       );
 
       // Transcription progress after stop, only meaningful in "transcribing"
@@ -247,6 +267,7 @@ const RecordingOverlay: React.FC = () => {
         unlistenHide();
         unlistenProgress();
         unlistenLiveTextBox();
+        unlistenMicNotice();
         unlistenNotice();
         unlistenLevel();
       };
@@ -301,7 +322,7 @@ const RecordingOverlay: React.FC = () => {
   });
 
   // Right-click menus. Native, so the small pill window does not clip them.
-  type MenuEntry = MenuItem | CheckMenuItem | PredefinedMenuItem;
+  type MenuEntry = MenuItem | CheckMenuItem | PredefinedMenuItem | Submenu;
   const popup = async (entries: Promise<MenuEntry>[]) => {
     setHoverLabel(null);
     const menu = await Menu.new({ items: await Promise.all(entries) });
@@ -392,10 +413,25 @@ const RecordingOverlay: React.FC = () => {
         : []),
     ]);
   };
-  // The sound bars' menu: what takes record from (Windows only, like the
-  // setting). A change during a take applies to it at once where it can.
-  const soundSourceMenu = async () => {
-    const source = (await currentSettings())?.capture_source ?? "microphone";
+  // The sound bars' menu: the microphone (every system) and what takes record
+  // from (Windows only, like the setting). A change during a take applies to
+  // that take at once where it can.
+  const soundMenu = async () => {
+    const settings = await currentSettings();
+    const source = settings?.capture_source ?? "microphone";
+    const selected = settings?.selected_microphone ?? null;
+    const devices = await commands.getAvailableMicrophones();
+    const microphones = devices.status === "ok" ? devices.data : [];
+    const micItems = microphones.map((device) => {
+      const isDefault = device.index === "default";
+      return CheckMenuItem.new({
+        text: isDefault ? t("overlay.menu.defaultMicrophone") : device.name,
+        checked: isDefault ? selected === null : device.name === selected,
+        action: () => {
+          commands.setSelectedMicrophone(isDefault ? "default" : device.name);
+        },
+      });
+    });
     const option = (value: CaptureSource, key: string) =>
       CheckMenuItem.new({
         text: t(key),
@@ -404,29 +440,41 @@ const RecordingOverlay: React.FC = () => {
           commands.chooseCaptureSource(value);
         },
       });
+    const windows = osType === "windows";
     await popup([
-      MenuItem.new({
-        text: t("settings.advanced.captureSource.title"),
-        enabled: false,
+      Submenu.new({
+        text: t("overlay.menu.microphone"),
+        items: await Promise.all(micItems),
       }),
-      option(
-        "microphone",
-        "settings.advanced.captureSource.options.microphone",
-      ),
-      option(
-        "system_audio",
-        "settings.advanced.captureSource.options.systemAudio",
-      ),
-      option(
-        "microphone_and_system_audio",
-        "settings.advanced.captureSource.options.both",
-      ),
+      ...(windows
+        ? [
+            separator(),
+            MenuItem.new({
+              text: t("settings.advanced.captureSource.title"),
+              enabled: false,
+            }),
+            option(
+              "microphone",
+              "settings.advanced.captureSource.options.microphone",
+            ),
+            option(
+              "system_audio",
+              "settings.advanced.captureSource.options.systemAudio",
+            ),
+            option(
+              "microphone_and_system_audio",
+              "settings.advanced.captureSource.options.both",
+            ),
+          ]
+        : []),
       separator(),
       MenuItem.new({
-        text: t("overlay.menu.soundSourceSettings"),
-        action: openAt("general", "settings.advanced.captureSource.title"),
+        text: t("overlay.menu.soundSettings"),
+        action: windows
+          ? openAt("general", "settings.advanced.captureSource.title")
+          : openAt("general", "settings.sound.microphone.title"),
       }),
-      changeShortcut("cycle_capture_source"),
+      ...(windows ? [changeShortcut("cycle_capture_source")] : []),
     ]);
   };
   const shownNotice =
@@ -445,11 +493,15 @@ const RecordingOverlay: React.FC = () => {
           {t(
             shownNotice.next_take
               ? "overlay.captureSource.nextTake"
-              : "overlay.captureSource.now",
+              : shownNotice.microphone !== undefined
+                ? "overlay.menu.microphone"
+                : "overlay.captureSource.now",
           )}
         </span>
         <span className="capture-notice-source">
-          {t(CAPTURE_SOURCE_LABELS[shownNotice.source])}
+          {shownNotice.microphone !== undefined
+            ? shownNotice.microphone || t("overlay.menu.defaultMicrophone")
+            : t(CAPTURE_SOURCE_LABELS[shownNotice.source])}
         </span>
       </span>
     </div>
@@ -499,9 +551,8 @@ const RecordingOverlay: React.FC = () => {
         <div
           className={`overlay-middle ${!noticeOnly && shownNotice ? "noticing" : ""}`}
           onContextMenu={
-            osType === "windows" &&
-            (state === "recording" || state === "paused")
-              ? onMenu(soundSourceMenu)
+            state === "recording" || state === "paused"
+              ? onMenu(soundMenu)
               : undefined
           }
         >

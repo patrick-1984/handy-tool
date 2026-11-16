@@ -1332,6 +1332,49 @@
         "showLess": "Show less",
         "reveal": "Show in folder",
         "delete": "Remove from the list"
+      },
+      "batch": {
+        "skipped": "Skipped (not an audio file Handy can read): {{names}}",
+        "progress": "File {{current}} of {{total}}: {{name}}",
+        "order": {
+          "title": "Order files ({{count}})",
+          "description": "The texts are joined in this order. Drag a row by its grip or use the arrows; play a file to check what it is.",
+          "drag": "Drag to reorder",
+          "play": "Play",
+          "stop": "Stop",
+          "moveUp": "Move up",
+          "moveDown": "Move down",
+          "remove": "Remove from the list",
+          "noDate": "No date",
+          "noLength": "Length unknown",
+          "empty": "No files left in the list.",
+          "playFailed": "{{name}} can't be played here (it can still be transcribed).",
+          "modelNotReady": "Download the model first.",
+          "transcribe": "Transcribe {{count}} files"
+        },
+        "options": {
+          "title": "Combined text",
+          "separator": {
+            "label": "Between files",
+            "none": "Nothing (next line)",
+            "blank_line": "One empty line",
+            "divider": "A divider line"
+          },
+          "numbered": "Number the parts (1., 2., 3. …)",
+          "names": "File name before each part"
+        },
+        "result": {
+          "title": "{{done}} of {{total}} files transcribed",
+          "copyAll": "Copy all",
+          "clear": "Clear",
+          "perFile": "Each file",
+          "failed": "Failed: {{error}}",
+          "notTranscribed": "Not transcribed.",
+          "showAll": "Show all",
+          "showLess": "Show less",
+          "stopped": "The batch stopped: {{error}}",
+          "cancelled": "Cancelled. The finished parts are below; the combined text was not saved."
+        }
       }
     },
     "sound": {
@@ -2388,7 +2431,10 @@
       "changeShortcut": "Change shortcut…",
       "liveTextSettings": "Live text box settings…",
       "hidePause": "Hide the pause button",
-      "soundSourceSettings": "Sound source settings…"
+      "soundSourceSettings": "Sound source settings…",
+      "microphone": "Microphone",
+      "defaultMicrophone": "Default microphone",
+      "soundSettings": "Sound settings…"
     },
     "tooQuiet": "Too quiet — speak up",
     "captureSource": {
