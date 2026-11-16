@@ -859,6 +859,15 @@ impl AudioRecordingManager {
         }
     }
 
+    /// The microphone the open stream records from (the effective one: on a
+    /// closed MacBook that can be the clamshell microphone, not the selected one).
+    pub fn active_microphone_name(&self) -> Option<String> {
+        self.recorder
+            .lock()
+            .ok()
+            .and_then(|r| r.as_ref().and_then(|rec| rec.device_name()))
+    }
+
     /// Opens the selected microphone and, if take `take` is still the one
     /// running on a microphone, records the rest of it from there.
     fn switch_take_microphone(&self, take: u64) -> Result<SourceSwitch, anyhow::Error> {

@@ -3,10 +3,12 @@ import { subscribeWithSelector } from "zustand/middleware";
 import type {
   AppSettings as Settings,
   AudioDevice,
+  FileBatchOptions,
   FileTextSave,
   LlmProvider,
   ModelTestLibrary,
   ProgressStyle,
+  SidebarLayout,
 } from "@/bindings";
 import { commands } from "@/bindings";
 
@@ -55,6 +57,12 @@ const DEFAULT_AUDIO_DEVICE: AudioDevice = {
   name: "Default",
   is_default: true,
 };
+
+/**
+ * Sidebar layout writes, one after another: each is the whole layout, so an
+ * older one must never land after a newer one.
+ */
+let layoutWrites: Promise<unknown> = Promise.resolve();
 
 const settingUpdaters: {
   [K in keyof Settings]?: (value: Settings[K]) => Promise<unknown>;
@@ -277,6 +285,14 @@ const settingUpdaters: {
   file_keep_audio: (value) =>
     commands.changeFileKeepAudioSetting(value as boolean),
   files_folder: (value) => commands.changeFilesFolderSetting(value as string),
+  file_batch: (value) =>
+    commands.changeFileBatchOptionsSetting(value as FileBatchOptions),
+  sidebar_layout: (value) => {
+    layoutWrites = layoutWrites
+      .catch(() => undefined)
+      .then(() => commands.changeSidebarLayoutSetting(value as SidebarLayout));
+    return layoutWrites;
+  },
   proxy_mode: (value) => commands.changeProxyModeSetting(value as string),
   proxy_host: (value) => commands.changeProxyHostSetting(value as string),
   proxy_port: (value) => commands.changeProxyPortSetting(value as number),

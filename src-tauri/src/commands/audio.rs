@@ -383,10 +383,15 @@ pub async fn set_selected_microphone(app: AppHandle, device_name: String) -> Res
             .update_selected_device()
             .map_err(|e| format!("Failed to update selected device: {}", e))?;
         if rm.is_recording() {
-            crate::overlay::show_microphone_notice(
-                &app,
-                switch == crate::managers::audio::SourceSwitch::NextTake,
-            );
+            // The take keeps its microphone until the next one: name the new
+            // choice. Switched now: name what the take really records from.
+            let next_take = switch == crate::managers::audio::SourceSwitch::NextTake;
+            let name = if next_take {
+                crate::settings::get_settings(&app).selected_microphone
+            } else {
+                rm.active_microphone_name()
+            };
+            crate::overlay::show_microphone_notice(&app, name, next_take);
         }
         Ok(())
     })

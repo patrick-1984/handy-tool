@@ -4,7 +4,7 @@ use std::{
     path::PathBuf,
     sync::{
         Arc, Mutex,
-        atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering},
+        atomic::{AtomicBool, AtomicU8, AtomicU32, AtomicU64, Ordering},
         mpsc,
     },
     time::{Duration, Instant},
@@ -243,8 +243,18 @@ struct MasterSwap {
     producer: StreamProducer,
     rx: mpsc::Receiver<Vec<f32>>,
     rate: u32,
-    reply: mpsc::Sender<()>,
+    /// The candidate's own fault flag: checked before the old stream is let go.
+    errored: Arc<AtomicBool>,
+    /// Who decides first: the consumer taking it (SWAP_TAKEN) or the caller
+    /// giving up waiting (SWAP_ABANDONED). Whatever loses goes the other way, so
+    /// a late swap can never happen after the caller reported it failed.
+    decision: Arc<AtomicU8>,
+    reply: mpsc::Sender<Result<(), String>>,
 }
+
+const SWAP_PENDING: u8 = 0;
+const SWAP_TAKEN: u8 = 1;
+const SWAP_ABANDONED: u8 = 2;
 
 /// Which side of the audio graph a capture device sits on: an ordinary input
 /// (microphone) or an output endpoint captured via loopback (system audio).
@@ -666,20 +676,46 @@ impl AudioRecorder {
             device,
             errored,
         } = candidate;
+        let decision = Arc::new(AtomicU8::new(SWAP_PENDING));
         tx.send(Cmd::SwapMaster(MasterSwap {
             producer,
             rx,
             rate,
+            errored: Arc::clone(&errored),
+            decision: Arc::clone(&decision),
             reply: reply_tx,
         }))
         .map_err(|_| "the recorder has stopped".to_string())?;
-        reply_rx
-            .recv_timeout(Duration::from_secs(5))
-            .map_err(|_| "the recorder did not take the new microphone".to_string())?;
+        let outcome = match reply_rx.recv_timeout(Duration::from_secs(5)) {
+            Ok(outcome) => outcome,
+            Err(_) => {
+                if decision
+                    .compare_exchange(
+                        SWAP_PENDING,
+                        SWAP_ABANDONED,
+                        Ordering::SeqCst,
+                        Ordering::SeqCst,
+                    )
+                    .is_ok()
+                {
+                    return Err("the recorder did not take the new microphone".into());
+                }
+                // The consumer took it just now: its answer is on the way.
+                reply_rx
+                    .recv()
+                    .map_err(|_| "the recorder has stopped".to_string())?
+            }
+        };
+        outcome?;
         self.device = Some(device);
         // Faults of the retired stream must not count against the new one.
         self.stream_errored = errored;
         Ok(())
+    }
+
+    /// The name of the device the take records from (None while closed).
+    pub fn device_name(&self) -> Option<String> {
+        self.device.as_ref().and_then(|d| d.name().ok())
     }
 
     /// Open a capture stream. `role` says whether `device` is an ordinary input
@@ -1099,9 +1135,9 @@ impl AudioRecorder {
                 }
             }
 
-            if sample_tx.send(output_buffer.clone()).is_err() {
-                log::error!("Failed to send samples");
-            }
+            // A closed receiver means this stream is being retired (or the
+            // recorder closed): nothing to do, and no logging on the audio thread.
+            let _ = sample_tx.send(output_buffer.clone());
         };
 
         device.build_input_stream(
@@ -2419,8 +2455,26 @@ fn run_consumer(
                         producer,
                         rx,
                         rate,
+                        errored,
+                        decision,
                         reply,
                     } = swap;
+                    if decision
+                        .compare_exchange(
+                            SWAP_PENDING,
+                            SWAP_TAKEN,
+                            Ordering::SeqCst,
+                            Ordering::SeqCst,
+                        )
+                        .is_err()
+                    {
+                        // The caller gave up waiting and reported it: keep the old one.
+                        continue;
+                    }
+                    if errored.load(Ordering::Relaxed) {
+                        let _ = reply.send(Err("the new microphone failed as it started".into()));
+                        continue;
+                    }
                     // 1. The old microphone stops: nothing more reaches its channel.
                     drop(std::mem::replace(
                         &mut stream,
@@ -2452,7 +2506,12 @@ fn run_consumer(
                     // 3. The new microphone from now on. What it captured while it was
                     //    being opened came before this point and is left out.
                     sample_rx = rx;
-                    while sample_rx.try_recv().is_ok() {}
+                    // Bounded: it keeps capturing meanwhile, a buffer every few ms.
+                    for _ in 0..1_000 {
+                        if sample_rx.try_recv().is_err() {
+                            break;
+                        }
+                    }
                     frame_resampler = FrameResampler::new(
                         rate as usize,
                         constants::WHISPER_SAMPLE_RATE as usize,
@@ -2470,7 +2529,7 @@ fn run_consumer(
                         }
                     }
                     log::info!("Microphone switched during the take ({rate} Hz)");
-                    let _ = reply.send(());
+                    let _ = reply.send(Ok(()));
                 }
                 Cmd::MicLeg(on) => {
                     log::info!(
@@ -2963,10 +3022,12 @@ mod live_mix_tests {
 mod swap_tests {
     use super::*;
 
-    /// A stream "owned" by a thread that only answers pause/play.
-    fn fake_producer() -> StreamProducer {
+    /// A stream "owned" by a thread that only answers pause/play. It holds the
+    /// sending side of its channel like a real stream: dropping it closes it.
+    fn fake_producer(sender: Option<mpsc::Sender<Vec<f32>>>) -> StreamProducer {
         let (ctl_tx, ctl_rx) = mpsc::channel::<ProducerCmd>();
         let handle = std::thread::spawn(move || {
+            let _sender = sender;
             while let Ok(cmd) = ctl_rx.recv() {
                 match cmd {
                     ProducerCmd::Pause(reply) | ProducerCmd::Play(reply) => {
@@ -2984,11 +3045,12 @@ mod swap_tests {
     fn spawn_consumer(
         rate: u32,
         rx: mpsc::Receiver<Vec<f32>>,
+        sender: mpsc::Sender<Vec<f32>>,
     ) -> (mpsc::Sender<Cmd>, std::thread::JoinHandle<()>) {
         let (cmd_tx, cmd_rx) = mpsc::channel();
         let handle = std::thread::spawn(move || {
             run_consumer(
-                CaptureStream::Producer(fake_producer()),
+                CaptureStream::Producer(fake_producer(Some(sender))),
                 rate,
                 None,
                 rx,
@@ -3010,39 +3072,64 @@ mod swap_tests {
         (cmd_tx, handle)
     }
 
+    /// Waits until every command sent before it has been handled.
+    fn barrier(cmd: &mpsc::Sender<Cmd>) -> Vec<f32> {
+        let (tx, rx) = mpsc::channel();
+        cmd.send(Cmd::Snapshot(tx)).unwrap();
+        rx.recv_timeout(Duration::from_secs(3)).unwrap()
+    }
+
+    fn swap(
+        producer: StreamProducer,
+        rx: mpsc::Receiver<Vec<f32>>,
+        rate: u32,
+        errored: bool,
+        decision: u8,
+    ) -> (MasterSwap, mpsc::Receiver<Result<(), String>>) {
+        let (reply_tx, reply_rx) = mpsc::channel();
+        (
+            MasterSwap {
+                producer,
+                rx,
+                rate,
+                errored: Arc::new(AtomicBool::new(errored)),
+                decision: Arc::new(AtomicU8::new(decision)),
+                reply: reply_tx,
+            },
+            reply_rx,
+        )
+    }
+
+    fn stop(cmd: mpsc::Sender<Cmd>, consumer: std::thread::JoinHandle<()>) -> Vec<f32> {
+        let (stop_tx, stop_rx) = mpsc::channel();
+        cmd.send(Cmd::Stop(stop_tx)).unwrap();
+        let kept = stop_rx.recv_timeout(Duration::from_secs(3)).unwrap();
+        cmd.send(Cmd::Shutdown).unwrap();
+        consumer.join().unwrap();
+        kept
+    }
+
     #[test]
     fn a_microphone_switched_mid_take_keeps_both_parts_of_the_take() {
         let (tx1, rx1) = mpsc::channel();
-        let (cmd, consumer) = spawn_consumer(16_000, rx1);
+        let (cmd, consumer) = spawn_consumer(16_000, rx1, tx1.clone());
         cmd.send(Cmd::Start(None)).unwrap();
-        std::thread::sleep(Duration::from_millis(250));
-        // 1 s from the first microphone (16 kHz), not yet consumed at the switch.
+        barrier(&cmd);
+        // 1 s from the first microphone (16 kHz), queued when the switch comes.
         tx1.send(vec![0.5; 16_000]).unwrap();
 
         // The new microphone runs at 48 kHz; what it captured while it was being
         // opened is from before the switch and must be left out.
         let (tx2, rx2) = mpsc::channel();
         tx2.send(vec![0.9; 4_800]).unwrap();
-        let (reply_tx, reply_rx) = mpsc::channel();
-        cmd.send(Cmd::SwapMaster(MasterSwap {
-            producer: fake_producer(),
-            rx: rx2,
-            rate: 48_000,
-            reply: reply_tx,
-        }))
-        .unwrap();
-        reply_rx.recv_timeout(Duration::from_secs(2)).unwrap();
+        let (sw, reply) = swap(fake_producer(None), rx2, 48_000, false, SWAP_PENDING);
+        cmd.send(Cmd::SwapMaster(sw)).unwrap();
+        assert_eq!(reply.recv_timeout(Duration::from_secs(3)).unwrap(), Ok(()));
         // The old channel is gone: the retired stream can add nothing more.
         assert!(tx1.send(vec![0.5; 160]).is_err());
-        // 1 s from the new microphone.
+        // 1 s from the new microphone; Stop drains whatever is still queued.
         tx2.send(vec![0.25; 48_000]).unwrap();
-        std::thread::sleep(Duration::from_millis(400));
-
-        let (stop_tx, stop_rx) = mpsc::channel();
-        cmd.send(Cmd::Stop(stop_tx)).unwrap();
-        let kept = stop_rx.recv_timeout(Duration::from_secs(3)).unwrap();
-        cmd.send(Cmd::Shutdown).unwrap();
-        consumer.join().unwrap();
+        let kept = stop(cmd, consumer);
 
         // Both seconds are in the take, at 16 kHz (resampler edges aside).
         assert!(
@@ -3072,8 +3159,42 @@ mod swap_tests {
     }
 
     #[test]
+    fn a_swap_given_up_or_already_faulted_keeps_the_old_microphone() {
+        let (tx1, rx1) = mpsc::channel();
+        let (cmd, consumer) = spawn_consumer(16_000, rx1, tx1.clone());
+        cmd.send(Cmd::Start(None)).unwrap();
+        barrier(&cmd);
+
+        // The caller gave up waiting: the swap must not happen later.
+        let (_tx2, rx2) = mpsc::channel();
+        let (sw, reply) = swap(fake_producer(None), rx2, 48_000, false, SWAP_ABANDONED);
+        cmd.send(Cmd::SwapMaster(sw)).unwrap();
+        barrier(&cmd);
+        assert!(reply.try_recv().is_err(), "no answer: nobody waits for it");
+        assert!(
+            tx1.send(vec![0.5; 1_600]).is_ok(),
+            "still the old microphone"
+        );
+
+        // A candidate that faulted right after starting is refused.
+        let (_tx3, rx3) = mpsc::channel();
+        let (sw, reply) = swap(fake_producer(None), rx3, 48_000, true, SWAP_PENDING);
+        cmd.send(Cmd::SwapMaster(sw)).unwrap();
+        assert!(reply.recv_timeout(Duration::from_secs(3)).unwrap().is_err());
+        assert!(
+            tx1.send(vec![0.5; 1_600]).is_ok(),
+            "still the old microphone"
+        );
+
+        let kept = stop(cmd, consumer);
+        // Both pieces from the old microphone (the last frame may be padded).
+        assert!((3_200..=3_840).contains(&kept.len()), "kept {}", kept.len());
+        assert!(kept.iter().all(|s| *s < 0.8));
+    }
+
+    #[test]
     fn a_retired_stream_closes_with_its_owner() {
-        let producer = fake_producer();
+        let producer = fake_producer(None);
         assert_eq!(producer.ask(ProducerCmd::Pause), Ok(()));
         // Dropping it ends the thread (joins), so a switch never leaks a stream.
         drop(producer);

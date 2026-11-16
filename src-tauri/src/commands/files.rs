@@ -630,8 +630,8 @@ pub struct AudioFileInfo {
     pub file_name: String,
     /// Whether Handy can read this file type.
     pub supported: bool,
-    /// When the file was created (or, where the system does not keep that,
-    /// last changed), in milliseconds since 1970.
+    /// When the file was recorded as far as the system knows: the earlier of
+    /// its created and modified times, in milliseconds since 1970.
     pub created_ms: Option<f64>,
     /// Its length, when the file's headers say.
     pub duration_secs: Option<f64>,
@@ -654,9 +654,14 @@ fn audio_file_info(path: &str) -> AudioFileInfo {
     let path_buf = PathBuf::from(path.trim());
     let meta = std::fs::metadata(&path_buf).ok().filter(|m| m.is_file());
     let supported = meta.is_some() && is_supported_audio(&path_buf);
-    let created_ms = meta
-        .as_ref()
-        .and_then(|m| system_time_ms(m.created()).or_else(|| system_time_ms(m.modified())));
+    // The earlier of created and modified: copying a recording on Windows gives
+    // the copy a new "created" time but keeps "modified" (when it was recorded).
+    let created_ms = meta.as_ref().and_then(|m| {
+        match (system_time_ms(m.created()), system_time_ms(m.modified())) {
+            (Some(c), Some(w)) => Some(c.min(w)),
+            (c, w) => c.or(w),
+        }
+    });
     AudioFileInfo {
         file_name: file_name_of(&path_buf),
         path: path_buf.display().to_string(),

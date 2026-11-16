@@ -557,13 +557,13 @@ struct MicrophoneNotice {
 
 /// Tells the pill of a take in progress which microphone it records from now
 /// (2.7.0). Nothing is shown when no take is on the pill.
-pub fn show_microphone_notice(app_handle: &AppHandle, next_take: bool) {
+pub fn show_microphone_notice(app_handle: &AppHandle, name: Option<String>, next_take: bool) {
     let settings = settings::get_settings(app_handle);
     if settings.overlay_position == OverlayPosition::None || !TAKE_ON_PILL.load(Ordering::SeqCst) {
         return;
     }
     let notice = MicrophoneNotice {
-        name: settings.selected_microphone.unwrap_or_default(),
+        name: name.unwrap_or_default(),
         next_take,
     };
     let _ = app_handle.emit_to("recording_overlay", "microphone-notice", notice);

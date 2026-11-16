@@ -88,7 +88,11 @@ export const useNavStore = create<NavStore>()((set, get) => {
     set({
       ...next,
       ...extra,
-      navHistory: recordVisit(state.navHistory, targetOf(state), targetOf(next)),
+      navHistory: recordVisit(
+        state.navHistory,
+        targetOf(state),
+        targetOf(next),
+      ),
     });
   };
 
@@ -124,11 +128,9 @@ export const useNavStore = create<NavStore>()((set, get) => {
     setLastMoreSection: (lastMoreSection) => set({ lastMoreSection }),
     setLastToolsSection: (lastToolsSection) => set({ lastToolsSection }),
     setHistoryTab: (historyTab) => go(get().currentSection, historyTab),
-    navigateTo: (currentSection, historyTab) =>
-      go(currentSection, historyTab),
+    navigateTo: (currentSection, historyTab) => go(currentSection, historyTab),
     pendingSetup: null,
-    startSetup: (pendingSetup) =>
-      go("setups", undefined, { pendingSetup }),
+    startSetup: (pendingSetup) => go("setups", undefined, { pendingSetup }),
     clearPendingSetup: () => set({ pendingSetup: null }),
     goBack: travel("back"),
     goForward: travel("forward"),
