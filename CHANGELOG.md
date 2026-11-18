@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.7.1] - 2026-11-18
+
+### Fixed
+
+- **Auto language came back translated into English with an online API server.** With the
+  language on Auto, the API engine (your own OpenAI-compatible server) sent `language=en`, and
+  Whisper takes a named language as an instruction: Polish or Russian speech came back as an
+  English translation even with "Translate to English" off. Auto now sends no language, so the
+  server detects it. The same fallback is gone from FLM (checked live: FLM detects the language
+  itself). The Custom STT server engine was not affected (it already sent no language on Auto).
+- **"Translate to English" on a server that cannot translate failed silently.** When the server
+  has no `/audio/translations` endpoint (404), Handy used to fall back to a plain transcription
+  without saying so, on every recording. It now remembers that server for the session and shows
+  a notice once: the text stays in the language you spoke.
+
 ## [2.7.0] - 2026-11-16
 
 ### Added

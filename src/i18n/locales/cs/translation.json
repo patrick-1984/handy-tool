@@ -2473,7 +2473,8 @@
     "recoverFromHistory": "Otevřete Nastavení › Historie a zkopírujte jej.",
     "transcriptionFallback": "{{from}} tento záznam nepřepsal, takže ho přepsal {{to}}",
     "transcriptionIncomplete": "Část nahrávky se nepodařilo přepsat (chybějící části: {{count}}), text proto není úplný. Celá nahrávka je v Historii: přepište ji tam znovu.",
-    "speakersFailed": "Mluvčí tohoto záznamu se nepodařilo rozpoznat, Historie proto obsahuje jen jeho text. Chcete-li to zkusit znovu: Historie › ⋯ › Přepsat znovu s mluvčími."
+    "speakersFailed": "Mluvčí tohoto záznamu se nepodařilo rozpoznat, Historie proto obsahuje jen jeho text. Chcete-li to zkusit znovu: Historie › ⋯ › Přepsat znovu s mluvčími.",
+    "translationUnsupported": "Tento server neumí překládat, takže text zůstane v jazyce, kterým jste mluvili."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Řízení aplikací ve Windows zablokovalo flm.exe, protože není podepsaný. Modul NPU není dostupný. Zvolte jiný model přepisu.",
@@ -2809,6 +2810,10 @@
       "filesBatch": {
         "title": "Více souborů najednou",
         "description": "Vyberte nebo přetáhněte několik nahrávek na Soubory. Seřaďte je (nejprve podle data, přetažením nebo šipkami, jednu si přehrajte pro kontrolu), zvolte oddělovač, čísla a názvy souborů a získejte jeden spojený text ke zkopírování a k tomu vlastní text každého souboru."
+      },
+      "autoLanguage": {
+        "title": "Automatický jazyk zachová, co jste řekli",
+        "description": "S jazykem nastaveným na Automaticky nyní online přepis (váš vlastní API server) nechá jazyk rozpoznat server. Dříve Automaticky posílalo „angličtina“ a Whisper pak ostatní jazyky překládal do angličtiny. Server, který neumí překládat, to nyní oznámí."
       }
     },
     "installed": "Nainstalovaná"

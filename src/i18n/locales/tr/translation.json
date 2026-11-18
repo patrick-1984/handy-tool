@@ -2473,7 +2473,8 @@
     "recoverFromHistory": "Kopyalamak için Ayarlar › Geçmiş'i açın.",
     "transcriptionFallback": "{{from}} bu kaydı yazıya dökemedi, bu yüzden {{to}} döktü",
     "transcriptionIncomplete": "Bu kaydın bir kısmı yazıya dökülemedi (eksik parça: {{count}}), bu yüzden metin eksik. Kaydın tamamı Geçmiş'te: oradan yeniden yazıya dök.",
-    "speakersFailed": "Bu kaydın konuşmacıları bulunamadı, bu yüzden Geçmiş'te yalnızca metni var. Yeniden denemek için: Geçmiş › ⋯ › Konuşmacılarla yeniden transkribe et."
+    "speakersFailed": "Bu kaydın konuşmacıları bulunamadı, bu yüzden Geçmiş'te yalnızca metni var. Yeniden denemek için: Geçmiş › ⋯ › Konuşmacılarla yeniden transkribe et.",
+    "translationUnsupported": "Bu sunucu çeviri yapamıyor, bu yüzden metin konuştuğunuz dilde kalır."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Windows Uygulama Denetimi, imzalı olmadığı için flm.exe dosyasını engelledi. NPU altyapısı kullanılamıyor. Farklı bir transkripsiyon modeli seçin.",
@@ -2809,6 +2810,10 @@
       "filesBatch": {
         "title": "Aynı anda birden fazla dosya",
         "description": "Dosyalar'da birkaç kaydı seçin veya bırakın. Onları sıraya koyun (önce tarihe göre, sürükleyerek veya oklarla, kontrol etmek için birini oynatın), ayırıcı, numaralar ve dosya adlarını seçin; kopyalamak için tek bir birleşik metin ve her dosyanın kendi metnini alın."
+      },
+      "autoLanguage": {
+        "title": "Otomatik dil söylediğinizi korur",
+        "description": "Dil Otomatik olduğunda çevrimiçi yazıya dökme (kendi API sunucunuz) artık dili sunucunun tanımasına izin veriyor. Önceden Otomatik \"İngilizce\" gönderiyordu ve Whisper diğer dilleri İngilizceye çeviriyordu. Çeviri yapamayan bir sunucu artık bunu bildiriyor."
       }
     },
     "installed": "Yüklü"

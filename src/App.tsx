@@ -190,6 +190,14 @@ function App() {
           { description: e.payload.reason || undefined, duration: 12000 },
         ),
     );
+    // "Translate to English" is on, but the API server cannot translate (it has
+    // no translations endpoint): the text stayed in the spoken language.
+    const unlistenNoTranslate = listen<string>("translation-unsupported", (e) =>
+      toast.warning(t("toasts.translationUnsupported"), {
+        description: e.payload || undefined,
+        duration: 12000,
+      }),
+    );
     // A take's speakers, asked for after its text was pasted, could not be
     // found: History keeps the text alone and can try again.
     const unlistenSpeakers = listen<string>("speakers-failed", (e) =>
@@ -219,6 +227,7 @@ function App() {
       unlistenTranscribe.then((f) => f());
       unlistenIncomplete.then((f) => f());
       unlistenSpeakers.then((f) => f());
+      unlistenNoTranslate.then((f) => f());
       unlistenFallback.then((f) => f());
     };
   }, [t, pasteLastKey]);

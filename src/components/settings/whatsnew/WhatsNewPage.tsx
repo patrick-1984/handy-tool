@@ -37,6 +37,10 @@ interface Item {
  */
 const RELEASES: { version: string; items: Item[] }[] = [
   {
+    version: "2.7.1",
+    items: [{ key: "autoLanguage" }],
+  },
+  {
     version: "2.7.0",
     items: [
       { key: "pinPages", section: "appearance" },

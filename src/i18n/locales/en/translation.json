@@ -19,7 +19,8 @@
     "recoverFromHistory": "Open Settings › History to copy it.",
     "transcriptionFallback": "{{from}} could not transcribe this take, so {{to}} did",
     "transcriptionIncomplete": "Part of this take could not be transcribed (pieces missing: {{count}}), so the text is incomplete. The whole recording is in History: use Transcribe again there.",
-    "speakersFailed": "The speakers of this take could not be found, so History has its text only. To try again: History › ⋯ › Transcribe again with speakers."
+    "speakersFailed": "The speakers of this take could not be found, so History has its text only. To try again: History › ⋯ › Transcribe again with speakers.",
+    "translationUnsupported": "This server can't translate, so the text stays in the language you spoke."
   },
   "sidebar": {
     "general": "General",
@@ -2809,6 +2810,10 @@
       "filesBatch": {
         "title": "Several files at once",
         "description": "Pick or drop several recordings on Files. Put them in order (by date first, drag or arrows, play one to check it), choose a separator, numbers and file names, and get one combined text to copy, plus each file's own text."
+      },
+      "autoLanguage": {
+        "title": "Auto language keeps what you said",
+        "description": "With the language on Auto, online transcription (your own API server) now lets the server recognise the language. Before, Auto sent \"English\", and Whisper then translated other languages into English. A server that cannot translate now says so."
       }
     },
     "installed": "Installed"

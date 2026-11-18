@@ -2473,7 +2473,8 @@
     "recoverFromHistory": "開啟設定 › 歷史紀錄以複製文字。",
     "transcriptionFallback": "{{from}} 無法轉錄此錄音，因此改由 {{to}} 轉錄",
     "transcriptionIncomplete": "此錄音有部分未能轉寫(缺少片段:{{count}}),文字不完整。完整錄音在歷史紀錄中:可在那裡重新轉寫。",
-    "speakersFailed": "未能區分此錄音的說話者，因此歷史紀錄中只有其文字。如需重試：歷史紀錄 › ⋯ › 依說話者重新轉錄。"
+    "speakersFailed": "未能區分此錄音的說話者，因此歷史紀錄中只有其文字。如需重試：歷史紀錄 › ⋯ › 依說話者重新轉錄。",
+    "translationUnsupported": "此伺服器無法翻譯，因此文字保留為你所說的語言。"
   },
   "flm": {
     "windowsApplicationControlBlocked": "Windows 應用程式控制已封鎖 flm.exe，因為它未經數位簽署。NPU 引擎無法使用。請選擇其他轉錄模型。",
@@ -2809,6 +2810,10 @@
       "filesBatch": {
         "title": "一次處理多個檔案",
         "description": "在「檔案」中選擇或拖入多個錄音。排好順序（先依日期，再拖曳或用箭頭調整，可播放檢查），選擇分隔方式、編號和檔名，即可得到一份可複製的合併文字，以及每個檔案各自的文字。"
+      },
+      "autoLanguage": {
+        "title": "自動語言保留你所說的內容",
+        "description": "語言設為「自動」時，線上轉錄（你自己的 API 伺服器）現在由伺服器辨識語言。以前「自動」會送出「英文」，Whisper 隨後會把其他語言翻譯成英文。無法翻譯的伺服器現在會提示。"
       }
     },
     "installed": "已安裝"

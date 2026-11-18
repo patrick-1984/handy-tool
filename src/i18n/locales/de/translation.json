@@ -2473,7 +2473,8 @@
     "recoverFromHistory": "Öffne Einstellungen › Verlauf, um ihn zu kopieren.",
     "transcriptionFallback": "{{from}} konnte diese Aufnahme nicht transkribieren, daher hat {{to}} übernommen",
     "transcriptionIncomplete": "Ein Teil dieser Aufnahme konnte nicht transkribiert werden (fehlende Stücke: {{count}}), der Text ist also unvollständig. Die ganze Aufnahme ist im Verlauf: Transkribiere sie dort erneut.",
-    "speakersFailed": "Die Sprecher dieser Aufnahme konnten nicht erkannt werden, daher enthält der Verlauf nur ihren Text. Zum erneuten Versuchen: Verlauf › ⋯ › Erneut mit Sprechern transkribieren."
+    "speakersFailed": "Die Sprecher dieser Aufnahme konnten nicht erkannt werden, daher enthält der Verlauf nur ihren Text. Zum erneuten Versuchen: Verlauf › ⋯ › Erneut mit Sprechern transkribieren.",
+    "translationUnsupported": "Dieser Server kann nicht übersetzen, daher bleibt der Text in der gesprochenen Sprache."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Die Windows-Anwendungssteuerung hat flm.exe blockiert, weil die Datei nicht signiert ist. Die NPU-Engine ist nicht verfügbar. Wähle ein anderes Transkriptionsmodell.",
@@ -2809,6 +2810,10 @@
       "filesBatch": {
         "title": "Mehrere Dateien auf einmal",
         "description": "Wähle oder ziehe mehrere Aufnahmen auf Dateien. Bring sie in Reihenfolge (zuerst nach Datum, per Ziehen oder Pfeilen, spiele eine zur Kontrolle ab), wähle Trenner, Nummern und Dateinamen und erhalte einen kombinierten Text zum Kopieren sowie den eigenen Text jeder Datei."
+      },
+      "autoLanguage": {
+        "title": "Automatische Sprache behält, was Sie gesagt haben",
+        "description": "Mit Sprache auf Automatisch erkennt bei der Online-Transkription (Ihr eigener API-Server) jetzt der Server die Sprache. Bisher sendete Automatisch „Englisch“, und Whisper übersetzte andere Sprachen ins Englische. Ein Server, der nicht übersetzen kann, meldet das jetzt."
       }
     },
     "installed": "Installiert"

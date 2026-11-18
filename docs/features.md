@@ -1766,8 +1766,10 @@ transcription server.
 server — Groq, OpenAI, faster-whisper-server, your own — configured with a URL, a key and a
 model name. With Crash-Safe Recording on (the default) it transcribes the take piece by piece
 while you record, as described under [Online models have the text ready when you stop](#online-models-transcribe-while-you-record); with it off it sends one request when you
-stop. When the language is set to automatic it sends English explicitly, because
-these endpoints need to be told.
+stop. When the language is set to automatic it sends no language, so the server detects it
+(before 2.7.1 it sent English, and Whisper then translated other languages into English).
+With Translate to English on, a server without a translations endpoint is named in a notice
+once, and the text stays in the language you spoke.
 **Where.** `Advanced settings › Transcription providers › API Transcription (OpenAI-compatible) › API URL`.
 **Since.** 0.8.2; transcribing while you record since 2.5.0.
 
