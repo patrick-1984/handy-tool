@@ -2546,7 +2546,8 @@
     "recoverFromHistory": "Otwórz Ustawienia › Historia, aby go skopiować.",
     "transcriptionFallback": "{{from}} nie mógł przetranskrybować tego nagrania, więc zrobił to {{to}}",
     "transcriptionIncomplete": "Części nagrania nie udało się przetranskrybować (brakujące fragmenty: {{count}}), więc tekst jest niepełny. Całe nagranie jest w Historii: użyj tam „Transkrybuj ponownie”.",
-    "speakersFailed": "Nie udało się rozpoznać mówców tego nagrania, więc Historia ma tylko jego tekst. Aby spróbować ponownie: Historia › ⋯ › Transkrybuj ponownie z mówcami."
+    "speakersFailed": "Nie udało się rozpoznać mówców tego nagrania, więc Historia ma tylko jego tekst. Aby spróbować ponownie: Historia › ⋯ › Transkrybuj ponownie z mówcami.",
+    "translationUnsupported": "Ten serwer nie tłumaczy, więc tekst zostaje w języku, w którym mówisz."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Funkcja Kontrola aplikacji systemu Windows zablokowała plik flm.exe, ponieważ nie jest podpisany. Silnik NPU jest niedostępny. Wybierz inny model transkrypcji.",
@@ -2809,6 +2810,10 @@
       "filesBatch": {
         "title": "Kilka plików naraz",
         "description": "Wybierz lub upuść kilka nagrań w Plikach. Ułóż je w kolejności (najpierw według daty, przeciąganiem lub strzałkami, odtwórz jedno, aby sprawdzić), wybierz separator, numery i nazwy plików, i otrzymaj jeden połączony tekst do skopiowania oraz osobny tekst każdego pliku."
+      },
+      "autoLanguage": {
+        "title": "Automatyczny język zachowuje to, co powiedziałeś",
+        "description": "Gdy język jest ustawiony na Auto, transkrypcja online (własny serwer API) pozwala teraz serwerowi rozpoznać język. Wcześniej Auto wysyłało „angielski” i Whisper tłumaczył inne języki na angielski. Serwer, który nie umie tłumaczyć, teraz o tym informuje."
       }
     },
     "installed": "Zainstalowana"

@@ -2480,7 +2480,8 @@
     "recoverFromHistory": "Mở Cài đặt › Lịch sử để sao chép.",
     "transcriptionFallback": "{{from}} không thể chép lời bản ghi này, nên {{to}} đã chép lời thay",
     "transcriptionIncomplete": "Không thể chép lời một phần của bản ghi này (thiếu {{count}} đoạn), nên văn bản chưa đầy đủ. Toàn bộ bản ghi có trong Lịch sử: hãy chép lời lại ở đó.",
-    "speakersFailed": "Không thể xác định người nói của bản ghi này, nên Lịch sử chỉ có văn bản của nó. Để thử lại: Lịch sử › ⋯ › Phiên âm lại theo người nói."
+    "speakersFailed": "Không thể xác định người nói của bản ghi này, nên Lịch sử chỉ có văn bản của nó. Để thử lại: Lịch sử › ⋯ › Phiên âm lại theo người nói.",
+    "translationUnsupported": "Máy chủ này không thể dịch, nên văn bản giữ nguyên ngôn ngữ bạn đã nói."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Kiểm soát ứng dụng Windows đã chặn flm.exe vì tệp này chưa được ký. Công cụ NPU không khả dụng. Hãy chọn một mô hình phiên âm khác.",
@@ -2809,6 +2810,10 @@
       "filesBatch": {
         "title": "Nhiều file cùng lúc",
         "description": "Chọn hoặc thả nhiều bản ghi vào File. Sắp xếp chúng (trước tiên theo ngày, kéo hoặc dùng mũi tên, phát thử một file để kiểm tra), chọn dấu phân cách, số thứ tự và tên file, rồi nhận một văn bản gộp để sao chép, cùng văn bản riêng của từng file."
+      },
+      "autoLanguage": {
+        "title": "Ngôn ngữ tự động giữ nguyên lời bạn nói",
+        "description": "Khi ngôn ngữ đặt là Tự động, phiên âm trực tuyến (máy chủ API của bạn) giờ để máy chủ tự nhận diện ngôn ngữ. Trước đây, Tự động gửi \"tiếng Anh\" và Whisper dịch các ngôn ngữ khác sang tiếng Anh. Máy chủ không thể dịch giờ sẽ thông báo."
       }
     },
     "installed": "Đã cài"

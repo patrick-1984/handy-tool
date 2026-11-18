@@ -2473,7 +2473,8 @@
     "recoverFromHistory": "Apri Impostazioni › Cronologia per copiarlo.",
     "transcriptionFallback": "{{from}} non è riuscito a trascrivere questa registrazione, quindi l'ha fatto {{to}}",
     "transcriptionIncomplete": "Una parte di questa registrazione non è stata trascritta (pezzi mancanti: {{count}}), quindi il testo è incompleto. La registrazione completa è nella Cronologia: trascrivila di nuovo da lì.",
-    "speakersFailed": "Non è stato possibile riconoscere i parlanti di questa ripresa, quindi la Cronologia ne ha solo il testo. Per riprovare: Cronologia › ⋯ › Trascrivi di nuovo con i parlanti."
+    "speakersFailed": "Non è stato possibile riconoscere i parlanti di questa ripresa, quindi la Cronologia ne ha solo il testo. Per riprovare: Cronologia › ⋯ › Trascrivi di nuovo con i parlanti.",
+    "translationUnsupported": "Questo server non può tradurre, quindi il testo resta nella lingua parlata."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Controllo app di Windows ha bloccato flm.exe perché non è firmato. Il motore NPU non è disponibile. Scegli un altro modello di trascrizione.",
@@ -2809,6 +2810,10 @@
       "filesBatch": {
         "title": "Più file insieme",
         "description": "Scegli o trascina più registrazioni su File. Mettile in ordine (prima per data, trascinando o con le frecce, riproducine una per controllarla), scegli un separatore, numeri e nomi dei file, e ottieni un unico testo combinato da copiare, più il testo di ciascun file."
+      },
+      "autoLanguage": {
+        "title": "La lingua automatica mantiene ciò che hai detto",
+        "description": "Con la lingua su Automatica, la trascrizione online (il tuo server API) ora lascia che sia il server a riconoscere la lingua. Prima, Automatica inviava «inglese» e Whisper traduceva le altre lingue in inglese. Un server che non può tradurre ora lo segnala."
       }
     },
     "installed": "Installata"

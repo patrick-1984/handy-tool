@@ -2480,7 +2480,8 @@
     "recoverFromHistory": "Abre Configuración › Historial para copiarlo.",
     "transcriptionFallback": "{{from}} no pudo transcribir esta toma, así que lo hizo {{to}}",
     "transcriptionIncomplete": "Parte de esta toma no se pudo transcribir (fragmentos que faltan: {{count}}), así que el texto está incompleto. La grabación completa está en el Historial: vuelve a transcribirla allí.",
-    "speakersFailed": "No se pudieron identificar los hablantes de esta toma, así que el Historial solo tiene su texto. Para volver a intentarlo: Historial › ⋯ › Transcribir de nuevo con hablantes."
+    "speakersFailed": "No se pudieron identificar los hablantes de esta toma, así que el Historial solo tiene su texto. Para volver a intentarlo: Historial › ⋯ › Transcribir de nuevo con hablantes.",
+    "translationUnsupported": "Este servidor no puede traducir, así que el texto queda en el idioma en que hablaste."
   },
   "flm": {
     "windowsApplicationControlBlocked": "El Control de aplicaciones de Windows bloqueó flm.exe porque no está firmado. El motor NPU no está disponible. Elige otro modelo de transcripción.",
@@ -2809,6 +2810,10 @@
       "filesBatch": {
         "title": "Varios archivos a la vez",
         "description": "Elige o suelta varias grabaciones en Archivos. Ordénalas (primero por fecha, arrastrando o con flechas, reproduce una para comprobarla), elige un separador, números y nombres de archivo, y obtén un único texto combinado para copiar, además del texto propio de cada archivo."
+      },
+      "autoLanguage": {
+        "title": "El idioma automático conserva lo que dijiste",
+        "description": "Con el idioma en Automático, la transcripción en línea (tu propio servidor de API) deja ahora que el servidor reconozca el idioma. Antes, Automático enviaba «inglés» y Whisper traducía los demás idiomas al inglés. Un servidor que no puede traducir ahora lo indica."
       }
     },
     "installed": "Instalada"

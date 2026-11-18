@@ -595,6 +595,29 @@ impl Clone for TranscriptionManager {
     }
 }
 
+/// The language an online or FLM request names. "Auto" sends none, so the
+/// server detects it: naming a language (e.g. "en") makes Whisper TRANSLATE
+/// speech in any other language into it (2.7.1 - Auto used to send "en").
+fn request_language(selected: &str) -> Option<String> {
+    normalize_language_for_engine(selected)
+}
+
+impl TranscriptionManager {
+    /// "Translate to English" is on but the API server has no translations
+    /// endpoint (it answered 404): the text came back in the spoken language.
+    /// Say so once per server and session instead of failing silently.
+    fn notify_translation_unsupported(&self) {
+        if let Some(server) =
+            crate::managers::api_transcription::take_translation_unsupported_notice()
+        {
+            warn!(
+                "API transcription: {server} cannot translate; the text stays in the spoken language"
+            );
+            let _ = self.app_handle.emit("translation-unsupported", server);
+        }
+    }
+}
+
 impl TranscriptionManager {
     pub fn new(app_handle: &AppHandle, model_manager: Arc<ModelManager>) -> Result<Self> {
         // The overlay's estimates start from the last run's timings.
@@ -986,8 +1009,7 @@ impl TranscriptionManager {
 
         let settings = get_settings(&self.app_handle);
         let translate = settings.translate_to_english && model_info.supports_translation;
-        let language = normalize_language_for_engine(&settings.selected_language)
-            .or_else(|| Some("en".to_string()));
+        let language = request_language(&settings.selected_language);
         let audio_secs = audio.len() as f32 / 16_000.0;
         let result = {
             let flm = self
@@ -1137,16 +1159,17 @@ impl TranscriptionManager {
         let translate = settings.translate_to_english && model_info.supports_translation;
         let raw_text = match model_info.engine_type {
             EngineType::ApiWhisper => {
-                let language = normalize_language_for_engine(&settings.selected_language)
-                    .or_else(|| Some("en".to_string()));
-                crate::managers::api_transcription::transcribe(
+                let language = request_language(&settings.selected_language);
+                let text = crate::managers::api_transcription::transcribe(
                     &settings.api_transcription_url,
                     &settings.api_transcription_key,
                     &settings.api_transcription_model,
                     audio,
                     language.as_deref(),
                     translate,
-                )?
+                )?;
+                self.notify_translation_unsupported();
+                text
             }
             EngineType::OpenRouterWhisper => {
                 let base_url = settings.openrouter_transcription_url.trim();
@@ -1978,8 +2001,7 @@ impl TranscriptionManager {
                     FLM_IN_FLIGHT.fetch_add(1, Ordering::AcqRel);
                     (engine_guard.model_id.clone().unwrap_or_default(), FlmLease)
                 };
-                let language = normalize_language_for_engine(&settings.selected_language)
-                    .or_else(|| Some("en".to_string()));
+                let language = request_language(&settings.selected_language);
                 let audio_secs = audio.len() as f32 / 16_000.0;
                 // Transcribe under the flm lock, then RELEASE it before
                 // maybe_unload_immediately: unload_model re-locks flm_manager, so
@@ -2072,8 +2094,7 @@ impl TranscriptionManager {
             if matches!(&engine_guard.engine, Some(LoadedEngine::ApiWhisper)) {
                 Self::ensure_expected_model(&engine_guard, expected_model)?;
                 drop(engine_guard);
-                let language = normalize_language_for_engine(&settings.selected_language)
-                    .or_else(|| Some("en".to_string()));
+                let language = request_language(&settings.selected_language);
                 let audio_secs = audio.len() as f32 / 16_000.0;
                 let raw_text = timed_online_request(expected_model, audio_secs, || {
                     crate::managers::api_transcription::transcribe(
@@ -2085,6 +2106,7 @@ impl TranscriptionManager {
                         effective_translate,
                     )
                 })?;
+                self.notify_translation_unsupported();
                 let corrected = if !settings.custom_words.is_empty() {
                     apply_custom_words(
                         &raw_text,

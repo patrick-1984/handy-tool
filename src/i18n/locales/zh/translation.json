@@ -2473,7 +2473,8 @@
     "recoverFromHistory": "打开设置 › 历史记录以复制文本。",
     "transcriptionFallback": "{{from}} 无法转录此录音，因此由 {{to}} 完成转录",
     "transcriptionIncomplete": "此录音有部分未能转写(缺少片段:{{count}}),文本不完整。完整录音在历史记录中:可在那里重新转写。",
-    "speakersFailed": "未能区分此录音的说话人，因此历史记录中只有其文本。如需重试：历史记录 › ⋯ › 按说话人重新转录。"
+    "speakersFailed": "未能区分此录音的说话人，因此历史记录中只有其文本。如需重试：历史记录 › ⋯ › 按说话人重新转录。",
+    "translationUnsupported": "此服务器无法翻译，因此文本保留为你所说的语言。"
   },
   "flm": {
     "windowsApplicationControlBlocked": "Windows 应用控制已阻止 flm.exe，因为它没有数字签名。NPU 引擎不可用。请选择其他转录模型。",
@@ -2809,6 +2810,10 @@
       "filesBatch": {
         "title": "一次处理多个文件",
         "description": "在“文件”中选择或拖入多个录音。排好顺序（先按日期，再拖动或用箭头调整，可播放检查），选择分隔方式、编号和文件名，即可得到一份可复制的合并文本，以及每个文件各自的文本。"
+      },
+      "autoLanguage": {
+        "title": "自动语言保留你所说的内容",
+        "description": "语言设为“自动”时，在线转写（你自己的 API 服务器）现在由服务器识别语言。以前“自动”会发送“英语”，Whisper 随后会把其他语言翻译成英语。无法翻译的服务器现在会给出提示。"
       }
     },
     "installed": "已安装"

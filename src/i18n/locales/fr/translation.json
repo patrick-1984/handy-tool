@@ -2480,7 +2480,8 @@
     "recoverFromHistory": "Ouvrez Paramètres › Historique pour le copier.",
     "transcriptionFallback": "{{from}} n'a pas pu transcrire cette prise, {{to}} l'a donc fait",
     "transcriptionIncomplete": "Une partie de cette prise n'a pas pu être transcrite (morceaux manquants : {{count}}) : le texte est incomplet. L'enregistrement complet est dans l'Historique : transcrivez-le à nouveau depuis là.",
-    "speakersFailed": "Les locuteurs de cette prise n'ont pas pu être identifiés : l'Historique n'en contient que le texte. Pour réessayer : Historique › ⋯ › Transcrire à nouveau avec les locuteurs."
+    "speakersFailed": "Les locuteurs de cette prise n'ont pas pu être identifiés : l'Historique n'en contient que le texte. Pour réessayer : Historique › ⋯ › Transcrire à nouveau avec les locuteurs.",
+    "translationUnsupported": "Ce serveur ne sait pas traduire : le texte reste dans la langue parlée."
   },
   "flm": {
     "windowsApplicationControlBlocked": "Le contrôle des applications Windows a bloqué flm.exe car il n'est pas signé. Le moteur NPU est indisponible. Choisissez un autre modèle de transcription.",
@@ -2809,6 +2810,10 @@
       "filesBatch": {
         "title": "Plusieurs fichiers à la fois",
         "description": "Choisissez ou déposez plusieurs enregistrements dans Fichiers. Mettez-les en ordre (d'abord par date, par glisser ou avec les flèches, écoutez-en un pour vérifier), choisissez un séparateur, des numéros et les noms de fichiers, et obtenez un seul texte combiné à copier, ainsi que le texte de chaque fichier."
+      },
+      "autoLanguage": {
+        "title": "La langue automatique garde ce que vous avez dit",
+        "description": "Avec la langue sur Automatique, la transcription en ligne (votre propre serveur API) laisse désormais le serveur reconnaître la langue. Avant, Automatique envoyait « anglais » et Whisper traduisait les autres langues en anglais. Un serveur qui ne sait pas traduire le signale désormais."
       }
     },
     "installed": "Installée"
