@@ -36,8 +36,7 @@ pub fn transcribe(
         match send_multipart_request(&url, api_key, boundary, &body) {
             Ok(text) => return Ok(text),
             Err(e) => {
-                let msg = format!("{}", e);
-                if msg.contains("404") {
+                if is_not_found(&e) {
                     info!(
                         "API transcription: translations endpoint returned 404, falling back to transcriptions"
                     );
@@ -74,10 +73,45 @@ fn translations_missing(base: &str) -> bool {
         .any(|(b, _)| b == base)
 }
 
+/// Servers kept at most (the oldest is forgotten first).
+const NO_TRANSLATIONS_MAX: usize = 16;
+
 fn mark_translations_missing(base: &str) {
     let mut list = NO_TRANSLATIONS.lock().unwrap_or_else(|p| p.into_inner());
     if !list.iter().any(|(b, _)| b == base) {
+        if list.len() >= NO_TRANSLATIONS_MAX {
+            list.remove(0);
+        }
         list.push((base.to_string(), false));
+    }
+}
+
+/// The HTTP status a server answered with, kept on the error so a caller can
+/// tell a real 404 from any error whose text happens to contain "404" (a URL
+/// with port 4040, say).
+#[derive(Debug)]
+struct HttpStatus(u16);
+
+impl std::fmt::Display for HttpStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "HTTP {}", self.0)
+    }
+}
+
+impl std::error::Error for HttpStatus {}
+
+/// The server answered 404 Not Found (it has no such endpoint).
+fn is_not_found(e: &anyhow::Error) -> bool {
+    e.chain()
+        .any(|cause| matches!(cause.downcast_ref::<HttpStatus>(), Some(HttpStatus(404))))
+}
+
+fn request_error(url: &str, e: ureq::Error) -> anyhow::Error {
+    match e {
+        ureq::Error::Status(code, _) => {
+            anyhow::Error::new(HttpStatus(code)).context(format!("{url}: status code {code}"))
+        }
+        other => anyhow::anyhow!("{}: {}", url, other),
     }
 }
 
@@ -104,9 +138,7 @@ fn send_multipart_request(url: &str, api_key: &str, boundary: &str, body: &[u8])
         req = req.set("Authorization", &format!("Bearer {}", api_key));
     }
 
-    let response = req
-        .send_bytes(body)
-        .map_err(|e| anyhow::anyhow!("{}: {}", url, e))?;
+    let response = req.send_bytes(body).map_err(|e| request_error(url, e))?;
 
     let body_str = response
         .into_string()
@@ -209,6 +241,9 @@ mod tests {
     use super::*;
     use crate::settings::normalize_language_for_engine;
 
+    /// The server list is shared: tests that use it run one at a time.
+    static LIST_TESTS: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
     fn body_for(language: Option<&str>) -> String {
         String::from_utf8_lossy(&build_multipart_body(
             b"RIFF",
@@ -237,7 +272,33 @@ mod tests {
     }
 
     #[test]
+    fn only_a_real_404_counts_as_no_translations_endpoint() {
+        let not_found = anyhow::Error::new(HttpStatus(404)).context("x: status code 404");
+        assert!(is_not_found(&not_found));
+        let server_error = anyhow::Error::new(HttpStatus(500)).context("x");
+        assert!(!is_not_found(&server_error));
+        // "404" in the URL (port 4040) of a connection error is not a 404.
+        let refused = anyhow::anyhow!("http://host:4040/v1/audio/translations: connection refused");
+        assert!(!is_not_found(&refused));
+    }
+
+    #[test]
+    fn the_server_list_is_capped() {
+        let _serial = LIST_TESTS.lock().unwrap_or_else(|p| p.into_inner());
+        for i in 0..(NO_TRANSLATIONS_MAX + 5) {
+            mark_translations_missing(&format!("https://cap-{i}.invalid/v1"));
+        }
+        let len = NO_TRANSLATIONS.lock().unwrap().len();
+        assert!(len <= NO_TRANSLATIONS_MAX, "{len}");
+        assert!(translations_missing(&format!(
+            "https://cap-{}.invalid/v1",
+            NO_TRANSLATIONS_MAX + 4
+        )));
+    }
+
+    #[test]
     fn a_server_without_translations_is_reported_once() {
+        let _serial = LIST_TESTS.lock().unwrap_or_else(|p| p.into_inner());
         let base = "https://test-no-translations.invalid/v1";
         assert!(!translations_missing(base));
         mark_translations_missing(base);
