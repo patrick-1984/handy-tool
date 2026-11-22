@@ -1209,6 +1209,36 @@ export const commands = {
       else return { status: "error", error: e as any };
     }
   },
+  async changeNvidiaTranscriptionKeySetting(
+    key: string,
+  ): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_nvidia_transcription_key_setting", {
+          key,
+        }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
+  async changeNvidiaTranscriptionFunctionIdSetting(
+    functionId: string,
+  ): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("change_nvidia_transcription_function_id_setting", {
+          functionId,
+        }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
   async changeApiTranscriptionModelSetting(
     model: string,
   ): Promise<Result<null, string>> {
@@ -3603,6 +3633,8 @@ export type AppSettings = {
   transcription_mode_ptt?: TranscriptionMode;
   api_transcription_url?: string;
   api_transcription_key?: string;
+  nvidia_transcription_key?: string;
+  nvidia_transcription_function_id?: string;
   api_transcription_model?: string;
   post_process_disable_thinking?: boolean;
   /**
@@ -4103,6 +4135,7 @@ export type EngineType =
   | "SenseVoice"
   | "FlmWhisper"
   | "ApiWhisper"
+  | "NvidiaRiva"
   /**
    * OpenRouter transcription (JSON + base64 audio via the dedicated STT
    * endpoint or chat `input_audio`). Unlike ApiWhisper it participates in

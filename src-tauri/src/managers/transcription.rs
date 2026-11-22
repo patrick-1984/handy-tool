@@ -477,6 +477,7 @@ enum LoadedEngine {
     #[cfg(not(target_os = "macos"))]
     FlmWhisper,
     ApiWhisper,
+    NvidiaRiva,
     OpenRouterWhisper,
     SttServer,
 }
@@ -909,7 +910,7 @@ impl TranscriptionManager {
                             *flm_guard = None;
                         }
                     }
-                    LoadedEngine::ApiWhisper => {
+                    LoadedEngine::ApiWhisper | LoadedEngine::NvidiaRiva => {
                         // No resources to release — stateless HTTP client
                     }
                     LoadedEngine::OpenRouterWhisper | LoadedEngine::SttServer => {
@@ -1171,6 +1172,12 @@ impl TranscriptionManager {
                 self.notify_translation_unsupported();
                 text
             }
+            EngineType::NvidiaRiva => crate::managers::nvidia_transcription::transcribe(
+                &settings.nvidia_transcription_key,
+                &settings.nvidia_transcription_function_id,
+                &audio,
+                &settings.selected_language,
+            )?,
             EngineType::OpenRouterWhisper => {
                 let base_url = settings.openrouter_transcription_url.trim();
                 let api_key = settings.openrouter_transcription_key.trim();
@@ -1723,6 +1730,26 @@ impl TranscriptionManager {
                 );
                 LoadedEngine::ApiWhisper
             }
+            EngineType::NvidiaRiva => {
+                let settings = get_settings(&self.app_handle);
+                if let Err(error) = crate::managers::nvidia_transcription::validate_config(
+                    &settings.nvidia_transcription_key,
+                    &settings.nvidia_transcription_function_id,
+                ) {
+                    let message = error.to_string();
+                    let _ = self.app_handle.emit(
+                        "model-state-changed",
+                        ModelStateEvent {
+                            event_type: "loading_failed".to_string(),
+                            model_id: Some(model_id.to_string()),
+                            model_name: Some(model_info.name.clone()),
+                            error: Some(message.clone()),
+                        },
+                    );
+                    return Err(anyhow::anyhow!(message));
+                }
+                LoadedEngine::NvidiaRiva
+            }
             EngineType::OpenRouterWhisper => {
                 // Require a provider WITH an API key. The model is optional — it
                 // defaults to a known-good Whisper id at request time.
@@ -2091,12 +2118,24 @@ impl TranscriptionManager {
         // If API Whisper engine is active, POST to the configured endpoint
         {
             let engine_guard = self.lock_engine();
-            if matches!(&engine_guard.engine, Some(LoadedEngine::ApiWhisper)) {
+            if matches!(
+                &engine_guard.engine,
+                Some(LoadedEngine::ApiWhisper | LoadedEngine::NvidiaRiva)
+            ) {
                 Self::ensure_expected_model(&engine_guard, expected_model)?;
+                let nvidia = matches!(&engine_guard.engine, Some(LoadedEngine::NvidiaRiva));
                 drop(engine_guard);
                 let language = request_language(&settings.selected_language);
                 let audio_secs = audio.len() as f32 / 16_000.0;
                 let raw_text = timed_online_request(expected_model, audio_secs, || {
+                    if nvidia {
+                        return crate::managers::nvidia_transcription::transcribe(
+                            &settings.nvidia_transcription_key,
+                            &settings.nvidia_transcription_function_id,
+                            &audio,
+                            &settings.selected_language,
+                        );
+                    }
                     crate::managers::api_transcription::transcribe(
                         &settings.api_transcription_url,
                         &settings.api_transcription_key,
@@ -2355,7 +2394,7 @@ impl TranscriptionManager {
                                 "FlmWhisper engine should use FLM manager path"
                             ))
                         }
-                        LoadedEngine::ApiWhisper => {
+                        LoadedEngine::ApiWhisper | LoadedEngine::NvidiaRiva => {
                             // API transcription is handled earlier; this arm should never be reached.
                             Err(anyhow::anyhow!("ApiWhisper engine should use API path"))
                         }
@@ -2743,7 +2782,7 @@ impl TranscriptionManager {
             LoadedEngine::FlmWhisper => Err(anyhow::anyhow!(
                 "FlmWhisper engine should use FLM manager path"
             )),
-            LoadedEngine::ApiWhisper => {
+            LoadedEngine::ApiWhisper | LoadedEngine::NvidiaRiva => {
                 Err(anyhow::anyhow!("ApiWhisper engine should use API path"))
             }
             LoadedEngine::OpenRouterWhisper => Err(anyhow::anyhow!(

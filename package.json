@@ -9,6 +9,8 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "lint": "eslint src",
+    "typecheck": "tsc --noEmit",
+    "docs:check": "bun scripts/check-docs-breadcrumbs.mjs",
     "lint:fix": "eslint src --fix",
     "format": "prettier --write . && cd src-tauri && cargo fmt",
     "format:check": "prettier --check . && cd src-tauri && cargo fmt -- --check",

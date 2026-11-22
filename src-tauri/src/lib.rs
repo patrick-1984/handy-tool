@@ -519,6 +519,8 @@ pub fn run(cli_args: CliArgs) {
         shortcut::change_transcribe_gpu_device_setting,
         shortcut::change_api_transcription_url_setting,
         shortcut::change_api_transcription_key_setting,
+        shortcut::change_nvidia_transcription_key_setting,
+        shortcut::change_nvidia_transcription_function_id_setting,
         shortcut::change_api_transcription_model_setting,
         shortcut::change_openrouter_transcription_url_setting,
         shortcut::change_openrouter_transcription_key_setting,

@@ -431,7 +431,10 @@ pub fn usable_for_folders(settings: &AppSettings, models: &ModelManager, model: 
     models.get_model_info(model).is_some_and(|info| {
         let online = matches!(
             info.engine_type,
-            EngineType::ApiWhisper | EngineType::OpenRouterWhisper | EngineType::SttServer
+            EngineType::ApiWhisper
+                | EngineType::NvidiaRiva
+                | EngineType::OpenRouterWhisper
+                | EngineType::SttServer
         );
         info.is_downloaded
             && (!online

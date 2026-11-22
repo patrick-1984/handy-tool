@@ -63,7 +63,9 @@ tokio = { version = "1.43.0", features = ["macros", "sync", "rt", "time"] }
 vad-rs = { git = "https://github.com/cjpais/vad-rs", default-features = false }
 enigo = "0.6.1"
 rodio = { git = "https://github.com/cjpais/rodio.git" }
-reqwest = { version = "0.12", features = ["json", "stream"] }
+reqwest = { version = "0.12", features = ["json", "stream", "native-tls-alpn"] }
+# Already transitive through reqwest; needed to retain gRPC status trailers.
+http-body-util = "0.1"
 futures-util = "0.3"
 rustfft = "6.4.0"
 # Speakers on this PC (Sortformer ONNX): the same ort/ndarray as transcribe-rs.

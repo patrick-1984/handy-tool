@@ -31,6 +31,7 @@ import { AutostartToggle } from "../AutostartToggle";
 import { ShowTrayIcon } from "../ShowTrayIcon";
 import { PostProcessingToggle } from "../PostProcessingToggle";
 import { PostProcessingSettings } from "../post-processing/PostProcessingSettings";
+import { NvidiaTranscriptionSettings } from "../NvidiaTranscriptionSettings";
 import { ApiTranscriptionSettings } from "../ApiTranscriptionSettings";
 import { OpenRouterTranscriptionSettings } from "../OpenRouterTranscriptionSettings";
 import { KeyboardImplementationSelector } from "../debug/KeyboardImplementationSelector";
@@ -145,6 +146,12 @@ export const ProvidersSection: React.FC = () => {
         title={t("settings.advanced.apiTranscription.cardTitle")}
       >
         <ApiTranscriptionSettings descriptionMode="tooltip" grouped={true} />
+      </SettingsGroup>
+      <SettingsGroup
+        icon={Cloud}
+        title={t("settings.advanced.nvidiaTranscription.cardTitle")}
+      >
+        <NvidiaTranscriptionSettings />
       </SettingsGroup>
       <SettingsGroup
         icon={Route}

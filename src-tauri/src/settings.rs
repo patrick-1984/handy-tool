@@ -1428,6 +1428,10 @@ pub struct AppSettings {
     #[serde(default)]
     pub api_transcription_key: String,
     #[serde(default)]
+    pub nvidia_transcription_key: String,
+    #[serde(default = "default_nvidia_function_id")]
+    pub nvidia_transcription_function_id: String,
+    #[serde(default)]
     pub api_transcription_model: String,
     /// T-308: per-provider (LOCAL) language + translate for the OpenAI-compatible
     /// API transcription engine. Global `selected_language`/`translate_to_english`
@@ -1998,6 +2002,10 @@ fn default_stt_server_model() -> String {
 
 fn default_stt_server_speakers_model() -> String {
     "transcribe-diarize-openai".to_string()
+}
+
+fn default_nvidia_function_id() -> String {
+    crate::managers::nvidia_transcription::DEFAULT_FUNCTION_ID.to_string()
 }
 
 fn default_openrouter_transcription_url() -> String {
@@ -3224,6 +3232,8 @@ pub fn get_default_settings() -> AppSettings {
         transcription_mode_ptt: default_transcription_mode_ptt(),
         api_transcription_url: String::new(),
         api_transcription_key: String::new(),
+        nvidia_transcription_key: String::new(),
+        nvidia_transcription_function_id: default_nvidia_function_id(),
         api_transcription_model: String::new(),
         api_transcription_language: default_selected_language(),
         api_transcription_translate_to_english: false,

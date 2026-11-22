@@ -28,6 +28,11 @@ export const modelConfigTarget = (
         section: "providers",
         titleKey: "settings.advanced.apiTranscription.url.title",
       };
+    case "NvidiaRiva":
+      return {
+        section: "providers",
+        titleKey: "settings.advanced.nvidiaTranscription.apiKey.title",
+      };
     case "OpenRouterWhisper":
       return {
         section: "providers",

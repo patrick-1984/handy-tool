@@ -1773,6 +1773,37 @@ once, and the text stays in the language you spoke.
 **Where.** `Advanced settings › Transcription providers › API Transcription (OpenAI-compatible) › API URL`.
 **Since.** 0.8.2; transcribing while you record since 2.5.0.
 
+### Use NVIDIA for cloud transcription
+
+<a id="use-nvidia-for-cloud-transcription"></a>
+
+<!-- prov: NVIDIA cloud transcription | src: src-tauri/src/managers/nvidia_transcription.rs; src-tauri/src/managers/nvidia_proto.rs; src-tauri/src/managers/model.rs; src-tauri/src/managers/transcription.rs; src-tauri/src/actions.rs; src-tauri/src/settings.rs; src/components/settings/NvidiaTranscriptionSettings.tsx | claim: behavior -->
+
+**The situation.** You want NVIDIA's hosted Whisper without running a model on your PC.
+**What Handy does.** Choose NVIDIA (Whisper large-v3, cloud) on Models and enter your NVIDIA
+API key. After you stop, Handy sends mono 16 kHz PCM audio to NVIDIA's hosted Riva Recognize
+service over TLS with negotiated HTTP/2. It divides recordings into pieces of at most 25 seconds
+and joins their text in order, keeping unary uploads short. Cuts can interrupt
+words, so text at a boundary may be less accurate. No audio is sent while you record, including
+with Crash-Safe Recording on. The live text box is unavailable for this engine.
+Language follows `General › Language`: Auto sends `multi`, English sends `en-US`, Polish sends
+`pl-PL`. Regional defaults are `de: de-DE`, `fr: fr-FR`, `es: es-ES`, `it: it-IT`,
+`pt: pt-BR`, `nl: nl-NL`, `ja: ja-JP`, `ko: ko-KR`, `ru: ru-RU`, `uk: uk-UA`,
+`cs: cs-CZ`, `sk: sk-SK`, `sv: sv-SE`, `da: da-DK`, `fi: fi-FI`, `no/nb: nb-NO`,
+`tr: tr-TR`, `hi: hi-IN`, `el: el-GR`, `ro: ro-RO`, `hu: hu-HU`, `bg: bg-BG`,
+`hr: hr-HR`, `vi: vi-VN`, `th: th-TH`, `id: id-ID`, `ms: ms-MY`, `ta: ta-IN`,
+and `he: he-IL`. Chinese `zh` and `zh-Hans` use `zh-CN`; `zh-Hant` uses `zh-TW`.
+Existing BCP-47 tags pass through; other two-letter codes pass through unchanged. The function
+must support the chosen language. Translation to English is unavailable. Function ID is editable
+for other Riva Recognize functions, including compatible Parakeet and Canary deployments;
+changing it does not change the card's Whisper label. Key refusal, gRPC status and server message,
+and timeouts are reported as errors. Each request has a 15-second connect timeout and a
+120-second total timeout. The key is stored like the API Transcription key, unencrypted and
+included in backups.
+**Where.** `Advanced settings › Transcription providers › NVIDIA (Whisper large-v3, cloud) › NVIDIA API Key`.
+**Applies to.** NVIDIA cloud dictation and file transcription; the available release is Windows x64.
+**Since.** Unreleased.
+
 ### Online models have the text ready when you stop
 
 <a id="online-models-transcribe-while-you-record"></a>

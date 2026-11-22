@@ -242,6 +242,7 @@ pub enum EngineType {
     #[cfg(not(target_os = "macos"))]
     FlmWhisper,
     ApiWhisper,
+    NvidiaRiva,
     /// OpenRouter transcription (JSON + base64 audio via the dedicated STT
     /// endpoint or chat `input_audio`). Unlike ApiWhisper it participates in
     /// the live/chunked per-segment pipeline.
@@ -262,7 +263,10 @@ impl EngineType {
     pub fn is_online(&self) -> bool {
         matches!(
             self,
-            EngineType::ApiWhisper | EngineType::OpenRouterWhisper | EngineType::SttServer
+            EngineType::ApiWhisper
+                | EngineType::NvidiaRiva
+                | EngineType::OpenRouterWhisper
+                | EngineType::SttServer
         )
     }
 
@@ -270,7 +274,10 @@ impl EngineType {
         match self {
             #[cfg(not(target_os = "macos"))]
             EngineType::FlmWhisper => true,
-            EngineType::ApiWhisper | EngineType::OpenRouterWhisper | EngineType::SttServer => true,
+            EngineType::ApiWhisper
+            | EngineType::NvidiaRiva
+            | EngineType::OpenRouterWhisper
+            | EngineType::SttServer => true,
             _ => false,
         }
     }
@@ -734,6 +741,29 @@ impl ModelManager {
                 accuracy_score: 0.90,
                 speed_score: 0.80,
                 supports_translation: true,
+                is_recommended: false,
+                supported_languages: whisper_languages.clone(),
+                is_custom: false,
+            },
+        );
+
+        available_models.insert(
+            "nvidia-riva".to_string(),
+            ModelInfo {
+                id: "nvidia-riva".to_string(),
+                name: "NVIDIA (Whisper large-v3, cloud)".to_string(),
+                description: "Send the recording after stop to NVIDIA hosted Riva. Configure the API key and Function ID in Advanced settings > Transcription providers.".to_string(),
+                filename: String::new(),
+                url: None,
+                size_mb: 0,
+                is_downloaded: true,
+                is_downloading: false,
+                partial_size: 0,
+                is_directory: false,
+                engine_type: EngineType::NvidiaRiva,
+                accuracy_score: 0.90,
+                speed_score: 0.80,
+                supports_translation: false,
                 is_recommended: false,
                 supported_languages: whisper_languages.clone(),
                 is_custom: false,

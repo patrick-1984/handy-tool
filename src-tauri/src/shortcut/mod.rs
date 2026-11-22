@@ -2250,6 +2250,25 @@ pub fn change_api_transcription_model_setting(app: AppHandle, model: String) -> 
 
 #[tauri::command]
 #[specta::specta]
+pub fn change_nvidia_transcription_key_setting(app: AppHandle, key: String) -> Result<(), String> {
+    settings::update_settings(&app, |s| s.nvidia_transcription_key = key);
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn change_nvidia_transcription_function_id_setting(
+    app: AppHandle,
+    function_id: String,
+) -> Result<(), String> {
+    settings::update_settings(&app, |s| {
+        s.nvidia_transcription_function_id = function_id.trim().to_string()
+    });
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 pub fn change_openrouter_transcription_url_setting(
     app: AppHandle,
     url: String,

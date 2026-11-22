@@ -41,6 +41,7 @@ const LIVE_TEXT_HEIGHTS = [
 /** Remote engines get the audio only after stop, so their takes are never live. */
 export const isRemote = (model?: ModelInfo) =>
   model?.engine_type === "ApiWhisper" ||
+  model?.engine_type === "NvidiaRiva" ||
   model?.engine_type === "OpenRouterWhisper" ||
   model?.engine_type === "SttServer";
 
