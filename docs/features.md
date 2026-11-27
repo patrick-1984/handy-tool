@@ -1794,8 +1794,9 @@ Language follows `General › Language`: Auto sends `multi`, English sends `en-U
 `hr: hr-HR`, `vi: vi-VN`, `th: th-TH`, `id: id-ID`, `ms: ms-MY`, `ta: ta-IN`,
 and `he: he-IL`. Chinese `zh` and `zh-Hans` use `zh-CN`; `zh-Hant` uses `zh-TW`.
 Existing BCP-47 tags pass through; other two-letter codes pass through unchanged. The function
-must support the chosen language. Translation to English is unavailable. Function ID is editable
-for other Riva Recognize functions, including compatible Parakeet and Canary deployments;
+must support the chosen language. Translation to English is unavailable. Function ID offers
+two presets, Whisper large-v3 (multilingual, default) and Parakeet 1.1B multilingual, plus
+Custom for any other Riva Recognize function, including compatible Canary deployments;
 changing it does not change the card's Whisper label. Key refusal, gRPC status and server message,
 and timeouts are reported as errors. Each request has a 15-second connect timeout and a
 120-second total timeout. The key is stored like the API Transcription key, unencrypted and

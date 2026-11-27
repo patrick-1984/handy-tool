@@ -2,7 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSettings } from "../../hooks/useSettings";
 import { SettingContainer } from "../ui/SettingContainer";
+import { Dropdown } from "../ui/Dropdown";
 import { TEXT_FIELD } from "../ui/controlClasses";
+import {
+  NVIDIA_FUNCTION_PRESETS,
+  presetKeyForFunctionId,
+} from "../../lib/nvidiaPresets";
 
 export const NvidiaTranscriptionSettings: React.FC = () => {
   const { t } = useTranslation();
@@ -13,6 +18,20 @@ export const NvidiaTranscriptionSettings: React.FC = () => {
   const [functionId, setFunctionId] = useState(savedFunction);
   useEffect(() => setApiKey(savedKey), [savedKey]);
   useEffect(() => setFunctionId(savedFunction), [savedFunction]);
+  // "Custom" stays chosen while the saved ID matches a preset only if picked.
+  const [customPicked, setCustomPicked] = useState(false);
+  const savedPreset = presetKeyForFunctionId(savedFunction);
+  const selectedPreset = customPicked ? "custom" : savedPreset;
+  const presetOptions = [
+    ...NVIDIA_FUNCTION_PRESETS.map((p) => ({
+      value: p.key,
+      label: t(`settings.advanced.nvidiaTranscription.preset.${p.key}`),
+    })),
+    {
+      value: "custom",
+      label: t("settings.advanced.nvidiaTranscription.preset.custom"),
+    },
+  ];
 
   return (
     <>
@@ -48,22 +67,43 @@ export const NvidiaTranscriptionSettings: React.FC = () => {
         descriptionMode="tooltip"
         grouped
       >
-        <input
-          type="text"
-          aria-label={t(
-            "settings.advanced.nvidiaTranscription.functionId.title",
+        <div className="flex w-full flex-col gap-2">
+          <Dropdown
+            options={presetOptions}
+            selectedValue={selectedPreset}
+            onSelect={(value) => {
+              const preset = NVIDIA_FUNCTION_PRESETS.find(
+                (p) => p.key === value,
+              );
+              if (preset) {
+                setCustomPicked(false);
+                setFunctionId(preset.id);
+                if (preset.id !== savedFunction)
+                  updateSetting("nvidia_transcription_function_id", preset.id);
+              } else {
+                setCustomPicked(true);
+              }
+            }}
+          />
+          {selectedPreset === "custom" && (
+            <input
+              type="text"
+              aria-label={t(
+                "settings.advanced.nvidiaTranscription.functionId.title",
+              )}
+              value={functionId}
+              onChange={(event) => setFunctionId(event.target.value)}
+              onBlur={() => {
+                if (functionId !== savedFunction)
+                  updateSetting("nvidia_transcription_function_id", functionId);
+              }}
+              placeholder={t(
+                "settings.advanced.nvidiaTranscription.functionId.placeholder",
+              )}
+              className={`w-full ${TEXT_FIELD}`}
+            />
           )}
-          value={functionId}
-          onChange={(event) => setFunctionId(event.target.value)}
-          onBlur={() => {
-            if (functionId !== savedFunction)
-              updateSetting("nvidia_transcription_function_id", functionId);
-          }}
-          placeholder={t(
-            "settings.advanced.nvidiaTranscription.functionId.placeholder",
-          )}
-          className={`w-full ${TEXT_FIELD}`}
-        />
+        </div>
       </SettingContainer>
     </>
   );

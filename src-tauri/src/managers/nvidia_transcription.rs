@@ -231,6 +231,11 @@ mod tests {
         }
     }
     #[test]
+    fn default_function_is_whisper_preset() {
+        assert_eq!(DEFAULT_FUNCTION_ID, "b702f636-f60c-4a3d-a6f4-f3568c13bd7d");
+        validate_config("k", "71203149-d3b7-4460-8231-1be2543a1fca").unwrap();
+    }
+    #[test]
     fn config_requires_key_and_function_uuid() {
         assert!(validate_config("", DEFAULT_FUNCTION_ID).is_err());
         assert!(validate_config("test-key", " ").is_err());

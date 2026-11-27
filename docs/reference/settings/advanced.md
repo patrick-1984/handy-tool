@@ -270,7 +270,7 @@ Catalog: [Use NVIDIA for cloud transcription](../../features.md#use-nvidia-for-c
 
 `Advanced settings › Transcription providers › NVIDIA (Whisper large-v3, cloud) › Function ID`
 
-Sets the hosted Riva function UUID. **Default:** `b702f636-f60c-4a3d-a6f4-f3568c13bd7d`.
+Picks the hosted Riva function: `Whisper large-v3 (multilingual, default)` (`b702f636-f60c-4a3d-a6f4-f3568c13bd7d`), `Parakeet 1.1B multilingual` (`71203149-d3b7-4460-8231-1be2543a1fca`), or `Custom`, which shows a text field for any other function UUID. A preset writes its UUID when you choose it; a saved UUID that matches a preset shows that preset. **Default:** `Whisper large-v3 (multilingual, default)`.
 
 Tooltip: “NVIDIA hosted Riva function UUID. Default: b702f636-f60c-4a3d-a6f4-f3568c13bd7d (Whisper large-v3). Replace it with a compatible Parakeet or Canary Recognize function; supported languages depend on that function.”
 
