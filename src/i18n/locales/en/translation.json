@@ -1650,7 +1650,7 @@
         },
         "functionId": {
           "title": "Function ID",
-          "description": "NVIDIA hosted Riva function UUID. Default: b702f636-f60c-4a3d-a6f4-f3568c13bd7d (Whisper large-v3). Replace it with a compatible Parakeet or Canary Recognize function; supported languages depend on that function.",
+          "description": "NVIDIA hosted Riva function. Default: Whisper large-v3 (b702f636-f60c-4a3d-a6f4-f3568c13bd7d). Pick Parakeet 1.1B multilingual, or Custom to enter the UUID of another compatible Recognize function such as Canary; supported languages depend on the function.",
           "placeholder": "b702f636-f60c-4a3d-a6f4-f3568c13bd7d"
         }
       },

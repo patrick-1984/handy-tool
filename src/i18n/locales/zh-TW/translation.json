@@ -1378,10 +1378,10 @@
         }
       },
       "nvidiaTranscription": {
-        "cardTitle": "NVIDIA (Whisper large-v3, cloud)",
+        "cardTitle": "NVIDIA (Whisper large-v3，雲端)",
         "apiKey": {
-          "title": "NVIDIA API Key",
-          "description": "Bearer key for NVIDIA hosted Riva. Default: empty. Stored unencrypted in your settings file and included in backups, like the API Transcription key. NVIDIA receives your audio after you stop. Set Language on General; Auto asks NVIDIA to detect the language.",
+          "title": "NVIDIA API 金鑰",
+          "description": "NVIDIA 託管 Riva 的 Bearer 金鑰。預設：空白。與 API 轉錄的金鑰一樣，以未加密方式儲存在設定檔中，並包含在備份內。停止錄音後，音訊會傳送給 NVIDIA。語言請在「一般」中設定；選擇「自動」時由 NVIDIA 偵測語言。",
           "placeholder": "nvapi-..."
         },
         "preset": {
@@ -1390,8 +1390,8 @@
           "custom": "自訂"
         },
         "functionId": {
-          "title": "Function ID",
-          "description": "NVIDIA hosted Riva function UUID. Default: b702f636-f60c-4a3d-a6f4-f3568c13bd7d (Whisper large-v3). Replace it with a compatible Parakeet or Canary Recognize function; supported languages depend on that function.",
+          "title": "函式 ID",
+          "description": "NVIDIA 託管的 Riva 函式。預設：Whisper large-v3 (b702f636-f60c-4a3d-a6f4-f3568c13bd7d)。可選 Parakeet 1.1B 多語言，或選「自訂」輸入其他相容 Recognize 函式（例如 Canary）的 UUID；支援的語言取決於函式。",
           "placeholder": "b702f636-f60c-4a3d-a6f4-f3568c13bd7d"
         }
       },

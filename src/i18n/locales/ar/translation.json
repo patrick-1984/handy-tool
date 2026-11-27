@@ -1300,10 +1300,10 @@
         }
       },
       "nvidiaTranscription": {
-        "cardTitle": "NVIDIA (Whisper large-v3, cloud)",
+        "cardTitle": "NVIDIA (Whisper large-v3، سحابي)",
         "apiKey": {
-          "title": "NVIDIA API Key",
-          "description": "Bearer key for NVIDIA hosted Riva. Default: empty. Stored unencrypted in your settings file and included in backups, like the API Transcription key. NVIDIA receives your audio after you stop. Set Language on General; Auto asks NVIDIA to detect the language.",
+          "title": "مفتاح NVIDIA API",
+          "description": "مفتاح Bearer لخدمة Riva المستضافة لدى NVIDIA. الافتراضي: فارغ. يُخزَّن دون تشفير في ملف الإعدادات ويُضمَّن في النسخ الاحتياطية، مثل مفتاح تفريغ صوتي عبر API. تتلقى NVIDIA الصوت بعد أن تتوقف. اضبط اللغة في عام؛ مع تلقائي تكتشف NVIDIA اللغة.",
           "placeholder": "nvapi-..."
         },
         "preset": {
@@ -1312,8 +1312,8 @@
           "custom": "مخصص"
         },
         "functionId": {
-          "title": "Function ID",
-          "description": "NVIDIA hosted Riva function UUID. Default: b702f636-f60c-4a3d-a6f4-f3568c13bd7d (Whisper large-v3). Replace it with a compatible Parakeet or Canary Recognize function; supported languages depend on that function.",
+          "title": "معرّف الدالة",
+          "description": "دالة Riva المستضافة لدى NVIDIA. الافتراضي: Whisper large-v3 (b702f636-f60c-4a3d-a6f4-f3568c13bd7d). اختر Parakeet 1.1B متعدد اللغات، أو مخصص لإدخال UUID لدالة Recognize متوافقة أخرى مثل Canary؛ تعتمد اللغات المدعومة على الدالة.",
           "placeholder": "b702f636-f60c-4a3d-a6f4-f3568c13bd7d"
         }
       },

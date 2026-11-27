@@ -1378,10 +1378,10 @@
         }
       },
       "nvidiaTranscription": {
-        "cardTitle": "NVIDIA (Whisper large-v3, cloud)",
+        "cardTitle": "NVIDIA (Whisper large-v3、クラウド)",
         "apiKey": {
-          "title": "NVIDIA API Key",
-          "description": "Bearer key for NVIDIA hosted Riva. Default: empty. Stored unencrypted in your settings file and included in backups, like the API Transcription key. NVIDIA receives your audio after you stop. Set Language on General; Auto asks NVIDIA to detect the language.",
+          "title": "NVIDIA APIキー",
+          "description": "NVIDIA がホストする Riva 用の Bearer キーです。デフォルト: 空。API文字起こしのキーと同様に、暗号化されずに設定ファイルに保存され、バックアップにも含まれます。録音を停止すると音声が NVIDIA に送信されます。言語は「一般」で設定します。「自動」では NVIDIA が言語を検出します。",
           "placeholder": "nvapi-..."
         },
         "preset": {
@@ -1390,8 +1390,8 @@
           "custom": "カスタム"
         },
         "functionId": {
-          "title": "Function ID",
-          "description": "NVIDIA hosted Riva function UUID. Default: b702f636-f60c-4a3d-a6f4-f3568c13bd7d (Whisper large-v3). Replace it with a compatible Parakeet or Canary Recognize function; supported languages depend on that function.",
+          "title": "関数 ID",
+          "description": "NVIDIA がホストする Riva の関数です。デフォルト: Whisper large-v3 (b702f636-f60c-4a3d-a6f4-f3568c13bd7d)。Parakeet 1.1B 多言語を選ぶか、「カスタム」を選んで Canary など互換性のある別の Recognize 関数の UUID を入力します。対応言語は関数によって異なります。",
           "placeholder": "b702f636-f60c-4a3d-a6f4-f3568c13bd7d"
         }
       },

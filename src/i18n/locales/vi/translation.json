@@ -1378,10 +1378,10 @@
         }
       },
       "nvidiaTranscription": {
-        "cardTitle": "NVIDIA (Whisper large-v3, cloud)",
+        "cardTitle": "NVIDIA (Whisper large-v3, đám mây)",
         "apiKey": {
-          "title": "NVIDIA API Key",
-          "description": "Bearer key for NVIDIA hosted Riva. Default: empty. Stored unencrypted in your settings file and included in backups, like the API Transcription key. NVIDIA receives your audio after you stop. Set Language on General; Auto asks NVIDIA to detect the language.",
+          "title": "Khóa API NVIDIA",
+          "description": "Khóa Bearer cho dịch vụ Riva do NVIDIA lưu trữ. Mặc định: trống. Được lưu không mã hóa trong tệp cài đặt và có trong bản sao lưu, giống khóa Phiên âm qua API. NVIDIA nhận âm thanh sau khi bạn dừng ghi. Đặt Ngôn ngữ trong Chung; với Tự động, NVIDIA sẽ tự nhận diện ngôn ngữ.",
           "placeholder": "nvapi-..."
         },
         "preset": {
@@ -1390,8 +1390,8 @@
           "custom": "Tùy chỉnh"
         },
         "functionId": {
-          "title": "Function ID",
-          "description": "NVIDIA hosted Riva function UUID. Default: b702f636-f60c-4a3d-a6f4-f3568c13bd7d (Whisper large-v3). Replace it with a compatible Parakeet or Canary Recognize function; supported languages depend on that function.",
+          "title": "ID hàm",
+          "description": "Hàm Riva do NVIDIA lưu trữ. Mặc định: Whisper large-v3 (b702f636-f60c-4a3d-a6f4-f3568c13bd7d). Chọn Parakeet 1.1B đa ngôn ngữ, hoặc Tùy chỉnh để nhập UUID của một hàm Recognize tương thích khác như Canary; ngôn ngữ được hỗ trợ tùy thuộc vào hàm.",
           "placeholder": "b702f636-f60c-4a3d-a6f4-f3568c13bd7d"
         }
       },
