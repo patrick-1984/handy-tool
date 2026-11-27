@@ -1,5 +1,20 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- **The pill was missing on the first take after Handy had been idle for hours.** Recording and
+  transcription worked, but nothing showed on screen. The pill's page was told to show by a single
+  message, which is lost when the page is asleep or not loaded yet. The page now also asks Handy
+  what to show when it loads and when it comes up, and Handy sends the show again until the page
+  confirms it (repainting the window, and as the last step reloading the page).
+- **The pill sometimes came up drawn wrong:** a dark square box instead of the rounded transparent
+  pill, its right edge cut off and the sound bars flat dots. The pill's window is now placed and
+  sized in the screen's own pixels (after a docking change or a sleep the old way could size it for
+  the wrong screen), made transparent again on every show, and the sound bars start flat for each
+  take instead of from where the last one ended.
+
 ## [2.7.1] - 2026-11-18
 
 ### Fixed

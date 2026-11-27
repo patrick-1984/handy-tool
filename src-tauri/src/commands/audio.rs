@@ -156,6 +156,16 @@ pub fn overlay_restore_focus() {
     crate::overlay::restore_focus_after_pill();
 }
 
+/// The recording pill's page says which show or hide it last drew (`applied`, 0 on
+/// a fresh load) and gets what the pill should show now. The page asks when it
+/// loads, when it becomes visible and after every event it drew; the answer also
+/// confirms the show, which is sent again until it is confirmed.
+#[tauri::command]
+#[specta::specta]
+pub fn overlay_sync(applied: u32) -> crate::overlay::OverlaySnapshot {
+    crate::overlay::sync_overlay_page(applied)
+}
+
 /// Flip the live text box (the overlay's T button). Returns the new state.
 #[tauri::command]
 #[specta::specta]

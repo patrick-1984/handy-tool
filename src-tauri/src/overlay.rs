@@ -1,6 +1,7 @@
 use crate::settings;
 use crate::settings::OverlayPosition;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::{Mutex, MutexGuard, PoisonError};
 use tauri::{AppHandle, Emitter, Manager};
 
 /// The main window's handle, noted at startup on the main thread (`hwnd()` is a
@@ -461,6 +462,476 @@ pub fn create_recording_overlay(app_handle: &AppHandle) {
     }
 }
 
+/* ───────── The pill's page: told by events, asked when it was missed ───────── */
+
+/// The window label of the recording pill.
+const OVERLAY_LABEL: &str = "recording_overlay";
+
+/// What the pill's page should be drawing, as a numbered revision: every show and
+/// every hide of the pill is the next one. The page is told by events, but an
+/// event is lost when the page is not there to hear it (a hidden WebView2 page
+/// that was suspended, discarded or reloaded while Handy sat idle for hours), and
+/// the take then has no pill. So the page also asks ([`sync_overlay_page`]) when
+/// it loads and when it becomes visible, and says which revision it drew; a show
+/// it has not confirmed is sent again ([`watch_overlay_page`]). The page ignores
+/// a revision it has already drawn, so sending one twice is harmless.
+struct PillSync {
+    rev: u32,
+    /// What the pill shows ("recording", "transcribing", ...); `None` while hidden.
+    state: Option<String>,
+    /// The sound source change a notice-only pill shows.
+    notice: Option<CaptureSourceNotice>,
+    /// The last revision the page said it drew.
+    confirmed: u32,
+}
+
+/// What the backend wants on the pill now, for the page's `overlay_sync` call.
+#[derive(Clone, serde::Serialize, specta::Type)]
+pub struct OverlaySnapshot {
+    /// The revision of this state; the page draws it only when newer than its own.
+    rev: u32,
+    /// `None`: the pill is hidden.
+    state: Option<String>,
+    notice: Option<CaptureSourceNotice>,
+}
+
+impl PillSync {
+    const fn new() -> Self {
+        Self {
+            rev: 0,
+            state: None,
+            notice: None,
+            confirmed: 0,
+        }
+    }
+
+    /// The pill shows `state`: the new revision.
+    fn show(&mut self, state: &str, notice: Option<CaptureSourceNotice>) -> u32 {
+        self.rev = self.rev.wrapping_add(1);
+        self.state = Some(state.to_string());
+        self.notice = notice;
+        self.rev
+    }
+
+    /// The pill is hidden: the new revision.
+    fn hide(&mut self) -> u32 {
+        self.rev = self.rev.wrapping_add(1);
+        self.state = None;
+        self.notice = None;
+        self.rev
+    }
+
+    /// The page says it drew `rev`. Never beyond the current revision (a page
+    /// that reloaded says 0), and never back.
+    fn confirm(&mut self, rev: u32) {
+        self.confirmed = self.confirmed.max(rev.min(self.rev));
+    }
+
+    /// Show `rev` if it is still the pill's state and the page has not drawn it.
+    /// `None` once the page confirmed, a newer show or a hide came, or the pill is
+    /// hidden: nothing is left to send.
+    fn unconfirmed_show(&self, rev: u32) -> Option<(String, Option<CaptureSourceNotice>)> {
+        let state = self.state.as_ref()?;
+        (self.rev == rev && self.confirmed < rev).then(|| (state.clone(), self.notice.clone()))
+    }
+
+    /// `rev` is the pill's state and it is showing.
+    fn is_showing(&self, rev: u32) -> bool {
+        self.rev == rev && self.state.is_some()
+    }
+
+    fn snapshot(&self) -> OverlaySnapshot {
+        OverlaySnapshot {
+            rev: self.rev,
+            state: self.state.clone(),
+            notice: self.notice.clone(),
+        }
+    }
+}
+
+static PILL_SYNC: Mutex<PillSync> = Mutex::new(PillSync::new());
+
+/// The lock is never held while a window is touched (a window getter waits on the
+/// main loop, T-306).
+fn pill_sync() -> MutexGuard<'static, PillSync> {
+    PILL_SYNC.lock().unwrap_or_else(PoisonError::into_inner)
+}
+
+/// The pill's page reports the last revision it drew (`applied`, 0 on a fresh
+/// load) and gets what is on the pill now. Called by the page when it loads, when
+/// it becomes visible and after every show or hide it drew.
+pub fn sync_overlay_page(applied: u32) -> OverlaySnapshot {
+    let mut pill = pill_sync();
+    pill.confirm(applied);
+    pill.snapshot()
+}
+
+/// The payload of the `show-overlay` event.
+#[derive(Clone, serde::Serialize)]
+struct ShowOverlay<'a> {
+    state: &'a str,
+    rev: u32,
+    notice: Option<&'a CaptureSourceNotice>,
+}
+
+fn emit_show(
+    overlay_window: &tauri::webview::WebviewWindow,
+    rev: u32,
+    state: &str,
+    notice: Option<&CaptureSourceNotice>,
+) {
+    let _ = overlay_window.emit("show-overlay", ShowOverlay { state, rev, notice });
+}
+
+/// The pill window's rectangle in physical pixels: the position, then the size.
+fn physical_rect(
+    (x, y): (f64, f64),
+    (width, height): (f64, f64),
+    scale: f64,
+) -> ((i32, i32), (u32, u32)) {
+    (
+        ((x * scale).round() as i32, (y * scale).round() as i32),
+        (
+            (width * scale).round().max(1.0) as u32,
+            (height * scale).round().max(1.0) as u32,
+        ),
+    )
+}
+
+/// Puts the pill's window at its place and size for the current settings.
+///
+/// In physical pixels of the primary monitor, where the pill is placed: a logical
+/// size or position is converted with the scale of the monitor the window is on
+/// right now, which after a docking change or a sleep may not be the primary one -
+/// the window then came out too small (the pill's right edge cut off) or in the
+/// wrong place. Position first, so a change of monitor (and of scale) has settled
+/// before the size is set. `nudge` sets the size a pixel off and back: a hidden
+/// window has no visible resize, and the page's view of the window is then
+/// resized for certain (the margin round the pill hides the extra pixel).
+fn place_overlay_window(
+    app_handle: &AppHandle,
+    overlay_window: &tauri::webview::WebviewWindow,
+    nudge: bool,
+) {
+    #[cfg(target_os = "linux")]
+    update_gtk_layer_shell_anchors(overlay_window);
+
+    // The Pill size setting may have changed since the last take.
+    let (width, height) = overlay_window_size(&settings::get_settings(app_handle));
+    let scale = app_handle
+        .primary_monitor()
+        .ok()
+        .flatten()
+        .map(|monitor| monitor.scale_factor());
+    match overlay_window_position(app_handle).zip(scale) {
+        Some((position, scale)) => {
+            let ((x, y), (w, h)) = physical_rect(position, (width, height), scale);
+            let _ = overlay_window.set_position(tauri::Position::Physical(
+                tauri::PhysicalPosition::new(x, y),
+            ));
+            if nudge {
+                let _ = overlay_window
+                    .set_size(tauri::Size::Physical(tauri::PhysicalSize::new(w + 1, h)));
+            }
+            let _ = overlay_window.set_size(tauri::Size::Physical(tauri::PhysicalSize::new(w, h)));
+        }
+        // No monitor known (Linux Wayland): the compositor places the window.
+        None => {
+            let _ =
+                overlay_window.set_size(tauri::Size::Logical(tauri::LogicalSize { width, height }));
+        }
+    }
+}
+
+/// Everything about the pill's window that a long idle, a sleep or a display
+/// change may have spoiled (a dark square instead of the transparent pill, the
+/// right edge cut off): place and size again, make its page transparent again
+/// (the same as when the window was built) and re-assert the Z-order.
+fn restore_overlay_window(app_handle: &AppHandle, nudge: bool) {
+    let Some(overlay_window) = app_handle.get_webview_window(OVERLAY_LABEL) else {
+        return;
+    };
+    place_overlay_window(app_handle, &overlay_window, nudge);
+    // The webview layer only: the window layer's colour is left alone.
+    let webview: &tauri::Webview = overlay_window.as_ref();
+    let _ = webview.set_background_color(Some(tauri::window::Color(0, 0, 0, 0)));
+    #[cfg(target_os = "windows")]
+    force_overlay_topmost(&overlay_window);
+}
+
+/// What the watch over a show does when the page has not confirmed it.
+#[derive(Clone, Copy, Debug, PartialEq)]
+enum Recovery {
+    /// Send the show again: the page was not listening yet.
+    Resend,
+    /// Place the window and make its page transparent again, then send again.
+    Repaint,
+    /// Reload the page: it is not answering at all. It asks for the state when it
+    /// has loaded.
+    Reload,
+}
+
+/// How long a page has to confirm a show before the first step.
+const PAGE_CONFIRM_MS: u64 = 150;
+
+/// The steps while the page stays silent, each with how long to wait after it:
+/// about 7 s in all, the reload once, in the middle.
+const RECOVERY_PLAN: [(Recovery, u64); 5] = [
+    (Recovery::Resend, 300),
+    (Recovery::Repaint, 600),
+    (Recovery::Reload, 1_500),
+    (Recovery::Resend, 2_000),
+    (Recovery::Repaint, 2_500),
+];
+
+/// The page is reloaded at most this often, however many shows go unanswered.
+const PAGE_RELOAD_COOLDOWN_MS: u64 = 10_000;
+static LAST_PAGE_RELOAD_MS: AtomicU64 = AtomicU64::new(0);
+
+fn reload_allowed(now_ms: u64, last_reload_ms: u64) -> bool {
+    last_reload_ms == 0 || now_ms.saturating_sub(last_reload_ms) >= PAGE_RELOAD_COOLDOWN_MS
+}
+
+fn epoch_ms() -> u64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis() as u64
+}
+
+fn reload_overlay_page(app_handle: &AppHandle) {
+    let now = epoch_ms();
+    if !reload_allowed(now, LAST_PAGE_RELOAD_MS.load(Ordering::Relaxed)) {
+        return;
+    }
+    LAST_PAGE_RELOAD_MS.store(now, Ordering::Relaxed);
+    if let Some(overlay_window) = app_handle.get_webview_window(OVERLAY_LABEL) {
+        log::warn!("Recording pill: its page did not answer, reloading it");
+        if let Err(e) = overlay_window.reload() {
+            log::warn!("Recording pill: reload failed: {e}");
+        }
+    }
+}
+
+/// Watches that the page draws the show `rev`: it confirms by calling
+/// `overlay_sync`. Without that the show is sent again, the window repainted and,
+/// as the last resort, the page reloaded (see [`RECOVERY_PLAN`]); the watch ends
+/// the moment the page confirms, or a newer show or a hide replaces `rev`.
+/// `settle`: the pill came up from hidden, so once the page had its moment the
+/// window is placed and made transparent again, in case the show itself (a change
+/// of monitor scale, the window waking up) spoiled it.
+fn watch_overlay_page(app_handle: AppHandle, rev: u32, settle: bool) {
+    std::thread::spawn(move || {
+        std::thread::sleep(std::time::Duration::from_millis(PAGE_CONFIRM_MS));
+        if settle && pill_sync().is_showing(rev) {
+            restore_overlay_window(&app_handle, false);
+        }
+        for (recovery, wait_ms) in RECOVERY_PLAN {
+            let unconfirmed = pill_sync().unconfirmed_show(rev);
+            let Some((state, notice)) = unconfirmed else {
+                return;
+            };
+            log::debug!("Recording pill: show {rev} ({state}) not confirmed, {recovery:?}");
+            if matches!(recovery, Recovery::Repaint) {
+                restore_overlay_window(&app_handle, true);
+            }
+            if matches!(recovery, Recovery::Reload) {
+                reload_overlay_page(&app_handle);
+            } else if let Some(overlay_window) = app_handle.get_webview_window(OVERLAY_LABEL) {
+                emit_show(&overlay_window, rev, &state, notice.as_ref());
+            }
+            std::thread::sleep(std::time::Duration::from_millis(wait_ms));
+        }
+        if pill_sync().unconfirmed_show(rev).is_some() {
+            log::warn!("Recording pill: its page never confirmed show {rev}");
+        }
+    });
+}
+
+/// Shows the pill's window with `state` and tells its page. The window is placed
+/// first (nudged when it comes up from hidden), the page told right after the
+/// show, and a watch started that sees to it that the page really drew it.
+fn present_overlay_window(
+    app_handle: &AppHandle,
+    overlay_window: &tauri::webview::WebviewWindow,
+    state: &str,
+    notice: Option<CaptureSourceNotice>,
+) {
+    let from_hidden = !OVERLAY_VISIBLE.load(Ordering::Relaxed);
+    let rev = pill_sync().show(state, notice.clone());
+    place_overlay_window(app_handle, overlay_window, from_hidden);
+
+    // Mark visible ONLY if the native show actually succeeded, so the audio
+    // worker's emit_levels doesn't queue frames to a window that never
+    // appeared (T-306: it gates on this flag, never on a sync window getter).
+    if overlay_window.show().is_ok() {
+        OVERLAY_VISIBLE.store(true, Ordering::Relaxed);
+    }
+
+    // On Windows, aggressively re-assert "topmost" in the native Z-order after showing
+    #[cfg(target_os = "windows")]
+    force_overlay_topmost(overlay_window);
+
+    emit_show(overlay_window, rev, state, notice.as_ref());
+    watch_overlay_page(app_handle.clone(), rev, from_hidden);
+}
+
+#[cfg(test)]
+mod pill_sync_tests {
+    use super::{
+        CaptureSourceNotice, PAGE_RELOAD_COOLDOWN_MS, PillSync, RECOVERY_PLAN, Recovery,
+        physical_rect, reload_allowed,
+    };
+    use crate::settings::CaptureSource;
+
+    fn notice() -> CaptureSourceNotice {
+        CaptureSourceNotice {
+            source: CaptureSource::Microphone,
+            next_take: false,
+        }
+    }
+
+    #[test]
+    fn every_show_and_hide_is_a_new_revision() {
+        let mut pill = PillSync::new();
+        let first = pill.show("recording", None);
+        let second = pill.show("transcribing", None);
+        let hidden = pill.hide();
+        assert!(first < second && second < hidden);
+        let snapshot = pill.snapshot();
+        assert_eq!(snapshot.rev, hidden);
+        assert_eq!(snapshot.state, None, "hidden: nothing to draw");
+    }
+
+    #[test]
+    fn a_page_that_loads_late_is_told_what_is_on_the_pill() {
+        // The first take after hours idle: the show was announced before the page
+        // was listening. The page loads, says it drew nothing (0), and is told.
+        let mut pill = PillSync::new();
+        let rev = pill.show("recording", None);
+        pill.confirm(0);
+        let snapshot = pill.snapshot();
+        assert_eq!(snapshot.rev, rev);
+        assert_eq!(snapshot.state.as_deref(), Some("recording"));
+        assert!(
+            pill.unconfirmed_show(rev).is_some(),
+            "still unconfirmed: the watch keeps sending"
+        );
+    }
+
+    #[test]
+    fn a_show_is_sent_again_until_the_page_confirms_it() {
+        let mut pill = PillSync::new();
+        let rev = pill.show("recording", None);
+        assert_eq!(
+            pill.unconfirmed_show(rev)
+                .map(|(state, _)| state)
+                .as_deref(),
+            Some("recording")
+        );
+        pill.confirm(rev);
+        assert!(pill.unconfirmed_show(rev).is_none(), "confirmed: done");
+    }
+
+    #[test]
+    fn a_newer_show_or_a_hide_ends_the_watch_of_the_old_one() {
+        let mut pill = PillSync::new();
+        let old = pill.show("recording", None);
+        let newer = pill.show("transcribing", None);
+        assert!(pill.unconfirmed_show(old).is_none(), "replaced");
+        assert!(pill.unconfirmed_show(newer).is_some());
+        pill.hide();
+        assert!(
+            pill.unconfirmed_show(newer).is_none(),
+            "hidden: nothing to send"
+        );
+        assert!(!pill.is_showing(newer));
+    }
+
+    #[test]
+    fn a_confirmation_only_counts_up_and_never_past_the_current_revision() {
+        let mut pill = PillSync::new();
+        pill.show("recording", None);
+        let rev = pill.show("transcribing", None);
+        pill.confirm(rev);
+        pill.confirm(1);
+        assert!(
+            pill.unconfirmed_show(rev).is_none(),
+            "an old confirmation does not undo"
+        );
+        pill.confirm(rev + 50);
+        let next = pill.show("processing", None);
+        assert!(
+            pill.unconfirmed_show(next).is_some(),
+            "a confirmation from the future does not cover the next show"
+        );
+    }
+
+    #[test]
+    fn a_notice_travels_with_its_show() {
+        let mut pill = PillSync::new();
+        let rev = pill.show("notice", Some(notice()));
+        let (_, sent) = pill.unconfirmed_show(rev).unwrap();
+        assert!(sent.is_some());
+        assert!(pill.snapshot().notice.is_some());
+        pill.show("recording", None);
+        assert!(
+            pill.snapshot().notice.is_none(),
+            "a take's pill has no notice of its own"
+        );
+    }
+
+    #[test]
+    fn the_recovery_starts_gently_reloads_once_and_gives_up_after_seconds() {
+        assert_eq!(RECOVERY_PLAN[0].0, Recovery::Resend);
+        let reloads = RECOVERY_PLAN
+            .iter()
+            .filter(|(step, _)| *step == Recovery::Reload)
+            .count();
+        assert_eq!(reloads, 1);
+        let reload_at = RECOVERY_PLAN
+            .iter()
+            .position(|(step, _)| *step == Recovery::Reload)
+            .unwrap();
+        assert!(
+            RECOVERY_PLAN[..reload_at]
+                .iter()
+                .any(|(step, _)| *step == Recovery::Repaint),
+            "repainting is tried before the page is reloaded"
+        );
+        let total: u64 = RECOVERY_PLAN.iter().map(|(_, wait)| wait).sum();
+        assert!(
+            total <= 10_000,
+            "a pill that never answers is dropped in time"
+        );
+    }
+
+    #[test]
+    fn the_page_is_not_reloaded_over_and_over() {
+        assert!(reload_allowed(5_000, 0), "never reloaded yet");
+        assert!(!reload_allowed(5_000 + PAGE_RELOAD_COOLDOWN_MS - 1, 5_000));
+        assert!(reload_allowed(5_000 + PAGE_RELOAD_COOLDOWN_MS, 5_000));
+    }
+
+    #[test]
+    fn the_window_is_sized_in_physical_pixels_of_the_monitor_it_is_placed_on() {
+        // A 150% screen: the pill's window (208 x 56 logical) and its place.
+        assert_eq!(
+            physical_rect((100.0, 200.5), (208.0, 56.0), 1.5),
+            ((150, 301), (312, 84))
+        );
+        assert_eq!(
+            physical_rect((0.0, 0.0), (208.0, 56.0), 1.0),
+            ((0, 0), (208, 56))
+        );
+        assert_eq!(
+            physical_rect((0.0, 0.0), (0.0, 0.0), 1.0).1,
+            (1, 1),
+            "never an empty window"
+        );
+    }
+}
+
 fn show_overlay_state(app_handle: &AppHandle, state: &str) {
     // First, so a sound source notice from here on joins this take's pill instead
     // of showing (and later hiding) a pill of its own.
@@ -483,21 +954,8 @@ fn show_overlay_state(app_handle: &AppHandle, state: &str) {
         PROGRESS_SHOWN.store(false, Ordering::Relaxed);
     }
 
-    update_overlay_position(app_handle);
-
-    if let Some(overlay_window) = app_handle.get_webview_window("recording_overlay") {
-        // Mark visible ONLY if the native show actually succeeded, so the audio
-        // worker's emit_levels doesn't queue frames to a window that never
-        // appeared (T-306: it gates on this flag, never on a sync window getter).
-        if overlay_window.show().is_ok() {
-            OVERLAY_VISIBLE.store(true, Ordering::Relaxed);
-        }
-
-        // On Windows, aggressively re-assert "topmost" in the native Z-order after showing
-        #[cfg(target_os = "windows")]
-        force_overlay_topmost(&overlay_window);
-
-        let _ = overlay_window.emit("show-overlay", state);
+    if let Some(overlay_window) = app_handle.get_webview_window(OVERLAY_LABEL) {
+        present_overlay_window(app_handle, &overlay_window, state, None);
     }
 }
 
@@ -539,7 +997,7 @@ pub fn show_microphone_problem_overlay(app_handle: &AppHandle, state: &str) {
 }
 
 /// What the pill says after the sound source changed from the shortcut or its menu.
-#[derive(Clone, serde::Serialize)]
+#[derive(Clone, serde::Serialize, specta::Type)]
 struct CaptureSourceNotice {
     source: settings::CaptureSource,
     /// The take in progress keeps its source; the new one starts with the next take.
@@ -595,17 +1053,12 @@ pub fn show_capture_source_notice(
     // the pill (the page ignores a later "notice") and the hide below skips it.
     OVERLAY_GENERATION.fetch_add(1, Ordering::SeqCst);
     let generation = OVERLAY_GENERATION.load(Ordering::SeqCst);
-    update_overlay_position(app_handle);
-    let Some(overlay_window) = app_handle.get_webview_window("recording_overlay") else {
+    let Some(overlay_window) = app_handle.get_webview_window(OVERLAY_LABEL) else {
         return;
     };
-    if overlay_window.show().is_ok() {
-        OVERLAY_VISIBLE.store(true, Ordering::Relaxed);
-    }
-    #[cfg(target_os = "windows")]
-    force_overlay_topmost(&overlay_window);
-    let _ = overlay_window.emit("show-overlay", "notice");
-    let _ = overlay_window.emit("capture-source-notice", notice);
+    // The notice goes with the show (a page that has to be told again, or asks,
+    // gets the notice along), not as an event of its own.
+    present_overlay_window(app_handle, &overlay_window, "notice", Some(notice));
     // A take shown in the meantime (or another notice) bumps the generation and
     // keeps the pill.
     let app_handle = app_handle.clone();
@@ -621,19 +1074,8 @@ pub fn show_capture_source_notice(
 
 /// Updates the overlay window position based on current settings
 pub fn update_overlay_position(app_handle: &AppHandle) {
-    if let Some(overlay_window) = app_handle.get_webview_window("recording_overlay") {
-        #[cfg(target_os = "linux")]
-        {
-            update_gtk_layer_shell_anchors(&overlay_window);
-        }
-
-        // The Pill size setting may have changed since the last take.
-        let (width, height) = overlay_window_size(&settings::get_settings(app_handle));
-        let _ = overlay_window.set_size(tauri::Size::Logical(tauri::LogicalSize { width, height }));
-        if let Some((x, y)) = overlay_window_position(app_handle) {
-            let _ = overlay_window
-                .set_position(tauri::Position::Logical(tauri::LogicalPosition { x, y }));
-        }
+    if let Some(overlay_window) = app_handle.get_webview_window(OVERLAY_LABEL) {
+        place_overlay_window(app_handle, &overlay_window, false);
     }
 }
 
@@ -643,6 +1085,7 @@ pub fn hide_recording_overlay(app_handle: &AppHandle) {
     // window work below — the actual native hide is delayed for the fade-out.
     OVERLAY_VISIBLE.store(false, Ordering::Relaxed);
     TAKE_ON_PILL.store(false, Ordering::SeqCst);
+    let hide_rev = pill_sync().hide();
     #[cfg(windows)]
     FOCUS_BEFORE_PILL.store(0, Ordering::Relaxed);
     let _ = app_handle.emit_to("main", "take-state", "idle");
@@ -651,9 +1094,10 @@ pub fn hide_recording_overlay(app_handle: &AppHandle) {
     }
     // Always hide the overlay regardless of settings - if setting was changed while recording,
     // we still want to hide it properly
-    if let Some(overlay_window) = app_handle.get_webview_window("recording_overlay") {
-        // Emit event to trigger fade-out animation
-        let _ = overlay_window.emit("hide-overlay", ());
+    if let Some(overlay_window) = app_handle.get_webview_window(OVERLAY_LABEL) {
+        // Emit event to trigger fade-out animation (a page that misses it hides
+        // itself when it asks, see `sync_overlay_page`)
+        let _ = overlay_window.emit("hide-overlay", hide_rev);
         // Hide the window after a short delay to allow animation to complete.
         // Capture the current generation so we can skip the hide if a new show happened.
         let generation = OVERLAY_GENERATION.load(Ordering::SeqCst);

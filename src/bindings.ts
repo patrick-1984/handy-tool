@@ -2775,6 +2775,15 @@ export const commands = {
     await TAURI_INVOKE("overlay_restore_focus");
   },
   /**
+   * The recording pill's page says which show or hide it last drew (`applied`, 0 on
+   * a fresh load) and gets what the pill should show now. The page asks when it
+   * loads, when it becomes visible and after every event it drew; the answer also
+   * confirms the show, which is sent again until it is confirmed.
+   */
+  async overlaySync(applied: number): Promise<OverlaySnapshot> {
+    return await TAURI_INVOKE("overlay_sync", { applied });
+  },
+  /**
    * What the live text box shows: the last words, or the whole text so far.
    */
   async changeLiveTextModeSetting(mode: LiveTextMode): Promise<Result<null, string>> {
@@ -4435,6 +4444,30 @@ export type OpenRouterTranscriptionRoute =
    * Chat `/chat/completions` with an `input_audio` part (audio-capable LLMs).
    */
   | "chat";
+/**
+ * What the pill says after the sound source changed from the shortcut or its menu.
+ */
+export type CaptureSourceNotice = {
+  source: CaptureSource;
+  /**
+   * The take in progress keeps its source; the new one starts with the next take.
+   */
+  next_take: boolean;
+};
+/**
+ * What the backend wants on the pill now, for the page's `overlay_sync` call.
+ */
+export type OverlaySnapshot = {
+  /**
+   * The revision of this state; the page draws it only when newer than its own.
+   */
+  rev: number;
+  /**
+   * `None`: the pill is hidden.
+   */
+  state: string | null;
+  notice: CaptureSourceNotice | null;
+};
 export type OverlayPosition = "none" | "top" | "bottom";
 export type PasteMethod =
   | "ctrl_v"
