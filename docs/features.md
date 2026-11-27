@@ -664,13 +664,19 @@ character never arrives, and nothing in the interface says why.
 **What Handy does.** No default binding uses a chord AltGr can type a character with. The
 trigger shortcuts sit on Ctrl+Space, Ctrl+Shift+Space and the Ctrl+Shift function keys, all of
 which are identical on every layout; a test over the whole default set fails the build if one
-regresses. When _you_ pick a colliding chord by hand, a hint (a question mark marked Attention)
+regresses. On Windows, Alt in a shortcut means the left Alt key: AltGr (left Ctrl plus right Alt)
+no longer runs an Alt or Ctrl+Alt shortcut, with either keyboard implementation. With `Handy Keys`
+the character then types as usual. With the default `Tauri Global Shortcut`, Windows still hands a
+key press that matches a Ctrl+Alt chord to the shortcut rather than to the app you type in, so that
+character can still go missing. A chord you gave an explicit right-side modifier (`alt_right`,
+`Handy Keys` only) keeps working as written. When _you_ pick a colliding chord by hand, a hint (a question mark marked Attention)
 appears beside it saying what may not work, because the app cannot safely change a chord you
 chose. If you never type with AltGr, the hint's tooltip offers to turn it off and takes you to the
 switch. The one deliberate
 exception is the Jumper's eighteen slot chords, which stay on `ctrl+alt+<digit>` and
 `ctrl+alt+shift+<digit>`: no common European layout puts a character on AltGr+digit, and no other
-free chord space of that size exists.
+free chord space of that size exists. On Windows they too need the left Alt key: AltGr plus a
+digit does not run them.
 **Where.** Every shortcut control; the hint appears next to the chord itself. Switch it off
 at `Shortcuts › Hints › Show hints for AltGr shortcuts = Off`.
 **Applies to.** All platforms; AltGr is a Windows keyboard concept, so the collision itself is
@@ -679,7 +685,8 @@ Windows-only.
 keys moved off `ctrl+alt+<letter>` chords across earlier releases; 1.4.0 finished the job by
 moving Transcribe & Submit off `ctrl+alt+space` and adding the test and the warning. The
 switch since 1.11.0. Since 2.1.1 the warning triangle is a question mark and its badge says
-Attention: it is a risk of not working, not an alarm.
+Attention: it is a risk of not working, not an alarm. Alt meaning the left Alt key on Windows
+is unreleased (after 2.7.1).
 
 ### Turn off a shortcut you don't want
 

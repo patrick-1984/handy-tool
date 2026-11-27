@@ -191,9 +191,14 @@ impl HandyKeysState {
         binding_id: &str,
         hotkey_string: &str,
     ) -> Result<(), String> {
-        let hotkey: Hotkey = hotkey_string
+        let mut hotkey: Hotkey = hotkey_string
             .parse()
             .map_err(|e| format!("Failed to parse hotkey '{}': {}", hotkey_string, e))?;
+        // Windows: Alt means the left Alt key, so AltGr (left Ctrl + right Alt)
+        // never fires an Alt chord. A chord that names the right side is kept.
+        if cfg!(windows) {
+            hotkey.modifiers = super::altgr::alt_means_left_only(hotkey.modifiers);
+        }
 
         let id = manager
             .register(hotkey)
