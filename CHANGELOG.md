@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- **AltGr no longer triggers a shortcut that uses Alt.** A shortcut set to Alt+R, or to Ctrl+Alt+R,
+  also fired on AltGr+R, so on a Polish, German or French keyboard typing ą, ę, ś or € could run
+  the shortcut instead of typing the character. On Windows, Alt in a shortcut now means the left
+  Alt key only: AltGr (the right Alt, which Windows reports as left Ctrl plus right Alt) is
+  ignored by Alt and Ctrl+Alt shortcuts, with either keyboard implementation. A shortcut you
+  recorded with the right Alt on purpose (handy-keys keyboard implementation) still works.
+
 ## [2.7.1] - 2026-11-18
 
 ### Fixed

@@ -5,10 +5,11 @@
 
 use log::{error, warn};
 use tauri::AppHandle;
-use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
+use tauri_plugin_global_shortcut::{GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 
 use crate::settings::{self, ShortcutBinding, get_settings};
 
+use super::altgr;
 use super::handler::handle_shortcut_event;
 
 /// Every binding this backend holds right now, with the chord it holds, kept by
@@ -21,6 +22,11 @@ use super::handler::handle_shortcut_event;
 static REGISTERED: once_cell::sync::Lazy<
     std::sync::Mutex<std::collections::HashMap<String, String>>,
 > = once_cell::sync::Lazy::new(|| std::sync::Mutex::new(std::collections::HashMap::new()));
+
+/// Presses ignored because they came from AltGr (see `altgr`), so their
+/// releases are ignored too.
+static ALTGR_GUARD: once_cell::sync::Lazy<std::sync::Mutex<altgr::GuardState>> =
+    once_cell::sync::Lazy::new(|| std::sync::Mutex::new(altgr::GuardState::default()));
 
 /// (binding id, chord) of every binding this backend holds right now.
 pub(crate) fn registered_bindings() -> Vec<(String, String)> {
@@ -141,6 +147,23 @@ pub fn register_shortcut(app: &AppHandle, binding: ShortcutBinding) -> Result<()
             if scut == &shortcut {
                 let shortcut_string = scut.into_string();
                 let is_pressed = event.state == ShortcutState::Pressed;
+                // RegisterHotKey cannot tell left Alt from right Alt, so AltGr
+                // (left Ctrl + right Alt on Windows) would fire an Alt / Ctrl+Alt
+                // chord and swallow the character being typed: drop it here.
+                let (left_alt, right_alt) = altgr::alt_keys_down();
+                let ignore = altgr::ignore_for_altgr(
+                    scut.mods.contains(Modifiers::ALT),
+                    scut.mods.contains(Modifiers::CONTROL),
+                    left_alt,
+                    right_alt,
+                );
+                let deliver = ALTGR_GUARD
+                    .lock()
+                    .map(|mut guard| guard.deliver(&binding_id_for_closure, is_pressed, ignore))
+                    .unwrap_or(true);
+                if !deliver {
+                    return;
+                }
                 handle_shortcut_event(
                     app_handle,
                     &binding_id_for_closure,
