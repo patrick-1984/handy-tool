@@ -642,6 +642,7 @@ pub fn run(cli_args: CliArgs) {
         commands::audio::toggle_live_text_box,
         commands::audio::overlay_note_focus,
         commands::audio::overlay_restore_focus,
+        commands::audio::overlay_sync,
         commands::audio::change_live_text_mode_setting,
         commands::audio::change_live_text_fade_setting,
         commands::audio::change_live_text_after_stop_setting,

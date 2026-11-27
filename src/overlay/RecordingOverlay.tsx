@@ -1,4 +1,4 @@
-import { listen } from "@tauri-apps/api/event";
+import { listen, type EventCallback } from "@tauri-apps/api/event";
 import {
   CheckMenuItem,
   Menu,
@@ -48,6 +48,19 @@ interface CaptureSourceNotice {
 interface MicrophoneNotice {
   name: string;
   next_take: boolean;
+}
+
+/**
+ * The backend numbers every show and hide of the pill ("rev"). A show comes as
+ * the "show-overlay" event, and the page can also ask for the current one
+ * (`overlaySync`): an event is lost when the page was not alive to hear it, as
+ * after hours idle.
+ */
+interface ShowPayload {
+  state: OverlayState;
+  rev: number;
+  /** The sound source change of a notice-only pill. */
+  notice?: CaptureSourceNotice | null;
 }
 const CAPTURE_NOTICE_MS = 1500;
 
@@ -156,93 +169,149 @@ const RecordingOverlay: React.FC = () => {
   const smoothedLevelsRef = useRef<number[]>(Array(BAR_BANDS).fill(0));
   const direction = getLanguageDirection(i18n.language);
 
+  // The last show or hide of the backend this page drew (0 = none yet).
+  const appliedRevRef = useRef(0);
+
   useEffect(() => {
-    const setupEventListeners = async () => {
-      // Listen for show-overlay event from Rust
-      const unlistenShow = await listen("show-overlay", async (event) => {
-        const overlayState = event.payload as OverlayState;
-        if (overlayState !== "notice") takeShownRef.current = true;
-        // Sync language from settings each time overlay is shown
-        await syncLanguageFromSettings();
-        if (overlayState === "notice" && takeShownRef.current) return;
-        setState(overlayState);
-        setHoverLabel(null);
-        setMicLive(false);
-        setTooQuiet(false);
-        setProgress(null);
-        setFinishing(false);
-        setIsVisible(true);
-        const settings = await commands.getAppSettings();
-        if (settings.status === "ok") {
-          setPauseEnabled(settings.data.pause_button_enabled ?? false);
-          setLiveTextBox(settings.data.live_text_box_enabled ?? false);
-          // Reduce motion: the circling light becomes the line.
-          const style = settings.data.progress_style ?? "line";
-          setProgressStyle(
-            style === "lap" &&
-              window.matchMedia("(prefers-reduced-motion: reduce)").matches
-              ? "line"
-              : style,
-          );
-          setSoundBarsWide(settings.data.sound_bars_wide ?? false);
-          setProgressColor(settings.data.progress_color ?? "");
-          setGlow(settings.data.progress_glow ?? 100);
-          setLineGlow(settings.data.progress_line_glow ?? false);
-          // Overlay Size: the window is already that size; the page follows.
-          document.documentElement.style.zoom = String(
-            (settings.data.pill_scale ?? 100) / 100,
-          );
+    let disposed = false;
+    const unlisteners: Array<() => void> = [];
+    const on = async <T,>(name: string, handler: EventCallback<T>) => {
+      const unlisten = await listen<T>(name, handler);
+      if (disposed) unlisten();
+      else unlisteners.push(unlisten);
+    };
+
+    const showNotice = (next: CaptureSourceNotice) => {
+      lastNoticeRef.current = next;
+      setNotice(next);
+      if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current);
+      noticeTimerRef.current = setTimeout(
+        () => setNotice(null),
+        CAPTURE_NOTICE_MS,
+      );
+    };
+
+    // The language and the look settings of the pill. Not awaited before the
+    // pill is shown: a slow or stuck call must not keep the pill off the screen.
+    const refreshFromSettings = async () => {
+      await syncLanguageFromSettings();
+      const settings = await commands.getAppSettings();
+      if (disposed || settings.status !== "ok") return;
+      setPauseEnabled(settings.data.pause_button_enabled ?? false);
+      setLiveTextBox(settings.data.live_text_box_enabled ?? false);
+      // Reduce motion: the circling light becomes the line.
+      const style = settings.data.progress_style ?? "line";
+      setProgressStyle(
+        style === "lap" &&
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "line"
+          : style,
+      );
+      setSoundBarsWide(settings.data.sound_bars_wide ?? false);
+      setProgressColor(settings.data.progress_color ?? "");
+      setGlow(settings.data.progress_glow ?? 100);
+      setLineGlow(settings.data.progress_line_glow ?? false);
+      // Overlay Size: the window is already that size; the page follows.
+      document.documentElement.style.zoom = String(
+        (settings.data.pill_scale ?? 100) / 100,
+      );
+    };
+
+    // A show of the backend: from its event, or from asking. Each is drawn once
+    // (the backend sends a show again until it is confirmed).
+    const applyShow = ({
+      state: overlayState,
+      rev,
+      notice: next,
+    }: ShowPayload) => {
+      if (rev <= appliedRevRef.current) return;
+      appliedRevRef.current = rev;
+      if (next) showNotice(next);
+      if (overlayState !== "notice") takeShownRef.current = true;
+      else if (takeShownRef.current) return;
+      setState(overlayState);
+      setHoverLabel(null);
+      setMicLive(false);
+      setTooQuiet(false);
+      setProgress(null);
+      setFinishing(false);
+      // A new take starts from flat bars, not from where the last one ended.
+      smoothedLevelsRef.current = Array(BAR_BANDS).fill(0);
+      setLevels(Array(BAR_BANDS).fill(0));
+      setIsVisible(true);
+      refreshFromSettings().catch((e) =>
+        console.warn("Failed to refresh the pill's settings:", e),
+      );
+    };
+
+    const applyHide = (rev: number) => {
+      if (rev <= appliedRevRef.current) return;
+      appliedRevRef.current = rev;
+      takeShownRef.current = false;
+      const shown = shownProgressRef.current;
+      if (shown !== null && shown < 100) {
+        setFinishing(true); // hides once the figure reaches 100%
+      } else {
+        setIsVisible(false);
+      }
+    };
+
+    // Says which show or hide this page drew (which confirms it to the backend,
+    // or the backend sends it again) and draws what the backend has on the pill
+    // now. Asked when the page loads, when it becomes visible, and after every
+    // event: this is what brings the pill back when an event was lost.
+    const syncWithBackend = async () => {
+      try {
+        const snapshot = await commands.overlaySync(appliedRevRef.current);
+        if (disposed) return;
+        if (snapshot.state) {
+          applyShow({
+            state: snapshot.state as OverlayState,
+            rev: snapshot.rev,
+            notice: snapshot.notice,
+          });
+        } else {
+          applyHide(snapshot.rev);
         }
+      } catch (e) {
+        console.warn("Failed to sync the pill with the backend:", e);
+      }
+    };
+
+    const setupEventListeners = async () => {
+      await on<ShowPayload>("show-overlay", (event) => {
+        applyShow(event.payload);
+        void syncWithBackend();
       });
 
-      const unlistenLiveTextBox = await listen<boolean>(
-        "live-text-box-changed",
-        (event) => setLiveTextBox(event.payload),
+      await on<number>("hide-overlay", (event) => {
+        applyHide(event.payload);
+        void syncWithBackend();
+      });
+
+      await on<boolean>("live-text-box-changed", (event) =>
+        setLiveTextBox(event.payload),
       );
 
-      const showNotice = (next: CaptureSourceNotice) => {
-        lastNoticeRef.current = next;
-        setNotice(next);
-        if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current);
-        noticeTimerRef.current = setTimeout(
-          () => setNotice(null),
-          CAPTURE_NOTICE_MS,
-        );
-      };
-      const unlistenNotice = await listen<CaptureSourceNotice>(
-        "capture-source-notice",
-        (event) => showNotice(event.payload),
+      await on<CaptureSourceNotice>("capture-source-notice", (event) =>
+        showNotice(event.payload),
       );
       // A microphone picked during the take (from this menu or Settings).
-      const unlistenMicNotice = await listen<MicrophoneNotice>(
-        "microphone-notice",
-        (event) =>
-          showNotice({
-            source: "microphone",
-            next_take: event.payload.next_take,
-            microphone: event.payload.name,
-          }),
+      await on<MicrophoneNotice>("microphone-notice", (event) =>
+        showNotice({
+          source: "microphone",
+          next_take: event.payload.next_take,
+          microphone: event.payload.name,
+        }),
       );
 
       // Transcription progress after stop, only meaningful in "transcribing"
-      const unlistenProgress = await listen<number>(
-        "transcription-progress",
-        (event) => setProgress(event.payload),
+      await on<number>("transcription-progress", (event) =>
+        setProgress(event.payload),
       );
 
-      // Listen for hide-overlay event from Rust
-      const unlistenHide = await listen("hide-overlay", () => {
-        takeShownRef.current = false;
-        const shown = shownProgressRef.current;
-        if (shown !== null && shown < 100) {
-          setFinishing(true); // hides once the figure reaches 100%
-        } else {
-          setIsVisible(false);
-        }
-      });
-
       // Listen for mic-level updates
-      const unlistenLevel = await listen<{
+      await on<{
         levels: number[];
         live: boolean;
         too_quiet: boolean;
@@ -261,19 +330,23 @@ const RecordingOverlay: React.FC = () => {
         if (live) setMicLive(true);
       });
 
-      // Cleanup function
-      return () => {
-        unlistenShow();
-        unlistenHide();
-        unlistenProgress();
-        unlistenLiveTextBox();
-        unlistenMicNotice();
-        unlistenNotice();
-        unlistenLevel();
-      };
+      // Everything is listened to: whatever was shown before that is drawn now.
+      await syncWithBackend();
     };
 
+    // The window comes up from hidden: the page may have been asleep for hours.
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") void syncWithBackend();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
     setupEventListeners();
+
+    return () => {
+      disposed = true;
+      document.removeEventListener("visibilitychange", onVisibility);
+      unlisteners.forEach((unlisten) => unlisten());
+    };
   }, []);
 
   useEffect(() => {
