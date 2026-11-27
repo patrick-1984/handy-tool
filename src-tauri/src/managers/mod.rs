@@ -6,6 +6,8 @@ pub mod flm;
 pub mod hf_parakeet;
 pub mod history;
 pub mod model;
+pub mod nvidia_proto;
+pub mod nvidia_transcription;
 pub mod openrouter_transcription;
 pub mod stt_server;
 pub mod transcription;

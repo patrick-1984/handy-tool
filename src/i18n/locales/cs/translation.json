@@ -1377,6 +1377,24 @@
           "deviceWithVram": "{{name}} (zařízení {{index}}, {{vram}} GB)"
         }
       },
+      "nvidiaTranscription": {
+        "cardTitle": "NVIDIA (Whisper large-v3, v cloudu)",
+        "apiKey": {
+          "title": "Klíč NVIDIA API",
+          "description": "Klíč Bearer pro hostovanou službu NVIDIA Riva. Výchozí: prázdné. Ukládá se nešifrovaně v souboru nastavení a je součástí záloh, stejně jako klíč pro API přepis. NVIDIA obdrží váš zvuk po zastavení nahrávání. Jazyk nastavíte v Obecné; při volbě Auto jazyk rozpozná NVIDIA.",
+          "placeholder": "nvapi-..."
+        },
+        "preset": {
+          "whisper": "Whisper large-v3 (vícejazyčný, výchozí)",
+          "parakeet": "Parakeet 1.1B vícejazyčný",
+          "custom": "Vlastní"
+        },
+        "functionId": {
+          "title": "ID funkce",
+          "description": "Hostovaná funkce NVIDIA Riva. Výchozí: Whisper large-v3 (b702f636-f60c-4a3d-a6f4-f3568c13bd7d). Zvolte Parakeet 1.1B vícejazyčný, nebo Vlastní a zadejte UUID jiné kompatibilní funkce Recognize, například Canary; podporované jazyky závisí na funkci.",
+          "placeholder": "b702f636-f60c-4a3d-a6f4-f3568c13bd7d"
+        }
+      },
       "apiTranscription": {
         "title": "API přepis",
         "cardTitle": "API přepis (kompatibilní s OpenAI)",

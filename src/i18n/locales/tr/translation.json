@@ -1377,6 +1377,24 @@
           "deviceWithVram": "{{name}} (cihaz {{index}}, {{vram}} GB)"
         }
       },
+      "nvidiaTranscription": {
+        "cardTitle": "NVIDIA (Whisper large-v3, bulut)",
+        "apiKey": {
+          "title": "NVIDIA API Anahtarı",
+          "description": "NVIDIA tarafından barındırılan Riva için Bearer anahtarı. Varsayılan: boş. API Transkripsiyonu anahtarı gibi ayarlar dosyanızda şifrelenmeden saklanır ve yedeklere dahil edilir. Kaydı durdurduğunuzda ses NVIDIA'ya gönderilir. Dili Genel bölümünde ayarlayın; Otomatik seçiliyken dili NVIDIA algılar.",
+          "placeholder": "nvapi-..."
+        },
+        "preset": {
+          "whisper": "Whisper large-v3 (çok dilli, varsayılan)",
+          "parakeet": "Parakeet 1.1B çok dilli",
+          "custom": "Özel"
+        },
+        "functionId": {
+          "title": "İşlev Kimliği",
+          "description": "NVIDIA tarafından barındırılan Riva işlevi. Varsayılan: Whisper large-v3 (b702f636-f60c-4a3d-a6f4-f3568c13bd7d). Parakeet 1.1B çok dilli seçeneğini ya da Canary gibi başka bir uyumlu Recognize işlevinin UUID'sini girmek için Özel seçeneğini seçin; desteklenen diller işleve bağlıdır.",
+          "placeholder": "b702f636-f60c-4a3d-a6f4-f3568c13bd7d"
+        }
+      },
       "apiTranscription": {
         "title": "API Transkripsiyonu",
         "cardTitle": "API Transkripsiyonu (OpenAI uyumlu)",

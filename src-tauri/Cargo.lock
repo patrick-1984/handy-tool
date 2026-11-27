@@ -2552,6 +2552,7 @@ dependencies = [
  "gtk-layer-shell",
  "handy-keys",
  "hound",
+ "http-body-util",
  "log",
  "natural",
  "ndarray",

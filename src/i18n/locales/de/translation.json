@@ -1377,6 +1377,24 @@
           "deviceWithVram": "{{name}} (Gerät {{index}}, {{vram}} GB)"
         }
       },
+      "nvidiaTranscription": {
+        "cardTitle": "NVIDIA (Whisper large-v3, Cloud)",
+        "apiKey": {
+          "title": "NVIDIA-API-Schlüssel",
+          "description": "Bearer-Schlüssel für das gehostete NVIDIA Riva. Standard: leer. Wird unverschlüsselt in deiner Einstellungsdatei gespeichert und in Sicherungen aufgenommen, wie der Schlüssel der API-Transkription. NVIDIA erhält deine Aufnahme, nachdem du stoppst. Die Sprache stellst du unter Allgemein ein; bei Auto erkennt NVIDIA die Sprache.",
+          "placeholder": "nvapi-..."
+        },
+        "preset": {
+          "whisper": "Whisper large-v3 (mehrsprachig, Standard)",
+          "parakeet": "Parakeet 1.1B mehrsprachig",
+          "custom": "Benutzerdefiniert"
+        },
+        "functionId": {
+          "title": "Funktions-ID",
+          "description": "Gehostete NVIDIA-Riva-Funktion. Standard: Whisper large-v3 (b702f636-f60c-4a3d-a6f4-f3568c13bd7d). Wähle Parakeet 1.1B mehrsprachig oder Benutzerdefiniert, um die UUID einer anderen kompatiblen Recognize-Funktion wie Canary einzugeben; die unterstützten Sprachen hängen von der Funktion ab.",
+          "placeholder": "b702f636-f60c-4a3d-a6f4-f3568c13bd7d"
+        }
+      },
       "apiTranscription": {
         "title": "API-Transkription",
         "cardTitle": "API-Transkription (OpenAI-kompatibel)",

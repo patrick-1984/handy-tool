@@ -236,6 +236,11 @@ pub fn model_usable(models: &ModelManager, settings: &AppSettings, id: &str) -> 
 fn is_model_usable(model: &ModelInfo, settings: &AppSettings) -> bool {
     match model.engine_type {
         EngineType::ApiWhisper => !settings.api_transcription_url.trim().is_empty(),
+        EngineType::NvidiaRiva => crate::managers::nvidia_transcription::validate_config(
+            &settings.nvidia_transcription_key,
+            &settings.nvidia_transcription_function_id,
+        )
+        .is_ok(),
         EngineType::OpenRouterWhisper => {
             // T-308: usable when the dedicated URL + API key are set (no longer
             // tied to an `llm_providers` entry). Model is optional (defaults).
@@ -368,6 +373,17 @@ mod tests {
 
         // Whitespace-only URL must not count as usable even with a key.
         settings.openrouter_transcription_url = "   ".to_string();
+        assert!(!is_model_usable(&m, &settings));
+    }
+
+    #[test]
+    fn nvidia_engine_requires_key_and_valid_function() {
+        let mut settings = get_default_settings();
+        let m = model(EngineType::NvidiaRiva, true);
+        assert!(!is_model_usable(&m, &settings));
+        settings.nvidia_transcription_key = "test-key".into();
+        assert!(is_model_usable(&m, &settings));
+        settings.nvidia_transcription_function_id = "invalid".into();
         assert!(!is_model_usable(&m, &settings));
     }
 

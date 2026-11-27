@@ -1377,6 +1377,24 @@
           "deviceWithVram": "{{name}}（设备 {{index}}，{{vram}} GB）"
         }
       },
+      "nvidiaTranscription": {
+        "cardTitle": "NVIDIA (Whisper large-v3，云端)",
+        "apiKey": {
+          "title": "NVIDIA API 密钥",
+          "description": "NVIDIA 托管 Riva 的 Bearer 密钥。默认：空。与 API 转录的密钥一样，以未加密方式保存在设置文件中，并包含在备份里。停止录音后，音频会发送给 NVIDIA。语言请在“通用”中设置；选择“自动”时由 NVIDIA 检测语言。",
+          "placeholder": "nvapi-..."
+        },
+        "preset": {
+          "whisper": "Whisper large-v3 (多语言，默认)",
+          "parakeet": "Parakeet 1.1B 多语言",
+          "custom": "自定义"
+        },
+        "functionId": {
+          "title": "函数 ID",
+          "description": "NVIDIA 托管的 Riva 函数。默认：Whisper large-v3 (b702f636-f60c-4a3d-a6f4-f3568c13bd7d)。可选择 Parakeet 1.1B 多语言，或选择“自定义”输入其他兼容 Recognize 函数（例如 Canary）的 UUID；支持的语言取决于函数。",
+          "placeholder": "b702f636-f60c-4a3d-a6f4-f3568c13bd7d"
+        }
+      },
       "apiTranscription": {
         "title": "API 转录",
         "cardTitle": "API 转录（兼容 OpenAI）",

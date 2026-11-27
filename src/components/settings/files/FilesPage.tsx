@@ -235,6 +235,7 @@ const TranscribeFile: React.FC<{ onFinished: () => void }> = ({
   // remembered; until then, the dictation model.
   const isOnline = (m: ModelInfo) =>
     m.engine_type === "ApiWhisper" ||
+    m.engine_type === "NvidiaRiva" ||
     m.engine_type === "OpenRouterWhisper" ||
     m.engine_type === "SttServer";
   const fileModels = models;

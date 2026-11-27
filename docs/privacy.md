@@ -167,3 +167,5 @@ See [It refuses to dictate into a password box](features.md#it-refuses-to-dictat
 ## Practical boundary
 
 Local-model dictation avoids an app-level network request, but still writes sensitive local data. Clipboard-based normal delivery briefly uses the system clipboard; `Direct` does not. Remote engines, post-processing, provider-backed tools, MCP clients, Windows, and destination apps widen that boundary. Choose them as carefully as you would choose where to upload the original audio or text.
+
+NVIDIA data flow: [Use NVIDIA for cloud transcription](features.md#use-nvidia-for-cloud-transcription). The NVIDIA provider sends PCM audio, the selected language code, function ID, and bearer key to `grpc.nvcf.nvidia.com` over TLS. It stores the key in the settings file, as the existing API provider does. Source: `src-tauri/src/managers/nvidia_transcription.rs`, `src-tauri/src/settings.rs`.

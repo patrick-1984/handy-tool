@@ -30,6 +30,7 @@ const modelSupportsLanguage = (model: ModelInfo, langCode: string): boolean => {
 const isExternalEngine = (model: ModelInfo): boolean =>
   model.engine_type === "FlmWhisper" ||
   model.engine_type === "ApiWhisper" ||
+  model.engine_type === "NvidiaRiva" ||
   model.engine_type === "OpenRouterWhisper" ||
   model.engine_type === "SttServer";
 

@@ -1377,6 +1377,24 @@
           "deviceWithVram": "{{name}}（デバイス{{index}}、{{vram}} GB）"
         }
       },
+      "nvidiaTranscription": {
+        "cardTitle": "NVIDIA (Whisper large-v3、クラウド)",
+        "apiKey": {
+          "title": "NVIDIA APIキー",
+          "description": "NVIDIA がホストする Riva 用の Bearer キーです。デフォルト: 空。API文字起こしのキーと同様に、暗号化されずに設定ファイルに保存され、バックアップにも含まれます。録音を停止すると音声が NVIDIA に送信されます。言語は「一般」で設定します。「自動」では NVIDIA が言語を検出します。",
+          "placeholder": "nvapi-..."
+        },
+        "preset": {
+          "whisper": "Whisper large-v3 (多言語、デフォルト)",
+          "parakeet": "Parakeet 1.1B 多言語",
+          "custom": "カスタム"
+        },
+        "functionId": {
+          "title": "関数 ID",
+          "description": "NVIDIA がホストする Riva の関数です。デフォルト: Whisper large-v3 (b702f636-f60c-4a3d-a6f4-f3568c13bd7d)。Parakeet 1.1B 多言語を選ぶか、「カスタム」を選んで Canary など互換性のある別の Recognize 関数の UUID を入力します。対応言語は関数によって異なります。",
+          "placeholder": "b702f636-f60c-4a3d-a6f4-f3568c13bd7d"
+        }
+      },
       "apiTranscription": {
         "title": "API文字起こし",
         "cardTitle": "API文字起こし（OpenAI互換）",

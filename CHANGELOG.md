@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- **NVIDIA cloud engine.** Choose NVIDIA (Whisper large-v3, cloud) on Models, enter your NVIDIA
+  API key under Advanced settings › Transcription providers, and Handy sends the recording to
+  NVIDIA's hosted Riva service after you stop. The Function ID has model presets: Whisper
+  large-v3 (multilingual, the default, better on Polish) and Parakeet 1.1B multilingual, or
+  Custom for any other compatible function.
+
 ## [2.7.1] - 2026-11-18
 
 ### Fixed

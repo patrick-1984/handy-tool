@@ -254,6 +254,28 @@ Sets the remote speech-model identifier. **Default:** empty.
 
 Catalog: [Point it at any OpenAI-compatible speech endpoint](../../features.md#point-it-at-any-openai-compatible-speech-endpoint).
 
+### NVIDIA (Whisper large-v3, cloud)
+
+#### NVIDIA API Key
+
+`Advanced settings › Transcription providers › NVIDIA (Whisper large-v3, cloud) › NVIDIA API Key`
+
+Stores the NVIDIA bearer key in the same settings file as the API Transcription key (unencrypted and included in backups). **Default:** empty.
+
+Tooltip: “Bearer key for NVIDIA hosted Riva. Default: empty. Stored unencrypted in your settings file and included in backups, like the API Transcription key. NVIDIA receives your audio after you stop. Set Language on General; Auto asks NVIDIA to detect the language.”
+
+Catalog: [Use NVIDIA for cloud transcription](../../features.md#use-nvidia-for-cloud-transcription).
+
+#### Function ID
+
+`Advanced settings › Transcription providers › NVIDIA (Whisper large-v3, cloud) › Function ID`
+
+Picks the hosted Riva function: `Whisper large-v3 (multilingual, default)` (`b702f636-f60c-4a3d-a6f4-f3568c13bd7d`), `Parakeet 1.1B multilingual` (`71203149-d3b7-4460-8231-1be2543a1fca`), or `Custom`, which shows a text field for any other function UUID. A preset writes its UUID when you choose it; a saved UUID that matches a preset shows that preset. **Default:** `Whisper large-v3 (multilingual, default)`.
+
+Tooltip: “NVIDIA hosted Riva function. Default: Whisper large-v3 (b702f636-f60c-4a3d-a6f4-f3568c13bd7d). Pick Parakeet 1.1B multilingual, or Custom to enter the UUID of another compatible Recognize function such as Canary; supported languages depend on the function.”
+
+Catalog: [Use NVIDIA for cloud transcription](../../features.md#use-nvidia-for-cloud-transcription).
+
 ### OpenRouter Transcription
 
 #### API URL

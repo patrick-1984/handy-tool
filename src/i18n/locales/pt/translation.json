@@ -1377,6 +1377,24 @@
           "deviceWithVram": "{{name}} (dispositivo {{index}}, {{vram}} GB)"
         }
       },
+      "nvidiaTranscription": {
+        "cardTitle": "NVIDIA (Whisper large-v3, na nuvem)",
+        "apiKey": {
+          "title": "Chave da API NVIDIA",
+          "description": "Chave Bearer para o NVIDIA Riva hospedado. Padrão: vazio. Guardada sem criptografia no seu arquivo de configurações e incluída nos backups, como a chave da Transcrição por API. A NVIDIA recebe seu áudio depois que você para a gravação. Defina o Idioma em Geral; com Auto, a NVIDIA detecta o idioma.",
+          "placeholder": "nvapi-..."
+        },
+        "preset": {
+          "whisper": "Whisper large-v3 (multilíngue, padrão)",
+          "parakeet": "Parakeet 1.1B multilíngue",
+          "custom": "Personalizado"
+        },
+        "functionId": {
+          "title": "ID da função",
+          "description": "Função do NVIDIA Riva hospedado. Padrão: Whisper large-v3 (b702f636-f60c-4a3d-a6f4-f3568c13bd7d). Escolha Parakeet 1.1B multilíngue, ou Personalizado para inserir o UUID de outra função Recognize compatível, como Canary; os idiomas suportados dependem da função.",
+          "placeholder": "b702f636-f60c-4a3d-a6f4-f3568c13bd7d"
+        }
+      },
       "apiTranscription": {
         "title": "Transcrição por API",
         "cardTitle": "Transcrição por API (compatível com OpenAI)",

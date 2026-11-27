@@ -1299,6 +1299,24 @@
           "deviceWithVram": "{{name}} (الجهاز {{index}}، {{vram}} جيجابايت)"
         }
       },
+      "nvidiaTranscription": {
+        "cardTitle": "NVIDIA (Whisper large-v3، سحابي)",
+        "apiKey": {
+          "title": "مفتاح NVIDIA API",
+          "description": "مفتاح Bearer لخدمة Riva المستضافة لدى NVIDIA. الافتراضي: فارغ. يُخزَّن دون تشفير في ملف الإعدادات ويُضمَّن في النسخ الاحتياطية، مثل مفتاح تفريغ صوتي عبر API. تتلقى NVIDIA الصوت بعد أن تتوقف. اضبط اللغة في عام؛ مع تلقائي تكتشف NVIDIA اللغة.",
+          "placeholder": "nvapi-..."
+        },
+        "preset": {
+          "whisper": "Whisper large-v3 (متعدد اللغات، افتراضي)",
+          "parakeet": "Parakeet 1.1B متعدد اللغات",
+          "custom": "مخصص"
+        },
+        "functionId": {
+          "title": "معرّف الدالة",
+          "description": "دالة Riva المستضافة لدى NVIDIA. الافتراضي: Whisper large-v3 (b702f636-f60c-4a3d-a6f4-f3568c13bd7d). اختر Parakeet 1.1B متعدد اللغات، أو مخصص لإدخال UUID لدالة Recognize متوافقة أخرى مثل Canary؛ تعتمد اللغات المدعومة على الدالة.",
+          "placeholder": "b702f636-f60c-4a3d-a6f4-f3568c13bd7d"
+        }
+      },
       "apiTranscription": {
         "title": "تفريغ صوتي عبر API",
         "cardTitle": "تفريغ صوتي عبر API (متوافق مع OpenAI)",

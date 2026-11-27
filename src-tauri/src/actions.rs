@@ -205,8 +205,8 @@ struct ChunkedSession {
     /// (serialized, potentially expensive) transcription instead of burning
     /// the engine for a take nobody wants.
     abandoned: AtomicBool,
-    /// When true (OpenRouter engine), chunks are NOT transcribed as they close;
-    /// their PCM is buffered and the whole recording is sent in ONE request on
+    /// When true (OpenRouter or NVIDIA), chunks are NOT transcribed as they close;
+    /// their PCM is buffered and the whole recording is transcribed after
     /// stop — so nothing goes over the network mid-recording (the on-disk Opus
     /// chunks are still written for crash safety).
     deferred: bool,
@@ -1179,6 +1179,10 @@ fn model_label(app: &AppHandle) -> Option<String> {
                 format!("{} — STT server", m)
             }
         }
+        "nvidia-riva" => format!(
+            "{} — NVIDIA",
+            settings.nvidia_transcription_function_id.trim()
+        ),
         "api-whisper" => {
             let m = settings.api_transcription_model.trim();
             if m.is_empty() {
@@ -1821,14 +1825,17 @@ impl ShortcutAction for TranscribeAction {
             );
             let stt_speakers =
                 settings.selected_model == "stt-server" && settings.stt_server_speakers;
-            // OpenRouter transcription must never stream audio mid-recording (the
+            // OpenRouter and NVIDIA must never stream audio mid-recording (the
             // user may hit network drops). It uses the on-disk chunked recording
-            // for crash safety, but transcribes the WHOLE recording in one request
-            // on stop — so it's excluded from live streaming here and marked
+            // for crash safety, but transcribes the WHOLE recording after
+            // stop — so it's excluded from live streaming here and marked
             // `deferred` in the chunked session below.
-            let is_openrouter = settings.selected_model == "openrouter-transcription";
+            let is_deferred_cloud = matches!(
+                settings.selected_model.as_str(),
+                "openrouter-transcription" | "nvidia-riva"
+            );
 
-            let plan_live = is_live_mode && !is_api_model && !is_openrouter;
+            let plan_live = is_live_mode && !is_api_model && !is_deferred_cloud;
             let plan_chunked = !plan_live && settings.crash_resilient_recording;
             *RECORDING_PLAN.lock().unwrap() = Some(RecordingPlan {
                 live: plan_live,
@@ -1842,13 +1849,13 @@ impl ShortcutAction for TranscribeAction {
             } else if plan_chunked {
                 // Chunked (default Post-Recording) mode: transcribe each chunk in
                 // the background as it closes, so a long recording is mostly
-                // transcribed by the time the user stops. For OpenRouter (deferred)
+                // transcribed by the time the user stops. For deferred cloud engines
                 // we instead buffer each chunk's PCM and transcribe the whole
                 // recording once on stop (no per-chunk network calls).
                 tm_seg.set_live_transcribing(true);
                 let session = Arc::new(ChunkedSession::new(
                     ts,
-                    is_openrouter,
+                    is_deferred_cloud,
                     is_api_model,
                     stt_speakers,
                 ));
@@ -1869,7 +1876,7 @@ impl ShortcutAction for TranscribeAction {
 
                     if session.deferred {
                         // Buffer the chunk PCM; the full recording is transcribed
-                        // in one request on stop. No transcription thread here.
+                        // after stop. No transcription thread here.
                         if let Ok(mut map) = session.pcm.lock() {
                             map.insert(closed.index, closed.pcm);
                         }
@@ -2007,12 +2014,15 @@ impl ShortcutAction for TranscribeAction {
         let settings_snapshot = get_settings(app);
         let is_ptt_binding = binding_id == "transcribe_ptt";
         let plan = RECORDING_PLAN.lock().ok().and_then(|mut g| g.take());
-        let is_openrouter = settings_snapshot.selected_model == "openrouter-transcription";
+        let is_deferred_cloud = matches!(
+            settings_snapshot.selected_model.as_str(),
+            "openrouter-transcription" | "nvidia-riva"
+        );
         let is_api_model = matches!(
             settings_snapshot.selected_model.as_str(),
             "api-whisper" | "stt-server"
         );
-        let fallback_live = !is_openrouter
+        let fallback_live = !is_deferred_cloud
             && !is_api_model
             && (settings_snapshot.live_text_box_enabled
                 || if is_ptt_binding {
@@ -2193,9 +2203,9 @@ impl ShortcutAction for TranscribeAction {
                     pieces_unfinished = done < total;
                     total_samples = session.total_samples.load(Ordering::SeqCst);
                     if session.deferred {
-                        // Deferred (OpenRouter): all chunk PCM is now buffered —
-                        // concatenate and transcribe the whole recording in ONE
-                        // request. This is where the single network call happens.
+                        // Deferred cloud engine: all chunk PCM is now buffered —
+                        // concatenate and transcribe after stop. The provider may
+                        // split this audio to respect its request limits.
                         let full = session.assemble_pcm();
                         if !full.is_empty() {
                             // Same serialization as every other engine call
@@ -2209,7 +2219,7 @@ impl ShortcutAction for TranscribeAction {
                             ) {
                                 Ok(t) => t,
                                 Err(e) => {
-                                    error!("Deferred (OpenRouter) transcription failed: {}", e);
+                                    error!("Deferred cloud transcription failed: {}", e);
                                     session.error_count.fetch_add(1, Ordering::SeqCst);
                                     if let Ok(mut le) = session.last_error.lock() {
                                         *le = Some(e.to_string());

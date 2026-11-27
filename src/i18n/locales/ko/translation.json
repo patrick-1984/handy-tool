@@ -1377,6 +1377,24 @@
           "deviceWithVram": "{{name}} (장치 {{index}}, {{vram}}GB)"
         }
       },
+      "nvidiaTranscription": {
+        "cardTitle": "NVIDIA (Whisper large-v3, 클라우드)",
+        "apiKey": {
+          "title": "NVIDIA API 키",
+          "description": "NVIDIA 호스팅 Riva용 Bearer 키입니다. 기본값: 비어 있음. API 전사 키와 마찬가지로 암호화되지 않은 채 설정 파일에 저장되며 백업에 포함됩니다. 녹음을 멈추면 오디오가 NVIDIA로 전송됩니다. 언어는 일반에서 설정하며, 자동이면 NVIDIA가 언어를 감지합니다.",
+          "placeholder": "nvapi-..."
+        },
+        "preset": {
+          "whisper": "Whisper large-v3 (다국어, 기본값)",
+          "parakeet": "Parakeet 1.1B 다국어",
+          "custom": "사용자 지정"
+        },
+        "functionId": {
+          "title": "함수 ID",
+          "description": "NVIDIA 호스팅 Riva 함수입니다. 기본값: Whisper large-v3 (b702f636-f60c-4a3d-a6f4-f3568c13bd7d). Parakeet 1.1B 다국어를 선택하거나, 사용자 지정을 선택해 Canary 같은 다른 호환 Recognize 함수의 UUID를 입력하세요. 지원 언어는 함수에 따라 다릅니다.",
+          "placeholder": "b702f636-f60c-4a3d-a6f4-f3568c13bd7d"
+        }
+      },
       "apiTranscription": {
         "title": "API 전사",
         "cardTitle": "API 전사 (OpenAI 호환)",

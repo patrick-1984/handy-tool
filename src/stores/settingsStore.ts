@@ -477,6 +477,10 @@ const settingUpdaters: {
     commands.changeApiTranscriptionUrlSetting(value as string),
   api_transcription_key: (value) =>
     commands.changeApiTranscriptionKeySetting(value as string),
+  nvidia_transcription_key: (value) =>
+    commands.changeNvidiaTranscriptionKeySetting(value as string),
+  nvidia_transcription_function_id: (value) =>
+    commands.changeNvidiaTranscriptionFunctionIdSetting(value as string),
   api_transcription_model: (value) =>
     commands.changeApiTranscriptionModelSetting(value as string),
   openrouter_transcription_url: (value) =>

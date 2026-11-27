@@ -16,6 +16,7 @@ const LANGUAGE_FORCING_ENGINES = [
   "SenseVoice",
   "FlmWhisper",
   "ApiWhisper",
+  "NvidiaRiva",
   "SttServer",
 ];
 
