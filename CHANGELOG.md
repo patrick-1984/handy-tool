@@ -7,9 +7,12 @@
 - **AltGr no longer triggers a shortcut that uses Alt.** A shortcut set to Alt+R, or to Ctrl+Alt+R,
   also fired on AltGr+R, so on a Polish, German or French keyboard typing ą, ę, ś or € could run
   the shortcut instead of typing the character. On Windows, Alt in a shortcut now means the left
-  Alt key only: AltGr (the right Alt, which Windows reports as left Ctrl plus right Alt) is
-  ignored by Alt and Ctrl+Alt shortcuts, with either keyboard implementation. A shortcut you
-  recorded with the right Alt on purpose (handy-keys keyboard implementation) still works.
+  Alt key only: AltGr (the right Alt, which Windows reports as left Ctrl plus right Alt) no longer
+  runs Alt and Ctrl+Alt shortcuts, with either keyboard implementation; this includes the
+  Jumper's Ctrl+Alt+digit slots. With Handy Keys the character then types; with the default
+  Tauri Global Shortcut, Windows still keeps the key press of a matching Ctrl+Alt chord, so the
+  AltGr hint stays for those. A shortcut recorded with the right Alt on purpose (Handy Keys)
+  still works.
 
 ## [2.7.1] - 2026-11-18
 
